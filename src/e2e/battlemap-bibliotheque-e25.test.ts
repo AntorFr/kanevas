@@ -11,10 +11,12 @@
 //   pleine      : with the API answering `bibliotheque_pleine` the screen says « Bibliothèque pleine (5 000 assets). »
 //   mediatheque : « Choisir dans la médiathèque » lists images without asset only, adds one
 //   mur         : a footprint on a floor is refused (« Un sol ou un mur n’a pas d’empreinte. »)
-//   captures    : MJ and player, both themes, 1440 / 768 / 390 px, written under $E25_CAPTURES when set
+//   captures    : MJ and player, both themes, 1440 / 768 / 390 px, written under $E25_CAPTURES (default: the temp dir)
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { mkdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 import { pngPlat } from '../bouchon/png-plat.js';
 import { attendre, connecte, launch, skipBrowser, startServer, type Any, type Server } from './harnais.test.js';
@@ -259,9 +261,9 @@ describe('E-25 Bibliothèque au navigateur', { skip: skipBrowser }, () => {
     await tiers.getByText('Page introuvable.').waitFor();
   });
 
-  const dir = process.env.E25_CAPTURES;
-  it('captures : MJ et joueuse, deux thèmes, 1440 / 768 / 390', { skip: dir ? false : 'E25_CAPTURES non posé' }, async () => {
-    mkdirSync(dir!, { recursive: true });
+  const dir = process.env.E25_CAPTURES ?? join(tmpdir(), 'e25-captures');
+  it('captures : MJ et joueuse, deux thèmes, 1440 / 768 / 390', async () => {
+    mkdirSync(dir, { recursive: true });
     for (const [nom, page] of [['mj', antor], ['joueuse', lea]] as const) {
       for (const theme of ['clair', 'sombre']) {
         for (const [w, h] of [[1440, 900], [768, 1024], [390, 800]]) {

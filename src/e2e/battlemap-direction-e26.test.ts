@@ -12,9 +12,11 @@
 //   joueuse     : Léa forcing ?onglet=direction → « Page introuvable. », and the API answers 404
 //   mode joueur : the GM switching to Player mode on the tab → « Page introuvable. »
 //   etats       : error → « Impossible de charger la direction artistique. » + « Réessayer »; loading text
-//   captures    : both themes, 1440 / 768 / 390 px, under $E26_CAPTURES when set
+//   captures    : both themes, 1440 / 768 / 390 px, under $E26_CAPTURES (default: the temp dir)
 import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 import { pngPlat } from '../bouchon/png-plat.js';
 import { attendre, connecte, launch, skipBrowser, startServer, type Any, type Server } from './harnais.test.js';
@@ -205,9 +207,9 @@ describe('E-26 Direction artistique au navigateur', { skip: skipBrowser }, () =>
     await page.close();
   });
 
-  const dir = process.env.E26_CAPTURES;
-  it('captures : deux thèmes, 1440 / 768 / 390', { skip: dir ? false : 'E26_CAPTURES non posé' }, async () => {
-    mkdirSync(dir!, { recursive: true });
+  const dir = process.env.E26_CAPTURES ?? join(tmpdir(), 'e26-captures');
+  it('captures : deux thèmes, 1440 / 768 / 390', async () => {
+    mkdirSync(dir, { recursive: true });
     for (const theme of ['clair', 'sombre']) {
       for (const [w, h] of [[1440, 900], [768, 1024], [390, 800]]) {
         await antor.setViewportSize({ width: w, height: h });
