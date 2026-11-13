@@ -136,14 +136,14 @@ describe('B-86 · E-22 : base de la réduction, légendes des effets, élément 
     await attendreTexte(p, /Prix\s*300 000 cr/);
   });
 
-  it('les quatre effets du livre : lus sans légende ni contrôle de plus tant que l’atelier ne les dit pas (légendes à la tâche suivante)', async () => {
+  it('les quatre effets du livre : lus avec leur légende (W-6)', async () => {
     const m = await monde(true);
     await m.poser(m.etoile, { coque: 'fregate-r3', choix: [l('armes', 'laser-z'), l('modifications', 'optimise-z'), l('modifications', 'blindage-z'), l('modifications', 'montage-z', { vise: { nature: 'armes', cle: 'laser-z' } }), l('modifications', 'surcharge-z', { vise: { nature: 'armes', cle: 'laser-z' } }), l('modifications', 'reacteur-i', { points: 3 })] });
     const p = await ouvrir(m, 'Léa', m.etoile);
     await attendreTexte(p, /arrondi par installation/);
     const t = await corps(p);
     for (const nom of ['Optimise Z', 'Blindage Z', 'Montage Z', 'Surcharge Z']) assert.match(t, new RegExp(nom));
-    assert.doesNotMatch(t, /soutes −|armure \+\d · |emports [−+]\d|puissance de l['’]arme/);
+    for (const re of [/soutes −10 % de masse libre, fret ×2/, /armure \+2 et réparation/, /puissance et masse de l['’]arme visée ÷ 2/, /puissance de l['’]arme \+50 % par installation/]) assert.match(t, re);
     await p.screenshot({ path: `${SHOTS}-legendes.png`, fullPage: true });
   });
 

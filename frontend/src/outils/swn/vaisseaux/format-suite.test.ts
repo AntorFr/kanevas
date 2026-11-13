@@ -6,10 +6,15 @@ import type { Donnees } from './types.ts';
 
 const mod = (d: Donnees) => ({ nature: 'modifications' as const, donnees: d });
 
-test('les quatre effets du livre : aucune légende tant que l’atelier ne les dit pas (W-6, tâche suivante)', () => {
-  for (const effet of ['soutes_optimisees_livre', 'blindage_renforce', 'montages_specialises', 'surcharge_cumulable']) {
-    assert.equal(legende(mod({ effet, valeur: 2, effet_pct: 50 }), 2), '', effet);
-  }
+test('les quatre effets du livre : la légende dit la règle du livre (W-6)', () => {
+  assert.equal(legende(mod({ effet: 'soutes_optimisees_livre' }), 2), 'soutes −10 % de masse libre, fret ×2');
+  assert.equal(legende(mod({ effet: 'blindage_renforce', valeur: 2 }), 2), 'armure +2 et réparation');
+  assert.equal(legende(mod({ effet: 'montages_specialises' }), 2), 'puissance et masse de l’arme visée ÷ 2');
+  assert.equal(legende(mod({ effet: 'surcharge_cumulable', effet_pct: 50 }), 2), 'puissance de l’arme +50 % par installation');
+});
+
+test('armure ajustée : « armure +5 » lu sur ajuste', () => {
+  assert.equal(ligneAjuste({ armure: 5 }), 'armure +5');
 });
 
 test('base de la réduction : « de la coque » seulement pour la coque', () => {
