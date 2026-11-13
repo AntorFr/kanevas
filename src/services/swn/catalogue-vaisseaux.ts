@@ -316,6 +316,12 @@ export const catalogueVaisseaux: DeclarationCatalogue = {
     resume: (d: Record<string, unknown>) => resume(nom, d),
   })),
   stockage: stockageVaisseaux,
+  /** W-1: `vise` of a modification is checked at the import and never stored, so the replay compares without it. */
+  conserve(nature, donnees) {
+    if (nature !== 'modifications' || donnees.vise === undefined) return donnees;
+    const { vise: _vise, ...reste } = donnees;
+    return reste;
+  },
   /** V-10: a hull and every line of an example must resolve at the level of the import, else the example is refused. */
   verifier(nature, donnees, { existe }) {
     const forme = verifierFormes(nature as NatureCatalogueVaisseau, donnees) ?? verifierCroises(nature as NatureCatalogueVaisseau, donnees);
