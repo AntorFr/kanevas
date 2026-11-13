@@ -678,7 +678,7 @@ The 10 % of the first rule is the book's rule, not a parameter: no `effet_pct` i
 **W-2 — The calculation (amends V-2, X-3 and Z-3; integers and halves).** `puissance_ligne(cible)` and `masse_ligne(cible)` are the target line's totals before any adjustment, quantity included (Z-3). Each targeted adjustment is computed on that value, **before any other adjustment**, then summed (so two modifications aiming at one weapon do not feed each other):
 ```
 montages_specialises   puissance += max(1, ceil(puissance_ligne(cible) / 2))      (half, rounded up, at least 1)
-                       masse     += max(1, ceil(masse_ligne(cible)) / 2)          (half, rounded up to the half unit, at least 1)
+                       masse     += max(1, ceil(masse_ligne(cible)) / 2)          (half, rounded up to the half unit: ceil(m) / 2 is that, since masses are in halves; at least 1)
 surcharge_cumulable    puissance += q × floor((puissance_ligne(cible) × effet_pct + 50) / 100)   (per installation, half up to the unit)
 blindage_renforce      armure    += valeur + reparation                            (once; the repair skill chosen in E-22, 0 to 20)
 soutes_optimisees_livre  libre'  = ceil(libre × 1,8) / 2   when libre > 0, else unchanged     (libre = the final free mass, at that step)
