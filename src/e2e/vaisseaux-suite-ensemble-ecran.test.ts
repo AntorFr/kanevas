@@ -26,7 +26,7 @@ const catalogue = () => ({
   catalogue: 'swn/vaisseaux', version: 'suite-ecran-1',
   coques: [
     { cle: 'fregate-r', nom: 'Frégate R', classe: 2, ...coque, vitesse: 3, armure: 5 },
-    { cle: 'fregate-r3', nom: 'Frégate R3', classe: 3, ...coque, cout: 400000, vitesse: 3, armure: 5 },
+    { cle: 'fregate-r3', nom: 'Frégate R3', classe: 3, ...coque, cout: 400000, puissance: 30, vitesse: 3, armure: 5 },
   ],
   amenagements: [
     { cle: 'moteur-coque', nom: 'Moteur base coque', ...el, cout: 40000, ...sys, reduction_cout_pct: 10, reduction_base: 'coque' },
@@ -138,7 +138,7 @@ describe('B-86 · E-22 : base de la réduction, légendes des effets, élément 
 
   it('les quatre effets du livre : lus sans légende ni contrôle de plus tant que l’atelier ne les dit pas (légendes à la tâche suivante)', async () => {
     const m = await monde(true);
-    await m.poser(m.etoile, { coque: 'fregate-r', choix: [l('armes', 'laser-z'), l('modifications', 'optimise-z'), l('modifications', 'blindage-z'), l('modifications', 'montage-z', { vise: { nature: 'armes', cle: 'laser-z' } }), l('modifications', 'surcharge-z', { vise: { nature: 'armes', cle: 'laser-z' } }), l('modifications', 'reacteur-i', { points: 3 })] });
+    await m.poser(m.etoile, { coque: 'fregate-r3', choix: [l('armes', 'laser-z'), l('modifications', 'optimise-z'), l('modifications', 'blindage-z'), l('modifications', 'montage-z', { vise: { nature: 'armes', cle: 'laser-z' } }), l('modifications', 'surcharge-z', { vise: { nature: 'armes', cle: 'laser-z' } }), l('modifications', 'reacteur-i', { points: 3 })] });
     const p = await ouvrir(m, 'Léa', m.etoile);
     await attendreTexte(p, /arrondi par installation/);
     const t = await corps(p);

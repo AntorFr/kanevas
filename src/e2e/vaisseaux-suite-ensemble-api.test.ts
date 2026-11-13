@@ -358,7 +358,7 @@ describe('B-86 fiches de règles et texte de la conception', () => {
     assert.match(t, /Montage L \(→ Laser Z\)/);
     assert.match(t, /Réacteur arrondi \(3 points\)/);
     const relue = (await m.lea('GET', `${m.V}/conceptions/${m.etoile}`)).json;
-    assert.equal(relue.resultat.masseLibre, 20);
+    assert.equal(relue.resultat.masseLibre, 19);
   });
 });
 

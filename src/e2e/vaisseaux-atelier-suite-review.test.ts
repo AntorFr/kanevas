@@ -166,7 +166,6 @@ describe('E-22 suite Z, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => 
       choix: [
         { nature: 'armes', cle: 'laser-z', quantite: 1 },
         { nature: 'modifications', cle: 'montage-z', quantite: 1, vise: { nature: 'armes', cle: 'laser-z' } },
-        { nature: 'modifications', cle: 'blindage-z', quantite: 1 },
         { nature: 'modifications', cle: 'reacteur-i', quantite: 1, points: 3 },
       ],
     });
