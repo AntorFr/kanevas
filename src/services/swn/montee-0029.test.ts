@@ -16,7 +16,7 @@ const NOUVELLES: Record<string, string[]> = {
   amenagements: ['classe_min', 'classe_max', 'condition', 'effet', 'rend_puissance', 'rend_masse', 'soute', 'soute_par_classe', 'reduction_cout_pct', 'reduction_base'], defenses: ['classe_min', 'classe_max', 'condition', 'bonus_vitesse'],
   armes: ['degats', 'perforation', 'qualites', 'niveau_tech'], exemples: ['equipage'],
   // 0032: also written by the seed; stubbed here, all NULL after the real migration.
-  modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse', 'reparation_min', 'effet_pct', 'armure_par_classe', 'echange_arrondi'],
+  modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse', 'reparation_min', 'effet_pct', 'echange_arrondi'],
 };
 
 test('0029 : montée depuis 0028 avec le semis, comptes inchangés, colonnes nouvelles nulles, foreign_key_check vide', () => {
@@ -32,7 +32,7 @@ test('0029 : montée depuis 0028 avec le semis, comptes inchangés, colonnes nou
   const comptes = () => TABLES.map((t) => (db.prepare(`SELECT COUNT(*) n FROM swn_catalogue_${t}`).get() as any).n as number);
   const avant = comptes();
   assert.ok(avant.every((n) => n > 0));
-  assert.deepEqual(migrate(db), [29, 30, 31, 32, 33, 34, 35]);
+  assert.deepEqual(migrate(db), [29, 30, 31, 32, 33, 34, 35, 36]);
   assert.deepEqual(comptes(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   for (const [t, cs] of Object.entries(NOUVELLES)) for (const c of cs) {

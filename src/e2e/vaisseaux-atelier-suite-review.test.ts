@@ -26,10 +26,10 @@ const catalogue = (muet = false) => {
     defenses: [],
     armes: [{ cle: 'laser-z', nom: 'Laser Z', ...el, puissance: 10, masse: 1, emport: 1, munitions: 0, cout_munition: 0 }],
     modifications: [
-      { cle: 'optimise-z', nom: 'Optimise Z', ...el, limite: 1, ...si({ effet: 'soutes_optimisees', effet_pct: 10 }) },
-      { cle: 'montage-z', nom: 'Montage Z', ...el, limite: 1, ...si({ effet: 'montage_specialise', valeur: -1 }) },
-      { cle: 'surcharge-z', nom: 'Surcharge Z', ...el, limite: 1, ...si({ effet: 'surcharge_arme', effet_pct: 50 }) },
-      { cle: 'blindage-z', nom: 'Blindage Z', ...el, ...si({ effet: 'armure_par_classe', armure_par_classe: [1, 2, 3, 4] }) },
+      { cle: 'optimise-z', nom: 'Optimise Z', ...el, limite: 1, ...si({ effet: 'soutes_optimisees_livre' }) },
+      { cle: 'montage-z', nom: 'Montage Z', ...el, limite: 1, ...si({ effet: 'montages_specialises', vise: { nature: 'armes', cle: 'laser-z' } }) },
+      { cle: 'surcharge-z', nom: 'Surcharge Z', ...el, limite: 2, ...si({ effet: 'surcharge_cumulable', effet_pct: 50, vise: { nature: 'armes', cle: 'laser-z' } }) },
+      { cle: 'blindage-z', nom: 'Blindage Z', ...el, limite: 1, ...si({ effet: 'blindage_renforce', valeur: 2 }) },
       { cle: 'reacteur-i', nom: 'Réacteur I', ...el, limite: 3, ...si({ effet: 'echange', sens: 'puissance_vers_masse', points_max: 5, echange_puissance: 1, echange_masse: 0.5, echange_arrondi: 'installation' }) },
     ],
     exemples: [],
@@ -115,24 +115,7 @@ describe('E-22 suite Z, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => 
     await p.screenshot({ path: '/tmp/shots/z-1280-moteur.png', fullPage: true });
   });
 
-  it('soute-z + optimise-z : légende, masse −1, liste réduite aux soutes', async () => {
-    await remettre();
-    const p = await ouvrir('antor', orak, 1280);
-    await ajouter(p, AJ_AM, 'Soute Z');
-    await p.getByRole('button', { name: 'Ajouter : Aménagements' }).click();
-    await p.locator('li').filter({ hasText: 'Cabine Z' }).last().getByRole('button', { name: /^Ajouter / }).click();
-    await p.getByRole('button', { name: 'Retirer : Cabine Z' }).waitFor();
-    await p.getByRole('button', { name: AJ_MOD }).first().click();
-    assert.match(norm(await p.locator('li').filter({ hasText: 'Optimise Z' }).last().innerText()), /soutes −10 % de masse/);
-    await p.locator('li').filter({ hasText: 'Optimise Z' }).last().getByRole('button').first().click();
-    await p.getByRole('button', { name: 'Retirer : Optimise Z' }).waitFor();
-    assert.deepEqual(await opts(p), ['Choisir un élément', 'Soute Z']);
-    await visees(p, 'Optimise Z').selectOption('amenagements/soute-z');
-    await p.waitForFunction(() => /masse −1/.test(document.body.innerText.replace(/[\u00A0\u202F]/g, ' ')), null, { timeout: 15000 });
-    await p.screenshot({ path: '/tmp/shots/z-1280-optimise.png', fullPage: true });
-  });
-
-  it('montage-z et surcharge-z : seulement les armes, emports −1 et puissance +5', async () => {
+  it('montage-z et surcharge-z : seulement les armes (légendes et ajustements à la tâche suivante)', async () => {
     await remettre();
     const p = await ouvrir('antor', orak, 1280);
     await ajouter(p, AJ_AM, 'Soute Z');
@@ -140,8 +123,6 @@ describe('E-22 suite Z, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => 
     await p.locator('li').filter({ hasText: 'Laser Z' }).last().getByRole('button').first().click();
     await p.getByRole('button', { name: 'Retirer : Laser Z' }).waitFor();
     await p.getByRole('button', { name: AJ_MOD }).first().click();
-    assert.match(norm(await p.locator('li').filter({ hasText: 'Montage Z' }).last().innerText()), /emports −1/);
-    assert.match(norm(await p.locator('li').filter({ hasText: 'Surcharge Z' }).last().innerText()), /puissance de l’arme \+50 %/);
     await p.locator('li').filter({ hasText: 'Montage Z' }).last().getByRole('button').first().click();
     await p.getByRole('button', { name: 'Retirer : Montage Z' }).waitFor();
     await p.getByRole('button', { name: 'Ajouter : Modifications' }).click();
@@ -150,19 +131,7 @@ describe('E-22 suite Z, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => 
     for (const n of ['Montage Z', 'Surcharge Z']) assert.deepEqual((await visees(p, n).locator('option').allInnerTexts()).map(norm), ['Choisir un élément', 'Laser Z'], n);
     await visees(p, 'Montage Z').selectOption('armes/laser-z');
     await visees(p, 'Surcharge Z').selectOption('armes/laser-z');
-    await p.waitForFunction(() => { const t = document.body.innerText; return /emports −1/.test(t) && /puissance \+5/.test(t); }, null, { timeout: 15000 });
     await p.screenshot({ path: '/tmp/shots/z-1280-armes.png', fullPage: true });
-  });
-
-  it('blindage-z : armure +2 en classe 2', async () => {
-    await remettre();
-    const p = await ouvrir('antor', orak, 1280);
-    await p.getByRole('button', { name: AJ_MOD }).first().click();
-    assert.match(norm(await p.locator('li').filter({ hasText: 'Blindage Z' }).last().innerText()), /armure \+2/);
-    await p.locator('li').filter({ hasText: 'Blindage Z' }).last().getByRole('button').first().click();
-    await p.getByRole('button', { name: 'Retirer : Blindage Z' }).waitFor();
-    assert.match(norm(await ligne(p, 'Blindage Z').innerText()), /armure \+2/);
-    await p.waitForFunction(() => /Armure\s*7/.test((document.querySelector('.vx-resultats') as HTMLElement).innerText), null, { timeout: 15000 });
   });
 
   it('reacteur-i : 3 points, une seconde installation', async () => {
@@ -189,14 +158,14 @@ describe('E-22 suite Z, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => 
     await p.getByText('3 points : −6 puissance, +2 masse', { exact: true }).waitFor();
   });
 
-  it('lecteur : mêmes légendes, aucun contrôle', async () => {
+  it('lecteur : élément visé nommé, aucun contrôle', async () => {
     await remettre();
     const v = (await api('antor', 'GET', `${B()}/conceptions/${etoile}`)).json;
     const r = await api('antor', 'PUT', `${B()}/conceptions/${etoile}`, {
       coque: 'fregate-r', version: v.version,
       choix: [
-        { nature: 'amenagements', cle: 'soute-z', quantite: 1 },
-        { nature: 'modifications', cle: 'optimise-z', quantite: 1, vise: { nature: 'amenagements', cle: 'soute-z' } },
+        { nature: 'armes', cle: 'laser-z', quantite: 1 },
+        { nature: 'modifications', cle: 'montage-z', quantite: 1, vise: { nature: 'armes', cle: 'laser-z' } },
         { nature: 'modifications', cle: 'blindage-z', quantite: 1 },
         { nature: 'modifications', cle: 'reacteur-i', quantite: 1, points: 3 },
       ],
@@ -205,10 +174,8 @@ describe('E-22 suite Z, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => 
     await api('antor', 'POST', `/api/univers/${E}/membres`, { username: 'teo', role: 'joueur' });
     const p = await ouvrir('teo', etoile, 1280);
     await p.getByText('Lecture seule.').waitFor();
-    await p.getByText('Élément visé : Soute Z').waitFor();
+    await p.getByText('Élément visé : Laser Z').waitFor();
     const t = norm(await p.locator('body').innerText());
-    assert.match(t, /armure \+2/);
-    assert.match(t, /masse −1/);
     assert.match(t, /3 points : −3 puissance, \+1 masse/);
     assert.equal(await p.locator('input[type="number"]').count(), 0);
     assert.equal(await p.getByRole('combobox').count(), 0);
@@ -218,7 +185,6 @@ describe('E-22 suite Z, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => 
   it('catalogue sans ces champs : ni légende ni contrôle nouveau', async () => {
     await remettre(true);
     const p = await ouvrir('antor', orak, 1280);
-    await ajouter(p, AJ_AM, 'Soute Z');
     await p.getByRole('button', { name: AJ_MOD }).first().click();
     for (const n of ['Optimise Z', 'Montage Z', 'Surcharge Z', 'Blindage Z', 'Réacteur I']) {
       const t = norm(await p.locator('li').filter({ hasText: n }).last().innerText());
@@ -242,10 +208,6 @@ describe('E-22 suite Z, 390 px', { skip: skipBrowser, timeout: 240000 }, () => {
     await p.locator('li').filter({ hasText: 'Soute Z' }).last().getByRole('button', { name: /^Ajouter / }).click();
     await p.getByRole('button', { name: 'Retirer : Soute Z' }).waitFor();
     await p.getByRole('button', { name: AJ_MOD }).first().click();
-    await p.locator('li').filter({ hasText: 'Optimise Z' }).last().getByRole('button').first().click();
-    await p.getByRole('button', { name: 'Retirer : Optimise Z' }).waitFor();
-    await visees(p, 'Optimise Z').selectOption('amenagements/soute-z');
-    await p.getByRole('button', { name: 'Ajouter : Modifications' }).click();
     await p.locator('li').filter({ hasText: 'Réacteur I' }).last().getByRole('button', { name: /^Ajouter / }).click();
     await p.locator('input[aria-label="Points échangés : Réacteur I"]').first().fill('3');
     await p.getByText('3 points : −3 puissance, +1 masse', { exact: true }).waitFor();
