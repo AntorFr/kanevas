@@ -25,7 +25,7 @@ export interface Porte {
   noms: { coque: string | null; lignes: { nature: string; cle: string; nom: string }[] };
 }
 
-const EFFETS_VISANT = ['soutes_doublees', 'magasins_doubles', 'soutes_optimisees', 'montage_specialise', 'surcharge_arme'];
+const EFFETS_VISANT = ['soutes_doublees', 'magasins_doubles', 'montages_specialises', 'surcharge_cumulable'];
 const invalide = (message: string, detail: string, champ: string) => new ErreurService('invalide', message, detail, champ);
 
 const viseValide = (v: unknown): boolean => {

@@ -68,8 +68,6 @@ const CHAMPS: Record<NatureCatalogueVaisseau, Champ[]> = {
     code('sens'), facultatif('echange_puissance', 1, 99), reel('echange_masse', 0.5, 99),
     verifie('reparation_min', 1, 20, 'nombre entier de 1 à 20 attendu'),
     libre('effet_pct', () => true, ''), // range by effect, in `verifierEffet`
-    libre('armure_par_classe', (v) => Array.isArray(v) && v.length === 4 && v.every((x) => entierDans(x, 0, 9)),
-      'quatre nombres entiers de 0 à 9 attendus (classes 1 à 4)', true),
     libre('echange_arrondi', (v) => v === 'installation', '« installation » attendu')],
   exemples: [{ nom: 'coque', type: 'texte' }, { nom: 'choix', type: 'choix' }, facultatif('equipage', 0, 100_000)],
 };
@@ -97,7 +95,11 @@ function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
       : z.array(ligneChoix).max(100);
   }
   // Y-1: a modification may state the field to be refused with the reason of its own (checked in `verifier`).
-  if (nature === 'modifications') { forme.reduction_cout_pct = z.unknown().optional(); forme.valeur = z.unknown().optional(); } // `valeur`: range by effect, in `verifierEffet`
+  // `valeur` and `limite`: range by effect, in `verifierEffet`; `vise` is checked there and never stored (W-1).
+  if (nature === 'modifications') {
+    forme.reduction_cout_pct = z.unknown().optional(); forme.valeur = z.unknown().optional();
+    forme.limite = z.unknown().optional(); forme.vise = z.unknown().optional();
+  }
   return z.strictObject(forme);
 }
 
@@ -157,6 +159,7 @@ export const stockageVaisseaux: StockageCatalogue = {
     table(nature);
     const n = nature as NatureCatalogueVaisseau;
     const o = proprietaire(cible);
+    if (n === 'modifications') { donnees = { ...donnees }; delete donnees.vise; } // W-1: the target is checked at the import, not stored
     const avant = lire(db, cible, n, cle);
     const complet = { ...donnees };
     for (const c of CHAMPS[n]) if (c.type === 'entier' && c.defaut !== undefined) complet[c.nom] ??= c.defaut;
@@ -260,9 +263,12 @@ const quatre = (v: unknown, masse: boolean): boolean => Array.isArray(v) && v.le
 /** X-1: the rules between the fields of a modification or a fitting — the effect, its parameters (required with it, refused without it), `limite` 1. */
 function verifierEffet(nature: 'modifications' | 'amenagements', d: Record<string, unknown>): Refus {
   const effet = d.effet;
+  if (nature === 'modifications' && !entierDans(d.limite, 0, Infinity)) {
+    return { champ: 'limite', raison: effet === 'surcharge_cumulable' ? 'nombre entier de 1 ou plus attendu.' : 'nombre entier de 0 ou plus attendu' };
+  }
   const parametres = nature === 'modifications' ? PARAMETRES_EFFET.filter((p) => !p.startsWith('rend_')) : PARAMETRES_EFFET.filter((p) => p.startsWith('rend_'));
   if (effet === undefined) {
-    const p = parametres.find((x) => d[x] !== undefined);
+    const p = parametres.find((x) => d[x] !== undefined) ?? (d.vise !== undefined ? 'vise' : undefined);
     return p ? { champ: p, raison: "paramètre sans effet" } : null;
   }
   if (!estEffet(effet) || EFFETS[effet].nature !== nature) return { champ: 'effet', raison: `effet inconnu : ${String(effet)}` };
@@ -273,18 +279,24 @@ function verifierEffet(nature: 'modifications' | 'amenagements', d: Record<strin
     if (!propre && d[p] !== undefined) return { champ: p, raison: 'paramètre réservé à son effet' };
     if (requis && d[p] === undefined) return { champ: p, raison: "paramètre requis par l'effet" };
   }
-  if (d.effet_pct !== undefined) {
-    const max = effet === 'soutes_optimisees' ? 100 : 1000;
-    if (!entierDans(d.effet_pct, 1, max)) return { champ: 'effet_pct', raison: `nombre entier de 1 à ${max === 100 ? '100' : '1 000'} attendu` };
+  if (nature === 'modifications') {
+    if (decl.cible) {
+      const v = d.vise as { nature?: unknown; cle?: unknown } | string | null | undefined;
+      const ok = typeof v === 'string' ? v.length >= 1 && v.length <= 64
+        : v !== null && typeof v === 'object' && !Array.isArray(v) && typeof v.cle === 'string' && v.cle.length >= 1 && v.cle.length <= 64;
+      if (!ok) return { champ: 'vise', raison: 'élément visé exigé.' };
+    } else if (d.vise !== undefined) return { champ: 'vise', raison: 'paramètre réservé à son effet.' };
   }
-  if (effet === 'montage_specialise' && !(entierDans(d.valeur, -9, 9) && d.valeur !== 0)) {
-    return { champ: 'valeur', raison: 'nombre entier de −9 à 9, sauf 0, attendu' };
-  }
-  const v = d.valeur;
-  if (v !== undefined && !entierDans(v, -9, 20)) return { champ: 'valeur', raison: 'nombre entier de −9 à 20 attendu' };
-  if (typeof v === 'number') {
-    if (effet === 'reparation_min' ? v < 1 || v > 20 : v === 0 || v < -9 || v > 9) {
-      return { champ: 'valeur', raison: effet === 'reparation_min' ? 'de 1 à 20 attendu' : 'de -9 à 9, hors 0, attendu' };
+  if (d.effet_pct !== undefined && !entierDans(d.effet_pct, 1, 1000)) return { champ: 'effet_pct', raison: 'nombre entier de 1 à 1 000 attendu' };
+  if (effet === 'blindage_renforce') {
+    if (!entierDans(d.valeur, 0, 9)) return { champ: 'valeur', raison: 'nombre entier de 0 à 9 attendu.' };
+  } else {
+    const v = d.valeur;
+    if (v !== undefined && !entierDans(v, -9, 20)) return { champ: 'valeur', raison: 'nombre entier de −9 à 20 attendu' };
+    if (typeof v === 'number') {
+      if (effet === 'reparation_min' ? v < 1 || v > 20 : v === 0 || v < -9 || v > 9) {
+        return { champ: 'valeur', raison: effet === 'reparation_min' ? 'de 1 à 20 attendu' : 'de -9 à 9, hors 0, attendu' };
+      }
     }
   }
   if (d.sens !== undefined && !(SENS_ECHANGE as readonly string[]).includes(d.sens as string)) {
@@ -294,6 +306,7 @@ function verifierEffet(nature: 'modifications' | 'amenagements', d: Record<strin
   if (d.rend_masse !== undefined && !quatre(d.rend_masse, true)) return { champ: 'rend_masse', raison: 'quatre masses (multiples de 0,5) attendues' };
   const arrondi = effet === 'echange' && d.echange_arrondi !== undefined;
   if (decl.limiteUne && !arrondi && d.limite !== 1) return { champ: 'limite', raison: 'limite 1 attendue' };
+  if (effet === 'surcharge_cumulable' && !entierDans(d.limite, 1, Infinity)) return { champ: 'limite', raison: 'nombre entier de 1 ou plus attendu.' };
   return null;
 }
 

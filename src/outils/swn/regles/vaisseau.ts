@@ -73,7 +73,6 @@ export interface ElementResolu {
   reparation_min?: number
   /** Stated by the catalogue only (Z-1); the sheets print them, the calculation reads them (Z-3). */
   effet_pct?: number
-  armure_par_classe?: number[]
   echange_arrondi?: string
   reduction_base?: string
 }
@@ -140,7 +139,7 @@ const souteDe = (e: ElementResolu, classe: number): number | null => e.soute_par
 const exigence = (e: ElementResolu): number | null => e.reparation_min ?? (e.effet === 'reparation_min' ? (e.valeur ?? 0) : null)
 
 /** Z-3/Z-4: the effects that aim at one line of the design, and what the target must be. */
-const EFFETS_CIBLES = ['soutes_doublees', 'magasins_doubles', 'soutes_optimisees', 'montage_specialise', 'surcharge_arme']
+const EFFETS_CIBLES = ['soutes_doublees', 'magasins_doubles', 'montages_specialises', 'surcharge_cumulable']
 
 function moins(n: number): string {
   return n < 0 ? `−${-n}` : String(n)
@@ -172,39 +171,6 @@ export function calculer(
   const cibleDe = (l: LigneResolue) => l.vise === undefined ? undefined : lignes.find((m) => m.nature === l.vise!.nature && m.cle === l.vise!.cle)
   const masseDeLigne = (l: LigneResolue) => l.element.masse * (l.element.x_masse ? coque.facteur_masse : 1) * l.quantite
   const puissanceDeLigne = (l: LigneResolue) => l.element.puissance * (l.element.x_puissance ? coque.facteur_puissance : 1) * l.quantite
-  // Z-3: each targeted adjustment is computed on the target's line before any adjustment; the sums are clamped per target.
-  const ajustes = new Map<number, { masse?: number; puissance?: number; emports?: number }>()
-  const sommes = new Map<LigneResolue, { masse: number; puissance: number; emports: number }>()
-  lignes.forEach((l, i) => {
-    const e = l.element
-    const cible = cibleDe(l)
-    if (cible === undefined) return
-    const somme = sommes.get(cible) ?? { masse: 0, puissance: 0, emports: 0 }
-    if (e.effet === 'soutes_optimisees' && e.effet_pct !== undefined && cible.nature === 'amenagements' && souteDe(cible.element, coque.classe) !== null) {
-      const m = masseDeLigne(cible)
-      const d = Math.floor((m * 2 * e.effet_pct + 50) / 100) / 2
-      ajustes.set(i, { masse: d === 0 ? 0 : -d })
-      somme.masse -= d
-    } else if (e.effet === 'surcharge_arme' && e.effet_pct !== undefined && cible.nature === 'armes') {
-      const d = Math.floor((puissanceDeLigne(cible) * e.effet_pct + 50) / 100)
-      ajustes.set(i, { puissance: d })
-      somme.puissance += d
-    } else if (e.effet === 'montage_specialise' && e.valeur !== undefined && cible.nature === 'armes') {
-      const base = (cible.element.emport ?? 0) * cible.quantite
-      ajustes.set(i, { emports: Math.max(0, base + e.valeur) - base })
-      somme.emports += e.valeur
-    } else return
-    sommes.set(cible, somme)
-  })
-  // The clamped extra each target line takes (never below 0 in total).
-  const extras = new Map<LigneResolue, { masse: number; puissance: number; emports: number }>()
-  sommes.forEach((s, c) => {
-    extras.set(c, {
-      masse: Math.max(0, masseDeLigne(c) + s.masse) - masseDeLigne(c),
-      puissance: Math.max(0, puissanceDeLigne(c) + s.puissance) - puissanceDeLigne(c),
-      emports: Math.max(0, (c.element.emport ?? 0) * c.quantite + s.emports) - (c.element.emport ?? 0) * c.quantite,
-    })
-  })
   // X-2: a doubling aims at one line of the design, named by its pair.
   const visee = (cible: LigneResolue | undefined, nature: NatureVaisseau, effet: string) =>
     cible !== undefined && cible.nature === nature && lignes.some((m) => m.element.effet === effet && m.vise?.nature === cible.nature && m.vise.cle === cible.cle)
@@ -225,15 +191,12 @@ export function calculer(
     if (e.cout_pct !== undefined || reduit) coutsLigne.set(i, coutLigne)
     if (e.effet === 'vitesse') effetVitesse += (e.valeur ?? 0) * q
     if (e.effet === 'armure') effetArmure += (e.valeur ?? 0) * q
-    if (e.effet === 'armure_par_classe') effetArmure += (e.armure_par_classe?.[coque.classe - 1] ?? 0) * q
     const exig = exigence(e)
     if (exig !== null) reparationMin = Math.max(reparationMin ?? 0, exig)
     const soute = souteDe(e, coque.classe)
     if (soute !== null) soutes = (soutes ?? 0) + soute * q * (visee(l, 'amenagements', 'soutes_doublees') ? 2 : 1)
-    const extra = extras.get(l)
-    puissanceUsee += e.puissance * (e.x_puissance ? coque.facteur_puissance : 1) * q + (extra?.puissance ?? 0)
-    masseUsee += e.masse * (e.x_masse ? coque.facteur_masse : 1) * q + (extra?.masse ?? 0)
-    emportsUtilises += extra?.emports ?? 0
+    puissanceUsee += e.puissance * (e.x_puissance ? coque.facteur_puissance : 1) * q
+    masseUsee += e.masse * (e.x_masse ? coque.facteur_masse : 1) * q
     pv += e.pv * q
     ca += e.ca * q
     if (l.nature === 'defenses') bonusVitesse += (e.bonus_vitesse ?? 0) * q
@@ -319,7 +282,7 @@ export function calculer(
     const cible = cibleDe(l)
     if (l.vise === undefined) raison = 'choisissez l\'élément visé.'
     else if (cible === undefined) raison = 'l\'élément visé n\'est pas dans cette conception.'
-    else if (effet === 'soutes_doublees' || effet === 'soutes_optimisees' ? !(cible.nature === 'amenagements' && souteDe(cible.element, coque.classe) !== null) : cible.nature !== 'armes') {
+    else if (effet === 'soutes_doublees' ? !(cible.nature === 'amenagements' && souteDe(cible.element, coque.classe) !== null) : cible.nature !== 'armes') {
       raison = 'cet élément ne peut pas être visé.'
     } else return
     bloquantes.push({ niveau: 'bloquante', code: 'cible_invalide', texte: `« ${l.nom} » : ${raison}`, ligne: i })
@@ -358,7 +321,6 @@ export function calculer(
       ...(coutsLigne.has(i) ? { cout: coutsLigne.get(i)! } : {}),
       ...(echanges.has(i) ? { points: l.points ?? 0, echange: echanges.get(i)! } : {}),
       ...(l.vise ? { vise: { nature: l.vise.nature, cle: l.vise.cle } } : {}),
-      ...(ajustes.has(i) ? { ajuste: ajustes.get(i)! } : {}),
     })),
     prix,
     pv,

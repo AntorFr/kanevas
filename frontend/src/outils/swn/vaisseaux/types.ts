@@ -106,7 +106,7 @@ export interface Donnees {
   /** B-85 (Y-1): stated by the catalogue only when the element has them. */
   reparation_min?: number; soute_par_classe?: number[]; reduction_cout_pct?: number;
   /** Z-1: stated by the catalogue only when the element has them. */
-  effet_pct?: number; armure_par_classe?: number[]; echange_arrondi?: string; reduction_base?: string;
+  effet_pct?: number; echange_arrondi?: string; reduction_base?: string;
 }
 
 export interface PageCatalogue {

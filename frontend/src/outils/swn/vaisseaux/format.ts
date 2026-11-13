@@ -74,7 +74,7 @@ export const exigeReparation = (d: Donnees | undefined) => d !== undefined && (d
 const signe = (n: number) => (n > 0 ? '+' : n < 0 ? '−' : '') + String(Math.abs(n));
 
 /** The effect of a modification in words (B-83), from the fields the catalogue states; empty when it states none. */
-export function motEffet(d: Donnees, classe?: number): string {
+export function motEffet(d: Donnees): string {
   switch (d.effet) {
     case 'vitesse': return d.valeur === undefined ? '' : `vitesse ${signe(d.valeur)}`;
     case 'armure': return d.valeur === undefined ? '' : `armure ${signe(d.valeur)}`;
@@ -86,13 +86,6 @@ export function motEffet(d: Donnees, classe?: number): string {
       const base = d.points_max === undefined ? sens : `${sens}, jusqu’à ${d.points_max} ${d.points_max === 1 ? 'point' : 'points'}`;
       return d.echange_arrondi === 'installation' ? `${base} · arrondi par installation` : base;
     }
-    case 'soutes_optimisees': return d.effet_pct === undefined ? '' : `soutes −${d.effet_pct} % de masse`;
-    case 'armure_par_classe': {
-      const a = classe === undefined ? undefined : d.armure_par_classe?.[classe - 1];
-      return a ? `armure +${a}` : '';
-    }
-    case 'montage_specialise': return d.valeur === undefined ? '' : `emports ${signe(d.valeur)}`;
-    case 'surcharge_arme': return d.effet_pct === undefined ? '' : `puissance de l’arme +${nombre(d.effet_pct)} %`;
     default: return '';
   }
 }
@@ -131,7 +124,7 @@ export function legende(e: Pick<ElementCatalogue, 'nature' | 'donnees'>, classe?
       parts.push(soute !== undefined && `soutes ${nombre(soute)}`);
     }
   } else if (e.nature === 'modifications') {
-    parts.push(d.cout_pct !== undefined && `${d.cout_pct} % de la coque`, motEffet(d, classe) || false,
+    parts.push(d.cout_pct !== undefined && `${d.cout_pct} % de la coque`, motEffet(d) || false,
       d.reparation_min !== undefined && d.effet !== 'reparation_min' && `réparation ${d.reparation_min} au moins`);
   }
   return parts.filter(Boolean).join(' · ');
