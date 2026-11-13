@@ -22,7 +22,7 @@ scripts/tests-attestes.mjs           `npm run tests:attestes`: plays the suite d
 src/
   server.ts, app.ts               Startup; assembly of plugins and routes
   config/env.ts                   Environment variables (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001 to 0034 (a number is taken when its slice merges, AD-51; `rm -rf dist` after a renumbering), runner
+  db/                             SQLite (better-sqlite3), migrations/0001 to 0035 (a number is taken when its slice merges, AD-51; `rm -rf dist` after a renumbering), runner
   services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, natures (the closed list of the five relation natures, `GET /api/univers/:id/natures`), preparation (tasks of an adventure), comptes_rendus, propositions, markdown (single renderer), liens (`liens` table, sole writer), etiquettes (aliases and labels, sole writer), mentions (“Mentioned in”, natured relations excluded), liees (“Fiches liées”, screen: `frontend/src/ecrans/fiche/blocs-fiche/liees.tsx`, line `frontend/src/ui/ligne-fiche-liee.tsx`: read-only, both AD-64 guards, one query to count and list), types, types-fiche (the list of types and their activation),
                                    fichiers (media library, sole writer of `fichiers*`, except that deleting a universe in `univers.ts` erases its rows), fichiers-lecture (read of the files a text or sheet references by key, waiting render), cartes, jetons, lots, import (token context), outils (tools framework), sections-gerees, catalogues (the two catalogue levels: resolution, preview and application, hide and withdraw; the only reader of a module's `StockageCatalogue`), import-catalogue (catalogue import by tool-scoped token), import-fiches (import API), import-relations (relations by origin key),  stockage (bytes on the volume)
                                    the only code that reads or writes the data; session, oidc
@@ -66,6 +66,7 @@ To **view the screens**, use the command under “Without Authelia: stub mode”
 # (or, with Node ≥ 20 on the host, `npm ci` then the command of the “stub mode” section).
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # then, from the host: curl http://localhost:3001/healthz
+# (this image has no Rust: the API starts and answers /healthz, but the galaxy's block reads answer their generic server error until `npm run build:wasm` has run on a host that has Rust)
 # (without KANEVAS_STUB=1 or the four OIDC_*, `/` leads to an OIDC sign-in that answers 404: no screen; to see them, start the stub mode above)
 ```
 
@@ -81,7 +82,7 @@ Or, with Node 20+ installed locally (`engines`: `>=20`; the suite also passes on
 npm ci   # not `npm install`; run it to the end, also on a clone that already has a node_modules/
 cp .env.example .env
 npm run dev            # or, without reload: npm run build && npm start (`npm start` alone fails without `dist/`, ignored by git)
-curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
+curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"; the galaxy needs `npm run build:wasm` first (see « Rust / WebAssembly »)
 ```
 
 The attested run is `attester --publier` (the chain's proof tool, installed in its pods and on the maintainer's workstation; it plays the suite declared in `.sdlc.yaml` on a clean checkout of the pushed commit), which calls `npm run tests:attestes` (no test skipped; you can run that one alone). `attester` refuses a dirty tree: commit first. It plays two test files at a time by default (`min(os.availableParallelism(), 2)`, the budget measured on the 3-CPU pod); `-- --concurrence N` (positive integer, otherwise exit 2) overrides it, and the log carries the effective value. During the run, server and Chromium startups of the e2e files go one at a time (`withStartupLock`, a lock under the run's temporary directory); ready servers and browsers then run their scenarios in parallel.
@@ -95,7 +96,7 @@ shows no screen). `npm run dev:front` starts Vite alone (port 5173 by default) a
 stub server (port 3001), sign in at `http://localhost:3001/`, then open
 `http://localhost:5173/` (the session cookie does not depend on the port).
 
-The reference path remains the Node 20 container in `CLAUDE.md` (the same stack as the pods that attest); without Docker, a recent local Node
+The Node 20 container of `CLAUDE.md` has no Rust: it runs the commands that do not need the Wasm only; the pods that attest carry Rust and play `npm ci && npm run build:wasm && …` on the host. Without Docker, a recent local Node
 suffices for the same commands (`npm ci && npm run build:wasm && npm run typecheck && npm test`).
 
 ### Import sample acceptance
@@ -302,7 +303,7 @@ Maps recipe in stub mode (the seed contains only a graph, « Carte de la côte �
 
 ## Rust / WebAssembly
 
-Rust is compiled to WebAssembly (Wasm) once and the same `.wasm` runs in the browser and on the Node server (AD-rust-1 to 10, `ARCHITECTURE.md`). The ground ships the example module `rust/modules/exemple` (`fnv1a(text)`, `version()`); the first product function is the `generation` module of the core, crate `rust/modules/coeur` (`tirer_bloc`, `hex_vers_plan`, `plan_vers_hex`, `densite_defaut`, `AD-etoiles-1` to `7`): it draws the stars of the galaxy (E-21) at the places of Éneria's generator, for the server (`src/services/swn/tirage-etoiles.ts`, the only caller) and the browser (`frontend/src/wasm/coeur.ts`). Its fixtures (`rust/modules/coeur/tests/fixtures/`) come from Éneria's generator on a neutral seed and make the rule; `cargo test` and `src/wasm/coeur.test.ts` replay them. If the server cannot load `coeur`, a block request answers the generic server error, with no fallback to another draw. **Since this slice, every command that builds, typechecks or runs the app (`npm run typecheck`, `npm run build`, `npm test`, the stub-mode command above) needs `npm run build:wasm` first**, on a host that has Rust: the Node-only Docker routes of this README cannot run it. It needs `rustup`, `rustc`/`cargo` 1.99.1 (pinned by `rust/rust-toolchain.toml`), the `wasm32-unknown-unknown` target (`rustup target add wasm32-unknown-unknown`) and `wasm-bindgen` at the exact version of `rust/Cargo.lock`, now 0.2.130 (`cargo install --locked --version =0.2.130 wasm-bindgen-cli`) in the PATH; the script names a missing tool and installs nothing (the first `cargo install` of `wasm-bindgen-cli` compiles for minutes; `rust/pkg/` and `rust/target/` are git-ignored; the chain's pods already carry all of it). `npm run tests:attestes` plays `build:wasm` itself.
+Rust is compiled to WebAssembly (Wasm) once and the same `.wasm` runs in the browser and on the Node server (AD-rust-1 to 10, `ARCHITECTURE.md`). The ground ships the example module `rust/modules/exemple` (`fnv1a(text)`, `version()`); the first product function is the `generation` module of the core, crate `rust/modules/coeur` (`tirer_bloc`, `hex_vers_plan`, `plan_vers_hex`, `densite_defaut`, `AD-etoiles-1` to `7`): it draws the stars of the galaxy (E-21) at the places of Éneria's generator, for the server (`src/services/swn/tirage-etoiles.ts`, the only caller) and the browser (`frontend/src/wasm/coeur.ts`). Its fixtures (`rust/modules/coeur/tests/fixtures/`) come from Éneria's generator on a neutral seed and make the rule; `cargo test` and `src/wasm/coeur.test.ts` replay them. If the server cannot load `coeur`, a block request answers the generic server error, with no fallback to another draw. **Since this slice, every command that builds, typechecks or runs the app (`npm run typecheck`, `npm run build`, `npm test`, the stub-mode command above) needs `npm run build:wasm` first**, on a host that has Rust: the Node-only Docker routes of this README cannot run it. It needs `rustup`, `rustc`/`cargo` 1.99.1 (pinned by `rust/rust-toolchain.toml`), the `wasm32-unknown-unknown` target (`rustup target add wasm32-unknown-unknown`) and `wasm-bindgen` at the exact version of `rust/Cargo.lock`, now 0.2.130 (`cargo install --locked --version =0.2.130 wasm-bindgen-cli`) in the PATH; the script names a missing tool and installs nothing (the first `cargo install` of `wasm-bindgen-cli` compiles for minutes; `rustup`, `cargo install` and `--locked` fetch from the network: an offline host cannot build; `rust/pkg/` and `rust/target/` are git-ignored; the chain's pods already carry all of it). `npm run tests:attestes` plays `build:wasm` itself.
 
 ```bash
 npm run build:wasm      # rust/pkg/<module>/ (glue .js, .d.ts, _bg.wasm); required before typecheck, build and the server's loader
