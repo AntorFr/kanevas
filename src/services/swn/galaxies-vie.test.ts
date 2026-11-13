@@ -25,7 +25,7 @@ function monde() {
 const err = (f: () => unknown): any => { try { f(); } catch (x) { return x; } assert.fail("pas d'erreur"); };
 const total = (w: ReturnType<typeof monde>) => w.q('SELECT * FROM swn_galaxies');
 
-test('création : Antor et Mira, invisible, graine hexadécimale de 12, version 1, densité 0,2', () => {
+test('création : Antor et Mira, invisible, graine hexadécimale de 12, version 1, densité 0,68 (défaut du cœur)', () => {
   const w = monde();
   for (const u of ['antor', 'mira']) {
     const { id } = g.creerGalaxie(w.db, w.a(u), w.univers, { titre: 'Galaxie neuve' });
@@ -34,7 +34,7 @@ test('création : Antor et Mira, invisible, graine hexadécimale de 12, version 
     assert.equal(l.visible, 0);
     assert.match(l.graine, /^[0-9a-f]{12}$/);
     assert.equal(l.version, 1);
-    assert.equal(l.densite_defaut, 0.2);
+    assert.equal(l.densite_defaut, 0.68); // DENSITE_DEFAUT of the core (AD-etoiles-7)
     assert.equal(l.univers_id, w.univers);
   }
   const graines = w.q("SELECT graine FROM swn_galaxies WHERE titre='Galaxie neuve'").map((r) => r.graine);

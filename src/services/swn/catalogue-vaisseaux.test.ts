@@ -67,6 +67,8 @@ test('migration : neuf tables créées, lignes existantes intactes, foreign_key_
   const tablesAvant = swn();
   const derniere = Math.max(...readdirSync(source).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))));
   assert.deepEqual(migrate(db), Array.from({ length: derniere - 23 }, (_, i) => 24 + i));
+  // 0035 (AD-etoiles-7) moves a galaxy left at the former default 0.2 to the core's 0.68, nothing else.
+  avant[3] = (avant[3] as any[]).map((g) => ({ ...g, densite_defaut: 0.68 }));
   assert.deepEqual(snap(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const tables = swn().filter((t) => !tablesAvant.includes(t));
