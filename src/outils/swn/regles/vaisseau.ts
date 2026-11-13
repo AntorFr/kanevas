@@ -111,7 +111,7 @@ export interface ResultatVaisseau {
     echange?: { puissance: number; masse: number }
     vise?: { nature: NatureVaisseau; cle: string }
     /** Z-3: only on a targeted modification (cargo mass, mounting, overload): the signed deltas actually applied to its target. */
-    ajuste?: { masse?: number; puissance?: number; emports?: number }
+    ajuste?: { masse?: number; puissance?: number; emports?: number; armure?: number }
   }[]
   prix: number
   pv: number
@@ -240,6 +240,44 @@ export function calculer(
     masseLibre += delta.masse
     echanges.set(i, delta)
   })
+  // W-2: the targeted adjustments read the target line's totals before any adjustment, so two of them never feed each other.
+  const ajustes = new Map<number, { masse?: number; puissance?: number; armure?: number }>()
+  let blindage = 0
+  let blindageVu = false
+  lignes.forEach((l, i) => {
+    const e = l.element
+    if (l.quantite <= 0) return
+    if (e.effet === 'montages_specialises' || e.effet === 'surcharge_cumulable') {
+      const cible = cibleDe(l)
+      if (cible === undefined || cible.nature !== 'armes') return
+      const p = puissanceDeLigne(cible)
+      if (e.effet === 'surcharge_cumulable') {
+        const plus = l.quantite * Math.floor((p * (e.effet_pct ?? 0) + 50) / 100)
+        puissanceLibre -= plus
+        ajustes.set(i, { puissance: plus })
+      } else {
+        const plusP = Math.max(1, Math.ceil(p / 2))
+        const plusM = Math.max(1, Math.ceil(masseDeLigne(cible)) / 2)
+        puissanceLibre -= plusP
+        masseLibre -= plusM
+        ajustes.set(i, { masse: plusM, puissance: plusP })
+      }
+    } else if (e.effet === 'blindage_renforce' && !blindageVu) {
+      blindageVu = true
+      blindage = (e.valeur ?? 0) + reparation
+      ajustes.set(i, { armure: blindage })
+    }
+  })
+  // W-2, last mass step: the optimised holds act once, on the final free mass; a free mass of 0 or below is unchanged.
+  const optimisee = lignes.findIndex((l) => l.element.effet === 'soutes_optimisees_livre' && l.quantite > 0)
+  if (optimisee >= 0) {
+    if (masseLibre > 0) {
+      const avant = masseLibre
+      masseLibre = Math.ceil(Math.round(masseLibre * 2) * 9 / 10) / 2
+      ajustes.set(optimisee, { masse: masseLibre - avant })
+    }
+    if (soutes !== null) soutes = (soutes as number) * 2
+  }
   const emports = { utilises: emportsUtilises, total: coque.emports }
 
   const bloquantes: AlerteVaisseau[] = []
@@ -312,7 +350,7 @@ export function calculer(
   })
 
   const vitesseBase = coque.vitesse === undefined ? null : Math.max(0, coque.vitesse + bonusVitesse + effetVitesse)
-  const armureBase = coque.armure === undefined ? null : Math.max(0, coque.armure + effetArmure)
+  const armureBase = coque.armure === undefined ? null : Math.max(0, coque.armure + effetArmure) + blindage
 
   return {
     coque: { cle: coque.cle, nom: coque.nom, classe: coque.classe },
@@ -321,6 +359,7 @@ export function calculer(
       ...(coutsLigne.has(i) ? { cout: coutsLigne.get(i)! } : {}),
       ...(echanges.has(i) ? { points: l.points ?? 0, echange: echanges.get(i)! } : {}),
       ...(l.vise ? { vise: { nature: l.vise.nature, cle: l.vise.cle } } : {}),
+      ...(ajustes.has(i) ? { ajuste: ajustes.get(i)! } : {}),
     })),
     prix,
     pv,
