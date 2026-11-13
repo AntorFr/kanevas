@@ -57,12 +57,12 @@ Tests without Docker: `npm ci` first (an existing `node_modules/` may be incompl
 
 ## Local startup
 
-To **view the screens**, use the command under “Without Authelia: stub mode” below (`npm ci && npm run build && KANEVAS_STUB=1 npm start`). The block below only serves the API (`/healthz`). `npm run build` writes to the repository's `dist/`: after renumbering a migration, run `rm -rf dist` first.
+To **view the screens**, use the command under “Without Authelia: stub mode” below (`npm ci && npm run build:wasm && npm run build && KANEVAS_STUB=1 npm start`; `build:wasm` needs Rust, see “Rust / WebAssembly”). The block below only serves the API (`/healthz`). `npm run build` writes to the repository's `dist/`: after renumbering a migration, run `rm -rf dist` first.
 
 ```bash
 # writes node_modules/ and ./data/ (database and session.key) into the mounted repository, as root; both are ignored by git.
 # Without a prior `npm run build` (done on the host, outside this command), this route serves only the API: see below.
-# To see the screens (E-5, `/administration`, included): same container, but `sh -c "npm ci && npm run build && KANEVAS_STUB=1 npm start"`
+# To see the screens (E-5, `/administration`, included): this Node-only container has no Rust and cannot build them; use a host with Rust and the command of the “stub mode” section
 # (or, with Node ≥ 20 on the host, `npm ci` then the command of the “stub mode” section).
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # then, from the host: curl http://localhost:3001/healthz
@@ -144,7 +144,7 @@ token belongs to the deleted universe and cannot be reused for the new one.
 The « bouchon » (*stub*) is the `KANEVAS_STUB=1` mode: no Authelia, test accounts and a script that answers in place of the model. It is the command to see the application; the `docker run … npm run dev` block above only serves the API (`/healthz`).
 
 ```bash
-npm ci && npm run build && KANEVAS_STUB=1 npm start   # then open http://localhost:3001/ : pick a test account
+npm ci && npm run build:wasm && npm run build && KANEVAS_STUB=1 npm start   # then open http://localhost:3001/ : pick a test account
 # seeding precedes listening on the port (under a second here); without writing to ./data/ or using port 3001: npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start
 # The recipes below that name `http://localhost:3001` assume `npm start` without `PORT`; with the `PORT=3055` command, replace 3001 by 3055. Stop with Ctrl-C. In the background, `kill $!` stops only `npm`, not the server: kill the `node dist/server.js` process that listens on the port (simplest: start it with `PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 node dist/server.js &` instead of `npm start`, then `kill $!` stops it (keep the PID: `echo $!`); `ss`, `ps` and `pgrep` may be missing in a pod) (a server left running keeps the port, the database and `session.key`). Delete /tmp/k.db to reset the database. Every recipe below assumes a fresh seeded database (ids such as universe 4 are those of a fresh seed; the deletion recipe destroys « Port-Sel » and the universe it is run on): delete /tmp/k.db before each.
 # `session.key` and `attachments/` are created beside the database: use a dedicated directory,
