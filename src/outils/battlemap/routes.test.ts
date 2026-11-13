@@ -31,7 +31,8 @@ async function monde(activer = true) {
   const E = one(app, 'SELECT id FROM univers WHERE nom = ?', "Éneria d'essai").id as number;
   const S = one(app, 'SELECT id FROM systemes_jeu WHERE nom = ?', "Système d'essai").id as number;
   const antor = one(app, "SELECT id FROM comptes WHERE username = 'antor'").id as number;
-  if (activer) poserActivation(app.db, antor, { niveau: 'systeme', id: S }, 'battlemap/assets', true);
+  // the seed already switches the tool on for the system of « Éneria d'essai »
+  poserActivation(app.db, antor, { niveau: 'systeme', id: S }, 'battlemap/assets', activer);
   const R = `/api/univers/${E}/outils/battlemap`;
   const req = (method: M, who: string | null, url: string, payload?: any, headers: Record<string, string> = {}) =>
     app.inject({ method, url, headers: { ...(who ? h[who] : {}), ...headers }, payload });
@@ -52,13 +53,15 @@ async function monde(activer = true) {
 }
 const png = (n: number) => pngPlat([n, 10, 10], 8);
 
-test('le semis : 9 assets dont 1 MJ seul, une direction, une référence dans « Essai Kanka »', async () => {
+test('le semis : 9 assets dont 1 MJ seul, une direction, une référence dans « Éneria d’essai »', async () => {
   const w = await monde();
-  const essai = one(w.app, "SELECT id FROM univers WHERE nom = 'Essai Kanka'").id;
+  const essai = w.E;
   assert.equal(one(w.app, 'SELECT COUNT(*) n FROM bm_assets WHERE univers_id = ?', essai).n, 9);
   assert.equal(one(w.app, "SELECT COUNT(*) n FROM bm_assets a JOIN fichiers f ON f.id=a.fichier_id WHERE a.univers_id = ? AND f.visibilite='mj'", essai).n, 1);
   assert.equal(one(w.app, 'SELECT COUNT(*) n FROM bm_direction_images WHERE univers_id = ?', essai).n, 1);
   assert.ok(one(w.app, 'SELECT texte FROM bm_direction WHERE univers_id = ?', essai).texte.length > 0);
+  const tags = one(w.app, "SELECT tags FROM bm_assets WHERE univers_id = ? AND nom = 'Tonneau'", essai).tags;
+  assert.equal(JSON.parse(tags).length, 2);
 });
 
 test('joueur : lit seulement les assets visibles, écrit et lit la direction → 404', async () => {
@@ -76,7 +79,10 @@ test('joueur : lit seulement les assets visibles, écrit et lit la direction →
   const noms = (j: any) => (j.assets ?? j.elements ?? []).map((a: any) => a.nom);
   assert.ok(noms(toutes).includes('secret'));
   assert.ok(!noms(lea.json()).includes('secret'));
-  assert.equal(noms(lea.json()).length, noms(toutes).length - 1);
+  // 9 seeded (1 GM-only) + 4 added (1 hidden): 13 for the GM, 11 for the player
+  assert.equal(noms(toutes).length, 13);
+  assert.equal(noms(lea.json()).length, 11);
+  assert.ok(!noms(lea.json()).includes('Coffre piégé'));
   const avant = one(w.app, 'SELECT COUNT(*) n FROM bm_assets').n;
   const ecritures: [M, string, any][] = [
     ['PATCH', `${w.R}/assets`, { ids: [cachee.id], visible: true }], ['DELETE', `${w.R}/assets`, { ids: [cachee.id] }],
