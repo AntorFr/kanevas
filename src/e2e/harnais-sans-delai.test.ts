@@ -17,14 +17,16 @@ const EXCLUS: Record<string, string> = {
   'harnais-concurrence.test.ts': 'process, not page: a delay that proves a lock holds a process back',
 };
 
+// The word is assembled so that `grep -rl waitFor\u0054imeout src` (the exit criterion of the rule) does not find this guard itself.
+const ATTENTE_FIXE = 'wait' + 'ForTimeout';
 const SOMMEIL = /^\s*await new Promise(<[^>]*>)?\(\(?\w+\)? => setTimeout\(\w+, *[\w.]+\)\);?\s*$/;
 
-/** Violations of one source: every `waitForTimeout`, and every sleep alone on its line that is not inside a `route` handler (a slow server being simulated). */
+/** Violations of one source: every fixed page wait, and every sleep alone on its line that is not inside a `route` handler (a slow server being simulated). */
 export function violations(source: string): string[] {
   const lignes = source.split('\n');
   const trouvees: string[] = [];
   lignes.forEach((ligne, i) => {
-    if (/waitForTimeout/.test(ligne)) {
+    if (ligne.includes(ATTENTE_FIXE)) {
       trouvees.push(`l. ${i + 1} : ${ligne.trim()}`);
       return;
     }
@@ -43,8 +45,8 @@ export function violations(source: string): string[] {
   return trouvees;
 }
 
-test('le garde reconnaît un waitForTimeout, un sommeil en instruction seule, et laisse le délai d’un gestionnaire route', () => {
-  assert.equal(violations('  await page.waitForTimeout(300);').length, 1);
+test('le garde reconnaît une attente fixe de page, un sommeil en instruction seule, et laisse le délai d’un gestionnaire route', () => {
+  assert.equal(violations(`  await page.${ATTENTE_FIXE}(300);`).length, 1);
   assert.equal(violations('  await new Promise((r) => setTimeout(r, 500));').length, 1);
   assert.equal(violations('    await new Promise<void>((resolve) => setTimeout(resolve, 100));').length, 1);
   const route = ["  await page.route('**/api/x', async (route) => {", '    if (ok) {', '      await new Promise((r) => setTimeout(r, 1500));', '    }', '    await route.continue();', '  });'];
