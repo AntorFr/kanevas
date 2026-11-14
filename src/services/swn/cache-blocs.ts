@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
 import type { Db } from '../../db/db.js';
-import { bloc, densiteHexagone, TAILLE_BLOC } from '../../outils/swn/regles/generation.js';
+import { TAILLE_BLOC } from '../../outils/swn/regles/generation.js';
 import { lirePlages } from '../../outils/swn/regles/forme.js';
 import type { Point } from '../../outils/swn/regles/hex.js';
 import { invalide } from '../erreurs.js';
 import type { Acteur } from '../types.js';
+import { entreesBloc, systemesExclusants, tirerEtoiles, VERSION_GENERATEUR } from './tirage-etoiles.js';
 import { galaxieLisible, zonesLisibles, type NiveauLecture } from './galaxies.js';
 
 export interface CoordonneesBloc { bx: number; by: number }
@@ -62,21 +63,23 @@ export function lireBlocsGeneres(
   const densites = zones.map((z) => ({
     contour: JSON.parse(z.contour) as Point[], plages: z.plages === null ? null : lirePlages(z.plages), densite: z.densite,
   }));
+  const definis = systemesExclusants(db, galaxie.id, de, a); // unfiltered: the same for every reader
   let base = bases.get(db);
   if (base === undefined) { base = ++prochaineBase; bases.set(db, base); }
   const resultat: BlocGenere[] = [];
   for (let by = de.by; by <= a.by; by++) {
     for (let bx = de.bx; bx <= a.bx; bx++) {
-      // Default density is also an input of generation: changing it must not reuse a stale block.
-      const cle = JSON.stringify([base, galaxie.id, galaxie.graine, bx, by, niveau, empreinte, galaxie.densite_defaut]);
+      // Default density, exclusions and generator version are inputs of the draw: changing one must not reuse a stale block.
+      const entrees = entreesBloc(bx, by, densites, galaxie.densite_defaut, definis);
+      const cle = JSON.stringify([base, galaxie.id, galaxie.graine, bx, by, niveau, empreinte, galaxie.densite_defaut,
+        entrees.empreinteExclusions, VERSION_GENERATEUR]);
       let positions = cache.get(cle);
       if (positions !== undefined) {
         parNiveau[niveau].hits++;
         cache.delete(cle);
       } else {
         parNiveau[niveau].generations++;
-        positions = bloc(galaxie.graine, bx, by,
-          (q, r) => densiteHexagone(q, r, densites, galaxie.densite_defaut)).map(({ q, r }) => [q, r] as const);
+        positions = tirerEtoiles(galaxie.graine, bx, by, entrees);
       }
       cache.set(cle, positions);
       if (cache.size > LIMITE) cache.delete(cache.keys().next().value!);

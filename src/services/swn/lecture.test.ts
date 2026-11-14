@@ -149,18 +149,26 @@ test('cache : Léa après Antor — aucune génération mj, résultat identique 
 
 test('clé : graine, zone, densité par défaut changent le résultat servi', () => {
   const { db, univers, g, a } = monde();
+  // The core draws block (0,0) of seed 'essai-1' at the candidate (1,3) (one star at most per block, AD-etoiles-1).
   const b = { bx: 0, by: 0 };
   const lire = () => JSON.stringify(lireBlocsGeneres(db, a('antor'), univers, g, b, b));
   const base = lire();
+  assert.equal(base, '[{"bx":0,"by":0,"generes":[[1,3]]}]');
   db.prepare("UPDATE swn_galaxies SET graine='autre' WHERE id=?").run(g);
-  assert.notEqual(lire(), base);
+  const R = { bx: 0, by: 0 }, S = { bx: 4, by: 4 };
+  const autre = JSON.stringify(lireBlocsGeneres(db, a('antor'), univers, g, R, S));
   db.prepare("UPDATE swn_galaxies SET graine='essai-1' WHERE id=?").run(g);
+  assert.notEqual(JSON.stringify(lireBlocsGeneres(db, a('antor'), univers, g, R, S)), autre, 'une autre graine tire d\'autres étoiles');
   assert.equal(lire(), base);
   db.prepare("INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, densite, secret) VALUES (?,?,'z','Z','[[0,0],[4,0],[4,4],[0,4]]','rouge',0,0)").run(g, univers);
   assert.equal(JSON.parse(lire())[0].generes.length, 0);
   db.prepare("UPDATE swn_zones SET densite=1, version=version+1 WHERE cle='z'").run();
-  assert.equal(JSON.parse(lire())[0].generes.length, 25);
+  assert.deepEqual(JSON.parse(lire())[0].generes, [[1, 3]]);
   db.prepare('DELETE FROM swn_zones WHERE cle=?').run('z');
+  assert.equal(lire(), base);
+  db.prepare('UPDATE swn_galaxies SET densite_defaut = 0 WHERE id = ?').run(g);
+  assert.equal(JSON.parse(lire())[0].generes.length, 0, 'densité par défaut 0 : plus d\'étoile');
+  db.prepare('UPDATE swn_galaxies SET densite_defaut = 0.68 WHERE id = ?').run(g);
   assert.equal(lire(), base);
 });
 
