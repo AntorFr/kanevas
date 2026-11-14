@@ -4395,6 +4395,8 @@ Objects: a **galaxy** (E-21) holds **systems**; a system holds **bodies** (star,
 | Screen | Reached from | Serves to |
 |---|---|---|
 | E-21 (amended) | the tool, as today | « Ouvrir le système » on the panel of a star, drawn or defined; « Réglages du générateur… » (GM); the existing « Secret (MJ seul) » switch on a system, drawn or defined (B-97) |
+
+**What `kanevas-carte-spatiale-etoiles` changes on E-21** (no new control, no new text): the drawn stars are those of the Rust core, at Éneria's places (one star at most per block of 5 × 5 hexagons, AD-etoiles-1), so the same dots appear on the same hexagons for the two bindings and for every visit. Around a defined system that is not promoted, the six neighbouring hexagons hold no drawn star, for the GM and for a Player alike; around a promoted system nothing moves. States, texts and roles are those of E-21 above.
 | E-9 Sheet (amended) | the sheet, as today | gains the block « Sur la carte spatiale » (below) |
 | E-23 System map | E-21; the « Sur la carte spatiale » block of a sheet (E-9); a shareable link | read the system, see and open the illustrations, follow links; GM: move, name, link, add a body, a zone or an element, anchor, hide an element |
 | E-24 Generator settings | E-21 (GM) | settings and catalogue of aspects of the galaxy |

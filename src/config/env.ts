@@ -88,5 +88,6 @@ export const codexHome = env.CODEX_HOME?.trim() || (dbPath === ':memory:' ? join
 export const imagesTmpDir =
   dbPath === ':memory:' ? join(tmpdir(), 'kanevas-images') : join(dirname(dbPath), 'tmp', 'images');
 
+// Wasm modules directory (AD-rust-4), tests: `<dir>/<module>/<module>_bg.wasm`. Absent = dist/wasm, then rust/pkg.
 // Read at each call (not frozen at import) so a test can point the loader elsewhere.
 export const wasmDir = (): string | undefined => process.env.WASM_DIR?.trim() || undefined;
