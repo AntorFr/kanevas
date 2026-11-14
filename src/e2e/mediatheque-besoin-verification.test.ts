@@ -27,6 +27,7 @@ import {
   ajouterMembre,
   allerMembres,
   attendre,
+  attendreAbsent,
   connecte,
   creerUnivers,
   launch,

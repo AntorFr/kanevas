@@ -22,7 +22,7 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { after, before, test } from 'node:test';
-import { type Any, attendre, connecte, launch, rx, skipBrowser, startServer, texte } from './harnais.test.js';
+import { type Any, attendre, attendreTransitions, connecte, launch, rx, skipBrowser, startServer, texte } from './harnais.test.js';
 
 const opts = { skip: skipBrowser };
 let srv: Awaited<ReturnType<typeof startServer>>;
@@ -297,7 +297,7 @@ test('B-55 menu de l\'illustration : « Ajouter depuis l\'appareil » et « Choi
   await attendre(antor);
   await antor.getByRole('button', { name: /Remplacer/ }).first().click();
   await antor.getByText(rx("Ajouter depuis l'appareil")).first().waitFor();
-  await attendre(antor);
+  await attendreTransitions(antor);
   await antor.screenshot({ path: '/tmp/shots/antor-menu-illustration.png' });
   // the point at the right end of each label must belong to the label itself: not clipped, not covered
   const coupes: string[] = await antor.evaluate(() => {
