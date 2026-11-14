@@ -328,11 +328,13 @@ async function attendreDansLaPage(delai: number): Promise<string | null> {
   const signe = (): string | null => {
     const n = w.__kvEnVol ?? 0;
     if (n > 0) return `${n} requête(s) fetch/XHR en vol`;
-    const occupe = document.querySelector('[aria-busy="true"]');
+    // A demo showcase (`.demo-etat`, page /demo) shows loading states for good: not a page that is still settling.
+    const vitrine = (el: Element) => el.closest('.demo-etat') !== null;
+    const occupe = Array.from(document.querySelectorAll('[aria-busy="true"]')).find((el) => !vitrine(el));
     if (occupe) return `élément occupé <${occupe.tagName.toLowerCase()} aria-busy="true">${occupe.id ? '#' + occupe.id : ''}`;
     for (const el of Array.from(document.querySelectorAll('[role="status"]'))) {
       const t = (el.textContent ?? '').trim();
-      if (/^Chargement/.test(t) && (el as HTMLElement).getClientRects().length > 0) return `chargement visible (role=status « ${t.slice(0, 40)} »)`;
+      if (!vitrine(el) && /^Chargement/.test(t) && (el as HTMLElement).getClientRects().length > 0) return `chargement visible (role=status « ${t.slice(0, 40)} »)`;
     }
     return null;
   };
