@@ -1,23 +1,29 @@
 // Harness shared by the black-box tests of kanevas-premiere-fiche (no test of its own).
 // It starts the real server in stub mode (AD-55) on a throw-away SQLite file and drives it
 // with a real Chromium through Playwright. Playwright is not a dependency of the repo: it is
-// taken from the image (global install) and, when it or Chromium is missing, the browser
-// tests are skipped with a message instead of failing. Every browser it launches carries the request
+// taken from the image (global install) and, when it or Chromium is missing, importing this
+// file throws (AD-harnais-4): the suite fails, it never skips. Every browser it launches carries the request
 // counter `attendre` reads, and `waitForLoadState('networkidle')` of its pages runs `attendre` (AD-harnais-1).
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, unlinkSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, rmSync, statSync, symlinkSync, unlinkSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Any = any;
 
+/** Where Playwright is looked for; `HARNAIS_RACINES_PLAYWRIGHT` (colon-separated) replaces the list, which lets a test run the harness without it. */
+function racinesPlaywright(): string[] {
+  const forcees = process.env.HARNAIS_RACINES_PLAYWRIGHT;
+  if (forcees !== undefined) return forcees.split(':').filter(Boolean).map((r) => r.replace(/\/?$/, '/'));
+  return [process.cwd() + '/', '/usr/lib/node_modules/', '/usr/local/lib/node_modules/'];
+}
+
 export function loadPlaywright(): Any | null {
-  const roots = [process.cwd() + '/', '/usr/lib/node_modules/', '/usr/local/lib/node_modules/'];
-  for (const r of roots) {
+  for (const r of racinesPlaywright()) {
     try {
       return createRequire(r)('playwright');
     } catch {
@@ -27,10 +33,28 @@ export function loadPlaywright(): Any | null {
   return null;
 }
 
-export const playwright = loadPlaywright();
-export const skipBrowser: string | false = playwright
-  ? false
-  : 'playwright is not installed in this image: browser tests skipped';
+function chargerPlaywright(): Any {
+  const pw = loadPlaywright();
+  if (!pw) {
+    throw new Error(
+      'Playwright cannot be loaded (looked in ' + racinesPlaywright().join(', ') + '): the browser tests cannot run. Install it (npm i -g playwright) — they are never skipped.',
+    );
+  }
+  let chemin = '';
+  try {
+    chemin = pw.chromium.executablePath();
+  } catch {
+    /* reported below */
+  }
+  if (!chemin || !existsSync(chemin)) {
+    throw new Error('Playwright is loaded but its Chromium is missing (' + (chemin || 'no path') + '): run `npx playwright install chromium`.');
+  }
+  return pw;
+}
+
+export const playwright = chargerPlaywright();
+/** Kept for the guards of the test files; always `false` now (AD-harnais-4). */
+export const skipBrowser: string | false = false;
 
 export async function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -43,10 +67,45 @@ export async function freePort(): Promise<number> {
   });
 }
 
-/** Runs `npm run build` once if `dist/public` is missing; a stale `dist/` is not rebuilt (the server runs from dist/server.js). */
+const SOURCES_BUILD = ['src', 'frontend/src', 'frontend/index.html', 'package.json', 'tsconfig.json', 'frontend/tsconfig.json', 'frontend/vite.config.ts'];
+const PRODUITS_BUILD = ['dist/server.js', 'dist/public/index.html'];
+
+function plusRecent(chemin: string): number {
+  let st;
+  try {
+    st = statSync(chemin);
+  } catch {
+    return 0;
+  }
+  if (!st.isDirectory()) return st.mtimeMs;
+  let max = 0; // a directory's own mtime moves with a rename, only files count
+  for (const e of readdirSync(chemin)) {
+    if (e === 'node_modules') continue;
+    max = Math.max(max, plusRecent(join(chemin, e)));
+  }
+  return max;
+}
+
+/** Pure decision (AD-harnais-5): rebuild when a product of the build is missing or older than the newest source under `racine`. */
+export function doitReconstruire(racine: string): boolean {
+  let produit = Infinity;
+  for (const p of PRODUITS_BUILD) {
+    const f = join(racine, p);
+    if (!existsSync(f)) return true;
+    produit = Math.min(produit, statSync(f).mtimeMs);
+  }
+  return SOURCES_BUILD.some((s) => plusRecent(join(racine, s)) > produit);
+}
+
+/** Runs `npm run build` when `dist/` is missing or older than its sources; a failure carries the build output. */
 export function ensureBuilt(): void {
-  if (existsSync('dist/public/index.html')) return;
-  execFileSync('npm', ['run', 'build'], { stdio: 'ignore' });
+  if (!doitReconstruire(resolve('.'))) return;
+  try {
+    execFileSync('npm', ['run', 'build'], { stdio: 'pipe', encoding: 'utf8' });
+  } catch (e) {
+    const err = e as { stdout?: string; stderr?: string; message: string };
+    throw new Error('npm run build failed:\n' + [err.stdout, err.stderr].filter(Boolean).join('\n').slice(-4000) || err.message);
+  }
 }
 
 export interface Server {
