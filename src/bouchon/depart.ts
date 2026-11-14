@@ -4,7 +4,7 @@ import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 
 import type { Db } from '../db/db.js';
-import { attachmentsDir } from '../config/env.js';
+import { attachmentsDir, env } from '../config/env.js';
 import {
   ajouterFichier,
   choisirIllustration,
@@ -422,7 +422,7 @@ export async function semerIllustrations(db: Db, racine: string = attachmentsDir
   supprimerFichier(fresque.jeton, racine);
 
   await semerFichiers(db, racine);
-  if (modulesActifs().some((m) => m.nom === 'battlemap')) await semerBattlemap(db, racine);
+  if (!env.KANEVAS_SANS_SEMIS_BATTLEMAP && modulesActifs().some((m) => m.nom === 'battlemap')) await semerBattlemap(db, racine);
 }
 
 /**
