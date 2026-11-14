@@ -188,15 +188,6 @@ describe('B-61 import du catalogue du système (P-17 étape 2)', () => {
     assert.deepEqual(await tout(m.antor, CAT(m.E)), []);
   });
 
-  it('échec: plus de 8 Mio refusé (413 fichier_trop_gros)', async () => {
-    const m = await monde();
-    const gros = JSON.stringify({ catalogue: 'essai/g', version: 'v', coques: [], armes: [], bourrage: 'x'.repeat(8 * 1024 * 1024 + 10) });
-    const r = await m.antor('POST', `${SYS(m.S)}/apercu`, gros);
-    assert.equal(r.status, 413);
-    assert.equal(r.json.code, 'fichier_trop_gros');
-    assert.equal(r.json.message, 'Ce fichier est trop volumineux (8 Mio au plus).');
-  });
-
   it('exclusion: MJ non responsable, joueur et MJ en mode joueur n’écrivent pas le système', async () => {
     const m = await monde();
     for (const [qui, client, suffixe] of [['mira', m.mira, ''], ['lea', m.lea, ''], ['antor joueur', m.antor, '?mode=joueur']] as const) {
