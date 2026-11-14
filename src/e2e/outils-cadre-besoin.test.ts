@@ -50,7 +50,7 @@ const CAPTURES = process.env.KANEVAS_CAPTURES ?? '';
 
 before(async () => {
   if (skipBrowser) return;
-  srv = await startServer({ KANEVAS_SANS_SEMIS: '' }); // the starting data are the fixture
+  srv = await startServer({ KANEVAS_SANS_SEMIS: '', KANEVAS_SANS_SEMIS_BATTLEMAP: '1' }); // the starting data are the fixture
   browser = await launch();
   ({ ctx: ctxAntor, page: antor } = await connecte(browser, srv.base, 'Antor'));
   ({ ctx: ctxLea, page: lea } = await connecte(browser, srv.base, 'Léa'));
