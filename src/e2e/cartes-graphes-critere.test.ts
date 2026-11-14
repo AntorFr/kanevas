@@ -158,7 +158,6 @@ describe('kanevas-cartes-graphes, critère de sortie au navigateur', { skip: ski
     await attendre(antor);
     await antor.getByRole('radio', { name: rxExact('Mode Joueur') }).check();
     await attendre(antor);
-    await antor.waitForTimeout(300);
     try {
       const vuParLea = await liste(lea);
       assert.equal(vuParLea.length, 1);

@@ -78,7 +78,6 @@ async function ouvrir(page: Any, m: Monde, id: number): Promise<void> {
   await page.goto(`/univers/${m.U}/cartes/${id}`);
   await page.getByRole('heading', { level: 1 }).or(page.getByText(rx('Page introuvable.'))).first().waitFor();
   await attendre(page);
-  await page.waitForTimeout(200);
 }
 
 describe('kanevas-cartes-graphes, vérification indépendante', { skip: skipBrowser }, () => {

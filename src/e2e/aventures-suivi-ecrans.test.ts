@@ -133,13 +133,10 @@ test('comptes-rendus : cinq derniers sur E-3, ordre de création sur E-13, retou
     return r.body.id as number;
   };
   const premier = await cr(antor, 'Prologue');
-  await dormir(1100);
   for (const n of [2, 3, 4, 5, 6]) {
     await cr(antor, `Session ${n}`);
-    await dormir(1100);
   }
   await cr(lea.page, 'Récit de Léa');
-  await dormir(1100);
   session11 = await cr(antor, 'Session 11');
 
   // edit the oldest one: it must not climb

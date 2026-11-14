@@ -158,7 +158,7 @@ test('B-29 connexion perdue : bandeau, contenu déjà chargé lisible, boutons q
   assert.ok((await texte(page)).includes('États'), 'the loaded list stays');
   assert.equal(await page.getByRole('link', { name: rx('Créer un univers') }).or(page.getByRole('button', { name: rxExact('Créer un univers') })).first().isDisabled().catch(() => true), true);
   await page.context().setOffline(false);
-  for (let i = 0; i < 60 && (await page.getByText(rx(BANDEAU_PERDU)).count()) > 0; i++) await page.waitForTimeout(100);
+  await page.getByText(rx(BANDEAU_PERDU)).first().waitFor({ state: 'hidden' });
   assert.equal(await page.getByText(rx(BANDEAU_PERDU)).count(), 0, 'the banner goes away by itself');
   await page.close();
 });
@@ -306,12 +306,8 @@ test('B-29 connexion perdue : quand la requête n\'aboutit pas puis que le serve
   await page.getByRole('dialog', { name: /^Qui voit/ }).getByRole('switch', { name: rx('Les joueurs la lisent') }).click({ noWaitAfter: true });
   await voit(page, BANDEAU_PERDU);
   await page.unroute(motif); // the server is reachable again
-  let revenu = false;
-  for (let i = 0; i < 300 && !revenu; i++) {
-    revenu = (await page.getByText(rx(BANDEAU_PERDU)).count()) === 0;
-    if (!revenu) await page.waitForTimeout(100);
-  }
-  assert.equal(revenu, true, 'the banner must go away within 30 s of the connection coming back');
+  // the banner must go away within 30 s of the connection coming back
+  await page.getByText(rx(BANDEAU_PERDU)).first().waitFor({ state: 'hidden', timeout: 30000 });
   assert.equal(await page.getByRole('dialog', { name: /^Qui voit/ }).getByRole('switch', { name: rx('Les joueurs la lisent') }).isDisabled(), false);
   await page.close();
 });

@@ -69,8 +69,9 @@ describe('kanevas-scenarios-type-fiche, E-9 aventure', { skip: skipBrowser }, ()
       await route.continue();
     });
     await declencheur(antor, 'La Couronne brisée').click();
+    const parti = antor.waitForRequest((r: Any) => r.method() === 'PATCH' && /\/fiches\/\d+$/.test(r.url()));
     await antor.getByRole('menuitem', { name: 'En cours' }).click();
-    await antor.waitForTimeout(400);
+    await parti; // the write is out and held: the screen still shows the old status
     assert.match(await ligne(antor).innerText(), /En préparation/, 'ancien statut tant que le serveur n’a pas répondu');
     liberer();
     await ligne(antor).getByText('En cours').waitFor();

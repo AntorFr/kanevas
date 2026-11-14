@@ -92,7 +92,6 @@ async function chercher(page: Any, mot: string, type = 'personnages'): Promise<v
   await page.getByRole('button', { name: rxExact('Chercher') }).click();
   await page.waitForFunction(() => !/Recherche…/.test(document.body.innerText));
   await attendre(page);
-  await page.waitForTimeout(150);
 }
 const aucun = (mot: string, type = 'personnages') => `Aucun résultat pour « ${mot} » dans les ${type}.`;
 const liens = async (page: Any): Promise<string[]> =>
@@ -290,7 +289,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
         if (/[?&]q=/.test(r.url())) requetes.push(r.url());
       });
       await champ(m.antor).pressSequentially('Zzyzx', { delay: 30 });
-      await m.antor.waitForTimeout(600);
+      await attendre(m.antor);
       assert.equal(requetes.length, 0, 'recherche partie à la frappe');
       assert.ok((await liens(m.antor)).some((t) => t.includes('Maître Aldric')));
       await champ(m.antor).press('Enter');

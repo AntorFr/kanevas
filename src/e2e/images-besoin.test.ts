@@ -151,7 +151,6 @@ describe('kanevas-images : générer un portrait (B-25, B-27, P-3 étape 5)', { 
     await demander(m.antor, DEMANDE);
     await bloc(m.antor).getByRole('link', { name: 'Ouvrir la section' }).click();
     await attendre(m.antor);
-    await m.antor.waitForTimeout(500);
     assert.equal(await m.antor.locator('main img[src*="/fichiers/"]').count(), 1);
   });
 

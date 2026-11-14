@@ -74,12 +74,14 @@ describe('rouge-kanevas-5, « Fiches liées » et la liste des types lente (B-64
       await retenue;
       await route.continue();
     });
+    const donnees = page.waitForResponse((r: Any) => /\/fiches\/\d+\/liees\?/.test(r.url()));
     await ouvrirPortSel(page);
     const b = bloc(page);
     await b.waitFor();
     await b.getByText('Chargement…').waitFor();
-    // let the block's own data arrive well before the types: it must still be loading
-    await page.waitForTimeout(1500);
+    // the block's own data has arrived (and been rendered) before the types: it must still be loading
+    await donnees;
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
     assert.equal(await b.getByText('Chargement…').count(), 1, 'toujours « Chargement… » tant que les types ne sont pas lus');
     assert.equal(await b.getByRole('heading', { level: 3 }).count(), 0, 'aucun groupe avant les types');
     liberer();

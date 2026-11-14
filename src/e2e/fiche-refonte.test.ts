@@ -25,6 +25,7 @@ import {
   choisirDansMenuSection,
   confirmerRetraitSection,
   connecte,
+  attendre,
   creerFiche,
   creerUnivers,
   launch,
@@ -380,7 +381,7 @@ describe('E-9 refaite : édition', { skip: skipBrowser }, () => {
     antor.on('request', (r: Any) => r.method() === 'PUT' && puts++);
     await s.getByRole('textbox').fill('x'.repeat(100001));
     await antor.keyboard.press('Control+Enter');
-    await antor.waitForTimeout(500);
+    await attendre(antor);
     assert.equal(puts, 0, 'no request left');
     assert.ok(await s.getByText(/100 000 caractères au plus\./).first().isVisible());
     await s.getByRole('textbox').fill('y'.repeat(100000));
@@ -405,7 +406,7 @@ describe('E-9 refaite : édition', { skip: skipBrowser }, () => {
     try {
       await antor.getByText(PERDU).waitFor();
       await antor.keyboard.press('Control+Enter');
-      await antor.waitForTimeout(500);
+      await attendre(antor);
       assert.equal(puts, 0);
       assert.equal(await s.getByRole('textbox').inputValue(), 'Texte en attente');
       assert.equal(await s.getByRole('button', { name: rxExact('Enregistrer') }).isDisabled(), true, 'the button says the same');
@@ -455,15 +456,17 @@ describe('E-9 refaite : « Modifier », menu ⋯, retrait', { skip: skipBrowser 
     const s = section(antor, 'Apparence');
     const modifier = s.getByRole('button', { name: rxExact('Modifier') });
     const opacite = () => modifier.evaluate((e: Element) => getComputedStyle(e.closest('.sec-actions')!).opacity);
+    // the opacity transitions: the result is waited for, not a delay
+    const opaciteVaut = async (v: string) => antor.waitForFunction(({ el, v }: Any) => getComputedStyle(el.closest('.sec-actions')).opacity === v, { el: await modifier.elementHandle(), v });
     assert.equal(await opacite(), '0', 'hidden without hover or focus');
     await s.hover();
-    await antor.waitForTimeout(400);
+    await opaciteVaut('1');
     assert.equal(await opacite(), '1', 'shown on hover');
     await antor.mouse.move(2, 2);
-    await antor.waitForTimeout(400);
+    await opaciteVaut('0');
     assert.equal(await opacite(), '0');
     await modifier.focus();
-    await antor.waitForTimeout(400);
+    await opaciteVaut('1');
     assert.equal(await opacite(), '1', 'shown on focus');
   });
 

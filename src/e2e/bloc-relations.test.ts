@@ -37,7 +37,6 @@ async function relier(page: Any, titreSection: string, type: string, typeFiche: 
   await b.getByLabel('Type de fiche').selectOption({ label: typeFiche });
   await b.getByLabel(`Chercher dans ${chercherDans}`).fill(cible);
   await b.getByRole('button', { name: rxExact('Chercher') }).click();
-  await page.waitForTimeout(400);
   await attendre(page);
   await b.locator('button.choix-fiche').filter({ hasText: cible }).click();
   await b.getByRole('button', { name: rxExact('Relier') }).click();

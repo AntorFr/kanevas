@@ -104,7 +104,6 @@ describe('kanevas-recherche-e9, E-9 alias et étiquettes', { skip: skipBrowser }
     await lea.getByRole('link', { name: 'Côte des Brumes' }).click();
     await lea.waitForURL(/recherche\?etiquette=C%C3%B4te%20des%20Brumes/);
     await lea.getByRole('heading', { level: 1, name: 'Recherche' }).waitFor();
-    await lea.waitForTimeout(800);
     await attendre(lea);
     await lea.screenshot({ path: `${SHOTS}/lea-e17.png` });
     const res = await lea.locator('main').innerText();

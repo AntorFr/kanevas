@@ -637,11 +637,10 @@ export async function regler(page: Any, titre: string, reglage: string, actif: b
     const case_ = s.getByLabel(rx(reglage));
     if ((await case_.isChecked()) === actif) return;
     await case_.click({ noWaitAfter: true });
-    for (let i = 0; i < 50; i++) {
-      if ((await case_.isChecked()) === actif) return;
-      await page.waitForTimeout(100);
-    }
-    throw new Error(`audience "${reglage}" of "${titre}" did not become ${actif}`);
+    await page
+      .waitForFunction(({ el, actif }: Any) => el.checked === actif, { el: await case_.elementHandle(), actif }, { timeout: 5000 })
+      .catch(() => { throw new Error(`audience "${reglage}" of "${titre}" did not become ${actif}`); });
+    return;
   }
   await pastille.click();
   const boite = page.getByRole('dialog', { name: /^Qui voit/ });
@@ -649,12 +648,9 @@ export async function regler(page: Any, titre: string, reglage: string, actif: b
   const interrupteur = boite.getByRole('switch', { name: rx(reglage) });
   if ((await interrupteur.getAttribute('aria-checked')) !== String(actif)) {
     await interrupteur.click({ noWaitAfter: true });
-    let ok = false;
-    for (let i = 0; i < 50 && !ok; i++) {
-      ok = (await interrupteur.getAttribute('aria-checked')) === String(actif);
-      if (!ok) await page.waitForTimeout(100);
-    }
-    if (!ok) throw new Error(`audience "${reglage}" of "${titre}" did not become ${actif}`);
+    await page
+      .waitForFunction(({ el, actif }: Any) => el.getAttribute('aria-checked') === String(actif), { el: await interrupteur.elementHandle(), actif }, { timeout: 5000 })
+      .catch(() => { throw new Error(`audience "${reglage}" of "${titre}" did not become ${actif}`); });
   }
   await page.keyboard.press('Escape');
   await boite.waitFor({ state: 'detached' });
@@ -666,8 +662,9 @@ export async function choisirAuteur(page: Any, titre: string, identifiant: strin
   const boite = page.getByRole('dialog', { name: /^Qui voit/ });
   const liste = boite.getByRole('combobox', { name: /Auteur/ });
   await liste.selectOption({ label: identifiant });
-  await boite.getByRole('switch', { name: rx('L’auteur la lit') }).waitFor();
-  for (let i = 0; i < 50 && (await boite.getByRole('switch', { name: rx('L’auteur la lit') }).isDisabled()); i++) await page.waitForTimeout(100);
+  const lit = boite.getByRole('switch', { name: rx('L’auteur la lit') });
+  await lit.waitFor();
+  await page.waitForFunction((el: Any) => !el.disabled && el.getAttribute('aria-disabled') !== 'true', await lit.elementHandle(), { timeout: 5000 });
   await liste.focus();
   await page.keyboard.press('Escape');
   await boite.waitFor({ state: 'detached' });

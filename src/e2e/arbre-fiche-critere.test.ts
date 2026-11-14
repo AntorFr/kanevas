@@ -127,8 +127,10 @@ describe('kanevas-arbre-fiche, E-9 fil, Contient, Déplacer sous…', { skip: sk
     await antor.screenshot({ path: `${SHOTS}/cycle.png` });
     // soi-même n'est pas proposé
     await d.getByRole('button', { name: 'Recherche' }).click();
+    const reponse = antor.waitForResponse((r: Any) => /[?&]q=/.test(r.url()) && decodeURIComponent(r.url()).includes('Sphères'));
     await d.getByLabel('Chercher une fiche').fill('Sphères');
-    await antor.waitForTimeout(800);
+    await reponse;
+    await attendre(antor);
     assert.equal(await d.getByLabel(/^Les Sphères/).count(), 0);
     await d.getByRole('button', { name: 'Annuler' }).click();
     await api(antor, 'DELETE', `/api/univers/${U}/fiches/${libre}`);

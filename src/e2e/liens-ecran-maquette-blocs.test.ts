@@ -90,10 +90,9 @@ test('liste [[ ouverte, « Enregistrer » amené à l’écran (390px) : « Enre
   const liste = page.getByRole('listbox', { name: 'Fiches à lier' });
   await liste.waitFor();
   await liste.getByRole('option').nth(1).waitFor();
-  await page.waitForTimeout(600);
   // a user brings the buttons into view the way the browser does when one tabs to them: the bottom of the page
   await page.getByRole('button', { name: 'Enregistrer', exact: true }).scrollIntoViewIfNeeded();
-  await page.waitForTimeout(300);
+  await page.waitForLoadState('networkidle');
   const bad = await page.evaluate(() => {
     const out: string[] = [];
     const ab = [...document.querySelectorAll('button')].find((b) => /Demander à Kanevas/.test(b.textContent ?? '') || b.getAttribute('aria-label') === 'Demander à Kanevas');
