@@ -1,4 +1,4 @@
-import { Library } from 'lucide-react';
+import { Library, Plus, RefreshCw, RotateCw, Save, Sparkles, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { appeler, envoyerFichier, ErreurApi, lire, useConnexionPerdue } from '../../api';
@@ -158,13 +158,13 @@ export function DirectionArtistique({ id }: { id: string }) {
   return (
     <div className="bm-direction" {...survol.props}>
       {survol.survol && <VoileDepot texte="Déposez les images pour les ajouter." />}
-      {vide && <p className="etat">Aucune direction artistique. La génération et l’assistant travailleront sans style.</p>}
       {perime && (
-        <Alerte sens="avertissement" action={<Bouton petit onClick={() => setEssai((n) => n + 1)}>Recharger</Bouton>}>
+        <Alerte sens="avertissement" action={<Bouton petit icone={RefreshCw} onClick={() => setEssai((n) => n + 1)}>Recharger</Bouton>}>
           Ce texte a changé depuis que vous l’avez ouvert.
         </Alerte>
       )}
       <Panneau titre="Style" reserveMj>
+        {vide && <p className="bm-note bm-direction-vide">Aucune direction artistique. La génération et l’assistant travailleront sans style.</p>}
         <Champ
           etiquette="Style"
           zone
@@ -196,10 +196,10 @@ export function DirectionArtistique({ id }: { id: string }) {
         )}
         <p className="bm-note">{PHRASE_MJ}</p>
       </Panneau>
-      {echec && <Alerte action={echec.reessayer ? <Bouton petit onClick={echec.reessayer}>Réessayer</Bouton> : undefined}>{echec.texte}</Alerte>}
+      {echec && <Alerte action={echec.reessayer ? <Bouton petit icone={RotateCw} onClick={echec.reessayer}>Réessayer</Bouton> : undefined}>{echec.texte}</Alerte>}
       <div className="actions">
-        <Bouton variante="principal" ecrit enCours={enCours} disabled={!modifie && !perime} onClick={() => void enregistrer()}>Enregistrer</Bouton>
-        <Bouton disabled title="Disponible avec l’assistant">Demander à l’assistant</Bouton>
+        <Bouton variante="principal" icone={Save} ecrit enCours={enCours} disabled={!modifie && !perime} onClick={() => void enregistrer()}>Enregistrer</Bouton>
+        <Bouton icone={Sparkles} disabled title="Disponible avec l’assistant">Demander à l’assistant</Bouton>
       </div>
       {mediatheque && <ChoixImage id={id} base={base} deja={images.map((i) => i.fichierId)} pleine={pleines} onChoisir={choisir} onFermer={() => setMediatheque(false)} />}
     </div>
@@ -235,13 +235,13 @@ function ChoixImage({ id, base, deja, pleine, onChoisir, onFermer }: {
                 <li key={f.id}>
                   <img src={src(id, { id: f.id, jeton: f.jeton })} alt="" loading="lazy" />
                   <span className="bm-choix-nom">{f.nom}</span>
-                  <Bouton petit disabled={pleine} ecrit aria-label={`Ajouter ${f.nom}`} onClick={() => void onChoisir(f).then((ok) => ok && setFichiers((l) => (l ?? []).filter((x) => x.id !== f.id)))}>Ajouter</Bouton>
+                  <Bouton petit icone={Plus} disabled={pleine} ecrit aria-label={`Ajouter ${f.nom}`} onClick={() => void onChoisir(f).then((ok) => ok && setFichiers((l) => (l ?? []).filter((x) => x.id !== f.id)))}>Ajouter</Bouton>
                 </li>
               ))}
             </ul>
           </>
         )}
-      <div className="actions"><Bouton onClick={onFermer}>Fermer</Bouton></div>
+      <div className="actions"><Bouton icone={X} onClick={onFermer}>Fermer</Bouton></div>
     </Fenetre>
   );
 }
