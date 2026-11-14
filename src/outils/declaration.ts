@@ -54,6 +54,8 @@ export interface DeclarationCatalogue {
    * rely on the valid ones of the same file declared before it. A refusal gives the field and the reason.
    */
   verifier?(nature: string, donnees: Record<string, unknown>, ctx: ContexteVerification): { champ: string; raison: string } | null;
+  /** The part of a valid element the storage keeps; the replay compares this form with the stored one. Left out: all of it. */
+  conserve?(nature: string, donnees: Record<string, unknown>): Record<string, unknown>;
 }
 /** Where a tool's data are counted and erased: one universe, or one system's shared level (D-1). */
 export type Portee = { niveau: 'univers'; universId: number } | { niveau: 'systeme'; systemeId: number };
@@ -187,6 +189,7 @@ const declaration = z.strictObject({
       stockage: z.strictObject({ lister: fonction, lirePar: fonction, ecrire: fonction,
         poserMasque: fonction, retraits: fonction, poserRetrait: fonction, compter: fonction, effacer: fonction }),
       verifier: fonction.optional(),
+      conserve: fonction.optional(),
     }).optional(),
     donnees: z.strictObject({ compter: fonction, effacer: fonction, utilisations: fonction.optional() }).optional(),
     importation: z.strictObject({

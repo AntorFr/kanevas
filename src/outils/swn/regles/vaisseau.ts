@@ -73,7 +73,6 @@ export interface ElementResolu {
   reparation_min?: number
   /** Stated by the catalogue only (Z-1); the sheets print them, the calculation reads them (Z-3). */
   effet_pct?: number
-  armure_par_classe?: number[]
   echange_arrondi?: string
   reduction_base?: string
 }
@@ -112,7 +111,7 @@ export interface ResultatVaisseau {
     echange?: { puissance: number; masse: number }
     vise?: { nature: NatureVaisseau; cle: string }
     /** Z-3: only on a targeted modification (cargo mass, mounting, overload): the signed deltas actually applied to its target. */
-    ajuste?: { masse?: number; puissance?: number; emports?: number }
+    ajuste?: { masse?: number; puissance?: number; emports?: number; armure?: number }
   }[]
   prix: number
   pv: number
@@ -140,7 +139,7 @@ const souteDe = (e: ElementResolu, classe: number): number | null => e.soute_par
 const exigence = (e: ElementResolu): number | null => e.reparation_min ?? (e.effet === 'reparation_min' ? (e.valeur ?? 0) : null)
 
 /** Z-3/Z-4: the effects that aim at one line of the design, and what the target must be. */
-const EFFETS_CIBLES = ['soutes_doublees', 'magasins_doubles', 'soutes_optimisees', 'montage_specialise', 'surcharge_arme']
+const EFFETS_CIBLES = ['soutes_doublees', 'magasins_doubles', 'montages_specialises', 'surcharge_cumulable']
 
 function moins(n: number): string {
   return n < 0 ? `−${-n}` : String(n)
@@ -172,39 +171,6 @@ export function calculer(
   const cibleDe = (l: LigneResolue) => l.vise === undefined ? undefined : lignes.find((m) => m.nature === l.vise!.nature && m.cle === l.vise!.cle)
   const masseDeLigne = (l: LigneResolue) => l.element.masse * (l.element.x_masse ? coque.facteur_masse : 1) * l.quantite
   const puissanceDeLigne = (l: LigneResolue) => l.element.puissance * (l.element.x_puissance ? coque.facteur_puissance : 1) * l.quantite
-  // Z-3: each targeted adjustment is computed on the target's line before any adjustment; the sums are clamped per target.
-  const ajustes = new Map<number, { masse?: number; puissance?: number; emports?: number }>()
-  const sommes = new Map<LigneResolue, { masse: number; puissance: number; emports: number }>()
-  lignes.forEach((l, i) => {
-    const e = l.element
-    const cible = cibleDe(l)
-    if (cible === undefined) return
-    const somme = sommes.get(cible) ?? { masse: 0, puissance: 0, emports: 0 }
-    if (e.effet === 'soutes_optimisees' && e.effet_pct !== undefined && cible.nature === 'amenagements' && souteDe(cible.element, coque.classe) !== null) {
-      const m = masseDeLigne(cible)
-      const d = Math.floor((m * 2 * e.effet_pct + 50) / 100) / 2
-      ajustes.set(i, { masse: d === 0 ? 0 : -d })
-      somme.masse -= d
-    } else if (e.effet === 'surcharge_arme' && e.effet_pct !== undefined && cible.nature === 'armes') {
-      const d = Math.floor((puissanceDeLigne(cible) * e.effet_pct + 50) / 100)
-      ajustes.set(i, { puissance: d })
-      somme.puissance += d
-    } else if (e.effet === 'montage_specialise' && e.valeur !== undefined && cible.nature === 'armes') {
-      const base = (cible.element.emport ?? 0) * cible.quantite
-      ajustes.set(i, { emports: Math.max(0, base + e.valeur) - base })
-      somme.emports += e.valeur
-    } else return
-    sommes.set(cible, somme)
-  })
-  // The clamped extra each target line takes (never below 0 in total).
-  const extras = new Map<LigneResolue, { masse: number; puissance: number; emports: number }>()
-  sommes.forEach((s, c) => {
-    extras.set(c, {
-      masse: Math.max(0, masseDeLigne(c) + s.masse) - masseDeLigne(c),
-      puissance: Math.max(0, puissanceDeLigne(c) + s.puissance) - puissanceDeLigne(c),
-      emports: Math.max(0, (c.element.emport ?? 0) * c.quantite + s.emports) - (c.element.emport ?? 0) * c.quantite,
-    })
-  })
   // X-2: a doubling aims at one line of the design, named by its pair.
   const visee = (cible: LigneResolue | undefined, nature: NatureVaisseau, effet: string) =>
     cible !== undefined && cible.nature === nature && lignes.some((m) => m.element.effet === effet && m.vise?.nature === cible.nature && m.vise.cle === cible.cle)
@@ -225,15 +191,12 @@ export function calculer(
     if (e.cout_pct !== undefined || reduit) coutsLigne.set(i, coutLigne)
     if (e.effet === 'vitesse') effetVitesse += (e.valeur ?? 0) * q
     if (e.effet === 'armure') effetArmure += (e.valeur ?? 0) * q
-    if (e.effet === 'armure_par_classe') effetArmure += (e.armure_par_classe?.[coque.classe - 1] ?? 0) * q
     const exig = exigence(e)
     if (exig !== null) reparationMin = Math.max(reparationMin ?? 0, exig)
     const soute = souteDe(e, coque.classe)
     if (soute !== null) soutes = (soutes ?? 0) + soute * q * (visee(l, 'amenagements', 'soutes_doublees') ? 2 : 1)
-    const extra = extras.get(l)
-    puissanceUsee += e.puissance * (e.x_puissance ? coque.facteur_puissance : 1) * q + (extra?.puissance ?? 0)
-    masseUsee += e.masse * (e.x_masse ? coque.facteur_masse : 1) * q + (extra?.masse ?? 0)
-    emportsUtilises += extra?.emports ?? 0
+    puissanceUsee += e.puissance * (e.x_puissance ? coque.facteur_puissance : 1) * q
+    masseUsee += e.masse * (e.x_masse ? coque.facteur_masse : 1) * q
     pv += e.pv * q
     ca += e.ca * q
     if (l.nature === 'defenses') bonusVitesse += (e.bonus_vitesse ?? 0) * q
@@ -277,6 +240,44 @@ export function calculer(
     masseLibre += delta.masse
     echanges.set(i, delta)
   })
+  // W-2: the targeted adjustments read the target line's totals before any adjustment, so two of them never feed each other.
+  const ajustes = new Map<number, { masse?: number; puissance?: number; armure?: number }>()
+  let blindage = 0
+  let blindageVu = false
+  lignes.forEach((l, i) => {
+    const e = l.element
+    if (l.quantite <= 0) return
+    if (e.effet === 'montages_specialises' || e.effet === 'surcharge_cumulable') {
+      const cible = cibleDe(l)
+      if (cible === undefined || cible.nature !== 'armes') return
+      const p = puissanceDeLigne(cible)
+      if (e.effet === 'surcharge_cumulable') {
+        const plus = l.quantite * Math.floor((p * (e.effet_pct ?? 0) + 50) / 100)
+        puissanceLibre -= plus
+        ajustes.set(i, { puissance: plus })
+      } else {
+        const plusP = Math.max(1, Math.ceil(p / 2))
+        const plusM = Math.max(1, Math.ceil(masseDeLigne(cible)) / 2)
+        puissanceLibre -= plusP
+        masseLibre -= plusM
+        ajustes.set(i, { masse: plusM, puissance: plusP })
+      }
+    } else if (e.effet === 'blindage_renforce' && !blindageVu) {
+      blindageVu = true
+      blindage = (e.valeur ?? 0) + reparation
+      ajustes.set(i, { armure: blindage })
+    }
+  })
+  // W-2, last mass step: the optimised holds act once, on the final free mass; a free mass of 0 or below is unchanged.
+  const optimisee = lignes.findIndex((l) => l.element.effet === 'soutes_optimisees_livre' && l.quantite > 0)
+  if (optimisee >= 0) {
+    if (masseLibre > 0) {
+      const avant = masseLibre
+      masseLibre = Math.ceil(Math.round(masseLibre * 2) * 9 / 10) / 2
+      ajustes.set(optimisee, { masse: masseLibre - avant })
+    }
+    if (soutes !== null) soutes = (soutes as number) * 2
+  }
   const emports = { utilises: emportsUtilises, total: coque.emports }
 
   const bloquantes: AlerteVaisseau[] = []
@@ -319,7 +320,7 @@ export function calculer(
     const cible = cibleDe(l)
     if (l.vise === undefined) raison = 'choisissez l\'élément visé.'
     else if (cible === undefined) raison = 'l\'élément visé n\'est pas dans cette conception.'
-    else if (effet === 'soutes_doublees' || effet === 'soutes_optimisees' ? !(cible.nature === 'amenagements' && souteDe(cible.element, coque.classe) !== null) : cible.nature !== 'armes') {
+    else if (effet === 'soutes_doublees' ? !(cible.nature === 'amenagements' && souteDe(cible.element, coque.classe) !== null) : cible.nature !== 'armes') {
       raison = 'cet élément ne peut pas être visé.'
     } else return
     bloquantes.push({ niveau: 'bloquante', code: 'cible_invalide', texte: `« ${l.nom} » : ${raison}`, ligne: i })
@@ -349,7 +350,7 @@ export function calculer(
   })
 
   const vitesseBase = coque.vitesse === undefined ? null : Math.max(0, coque.vitesse + bonusVitesse + effetVitesse)
-  const armureBase = coque.armure === undefined ? null : Math.max(0, coque.armure + effetArmure)
+  const armureBase = coque.armure === undefined ? null : Math.max(0, coque.armure + effetArmure) + blindage
 
   return {
     coque: { cle: coque.cle, nom: coque.nom, classe: coque.classe },

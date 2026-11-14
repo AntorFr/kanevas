@@ -164,7 +164,8 @@ function importCatalogue(db: Db, acteur: Acteur, cible: CibleOutils, cle: string
         if (verdict) { reject(nature.nom, itemKey, verdict.champ, verdict.raison); continue; }
         valides.add(key(nature.nom, itemKey));
         const old = catalogue.stockage.lirePar(db, target, nature.nom, itemKey);
-        const status = !old ? 'ajoutes' : old.nom !== donnees.nom || jsonCanonique(old.donnees) !== jsonCanonique(donnees) ? 'modifies' : 'inchanges';
+        const gardees = catalogue.conserve?.(nature.nom, donnees) ?? donnees;
+        const status = !old ? 'ajoutes' : old.nom !== donnees.nom || jsonCanonique(old.donnees) !== jsonCanonique(gardees) ? 'modifies' : 'inchanges';
         counts[status]++;
         if (status !== 'inchanges') {
           changed = true;
