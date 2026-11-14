@@ -15,7 +15,7 @@
 //   B-43 écran     : /api/moi gives the ceiling; typing the 100 001st character shows « Erreur : 100 000 caractères au plus. »
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { type Any, launch, skipBrowser, startServer } from './harnais.test.js';
+import { type Any, attendre, launch, skipBrowser, startServer } from './harnais.test.js';
 import { comptes, json } from './monde-aide.test.js';
 
 const opts = { skip: skipBrowser };
@@ -180,7 +180,7 @@ test('B-32 exclusion : HTML brut, schémas hors http/https/mailto (toutes casses
   assert.match(t, /<img src=x onerror=alert\(1\)>/);
   assert.match(t, /plan/);
   assert.equal(t.includes('p.png'), false);
-  await p.waitForTimeout(300);
+  await attendre(p);
   assert.deepEqual(dlg, []);
   await p.close();
 });

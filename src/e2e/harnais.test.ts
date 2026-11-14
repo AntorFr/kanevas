@@ -544,6 +544,13 @@ export async function attendreTexte(page: Any, texte: string | RegExp): Promise<
   await page.getByText(typeof texte === 'string' ? rx(texte) : texte).first().waitFor({ state: 'visible' });
 }
 
+/** Waits until no finite CSS transition or animation is running (a fade, a dialog opening): the result of a hover or an opening, not a delay. */
+export async function attendreTransitions(page: Any): Promise<void> {
+  await page.waitForFunction(() =>
+    document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getComputedTiming().iterations === Infinity),
+  );
+}
+
 // --- user gestures, after docs/ecrans.md (the doc's labels) ---
 
 export async function ouvrirFormulaireUnivers(page: Any): Promise<void> {

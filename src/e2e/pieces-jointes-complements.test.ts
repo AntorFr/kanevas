@@ -117,11 +117,7 @@ async function choisir(page: Any, panneau: Any, fichiers: { name: string; mimeTy
   await panneau.locator('input[type=file][data-ajout-appareil]').first().setInputFiles(fichiers);
 }
 async function finEnvois(panneau: Any): Promise<void> {
-  for (let i = 0; i < 100; i++) {
-    if (!(await panneau.innerText()).includes('Envoi…')) return;
-    await panneau.page().waitForTimeout(100);
-  }
-  throw new Error('uploads did not finish');
+  await panneau.page().waitForFunction((el: HTMLElement) => !el.innerText.includes('Envoi…'), await panneau.elementHandle(), { timeout: 10_000 });
 }
 /** Every piece (id, nom) of the fiche as the given context's API shows it. */
 async function pieces(ctx: Any, m: Monde): Promise<{ id: number; nom: string }[]> {

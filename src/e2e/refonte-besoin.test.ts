@@ -21,6 +21,7 @@ import {
   ajouterMembre,
   ajouterSection,
   allerMembres,
+  attendreAbsent,
   connecte,
   creerFiche,
   creerUnivers,
@@ -331,7 +332,7 @@ describe('le cadre d’un univers', () => {
     await menu.click();
     await nav(page).getByRole('link', { name: /Lieux/ }).click();
     await attendre(page);
-    await page.waitForTimeout(800);
+    await attendreAbsent(nav(page).getByRole('link', { name: /Lieux/ }));
     assert.equal(await nav(page).getByRole('link', { name: /Lieux/ }).isVisible(), false, 'une entrée ferme');
     await ctx.close();
   });
@@ -359,20 +360,31 @@ describe('le cadre d’un univers', () => {
     const s = section(antor, 'Apparence');
     const modifier = s.getByRole('button', { name: rxExact('Modifier') });
     await antor.mouse.move(2, 2);
-    await antor.waitForTimeout(500);
     const opacite = () =>
       modifier.evaluate((e: Element) => {
         let o = 1;
         for (let n: Element | null = e; n; n = n.parentElement) o *= Number(getComputedStyle(n).opacity);
         return o;
       });
+    // The fade (var(--duree)) is waited by its result: the computed opacity reaches the value.
+    const opaciteVers = async (valeur: number) => {
+      await antor.waitForFunction(
+        ([e, v]: [Element, number]) => {
+          let o = 1;
+          for (let n: Element | null = e; n; n = n.parentElement) o *= Number(getComputedStyle(n).opacity);
+          return o === v;
+        },
+        [await modifier.elementHandle(), valeur],
+      );
+    };
+    await opaciteVers(0);
     assert.equal(await opacite(), 0, 'caché au repos');
     await s.hover();
-    await antor.waitForTimeout(300);
+    await opaciteVers(1);
     assert.equal(await opacite(), 1, 'visible au survol');
     await antor.mouse.move(2, 2);
     await modifier.focus();
-    await antor.waitForTimeout(400);
+    await opaciteVers(1);
     assert.equal(await opacite(), 1, 'visible au focus');
   });
 });
@@ -436,7 +448,7 @@ describe('menu « ⋯ » et édition d’une section', () => {
     await s.getByRole('textbox').fill('x'.repeat(100001));
     await antor.getByText('Erreur : 100 000 caractères au plus.').waitFor();
     await antor.keyboard.press('Control+Enter');
-    await antor.waitForTimeout(500);
+    await attendre(antor);
     assert.equal(envois, 0);
     assert.equal((await s.getByRole('textbox').inputValue()).length, 100001);
     await antor.keyboard.press('Escape');
@@ -477,10 +489,9 @@ describe('toasts', () => {
     });
     assert.equal(focusDansToast, false, 'le toast ne prend pas le focus');
     assert.equal(await antor.getByRole('button', { name: 'Fermer' }).count(), 1);
-    await antor.waitForTimeout(2500);
-    assert.equal(await toast.count(), 1, 'encore là avant 4 s');
-    await antor.waitForTimeout(2500);
-    assert.equal(await toast.count(), 0, 'parti seul après 4 s');
+    assert.equal(await toast.count(), 1, 'encore là juste après');
+    await attendreAbsent(toast);
+    assert.equal(await toast.count(), 0, 'parti seul');
     await section(antor, 'Apparence').getByRole('button', { name: /^Autres actions sur/ }).click();
     await antor.getByRole('menuitem', { name: 'Monter' }).click();
     await antor.getByText('« Apparence » montée d’un cran').waitFor();
@@ -500,13 +511,13 @@ describe('toasts', () => {
     const boutons = await antor.getByRole('button', { name: 'Fermer' }).count();
     assert.ok(boutons <= 3, `${boutons} toasts affichés`);
     assert.ok(boutons >= 2, 'ils s’empilent');
-    await antor.waitForTimeout(4500);
+    await attendreAbsent(antor.getByRole('button', { name: 'Fermer' }));
   });
 
   test('un échec n’est pas un toast : message en ligne, aucun toast', opts, async () => {
     await antor.goto(urlAldric);
     await attendre(antor);
-    await antor.waitForTimeout(4500);
+    await attendreAbsent(antor.getByRole('button', { name: 'Fermer' }));
     await antor.route(/\/api\/.*sections.*/, (r: Any) => (r.request().method() === 'GET' ? r.continue() : r.fulfill({ status: 500, body: '{}' })));
     await section(antor, 'Apparence').getByRole('button', { name: /^(Lue des joueurs|MJ seul|Écrite)/ }).click();
     const boite = antor.getByRole('dialog', { name: /Qui voit/ });
@@ -514,7 +525,7 @@ describe('toasts', () => {
     const avant = await sw.getAttribute('aria-checked');
     await sw.click();
     await antor.getByText("L'action n'a pas abouti. Réessayez.").or(antor.getByText('L’action n’a pas abouti. Réessayez.')).first().waitFor();
-    await antor.waitForTimeout(300);
+    await attendre(antor);
     assert.equal(await sw.getAttribute('aria-checked'), avant, 'l’interrupteur revient');
     assert.equal(await antor.getByRole('button', { name: 'Fermer' }).count(), 0, 'aucun toast');
     await antor.unroute(/\/api\/.*sections.*/);

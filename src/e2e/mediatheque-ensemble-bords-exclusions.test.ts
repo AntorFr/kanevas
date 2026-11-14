@@ -197,12 +197,10 @@ test('renommer : nom vide et 201 caractères refusés avec leurs mots, 200 carac
   await champ.fill('b'.repeat(200));
   await champ.press('Enter');
   await attendre(antor);
-  await antor.waitForTimeout(500);
   assert.equal((await liste(antor)).find((x: Any) => x.id === f.id).nom, 'b'.repeat(200));
   await champ.fill('Règles de la Guilde.txt');
   await champ.press('Enter');
   await attendre(antor);
-  await antor.waitForTimeout(500);
   assert.equal((await liste(antor)).find((x: Any) => x.id === f.id).nom, 'Règles de la Guilde.txt');
 });
 
@@ -218,7 +216,6 @@ test('réserver un fichier sans usage : pas de boîte, toast « Fichier réserv�
   await antor.getByText('Fichier réservé au MJ.').first().waitFor({ state: 'hidden', timeout: 15000 });
   await antor.getByText('Visible des joueurs', { exact: true }).click();
   await attendre(antor);
-  await antor.waitForTimeout(800);
   assert.equal((await parNom(antor, 'regles-guilde.pdf')).visibilite, 'joueurs');
   assert.doesNotMatch(norm(await texte(antor)), /Fichier réservé au MJ\.|Fichier visible/);
 });
@@ -300,7 +297,7 @@ test('B-55 menu de l\'illustration : « Ajouter depuis l\'appareil » et « Choi
   await attendre(antor);
   await antor.getByRole('button', { name: /Remplacer/ }).first().click();
   await antor.getByText(rx("Ajouter depuis l'appareil")).first().waitFor();
-  await antor.waitForTimeout(500);
+  await attendre(antor);
   await antor.screenshot({ path: '/tmp/shots/antor-menu-illustration.png' });
   // the point at the right end of each label must belong to the label itself: not clipped, not covered
   const coupes: string[] = await antor.evaluate(() => {

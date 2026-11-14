@@ -293,7 +293,7 @@ test('E-19 sélecteur · barre d’outils de l’éditeur : un fichier supprimé
   await dlg.getByRole('button', { name: /ephemere-texte\.png/ }).waitFor();
   assert.equal((await antor.request.delete(`/api/univers/${uid}/fichiers/${eph.id}`)).status(), 204);
   await dlg.getByRole('button', { name: /ephemere-texte\.png/ }).click();
-  await antor.waitForTimeout(1500);
+  await attendre(antor);
   await antor.screenshot({ path: '/tmp/scr/ver-selecteur-disparu-texte.png' });
   const dit = await antor.getByText(/Ce fichier n.existe plus\./).count();
   const insere = (await d.getByRole('textbox').inputValue()).includes(`fichier:${eph.id}`);
@@ -335,7 +335,7 @@ test('E-19 contenu long · 102 fichiers : 100 puis « Charger la suite », le de
   const tuiles = () => a2.locator('main').getByRole('button', { name: /f\d{3}\.pdf/ }).count();
   assert.equal(await tuiles(), 100);
   await a2.getByRole('button', { name: 'Charger la suite' }).click();
-  for (let i = 0; i < 100 && (await tuiles()) < 102; i++) await a2.waitForTimeout(100);
+  await attendreAbsent(a2.getByRole('button', { name: 'Charger la suite' }));
   assert.equal(await tuiles(), 102);
   assert.equal(await a2.getByRole('button', { name: 'Charger la suite' }).count(), 0);
   await a2.screenshot({ path: '/tmp/scr/ver-102.png' });

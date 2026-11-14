@@ -20,7 +20,6 @@ async function api(page: Any, url: string): Promise<Any> {
 async function va(page: Any, url: string): Promise<string> {
   await page.goto(url);
   await attendre(page);
-  await page.waitForTimeout(400);
   return texte(page);
 }
 async function cliqueEntete(carte: Any): Promise<void> {
