@@ -111,6 +111,7 @@ Since `kanevas-import` (new types and screens, same set, same rules): « Créatu
 « Races » `dna`, « Vaisseaux » `ship`, « Savoirs » `lightbulb` (general knowledge: history, phenomena, resources, chronology), « Récits » `book-open`, « Règles » `scale`, « Notes »
 `sticky-note`, « Rechercher » `search`, « Accès par API » `key-round`, « Médiathèque » `images`, document `file-text` (PDF), `file-spreadsheet` (spreadsheet), `file-archive` (archive), `file` (other), editor's « Fichier » `paperclip`, « Cartes » `map` (the bar had it without a fixed icon), GM-only image `lock` (neutral frame, `--texte-3`), label `tag`, « Contient »
 `folder-tree`, « Mentionnée dans » `link-2`, tree view `list-tree`, broken link `link-2-off`.
+Since `kanevas-battlemap-assets` (E-25): « Bibliothèque » `images`, selection bar « Catégorie » `shapes`, « Empreinte » `scaling`, « Vue de dessus » `layers`, « Visibilité » `eye`, « Retirer… » `trash-2`, « Ajouter des images » `upload`, « Choisir dans la médiathèque » `library`.
 
 **Motion.** `--duree` 160 ms, `--courbe` *(new)* `cubic-bezier(.2,.7,.2,1)`. Only
 these move: a menu, settings panel or dialog appearing (opacity and 4 px), the drawer,

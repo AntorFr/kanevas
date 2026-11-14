@@ -281,6 +281,10 @@ a.jeton:hover { box-shadow: inset 0 0 0 1px var(--bord-champ); }
 .segments-groupe legend { color: var(--texte-2); font-size: var(--t-13); margin-bottom: var(--e-1); padding: 0; }
 .segments { display: flex; gap: var(--e-1); padding: var(--e-1); background: var(--surface-2); border-radius: var(--rayon-champ); }
 .segments [role="radio"] { flex: 1 1 0; min-height: 44px; justify-content: center; border: 0; border-radius: var(--rayon-champ); background: transparent; color: var(--texte-2); font: inherit; cursor: pointer; }
+@media (max-width: 760px) {
+  .segments { flex-wrap: wrap; }
+  .segments [role="radio"] { flex: 1 1 auto; min-width: 0; padding: 0 var(--e-3); }
+}
 .segments [role="radio"]:hover { color: var(--texte); }
 .segments [role="radio"][aria-checked="true"] { background: var(--accent); color: var(--sur-accent); }
 .segments [role="radio"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

@@ -1,4 +1,4 @@
-import { Images, Library, Palette, Trash2 } from 'lucide-react';
+import { Images, Layers, Library, Palette, Scaling, Shapes, Eye, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
@@ -300,16 +300,18 @@ function Bibliotheque({ id, ecriture, suffixe }: { id: string; ecriture: boolean
     <div className={`bm-assets${ouvertAsset ? ' bm-panneau-ouvert' : ''}`} {...survol.props}>
       {survol.survol && <VoileDepot texte="Déposez les images pour les ajouter." />}
       <Segments legende="Catégorie" options={options} valeur={categorie} onChange={(v) => { setCategorie(v); setSelection([]); }} />
-      <div className="bm-outils">
-        <Champ etiquette="Rechercher un asset" type="search" value={q} placeholder="Nom ou étiquette" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQ(e.target.value)} />
-      </div>
-      {etiquettes.length > 0 && (
-        <div className="bm-puces" role="group" aria-label="Étiquettes">
-          {etiquettes.map((t) => (
-            <PuceFiltre key={t} actif={tags.includes(t)} onChange={(on) => setTags((l) => (on ? [...l, t] : l.filter((x) => x !== t)))}>{t}</PuceFiltre>
-          ))}
+      <div className="bm-filtres">
+        <div className="bm-outils">
+          <Champ etiquette="Rechercher un asset" type="search" value={q} placeholder="Nom ou étiquette" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQ(e.target.value)} />
         </div>
-      )}
+        {etiquettes.length > 0 && (
+          <div className="bm-puces" role="group" aria-label="Étiquettes">
+            {etiquettes.map((t) => (
+              <PuceFiltre key={t} actif={tags.includes(t)} onChange={(on) => setTags((l) => (on ? [...l, t] : l.filter((x) => x !== t)))}>{t}</PuceFiltre>
+            ))}
+          </div>
+        )}
+      </div>
       {ecriture && (
         <ZoneDepot onFichiers={recevoir} desactive={bibliothequePleine || depot || perdue} annonce={annonce} texte={depot ? 'Ajout en cours…' : 'Déposez des images ici'}>
           <Bouton icone={Library} disabled={bibliothequePleine || depot} ecrit onClick={() => setMediatheque(true)}>Choisir dans la médiathèque</Bouton>
@@ -322,16 +324,16 @@ function Bibliotheque({ id, ecriture, suffixe }: { id: string; ecriture: boolean
       )}
       {ecriture && selection.length > 0 && (
         <BarreSelection nombre={selection.length} onVider={() => setSelection([])}>
-          <Menu etiquette="Catégorie de la sélection" varianteDeclencheur="fantome-petit" declencheur="Catégorie"
+          <Menu etiquette="Catégorie de la sélection" varianteDeclencheur="fantome-petit" icone={Shapes} declencheur="Catégorie"
             entrees={CATEGORIES.map((c) => ({ libelle: c.libelle, onChoisir: () => void modifier(selection, { categorie: c.valeur }, `Catégorie « ${c.libelle} » réglée.`) }))} />
-          <Menu etiquette="Empreinte de la sélection" varianteDeclencheur="fantome-petit" declencheur="Empreinte"
+          <Menu etiquette="Empreinte de la sélection" varianteDeclencheur="fantome-petit" icone={Scaling} declencheur="Empreinte"
             entrees={EMPREINTES.map(([l, h]) => ({ libelle: `${l}×${h}`, onChoisir: () => empreinteSelection(l, h) }))} />
-          <Menu etiquette="Vue de dessus de la sélection" varianteDeclencheur="fantome-petit" declencheur="Vue de dessus"
+          <Menu etiquette="Vue de dessus de la sélection" varianteDeclencheur="fantome-petit" icone={Layers} declencheur="Vue de dessus"
             entrees={[
               { libelle: 'Vue de dessus', onChoisir: () => void modifier(selection, { vueDessus: true }, 'Vue de dessus réglée.') },
               { libelle: 'Pas de vue de dessus', onChoisir: () => void modifier(selection, { vueDessus: false }, 'Vue de dessus retirée.') },
             ]} />
-          <Menu etiquette="Visibilité de la sélection" varianteDeclencheur="fantome-petit" declencheur="Visibilité"
+          <Menu etiquette="Visibilité de la sélection" varianteDeclencheur="fantome-petit" icone={Eye} declencheur="Visibilité"
             entrees={[
               { libelle: 'Visible des joueurs', onChoisir: () => void modifier(selection, { visible: true }, 'Visibilité réglée.') },
               { libelle: 'MJ seul', onChoisir: () => void modifier(selection, { visible: false }, 'Visibilité réglée.') },
@@ -482,10 +484,12 @@ function PanneauAsset({ id, asset, echap, onFermer, onEnregistrer, onRetirer }: 
           )}
           <Interrupteur etiquette="Vue de dessus" coche={dessus} onChange={setDessus} />
           <Champ etiquette="Étiquettes" value={etiquettes} placeholder="métal, sommeil" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEtiquettes(e.target.value)} />
-          <div className="actions"><Bouton type="submit" variante="principal" ecrit>Enregistrer</Bouton></div>
+          <Interrupteur etiquette="Visible des joueurs" coche={visible} ecrit onChange={(v) => void regler(v)} />
+          <div className="actions">
+            <Bouton type="submit" variante="principal" ecrit>Enregistrer</Bouton>
+            <Bouton variante="danger" icone={Trash2} ecrit onClick={onRetirer}>Retirer…</Bouton>
+          </div>
         </form>
-        <Interrupteur etiquette="Visible des joueurs" coche={visible} ecrit onChange={(v) => void regler(v)} />
-        <div className="actions"><Bouton variante="danger" icone={Trash2} ecrit onClick={onRetirer}>Retirer…</Bouton></div>
       </div>
     </PanneauLateral>
   );
