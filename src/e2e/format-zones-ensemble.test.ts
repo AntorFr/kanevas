@@ -291,12 +291,16 @@ describe('B-84 droits d’une zone privée (B-73)', () => {
     const fenetre = '/blocs?de=-3,-3&a=3,3';
     const leaAvant = (await m.api('lea', 'GET', `${m.G}${fenetre}`)).json.blocs;
     const mjAvant = (await m.api('antor', 'GET', `${m.G}${fenetre}`)).json.blocs;
+    // The core draws blocks (0,1) and (0,2) of the seed 'essai-1' at (3,7) and (3,12) and drops both at 0.68: density 1 under them brings them in.
     const grand: Hex[] = [];
-    for (let q = 8; q <= 13; q++) for (let r = 8; r <= 13; r++) grand.push([q, r]);
+    for (let q = 2; q <= 4; q++) for (let r = 6; r <= 13; r++) grand.push([q, r]);
     const r = await m.put([prive(grand, 'dense', 'Dense', { densite: 1 })]);
     assert.equal(r.json.refusTotal, 0, r.texte);
     assert.deepEqual((await m.api('lea', 'GET', `${m.G}${fenetre}`)).json.blocs, leaAvant);
-    assert.notDeepEqual((await m.api('antor', 'GET', `${m.G}${fenetre}`)).json.blocs, mjAvant, 'le MJ voit le bloc modifié');
+    const mjApres = (await m.api('antor', 'GET', `${m.G}${fenetre}`)).json.blocs as Any[];
+    assert.deepEqual(mjApres.find((b) => b.bx === 0 && b.by === 1).generes, [[3, 7]], 'le MJ voit le bloc modifié');
+    assert.deepEqual(mjApres.find((b) => b.bx === 0 && b.by === 2).generes, [[3, 12]]);
+    assert.notDeepEqual(mjApres, mjAvant);
   });
 
   it('exclusion : Léa n’écrit pas de zone d’hexagones (403), ni par le tracé ni par la modification', async () => {
@@ -321,8 +325,9 @@ describe('B-84 densité générée sous une zone d’hexagones', () => {
     const avant = await generes();
     const dansAnneau = (k: string) => { const [q, r] = k.split(',').map(Number); return q >= -15 && q <= 14 && r >= -10 && r <= 19 && !enTrou(q, r); };
     const dansTrou = (k: string) => { const [q, r] = k.split(',').map(Number); return enTrou(q, r); };
-    assert.ok(avant.filter(dansAnneau).length > 20, 'avant, l’anneau porte des systèmes générés');
-    assert.ok(avant.filter(dansTrou).length > 0, 'avant, le trou porte des systèmes générés');
+    // One star at most per block (AD-etoiles-1): 18 blocks of the ring and 3 of the hole keep theirs on the seed 'essai-1' at 0.68 (values of the core).
+    assert.equal(avant.filter(dansAnneau).length, 18, 'avant, l’anneau porte des systèmes générés');
+    assert.equal(avant.filter(dansTrou).length, 3, 'avant, le trou porte des systèmes générés');
     const r = await m.put([{ ...ANNEAU(), densite: 0 }]);
     assert.equal(r.json.refusTotal, 0, r.texte);
     const apres = await generes();

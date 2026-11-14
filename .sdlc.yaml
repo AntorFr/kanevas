@@ -7,3 +7,9 @@ langue_publique: en
 deploiement:
   images: [ghcr.io/antorfr/kanevas]
   applis: [kanevas]
+# tests: the suite the chain plays (`attester`, base measured on the target). Same files as `npm test`.
+tests:
+  commande: npm ci && npm run tests:attestes
+  rapport: resultats.tap
+  format: tap
+  delai: 90m

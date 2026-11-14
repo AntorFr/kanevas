@@ -116,6 +116,7 @@ test('corps invalides : non JSON 400 catalogue_invalide, objet non catalogue, pl
       { 'content-type': 'application/json' });
     assert.equal(gros.statusCode, 413, u);
     assert.equal(gros.json().code, 'fichier_trop_gros');
+    assert.equal(gros.json().message, 'Ce fichier est trop volumineux (8 Mio au plus).');
     const faux = await w.ap(w.antor, 'POST', u, [1, 2], { 'content-type': 'application/json' });
     assert.equal(faux.statusCode, 400);
     assert.equal(faux.json().code, 'catalogue_invalide');

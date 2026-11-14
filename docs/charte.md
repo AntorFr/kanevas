@@ -210,6 +210,14 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   entry; ↑ ↓ move it; Escape closes and returns focus to the button; clicking outside closes.
   An unavailable entry (« Monter » on the first section) is `aria-disabled`, visible,
   inert. A section's menu: « Monter », « Descendre », then « Retirer la section ».
+- `kanevas-taille-images` (E-taille-1, verdict of the guardian: existing component, no new one): `Menu`
+  gains (1) the trigger variant `varianteDeclencheur: 'outil'`, rendered as the editor's `.outil-md` (Lucide
+  `image`, label « Image »), `desactive` outside « Écrire » or with the caret outside an `![…](fichier:N…)`
+  reference; (2) the textarea selection is read at opening and the write uses that frozen position, the focus
+  goes back to the field on close; (3) the current choice of a `groupe` comes from the title read in the text
+  (`aria-checked`), none when the title is no setting. Icons of the `groupe` options: placement `align-left`,
+  `align-right`, `align-center`; size three Lucide `square` at 12, 16 and 20 px; labels in `aria-label` and
+  `title`. Keyboard: ↑ ↓ cross the choices (no ← →). No token added.
 
 **Switch** (the four boolean audience settings).
 - V: 32 × 18 px; off `--surface-3` bordered by `--bord-champ`, thumb `--texte-2`; on
