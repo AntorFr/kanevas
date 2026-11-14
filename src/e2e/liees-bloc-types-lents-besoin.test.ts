@@ -74,7 +74,7 @@ describe('rouge-kanevas-5, « Fiches liées » et la liste des types lente (B-64
       await retenue;
       await route.continue();
     });
-    const donnees = page.waitForResponse((r: Any) => /\/fiches\/\d+\/liees\?/.test(r.url()));
+    const donnees = page.waitForResponse((r: Any) => /\/fiches\/\d+\/liees(\?|$)/.test(r.url()));
     await ouvrirPortSel(page);
     const b = bloc(page);
     await b.waitFor();
