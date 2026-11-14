@@ -81,7 +81,7 @@ export function motEffet(d: Donnees): string {
     case 'soutes_doublees': return 'soutes doublées';
     case 'magasins_doubles': return 'magasins doublés';
     case 'soutes_optimisees_livre': return 'soutes −10 % de masse libre, fret ×2';
-    case 'blindage_renforce': return d.valeur === undefined ? '' : `armure ${signe(d.valeur)} et réparation`;
+    case 'blindage_renforce': return d.valeur === undefined ? '' : `armure ${d.valeur === 0 ? '+0' : signe(d.valeur)} et réparation`;
     case 'montages_specialises': return 'puissance et masse de l’arme visée ÷ 2';
     case 'surcharge_cumulable': return d.effet_pct === undefined ? '' : `puissance de l’arme +${d.effet_pct} % par installation`;
     case 'reparation_min': return d.valeur === undefined ? '' : `réparation ${d.valeur} au moins`;
