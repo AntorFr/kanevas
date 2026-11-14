@@ -2,7 +2,8 @@
 // It starts the real server in stub mode (AD-55) on a throw-away SQLite file and drives it
 // with a real Chromium through Playwright. Playwright is not a dependency of the repo: it is
 // taken from the image (global install) and, when it or Chromium is missing, the browser
-// tests are skipped with a message instead of failing.
+// tests are skipped with a message instead of failing. Every browser it launches carries the request
+// counter `attendre` reads, and `waitForLoadState('networkidle')` of its pages runs `attendre` (AD-harnais-1).
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, unlinkSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -276,6 +277,146 @@ async function startExpectingExitUnlocked(
   return { ...result, stderr };
 }
 
+/** Counts the same-origin fetch/XHR in flight (fonts and other origins are not the application's). Runs in every frame, before the page's scripts. */
+function compteurRequetes(): void {
+  const w = window as Any;
+  if (w.__kvEnVol !== undefined) return;
+  w.__kvEnVol = 0;
+  const memeOrigine = (u: Any): boolean => {
+    try {
+      return new URL(String(u && u.url ? u.url : u), location.href).origin === location.origin;
+    } catch {
+      return false;
+    }
+  };
+  const fetchOrigine = w.fetch;
+  w.fetch = function (this: Any, ...args: Any[]) {
+    if (!memeOrigine(args[0])) return fetchOrigine.apply(this, args);
+    w.__kvEnVol++;
+    return fetchOrigine.apply(this, args).finally(() => {
+      w.__kvEnVol--;
+    });
+  };
+  const ouvrir = XMLHttpRequest.prototype.open;
+  const envoyer = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.open = function (this: Any, ...args: Any[]) {
+    this.__kvMeme = memeOrigine(args[1]);
+    return (ouvrir as Any).apply(this, args);
+  };
+  XMLHttpRequest.prototype.send = function (this: Any, ...args: Any[]) {
+    if (this.__kvMeme) {
+      w.__kvEnVol++;
+      let fini = false;
+      const fin = () => {
+        if (!fini) {
+          fini = true;
+          w.__kvEnVol--;
+        }
+      };
+      this.addEventListener('loadend', fin);
+    }
+    return (envoyer as Any).apply(this, args);
+  };
+}
+
+/** Time `attendre` gives the page to settle: under the 30 s default timeout, so the message below reaches the test. */
+const DELAI_ATTENTE_MS = 25_000;
+
+/** In-page wait: no request in flight, no loading sign, DOM unmutated for two frames. Returns the unsettled sign on timeout, else null. */
+async function attendreDansLaPage(delai: number): Promise<string | null> {
+  const w = window as Any;
+  const signe = (): string | null => {
+    const n = w.__kvEnVol ?? 0;
+    if (n > 0) return `${n} requête(s) fetch/XHR en vol`;
+    const occupe = document.querySelector('[aria-busy="true"]');
+    if (occupe) return `élément occupé <${occupe.tagName.toLowerCase()} aria-busy="true">${occupe.id ? '#' + occupe.id : ''}`;
+    for (const el of Array.from(document.querySelectorAll('[role="status"]'))) {
+      const t = (el.textContent ?? '').trim();
+      if (/^Chargement/.test(t) && (el as HTMLElement).getClientRects().length > 0) return `chargement visible (role=status « ${t.slice(0, 40)} »)`;
+    }
+    return null;
+  };
+  let mute = true;
+  const obs = new MutationObserver(() => {
+    mute = true;
+  });
+  obs.observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
+  const fin = Date.now() + delai;
+  const image = () => new Promise<void>((r) => {
+    let fait = false;
+    const f = () => {
+      if (!fait) {
+        fait = true;
+        r();
+      }
+    };
+    requestAnimationFrame(f);
+    setTimeout(f, 50);
+  });
+  let calmes = 0;
+  let dernier: string | null = null;
+  try {
+    for (;;) {
+      mute = false;
+      await image();
+      dernier = signe();
+      if (!dernier && !mute) {
+        if (++calmes >= 2) return null;
+      } else {
+        calmes = 0;
+        if (!dernier) dernier = 'le DOM change encore (mutations)';
+      }
+      if (Date.now() > fin) return dernier;
+    }
+  } finally {
+    obs.disconnect();
+  }
+}
+
+/** Source of a function run in the page: the loader (tsx) wraps named functions in `__name`, which the page does not have. */
+function enSource(fn: (...a: Any[]) => unknown, args: unknown[] = []): string {
+  return `var __name = function (f) { return f; };(${fn.toString()})(${args.map((a) => JSON.stringify(a)).join(',')})`;
+}
+
+/** Equips a context of the harness: request counter, and `waitForLoadState('networkidle')` of its pages runs `attendre`. */
+function equiperContexte(ctx: Any): Any {
+  if (ctx.__kvEquipe) return ctx;
+  ctx.__kvEquipe = true;
+  void ctx.addInitScript({ content: enSource(compteurRequetes) });
+  const rediriger = (page: Any): void => {
+    if (page.__kvOrigine) return;
+    const origine = page.waitForLoadState.bind(page);
+    page.__kvOrigine = origine;
+    page.waitForLoadState = (etat?: string, opts?: Any) => (etat === 'networkidle' ? attendre(page) : origine(etat, opts));
+  };
+  ctx.pages().forEach(rediriger);
+  ctx.on('page', rediriger);
+  return ctx;
+}
+
+let navigateurEquipe = false;
+function equiperNavigateur(browser: Any): Any {
+  if (browser.__kvEquipe) return browser;
+  browser.__kvEquipe = true;
+  const nouveau = browser.newContext.bind(browser);
+  browser.newContext = async (...args: Any[]) => equiperContexte(await nouveau(...args));
+  const nouvellePage = browser.newPage.bind(browser);
+  browser.newPage = async (...args: Any[]) => {
+    const page = await nouvellePage(...args);
+    equiperContexte(page.context());
+    return page;
+  };
+  return browser;
+}
+/** Every browser the harness's Playwright launches, `launch()` or a file's own `chromium.launch`, carries the equipment. */
+function equiperPlaywright(): void {
+  if (navigateurEquipe || !playwright) return;
+  navigateurEquipe = true;
+  const lancer = playwright.chromium.launch.bind(playwright.chromium);
+  playwright.chromium.launch = async (...args: Any[]) => equiperNavigateur(await lancer(...args));
+}
+equiperPlaywright();
+
 export async function launch(): Promise<Any> {
   return withStartupLock(() => playwright.chromium.launch({ args: ['--no-sandbox'] }));
 }
@@ -287,7 +428,7 @@ export async function connecte(browser: Any, base: string, compte: string): Prom
   page.setDefaultTimeout(30000);
   await page.goto('/connexion-bouchon');
   await page.getByRole('button', { name: new RegExp(`^Se connecter en tant que ${compte}$`, 'i') }).click();
-  await page.waitForLoadState('networkidle');
+  await attendre(page);
   return { ctx, page };
 }
 
@@ -305,8 +446,41 @@ export async function texte(page: Any): Promise<string> {
   return ((await page.locator('body').innerText()) as string).replace(/’/g, "'");
 }
 
+/** Waits until the page is settled (AD-harnais-1): no application request in flight, no loading sign, DOM still for two frames. Never network silence. */
 export async function attendre(page: Any): Promise<void> {
-  await page.waitForLoadState('networkidle');
+  const fin = Date.now() + DELAI_ATTENTE_MS;
+  const origine = page.__kvOrigine ?? page.waitForLoadState.bind(page);
+  await origine('domcontentloaded');
+  for (;;) {
+    try {
+      const reste = Math.max(fin - Date.now(), 100);
+      const signe = await page.evaluate(enSource(attendreDansLaPage, [reste]));
+      if (signe === null) return;
+      throw new Error(`attendre: la page ne se pose pas, signe restant : ${signe}`);
+    } catch (e) {
+      // A navigation destroyed the context mid-wait: the new document is waited for in turn.
+      if (/Execution context was destroyed|navigat|Target page, context or browser has been closed/i.test(String((e as Error).message)) && !/ne se pose pas/.test(String((e as Error).message)) && Date.now() < fin && !page.isClosed()) {
+        await origine('domcontentloaded').catch(() => undefined);
+        continue;
+      }
+      throw e;
+    }
+  }
+}
+
+/** Waits for a locator to show (the visible result of an action). */
+export async function attendreVisible(cible: Any): Promise<void> {
+  await cible.first().waitFor({ state: 'visible' });
+}
+
+/** Waits for a locator to be gone (the vanished control, the closed dialog). */
+export async function attendreAbsent(cible: Any): Promise<void> {
+  await cible.first().waitFor({ state: 'hidden' });
+}
+
+/** Waits for a text (string, tolerant to the typographic apostrophe, or RegExp) to show on the page. */
+export async function attendreTexte(page: Any, texte: string | RegExp): Promise<void> {
+  await page.getByText(typeof texte === 'string' ? rx(texte) : texte).first().waitFor({ state: 'visible' });
 }
 
 // --- user gestures, after docs/ecrans.md (the doc's labels) ---
