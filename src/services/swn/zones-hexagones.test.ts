@@ -62,12 +62,18 @@ test('lecture d\'une zone d\'ensemble : bloc et panneau rendent plages et décom
 });
 
 test('la densité d\'une zone d\'ensemble agit sur les blocs ; un trou de l\'ensemble n\'en reçoit pas', () => {
+  // The core draws block (20,20) of seed 'essai-1' at the candidate hexagon (101,103): its density decides whether the star is kept.
   const w = monde();
-  const sans = JSON.stringify(lireBlocs(w.db, w.antor, w.univers, w.gid, { bx: 20, by: 20 }, { bx: 20, by: 20 }).blocs);
-  const h = carre(5).map(([q, r]) => [q + 100, r + 100]).filter(([q, r]) => !(q === 102 && r === 102));
-  e.dessinerZone(w.db, w.antor, w.univers, w.gid, { nom: 'Dense', contour: { hexagones: h }, densite: 1 });
-  const avec = JSON.stringify(lireBlocs(w.db, w.antor, w.univers, w.gid, { bx: 20, by: 20 }, { bx: 20, by: 20 }).blocs);
-  assert.notEqual(avec, sans);
+  const bloc = () => lireBlocs(w.db, w.antor, w.univers, w.gid, { bx: 20, by: 20 }, { bx: 20, by: 20 }).blocs[0]!.generes;
+  const sans = bloc(); assert.deepEqual(sans, [[101, 103]]);
+  const carreZone = carre(5).map(([q, r]) => [q + 100, r + 100]);
+  const vide = e.dessinerZone(w.db, w.antor, w.univers, w.gid, { nom: 'Vide', contour: { hexagones: carreZone }, densite: 0 });
+  assert.deepEqual(bloc(), [], 'densité 0 sur le candidat : aucune étoile');
+  e.modifierZone(w.db, w.antor, w.univers, w.gid, vide.cle, { densite: 1, version: vide.version });
+  assert.deepEqual(bloc(), [[101, 103]], 'densité 1 sur le candidat : l\'étoile tirée');
+  // a hole at the candidate: the zone's density does not reach it, the galaxy default (as without any zone) decides
+  e.modifierZone(w.db, w.antor, w.univers, w.gid, vide.cle, { contour: { hexagones: carreZone.filter(([q, r]) => !(q === 101 && r === 103)) }, densite: 0, version: vide.version + 1 });
+  assert.deepEqual(bloc(), sans, 'trou : densité par défaut');
 });
 
 test('document MJ : « n hexagones » pour un ensemble (« 1 hexagone » au singulier), polygone inchangé', () => {

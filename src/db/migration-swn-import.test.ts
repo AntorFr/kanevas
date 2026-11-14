@@ -43,7 +43,8 @@ test('0023 : montée depuis 0022 peuplée, rien de perdu, version_importee nulle
     assert.equal(plages === null || plages === undefined, true);
     assert.deepEqual(reste, (avant[i + 1] as any[])[j]);
   }));
-  assert.deepEqual(apres[0], avant[0]);
+  // 0035 (AD-etoiles-7) moves a galaxy left at the former default 0.2 to the core's 0.68; nothing else of the row moves.
+  assert.deepEqual(apres[0], (avant[0] as any[]).map((g) => ({ ...g, densite_defaut: 0.68 })));
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   assert.deepEqual(migrate(db), []);
 });

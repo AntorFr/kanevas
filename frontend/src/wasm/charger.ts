@@ -3,13 +3,16 @@
 // `new URL('<module>_bg.wasm', import.meta.url)` makes Vite emit the .wasm as a hashed asset (AD-rust-2).
 // A module is added to this table when a tool needs it; the example is the template.
 type Exemple = typeof import('../../../rust/pkg/exemple/exemple.js');
+type Coeur = typeof import('../../../rust/pkg/coeur/coeur.js');
 
 interface Modules {
   exemple: Exemple;
+  coeur: Coeur;
 }
 
 const importeurs: { [N in keyof Modules]: () => Promise<Modules[N] & { default: () => Promise<unknown> }> } = {
   exemple: () => import('../../../rust/pkg/exemple/exemple.js'),
+  coeur: () => import('../../../rust/pkg/coeur/coeur.js'),
 };
 
 const cache = new Map<keyof Modules, Promise<Modules[keyof Modules]>>();
