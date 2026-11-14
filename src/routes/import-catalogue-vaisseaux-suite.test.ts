@@ -16,6 +16,7 @@ const { produireRegles } = await import('../services/swn/regles-hooks.js');
 
 const T = 'swn/vaisseaux';
 const el = { cout: 1000, puissance: 1, masse: 1, x_cout: false, x_puissance: false, x_masse: false, pv: 0, ca: 0, limite: 0 };
+const VISE = { nature: 'armes', cle: 'canon-r' };
 const coque = { classe: 2, cout: 300000, pv: 5, ca: 10, puissance: 10, masse: 8, emports: 1, facteur_cout: 1, facteur_puissance: 1, facteur_masse: 1 };
 function catalogue(version = 'v1', retirer = false): any {
   const si = <X,>(x: X) => (retirer ? {} : x);
@@ -30,10 +31,10 @@ function catalogue(version = 'v1', retirer = false): any {
     ],
     defenses: [], armes: [{ cle: 'canon-r', nom: 'Canon R', emport: 1, munitions: 0, cout_munition: 0, ...el }],
     modifications: [
-      { cle: 'soutes-o', nom: 'Soutes O', ...el, effet: 'soutes_optimisees', limite: 1, ...si({ effet_pct: 10 }) },
-      { cle: 'armure-c', nom: 'Armure C', ...el, effet: 'armure_par_classe', ...si({ armure_par_classe: [1, 2, 3, 4] }) },
-      { cle: 'montage', nom: 'Montage', ...el, effet: 'montage_specialise', limite: 1, valeur: -1 },
-      { cle: 'surcharge', nom: 'Surcharge', ...el, effet: 'surcharge_arme', limite: 1, ...si({ effet_pct: 50 }) },
+      { cle: 'optimise-l', nom: 'Optimise L', ...el, effet: 'soutes_optimisees_livre', limite: 1 },
+      { cle: 'blindage-l', nom: 'Blindage L', ...el, effet: 'blindage_renforce', limite: 1, valeur: 2 },
+      { cle: 'montage-l', nom: 'Montage L', ...el, effet: 'montages_specialises', limite: 1, vise: VISE },
+      { cle: 'surcharge-l', nom: 'Surcharge L', ...el, effet: 'surcharge_cumulable', limite: 2, vise: VISE, ...si({ effet_pct: 50 }) },
       { cle: 'echange-i', nom: 'Echange I', ...el, effet: 'echange', limite: 3, points_max: 3, sens: 'puissance_vers_masse', echange_puissance: 1, echange_masse: 0.5, ...si({ echange_arrondi: 'installation' }) },
       { cle: 'simple', nom: 'Simple', ...el },
     ],
@@ -67,14 +68,16 @@ test('Z-1 : chaque champ nouveau est créé, relu par GET catalogue, inchangé a
   assert.deepEqual(r.json().refus, []);
   assert.equal((await w.ligne('amenagements', 'moteur-sys')).donnees.reduction_base, 'coque');
   assert.equal((await w.ligne('amenagements', 'moteur-am')).donnees.reduction_base, 'amenagement');
-  assert.equal((await w.ligne('modifications', 'soutes-o')).donnees.effet_pct, 10);
-  assert.equal((await w.ligne('modifications', 'surcharge')).donnees.effet_pct, 50);
-  assert.deepEqual((await w.ligne('modifications', 'armure-c')).donnees.armure_par_classe, [1, 2, 3, 4]);
-  assert.equal((await w.ligne('modifications', 'montage')).donnees.valeur, -1);
+  assert.equal((await w.ligne('modifications', 'surcharge-l')).donnees.effet_pct, 50);
+  assert.equal((await w.ligne('modifications', 'surcharge-l')).donnees.limite, 2);
+  assert.equal((await w.ligne('modifications', 'blindage-l')).donnees.valeur, 2);
+  assert.equal((await w.ligne('modifications', 'optimise-l')).donnees.effet, 'soutes_optimisees_livre');
+  assert.equal((await w.ligne('modifications', 'montage-l')).donnees.effet, 'montages_specialises');
+  for (const k of ['vise', 'armure_par_classe']) assert.ok(!(k in (await w.ligne('modifications', 'montage-l')).donnees), k);
   const ech = (await w.ligne('modifications', 'echange-i')).donnees;
   assert.equal(ech.echange_arrondi, 'installation'); assert.equal(ech.limite, 3);
   const simple = (await w.ligne('modifications', 'simple')).donnees;
-  for (const k of ['effet_pct', 'armure_par_classe', 'echange_arrondi']) assert.ok(!(k in simple), k);
+  for (const k of ['effet_pct', 'armure_par_classe', 'echange_arrondi', 'vise']) assert.ok(!(k in simple), k);
   assert.ok(!('reduction_base' in (await w.ligne('amenagements', 'vide')).donnees));
   const nat = (await w.post(catalogue())).json().natures;
   for (const n of Object.keys(nat)) { assert.equal(nat[n].ajoutes, 0, n); assert.equal(nat[n].modifies ?? 0, 0, n); }
@@ -83,11 +86,11 @@ test('Z-1 : chaque champ nouveau est créé, relu par GET catalogue, inchangé a
 test('Z-1 : un rejeu qui retire un champ le remet à null et monte la version du catalogue', async () => {
   const w = await monde();
   await w.post(catalogue('v1'));
-  const v = () => (w.app.db.prepare("SELECT version_catalogue v FROM swn_catalogue_modifications WHERE cle = 'armure-c' AND proprietaire = 'univers'").get() as any).v;
+  const v = () => (w.app.db.prepare("SELECT version_catalogue v FROM swn_catalogue_modifications WHERE cle = 'surcharge-l' AND proprietaire = 'univers'").get() as any).v;
   assert.equal(v(), 'v1');
   const r = await w.post(catalogue('v2', true));
   assert.equal(r.statusCode, 200, r.body);
-  assert.deepEqual(r.json().refus.map((x: any) => x.cle).sort(), ['armure-c', 'echange-i', 'soutes-o', 'surcharge']); // effect without its parameter, or a limite 3 without rounding
+  assert.deepEqual(r.json().refus.map((x: any) => x.cle).sort(), ['echange-i', 'surcharge-l']); // effect without its parameter, or a limite 3 without rounding
   const g = catalogue('v2', true);
   g.modifications = g.modifications.filter((m: any) => m.cle === 'echange-i' || m.cle === 'simple');
   g.modifications.find((m: any) => m.cle === 'echange-i').limite = 1;
@@ -102,10 +105,10 @@ test('Z-1 : un rejeu qui retire un champ le remet à null et monte la version du
 });
 
 const P = {
-  s: 'nombre entier de 1 à 100 attendu', o: 'nombre entier de 1 à 1 000 attendu',
-  arm: 'quatre nombres entiers de 0 à 9 attendus (classes 1 à 4)', arr: '« installation » attendu',
+  o: 'nombre entier de 1 à 1 000 attendu',
+  arr: '« installation » attendu',
   base: '« coque » ou « amenagement » attendu', baseRes: 'base réservée à la réduction du coût',
-  res: 'paramètre réservé à son effet', req: "paramètre requis par l'effet", mont: 'nombre entier de −9 à 9, sauf 0, attendu',
+  res: 'paramètre réservé à son effet', req: "paramètre requis par l'effet",
   lim: 'limite 1 attendue',
 };
 
@@ -116,43 +119,25 @@ test('Z-1 : valeurs mal formées refusées avec leur champ et la phrase d\'E-20,
     ['amenagements', 'moteur-sys', { reduction_base: null }, 'reduction_base', P.base],
     ['amenagements', 'moteur-sys', { reduction_base: 1 }, 'reduction_base', P.base],
     ['amenagements', 'vide', { reduction_base: 'coque' }, 'reduction_base', P.baseRes],
-    ['modifications', 'soutes-o', { effet_pct: 0 }, 'effet_pct', P.s],
-    ['modifications', 'soutes-o', { effet_pct: 101 }, 'effet_pct', P.s],
-    ['modifications', 'soutes-o', { effet_pct: 1.5 }, 'effet_pct', P.s],
-    ['modifications', 'soutes-o', { effet_pct: null }, 'effet_pct', P.s],
-    ['modifications', 'soutes-o', { effet_pct: '10' }, 'effet_pct', P.s],
-    ['modifications', 'surcharge', { effet_pct: 0 }, 'effet_pct', P.o],
-    ['modifications', 'surcharge', { effet_pct: 1001 }, 'effet_pct', P.o],
-    ['modifications', 'surcharge', { effet_pct: null }, 'effet_pct', P.o],
-    ['modifications', 'armure-c', { armure_par_classe: [1, 2, 3] }, 'armure_par_classe', P.arm],
-    ['modifications', 'armure-c', { armure_par_classe: [1, 2, 3, 10] }, 'armure_par_classe', P.arm],
-    ['modifications', 'armure-c', { armure_par_classe: [1, 2, 3, -1] }, 'armure_par_classe', P.arm],
-    ['modifications', 'armure-c', { armure_par_classe: [1, 2, 3, 1.5] }, 'armure_par_classe', P.arm],
-    ['modifications', 'armure-c', { armure_par_classe: null }, 'armure_par_classe', P.arm],
-    ['modifications', 'montage', { valeur: 0 }, 'valeur', P.mont],
-    ['modifications', 'montage', { valeur: 10 }, 'valeur', P.mont],
-    ['modifications', 'montage', { valeur: -10 }, 'valeur', P.mont],
-    ['modifications', 'montage', { valeur: 21 }, 'valeur', P.mont],
-    ['modifications', 'montage', { valeur: 1.5 }, 'valeur', P.mont],
-    // effect without its parameter
-    ['modifications', 'soutes-o', { effet_pct: undefined }, 'effet_pct', P.req],
-    ['modifications', 'surcharge', { effet_pct: undefined }, 'effet_pct', P.req],
-    ['modifications', 'armure-c', { armure_par_classe: undefined }, 'armure_par_classe', P.req],
-    ['modifications', 'montage', { valeur: undefined }, 'valeur', P.req],
+    ['modifications', 'surcharge-l', { effet_pct: 0 }, 'effet_pct', P.o],
+    ['modifications', 'surcharge-l', { effet_pct: 1001 }, 'effet_pct', P.o],
+    ['modifications', 'surcharge-l', { effet_pct: 1.5 }, 'effet_pct', P.o],
+    ['modifications', 'surcharge-l', { effet_pct: null }, 'effet_pct', P.o],
+    ['modifications', 'surcharge-l', { effet_pct: undefined }, 'effet_pct', P.req],
     // parameter on another effect
     ['modifications', 'simple', { effet: 'armure', valeur: 1, effet_pct: 5 }, 'effet_pct', P.res],
-    ['modifications', 'montage', { effet_pct: 5 }, 'effet_pct', P.res],
-    ['modifications', 'soutes-o', { armure_par_classe: [1, 2, 3, 4] }, 'armure_par_classe', P.res],
-    ['modifications', 'armure-c', { echange_arrondi: 'installation' }, 'echange_arrondi', P.res],
-    ['modifications', 'surcharge', { echange_arrondi: 'installation' }, 'echange_arrondi', P.res],
+    ['modifications', 'montage-l', { effet_pct: 5 }, 'effet_pct', P.res],
+    ['modifications', 'optimise-l', { effet_pct: 10 }, 'effet_pct', P.res],
+    ['modifications', 'blindage-l', { effet_pct: 10 }, 'effet_pct', P.res],
+    ['modifications', 'surcharge-l', { echange_arrondi: 'installation' }, 'echange_arrondi', P.res],
     // rounding
     ['modifications', 'echange-i', { echange_arrondi: 'autre' }, 'echange_arrondi', P.arr],
     ['modifications', 'echange-i', { echange_arrondi: null }, 'echange_arrondi', P.arr],
     ['modifications', 'echange-i', { echange_arrondi: undefined }, 'limite', P.lim],
-    // limite 1 for the targeted effects
-    ['modifications', 'soutes-o', { limite: 3 }, 'limite', P.lim],
-    ['modifications', 'surcharge', { limite: 3 }, 'limite', P.lim],
-    ['modifications', 'montage', { limite: 3 }, 'limite', P.lim],
+    // limite 1 for the three effects that need it
+    ['modifications', 'optimise-l', { limite: 2 }, 'limite', P.lim],
+    ['modifications', 'blindage-l', { limite: 2 }, 'limite', P.lim],
+    ['modifications', 'montage-l', { limite: 2 }, 'limite', P.lim],
   ];
   for (const [nature, cle, patch, champ, phrase] of cas) {
     const f = catalogue();
@@ -168,28 +153,26 @@ test('Z-1 : valeurs mal formées refusées avec leur champ et la phrase d\'E-20,
   }
   // the others pass
   const w2 = await monde();
-  const f = catalogue(); f.modifications[0].effet_pct = 0;
+  const f = catalogue(); f.modifications[3].effet_pct = 0;
   await w2.post(f);
-  assert.ok(await w2.ligne('modifications', 'surcharge'));
-  assert.ok(!(await w2.ligne('modifications', 'soutes-o')));
+  assert.ok(await w2.ligne('modifications', 'montage-l'));
+  assert.ok(!(await w2.ligne('modifications', 'surcharge-l')));
 });
 
 test('Z-1 : les bornes passent', async () => {
   const w = await monde();
   const f = catalogue();
   const m = (cle: string, o: Record<string, unknown>) => f.modifications.push({ cle, nom: cle, ...el, limite: 1, ...o });
-  m('s1', { effet: 'soutes_optimisees', effet_pct: 1 }); m('s100', { effet: 'soutes_optimisees', effet_pct: 100 });
-  m('o1', { effet: 'surcharge_arme', effet_pct: 1 }); m('o1000', { effet: 'surcharge_arme', effet_pct: 1000 });
-  m('a0', { effet: 'armure_par_classe', armure_par_classe: [0, 0, 0, 0], limite: 3 }); m('a9', { effet: 'armure_par_classe', armure_par_classe: [9, 9, 9, 9] });
-  for (const [c, v] of [['mm9', -9], ['mm1', -1], ['mp1', 1], ['mp9', 9]] as const) m(c, { effet: 'montage_specialise', valeur: v });
+  m('o1', { effet: 'surcharge_cumulable', effet_pct: 1, vise: VISE }); m('o1000', { effet: 'surcharge_cumulable', effet_pct: 1000, limite: 3, vise: VISE });
+  m('b0', { effet: 'blindage_renforce', valeur: 0 }); m('b9', { effet: 'blindage_renforce', valeur: 9 });
   m('e1', { effet: 'echange', limite: 1, points_max: 3, sens: 'masse_vers_puissance', echange_puissance: 1, echange_masse: 0.5 }); // without rounding, limite 1
   f.amenagements.push({ cle: 'rb', nom: 'RB', ...el, effet: 'moteur_systeme', rend_puissance: [1, 1, 1, 1], rend_masse: [1, 1, 1, 1], reduction_cout_pct: 1, reduction_base: 'coque' });
   const r = await w.post(f);
   assert.deepEqual(r.json().refus, []);
   assert.equal((await w.ligne('modifications', 'o1000')).donnees.effet_pct, 1000);
-  assert.deepEqual((await w.ligne('modifications', 'a0')).donnees.armure_par_classe, [0, 0, 0, 0]);
-  assert.equal((await w.ligne('modifications', 'mp9')).donnees.valeur, 9);
-  assert.equal((await w.ligne('modifications', 'mm9')).donnees.valeur, -9);
+  assert.equal((await w.ligne('modifications', 'o1000')).donnees.limite, 3);
+  assert.equal((await w.ligne('modifications', 'b0')).donnees.valeur, 0);
+  assert.equal((await w.ligne('modifications', 'b9')).donnees.valeur, 9);
 });
 
 test('Z-1 : un echange sans echange_arrondi avec limite 3 est refusé (garde l\'ancien comportement)', async () => {
@@ -206,15 +189,18 @@ test('Z-7 : fiches de règles — colonnes nouvelles seulement quand une ligne l
   const lignes = (n: string) => w.regles(n).split('\n').filter((l) => l.startsWith('|'));
   const ligneDe = (ls: string[], nom: string) => ls.find((l) => l.includes(nom))!;
   const mo = lignes('modifications');
-  for (const c of ['Pourcentage', 'Armure par classe', "Arrondi de l'échange", 'Effet']) assert.ok(mo[0]!.includes(c), `${c} : ${mo[0]}`);
-  assert.ok(ligneDe(mo, 'Soutes O').includes('| 10 % |'), ligneDe(mo, 'Soutes O'));
-  assert.ok(ligneDe(mo, 'Surcharge').includes('| 50 % |'), ligneDe(mo, 'Surcharge'));
-  assert.ok(ligneDe(mo, 'Armure C').includes('| 1 / 2 / 3 / 4 |'), ligneDe(mo, 'Armure C'));
+  for (const c of ['Pourcentage', "Arrondi de l'échange", 'Effet']) assert.ok(mo[0]!.includes(c), `${c} : ${mo[0]}`);
+  assert.ok(!mo[0]!.includes('Armure par classe'), mo[0]);
+  assert.ok(ligneDe(mo, 'Surcharge L').includes('| 50 % |'), ligneDe(mo, 'Surcharge L'));
   assert.ok(ligneDe(mo, 'Echange I').includes('par installation'), ligneDe(mo, 'Echange I'));
-  assert.ok(ligneDe(mo, 'Soutes O').includes('Soutes optimisées'), ligneDe(mo, 'Soutes O'));
-  assert.ok(ligneDe(mo, 'Montage').includes('Montage spécialisé'));
-  assert.ok(ligneDe(mo, 'Simple').endsWith('| — | — | — | — | — | — |') || !/%|installation|\//.test(ligneDe(mo, 'Simple')), ligneDe(mo, 'Simple'));
-  assert.ok(!/par installation|%/.test(ligneDe(mo, 'Armure C')));
+  for (const [nom, libelle, regle] of [
+    ['Optimise L', 'Soutes optimisées', 'Réduit de 10 % la masse libre et double le fret.'],
+    ['Blindage L', 'Blindage renforcé', "Ajoute l'armure indiquée et la Réparation de l'ingénieur."],
+    ['Montage L', 'Montages spécialisés', "Prend la moitié, au moins 1, de la puissance et de la masse de l'arme visée."],
+    ['Surcharge L', "Surcharge d'arme", "Augmente de 50 % la puissance de l'arme visée, autant de fois que l'installation est prise."],
+  ]) { const l = ligneDe(mo, nom); assert.ok(l.includes(libelle), l); assert.ok(l.includes(regle), l); }
+  assert.ok(!/par installation/.test(ligneDe(mo, 'Surcharge L')));
+  assert.ok(!/%|installation/.test(ligneDe(mo, 'Simple')), ligneDe(mo, 'Simple'));
   const am = lignes('amenagements');
   assert.match(am[0]!, /Base de la réduction/);
   assert.ok(ligneDe(am, '| Moteur système (').includes('| Coque |'), ligneDe(am, '| Moteur système ('));
@@ -225,7 +211,7 @@ test('Z-7 : fiches de règles — colonnes nouvelles seulement quand une ligne l
 test('Z-7 : un catalogue sans ces champs donne des fiches sans colonne en plus', async () => {
   const w = await monde();
   const f = catalogue('v1', true);
-  f.modifications = f.modifications.filter((m: any) => !['soutes-o', 'armure-c', 'surcharge'].includes(m.cle)); // those need their parameter
+  f.modifications = f.modifications.filter((m: any) => m.cle !== 'surcharge-l'); // needs its parameter
   f.modifications.find((m: any) => m.cle === 'echange-i').limite = 1;
   assert.deepEqual((await w.post(f)).json().refus, []);
   const entete = (n: string) => w.regles(n).split('\n').find((l) => l.startsWith('| Nom'))!;
@@ -237,20 +223,19 @@ test('Z-7 : un catalogue sans ces champs donne des fiches sans colonne en plus',
 test('Z-5 : le semis ne dit aucun champ nouveau', async () => {
   const w = await monde();
   const n = (sql: string) => (w.app.db.prepare(sql).get() as any).n as number;
-  assert.equal(n('SELECT COUNT(*) n FROM swn_catalogue_modifications WHERE effet_pct IS NOT NULL OR armure_par_classe IS NOT NULL OR echange_arrondi IS NOT NULL'), 0);
+  assert.equal(n('SELECT COUNT(*) n FROM swn_catalogue_modifications WHERE effet_pct IS NOT NULL OR echange_arrondi IS NOT NULL'), 0);
   assert.equal(n('SELECT COUNT(*) n FROM swn_catalogue_amenagements WHERE reduction_base IS NOT NULL'), 0);
 });
 
-test('Z-6 : CHECK de la base — effet_pct, armure_par_classe, echange_arrondi, reduction_base, quatre effets', async () => {
+test('Z-6 : CHECK de la base — effet_pct, echange_arrondi, reduction_base, huit effets, plus de colonne armure par classe', async () => {
   const w = await monde();
   await w.post(catalogue());
   const u = (t: string, c: string, v: unknown) => w.app.db.prepare(`UPDATE swn_catalogue_${t} SET ${c} = ? WHERE rowid = (SELECT MIN(rowid) FROM swn_catalogue_${t} WHERE proprietaire = 'univers')`).run(v as any);
   assert.throws(() => u('modifications', 'effet_pct', 0)); assert.throws(() => u('modifications', 'effet_pct', 1001));
   u('modifications', 'effet_pct', 1000); u('modifications', 'effet_pct', null);
-  assert.throws(() => u('modifications', 'armure_par_classe', '[1,2,3]')); assert.throws(() => u('modifications', 'armure_par_classe', 'x'));
-  u('modifications', 'armure_par_classe', '[1,2,3,4]'); u('modifications', 'armure_par_classe', null);
   assert.throws(() => u('modifications', 'echange_arrondi', 'autre')); u('modifications', 'echange_arrondi', 'installation');
   assert.throws(() => u('amenagements', 'reduction_base', 'autre')); u('amenagements', 'reduction_base', 'coque');
-  for (const e of ['soutes_optimisees', 'armure_par_classe', 'montage_specialise', 'surcharge_arme']) u('modifications', 'effet', e);
-  assert.throws(() => u('modifications', 'effet', 'inconnu'));
+  for (const e of ['soutes_optimisees_livre', 'blindage_renforce', 'montages_specialises', 'surcharge_cumulable']) u('modifications', 'effet', e);
+  for (const e of ['soutes_optimisees', 'armure_par_classe', 'montage_specialise', 'surcharge_arme', 'inconnu']) assert.throws(() => u('modifications', 'effet', e), /CHECK/, e);
+  assert.throws(() => u('modifications', 'armure_par_classe', null), /no such column/);
 });

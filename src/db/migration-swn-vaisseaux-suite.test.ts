@@ -27,7 +27,7 @@ test('0035 : montée depuis 0034, modifications et aménagements gardent leurs v
   db.prepare("INSERT INTO swn_catalogue_amenagements (proprietaire, univers_id, cle, nom, cout, puissance, masse, pv, ca, limite, x_cout, x_puissance, x_masse, version_catalogue, classe_min, classe_max, condition) VALUES ('univers', 1, 'am', 'N', 7, 1, 1.5, 2, 3, 4, 0, 1, 0, 'v1', 1, 3, 'cond')").run();
   const avantM = db.prepare('SELECT * FROM swn_catalogue_modifications ORDER BY cle').all();
   const avantA = db.prepare('SELECT * FROM swn_catalogue_amenagements ORDER BY cle').all();
-  assert.deepEqual(migrate(db), [35]);
+  assert.deepEqual(migrate(db, dossierJusqua(35)), [35]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const apres = db.prepare('SELECT * FROM swn_catalogue_modifications ORDER BY cle').all() as any[];
   assert.equal(apres.length, 3);

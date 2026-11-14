@@ -4,10 +4,10 @@
 // Pure: no database. No formula or code ever travels in the data.
 
 export type CodeEffet = 'vitesse' | 'armure' | 'echange' | 'soutes_doublees' | 'magasins_doubles' | 'reparation_min' | 'moteur_systeme'
-  | 'soutes_optimisees' | 'armure_par_classe' | 'montage_specialise' | 'surcharge_arme'
+  | 'soutes_optimisees_livre' | 'blindage_renforce' | 'montages_specialises' | 'surcharge_cumulable'
 export type ParametreEffet =
   | 'valeur' | 'points_max' | 'sens' | 'echange_puissance' | 'echange_masse' | 'rend_puissance' | 'rend_masse'
-  | 'effet_pct' | 'armure_par_classe' | 'echange_arrondi'
+  | 'effet_pct' | 'echange_arrondi'
 
 export interface DeclarationEffet {
   /** The one nature that may carry the effect. */
@@ -19,6 +19,8 @@ export interface DeclarationEffet {
   facultatifs?: readonly ParametreEffet[]
   /** The file must say `limite` 1: one line per design, so a target or a number of points has one meaning. */
   limiteUne?: true
+  /** W-1: the file states `vise` (a weapon line of the design), required with the effect and refused without it. */
+  cible?: true
 }
 
 export const EFFETS: Readonly<Record<CodeEffet, DeclarationEffet>> = {
@@ -31,10 +33,10 @@ export const EFFETS: Readonly<Record<CodeEffet, DeclarationEffet>> = {
   soutes_doublees: { nature: 'modifications', libelle: 'Soutes doublées', parametres: [], limiteUne: true },
   magasins_doubles: { nature: 'modifications', libelle: 'Magasins doublés', parametres: [], limiteUne: true },
   reparation_min: { nature: 'modifications', libelle: 'Réparation minimale', parametres: ['valeur'] },
-  soutes_optimisees: { nature: 'modifications', libelle: 'Soutes optimisées', parametres: ['effet_pct'], limiteUne: true },
-  armure_par_classe: { nature: 'modifications', libelle: 'Armure par classe', parametres: ['armure_par_classe'] },
-  montage_specialise: { nature: 'modifications', libelle: 'Montage spécialisé', parametres: ['valeur'], limiteUne: true },
-  surcharge_arme: { nature: 'modifications', libelle: "Surcharge d'arme", parametres: ['effet_pct'], limiteUne: true },
+  soutes_optimisees_livre: { nature: 'modifications', libelle: 'Soutes optimisées', parametres: [], limiteUne: true },
+  blindage_renforce: { nature: 'modifications', libelle: 'Blindage renforcé', parametres: ['valeur'], limiteUne: true },
+  montages_specialises: { nature: 'modifications', libelle: 'Montages spécialisés', parametres: [], limiteUne: true, cible: true },
+  surcharge_cumulable: { nature: 'modifications', libelle: "Surcharge d'arme", parametres: ['effet_pct'], cible: true },
   moteur_systeme: { nature: 'amenagements', libelle: 'Moteur système', parametres: ['rend_puissance', 'rend_masse'] },
 }
 

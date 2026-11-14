@@ -90,6 +90,18 @@ const PLAGE: Facultative<ElementRegle>[] = [
 
 const EFFET: Facultative<ElementRegle> = ['Effet', (e) => (e.effet === undefined ? null : texteBrut(libelleEffet(e.effet)))]
 
+/** W-6: the four rules of the book, written in words as rules of the game (no figure of a real catalogue); `null` for any other effect. */
+function regleEffet(e: ElementRegle): string | null {
+  switch (e.effet) {
+    case 'soutes_optimisees_livre': return 'Réduit de 10 % la masse libre et double le fret.'
+    case 'blindage_renforce': return "Ajoute l'armure indiquée et la Réparation de l'ingénieur."
+    case 'montages_specialises': return "Prend la moitié, au moins 1, de la puissance et de la masse de l'arme visée."
+    case 'surcharge_cumulable':
+      return e.effet_pct === undefined ? null : `Augmente de ${nombre(e.effet_pct)} % la puissance de l'arme visée, autant de fois que l'installation est prise.`
+    default: return null
+  }
+}
+
 const FACULTATIVES: Partial<Record<NatureRegles, Facultative<ElementRegle>[]>> = {
   moteurs: PLAGE,
   amenagements: [...PLAGE, EFFET, ['Soute', (e) => nombreF(e.soute)],
@@ -100,10 +112,10 @@ const FACULTATIVES: Partial<Record<NatureRegles, Facultative<ElementRegle>[]>> =
   modifications: [
     ['Coût %', (e) => nombreF(e.cout_pct)],
     EFFET,
+    ['Règle', (e) => regleEffet(e)],
     ['Valeur / points max', (e) => nombreF(e.valeur ?? e.points_max)],
     ['Réparation min.', (e) => nombreF(e.reparation_min)],
     ['Pourcentage', (e) => (e.effet_pct === undefined ? null : `${nombre(e.effet_pct)} %`)],
-    ['Armure par classe', (e) => (e.armure_par_classe === undefined ? null : e.armure_par_classe.map(nombre).join(' / '))],
     ["Arrondi de l'échange", (e) => (e.echange_arrondi === undefined ? null : 'par installation')],
   ],
   armes: [

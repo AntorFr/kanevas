@@ -134,7 +134,7 @@ test('montée : un élément de masse 8 (semis) reste lisible et inchangé, comp
   const AJOUTS: Record<string, string[]> = {
     coques: ['vitesse', 'armure', 'equipage_min', 'equipage_max'],
     moteurs: ['classe_min', 'classe_max', 'condition'], amenagements: ['classe_min', 'classe_max', 'condition', 'effet', 'rend_puissance', 'rend_masse', 'soute', 'soute_par_classe', 'reduction_cout_pct', 'reduction_base'],
-    modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse', 'reparation_min', 'effet_pct', 'armure_par_classe', 'echange_arrondi'], // 0032
+    modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse', 'reparation_min', 'effet_pct', 'echange_arrondi'], // 0032
     defenses: ['classe_min', 'classe_max', 'condition', 'bonus_vitesse'],
     armes: ['classe_min', 'degats', 'perforation', 'qualites', 'niveau_tech'], exemples: ['equipage'],
   };
@@ -147,7 +147,7 @@ test('montée : un élément de masse 8 (semis) reste lisible et inchangé, comp
   db.exec('ALTER TABLE swn_conceptions DROP COLUMN equipage');
   stub('DROP COLUMN');
   // 0028 adds `classe_min` to the weapons: the rows are compared without it, which is checked apart below.
-  const snap = () => TABLES.map((t) => (db.prepare(`SELECT * FROM swn_catalogue_${t} ORDER BY rowid`).all() as any[]).map(({ cout_pct, effet, valeur, points_max, sens, echange_puissance, echange_masse, rend_puissance, rend_masse, soute, classe_min, vitesse, armure, equipage_min, equipage_max, classe_max, condition, bonus_vitesse, degats, perforation, qualites, niveau_tech, equipage, reparation_min, soute_par_classe, reduction_cout_pct, effet_pct, armure_par_classe, echange_arrondi, reduction_base, ...r }) => r));
+  const snap = () => TABLES.map((t) => (db.prepare(`SELECT * FROM swn_catalogue_${t} ORDER BY rowid`).all() as any[]).map(({ cout_pct, effet, valeur, points_max, sens, echange_puissance, echange_masse, rend_puissance, rend_masse, soute, classe_min, vitesse, armure, equipage_min, equipage_max, classe_max, condition, bonus_vitesse, degats, perforation, qualites, niveau_tech, equipage, reparation_min, soute_par_classe, reduction_cout_pct, effet_pct, echange_arrondi, reduction_base, ...r }) => r));
   const idx = () => db.prepare("SELECT name, tbl_name FROM sqlite_master WHERE type = 'index' AND name LIKE 'swn_catalogue_%' ORDER BY name").all();
   const avant = snap();
   const indexAvant = idx();

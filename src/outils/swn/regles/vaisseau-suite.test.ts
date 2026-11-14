@@ -34,65 +34,45 @@ test('Z-3 base de la réduction', () => {
 })
 
 const soute = (m: number) => L('amenagements', 'soute-z', { soute: 10, masse: m })
-const opt = (pct: number, vise = 'soute-z', nat: NatureVaisseau = 'amenagements') =>
-  L('modifications', 'optimise-z', { effet: 'soutes_optimisees', effet_pct: pct, limite: 1 }, { vise: { nature: nat, cle: vise } })
+const doublee = () => L('modifications', 'double-z', { effet: 'soutes_doublees', limite: 1 }, { vise: { nature: 'amenagements', cle: 'soute-z' } })
 
-test('Z-3 masse de soute', () => {
-  const r = calculer(C2, [soute(8), opt(10)], R)
-  assert.equal(r.masseLibre, 13); assert.deepEqual(r.lignes[1]!.ajuste, { masse: -1 }); assert.equal(r.soutes, 10)
-  assert.equal(codes(r).includes('cible_invalide'), false)
-  for (const [m, p, libre] of [[5, 10, 15.5], [1, 10, 19], [8, 25, 14], [8, 100, 20]] as const) {
-    assert.equal(calculer(C2, [soute(m), opt(p)], R).masseLibre, libre, `${m}@${p}`)
+// W-2 / W-4: the four effects of the book, pure calculation, expected values written by hand from W-4.
+const laser = (q = 1) => L('armes', 'laser-z', { emport: 1, puissance: 10, masse: 1 }, { quantite: q })
+const mod = (effet: string, extra: Partial<ElementResolu> = {}, vise = false, q = 1) =>
+  L('modifications', effet, { effet, limite: 1, ...extra }, { quantite: q, ...(vise ? { vise: { nature: 'armes' as NatureVaisseau, cle: 'laser-z' } } : {}) })
+test('W-2 les quatre effets du livre : valeurs de W-4', () => {
+  const nu = calculer(C2, [], R)
+  const opt = calculer(C2, [mod('soutes_optimisees_livre')], R)
+  assert.equal(opt.masseLibre, 18); assert.deepEqual(opt.lignes[0]!.ajuste, { masse: -2 }); assert.equal(opt.soutes, null)
+  const s = calculer(C2, [soute(8), mod('soutes_optimisees_livre')], R)
+  assert.equal(s.masseLibre, 11); assert.equal(s.soutes, 20)
+  assert.equal(calculer(C2, [soute(7.5), mod('soutes_optimisees_livre')], R).masseLibre, 11.5)
+  assert.equal(calculer(C2, [L('amenagements', 'a', { masse: 3 }), mod('soutes_optimisees_livre')], R).masseLibre, 15.5)
+  assert.equal(calculer(C2, [L('amenagements', 'a', { masse: 19.5 }), mod('soutes_optimisees_livre')], R).masseLibre, 0.5)
+  assert.equal(calculer(C2, [L('amenagements', 'a', { masse: 22 }), mod('soutes_optimisees_livre')], R).masseLibre, -2)
+  assert.equal(calculer(C2, [{ ...reac(true), points: 4 }, mod('soutes_optimisees_livre')], R).masseLibre, 20)
+  assert.equal(calculer(C2, [mod('soutes_optimisees_livre'), mod('soutes_optimisees_livre')], R).masseLibre, 18)
+  for (const [valeur, rep, armure] of [[2, 0, 7], [2, 3, 10], [0, 4, 9], [2, 20, 27]] as const) {
+    assert.equal(calculer(C2, [mod('blindage_renforce', { valeur })], R, null, rep).armure, armure)
+    assert.equal(calculer(coque(4, 300000), [mod('blindage_renforce', { valeur })], R, null, rep).armure, armure)
   }
-  assert.equal(calculer(C2, [soute(1), opt(10)], R).masseLibre, 19)
-  assert.deepEqual(calculer(C2, [soute(5), opt(10)], R).lignes[1]!.ajuste, { masse: -0.5 })
-  assert.ok(codes(calculer(C2, [L('modifications', 'o', { effet: 'soutes_optimisees', effet_pct: 10 })], R)).includes('cible_invalide'))
-  assert.ok(codes(calculer(C2, [L('amenagements', 'nu', { masse: 8 }), opt(10, 'nu')], R)).includes('cible_invalide'))
-  assert.ok(codes(calculer(C2, [soute(8), opt(10, 'absent')], R)).includes('cible_invalide'))
-})
-
-test('Z-3 armure par classe', () => {
-  const b = L('modifications', 'blindage-z', { effet: 'armure_par_classe', armure_par_classe: [1, 2, 3, 4] })
-  assert.equal(calculer(C2, [b], R).armure, 7)
-  assert.equal(calculer(coque(3, 400000), [b], R).armure, 8)
-  assert.equal(calculer(coque(1, 100000), [b], R).armure, 6)
-  assert.equal(calculer(C2, [{ ...b, quantite: 2 }], R).armure, 9)
-  assert.equal(calculer(C2, [L('modifications', 'z', { effet: 'armure_par_classe', armure_par_classe: [0, 0, 0, 0] })], R).armure, 5)
-  // adds to a plain armour effect
-  assert.equal(calculer(C2, [b, L('modifications', 'a', { effet: 'armure', valeur: 1 })], R).armure, 8)
-})
-
-const laser = (extra: Partial<LigneResolue> = {}) => L('armes', 'laser-z', { emport: 1, puissance: 10, masse: 1, munitions: 0 }, extra)
-const mont = (v: number) => L('modifications', 'montage-z', { effet: 'montage_specialise', valeur: v, limite: 1 }, { vise: { nature: 'armes', cle: 'laser-z' } })
-test('Z-3 montage spécialisé', () => {
-  let r = calculer(C2, [laser(), mont(-1)], R)
-  assert.equal(r.emports.utilises, 0); assert.deepEqual(r.lignes[1]!.ajuste, { emports: -1 })
-  assert.equal(calculer(C2, [laser(), mont(1)], R).emports.utilises, 2)
-  r = calculer(C2, [laser(), mont(-2)], R)
-  assert.equal(r.emports.utilises, 0); assert.deepEqual(r.lignes[1]!.ajuste, { emports: -1 })
-  assert.equal(calculer(C2, [laser({ quantite: 2 }), mont(-1)], R).emports.utilises, 1)
-  assert.ok(codes(calculer(C2, [L('amenagements', 'laser-z', {}), mont(1)], R)).includes('cible_invalide'))
-})
-
-const sur = (p: number, nom = 'surcharge-z') => L('modifications', nom, { effet: 'surcharge_arme', effet_pct: p, limite: 1 }, { vise: { nature: 'armes', cle: 'laser-z' } })
-test('Z-3 surcharge', () => {
-  const r = calculer(C2, [laser(), sur(50)], R)
-  assert.deepEqual(r.lignes[1]!.ajuste, { puissance: 5 }); assert.equal(r.puissanceLibre, 5)
-  const l3 = L('armes', 'laser-z', { emport: 1, puissance: 3 })
-  assert.equal(calculer(C2, [l3, sur(50)], R).puissanceLibre, 15)
-  assert.equal(calculer(C2, [l3, sur(10)], R).puissanceLibre, 17)
-  assert.equal(calculer(C2, [laser(), sur(50), sur(20, 's2')], R).puissanceLibre, 3)
-  assert.ok(codes(calculer(C2, [L('modifications', 's', { effet: 'surcharge_arme', effet_pct: 50 })], R)).includes('cible_invalide'))
-  assert.ok(codes(calculer(C2, [L('moteurs', 'laser-z', {}), sur(50)], R)).includes('cible_invalide'))
-})
-
-test('Z-3 sommes jamais sous 0', () => {
-  // two mounts of −1 on a single emport: 1−2 → 0, extra −1
-  const r = calculer(C2, [laser(), mont(-1), { ...mont(-1), cle: 'm2', nom: 'm2' }], R)
-  assert.equal(r.emports.utilises, 0)
-  // each computed on the pre-adjustment value: 8 mass, 100 % twice → 8−8 floored at 0, not −8
-  const r2 = calculer(C2, [soute(8), opt(100), { ...opt(100), cle: 'o2', nom: 'o2' }], R)
-  assert.equal(r2.masseLibre, 20)
+  assert.equal(nu.armure, 5)
+  for (const [p, m, ep, em] of [[10, 1, 5, 1], [7, 3, 4, 1.5], [6, 4, 3, 2], [1, 1, 1, 1], [4, 2.5, 2, 1.5]] as const) {
+    const r = calculer(C2, [L('armes', 'laser-z', { emport: 1, puissance: p, masse: m }), mod('montages_specialises', {}, true)], R)
+    assert.deepEqual(r.lignes[1]!.ajuste, { masse: em, puissance: ep }, `${p}/${m}`)
+  }
+  const m2 = calculer(C2, [laser(2), mod('montages_specialises', {}, true)], R)
+  assert.deepEqual(m2.lignes[1]!.ajuste, { masse: 1, puissance: 10 })
+  assert.equal(calculer(C2, [laser(), mod('montages_specialises', {}, true)], R).puissanceLibre, 5)
+  for (const [q, plus, libre] of [[1, 5, 5], [2, 10, 0], [3, 15, -5]] as const) {
+    const r = calculer(C2, [laser(), mod('surcharge_cumulable', { effet_pct: 50, limite: 3 }, true, q)], R)
+    assert.deepEqual(r.lignes[1]!.ajuste, { puissance: plus }); assert.equal(r.puissanceLibre, libre)
+  }
+  assert.ok(codes(calculer(C2, [laser(), mod('surcharge_cumulable', { effet_pct: 50, limite: 3 }, true, 3)], R)).includes('puissance_insuffisante'))
+  for (const effet of ['montages_specialises', 'surcharge_cumulable']) {
+    assert.ok(codes(calculer(C2, [laser(), mod(effet, { effet_pct: 50 })], R)).includes('cible_invalide'), effet)
+    assert.ok(codes(calculer(C2, [laser(), { ...mod(effet, { effet_pct: 50 }), vise: { nature: 'amenagements', cle: 'soute-z' } }, soute(8)], R)).includes('cible_invalide'), effet)
+  }
 })
 
 const reac = (arr: boolean, sens = 'puissance_vers_masse') => L('modifications', 'reacteur-i', { effet: 'echange', sens, points_max: 5, echange_puissance: 1, echange_masse: 0.5, ...(arr ? { echange_arrondi: 'installation' } : {}), limite: 3 })
@@ -111,7 +91,7 @@ test('Z-3 échange arrondi', () => {
 })
 
 test('Z-7 texte du vaisseau', () => {
-  const t = texteVaisseau(calculer(C2, [soute(8), opt(10)], R))
+  const t = texteVaisseau(calculer(C2, [soute(8), doublee()], R))
   assert.match(t, /\(→ soute-z\)/)
 })
 
@@ -120,14 +100,14 @@ import type { Resolution } from '../../../services/swn/calcul-vaisseau.js'
 const res = (l: LigneResolue): Resolution => ({ coque: C2, lignes: [l], equipage: null, retirees: [], nomsRetires: [], inconnu: null, reparation: 0 })
 const refus = (l: LigneResolue) => { try { controlerChoix(res(l)) } catch (e) { return (e as { champ?: string }).champ } return null }
 const V = { nature: 'armes' as NatureVaisseau, cle: 'laser-z' }
-test('Z-4 points et vise refusés sans leur effet, vise admis pour les cinq effets ciblés', () => {
+test('Z-4 points et vise refusés sans leur effet, vise admis pour les quatre effets ciblés', () => {
   assert.equal(refus({ ...L('modifications', 'x', { effet: 'vitesse', valeur: 1 }), points: 2 }), 'points')
   assert.equal(refus({ ...L('modifications', 'x', {}), points: 2 }), 'points')
   assert.equal(refus({ ...reac(true), points: 6 }), 'points')
   assert.equal(refus({ ...reac(true), points: 5 }), null)
-  assert.equal(refus({ ...L('modifications', 'x', { effet: 'armure_par_classe', armure_par_classe: [1, 2, 3, 4] }), vise: V }), 'vise')
+  assert.equal(refus({ ...L('modifications', 'x', { effet: 'blindage_renforce', valeur: 2 }), vise: V }), 'vise')
   assert.equal(refus({ ...L('modifications', 'x', {}), vise: V }), 'vise')
-  for (const effet of ['soutes_doublees', 'magasins_doubles', 'soutes_optimisees', 'montage_specialise', 'surcharge_arme']) {
+  for (const effet of ['soutes_doublees', 'magasins_doubles', 'montages_specialises', 'surcharge_cumulable']) {
     assert.equal(refus({ ...L('modifications', 'x', { effet }), vise: V }), null, effet)
   }
 })

@@ -6,26 +6,15 @@ import type { Donnees } from './types.ts';
 
 const mod = (d: Donnees) => ({ nature: 'modifications' as const, donnees: d });
 
-test('armure par classe : la classe de la coque choisie, rien sans coque ni à 0', () => {
-  const d: Donnees = { effet: 'armure_par_classe', armure_par_classe: [1, 2, 3, 4] };
-  assert.equal(legende(mod(d), 2), 'armure +2');
-  assert.equal(legende(mod(d), 3), 'armure +3');
-  assert.equal(legende(mod(d), 4), 'armure +4');
-  assert.equal(legende(mod(d)), '');
-  assert.equal(legende(mod({ effet: 'armure_par_classe', armure_par_classe: [0, 0, 0, 0] }), 2), '');
+test('les quatre effets du livre : la légende dit la règle du livre (W-6)', () => {
+  assert.equal(legende(mod({ effet: 'soutes_optimisees_livre' }), 2), 'soutes −10 % de masse libre, fret ×2');
+  assert.equal(legende(mod({ effet: 'blindage_renforce', valeur: 2 }), 2), 'armure +2 et réparation');
+  assert.equal(legende(mod({ effet: 'montages_specialises' }), 2), 'puissance et masse de l’arme visée ÷ 2');
+  assert.equal(legende(mod({ effet: 'surcharge_cumulable', effet_pct: 50 }), 2), 'puissance de l’arme +50 % par installation');
 });
 
-test('soutes optimisées, montage et surcharge : la légende dit le paramètre du catalogue', () => {
-  assert.equal(legende(mod({ effet: 'soutes_optimisees', effet_pct: 10 })), 'soutes −10 % de masse');
-  assert.equal(legende(mod({ effet: 'montage_specialise', valeur: -1 })), 'emports −1');
-  assert.equal(legende(mod({ effet: 'montage_specialise', valeur: 1 })), 'emports +1');
-  assert.equal(legende(mod({ effet: 'surcharge_arme', effet_pct: 50 })), 'puissance de l’arme +50 %');
-});
-
-test('un catalogue sans ces champs ne donne aucune légende', () => {
-  for (const effet of ['soutes_optimisees', 'montage_specialise', 'surcharge_arme', 'armure_par_classe']) {
-    assert.equal(legende(mod({ effet }), 2), '', effet);
-  }
+test('armure ajustée : « armure +5 » lu sur ajuste', () => {
+  assert.equal(ligneAjuste({ armure: 5 }), 'armure +5');
 });
 
 test('base de la réduction : « de la coque » seulement pour la coque', () => {
