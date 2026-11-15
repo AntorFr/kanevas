@@ -196,7 +196,7 @@ test('0035 : montée depuis 0034, la galaxie à 0.2 passe à 0.68, une autre val
   const avantZones = zones();
   const avantGal = db.prepare('SELECT * FROM swn_galaxies ORDER BY id').all() as any[];
 
-  assert.deepEqual(migrate(db), [35]);
+  assert.deepEqual(migrate(db), [35, 36]);
 
   const apresGal = db.prepare('SELECT * FROM swn_galaxies ORDER BY id').all() as any[];
   assert.deepEqual(apresGal.map((g) => g.densite_defaut), [0.68, 0.5, 0.21, 0, 0.68]);
