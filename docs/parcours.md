@@ -954,7 +954,7 @@ the density of generated systems never changes based on a territory she cannot s
    maximum crew, provisions, lifeboats) and each element's effect line. On a station there is no Spike drive to choose and the
    speed reads « N/A ». She adds a specialised mounting and, in its « Visée » row (E-22), chooses which of her weapons it aims at (a second row for a second installation; a second specialised mounting on the same weapon is refused with « Cet élément est déjà visé par un montage spécialisé », while an overcharge may be aimed at it again); she adds a pretech modification, reads the components, the installation days and the Maintenance alert, and
    makes one mod part of the hull (refit), then reads its cost. Antor changes the price divisor, the yard pace, the daily pay or the daily food on E-20 (a cadence of 0 is refused with « Valeur hors limites. »): her
-   design is « Calculée avec d'anciens réglages »; after « Recalculer » she reads « Chantier : N jours » for the new pace and the price « (÷2) » for a divisor of 2.
+   design is « Calculée avec d'anciens réglages »; after « Recalculer » she reads « Chantier : N jours » (⌈price / pace⌉, 25 000 cr by default) for the new pace and the price « (÷2) » for a divisor of 2.
 *Highlight*: budgets recalculate before their eyes, and the sheet's section stays consistent with what
 is calculated.
 *Failure*: a recalculation that fails — « Le recalcul n'a pas abouti. Réessayez. », the text unchanged; the usage removed meanwhile — « Vous ne pouvez plus recalculer cette section. »; connection lost — « Connexion perdue. », the buttons disabled. Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
