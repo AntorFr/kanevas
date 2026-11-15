@@ -1,5 +1,6 @@
 # Status — kanevas
 
+> MàJ : 2026-11-15 (assemblage de `rouge-kanevas-battlemap-5` : le test e2e de l'envoi long de la médiathèque retient la requête par une promesse que le test libère ; test seul, produit inchangé)
 > MàJ : 2026-11-15 (assemblage de `kanevas-niveau-local`, PR vers `main`)
 > MàJ : 2026-11-15 (assemblage de `kanevas-harnais-preuve`, PR vers `main` : harnais des tests d'écran, tests seuls, produit inchangé)
 > MàJ : 2026-11-13 (assemblage de `rouge-kanevas-battlemap-2` : le test e2e E-22 « un lecteur (Téo, autre lecteur) lit les mêmes légendes sans contrôle » attend chaque légende avant de lire `main` ; test seul, produit inchangé)
@@ -18,6 +19,8 @@
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-3` : doc remise d'accord avec `main` — epic des fiches liées livrée, entrée « Campagnes » retirée de docs/ecrans.md ; le test de la marque « Mort » des Corvalis attend la réponse du `PATCH` avant de quitter la fiche, et le bloc « Fiches liées » des e2e attend les libellés de type avant de lire les titres de groupe ; tests seuls, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-2` : trois tests e2e instables stabilisés, tests seuls, produit inchangé — médiathèque (filtres) : sonde le texte de `main` jusqu'à l'état attendu en entier au lieu d'attendre une tuile `detached` ; bloc « Fiches liées » en mode Joueur : attend le groupe « S'y trouvent » et son titre avant de lire ; filtre Statut d'E-8 : attend la disparition de l'arbre et d'« Acte II »)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-1` : tests de Release par `gh` retirés, test de la médiathèque « fichier vide » stabilisé ; tests seuls, produit inchangé)
+
+**`feature/rouge-kanevas-battlemap-5` (correctif, PR vers `epic/kanevas-battlemap`, non fusionnée) :** le test « envoi long : « Envoi… » + pourcentage + Annuler, qui n'ajoute rien » (`src/e2e/mediatheque-ecran.test.ts`) était rouge par intermittence dans la suite complète, vert seul. Cause : il retenait le POST par un minuteur de 15 s qui pouvait expirer avant le clic sur « Annuler » (la ligne passait alors en « L'envoi n'a pas abouti »). Procédé de test seulement : la requête est retenue par une promesse que le test libère dans un `finally` ; aucun code produit ni doc de produit touchés. Piège encore vrai : un test qui retient une requête la libère lui-même, jamais par un délai.
 
 **`feature/rouge-kanevas-battlemap-2` (correctif, PR vers `epic/kanevas-battlemap`, non fusionnée) :** le test E-22 « un lecteur (Téo, autre lecteur) lit les mêmes légendes sans contrôle » (`src/e2e/vaisseaux-atelier-ecarts-review.test.ts`) était rouge par intermittence dans la suite complète (« vitesse −2 » absent), vert seul. Procédé de test seulement : il sonde `main` jusqu'à ce que chaque légende assertie soit rendue avant de la lire ; aucun code produit ni doc de produit touchés. Piège encore vrai : attendre deux textes ne garantit pas que le reste de la page est rendu, un test attend chaque texte qu'il assertit.
 
