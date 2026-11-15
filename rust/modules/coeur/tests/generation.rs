@@ -274,44 +274,6 @@ fn aller_retour_etoile() {
 }
 
 #[test]
-fn aller_retour_lune() {
-    aller_retour(Lune { orbite: 0.3, angle: 1.5707963267948966, rayon: 0.05 });
-}
-
-#[test]
-fn aller_retour_planete() {
-    aller_retour(Planete {
-        rang: 2,
-        orbite: 3.25,
-        angle: 0.1,
-        rayon: 0.4,
-        type_planete: "tellurique".into(),
-        lunes: vec![Lune { orbite: 0.3, angle: 1.0, rayon: 0.05 }, Lune { orbite: 0.6, angle: 2.0, rayon: 0.02 }],
-    });
-    aller_retour(Planete { rang: 0, orbite: 1.0, angle: 0.0, rayon: 0.1, type_planete: String::new(), lunes: vec![] });
-}
-
-#[test]
-fn aller_retour_ceinture() {
-    aller_retour(Ceinture { orbite: 4.5, largeur: 0.8, densite: 0.35 });
-}
-
-#[test]
-fn aller_retour_comete() {
-    aller_retour(Comete { demi_grand_axe: 6.0, excentricite: 0.93, angle: 3.0 });
-}
-
-#[test]
-fn aller_retour_nebuleuse() {
-    aller_retour(Nebuleuse { x: -1.5, y: 2.5, rayon: 4.0, teinte: 0.7 });
-}
-
-#[test]
-fn aller_retour_compagne() {
-    aller_retour(Compagne { orbite: 0.9, angle: 2.2, taille: 0.8, lettre: "K".into() });
-}
-
-#[test]
 fn le_json_de_l_etoile_porte_les_cles_attendues() {
     let e = tirer_bloc("kanevas-neutre-1", 0, 0, &[1.0; 9], &[false; 9]).unwrap();
     let v: Value = serde_json::from_str(&serde_json::to_string(&e).unwrap()).unwrap();

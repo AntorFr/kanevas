@@ -57,59 +57,6 @@ pub struct Etoile {
     pub y: f64,
 }
 
-/// A planet of a system (the draw comes with `-systeme`).
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Planete {
-    pub rang: u32,
-    pub orbite: f64,
-    pub angle: f64,
-    pub rayon: f64,
-    pub type_planete: String,
-    pub lunes: Vec<Lune>,
-}
-
-/// A moon of a planet.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Lune {
-    pub orbite: f64,
-    pub angle: f64,
-    pub rayon: f64,
-}
-
-/// An asteroid belt.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Ceinture {
-    pub orbite: f64,
-    pub largeur: f64,
-    pub densite: f64,
-}
-
-/// A comet.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Comete {
-    pub demi_grand_axe: f64,
-    pub excentricite: f64,
-    pub angle: f64,
-}
-
-/// A nebula around a system.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Nebuleuse {
-    pub x: f64,
-    pub y: f64,
-    pub rayon: f64,
-    pub teinte: f64,
-}
-
-/// A companion star of a system.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Compagne {
-    pub orbite: f64,
-    pub angle: f64,
-    pub taille: f64,
-    pub lettre: String,
-}
-
 /// JavaScript's `Math.round`: halves go up.
 fn arrondi_js(v: f64) -> f64 {
     (v + 0.5).floor()
