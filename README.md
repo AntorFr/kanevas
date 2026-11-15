@@ -17,6 +17,7 @@ rust/                             Cargo workspace (AD-rust-1): `modules/<name>/`
 src/wasm/, frontend/src/wasm/       Wasm loaders (server, browser) and their tests; see the « Rust / WebAssembly » section below
 scripts/rust-wasm.sh              `npm run build:wasm`: compiles each crate of `rust/modules/` to Wasm into `rust/pkg/<module>/`
 scripts/faux-setup-token.mjs        Le `claude setup-token` du bouchon (copié dans l'image)
+scripts/rejouer-tests.mjs            `node scripts/rejouer-tests.mjs "<nom>"` : rejoue les seuls tests nommés (`tests.rejouer`) ; `npm run tests:local` : la suite hors `src/e2e/` (`tests.local`)
 scripts/tests-attestes.mjs           `npm run tests:attestes` : joue toute la suite sur l'arbre commité et écrit le TAP par test `resultats.tap` (ignoré par git) ; c'est la suite déclarée dans `.sdlc.yaml`, `attester` la joue et pose le statut
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
@@ -79,6 +80,8 @@ cp .env.example .env
 npm run dev            # ou, sans rechargement : npm run build && npm start (`npm start` seul échoue sans `dist/`, ignoré par git)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
+
+Three test levels, declared in `.sdlc.yaml` (`tests:`): **`commande:`** `npm ci && npm run tests:attestes` is the whole suite (the proof `attester --publier` plays; about 36 minutes on a 12-CPU pod, two files at a time); **`local:`** `npm ci && npm run tests:local` (`tests-attestes.mjs --local`) plays `build:wasm`, `typecheck`, then every test file except `src/e2e/` (no server, no browser), with no `build` and no Playwright install, only `scripts/copier-wasm.mjs` so that `dist/wasm` exists — 2 min 58 s on the 3-CPU task pod (978 tests, `dist/` absent; `fondations.test.ts` skips without it) with the same `resultats.tap` and the same test names as the whole suite; **`rejouer:`** `node scripts/rejouer-tests.mjs "<describe > test>" ...` replays only the named tests (names as in `resultats.tap`; several names separated by `|` or line ends, a name may contain spaces), finds their files by the literal name, exits non-zero for a name found in no file, and builds only if a found file is under `src/e2e/` and `dist/` is missing. The file choice and the name search are `scripts/niveaux-tests.mjs`, tested by `src/scripts-tests/`.
 
 The attested run is `attester --publier` (the chain's proof tool, installed in its pods and on the maintainer's workstation; it plays the suite declared in `.sdlc.yaml` on a clean checkout of the pushed commit), which calls `npm run tests:attestes` (no test skipped; you can run that one alone). `attester` refuses a dirty tree: commit first. It plays two test files at a time by default (`min(os.availableParallelism(), 2)`, the budget measured on the 3-CPU pod); `-- --concurrence N` (positive integer, otherwise exit 2) overrides it, and the log carries the effective value. During the run, server and Chromium startups of the e2e files go one at a time (`withStartupLock`, a lock under the run's temporary directory); ready servers and browsers then run their scenarios in parallel.
 
