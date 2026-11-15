@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 
 import { ErreurService, introuvable } from '../services/erreurs.js';
-import { creerJeton, listerJetons, revoquerJeton } from '../services/jetons.js';
+import { creerJeton, listerJetons, listerOutilsProposables, revoquerJeton } from '../services/jetons.js';
 import { listerLots } from '../services/lots.js';
 import { idDeChemin } from './univers.js';
 
@@ -28,14 +28,19 @@ export function registerAccesApiRoutes(app: FastifyInstance) {
     return lecture(() => listerJetons(app.db, request.session!.id, univers, app.horloge()));
   });
 
+  app.get('/api/univers/:id/jetons/outils', async (request) => {
+    const univers = universDe(request);
+    return lecture(() => listerOutilsProposables(app.db, request.session!.id, univers));
+  });
+
   app.post('/api/univers/:id/jetons', async (request, reply) => {
     const univers = universDe(request);
-    const corps = (request.body ?? {}) as { nom?: unknown; dureeJours?: unknown };
+    const corps = (request.body ?? {}) as { nom?: unknown; dureeJours?: unknown; outils?: unknown };
     const { jeton, valeur } = creerJeton(
       app.db,
       request.session!.id,
       univers,
-      { nom: corps.nom, dureeJours: corps.dureeJours },
+      { nom: corps.nom, dureeJours: corps.dureeJours, outils: corps.outils },
       app.horloge(),
     );
     return reply.code(201).send({ jeton, valeur });

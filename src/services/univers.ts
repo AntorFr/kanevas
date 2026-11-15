@@ -1,4 +1,5 @@
 import type { Db } from '../db/db.js';
+import { effacerDonneesUniversComplet } from './outils-donnees.js';
 import { exigerMJ, exigerRole } from './droits.js';
 import { ErreurService, invalide, refuse } from './erreurs.js';
 import { supprimerFichier } from './stockage.js';
@@ -130,6 +131,7 @@ export function supprimerUnivers(db: Db, acteur: Acteur, universId: number, nom:
     const run = (sql: string) => db.prepare(sql).run(universId);
     run('DELETE FROM lots_import WHERE univers_id = ?');
     run('DELETE FROM jetons_api WHERE univers_id = ?');
+    effacerDonneesUniversComplet(db, universId); // before the sheets: module rows reference them (D-4)
     run('DELETE FROM taches_preparation WHERE fiche_id IN (SELECT id FROM fiches WHERE univers_id = ?)');
     run('DELETE FROM elements_carte WHERE carte_id IN (SELECT id FROM cartes WHERE univers_id = ?)');
     run('DELETE FROM cartes WHERE univers_id = ?');

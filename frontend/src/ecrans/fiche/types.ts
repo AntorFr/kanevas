@@ -21,6 +21,20 @@ export interface PieceJointe {
   attente?: string;
 }
 
+/** The `geree` object of a managed section's view (AD-128): never the source, only what the banner needs. */
+export interface Geree {
+  outil: string | null;
+  libelle: string | null;
+  type: string;
+  lien: string | null;
+  etat: 'a_jour' | 'perime' | 'desactive';
+  recalcul: 'geste' | 'proposition' | null;
+  peutRecalculer: boolean;
+  peutOuvrir: boolean;
+  propositionId: number | null;
+  composant: boolean;
+}
+
 export interface SectionVue {
   id: number;
   titre: string;
@@ -35,6 +49,8 @@ export interface SectionVue {
   piecesJointes?: PieceJointe[];
   /** Only in a GM view (never in player mode). */
   audience?: Audience;
+  /** Present for a section written by a tool (no editor, a banner). */
+  geree?: Geree;
 }
 
 export interface Fiche {

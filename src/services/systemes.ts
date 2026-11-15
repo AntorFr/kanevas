@@ -88,12 +88,12 @@ function estMJQuelquePart(db: Db, compteId: number): boolean {
 }
 
 /** Inserts a system; the NOCASE unique index is the final arbiter of "name taken". */
-function insererSysteme(db: Db, nom: string): SystemeCatalogue {
+function insererSysteme(db: Db, nom: string, compteId: number): SystemeCatalogue {
   const pris = db.prepare('SELECT 1 FROM systemes_jeu WHERE nom = ?').get(nom);
   if (pris) throw nomPris();
   const info = db
-    .prepare('INSERT INTO systemes_jeu (nom, cree_le) VALUES (?, ?)')
-    .run(nom, new Date().toISOString());
+    .prepare('INSERT INTO systemes_jeu (nom, cree_le, responsable_id) VALUES (?, ?, ?)')
+    .run(nom, new Date().toISOString(), compteId);
   return { id: Number(info.lastInsertRowid), nom };
 }
 
@@ -109,7 +109,7 @@ export function listerCatalogue(db: Db, compteId: number): SystemeCatalogue[] {
 export function creerSysteme(db: Db, compteId: number, entree: { nom: string }): SystemeCatalogue {
   if (!estMJQuelquePart(db, compteId)) throw refuse();
   const nom = validerNomSysteme(entree.nom);
-  return db.transaction(() => insererSysteme(db, nom))();
+  return db.transaction(() => insererSysteme(db, nom, compteId))();
 }
 
 /** Attaches the universe to a system, or detaches it with `null`. GM only; unknown system → invalid. */
@@ -137,7 +137,7 @@ export function creerEtRattacherSysteme(
   exigerMJ(db, universId, compteId);
   const nom = validerNomSysteme(entree.nom);
   return db.transaction(() => {
-    const s = insererSysteme(db, nom);
+    const s = insererSysteme(db, nom, compteId);
     db.prepare('UPDATE univers SET systeme_id = ? WHERE id = ?').run(s.id, universId);
     return s;
   })();

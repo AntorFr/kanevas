@@ -24,6 +24,11 @@ import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
 import { creerJetonDeValeur } from '../services/jetons.js';
 import { creerUnivers } from '../services/univers.js';
+import { modulesActifs } from '../outils/registre.js';
+import { creerSystemeAncienPourBouchon, poserActivation } from '../services/outils.js';
+import { semerGalaxieEssai } from '../services/swn/galaxies.js';
+import { appliquerCatalogue } from '../services/catalogues.js';
+import { creerConception, enregistrerConception } from '../services/swn/conceptions.js';
 
 /**
  * Starting world of the stub mode (AD-55, `docs/ecrans.md` « Données de départ du bouchon »),
@@ -278,6 +283,29 @@ export function semerBouchon(db: Db): boolean {
         'Une crique que fréquentent [[cle:faction:repaire|les contrebandiers du Repaire]] et jadis [[999999|Capitaine Hesk]].',
     });
     changerAudience(db, id.antor, essai.id, anse.id, descriptionAnse.id, { joueursLisent: true });
+    if (modulesActifs().some((m) => m.nom === 'essai')) {
+      compte('roxane');
+      const eneria = creerUnivers(db, id.antor, { nom: "Éneria d'essai" });
+      ajouterMembre(db, id.antor, eneria.id, 'mira', 'mj');
+      ajouterMembre(db, id.antor, eneria.id, 'lea', 'joueur');
+      ajouterMembre(db, id.antor, eneria.id, 'roxane', 'joueur');
+      const systeme = creerEtRattacherSysteme(db, id.antor, eneria.id, { nom: "Système d'essai" });
+      const voisin = creerUnivers(db, id.antor, { nom: 'Univers voisin' });
+      rattacherSysteme(db, id.antor, voisin.id, systeme.id);
+      const ancien = creerUnivers(db, id.mira, { nom: 'Univers ancien' });
+      const systemeAncien = creerSystemeAncienPourBouchon(db, 'Système ancien');
+      rattacherSysteme(db, id.mira, ancien.id, systemeAncien.id);
+      if (modulesActifs().some((m) => m.nom === 'swn')) {
+        // The galaxy tool is on for the system, visible to GMs and players (B-71).
+        poserActivation(db, id.antor, { niveau: 'systeme', id: systeme.id }, 'swn/galaxie', true);
+        semerGalaxieEssai(db, eneria.id);
+        semerVaisseauxEssai(db, { antor: id.antor, lea: id.lea }, systeme.id, eneria.id);
+        // Starting activation of the retirement slice: « Univers voisin » forces the designer on, « Éneria d'essai » follows the system.
+        poserActivation(db, id.antor, { niveau: 'univers', id: voisin.id }, 'swn/vaisseaux', true);
+        const sentinelle = creerFiche(db, id.antor, voisin.id, { type: 'vaisseau', titre: 'Sentinelle du voisin' }).id;
+        creerConception(db, { compteId: id.antor }, voisin.id, { ficheId: sentinelle, coque: 'eclaireur' });
+      }
+    }
 
     // Migration tests also seed a pre-pivot base: adventures require the 0017 task schema.
     if ((db.pragma('table_info(taches_preparation)') as { name: string }[]).some((c) => c.name === 'fiche_id')) {
@@ -294,6 +322,45 @@ export function semerBouchon(db: Db): boolean {
     }
   })();
   return true;
+}
+
+const EXEMPLES = join(dirname(fileURLToPath(import.meta.url)), '..', 'outils', 'swn', 'exemples');
+const exemple = (nom: string): unknown => JSON.parse(readFileSync(join(EXEMPLES, nom), 'utf8'));
+
+/**
+ * The ship designer on the trial universe (V-11): the tool on for the system, the invented catalogue imported at both levels
+ * (the spear at the universe's), and three ship sheets — « Vent d'Orak » (Léa's design, readable by her and the GMs),
+ * « Étoile du soir » (Léa's design, readable by the players) and « Aube de Sel » (no design yet).
+ */
+function semerVaisseauxEssai(db: Db, id: { antor: number; lea: number }, systemeId: number, universId: number): void {
+  const antor = { compteId: id.antor };
+  const lea = { compteId: id.lea };
+  poserActivation(db, id.antor, { niveau: 'systeme', id: systemeId }, 'swn/vaisseaux', true);
+  appliquerCatalogue(db, antor, { niveau: 'systeme', id: systemeId }, 'swn/vaisseaux', exemple('catalogue-essai.json'));
+  appliquerCatalogue(db, antor, { niveau: 'univers', id: universId }, 'swn/vaisseaux', exemple('catalogue-essai-univers.json'));
+  // A second local element (with « Lance d'essai »: two), added by a further import of the universe's catalogue.
+  appliquerCatalogue(db, antor, { niveau: 'univers', id: universId }, 'swn/vaisseaux', {
+    catalogue: 'swn/vaisseaux', version: '2026-11-essai-vaisseaux-univers-2',
+    modifications: [{ cle: 'plaque-d-essai', nom: "Plaque d'essai", cout: 6000, puissance: 1, masse: 1, x_cout: true,
+      x_puissance: false, x_masse: true, pv: 3, ca: 1, limite: 0 }],
+  });
+  const fiche = (titre: string) => creerFiche(db, id.antor, universId, { type: 'vaisseau', titre }).id;
+  const ligne = (nature: string, cle: string) => ({ nature, cle, quantite: 1 });
+
+  const orak = fiche("Vent d'Orak");
+  creerConception(db, antor, universId, { ficheId: orak, coque: 'fregate', auteurId: id.lea });
+  enregistrerConception(db, lea, universId, orak, {
+    coque: 'fregate', version: 1,
+    choix: [ligne('moteurs', 'moteur-2'), ligne('amenagements', 'soute'), ligne('armes', 'laser'), ligne('armes', 'lance-d-essai')],
+  });
+
+  const etoile = fiche('Étoile du soir');
+  const vue = creerConception(db, antor, universId, { ficheId: etoile, coque: 'eclaireur', auteurId: id.lea });
+  enregistrerConception(db, lea, universId, etoile, { coque: 'eclaireur', version: vue.version, choix: [ligne('moteurs', 'moteur-1'), ligne('armes', 'laser')] });
+  const section = lireFiche(db, antor, universId, etoile).sections.find((s) => s.titre === 'Caractéristiques')!;
+  changerAudience(db, id.antor, universId, etoile, section.id, { joueursLisent: true });
+
+  fiche('Aube de Sel');
 }
 
 /** The stub token of « Essai Kanka » (docs/ecrans.md): fixed, known to the tests, stub mode only. */

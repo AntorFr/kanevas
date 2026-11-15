@@ -164,4 +164,22 @@
   with `stdio: 'ignore'` and nothing of it is logged. The `codex` adapter lists `generated_images/` before and
   after (one engine at a time: `verrou.ts`), deletes the new file(s) and its scratch directory, 150 s deadline
   (AD-90). The Dockerfile pins `@openai/codex` (`CODEX_VERSION`).
+- Tools API (`kanevas-outils-cadre`, `routes/outils.ts`, C-5): in the guarded scope only, never in the import scope. A tool the caller
+  cannot use (disabled, hidden from the role, unknown) answers `reply.callNotFound()`, byte for byte like an unregistered path — never a
+  service `introuvable` JSON. Module routes are registered by `DeclarationModule.routes(app, garde)`; `catalogueDe` appends
+  `outilsAssistant` of every accessible tool of `modulesActifs()` without naming any.
+- Catalogues (`kanevas-outils-catalogue`, migration 0021, K-1 to K-8 in `ARCHITECTURE.md`): only `services/catalogues.ts` reads a module's
+  `StockageCatalogue` and resolves the two levels (never a module's computation on its own tables); an import (preview or application, one
+  transaction) never writes `masque` nor the withdrawals (B-48) and changes the catalogue version only when an element is added or modified;
+  no gesture hides a system element. A token with no `jetons_outils` row opens no tool route, a tool token opens no content route
+  (`config.portee` of each route in `routes/import.ts`).
+- Managed sections (`kanevas-outils-sections-gerees`, migration 0020, AD-127/128): a section with `gere_par` (`module/outil/type`) is written
+  only by its tool. `ecrireContenu` refuses it (`refuse`, `detail: 'section_geree'`) unless its last parameter `geree` is passed — and
+  **only `services/sections-gerees.ts` passes it** (`poserSectionGeree`, on behalf of the account, never more rights than it has;
+  a source-scan test fails otherwise). `source_version` is written in that branch, same transaction; never a new `INSERT INTO sections` /
+  `UPDATE sections SET contenu`. The state is `etatGere` (`a_jour` / `perime` / `desactive`), **computed at each read, never stored**; a
+  disabled or unknown tool gives no name, a tool not visible to the reader gives `libelle: null`. A view of a managed section never carries
+  `contenu` (the source) — `vueSection` gives `peutEcrire: false` — except the assistant's `'markdown'` form. `creerProposition` and the
+  import (`code: 'section_geree'`, before the transaction) refuse a managed section too.
 - Sheet visibility (`kanevas-fiche-mj-seul`, B-57, rule 11 of `docs/donnees.md`): a sheet has none of its own. `visibleJoueurs` is computed in the query (`SQL_VISIBLE_JOUEURS`, `services/fiches.ts`) from `sections.joueurs_lisent` and given to the GM outside player mode only; never store it in a column, never recompute it in the browser, never count the author's right of a player as « visible ».
+- Tool data deletion (`kanevas-outils-retrait`, D-1 to D-8): `services/outils-donnees.ts` is the only caller of a module's `donnees` and of the catalogue port's `compter` / `effacer`; `libererSections` (`sections-gerees.ts`) is the only way to free a lock when data go (sheets and their text are never deleted); the `…/suppression` routes sit beside `garde(...)` (they answer for a disabled tool); no assistant tool and no import route deletes tool data. Disabling erases nothing.

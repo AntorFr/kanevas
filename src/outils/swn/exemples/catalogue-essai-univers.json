@@ -1,0 +1,22 @@
+{
+  "catalogue": "swn/vaisseaux",
+  "version": "2026-11-essai-vaisseaux-univers",
+  "armes": [
+    {
+      "cle": "lance-d-essai",
+      "nom": "Lance d'essai",
+      "emport": 1,
+      "munitions": 0,
+      "cout_munition": 0,
+      "cout": 30000,
+      "puissance": 6,
+      "masse": 1,
+      "x_cout": true,
+      "x_puissance": false,
+      "x_masse": false,
+      "pv": 0,
+      "ca": 0,
+      "limite": 0
+    }
+  ]
+}

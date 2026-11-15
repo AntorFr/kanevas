@@ -2,6 +2,7 @@ export type Role = 'mj' | 'joueur';
 
 export { TYPES_FICHE, type TypeFiche } from './types-fiche.js';
 import type { TypeFiche } from './types-fiche.js';
+import type { Geree } from './sections-gerees.js';
 
 /**
  * Who is asking. `modeJoueur` (AD-39) only restricts READS: the caller is read
@@ -46,6 +47,10 @@ export interface SectionRow {
   auteur_id: number | null;
   auteur_lit: number;
   auteur_ecrit: number;
+  /** `module/outil/type` of the tool that manages the section (AD-127), null for a free section. */
+  gere_par: string | null;
+  /** Version of the sources the managed text was produced with (AD-128), null with `gere_par`. */
+  source_version: string | null;
 }
 
 export interface Audience {
@@ -72,6 +77,8 @@ export interface SectionVue {
   audience?: Audience;
   /** Attachments the caller sees; filled by a sheet read (AD-67). */
   piecesJointes?: PieceJointeVue[];
+  /** Only on a section managed by a tool (AD-128): the banner's state, never the source. */
+  geree?: Geree;
 }
 
 export interface PieceJointeVue {
