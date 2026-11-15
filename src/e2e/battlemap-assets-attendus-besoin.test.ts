@@ -334,7 +334,7 @@ describe('bibliothèque et direction — monde semé', () => {
     await carte(antor, 'Rocher').waitFor();
     await antor.getByRole('checkbox', { name: 'Sélectionner Rocher' }).check();
     await antor.getByRole('button', { name: 'Retirer…' }).click();
-    await antor.getByRole('alertdialog').getByText('Utilisé sur 0 carte', { exact: true }).waitFor({ timeout: 5000 });
+    await antor.getByRole('alertdialog').getByText(rx('Utilisé sur 0 carte')).waitFor({ timeout: 5000 });
   });
 
   test('B-97 · « Retirer… » compte les cartes, annule sans rien faire, confirme et laisse le fichier', opts, async () => {
