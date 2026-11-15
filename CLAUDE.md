@@ -10,7 +10,7 @@
   only) and the `main` rule require the status; no workflow plays a test or runs on a branch push or a pull request.
   Three levels in `.sdlc.yaml`: `commande:` (the whole suite, above), `local:` `npm ci && npm run tests:local` (every file but
   `src/e2e/`, no `build`, no Playwright; about 3 min) and `rejouer:` `node scripts/rejouer-tests.mjs {tests}` (only the named
-  tests, `describe > test` as in `resultats.tap`; non-zero for an unknown name). Test choice logic: `scripts/niveaux-tests.mjs`.
+  tests, `describe > test` as in `resultats.tap`; non-zero for a name no file declares as a literal test title). Test choice logic: `scripts/niveaux-tests.mjs`.
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
