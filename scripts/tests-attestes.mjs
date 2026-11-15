@@ -8,10 +8,11 @@
 //   npm run tests:attestes -- --concurrence 2    # test files at a time (default min(CPUs, 2))
 //   npm run tests:local                          # --local: no src/e2e/ file, no `build`, no Playwright
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readdirSync } from 'node:fs';
+import { mkdtempSync, readdirSync } from 'node:fs';
 import { availableParallelism, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { choisirFichiers } from './niveaux-tests.mjs';
+import { assurerPlaywright } from './playwright.mjs';
 
 // The reference run on the 3-CPU pod completed the whole suite with two files at a time and
 // no startup/browser launch failure. The harness also serializes startup bursts.
@@ -34,18 +35,7 @@ const fichiers = choisirFichiers(
   { local },
 );
 
-// Playwright is not a dependency of the repository: the pods' image carries a system install the
-// harness finds (`src/e2e/harnais.test.ts`). Without one, install it here (not saved) with Chromium,
-// otherwise the screen tests would be skipped, hence red.
-const playwrightVu = [process.cwd() + '/node_modules', '/usr/lib/node_modules', '/usr/local/lib/node_modules']
-  .some((racine) => existsSync(join(racine, 'playwright')));
-if (!local && !playwrightVu) {
-  console.log('Playwright not found: installing playwright@1.63.0 (--no-save) and Chromium.');
-  for (const cmd of [['npm', ['install', '--no-save', 'playwright@1.63.0']], ['npx', ['playwright', 'install', 'chromium']]]) {
-    const r = spawnSync(cmd[0], cmd[1], { stdio: 'inherit' });
-    if (r.status !== 0) process.exit(r.status ?? 1);
-  }
-}
+if (!local) assurerPlaywright();
 
 console.log(`Test file concurrency: ${concurrence}${iConc < 0 ? ' (default)' : ' (--concurrence)'}. Harness startups run one at a time.`);
 for (const script of local ? ['build:wasm', 'typecheck'] : ['build:wasm', 'typecheck', 'build']) {
