@@ -54,7 +54,7 @@ export function resoudre(arguments_, fichiers, lire) {
     const trouves = trouverFichiers(nom, fichiers, lire);
     for (const f of trouves) {
       if (!parFichier.has(f)) parFichier.set(f, new Set());
-      parFichier.get(f).add(nomPropre(nom));
+      parFichier.get(f).add(nom);
     }
     return trouves.length > 0;
   };
@@ -68,7 +68,14 @@ export function resoudre(arguments_, fichiers, lire) {
   return { parFichier, introuvables };
 }
 
-/** Anchored regex source for `--test-name-pattern`: the name alone or after its suites' names. */
+/**
+ * Anchored regex source for `--test-name-pattern`. The engine matches the full name (suite names and
+ * test name joined by spaces): a qualified `describe > test` keeps its path, so a same-titled test under
+ * another describe is not replayed. A bare title also matches after any suites' names. A title that itself
+ * contains ' > ' is matched literally as the last alternative.
+ */
 export function motif(nom) {
-  return `(^| )${nom.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&')}$`;
+  const esc = (t) => t.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
+  if (!nom.includes(SEP)) return `(^| )${esc(nom)}$`;
+  return `^${esc(nom.split(SEP).join(' '))}$|(^| )${esc(nom)}$`;
 }
