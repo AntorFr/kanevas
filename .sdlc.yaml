@@ -10,6 +10,8 @@ deploiement:
 # tests: the suite the chain plays (`attester`, base measured on the target). Same files as `npm test`.
 tests:
   commande: npm ci && npm run tests:attestes
+  local: npm ci && npm run tests:local
+  rejouer: node scripts/rejouer-tests.mjs {tests}
   rapport: resultats.tap
   format: tap
   delai: 90m

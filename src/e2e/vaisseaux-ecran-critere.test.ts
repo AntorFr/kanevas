@@ -5,7 +5,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
-import { connecte, launch, skipBrowser, startServer, texte, type Any, type Server } from './harnais.test.ts';
+import { attendre, attendreTransitions, connecte, launch, skipBrowser, startServer, texte, type Any, type Server } from './harnais.test.ts';
 
 const SHOTS = '/tmp/cap-vx';
 const CODE = /\/assets\/vaisseaux-[^/]*\.js/;
@@ -54,7 +54,7 @@ describe('E-22 concepteur de vaisseaux et section « Caractéristiques » de E-9
     const sel = page.getByRole('group', { name: /arme/i });
     await sel.getByRole('button', { name: /Lance d'essai/ }).click();
     await page.getByText('Puissance insuffisante : −2').waitFor();
-    await page.waitForTimeout(400);
+    await attendreTransitions(page); await attendre(page);
     const alerte = page.getByText('Puissance insuffisante : −2').first();
     const couleur = await alerte.evaluate((e: Any) => getComputedStyle(e).color);
     await hors(page, '2-alerte');
@@ -195,7 +195,7 @@ describe('E-22 concepteur de vaisseaux et section « Caractéristiques » de E-9
     await page.goto(`${outils}?fiche=${o.ficheId}`);
     await page.getByRole('heading', { name: "Vent d'Orak" }).waitFor();
     await page.getByRole('link', { name: 'Ouvrir la fiche' }).click();
-    await page.waitForTimeout(1500);
+    await attendreTransitions(page); await attendre(page);
     await hors(page, '13-ouvrir-la-fiche');
     assert.match(new URL(page.url()).pathname, new RegExp(`/fiche/${o.ficheId}$`), 'adresse : ' + page.url());
     await page.getByTestId('composant-caracteristiques').waitFor();

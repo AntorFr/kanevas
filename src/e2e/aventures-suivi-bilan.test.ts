@@ -69,7 +69,6 @@ before(async () => {
   for (const [camp, titre] of [[couronne, 'Séance un'], [couronne, 'Séance deux'], [acte2, 'Séance du sceau']] as const) {
     const r = await api(antor, 'POST', `/api/univers/${uid}/comptes-rendus`, { campagneId: camp, titre, texte: 'Texte.' });
     assert.equal(r.status, 201, JSON.stringify(r.body));
-    await new Promise((res) => setTimeout(res, 1100));
   }
 }, { timeout: 120000 });
 
