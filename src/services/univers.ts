@@ -10,6 +10,7 @@ import type { Acteur, Role, Univers } from './types.js';
 
 interface UniversRow {
   id: number;
+  cle: string;
   nom: string;
   description: string;
   cree_le: string;
@@ -17,6 +18,7 @@ interface UniversRow {
 
 const versUnivers = (r: UniversRow): Univers => ({
   id: r.id,
+  cle: r.cle,
   nom: r.nom,
   description: r.description,
   creeLe: r.cree_le,

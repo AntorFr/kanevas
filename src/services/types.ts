@@ -21,6 +21,8 @@ export interface Compte {
 
 export interface Univers {
   id: number;
+  /** Readable identifier, the address of the universe (AD-146); a member reads it. */
+  cle: string;
   nom: string;
   description: string;
   creeLe: string;
@@ -37,6 +39,7 @@ export interface SectionRow {
   fiche_id: number;
   titre: string;
   ordre: number;
+  cle: string;
   contenu: string;
   /** `contenu` without the GM blocks (AD-114), kept by `sections.ts` at each write. */
   contenu_public: string;
@@ -63,6 +66,8 @@ export interface Audience {
 
 export interface SectionVue {
   id: number;
+  /** Key of the section (B-104): the GM outside player mode only, like the sheet's. */
+  cle?: string;
   titre: string;
   ordre: number;
   /** Markdown source: only when the caller may write the section (AD-113). */
@@ -96,6 +101,8 @@ export interface PieceJointeVue {
 
 export interface Fiche {
   id: number;
+  /** Key of the sheet (AD-146): the GM outside player mode only; a reader's body never carries it. */
+  cle?: string;
   universId: number;
   type: TypeFiche;
   titre: string;

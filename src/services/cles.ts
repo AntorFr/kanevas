@@ -1,7 +1,8 @@
 import type { Db } from '../db/db.js';
 import { baseCleFiche, baseCleUnivers, cleFicheValide, cleUniversValide, CLE_FICHE_MAX, CLE_UNIVERS_MAX, estId, slug, suffixer } from './cles-forme.js';
-import { exigerRole } from './droits.js';
+import { exigerRole, peutVoirFiche, roleDe } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
+import { estTypeFiche } from './types-fiche.js';
 import type { Acteur } from './types.js';
 
 /**
@@ -67,7 +68,8 @@ export function changerCleFiche(
     | { cle: string }
     | undefined;
   if (!fiche) throw introuvable();
-  if (typeof cle !== 'string' || !cleFicheValide(cle)) {
+  // A bare type word (`lieu`) is not a key: a key is `type:name` or a name of its own, never the word of a type.
+  if (typeof cle !== 'string' || !cleFicheValide(cle) || estTypeFiche(cle)) {
     throw cleInvalide('Clé : minuscules, chiffres, « - » et « _ », au plus un « : », de 2 à 200 caractères, avec au moins une lettre.');
   }
   if (cle === fiche.cle) return { cle, ancienne: null };
@@ -163,6 +165,17 @@ export function resoudreUnivers(db: Db, reference: string): Resolution | null {
 /** Key of a sheet by id (for the services that name it), no right check. */
 export function cleDeFiche(db: Db, ficheId: number): string | null {
   return (db.prepare('SELECT cle FROM fiches WHERE id = ?').get(ficheId) as { cle: string } | undefined)?.cle ?? null;
+}
+
+/**
+ * The key of a sheet of the universe for a member who reads it (the redirection of a numeric address, B-101);
+ * `null` for an unknown sheet, one the account cannot read and a non-member alike.
+ */
+export function cleDeFicheLue(db: Db, compteId: number, universId: number, ficheId: number): string | null {
+  const role = roleDe(db, universId, compteId);
+  if (role === null) return null;
+  const f = db.prepare('SELECT cle FROM fiches WHERE id = ? AND univers_id = ?').get(ficheId, universId) as { cle: string } | undefined;
+  return f && peutVoirFiche(db, role, ficheId, { compteId, modeJoueur: false }) ? f.cle : null;
 }
 
 /** Key of an universe by id, no right check. */

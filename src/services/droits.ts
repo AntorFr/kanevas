@@ -246,7 +246,10 @@ export function vueSection(
     peutEcrire,
   };
   if (peutEcrire || (estGeree(s) && formeLiens === 'markdown')) vue.contenu = lecteurMJ ? s.contenu : s.contenu_public; // the source goes only to who may write it (AD-113)
-  if (lecteurMJ) vue.audience = audienceDe(s);
+  if (lecteurMJ) {
+    vue.audience = audienceDe(s);
+    vue.cle = s.cle;
+  }
   const geree = etatGere(db, acteur, universId, s);
   if (geree) vue.geree = geree;
   return vue;

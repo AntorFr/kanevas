@@ -267,7 +267,6 @@ interface FicheLue {
 }
 
 interface SectionLue extends SectionRow {
-  cle: string | null;
   version_importee: number | null;
   dernier_import: string | null;
 }
@@ -343,6 +342,8 @@ export function assurerFiche(
   let entree: FicheEntree;
   try {
     if (!cleValide(cle)) throw new Refus('cle', 'fiche', "clé d'origine invalide");
+    // A key of digits only would read as an id (AD-146): the sheet needs a letter in its key.
+    if (!/\p{L}/u.test(cle)) throw new Refus('cle', 'fiche', "clé d'origine invalide : au moins une lettre");
     entree = lireCorps(corps, maintenant);
     if (entree.campagne !== undefined) {
       // The key of the adventure sheet this report names (AD-125 (2)): a sheet of `aventure` type of the token's universe.

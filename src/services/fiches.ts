@@ -72,8 +72,14 @@ export const visibiliteVue = (r: FicheRow): { visibleJoueurs?: boolean } =>
  * The sheet as a reader sees it. Without `lecteur` (the GM's own writes) the illustration is the file; with
  * one, a closed illustration is the « illustration fermée » state (AD-117, E-8, E-9), never its address.
  */
-export const versFiche = (r: FicheRow, lecteur?: (f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>) => boolean): Fiche => ({
+export const versFiche = (
+  r: FicheRow,
+  lecteur?: (f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>) => boolean,
+  /** The key goes to the GM outside player mode only; the GM's own writes (no `lecteur`) carry it. */
+  avecCle: boolean = lecteur === undefined,
+): Fiche => ({
   id: r.id,
+  ...(avecCle ? { cle: r.cle } : {}),
   universId: r.univers_id,
   type: r.type,
   titre: r.titre,
@@ -123,6 +129,11 @@ export function chargerFiche(db: Db, universId: number, ficheId: number, avecVis
     .get(ficheId, universId) as FicheRow | undefined;
   if (!row) throw introuvable();
   return row;
+}
+
+/** The sheet as the GM's own write returns it (AD-146: with its key), read after the write. */
+export function ficheEcrite(db: Db, universId: number, ficheId: number): Fiche {
+  return versFiche(chargerFiche(db, universId, ficheId));
 }
 
 function sectionsDe(db: Db, ficheId: number): SectionRow[] {
@@ -684,7 +695,7 @@ export function lireFiche(
   const lisibles = sectionsDe(db, ficheId).filter((s) => peutLireSection(role, s, acteur));
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
   const mentions = mentionsDe(db, role, acteur, universId, ficheId);
-  const vueFiche = versFiche(fiche, (f) => lisiblePar(role, acteur, f));
+  const vueFiche = versFiche(fiche, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur));
   // An illustration the import has not delivered yet: a tile for the GM outside player mode, nothing for anyone else.
   const attendue = vueFiche.illustration === null && vueMJ(role, acteur) ? illustrationEnAttente(db, ficheId) : null;
   // A report names its adventure only to a reader who reads it (AD-124 (4)): the id leaves `charge` for
@@ -979,7 +990,7 @@ export function listerFiches(
   const mots = options.recherche === undefined ? null : motsDe(options.recherche);
   const enrichie = (r: FicheRow): Fiche => {
     const e = etiquetageDe(db, r.id);
-    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f)), ...visibiliteVue(r), alias: e.alias, etiquettes: e.etiquettes };
+    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur)), ...visibiliteVue(r), alias: e.alias, etiquettes: e.etiquettes };
     if (r.lien_via) {
       const via = JSON.parse(r.lien_via) as { id: number; titre: string };
       if (via.id !== options.lie) f.via = via;
