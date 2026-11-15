@@ -259,7 +259,7 @@ interface FicheLue {
 }
 
 interface SectionLue extends SectionRow {
-  cle_origine: string | null;
+  cle: string | null;
   version_importee: number | null;
   dernier_import: string | null;
 }
@@ -338,7 +338,7 @@ export function assurerFiche(
     if (entree.campagne !== undefined) {
       // The key of the adventure sheet this report names (AD-125 (2)): a sheet of `aventure` type of the token's universe.
       const campagne = db
-        .prepare("SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ? AND type = 'aventure'")
+        .prepare("SELECT id FROM fiches WHERE univers_id = ? AND cle = ? AND type = 'aventure'")
         .get(jeton.universId, entree.campagne) as { id: number } | undefined;
       if (!campagne) throw new Refus('campagne', 'fiche', `campagne inconnue : ${entree.campagne}`);
       entree.campagneId = campagne.id;
@@ -384,7 +384,7 @@ function ecrire(
 ): { id: number; etat: EtatImport } {
   const { universId, compteId } = jeton;
   const existante = db
-    .prepare('SELECT id, type, titre, charge, sous_type, dernier_import, cree_le FROM fiches WHERE univers_id = ? AND cle_origine = ?')
+    .prepare('SELECT id, type, titre, charge, sous_type, dernier_import, cree_le FROM fiches WHERE univers_id = ? AND cle = ?')
     .get(universId, cle) as FicheLue | undefined;
   const charge = e.type === 'aventure'
     ? CHARGES.aventure.parse({ v: 1, statut: e.statut })
@@ -571,7 +571,7 @@ function ecrire(
   const lignes = db
     .prepare('SELECT * FROM sections WHERE fiche_id = ? ORDER BY ordre')
     .all(existante.id) as SectionLue[];
-  const parCle = new Map(lignes.filter((l) => l.cle_origine !== null).map((l) => [l.cle_origine!, l]));
+  const parCle = new Map(lignes.filter((l) => l.cle !== null).map((l) => [l.cle!, l]));
   const demandes: number[] = [];
   let nouvelle = false;
   for (const s of e.sections) {
@@ -705,7 +705,7 @@ function poserParent(
     voulu === null
       ? null
       : ((
-          db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?').get(universId, voulu) as
+          db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle = ?').get(universId, voulu) as
             | { id: number }
             | undefined
         )?.id ?? undefined);
@@ -783,7 +783,7 @@ function creerSection(
   prevenirTexte(preparerContenu(db, universId, compteId, s.contenu), s.titre, prevenir);
   const joints = poserJoints(db, universId, { id: v.id, titre: s.titre }, s.fichiers, undefined, prevenir);
   if (joints) marque.fichiers = joints.marque;
-  db.prepare('UPDATE sections SET cle_origine = ?, version_importee = ?, dernier_import = ? WHERE id = ?').run(
+  db.prepare('UPDATE sections SET cle = ?, version_importee = ?, dernier_import = ? WHERE id = ?').run(
     s.cle,
     v.version,
     JSON.stringify(marque),
@@ -880,7 +880,7 @@ export function supprimerFicheImport(
   if (!cleValide(cle)) return;
   db.transaction(() => {
     const f = db
-      .prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?')
+      .prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle = ?')
       .get(jeton.universId, cle) as { id: number } | undefined;
     if (!f) return;
     supprimerFiche(db, { compteId: jeton.compteId }, jeton.universId, f.id);

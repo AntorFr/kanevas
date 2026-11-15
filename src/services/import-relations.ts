@@ -28,7 +28,7 @@ export function assurerRelations(
   }
   if (!cleValide(cle)) throw new ErreurService('invalide', "clé d'origine invalide", undefined, 'cle');
   if (!Array.isArray(corps)) throw new ErreurService('invalide', 'relations : une liste est attendue', undefined, 'corps');
-  const source = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?')
+  const source = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle = ?')
     .get(universId, cle) as { id: number } | undefined;
   if (!source) throw introuvable();
 
@@ -55,9 +55,9 @@ export function assurerRelations(
       || !entree.type || entree.type.length > 80) {
       return refuser('relation : clés de section et cible valides et type de 1 à 80 caractères attendus');
     }
-    const section = db.prepare('SELECT id FROM sections WHERE fiche_id = ? AND cle_origine = ?')
+    const section = db.prepare('SELECT id FROM sections WHERE fiche_id = ? AND cle = ?')
       .get(source.id, entree.section) as { id: number } | undefined;
-    const cible = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?')
+    const cible = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle = ?')
       .get(universId, entree.cible) as { id: number } | undefined;
     if (!section || !cible) {
       const raison = !section ? `section inconnue : ${entree.section}` : `cible inconnue : ${entree.cible}`;

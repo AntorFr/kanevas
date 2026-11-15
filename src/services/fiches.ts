@@ -17,6 +17,7 @@ import { illustrationEnAttente, lireLignes, lisiblePar, type FichierRow } from '
 import { supprimerFichier } from './stockage.js';
 import { IMAGE_RESERVEE } from './markdown.js';
 import { CHARGES, TYPES, STATUT_AVENTURE, estTypeFiche, typeActif } from './types-fiche.js';
+import { tirerCleFiche } from './cles.js';
 import { ajouterSection, changerAudience } from './sections.js';
 import {
   TYPES_FICHE,
@@ -48,7 +49,8 @@ interface FicheRow {
   illustration_disque: string | null;
   illustration_visibilite: 'joueurs' | 'mj' | null;
   illustration_ajoute_par: number | null;
-  cle_origine: string | null;
+  cle: string;
+  creee_via: string;
   sous_type: string | null;
   parent_id: number | null;
   visible_joueurs?: number;
@@ -144,6 +146,8 @@ export function creerFiche(
     sections?: { titre: string; joueursLisent?: boolean }[];
     /** Import only (B-50, AD-107): the origin key and dates of the sheet, and what the import wrote. */
     origine?: { cle: string; creeLe?: string; modifieLe?: string; dernierImport: unknown };
+    /** Where the sheet is created from (`creee_via`); the import is `import`, else `ecran` by default. */
+    via?: 'ecran' | 'assistant' | 'mcp';
   },
 ): Fiche {
   exigerMJ(db, universId, compteId);
@@ -177,8 +181,8 @@ export function creerFiche(
     const cree = o?.creeLe ?? now;
     const info = db
       .prepare(
-        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, dernier_import)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle, creee_via, dernier_import)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         universId,
@@ -187,7 +191,8 @@ export function creerFiche(
         JSON.stringify(charge.data),
         cree,
         o?.modifieLe ?? (cree > now ? cree : now),
-        o?.cle ?? null,
+        o?.cle ?? tirerCleFiche(db, universId, type, titre),
+        o ? 'import' : (entree.via ?? 'ecran'),
         o ? JSON.stringify(o.dernierImport) : null,
       );
     const id = Number(info.lastInsertRowid);
@@ -650,7 +655,7 @@ export function lireFiche(
     mentionsRestantes: mentions.restantes,
     ...etiquetageDe(db, ficheId),
     // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
-    ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
+    ...(vueMJ(role, acteur) && fiche.creee_via === 'import' ? { cleOrigine: fiche.cle } : {}),
     sections: lisibles.map((s) => ({
       ...vueSection(db, universId, role, s, acteur, formeLiens),
       piecesJointes: lireLignes(db, acteur, universId, role, s.id),

@@ -7,6 +7,7 @@ import {
   roleDe,
   vueSection,
 } from './droits.js';
+import { tirerCleSection } from './cles.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { chargerFiche, validerTitre } from './fiches.js';
 import { preparerContenu, remplacerLiens, resoudreLiens, sectionsEnAttenteDe } from './liens.js';
@@ -44,6 +45,8 @@ export function insererSection(
     ordre: number;
     contenu: string;
     modifieLe: string;
+    /** Import only: the key the importer gave; else drawn from the title (AD-146). */
+    cle?: string;
     joueursLisent?: number;
     joueursEcrivent?: number;
     auteurId?: number | null;
@@ -53,13 +56,14 @@ export function insererSection(
 ): number {
   const info = db
     .prepare(
-      `INSERT INTO sections (fiche_id, titre, ordre, contenu, contenu_public, modifie_le,
+      `INSERT INTO sections (fiche_id, titre, cle, ordre, contenu, contenu_public, modifie_le,
          joueurs_lisent, joueurs_ecrivent, auteur_id, auteur_lit, auteur_ecrit)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       s.ficheId,
       s.titre,
+      s.cle ?? tirerCleSection(db, s.ficheId, s.titre),
       s.ordre,
       s.contenu,
       contenuPublic(s.contenu),

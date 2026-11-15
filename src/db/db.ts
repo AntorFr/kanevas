@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 
 import Database from 'better-sqlite3';
 
+import { baseCleFiche, baseCleUnivers, migrationCles, slug } from '../services/cles-forme.js';
+
 export type Db = Database.Database;
 
 const MIGRATIONS_DIR = fileURLToPath(new URL('./migrations/', import.meta.url));
@@ -19,6 +21,17 @@ export function openDb(path: string): Db {
   db.function('plier', { deterministic: true }, (t: unknown) =>
     typeof t === 'string' ? t.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase() : t,
   );
+  // Key derivation of migration 0018 (AD-146): slug, and per-scope reservation so that collisions are suffixed in id order.
+  db.function('cle_slug', { deterministic: true }, (t: unknown) => (typeof t === 'string' ? slug(t) : t));
+  db.function('cle_debut', () => migrationCles.debut());
+  db.function('cle_reserver', (p: unknown, c: unknown) => migrationCles.reserver(String(p), String(c)));
+  db.function('cle_tirer', (p: unknown, b: unknown, m: unknown) =>
+    migrationCles.tirer(String(p), String(b), Number(m)),
+  );
+  db.function('cle_base_fiche', (type: unknown, titre: unknown, id: unknown) =>
+    baseCleFiche(String(type), String(titre), Number(id)),
+  );
+  db.function('cle_base_univers', (nom: unknown, id: unknown) => baseCleUnivers(String(nom), Number(id)));
   db.pragma('foreign_keys = ON');
   db.pragma('busy_timeout = 5000');
   if (path !== ':memory:') db.pragma('journal_mode = WAL');
@@ -89,6 +102,7 @@ function sansClesEtrangeres(db: Db, file: string, jouer: () => void): void {
       }
     })();
   } finally {
+    db.pragma('legacy_alter_table = OFF');
     db.pragma('foreign_keys = ON');
   }
 }
