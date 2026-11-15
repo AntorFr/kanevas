@@ -46,6 +46,11 @@ describe('rejouer-tests', () => {
     assert.deepEqual(trouverFichiers('x > crée une fiche', choisirFichiers(FICHIERS), lire), ['src/services/c.test.ts']);
     assert.deepEqual(trouverFichiers('inconnu', choisirFichiers(FICHIERS), lire), []);
   });
+  test('un nom qui apparaît ailleurs que comme titre de test ne retrouve pas le fichier', () => {
+    const src = (f: string) => (f === 'src/routes/b.test.ts' ? "const x = { section: 'nope' }; test('it\\'s ok', () => {})" : '');
+    assert.deepEqual(trouverFichiers('a > nope', ['src/routes/b.test.ts'], src), []);
+    assert.deepEqual(trouverFichiers("a > it's ok", ['src/routes/b.test.ts'], src), ['src/routes/b.test.ts']);
+  });
   test('un nom introuvable est rendu tel quel', () => {
     const r = resoudre(['liste les fiches', 'nulle part'], choisirFichiers(FICHIERS), lire);
     assert.deepEqual([...r.parFichier.keys()], ['src/routes/b.test.ts']);

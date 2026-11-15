@@ -25,10 +25,22 @@ export function nomPropre(nom) {
   return i >= 0 ? nom.slice(i + SEP.length) : nom;
 }
 
-/** Files (among `fichiers`, read through `lire`) whose source contains the test's own name literally. */
+/** True when `source` declares a test or suite titled exactly `propre`: `it('…'`, `test("…"`, `describe(`…``. */
+export function declare(source, propre) {
+  const formes = new Set([propre, propre.replace(/'/g, "\\'"), propre.replace(/"/g, '\\"'), propre.replace(/`/g, '\\`')]);
+  for (const forme of formes) {
+    const re = new RegExp(`\\b(?:it|test|describe|suite)(?:\\.\\w+)?\\(\\s*(['"\`])${forme.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&')}\\1`);
+    if (re.test(source)) return true;
+  }
+  return false;
+}
+
+/** Files (among `fichiers`, read through `lire`) that declare a test or suite titled with the test's own name. */
 export function trouverFichiers(nom, fichiers, lire = (f) => readFileSync(f, 'utf8')) {
-  const propre = nomPropre(nom);
-  return fichiers.filter((f) => lire(f).includes(propre));
+  // A title may itself contain ' > ': try every suffix after a separator, longest first.
+  const morceaux = nom.split(SEP);
+  const candidats = morceaux.map((_, i) => morceaux.slice(i).join(SEP)).reverse();
+  return fichiers.filter((f) => { const src = lire(f); return candidats.some((c) => declare(src, c)); });
 }
 
 /**
