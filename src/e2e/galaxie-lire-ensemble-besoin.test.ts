@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, test } from 'node:test';
 import Database from 'better-sqlite3';
-import { attendre, attendreTransitions, type Any, launch, skipBrowser, startServer } from './harnais.test.js';
+import { attendre, type Any, launch, skipBrowser, startServer } from './harnais.test.js';
 
 const opts = { skip: skipBrowser, timeout: 180000 };
 const tmpDirs: string[] = [];
@@ -551,7 +551,7 @@ test('P-18 échec / critère : Léa tape « fant » : « Aucun système ne corre
   await s.page.screenshot({ path: '/tmp/shots/galaxie-recherche-fant.png' });
   // une seule lettre : aucun message, aucun résultat
   await s.page.getByLabel('Rechercher un système', { exact: true }).first().fill('v');
-  await attendreTransitions(s.page); await attendre(s.page);
+  await attendre(s.page);
   assert.ok(!(await texteDe(s.page)).includes('Aucun système ne correspond.'));
   await s.ctx.close();
 });
