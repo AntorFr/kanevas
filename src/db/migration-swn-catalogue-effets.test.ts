@@ -29,7 +29,7 @@ test('0032 : montée depuis 0031, les lignes restent, colonnes nouvelles nulles,
   const avant = (t: string) => db.prepare(`SELECT * FROM swn_catalogue_${t}`).all() as Record<string, unknown>[];
   const [m0, a0] = [avant('modifications'), avant('amenagements')];
 
-  assert.deepEqual(migrate(db), [32, 33, 34]);
+  assert.deepEqual(migrate(db), [32, 33, 34, 35]);
 
   for (const [t, cs, a] of [['modifications', NOUVELLES_M, m0], ['amenagements', NOUVELLES_A, a0]] as const) {
     const apres = avant(t);

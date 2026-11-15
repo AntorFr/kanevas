@@ -59,7 +59,7 @@ export function Assistant() {
         aria-expanded={ouvert}
         onClick={() => (ouvert ? fermer() : setOuvert(true))}
       >
-        <Sparkles size={16} strokeWidth={1.75} aria-hidden="true" /> Demander à Kanevas
+        <Sparkles size={16} strokeWidth={1.75} aria-hidden="true" /> <span className="asst-bouton-texte">Demander à Kanevas</span>
       </button>
       {ouvert && (
         <Panneau

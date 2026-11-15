@@ -1,4 +1,4 @@
-import { BookOpen, Map as Carte, Rocket, WandSparkles, type LucideIcon } from 'lucide-react';
+import { BookOpen, Images, Map as Carte, Rocket, WandSparkles, type LucideIcon } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 import { lire } from '../api';
@@ -41,6 +41,8 @@ export const OUTILS_CLIENT: Record<string, OutilClient> = {
     },
     charger: () => import('./swn/vaisseaux'),
   },
+  // The screen answers its own address (`ecrans/battlemap-assets.tsx`); this entry makes « Bibliothèque » show in the bar.
+  'battlemap/assets': { icone: Images, charger: () => import('./battlemap/assets') },
   'essai/g': { icone: WandSparkles, charger: () => import('./essai/g') },
 };
 

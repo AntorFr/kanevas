@@ -23,6 +23,9 @@ const envSchema = z.object({
   KANEVAS_STUB: z.enum(['1']).optional(),
   // Stub mode only: `1` skips the starting-world seeding (e2e servers that build their own world).
   KANEVAS_SANS_SEMIS: z.enum(['1']).optional(),
+  // Stub mode only: `1` keeps the starting world but not the asset library and art direction of the `battlemap` module
+  // (e2e servers that start from an empty library with the tool off).
+  KANEVAS_SANS_SEMIS_BATTLEMAP: z.enum(['1']).optional(),
   // Session cookie signing secret (AD-56); absent, one is created once in <data dir>/session.key.
   SESSION_SECRET: z.string().min(16).optional(),
   PORT: z.coerce.number().int().positive().default(3001),
