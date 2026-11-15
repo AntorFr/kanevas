@@ -113,7 +113,8 @@ function exigerPlace(db: Db, universId: number): void {
   if (n >= MAX_ASSETS) throw erreur('conflit', 'Bibliothèque pleine (5 000 assets).', 'bibliotheque_pleine');
 }
 
-const echapperLike = (q: string) => q.replace(/[\\%_]/g, (c) => `\\${c}`);
+/** Lower case and no accent, for the search. */
+const plier = (t: string) => t.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 
 export interface FiltresAssets {
   categorie?: string;
@@ -140,17 +141,15 @@ export function listerAssets(db: Db, acteur: Acteur, universId: number, filtres:
   const where = ['a.univers_id = ?'];
   const params: (string | number)[] = [universId];
   if (!mj) where.push("a.etat = 'valide'", "f.visibilite = 'joueurs'");
-  const q = filtres.q?.trim();
-  if (q) {
-    where.push(`(a.nom LIKE ? ESCAPE '\\' OR EXISTS (SELECT 1 FROM json_each(a.tags) j WHERE j.value LIKE ? ESCAPE '\\'))`);
-    params.push(`%${echapperLike(q)}%`, `%${echapperLike(q)}%`);
-  }
+  const q = filtres.q?.trim() ? plier(filtres.q.trim()) : '';
   for (const t of filtres.tags ?? []) {
     where.push('EXISTS (SELECT 1 FROM json_each(a.tags) j WHERE lower(j.value) = lower(?))');
     params.push(t);
   }
   const comptes = { objet: 0, vaisseau: 0, decor: 0, sol: 0, mur: 0, total: 0 } as ListeAssets['comptes'];
-  const lignes = db.prepare(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY a.id DESC`).all(...params) as Ligne[];
+  let lignes = db.prepare(`${SELECT} WHERE ${where.join(' AND ')} ORDER BY a.id DESC`).all(...params) as Ligne[];
+  // Folded in code: SQLite's LIKE ignores neither accents nor the case of accented letters, and a SQL function would be slow at 5 000 assets.
+  if (q) lignes = lignes.filter((l) => plier(l.nom).includes(q) || (JSON.parse(l.tags) as string[]).some((t) => plier(t).includes(q)));
   for (const l of lignes) {
     comptes[l.categorie] += 1;
     comptes.total += 1;
