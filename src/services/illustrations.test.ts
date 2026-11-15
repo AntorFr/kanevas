@@ -6,9 +6,9 @@ import { migrate, openDb } from '../db/db.js';
 function base() {
   const db = openDb(':memory:');
   migrate(db);
-  db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('u', 'x')").run();
-  db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 'lieu', 'a', '{}', 'x', 'x')").run();
-  db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 'lieu', 'b', '{}', 'x', 'x')").run();
+  db.prepare("INSERT INTO univers (cle, nom, cree_le) VALUES ('u-' || lower(hex(randomblob(6))), 'u', 'x')").run();
+  db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', 1, 'lieu', 'a', '{}', 'x', 'x')").run();
+  db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', 1, 'lieu', 'b', '{}', 'x', 'x')").run();
   return db;
 }
 const maj = (db: ReturnType<typeof base>, id: number, f: string | null, t: string | null, n: number | null) =>

@@ -282,7 +282,7 @@ describe('B-46 refus du jeton : 401 au corps unique, aucun lot ouvert', () => {
     assert.equal(r.statusCode, 404);
     const put_ = await m.app.inject({ method: 'PUT', url: `/api/import/v1/univers/${autre}/fiches/lieu%3Apx`, headers: { authorization: `Bearer ${v}` }, payload: PORT_SEL });
     assert.equal(put_.statusCode, 404);
-    assert.equal((m.app.db.prepare('SELECT COUNT(*) AS n FROM fiches WHERE univers_id = ? AND cle_origine IS NOT NULL').get(autre) as { n: number }).n, 0);
+    assert.equal((m.app.db.prepare("SELECT COUNT(*) AS n FROM fiches WHERE univers_id = ? AND creee_via = 'import'").get(autre) as { n: number }).n, 0);
   });
 });
 

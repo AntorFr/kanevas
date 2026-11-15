@@ -47,8 +47,8 @@ test('migration 0005 sur base 0001+0002 peuplée : relations, index remplis, ide
   db.exec(readFileSync(`${dir}0002-systemes.sql`, 'utf8').toString());
   db.exec('CREATE TABLE migrations (numero INTEGER PRIMARY KEY, nom TEXT NOT NULL, applique_le TEXT NOT NULL)');
   db.exec("INSERT INTO migrations VALUES (1,'0001-premiere-fiche.sql','x'),(2,'0002-systemes.sql','x')");
-  db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('u','x')").run();
-  db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1,'lieu','Épée','{}','x','x')").run();
+  db.prepare("INSERT INTO univers (cle, nom, cree_le) VALUES ('u-' || lower(hex(randomblob(6))), 'u','x')").run();
+  db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', 1,'lieu','Épée','{}','x','x')").run();
   db.prepare(
     "INSERT INTO sections (fiche_id, titre, ordre, contenu, version, modifie_le) VALUES (1,'Histoire',1,'dragon ancien',1,'x')",
   ).run();

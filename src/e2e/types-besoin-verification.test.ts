@@ -44,6 +44,7 @@ describe('kanevas-import-types : migration sur une base d’avant', () => {
       // 0016 and 0017 follow 0013 (0017 writes `fiches.sous_type`): the base « d'avant » stops before 0013.
       rmSync(join(avant, '0016-import-suivi.sql'));
       rmSync(join(avant, '0017-scenarios-pivot.sql'));
+      rmSync(join(avant, '0018-cles.sql'));
       const chemin = join(dir, 'k.db');
       const db = openDb(chemin);
       migrate(db, avant + '/');
@@ -78,7 +79,7 @@ describe('kanevas-import-types : migration sur une base d’avant', () => {
       srv = await startServer({ DB_PATH: chemin, KANEVAS_SANS_SEMIS: '1' });
       assert.deepEqual(compter(), { fiches: 3, sections: 2, relations: 1, elements_carte: 1, propositions: 1, cartes: 1 });
       const d = new Database(chemin, { readonly: true });
-      const port = d.prepare("SELECT titre, type, illustration_fichier AS ill, cle_origine AS cle FROM fiches WHERE id = 1").get();
+      const port = d.prepare("SELECT titre, type, illustration_fichier AS ill, cle FROM fiches WHERE id = 1").get();
       assert.deepEqual(port, { titre: 'Port-Sel', type: 'lieu', ill: 'abc.png', cle: 'lieu:port-sel' });
       assert.deepEqual(d.prepare('PRAGMA foreign_key_check').all(), []);
       d.close();

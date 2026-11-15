@@ -118,7 +118,7 @@ describe('kanevas-import-fil, compléments', () => {
     const r = await api('PUT', `fiches/lieu%3Arevoque-2?lot=${lotId}`, jeton, corps(true));
     assert.equal(r.status, 401);
     assert.deepEqual(r.json, { message: 'Jeton invalide.', code: 'jeton_invalide' });
-    assert.equal(app.db.prepare("SELECT count(*) AS n FROM fiches WHERE cle_origine = 'lieu:revoque-2'").get()!.n ?? 0, 0);
+    assert.equal(app.db.prepare("SELECT count(*) AS n FROM fiches WHERE cle = 'lieu:revoque-2'").get()!.n ?? 0, 0);
     const lu = (await lotsListes()).find((l) => l.id === lotId || l.lotId === lotId);
     assert.ok(lu, 'the open batch is still listed');
     assert.equal(JSON.stringify(lu).includes('"creees":2'), false);

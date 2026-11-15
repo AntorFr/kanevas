@@ -161,7 +161,7 @@ describe('kanevas-scenarios-suivi : migration de la base d\'exemple (campagnes e
     assert.deepEqual(pro.ancetres.map((a: Any) => a.id), [ids['Les Brumes de Vaëlis']]);
     // les clés d'origine : la campagne garde 'couronne', le scénario libre garde 'acte-2', le scénario en collision est préfixé
     const sqlite = openDb(dbPath());
-    const cle = (t: string) => (sqlite.prepare('SELECT cle_origine FROM fiches WHERE id = ?').get(ids[t]) as { cle_origine: string | null }).cle_origine;
+    const cle = (t: string) => (sqlite.prepare('SELECT cle FROM fiches WHERE id = ?').get(ids[t]) as { cle: string | null }).cle;
     const att = { couronne: cle('La Couronne brisée'), acte2: cle('Acte II — Le sceau brisé'), acte1: cle('Acte I — Le couronnement') };
     const tables = (sqlite.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('campagnes', 'scenarios')").all() as unknown[]).length;
     sqlite.close();

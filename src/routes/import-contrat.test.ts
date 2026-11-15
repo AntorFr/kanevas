@@ -300,12 +300,12 @@ test('révocation : un autre MJ révoque, un id d’un autre univers est introuv
   assert.ok(!JSON.stringify(l).includes(valeur));
 });
 
-test('migration : clés d’origine uniques par univers (fiches) et par fiche (sections), NULL multiples permis', async () => {
+test('migration : clés uniques par univers (fiches) et par fiche (sections), jamais NULL', async () => {
   const { app, u, autre, antor } = await monter();
   const f = async (univers: number, titre: string) =>
     (await app.inject({ method: 'POST', url: `/api/univers/${univers}/fiches`, headers: antor, payload: { type: 'lieu', titre } })).json().id as number;
   const [a, b, c] = [await f(u.id, 'A'), await f(u.id, 'B'), await f(autre.id, 'C')];
-  const set = app.db.prepare('UPDATE fiches SET cle_origine = ? WHERE id = ?');
+  const set = app.db.prepare('UPDATE fiches SET cle = ? WHERE id = ?');
   set.run('k1', a);
   assert.throws(() => set.run('k1', b));
   set.run('k1', c); // same key, other universe
@@ -315,12 +315,13 @@ test('migration : clés d’origine uniques par univers (fiches) et par fiche (s
   const s = async (fiche: number) =>
     (await app.inject({ method: 'POST', url: `/api/univers/${u.id}/fiches/${fiche}/sections`, headers: antor, payload: { titre: 'S', contenu: '' } })).json().id as number;
   const [s1, s2, s3] = [await s(a), await s(a), await s(b)];
-  const ss = app.db.prepare('UPDATE sections SET cle_origine = ? WHERE id = ?');
+  const ss = app.db.prepare('UPDATE sections SET cle = ? WHERE id = ?');
   ss.run('s', s1);
   assert.throws(() => ss.run('s', s2));
   ss.run('s', s3); // other fiche
   assert.equal(
-    (app.db.prepare('SELECT count(*) AS n FROM sections WHERE cle_origine IS NULL').get() as { n: number }).n >= 0,
-    true,
+    (app.db.prepare('SELECT count(*) AS n FROM sections WHERE cle IS NULL').get() as { n: number }).n,
+    0,
   );
+  assert.throws(() => ss.run(null, s1), 'a section key is never NULL');
 });

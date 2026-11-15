@@ -57,12 +57,12 @@ test('migration: tables, types sans CHECK, clés étrangères, idempotente', () 
   assert.equal(db.pragma('foreign_keys', { simple: true }), 1);
   assert.equal((db.prepare('SELECT count(*) n FROM migrations').get() as { n: number }).n, 17);
   assert.throws(() => db.prepare("INSERT INTO membres VALUES (99, 99, 'mj')").run());
-  db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('u', 'x')").run();
+  db.prepare("INSERT INTO univers (cle, nom, cree_le) VALUES ('u-' || lower(hex(randomblob(6))), 'u', 'x')").run();
   for (const t of ['personnage', 'lieu', 'faction', 'objet', 'evenement', 'quete', 'compte_rendu']) {
-    db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, ?, 't', '{\"v\":1}', 'x', 'x')").run(t);
+    db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', 1, ?, 't', '{\"v\":1}', 'x', 'x')").run(t);
   }
   // AD-102: the type is guarded by creerFiche, no longer by a CHECK (0011).
-  db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 'carte', 't', '{}', 'x', 'x')").run();
+  db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', 1, 'carte', 't', '{}', 'x', 'x')").run();
 });
 
 test('migration: seconde exécution ne change pas les données', () => {

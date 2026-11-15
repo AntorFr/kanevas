@@ -148,7 +148,7 @@ test('valeur non-liste : 400 avec champ, rien créé', async () => {
   assert.equal(r.json().champ, 'alias');
   const r2 = await t.put('lieu:q', PORT({ etiquettes: [1] }));
   assert.equal(r2.statusCode, 400);
-  assert.equal((t.app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE cle_origine = 'lieu:q'").get() as { n: number }).n, 0);
+  assert.equal((t.app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE cle = 'lieu:q'").get() as { n: number }).n, 0);
 });
 
 test('doublons sans casse et vides fusionnés', async () => {

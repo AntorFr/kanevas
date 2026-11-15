@@ -682,7 +682,7 @@ test('B-56 bords · 100 fichiers joints par section sont acceptés, 101 refusés
   assert.ok(rap.rapport.some((r: Any) => r.cle === 'lieu:trop' && r.gravite === 'refus'));
   const vue = (await ficheDe(m, await cookieDe(m, 'antor'), cent.json.id)).json;
   assert.equal(vue.sections[0].piecesJointes.length, 100);
-  assert.equal(m.app.db.prepare("SELECT count(*) n FROM fiches WHERE cle_origine = 'lieu:trop'").get().n, 0, 'the refused sheet was not written');
+  assert.equal(m.app.db.prepare("SELECT count(*) n FROM fiches WHERE cle = 'lieu:trop'").get().n, 0, 'the refused sheet was not written');
   assert.equal((await imp(m, 'GET', '')).json.limites.fichiersJointsParSection, 100);
   await m.app.close();
 });
