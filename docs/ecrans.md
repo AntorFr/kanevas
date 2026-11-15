@@ -3385,7 +3385,7 @@ this text is authoritative where they differ.
 
 ## Screens of `kanevas-synchro` (framing, 2026-11-01)
 
-The epic is an API first (B-80 to B-87, read and written by a script, P-22); its human gestures
+The epic is an API first (B-105 to B-112, read and written by a script, P-22); its human gestures
 land on existing screens and on two new ones (E-23, E-24, below), in the product's visual direction
 (`docs/charte.md`).
 The slices draw them; nothing here invents a component.
@@ -3422,7 +3422,7 @@ refusals with its key and « modifiée depuis la lecture ». The warnings « mod
 écrasé » disappear with B-48.
 
 ### Cross-check
-- Each need has a screen or its script: B-80 to B-87, B-90, B-91 → the import API (E-18 shows the batches);
+- Each need has a screen or its script: B-105 to B-112, B-90, B-91 → the import API (E-18 shows the batches);
   B-88 → E-11, E-9; B-89 → E-5, E-11.
 - Each journey reaches its screens: P-22 → E-18; P-23 → E-11, E-9, E-5.
 - Each role: GM (E-11, E-9, E-18), player (E-9, E-11 reading), admin (E-5).
