@@ -128,9 +128,11 @@ test('illustration : recherche et filtre Images se combinent, pas de document', 
   await d.getByRole('button', { name: /Carte des Sphères/ }).waitFor();
   const requetes: string[] = [];
   antor.on('request', (r: Any) => requetes.push(r.url()));
+  const demandee = antor.waitForRequest((r: Any) => /\/fichiers\?.*q=Sph/.test(r.url()));
   await d.getByLabel('Chercher par nom').fill('Sphères');
+  await demandee;
+  await attendre(antor);
   await d.getByRole('button', { name: /Carte des Sphères/ }).waitFor();
-  await antor.waitForTimeout(300);
   const derniere = requetes.filter((u) => /\/fichiers\?/.test(u)).pop() ?? '';
   assert.match(derniere, /nature=images/);
   assert.match(derniere, /q=Sph/);
@@ -185,7 +187,7 @@ test('sélecteur d’un fichier lisible : la référence est insérée ; hors co
   assert.equal(await tuile.isDisabled(), false);
   await antor.context().setOffline(true);
   await antor.evaluate(() => window.dispatchEvent(new Event('offline')));
-  await antor.waitForTimeout(300);
+  await antor.waitForFunction((el: HTMLButtonElement) => el.disabled, await tuile.elementHandle());
   const desactivee = await tuile.isDisabled();
   await antor.context().setOffline(false);
   await antor.evaluate(() => window.dispatchEvent(new Event('online')));

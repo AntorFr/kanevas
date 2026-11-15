@@ -70,13 +70,17 @@ const tuile = (p: Any, nom: string) => p.getByRole('button', { name: nom, exact:
 const tuilesNoms = async (p: Any): Promise<string> => (await p.locator('main').innerText()) as string;
 // Sonde le texte de `main` jusqu'à l'état attendu en entier (voulus présents ET exclus absents) : « détachée » seul est vrai sur une liste vide.
 const tuilesQuand = async (p: Any, presents: RegExp[], absents: RegExp[]): Promise<string> => {
-  const fin = Date.now() + 15_000;
-  for (;;) {
-    const t = await tuilesNoms(p);
-    if (presents.every((r) => r.test(t)) && !absents.some((r) => r.test(t))) return t;
-    if (Date.now() > fin) return t;
-    await p.waitForTimeout(50);
-  }
+  await p
+    .waitForFunction(
+      ([pr, ab]: [string[], string[]]) => {
+        const t = (document.querySelector('main') as HTMLElement | null)?.innerText ?? '';
+        return pr.every((s) => new RegExp(s).test(t)) && !ab.some((s) => new RegExp(s).test(t));
+      },
+      [presents.map((r) => r.source), absents.map((r) => r.source)],
+      { timeout: 15_000 },
+    )
+    .catch(() => undefined);
+  return tuilesNoms(p);
 };
 const ouvrirFichier = async (p: Any, nom: string) => {
   await tuile(p, nom).first().click();
@@ -98,11 +102,11 @@ const fichierId = async (p: Any, nom: string): Promise<number> => {
 const inserer = async (p: Any, titre: string) => {
   // waits until the editor of the section holds a file reference (the upload is over)
   const ta = region(p, titre).getByRole('textbox');
-  for (let i = 0; i < 100; i++) {
-    if (/\]\(fichier:\d+\)/.test(await ta.inputValue())) return;
-    await p.waitForTimeout(100);
-  }
-  throw new Error('no file reference in the editor of ' + titre);
+  await p
+    .waitForFunction((el: HTMLTextAreaElement) => /\]\(fichier:\d+\)/.test(el.value), await ta.elementHandle(), { timeout: 10_000 })
+    .catch(() => {
+      throw new Error('no file reference in the editor of ' + titre);
+    });
 };
 const AVERT = 'Ce fichier est réservé au MJ : les joueurs qui lisent cette section ne le verront pas.';
 
