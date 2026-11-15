@@ -588,6 +588,70 @@ test('P-10 secret > Léa receives the section « Description » only, as html wi
   assert.equal(await q('brumes'), 1);
 });
 
+// ---------------------------------------------------------------- complements
+
+const AVEC_NOTES = (publique: boolean) => ({
+  type: 'lieu',
+  titre: 'Port-Sel',
+  sections: [
+    { cle: 'description', titre: 'Description', contenu: 'Un port brumeux.', joueursLisent: true, joueursEcrivent: false },
+    { cle: 'notes', titre: 'Notes', contenu: 'Le capitaine boit.', joueursLisent: publique, joueursEcrivent: false },
+  ],
+});
+
+test('B-47 audience > a section the script re-marks GM-only, untouched in Kanevas, is lost to Léa at the replay', async () => {
+  const m = await monde();
+  const jeton = await m.jeton();
+  const a = await m.pousser(jeton, 'lieu:audience', AVEC_NOTES(true));
+  assert.equal(a.json().etat, 'creee', a.body);
+  const fid = a.json().id as number;
+  const titres = async () => ((await m.rest(m.lea, 'GET', `/api/univers/${m.essai}/fiches/${fid}`)).json().sections as Array<{ titre: string }>).map((x) => x.titre).sort();
+  assert.deepEqual(await titres(), ['Description', 'Notes']);
+  const b = await m.pousser(jeton, 'lieu:audience', AVEC_NOTES(false));
+  assert.equal(b.json().etat, 'mise_a_jour');
+  assert.deepEqual(await titres(), ['Description']);
+  assert.ok(!(await m.rest(m.lea, 'GET', `/api/univers/${m.essai}/fiches/${fid}`)).body.includes('Le capitaine boit.'));
+});
+
+test('B-48 type > the type of a sheet changed in Kanevas is not put back by the replay, the lot names the sheet and the type', async () => {
+  const m = await monde();
+  const jeton = await m.jeton();
+  const fid = (await m.pousser(jeton, 'lieu:type', AVEC_NOTES(true))).json().id as number;
+  m.app.db.prepare("UPDATE fiches SET type = 'faction' WHERE id = ?").run(fid);
+  const lot = (await m.imp(jeton, 'POST', '/lots')).json().lotId as number;
+  assert.equal((await m.pousser(jeton, 'lieu:type', AVEC_NOTES(true), lot)).statusCode, 200);
+  const clos = (await m.imp(jeton, 'POST', `/lots/${lot}/clore`)).json();
+  assert.equal((m.app.db.prepare('SELECT type FROM fiches WHERE id = ?').get(fid) as { type: string }).type, 'faction');
+  assert.ok(JSON.stringify(clos).includes('lieu:type'));
+  assert.match(JSON.stringify(clos.rapport), /type/);
+  assert.ok(clos.avertissements >= 1);
+});
+
+test('B-47 without batch > a PUT without ?lot succeeds and no batch is listed', async () => {
+  const m = await monde();
+  const jeton = await m.jeton();
+  const r = await m.pousser(jeton, 'lieu:sanslot', AVEC_NOTES(true));
+  assert.equal(r.statusCode, 200);
+  assert.equal(r.json().etat, 'creee');
+  assert.deepEqual(await lots(m), []);
+});
+
+test('B-46 open batch > a token revoked while its batch is open gets 401 on the next PUT, nothing is written or counted', async () => {
+  const m = await monde();
+  const jeton = await m.jeton(m.antor, 'Éphémère', 7);
+  const lot = (await m.imp(jeton, 'POST', '/lots')).json().lotId as number;
+  assert.equal((await m.pousser(jeton, 'lieu:revoque-1', AVEC_NOTES(true), lot)).statusCode, 200);
+  const id = (await jetons(m))[0]!.id;
+  assert.equal((await m.rest(m.antor, 'POST', `/api/univers/${m.essai}/jetons/${id}/revoquer`)).statusCode, 204);
+  const r = await m.pousser(jeton, 'lieu:revoque-2', AVEC_NOTES(true), lot);
+  assert.equal(r.statusCode, 401);
+  assert.deepEqual(r.json(), UNIQUE);
+  assert.equal((m.app.db.prepare("SELECT count(*) AS n FROM fiches WHERE cle_origine = 'lieu:revoque-2'").get() as { n: number }).n, 0);
+  const lu = ((await lots(m)) as Array<Record<string, any>>).find((l) => l.id === lot || l.lotId === lot);
+  assert.ok(lu, 'the open batch is still listed');
+  assert.equal(lu.compteurs.fiches!.creees, 1, 'only the first write is counted');
+});
+
 // ---------------------------------------------------------------- stub world
 
 test('stub world > the token of the stub acts in « Essai Kanka », seeded with Antor GM and Léa a player', async () => {
