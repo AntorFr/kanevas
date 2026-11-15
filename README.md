@@ -55,13 +55,12 @@ Tests sans Docker : `npm ci` d'abord (un `node_modules/` présent peut être inc
 
 ## Démarrage local
 
-To **view the screens**, use the command under « Sans Authelia : le mode bouchon » below (`npm ci && npm run build && KANEVAS_STUB=1 npm start`). The block below only serves the API (`/healthz`). `npm run build` writes to the repository's `dist/`: after renumbering a migration, run `rm -rf dist` first.
+To **view the screens**, use the command under « Sans Authelia : le mode bouchon » below (`npm ci && npm run build:wasm && npm run build && KANEVAS_STUB=1 npm start`; `build:wasm` needs Rust, see « Rust / WebAssembly » — the Docker block below has none, so it cannot build the screens). The block below only serves the API (`/healthz`). `npm run build` writes to the repository's `dist/`: after renumbering a migration, run `rm -rf dist` first.
 
 ```bash
 # écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
 # Sans `npm run build` préalable (fait dans l'hôte, hors de cette commande), cette voie ne sert que l'API : voir plus bas.
-# Pour voir les écrans (dont E-5, `/administration`) : même conteneur, mais `sh -c "npm ci && npm run build && KANEVAS_STUB=1 npm start"`
-# (ou, avec Node ≥ 20 sur l'hôte, `npm ci` puis la commande de la section « mode bouchon »).
+# Pour voir les écrans : le conteneur Node seul n'a pas Rust, donc pas de `npm run build:wasm` ni de `npm run build` ; utiliser la commande de la section « mode bouchon » sur un hôte avec Rust.
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 # (sans KANEVAS_STUB=1 ni les quatre OIDC_*, `/` mène à une connexion OIDC qui répond 404 : aucun écran, pour les voir lancer le mode bouchon ci-dessus)
@@ -152,7 +151,7 @@ token belongs to the deleted universe and cannot be reused for the new one.
 Le « bouchon » (*stub*) est le mode `KANEVAS_STUB=1` : pas d'Authelia, des comptes de test et un script qui répond à la place du modèle. C'est la commande pour voir l'application ; le bloc `docker run … npm run dev` plus haut ne sert que l'API (`/healthz`).
 
 ```bash
-npm ci && npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
+npm ci && npm run build:wasm && npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
 # le semis précède l'écoute du port (moins d'une seconde ici) ; sans écrire dans ./data/ ni sur le port 3001 : npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start
 # The recipes below that name `http://localhost:3001` assume `npm start` without `PORT`; with the `PORT=3055` command, replace 3001 by 3055. Stop with Ctrl-C. In the background, `kill $!` stops only `npm`, not the server: kill the `node dist/server.js` process that listens on the port (simplest: start it with `PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 node dist/server.js &` instead of `npm start`, then `kill $!` stops it; `ss`, `ps` and `pgrep` may be missing in a pod) (a server left running keeps the port, the database and `session.key`). Delete /tmp/k.db to reset the database. Every recipe below assumes a fresh seeded database (ids such as universe 4 are those of a fresh seed; the deletion recipe destroys « Port-Sel » and the universe it is run on): delete /tmp/k.db before each.
 # `session.key` and `attachments/` are created beside the database: use a dedicated directory,
