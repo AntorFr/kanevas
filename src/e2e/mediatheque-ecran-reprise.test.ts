@@ -7,7 +7,7 @@
 //   offline : a GET answered late, `offline` fired meanwhile -> the banner stays; `online` clears it
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { type Any, connecte, launch, rx, skipBrowser, startServer } from './harnais.test.js';
+import { type Any, attendre, connecte, launch, rx, skipBrowser, startServer } from './harnais.test.js';
 
 const opts = { skip: skipBrowser };
 let srv: Awaited<ReturnType<typeof startServer>>;
@@ -49,6 +49,7 @@ test('Échap ferme « Qui voit » pendant la sauvegarde de l\'auteur, rend le fo
   const pastille = page.getByRole('button', { name: /régler l['’]audience de/ }).first();
   await pastille.click();
   const boite = page.getByRole('dialog', { name: /^Qui voit/ });
+  const reponsePatch = page.waitForResponse((r: Any) => r.request().method() === 'PATCH' && /sections/.test(r.url()));
   const choix = boite.getByRole('combobox', { name: /Auteur/ });
   await choix.selectOption({ label: 'lea' });
   await page.waitForFunction("document.querySelector('[role=dialog] select')?.disabled === true");
@@ -56,7 +57,7 @@ test('Échap ferme « Qui voit » pendant la sauvegarde de l\'auteur, rend le fo
   await boite.waitFor({ state: 'detached', timeout: 1200 });
   const nom: string = await page.evaluate("document.activeElement?.getAttribute('aria-label') ?? ''");
   assert.match(nom, /régler l['’]audience/, 'focus back on the badge');
-  await page.waitForTimeout(2000);
+  await reponsePatch;
   await page.unroute(/\/api\/.*sections/);
   await page.reload();
   await page.getByRole('button', { name: /régler l['’]audience de/ }).first().click();
@@ -78,14 +79,15 @@ test('une réponse 200 déjà en vol après « offline » ne lève pas le bandea
     await route.fallback();
   });
   // a GET goes out while online, and is held
+  const demandee = page.waitForRequest((q: Any) => /\/fichiers/.test(q.url()));
   await page.locator('label', { hasText: /^Images$/ }).click();
-  await page.waitForTimeout(300);
+  await demandee;
   await page.evaluate(
     "Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => false }); window.dispatchEvent(new Event('offline'));",
   );
   await page.getByText(rx(BANDEAU)).waitFor();
   liberer();
-  await page.waitForTimeout(800);
+  await attendre(page);
   assert.equal(await page.getByText(rx(BANDEAU)).count(), 1, 'banner kept after the late answer');
   await page.evaluate(
     "Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => true }); window.dispatchEvent(new Event('online'));",

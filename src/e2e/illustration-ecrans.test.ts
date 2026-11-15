@@ -24,7 +24,6 @@ async function grille(page: Any, nav: string): Promise<void> {
   await page.goto(`/univers/${U}/fiches/${nav}`);
   await page.getByRole('heading', { level: 1 }).waitFor();
   await attendre(page);
-  await page.waitForTimeout(300);
 }
 async function fiche(page: Any, titre: string): Promise<void> {
   await page.goto(`/univers/${U}/fiche/${ids[titre]}`);

@@ -35,7 +35,6 @@ const UNIVERS = "Lame d'Ébène";
 // writes in flight to finish before reading the screen.
 async function attendre(page: Any): Promise<void> {
   await attendreHarnais(page);
-  await page.waitForTimeout(200);
   await page.waitForFunction(() => ![...document.querySelectorAll('button')].some((b) => b.textContent?.trim() === '…'));
   await attendreHarnais(page);
 }

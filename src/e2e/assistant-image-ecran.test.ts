@@ -122,7 +122,7 @@ test('Léa : même demande → pas de bloc, pas de pièce', opts, async () => {
   await nouvelle(lea);
   await demander(lea, DEMANDE);
   await panneau(lea).getByRole('log').locator('.asst-attente').waitFor({ state: 'detached' });
-  await lea.waitForTimeout(300);
+  await attendre(lea);
   assert.equal(await bloc(lea).count(), 0);
   assert.equal((await pieces(antor)).length, avant);
 });
@@ -228,7 +228,7 @@ test('connexion perdue : vignette chargée reste ; sinon « Recharger l’image 
   const b = bloc(antor).first();
   await b.locator('img').waitFor({ state: 'visible' });
   await antor.context().setOffline(true);
-  await antor.waitForTimeout(300);
+  await attendre(antor);
   assert.equal(await b.locator('img').isVisible(), true);
   await antor.context().setOffline(false);
   // an unreadable thumbnail while offline
@@ -295,7 +295,7 @@ test('P-3 étape 5 : demande faite sur la fiche déjà ouverte → « Ouvrir la 
   const b = bloc(antor).first();
   await b.locator('img').waitFor({ state: 'visible' });
   await b.getByRole('link', { name: /Ouvrir la section/ }).click();
-  await antor.waitForTimeout(1500);
+  await s.getByRole('group', { name: 'Pièces jointes' }).getByText(/image-.*\.png/).nth(avant).waitFor();
   const apres = await s.getByRole('group', { name: 'Pièces jointes' }).getByText(/image-.*\.png/).count();
   assert.equal(apres, avant + 1);
 });
