@@ -217,23 +217,31 @@ test('Documents : un PDF de 2,4 Mo dit « 2,4 Mo » et « Document PDF »', opts
 test('envoi long : « Envoi… » + pourcentage + Annuler, qui n\'ajoute rien', opts, async () => {
   await ouvrir(antor);
   const avant = (await antor.request.get(`/api/univers/${uid}/fichiers`).then((r: Any) => r.json())).fichiers.length;
-  await antor.route('**/api/univers/*/fichiers', async (route: Any) => {
-    if (route.request().method() !== 'POST') return route.continue();
-    await new Promise((r) => setTimeout(r, 15000)).catch(() => undefined);
-    await route.abort().catch(() => undefined);
-  });
-  const gros = Buffer.concat([PNG, Buffer.alloc(2_400_000, 1)]);
-  await antor.locator('input[type=file]').first().setInputFiles({ name: 'lent.png', mimeType: 'image/png', buffer: gros });
-  const ligne = antor.getByRole('status').filter({ hasText: /Envoi…/ });
-  await ligne.waitFor();
-  assert.match(await ligne.innerText(), /lent.*Envoi… \d+ %/s);
-  await antor.screenshot({ path: '/tmp/scr/envoi.png' });
-  await ligne.getByRole('button', { name: 'Annuler' }).click();
-  await attendreAbsent(ligne);
-  await antor.unroute('**/api/univers/*/fichiers');
-  const apres = (await antor.request.get(`/api/univers/${uid}/fichiers`).then((r: Any) => r.json())).fichiers.length;
-  assert.equal(apres, avant);
-  assert.equal(await antor.getByText(/Envoi…/).count(), 0);
+  // La requête reste retenue tant que le test ne la libère pas : aucun délai chronométré.
+  let liberer: () => void = () => undefined;
+  const retenue = new Promise<void>((r) => { liberer = r; });
+  try {
+    await antor.route('**/api/univers/*/fichiers', async (route: Any) => {
+      if (route.request().method() !== 'POST') return route.continue();
+      await retenue;
+      await route.abort().catch(() => undefined);
+    });
+    const gros = Buffer.concat([PNG, Buffer.alloc(2_400_000, 1)]);
+    await antor.locator('input[type=file]').first().setInputFiles({ name: 'lent.png', mimeType: 'image/png', buffer: gros });
+    const ligne = antor.getByRole('status').filter({ hasText: /Envoi…/ });
+    await ligne.waitFor();
+    assert.match(await ligne.innerText(), /lent.*Envoi… \d+ %/s);
+    await antor.screenshot({ path: '/tmp/scr/envoi.png' });
+    await ligne.getByRole('button', { name: 'Annuler' }).click();
+    await attendreAbsent(ligne);
+    await antor.unroute('**/api/univers/*/fichiers');
+    const apres = (await antor.request.get(`/api/univers/${uid}/fichiers`).then((r: Any) => r.json())).fichiers.length;
+    assert.equal(apres, avant);
+    assert.equal(await antor.getByText(/Envoi…/).count(), 0);
+  } finally {
+    liberer();
+    await antor.unroute('**/api/univers/*/fichiers').catch(() => undefined);
+  }
 });
 
 test('glisser un fichier au-dessus de la grille : voile de dépôt', opts, async () => {
