@@ -14,6 +14,7 @@
     "test": "node --import tsx --test $(find src frontend/src -name '*.test.ts')",
     "tests:attestes": "node scripts/tests-attestes.mjs",
     "controle-langue": "node scripts/controle-langue.mjs",
+    "tests:local": "node scripts/tests-attestes.mjs --local",
     "dev:front": "vite --config frontend/vite.config.ts",
     "import:echantillon": "tsx src/bouchon/client-import.ts"
   },

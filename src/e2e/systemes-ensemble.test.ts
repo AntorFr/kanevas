@@ -33,7 +33,6 @@ let idLame = 0, idLandes = 0, idBrume = 0;
 
 async function attendre(page: Any): Promise<void> {
   await attendreHarnais(page);
-  await page.waitForTimeout(200);
   await page.waitForFunction(() => ![...document.querySelectorAll('button')].some((b) => b.textContent?.trim() === '…'));
   await attendreHarnais(page);
 }

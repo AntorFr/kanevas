@@ -79,11 +79,7 @@ test('le réseau revenu, le même geste ajoute et joint le fichier', opts, async
   await description.locator('input[type=file]').first().setInputFiles(PDF('coupe-joint.pdf'));
   await description.getByText('coupe-joint.pdf').first().waitFor();
   // The row shows the name while the POST is still running: wait for the stored file.
-  const fin = Date.now() + 15000;
-  let noms = await nomsDeLaMediatheque();
-  while (!noms.includes('coupe-joint.pdf') && Date.now() < fin) {
-    await new Promise((r) => setTimeout(r, 200));
-    noms = await nomsDeLaMediatheque();
-  }
+  await attendre(antor);
+  const noms = await nomsDeLaMediatheque();
   assert.ok(noms.includes('coupe-joint.pdf'));
 });
