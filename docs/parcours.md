@@ -952,8 +952,7 @@ the density of generated systems never changes based on a territory she cannot s
    alert « Classe de coque inadaptée » refuses the save; she chooses a lighter weapon. She sets « dont joueurs » and « dont robots »
    and reads the crew cost per day and the robots' one-off cost; the results show the capacities the fittings give (hidden cargo,
    maximum crew, provisions, lifeboats) and each element's effect line. On a station there is no Spike drive to choose and the
-   speed reads « N/A ». She adds a specialised mounting and, in its « Visée » row (E-22), chooses which of her weapons it aims at (a second row for a second installation; a second specialised mounting on the same weapon is refused with « Cet élément est déjà visé par un montage spécialisé », while an overcharge may be aimed at it again); she adds a pretech modification, reads the components, the installation days and the Maintenance alert, and
-   makes one mod part of the hull (refit), then reads its cost. Antor changes the price divisor or the yard pace on E-20: her
+   speed reads « N/A ». She adds a specialised mounting and, in its « Visée » row (E-22), chooses which of her weapons it aims at (a second row for a second installation; a second specialised mounting on the same weapon is refused with « Cet élément est déjà visé par un montage spécialisé », while an overcharge may be aimed at it again); she adds a pretech modification, reads the components and the installation days, enters « Modificateurs Int + Con » in the repair block and reads the Maintenance (« Maintenance : 3 » with a skill of 1): with four installations she reads the watch alert « 4 mods entretenus, Maintenance 3 », makes two of them part of the hull (« Intégrées à la coque »), reads the alert go and the « Refonte » cost, then makes a third one and reads « Plus de mods intégrés que 2 × Réparation » — saving stays permitted. Antor changes the price divisor or the yard pace on E-20: her
    design is « Calculée avec d'anciens réglages ».
 *Highlight*: budgets recalculate before their eyes, and the sheet's section stays consistent with what
 is calculated.
@@ -992,7 +991,7 @@ refused (401/403 depending on the import API) and nothing written.
 2. **E-22** of « Éneria »: Antor opens a converted design, sees the price, HP, AC, power and mass of the prototype's
    reference figures, the capacities and the crew costs, and the sheet's section in step. The campaign's ships
    (`classe-hyperion`, `le-pie-rouge`, …) are opened and checked against their sheets.
-3. Only if a converted design carries a specialised mounting or an overcharge (none of the prototype's ten examples carries any modification), **E-22** asks which weapon each installation aims at:
+3. *(B-93)* The ten examples carry no modification, so the book's rules of modification (components, installation days, Maintenance, refit) are read on the four campaign designs that carry some: Antor opens one, reads « Composants prétech », « Installation » and « Maintenance » and checks them against the ledger's § 13.1. Only if a converted design carries a specialised mounting or an overcharge (none of the prototype's ten examples carries any modification), **E-22** asks which weapon each installation aims at:
    the choice is on the design line and the section shows it. Otherwise the step is empty, and the rule is proved on constructed designs by the construction tasks (B-95, § 13 of `vaisseaux-regles.md`).
 4. The report of the conversion says « 0 non converti »; the figures replayed on the real data are the proof of B-95.
 *Failure*: a rule of the book that the catalogue cannot state stops the conversion with the rule named (the ledger's
