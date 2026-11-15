@@ -40,3 +40,6 @@ body:has(.bm-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 @media (max-width: 760px) { .bm-references { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bm-direction .bouton { min-height: 44px; } }
 .bm-direction .champ > .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .bm-direction-vide { margin: 0 0 var(--e-2); }
+/* The floating assistant button (fixed, bottom right) must never cover E-25 / E-26 content: keep a column free for it. */
+@media (min-width: 760px) { main.principal:has(.bm-page) { margin-inline: 0 auto; } .page-liste.bm-page { max-width: 900px; } }
+@media (max-width: 759px) { .page-liste.bm-page { padding-right: calc(44px + var(--e-3)); } }
