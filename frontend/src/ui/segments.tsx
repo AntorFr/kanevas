@@ -13,7 +13,7 @@ export function Segments<T extends string>({
   disabled,
 }: {
   legende: string;
-  options: readonly { valeur: T; libelle: string }[];
+  options: readonly { valeur: T; libelle: string; /** Variant « compte »: a number after the label. */ compte?: number }[];
   valeur: T;
   onChange: (valeur: T) => void;
   disabled?: boolean;
@@ -45,6 +45,7 @@ export function Segments<T extends string>({
             onClick={() => onChange(o.valeur)}
           >
             {o.libelle}
+            {o.compte !== undefined && <span className="segment-compte">{o.compte}</span>}
           </button>
         ))}
       </div>

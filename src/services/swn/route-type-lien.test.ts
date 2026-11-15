@@ -241,7 +241,7 @@ test('0027 : montée depuis 0026 peuplée, routes conservées, type_lien nul ; C
   }
   db.prepare("INSERT INTO swn_routes (galaxie_id, univers_id, depuis_id, vers_id, publique, longueur) VALUES (1, 1, 1, 2, 0, 3)").run();
   const avant = db.prepare('SELECT * FROM swn_routes').all() as any[];
-  assert.deepEqual(migrate(db), [27, 28, 29, 30, 31, 32, 33, 34]);
+  assert.deepEqual(migrate(db), [27, 28, 29, 30, 31, 32, 33, 34, 35]);
   const apres = db.prepare('SELECT * FROM swn_routes').all() as any[];
   assert.equal(apres.length, 1);
   assert.equal(apres[0].type_lien, null);
