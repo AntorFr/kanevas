@@ -1,3 +1,4 @@
+// ecrans: cartes
 // Browser test of kanevas-outils-galaxie-lire-ecran, written from the exit criterion and docs/ecrans.md
 // « What kanevas-outils-galaxie-lire builds of E-21 and E-10 » — not from the code. Stub world with the seed.
 // Screenshots go to /tmp/cap-galaxie (never into the workspace).

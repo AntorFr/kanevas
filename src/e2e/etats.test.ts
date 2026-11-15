@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of B-29: every built screen has its states (empty, loading, error,
 // connection lost, refusal, long content) and the shared write behaviour (« … », double click,
 // failure). Exact texts of docs/ecrans.md « Détail des écrans de kanevas-premiere-fiche ».

@@ -1,3 +1,4 @@
+// ecrans: comptes-rendus, fiche
 // Bords de `kanevas-scenarios-suivi` écrits depuis le besoin (docs/ecrans.md, E-9 « Comptes-rendus », E-9 refus, E-13) :
 // 100 comptes-rendus puis « Charger la suite », plafond de 100 000 caractères du texte d'un compte-rendu, scénario fermé
 // à une joueuse, CR d'une aventure supprimée. Vrai serveur en mode bouchon + Chromium piloté.

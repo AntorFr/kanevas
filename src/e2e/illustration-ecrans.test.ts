@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches
 // Black-box tests of kanevas-il-illustration-ecrans, written from docs/ecrans.md « Détail des écrans de
 // `kanevas-illustrations` » (E-8 grille, E-9 en-tête, § Critères), not from the code. Real server in stub
 // mode WITH its starting world (illustrations, « La Fresque effacée », failure rule) + real Chromium.

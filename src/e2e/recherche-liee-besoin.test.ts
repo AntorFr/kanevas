@@ -1,3 +1,4 @@
+// ecrans: recherche
 // Black-box tests of kanevas-fiches-liees-recherche, written from the need alone: B-65
 // (docs/parcours.md), E-17 « the advanced search » (docs/ecrans.md), the maquette
 // e17-recherche-avancee.html and the exit criterion of the feature. Real server in stub mode,

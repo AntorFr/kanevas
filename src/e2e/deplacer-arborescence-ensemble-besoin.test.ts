@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Feature-level tests of kanevas-deplacer-arborescence (B-35, E-9 « Déplacer sous… » with two views; AD-99
 // unchanged, AD-129), written from the feature's « Livre » / exit criterion and docs/parcours.md /
 // docs/ecrans.md only. World: the stub seed (« Lame d'Ébène »: Les Sphères > Port-Sel > La Taverne du Kraken,

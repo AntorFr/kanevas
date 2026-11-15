@@ -1,3 +1,4 @@
+// ecrans: parametres, systeme
 // Browser test of kanevas-outils-cadre-onglet, written from the exit criterion and docs/ecrans.md
 // « What kanevas-outils-cadre builds of E-20 » — not from the code. Stub world with the seed.
 // Screenshots go to /tmp/cap-onglet (never into the workspace).

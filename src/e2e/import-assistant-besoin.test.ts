@@ -1,3 +1,4 @@
+// ecrans: acces-api, fiche, vue-ensemble
 // Need-based tests of kanevas-scenarios-import-assistant (B-61, B-62), written from the feature sheet and
 // docs/parcours.md / docs/ecrans.md only. The real server in stub mode WITH its starting data (token of the
 // stub, « Essai Kanka » id 4, « Lame d'Ébène » id 1), real SQLite, a real Chromium for E-12 and E-18.

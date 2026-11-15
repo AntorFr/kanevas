@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Feature-level black-box tests of kanevas-sous-type-dialogue, written from the need only (Monsieur's
 // « Livre » of 2026-10-29; docs/parcours.md B-52 and the P-14 step added by the feature; docs/ecrans.md E-9
 // « Changer le type… » and « Le sous-type montre qu'il s'édite »). Real server in stub mode WITH the

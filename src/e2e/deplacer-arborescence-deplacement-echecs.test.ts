@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Feature-level tests of kanevas-deplacer-arborescence (B-35, E-9 « Déplacer sous… »), second pass: the answers of
 // the move itself (trop_profond, 404, 403), a parent of any type (AD-99), the « … » menu of a deep path closed by
 // Échap. Written from docs/ecrans.md « Ce que `kanevas-deplacer-arborescence` construit » only. Real server in stub

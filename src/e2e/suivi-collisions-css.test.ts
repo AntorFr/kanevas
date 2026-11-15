@@ -1,3 +1,4 @@
+// ecrans: accueil, comptes-rendus, fiches, membres, parametres, vue-ensemble
 // Black-box tests of the CSS non-collision fixes of kanevas-rv-lore-suivi (A, C, D of the reopening).
 // Panne visée : the global rules of liste.css / accueil.css leaking onto other screens —
 // the E-1 column header (.tete-liste, --texte-3, 12px padding) overriding the h1 of list screens,

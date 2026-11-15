@@ -1,3 +1,4 @@
+// ecrans: fiches
 // Black-box tests of kanevas-rc-ecran-recherche, written from docs/ecrans.md "E-8 — la recherche
 // dans un type" and the task's exit criterion (B-11, B-29, P-6 step 2). Real server in stub mode
 // (AD-55) + real Chromium; expected values are literals from the doc. Screenshots go to /tmp.

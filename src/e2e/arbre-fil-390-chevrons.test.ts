@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Ensemble tests of kanevas-import-arbre (P-12 step 1, E-9 trail) at 390 px: a very long ancestor title must not spill
 // over the chevron that follows it, and the current title stays the readable element (docs/ecrans.md: « le fil garde son dernier maillon entier »).
 import assert from 'node:assert/strict';

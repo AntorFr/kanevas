@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Review of kanevas-mediatheque-fiche, reopened by verify (E-9 « bloc Pièces jointes », B-24):
 // the size of a document sits against its name (no hole before the actions), and the legend of an image
 // shows « nom · taille » whole even for a long name, at desktop and phone widths.
