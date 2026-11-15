@@ -33,7 +33,7 @@ describe('E-26 Direction artistique au navigateur', { skip: skipBrowser }, () =>
   let api = '';
 
   before(async () => {
-    srv = await startServer({ KANEVAS_SANS_SEMIS: '' });
+    srv = await startServer({ KANEVAS_SANS_SEMIS: '', KANEVAS_SANS_SEMIS_BATTLEMAP: '1' });
     browser = await launch();
     antor = (await connecte(browser, srv.base, 'Antor')).page;
     lea = (await connecte(browser, srv.base, 'Léa')).page;
