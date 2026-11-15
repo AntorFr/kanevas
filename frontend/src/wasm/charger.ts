@@ -4,16 +4,12 @@
 // A module is added to this table when a tool needs it; the example is the template.
 type Exemple = typeof import('../../../rust/pkg/exemple/exemple.js');
 
-type CoeurBattlemap = typeof import('../../../rust/pkg/battlemap_core/battlemap_core.js');
-
 interface Modules {
   exemple: Exemple;
-  battlemap_core: CoeurBattlemap;
 }
 
 const importeurs: { [N in keyof Modules]: () => Promise<Modules[N] & { default: () => Promise<unknown> }> } = {
   exemple: () => import('../../../rust/pkg/exemple/exemple.js'),
-  battlemap_core: () => import('../../../rust/pkg/battlemap_core/battlemap_core.js'),
 };
 
 const cache = new Map<keyof Modules, Promise<Modules[keyof Modules]>>();
