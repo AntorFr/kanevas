@@ -2,6 +2,7 @@ import type { Db } from '../db/db.js';
 import { attachmentsDir } from '../config/env.js';
 import { exigerRole, vueMJ } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
+import { cartesUtilisant } from './battlemap-cartes.js';
 import { ajouterFichier, effacerFichier, modifierFichier, type FluxEntrant } from './fichiers.js';
 import { estImage } from './fichiers-lecture.js';
 import type { Acteur } from './types.js';
@@ -264,13 +265,13 @@ export function modifierAssets(db: Db, acteur: Acteur, universId: number, ids: n
 }
 
 /**
- * « Utilisé sur N cartes »: always 0 here, `bm_cartes` not existing yet (AD-battlemap-assets-3). The editor slice replaces this
- * body with the read of the map documents through the core. GM outside Player mode.
+ * « Utilisé sur N cartes »: the maps of the universe whose document uses one of the assets, read through the core
+ * (AD-battlemap-editeur-5); a map counts once, an asset removed since included. GM outside Player mode.
  */
 export function compterUsage(db: Db, acteur: Acteur, universId: number, ids: number[]): number {
   exigerEcriture(db, acteur, universId);
   for (const id of new Set(ids)) lireAsset(db, universId, id);
-  return 0;
+  return cartesUtilisant(db, universId, ids);
 }
 
 /** Removes a selection of assets, all or none; the files stay in the media library (and keep their visibility). */
