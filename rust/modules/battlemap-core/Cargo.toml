@@ -1,0 +1,16 @@
+[package]
+# Underscore on purpose: the wasm-bindgen output is `<name>_bg.wasm` and the server loader
+# (`chargerModule`) only accepts `[a-z0-9_]` names. The directory keeps the spec's `battlemap-core`.
+name = "battlemap_core"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = { workspace = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+png = "0.17"
