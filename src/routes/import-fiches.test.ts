@@ -229,8 +229,8 @@ test('envois concurrents de la même clé : une seule fiche', async () => {
   const rs = await Promise.all(Array.from({ length: 6 }, () => put('lieu:port-sel', PORT)));
   for (const r of rs) assert.equal(r.statusCode, 200, r.body);
   assert.equal(rs.filter((r) => r.json().etat === 'creee').length, 1);
-  assert.equal(compte(app, 'SELECT COUNT(*) n FROM fiches WHERE cle = ?', 'lieu:port-sel'), 1);
-  assert.equal(compte(app, "SELECT COUNT(*) n FROM sections WHERE cle IN ('desc','verite')"), 2);
+  assert.equal(compte(app, "SELECT COUNT(*) n FROM fiches WHERE cle = ? AND creee_via = 'import'", 'lieu:port-sel'), 1);
+  assert.equal(compte(app, "SELECT COUNT(*) n FROM sections s JOIN fiches f ON f.id = s.fiche_id WHERE f.creee_via = 'import' AND s.cle IN ('desc','verite')"), 2);
 });
 
 test('creeLe donné par la source devient la date de la fiche ; atomicité d’un échec en cours de route', async () => {
