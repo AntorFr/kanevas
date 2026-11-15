@@ -47,9 +47,8 @@ for (const [h, min] of [[700, 3], [600, 2]] as const) {
     const liste = page.getByRole('listbox', { name: 'Fiches à lier' });
     await liste.waitFor();
     await liste.getByRole('option').nth(3).waitFor();
-    await page.waitForTimeout(600);
     await page.getByRole('button', { name: 'Enregistrer', exact: true }).scrollIntoViewIfNeeded();
-    await page.waitForTimeout(300);
+    await page.waitForLoadState('networkidle');
     const g = await page.evaluate(() => {
       const save = [...document.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Enregistrer')!.getBoundingClientRect();
       const lb = document.querySelector('[role=listbox]')!.getBoundingClientRect();

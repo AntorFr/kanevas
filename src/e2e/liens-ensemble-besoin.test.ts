@@ -24,7 +24,7 @@
 //                  a sheet citing itself; no counter of what is hidden.
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
-import { type Any, launch, skipBrowser, startServer } from './harnais.test.js';
+import { type Any, attendre, launch, skipBrowser, startServer } from './harnais.test.js';
 import { comptes, json } from './monde-aide.test.js';
 
 const JETON = 'kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue'; // « Jeton du bouchon » (docs/ecrans.md)
@@ -510,7 +510,7 @@ describe('B-33 : une entrée de système (E-15)', opts, () => {
     const champ = page.getByRole('textbox', { name: /Contenu/ });
     await champ.fill('');
     await champ.pressSequentially('[[ald');
-    await page.waitForTimeout(500);
+    await attendre(page);
     assert.equal(await page.getByRole('listbox').count(), 0, 'pas de liste dans une entrée de système');
     await page.screenshot({ path: `${SHOTS}/liens-systeme-edition.png` });
     await page.close();
