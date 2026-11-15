@@ -40,7 +40,7 @@ export default function Systeme({ universId, cible, prealable, suffixeMode }: Pr
           {s.astres.length > 0 && (
             <section>
               <h2>Corps ({s.astres.length})</h2>
-              <ul className="gx-corps" aria-label="Corps du système">
+              <ul className="gx-lignes" aria-label="Corps du système">
                 {s.astres.map((a) => (
                   <li key={a.cle} className={a.genre === 'lune' ? 'lune' : undefined}>
                     <span className={a.nom ? 'nom' : 'nom vide'}>{nomAstre(a)}</span>
@@ -54,7 +54,7 @@ export default function Systeme({ universId, cible, prealable, suffixeMode }: Pr
           {s.formations.length > 0 && (
             <section>
               <h2>Zones ({s.formations.length})</h2>
-              <ul className="gx-corps" aria-label="Zones du système">
+              <ul className="gx-lignes" aria-label="Zones du système">
                 {s.formations.map((f) => (
                   <li key={f.cle}>
                     <span className={f.nom ? 'nom' : 'nom vide'}>{nomFormation(f)}</span>
