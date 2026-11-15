@@ -4,7 +4,7 @@ import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 
 import type { Db } from '../db/db.js';
-import { attachmentsDir } from '../config/env.js';
+import { attachmentsDir, env } from '../config/env.js';
 import {
   ajouterFichier,
   choisirIllustration,
@@ -25,6 +25,7 @@ import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../serv
 import { creerJetonDeValeur } from '../services/jetons.js';
 import { creerUnivers } from '../services/univers.js';
 import { modulesActifs } from '../outils/registre.js';
+import { semerBattlemap } from './semis-battlemap.js';
 import { creerSystemeAncienPourBouchon, poserActivation } from '../services/outils.js';
 import { semerGalaxieEssai } from '../services/swn/galaxies.js';
 import { appliquerCatalogue } from '../services/catalogues.js';
@@ -421,6 +422,7 @@ export async function semerIllustrations(db: Db, racine: string = attachmentsDir
   supprimerFichier(fresque.jeton, racine);
 
   await semerFichiers(db, racine);
+  if (!env.KANEVAS_SANS_SEMIS_BATTLEMAP && modulesActifs().some((m) => m.nom === 'battlemap')) await semerBattlemap(db, racine);
 }
 
 /**

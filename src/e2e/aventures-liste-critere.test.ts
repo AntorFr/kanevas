@@ -121,8 +121,9 @@ describe('kanevas-scenarios-type-liste, E-8 Aventures', { skip: skipBrowser }, (
     });
     await carte.click();
     await shot(antor, 'menu-carte');
+    const parti = antor.waitForRequest((r: Any) => r.method() === 'PATCH' && /\/fiches\/\d+$/.test(r.url()));
     await antor.getByRole('menuitem', { name: 'En cours' }).click();
-    await antor.waitForTimeout(400);
+    await parti; // the write is out and held: the screen still shows the old badge
     await shot(antor, 'carte-en-attente');
     assert.match(await carte.innerText(), /En préparation/, 'ancien badge tant que le serveur n’a pas répondu');
     assert.doesNotMatch(await carte.innerText(), /En cours/);

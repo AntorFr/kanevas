@@ -1,16 +1,14 @@
 name: docker-publish
 
-# The image is built only from a commit whose full suite was played and attested (status
-# « tests-complets », posted by `npm run tests:attestes -- --publier` from a laptop, a pod
-# of the chain, or the manual « tests » workflow). This workflow runs no test: it checks the
-# proof. Decision of 2026-10-13: tests wherever they run best, one proof, and a commit pushed
-# by hand without tests never becomes an image. No more automatic run on main or on PRs.
+# The image is built only on a `v*` tag whose commit (or a parent of the same tree) carries the
+# status « tests-complets », posted by `attester --publier`. This workflow plays no test: it
+# checks the proof. No run on a branch push or a pull request.
 on:
   push:
     tags: ['v*']            # → SemVer tags :X.Y.Z :X.Y :X, and :latest for the highest
                             #   (metadata-action's default flavor). A GitHub Release only
                             #   carries the notes: it builds nothing a second time.
-  workflow_dispatch:        # a tag attested after it was pushed: rebuild it from here
+  workflow_dispatch:        # a tag attested after it was pushed: re-run it from here
 
 permissions:
   contents: read
@@ -23,6 +21,9 @@ env:
 jobs:
   attestation:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: read
     steps:
       # The parents too: a PR merge makes a new commit, whose content is the attested head's
       # when that head already contained the target. Same TREE, same content: the proof holds.
@@ -43,7 +44,7 @@ jobs:
               exit 0
             fi
           done
-          echo "::error::Pas d'attestation « tests-complets » verte sur ce contenu (arbre ${arbre:0:7}, commit ${{ github.sha }} ni ses parents de même arbre). Jouer la suite : npm run tests:attestes -- --publier, ou le workflow « tests » sur ce tag ; il relance ce build."
+          echo "::error::No green « tests-complets » attestation on this content (tree ${arbre:0:7}, commit ${{ github.sha }} nor its same-tree parents). Run attester --publier on the pushed commit, then re-run this workflow."
           exit 1
 
   build:

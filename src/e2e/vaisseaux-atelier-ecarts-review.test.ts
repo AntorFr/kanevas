@@ -175,6 +175,13 @@ describe('E-22 écarts, 1280 px', { skip: skipBrowser, timeout: 300000 }, () => 
     const p = await ouvrir('teo', etoile, 1280);
     await p.getByText('Ligne : 36 000 cr').first().waitFor();
     await p.getByText(/moteur système · rend/).first().waitFor();
+    for (const re of [/vitesse −2/, /Compétence de réparation : 0/, /soutes 20/, /moteur système · rend puissance 3 et masse 1,5 · coût −10 %/, /Ligne : 36 000 cr/]) {
+      await p.waitForFunction(
+        (s: string) => new RegExp(s).test(((document.querySelector('main') as HTMLElement).innerText).replace(/[  ]/g, ' ').replace(/\s+/g, ' ')),
+        re.source,
+        { timeout: 15000 },
+      );
+    }
     const t = norm(await p.locator('main').innerText());
     assert.match(t, /vitesse −2/);
     assert.match(t, /Compétence de réparation : 0/);

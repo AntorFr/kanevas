@@ -119,7 +119,7 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
 | E-8 | read, search, create; each sheet's thumbnail (its illustration, or the drawn fallback) ; *(kanevas-fiches-liees)* the mark on the thumbnail (Mort, Morte, Détruit, Détruite, Éteinte depending on the type), the type's filter (Vivants / Morts, Intacts / Détruits…) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | read, search; thumbnails of visible sheets ; *(kanevas-fiches-liees)* the « gone » mark and its filter, the same as the GM sees them (the « Marquer … » entry is on E-9 only, hidden from a player) ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**hidden**) | — |
-| E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) | — |
+| E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) ; *(kanevas-taille-images)* the « Image » button (size, placement) in « Écrire », outside player mode — **hidden** in player mode | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) ; *(kanevas-taille-images)* the « Image » button in the sections he may write — **hidden** elsewhere | — |
 | E-10 | everything, tool maps (the galaxy) included, with « MJ seul » on those not visible; « Nouvelle carte » ▸ « Carte de la galaxie », « Rendre visible » / « Cacher aux joueurs » | visible maps, tool maps included when visible and the tool is visible to their role (otherwise absent); « Nouvelle carte », « Carte de la galaxie » and « Rendre visible » / « Cacher aux joueurs » **hidden** | — |
 | E-11 | everything; Player mode | read a visible map, open a sheet | — |
 | E-12 | GM catalogue (including image generation, if an image engine is available); proposals: only the requesting GM sees, applies, abandons them | Player catalogue (no image: the tool is absent, the assistant answers that it cannot); proposals: **hidden** (neither tool nor block; what is checked is the absence of a proposal and block, not the assistant's free text) | — |
@@ -2058,6 +2058,54 @@ the GM-only section's styling (hatched texture, amber rule, « MJ seul » `lock`
 section, at its place in the text; in Player mode and for any other reader, it does not exist — no
 gap, no rule, the next paragraph follows the previous one. A wide table scrolls inside its frame
 on a phone, never the page.
+
+### Image size and placement in a text (`kanevas-taille-images`, B-taille-1, AD-taille-1, E-taille-1)
+
+**Notation.** The image's own Markdown *title*: `![alt](fichier:12 "moyen-droite")`. The title is
+`<size>-<placement>` with size in `petit`, `moyen`, `grand` and placement in `gauche`, `droite`,
+`centre`, written exactly so (lowercase, one hyphen). Anything else in the title — a real tooltip, a
+typo, a size alone — is **not a setting**: the image shows as it does today and the text is left
+untouched. No title: the image shows as today (full column width of its natural size, in the flow).
+The address stays `fichier:<id>`, so the references, the import's `fichier:cle:` rewriting, the export
+and the assistant's `[…](fichier:<id>)` form carry the setting as plain text.
+
+**Reading.** A set image is `<img class="img-<size> img-<placement>">`: `gauche` / `droite` float the image
+to that side, the paragraph text wraps it with a `--e-4` gap; `centre` is a block centred between two
+paragraphs' flow, no wrap. Widths, as a share of the text column, capped by the file's natural width
+(an image is never enlarged): `petit` 25 %, `moyen` 40 %, `grand` 60 %. **Phone** (≤ 760 px, the width
+the charte already uses for `.md`): no float — every placement becomes a centred block, `petit` 40 %,
+`moyen` 70 %, `grand` 100 %, so text stays one readable column. A float never leaks out of its section
+(the `.md` container clears it). Closed, deleted and waiting references keep their frames; a setting
+on them is ignored. Only in a **section** or a compte-rendu, preview of its public text included (`rendreApercu`);
+the standalone `scenario` and system-entry text natures do not interpret `fichier:`, see above.
+
+**Editor (E-taille-1).** In « Écrire », the caret inside an `![…](fichier:N…)` reference enables the
+toolbar button « Image » (icon `image`); it opens a `Menu` (existing component, trigger variant `outil`,
+charte « Menu ») with two single-choice `groupe`s,
+« Taille » (Petit, Moyen, Grand) and « Placement » (À gauche, À droite, Centrée), and a « Sans
+réglage » action. Choosing writes the title in the text at once (both groups needed: the first choice
+completes the other with `moyen` / `centre`); « Sans réglage » removes it. Keyboard: ↑ ↓ cross the choices, Échap closes
+and the focus returns to the field. Icons: placement `align-left` / `align-right` / `align-center`, size three `square` of growing size. The text stays the single source: the panel reads the title back from the
+reference at the caret, so a hand-typed setting shows selected. « Aperçu » renders it as in reading (the preview resolves the `fichier:N` files like the reading does).
+Who may write the text sees the button; a reader never gets the editor.
+
+**Where it lives, who, states.** E-taille-1 is not a screen of its own: it is a button of the section
+editor of **E-9** (and of a compte-rendu's editor, E-13, which opens on E-9); reading is E-9's, a
+compte-rendu's included. Roles: a GM outside player mode and a player who may write the section (a
+compte-rendu's author writes his own text) get the button; a GM in player mode and a plain reader have
+no editor at all, so **hidden**, never refused. States: *empty* — caret outside an image reference, the
+button is `desactive` and its `title` says « Placez le curseur sur une image » ; *loading* — none, the
+choice is a local edit of the field; « Aperçu » with a set image waits and fails like any preview
+(« Aperçu en cours… », « L'aperçu n'a pas abouti. Réessayez. » with « Réessayer », the field intact:
+« États de l'aperçu » of the Markdown section below); *error, version conflict, offline* — those of
+saving the section (E-9, « Écrire »), whose messages are read there and unchanged: the written title
+stays in the field with the rest of the text, nothing of its own is added. A reference that is closed, deleted or waiting is still a
+reference: the button is active and writes the title, reading ignores it (above). Extreme content: a
+very long alt text or several images on one line change nothing (the caret's reference is the one
+between the nearest `![` and `)`); an image narrower than its share is never enlarged, so the sizes may
+look alike; two floats in a row stack on their side and the `.md` container clears them. Labels: the menu says « Centrée », the
+notation says `centre`, the reading is a centred block — one setting, three spellings, mapped once in
+the shared table.
 
 ### Markdown — what `kanevas-import-markdown` builds (E-9, E-7, E-15, E-12)
 
@@ -4371,6 +4419,30 @@ reference images (up to 8, dropped or chosen from the media library, with captio
 prefilled request), and after an assistant change a banner « Texte modifié par l'assistant » with « Annuler » (one step).
 GM only: a player gets « Page introuvable. ». States: empty « Aucune direction artistique. La génération et l'assistant
 travailleront sans style. »; stale version « Ce texte a changé depuis que vous l'avez ouvert. » + « Recharger ».
+
+### E-25 / E-26 — detail of `kanevas-battlemap-assets` (owner of both screens)
+Mockups: `docs/maquettes/e25-bibliotheque.html` (GM canonical with the side panel, player, drop with a refused file, removal, states, phone), `e26-direction.html` (GM, empty, stale / limits, player « Page introuvable. »). Components: charte, « Components of `kanevas-battlemap-assets` ».
+- **Address and bar.** `/univers/:id/outils/battlemap/assets`, `?onglet=direction` for E-26; the screen answers only when the tool is enabled and visible to the role (`reply.callNotFound()` family of C-5 for the API; the screen « Page introuvable. »). The tabs are « Assets » and, for the GM only, « Direction artistique »; the third (« Génération ») belongs to the generation slice.
+- **Drop.** The dialog lists the files and asks the category once (default: the active segment); each image becomes an asset named from its file (extension removed, 80 characters), visible to players, without footprint (`1×1` for `objet`, `vaisseau`, `decor`; none for `sol`, `mur`). The files go one request each: a refused file (not an image, SVG) gives « <nom> n'est pas une image. » and does not stop the others (no size limit is applied to the bytes; the library stops at 5 000 assets); the toast counts the added ones. « Choisir dans la médiathèque » lists the images of the library not already backing an asset; the chosen files keep their visibility.
+- **Selection.** Check boxes and shift-click; the bar edits the selection at once (category, footprint, top-down, tags, visibility); a footprint on a `sol` / `mur` is refused. « Retirer… » opens the confirmation with « Utilisé sur N carte(s) » — « 0 carte », « 1 carte », « N cartes » (0 while no map exists); on confirm the rows are deleted, **the files stay** in E-19.
+- **Visibility.** The asset's visibility is that of its file (« MJ » mark = file `mj`); changing it goes through `modifierFichier`. A file backing an asset cannot be deleted from E-19 (« Ce fichier est utilisé par la bibliothèque d'assets. »).
+- **Search** is on name and tags (substring, case-insensitive, accents folded in code on the rows read); tag filters are an AND.
+- **E-26.** « Enregistrer » writes the text with the version read (stale → « Ce texte a changé depuis que vous l'avez ouvert. » + « Recharger »), the previous text kept one step (`texte_precedent`, read by the assistant tool of the assistant slice). A reference image dropped here is added as a `mj` file; one chosen from the media library is turned `mj` with `modifierFichier` and the screen says so; the 9th is refused (« 8 images au plus. »). « Demander à l'assistant » is shown disabled (45 %) until the assistant slice.
+- **Player.** E-25 without tab bar, selection, check boxes, add / choose buttons or panel (the card opens nothing); GM-only assets and drafts are absent from the list and from the counts.
+- **Phone / tablet.** One column, 2-column grid, 44 px targets, panel as a full-screen sheet, selection bar sticky at the bottom; at 768 px the panel overlays the grid.
+- **Panel vs bar.** The selection bar saves at once (toast). The side panel of one asset has its fields (name, category, footprint, tags) saved with « Enregistrer »; its visibility switch and « Retirer… » act at once.
+- **More states.** E-25: a search or filter with no result — « Aucun asset ne correspond. » + « Effacer les filtres »; offline — the `Banner` « Connexion perdue » of the shell and the write controls disabled; a failed drop, save or removal — an `Alerte` « Impossible d'ajouter <nom>. », « Impossible d'enregistrer. », « Impossible de retirer. » with « Réessayer », the selection kept; extreme content — a name of 80 characters is cut with an ellipsis on the card and whole in the panel, 10 tags wrap; a full library disables the add buttons (« Bibliothèque pleine (5 000 assets). »). E-26: loading « Chargement de la direction artistique… », error « Impossible de charger la direction artistique. » + « Réessayer », offline as E-25, a text of 5 000 characters scrolls inside its area; the empty state offers the two fields as they are (nothing to press first).
+- **Roles.**
+
+| | GM | GM in Player mode | Player | Instance admin (not a member) |
+|---|---|---|---|---|
+| E-25 | grid, search, filters, category segments; add (drop, media library), select and edit by the bar, panel, remove; sees GM-only assets and drafts | reads as a player: grid, search, filters only, counts of what he sees, no tab bar (the « Direction artistique » tab is absent) | grid, search, filters, counts of what he sees; no write control, no tab bar, GM-only assets and drafts absent (hidden, not refused) | « Page introuvable. » |
+| E-26 | everything above | « Page introuvable. » (Player mode hides the GM-only screens) | « Page introuvable. » | « Page introuvable. » |
+
+  The API answers a write of a non-GM `introuvable` and one of a GM in Player mode `refuse` (AD-battlemap-assets-5); a hidden tool answers like an unregistered path.
+- **Texts added.** E-25 empty state while the generation tool is absent or disabled: « Aucun asset. Déposez des images. » (the full cadrage text, with « ou lancez une génération », once E-27 exists); one category empty: « Aucun asset dans cette catégorie. »; a footprint on a floor or wall: « Un sol ou un mur n'a pas d'empreinte. ». E-26: the counter turns to the danger tint at 5 000 and typing stops there; no reference: « Aucune image de référence. »; removing a reference (icon button « Retirer la référence <légende> ») acts at once with a toast; offline, the typed text is kept and « Enregistrer » is disabled. « Annuler » of an assistant change (B-98) is built by the assistant slice, not here. The tool hidden from a role is absent from the bar and the screen answers « Page introuvable. ». Vocabulary: « Bibliothèque » is the screen, an *asset* an image of it, the *direction artistique* the E-26 tab.
+- **Messages.** The ninth reference: « 8 images au plus. ». Choosing from the media library lists the library's images that back no asset (`GET assets/fichiers-disponibles`).
+- **P-26 detail.** Léa opens « Bibliothèque » (step 5 of P-26 as detailed in `docs/parcours.md`); the removal, the stale text and the limit of 8 are the failure paths of steps 1 and 2.
 
 ### E-27 — Asset generation
 **Content**: left, the **list** (one line = name, category, footprint, optional hint; add, remove, paste lines;

@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 import Database from 'better-sqlite3';
-import { connecte, launch, skipBrowser, startServer, texte, type Any, type Server } from './harnais.test.ts';
+import { attendre, attendreTransitions, connecte, launch, skipBrowser, startServer, texte, type Any, type Server } from './harnais.test.ts';
 
 const SHOTS = '/tmp/cap-galaxie';
 const CODE = /\/assets\/galaxie-[^/]*\.js/;
@@ -41,7 +41,7 @@ describe('E-21 galaxie en lecture et ligne « Galaxie » de E-10', { skip: skipB
       const moins = page.getByRole('button', { name: 'Zoom arrière' });
       if (await moins.isDisabled()) break;
       await moins.click();
-      await page.waitForTimeout(300);
+      await attendreTransitions(page); await attendre(page);
     }
     await systeme(page, nom).waitFor();
     return systeme(page, nom);
@@ -154,13 +154,13 @@ describe('E-21 galaxie en lecture et ligne « Galaxie » de E-10', { skip: skipB
         return r.left >= c.left && r.right <= c.right && r.top >= c.top && r.bottom <= c.bottom;
       });
     });
-    await page.waitForTimeout(800);
+    await attendreTransitions(page); await attendre(page);
     assert.deepEqual(await dedans(), [true, true, true], 'à l\'ouverture, sans zoom');
     // after losing the framing, « Recentrer » restores it
     await page.getByRole('button', { name: 'Zoom avant' }).click();
     await page.getByRole('button', { name: 'Zoom avant' }).click();
     await page.getByRole('button', { name: 'Recentrer' }).click();
-    await page.waitForTimeout(500);
+    await attendreTransitions(page); await attendre(page);
     assert.deepEqual(await dedans(), [true, true, true], 'après Recentrer');
     await page.screenshot({ path: `${SHOTS}/390-cadrage.png`, fullPage: true });
 
@@ -279,7 +279,7 @@ describe('E-21 galaxie en lecture et ligne « Galaxie » de E-10', { skip: skipB
 
     // generated hexagon
     await page.locator('circle[data-genere]').first().waitFor({ state: 'attached' });
-    await page.waitForTimeout(500);
+    await attendreTransitions(page); await attendre(page);
     const cadre = await page.locator('svg.gx-svg').boundingBox();
     const points = (await page.locator('circle[data-genere]').evaluateAll((g: Any[]) =>
       g.map((x) => { const r = x.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }))) as number[][];
@@ -331,7 +331,7 @@ describe('E-21 galaxie en lecture et ligne « Galaxie » de E-10', { skip: skipB
       ev('pointerup', 1, x - 120); ev('pointerup', 2, x + 120);
     })()`);
     await page.waitForFunction((a: string | null) => document.querySelector('pattern#gx-grille')?.getAttribute('width') !== a, avant);
-    await page.waitForTimeout(600);
+    await attendreTransitions(page); await attendre(page);
     await hors(page, 'pincement');
     for (const u of blocs) {
       const p = new URL(u).searchParams;
