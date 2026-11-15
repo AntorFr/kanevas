@@ -172,7 +172,7 @@ test('une densité par défaut modifiée change le résultat servi (clé de cach
   assert.equal(lire(), base);
 });
 
-// --- migration 0035 (AD-etoiles-7)
+// --- migration 0037 (AD-etoiles-7)
 
 const SRC = new URL('../../db/migrations/', import.meta.url).pathname;
 function dossierJusqua(max: number): string {
@@ -182,9 +182,9 @@ function dossierJusqua(max: number): string {
   return dir;
 }
 
-test('0035 : montée depuis 0034, la galaxie à 0.2 passe à 0.68, une autre valeur et les zones restent', () => {
+test('0037 : montée depuis 0036, la galaxie à 0.2 passe à 0.68, une autre valeur et les zones restent', () => {
   const db = openDb(':memory:');
-  assert.deepEqual(migrate(db, dossierJusqua(34)).at(-1), 34);
+  assert.deepEqual(migrate(db, dossierJusqua(36)).at(-1), 36);
   const d = '2026-10-01T00:00:00.000Z';
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'antor', ?)").run(d);
   db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', ?)").run(d);
@@ -196,7 +196,7 @@ test('0035 : montée depuis 0034, la galaxie à 0.2 passe à 0.68, une autre val
   const avantZones = zones();
   const avantGal = db.prepare('SELECT * FROM swn_galaxies ORDER BY id').all() as any[];
 
-  assert.deepEqual(migrate(db), [35]);
+  assert.deepEqual(migrate(db), [37]);
 
   const apresGal = db.prepare('SELECT * FROM swn_galaxies ORDER BY id').all() as any[];
   assert.deepEqual(apresGal.map((g) => g.densite_defaut), [0.68, 0.5, 0.21, 0, 0.68]);

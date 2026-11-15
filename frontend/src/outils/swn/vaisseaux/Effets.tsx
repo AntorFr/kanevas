@@ -50,7 +50,7 @@ export function Effets({ ligne, info, infos, lignes, resultat, alerte, ecriture,
     );
   }
 
-  if (d.effet === 'soutes_doublees' || d.effet === 'magasins_doubles') {
+  if (d.effet === 'soutes_doublees' || d.effet === 'magasins_doubles' || d.effet === 'montages_specialises' || d.effet === 'surcharge_cumulable') {
     const eligibles = lignes.filter((l) => d.effet === 'soutes_doublees'
       ? l.nature === 'amenagements' && (() => { const x = infos[`${l.nature}/${l.cle}`]?.el.donnees; return x?.soute !== undefined || x?.soute_par_classe !== undefined; })()
       : l.nature === 'armes');
