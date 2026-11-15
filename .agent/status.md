@@ -1,5 +1,6 @@
 # Status — kanevas
 
+> MàJ : 2026-11-15 (assemblage de `rouge-kanevas-battlemap-4` : le test e2e des types lus tardivement (B-64, `src/e2e/liees-bloc-types-tardifs.test.ts`) observe le bloc par deux cycles de rendu au lieu d'un `setTimeout` de 50 ms, que le garde « aucun fichier de src/e2e n'attend une durée fixe » refuse ; test seul, produit inchangé)
 > MàJ : 2026-11-15 (assemblage de `kanevas-niveau-local`, PR vers `main`)
 > MàJ : 2026-11-15 (assemblage de `kanevas-harnais-preuve`, PR vers `main` : harnais des tests d'écran, tests seuls, produit inchangé)
 > MàJ : 2026-11-13 (assemblage de `rouge-kanevas-battlemap-2` : le test e2e E-22 « un lecteur (Téo, autre lecteur) lit les mêmes légendes sans contrôle » attend chaque légende avant de lire `main` ; test seul, produit inchangé)

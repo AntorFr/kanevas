@@ -51,7 +51,7 @@ describe('kanevas-fiches-liees-bloc, types lus tardivement (B-64)', { skip: skip
       await b.waitFor();
       for (let i = 0; i < 10; i++) {
         vus.push(await b.innerText());
-        await new Promise((r) => setTimeout(r, 50));
+        await antor.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
       }
       assert.ok(vus.every((t) => !/personnage \(2\)/.test(t)), 'le type brut a été affiché');
       assert.ok(vus.every((t) => !/Personnages \(2\)/.test(t)), 'un groupe a été affiché avant les types');
