@@ -89,7 +89,7 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 
 | Level | Command | What it plays | Duration |
 |---|---|---|---|
-| `rejouer:` | `npm ci && node scripts/rejouer-tests.mjs "<describe > test>" ...` (e.g. `"niveaux de la suite > la suite entière garde tous les fichiers de test"`: the suite titles then the test title, as `resultats.tap` indents them) | only the named tests, in the files that contain them (found by name; names split on `\|` and line ends, never on spaces); exit non-zero if a name is found in no file | seconds (more when it builds what a replayed screen or wasm file reads) |
+| `rejouer:` | `node scripts/rejouer-tests.mjs "<describe > test>" ...` (e.g. `"niveaux de la suite > la suite entière garde tous les fichiers de test"`: the suite titles then the test title, as `resultats.tap` indents them) | only the named tests, in the files that contain them (found by name; names split on `\|` and line ends, never on spaces); exit non-zero if a name is found in no file | seconds |
 | `local:` | `npm run tests:local` | `build:wasm`, `typecheck`, `scripts/copier-wasm.mjs` (copies `rust/pkg` to `dist/wasm`, no `build`), then every test file except `src/e2e/` (no server, no browser, no Playwright install); same `resultats.tap` (overwritten: after a local run it no longer holds a whole-suite report), same test names | about 2-3 min (1 min 30 s to 3 min 36 s, 997 tests, 3-CPU pod; the font check of the built app is skipped when there is no dist/) |
 | `commande:` | `npm run tests:attestes` | everything, `src/e2e/` included, after `build` | about 36 min on a 12-CPU pod (see « Tests de bout en bout ») |
 
