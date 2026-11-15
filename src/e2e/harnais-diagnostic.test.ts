@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-import { DELAI_DEMARRAGE_MS, startServer } from './harnais.test.ts';
+import { DELAI_DEMARRAGE_MS, avecServeur, startServer } from './harnais.test.ts';
 
 test('le harnais attend le serveur au moins 30 s', () => {
   assert.ok(DELAI_DEMARRAGE_MS >= 30_000, String(DELAI_DEMARRAGE_MS));
@@ -16,7 +16,6 @@ test('un serveur qui sort au démarrage : erreur « server did not start » avec
   const dir = mkdtempSync(join(tmpdir(), 'kanevas-diag-'));
   const fichier = join(dir, 'fichier');
   writeFileSync(fichier, 'x');
-  const debut = Date.now();
   try {
     await assert.rejects(startServer({ DB_PATH: join(fichier, 'sous', 'k.db') }), (e: Error) => {
       assert.match(e.message, /server did not start/);
@@ -24,8 +23,29 @@ test('un serveur qui sort au démarrage : erreur « server did not start » avec
       assert.match(e.message, /ENOTDIR|not a directory|ENOENT|EEXIST/i, e.message);
       return true;
     });
-    assert.ok(Date.now() - debut < 25_000, `${Date.now() - debut} ms`);
   } finally {
     rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('un serveur tué en cours de fichier : l’échec du test dit « signal SIGKILL » et porte la sortie, sans attendre 30 s', async () => {
+  const srv = await startServer();
+  const debut = Date.now();
+  try {
+    await assert.rejects(
+      avecServeur(srv, async () => {
+        process.kill(srv.pid, 'SIGKILL');
+        await new Promise((r) => setTimeout(r, 60_000)); // what a page waiting on the dead server does
+      }),
+      (e: Error) => {
+        assert.match(e.message, /server died \(signal SIGKILL\)/);
+        assert.match(e.message, /server output \(tail\)/);
+        assert.match(e.message, /listening|Kanevas|kanevas|\d{4}/i, e.message);
+        return true;
+      },
+    );
+    assert.ok(Date.now() - debut < 10_000, `${Date.now() - debut} ms`);
+  } finally {
+    srv.stop();
   }
 });

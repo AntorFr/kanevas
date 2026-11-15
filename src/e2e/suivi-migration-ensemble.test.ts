@@ -228,8 +228,9 @@ describe('kanevas-scenarios-suivi : migration de la base d\'exemple (campagnes e
 
   test('un_second_demarrage_ne_reconvertit_rien', async () => {
     // Casse si : la conversion se rejoue (doublons) ou empêche le redémarrage.
+    const sorti = new Promise((r) => enfant.once('exit', r));
     arreter();
-    await new Promise((r) => setTimeout(r, 500));
+    await sorti;
     await demarrer();
     const a = await connecte(browser, base, 'antor');
     const liste = await appel(a.page, '/api/univers/1/fiches?type=aventure');

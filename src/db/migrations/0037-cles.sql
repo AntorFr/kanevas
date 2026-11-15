@@ -1,5 +1,5 @@
 -- migrate: sans-cles-etrangeres
--- Migration 0018 (kanevas-synchro-cles-noyau, number taken at merge, AD-51, AD-146): every universe, sheet
+-- Migration 0037 (kanevas-synchro-cles-noyau, number taken at merge, AD-51, AD-146): every universe, sheet
 -- and section carries a key. `fiches.cle_origine` becomes `fiches.cle` and `sections.cle_origine`
 -- `sections.cle`, both NOT NULL; `univers.cle` is new. The three tables are recreated (SQLite cannot
 -- add NOT NULL in place), so the file is played with foreign keys off and `foreign_key_check` runs before
@@ -145,18 +145,22 @@ CREATE TABLE sections_nouvelle (
   version_importee INTEGER,
   dernier_import   TEXT CHECK (dernier_import IS NULL OR json_valid(dernier_import)),
   contenu_public   TEXT NOT NULL DEFAULT '',
+  gere_par         TEXT
+    CHECK (gere_par IS NULL OR (gere_par LIKE '_%/_%/_%' AND gere_par NOT LIKE '%/%/%/%')),
+  source_version   TEXT,
   UNIQUE (fiche_id, ordre)
 );
 
 INSERT INTO sections_nouvelle (
   id, fiche_id, titre, ordre, contenu, version, modifie_le, joueurs_lisent, joueurs_ecrivent,
-  auteur_id, auteur_lit, auteur_ecrit, cle, version_importee, dernier_import, contenu_public
+  auteur_id, auteur_lit, auteur_ecrit, cle, version_importee, dernier_import, contenu_public,
+  gere_par, source_version
 )
 SELECT
   id, fiche_id, titre, ordre, contenu, version, modifie_le, joueurs_lisent, joueurs_ecrivent,
   auteur_id, auteur_lit, auteur_ecrit,
   coalesce(cle_origine, cle_tirer('s' || fiche_id, coalesce(nullif(cle_slug(titre), ''), 'section-' || id), 200)),
-  version_importee, dernier_import, contenu_public
+  version_importee, dernier_import, contenu_public, gere_par, source_version
 FROM sections ORDER BY id;
 
 DROP TABLE sections;

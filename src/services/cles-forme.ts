@@ -1,6 +1,6 @@
 /**
  * Pure helpers of the keys (AD-146): slug of a text, shapes of a key, and the reservation state the
- * migration 0018 plays through SQL functions (`openDb` registers them). No database access here;
+ * migration 0037 plays through SQL functions (`openDb` registers them). No database access here;
  * the reader and writer of the key columns is `services/cles.ts` (AD-2).
  */
 

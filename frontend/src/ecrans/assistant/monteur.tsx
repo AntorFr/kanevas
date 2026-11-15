@@ -2,7 +2,7 @@ import { Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { universDe, useChemin } from './adresse';
-import { choisirUnivers } from './fil';
+import { choisirUnivers, surDemandeOuverture } from './fil';
 import { Panneau, useDisponibilite } from './panneau';
 import './assistant.css';
 
@@ -24,6 +24,8 @@ export function Assistant() {
     choisirUnivers(universId);
     setOuvert(false);
   }, [universId]);
+
+  useEffect(() => surDemandeOuverture(() => setOuvert(true)), []);
 
   const present = universId !== null && dispo.k !== 'absent';
   useEffect(() => {

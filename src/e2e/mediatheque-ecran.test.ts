@@ -10,7 +10,7 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { after, before, test } from 'node:test';
-import { type Any, connecte, launch, skipBrowser, startServer, texte } from './harnais.test.js';
+import { type Any, attendreAbsent, connecte, launch, skipBrowser, startServer, texte } from './harnais.test.js';
 
 const opts = { skip: skipBrowser };
 let srv: Awaited<ReturnType<typeof startServer>>;
@@ -59,7 +59,8 @@ test('Antor filtre Images puis Non utilisés : seul « Plan secret de la Guilde 
   await antor.locator('label', { hasText: /^Images$/ }).click();
   await antor.getByLabel('Usage').selectOption({ label: 'Non utilisés' });
   await antor.waitForLoadState('networkidle');
-  await antor.locator('.med-tuile').first().waitFor();
+  await tuile(antor, 'Plan secret de la Guilde').waitFor({ state: 'visible' });
+  await tuile(antor, 'Carte des Sphères').waitFor({ state: 'detached' });
   const noms: string[] = await antor.locator('.med-tuile .med-nom').allInnerTexts();
   assert.ok(noms.includes('Plan secret de la Guilde'), JSON.stringify(noms));
   assert.ok(!noms.includes('Carte des Sphères'), JSON.stringify(noms));
@@ -228,7 +229,7 @@ test('envoi long : « Envoi… » + pourcentage + Annuler, qui n\'ajoute rien', 
   assert.match(await ligne.innerText(), /lent.*Envoi… \d+ %/s);
   await antor.screenshot({ path: '/tmp/scr/envoi.png' });
   await ligne.getByRole('button', { name: 'Annuler' }).click();
-  await antor.waitForTimeout(500);
+  await attendreAbsent(ligne);
   await antor.unroute('**/api/univers/*/fichiers');
   const apres = (await antor.request.get(`/api/univers/${uid}/fichiers`).then((r: Any) => r.json())).fichiers.length;
   assert.equal(apres, avant);

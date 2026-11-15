@@ -13,7 +13,7 @@ export interface Element {
 export interface Lien {
   de: number;
   vers: number;
-  type: string;
+  libelle: string;
 }
 
 /** The answer of `GET /api/univers/:id/cartes/:cid` (`CarteLue` of the server). */

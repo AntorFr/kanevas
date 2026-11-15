@@ -441,7 +441,12 @@ describe('E-5 Administration (B-6, P-2 étape 3)', { skip: raisonSaut }, () => {
       await w.lea.page.getByRole('link', { name: 'Membres' }).waitFor();
       // demote both MJs back: the last one is refused
       await page.getByRole('combobox', { name: 'Rôle de lea' }).selectOption({ label: 'Joueur' });
-      await page.waitForLoadState('networkidle');
+      // wait for the proof that the first demotion landed (lea's role read back as joueur),
+      // not for the network to be idle: under load the second change would race the first
+      await page.waitForFunction(async (url: string) => {
+        const membres = (await (await fetch(url)).json()) as { username: string; role: string }[];
+        return membres.find((m) => m.username === 'lea')?.role === 'joueur';
+      }, `/api/instance/univers/${w.lame}/membres`, { timeout: 8000 });
       await page.getByRole('combobox', { name: 'Rôle de antor' }).selectOption({ label: 'Joueur' });
       await page.getByText(t("Impossible : l'univers doit garder au moins un MJ.")).waitFor();
       assert.equal(await page.getByRole('combobox', { name: 'Rôle de antor' }).inputValue(), 'mj');

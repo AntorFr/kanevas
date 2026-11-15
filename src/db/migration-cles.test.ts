@@ -1,4 +1,4 @@
-// Migration 0018 (AD-146): every universe, sheet and section gets a unique non-null key; the 0017 database is
+// Migration 0037 (AD-146): every universe, sheet and section gets a unique non-null key; the 0017 database is
 // built by the test itself (migrations 0001–0017, then SQL rows). `creee_via` follows the former origin key.
 import assert from 'node:assert/strict';
 import { copyFileSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
@@ -8,6 +8,8 @@ import { test } from 'node:test';
 
 import { migrate, openDb, type Db } from './db.js';
 
+const NUMEROS = readdirSync(new URL('./migrations/', import.meta.url)).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))).sort((a, b) => a - b);
+const depuis = (n: number) => NUMEROS.filter((x) => x >= n);
 const D = '2022-02-02T10:00:00.000Z';
 
 function base0017(): { db: Db; dir: string } {
@@ -32,7 +34,7 @@ const section = (db: Db, id: number, f: number, ordre: number, titre: string, cl
     .prepare('INSERT INTO sections (id, fiche_id, titre, ordre, contenu, modifie_le, cle_origine) VALUES (?, ?, ?, ?, ?, ?, ?)')
     .run(id, f, titre, ordre, '', D, cle);
 
-test('0018 : chaque univers, fiche et section reçoit une clé unique non nulle ; creee_via suit la clé d’origine', () => {
+test('0037 : chaque univers, fiche et section reçoit une clé unique non nulle ; creee_via suit la clé d’origine', () => {
   const { db, dir } = base0017();
   try {
     univers(db, 1, 'Éneria Prime');
@@ -55,7 +57,7 @@ test('0018 : chaque univers, fiche et section reçoit une clé unique non nulle 
     section(db, 5, 2, 2, '???', null);
     section(db, 6, 3, 1, 'Description', null); // other sheet: same key allowed
 
-    assert.deepEqual(migrate(db), [18]);
+    assert.deepEqual(migrate(db), depuis(18));
 
     const u = db.prepare('SELECT id, cle FROM univers ORDER BY id').all() as { id: number; cle: string }[];
     assert.deepEqual(u.map((r) => r.cle).slice(0, 3), ['eneria-prime', 'eneria-prime-2', 'univers-3']);
@@ -113,10 +115,10 @@ test('0018 : chaque univers, fiche et section reçoit une clé unique non nulle 
   }
 });
 
-test('0018 sur une base vide : rien à convertir, schéma posé', () => {
+test('0037 sur une base vide : rien à convertir, schéma posé', () => {
   const { db, dir } = base0017();
   try {
-    assert.deepEqual(migrate(db), [18]);
+    assert.deepEqual(migrate(db), depuis(18));
     assert.equal((db.prepare('SELECT COUNT(*) n FROM univers').get() as { n: number }).n, 0);
     assert.deepEqual(db.pragma('foreign_key_check'), []);
   } finally {

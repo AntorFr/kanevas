@@ -1,16 +1,29 @@
 import assert from 'node:assert/strict';
-import { rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
 import { createServer } from 'vite';
 
+// Each Vite server gets its own cache directory and no file watcher: they share neither the cache nor the
+// watcher with the other test files played in parallel, nor with the block file the last test writes.
+const caches: string[] = [];
+const optionsServeur = () => {
+  const cacheDir = mkdtempSync(join(tmpdir(), 'kanevas-vite-registre-'));
+  caches.push(cacheDir);
+  return { configFile: false as const, root: import.meta.dirname, cacheDir, server: { middlewareMode: true, watch: null }, appType: 'custom' as const, logLevel: 'silent' as const };
+};
+
 // The registry uses import.meta.glob, which only Vite resolves: load it through Vite's SSR loader.
-const vite = await createServer({ configFile: false, root: import.meta.dirname, server: { middlewareMode: true }, appType: 'custom', logLevel: 'silent' });
+const vite = await createServer(optionsServeur());
 const { blocsVisibles } = (await vite.ssrLoadModule('./registre.ts')) as typeof import('./registre');
 const composant = () => null;
 
-test.after(() => vite.close());
+test.after(async () => {
+  await vite.close();
+  for (const dossier of caches) rmSync(dossier, { recursive: true, force: true });
+});
 
 test('blocsVisibles : ne rend que les blocs du rôle, par rang puis identifiant', () => {
   const registre = [
@@ -37,7 +50,7 @@ test('un bloc déposé seul dans blocs/ est trouvé par le registre, sans autre 
   const fichier = join(import.meta.dirname, 'blocs', 'zz-bloc-de-test.tsx');
   writeFileSync(fichier, "export default { id: 'zz-test', roles: ['mj'], rang: 9, composant: () => null };\n");
   try {
-    const frais = await createServer({ configFile: false, root: import.meta.dirname, server: { middlewareMode: true }, appType: 'custom', logLevel: 'silent' });
+    const frais = await createServer(optionsServeur());
     const m = (await frais.ssrLoadModule('./registre.ts')) as typeof import('./registre');
     assert.ok(m.blocsVisibles('mj').some((b) => b.id === 'zz-test'));
     // The test block is MJ-only: it must not leak to the Joueur role.

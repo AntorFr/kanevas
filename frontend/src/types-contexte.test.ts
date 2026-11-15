@@ -35,10 +35,10 @@ test('iconeDeNom : nom inconnu ou absent → icône de fiche, pas d’exception'
   assert.notEqual(ctx.iconeDeNom('ship'), ctx.iconeDeNom(undefined));
 });
 
-test('chaque icône que le serveur envoie a son composant (quatorze types + compte-rendu)', async () => {
+test('chaque icône que le serveur envoie a son composant (quinze types + compte-rendu)', async () => {
   const { TYPES } = await import('../../src/services/types-fiche.ts');
   const repli = ctx.iconeDeNom(undefined);
-  assert.equal(TYPES.length, 15);
+  assert.equal(TYPES.length, 16);
   for (const t of TYPES) {
     if (t.type === 'compte_rendu') continue;
     assert.notEqual(ctx.iconeDeNom(t.icone), repli, `icône ${t.icone} du type ${t.type} absente de la table`);

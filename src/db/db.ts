@@ -21,7 +21,7 @@ export function openDb(path: string): Db {
   db.function('plier', { deterministic: true }, (t: unknown) =>
     typeof t === 'string' ? t.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase() : t,
   );
-  // Key derivation of migration 0018 (AD-146): slug, and per-scope reservation so that collisions are suffixed in id order.
+  // Key derivation of migration 0037 (AD-146): slug, and per-scope reservation so that collisions are suffixed in id order.
   db.function('cle_slug', { deterministic: true }, (t: unknown) => (typeof t === 'string' ? slug(t) : t));
   db.function('cle_debut', () => migrationCles.debut());
   db.function('cle_reserver', (p: unknown, c: unknown) => migrationCles.reserver(String(p), String(c)));
