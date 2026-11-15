@@ -8,7 +8,7 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
 
-import { type Any, connecte, launch, rxExact, section, skipBrowser, startServer, type Server } from './harnais.test.js';
+import { type Any, attendreTransitions, connecte, launch, rxExact, section, skipBrowser, startServer, type Server } from './harnais.test.js';
 
 const SHOTS = '/tmp/kanevas-reverification-natures-shots';
 const opts = { skip: skipBrowser, timeout: 120000 };
@@ -185,18 +185,12 @@ describe('kanevas-fiches-liees-natures, revérification : E-11 deux liens Aldric
     await b.getByRole('button', { name: /^Lieu de test 05/ }).first().waitFor();
     return b;
   }
-  /** Background of a row, once its transition is over (it is read again until it stops moving). */
+  /** Background of a row, once its transition is over (its transitions are waited for). */
 async function fondStable(b: Any, nom: RegExp): Promise<string> {
   await b.page().mouse.move(1, 1); // the pointer rests elsewhere: a hover is no highlight of the choice
   const lire = () => b.getByRole('button', { name: nom }).first().evaluate((e: Element) => getComputedStyle(e).backgroundColor) as Promise<string>;
-  let prec = await lire();
-  for (let i = 0; i < 40; i++) {
-    await new Promise((r) => setTimeout(r, 100));
-    const v = await lire();
-    if (v === prec) return v;
-    prec = v;
-  }
-  return prec;
+  await attendreTransitions(b.page());
+  return lire();
 }
 /** The scrolling container that holds the rows of the picker. */
   const conteneur = (b: Any, ligne = /^Lieu de test 05/) =>

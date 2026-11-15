@@ -105,7 +105,7 @@ test('E-14 : enregistrer, créer et rattacher, rattacher, détacher donnent leur
   await voit(p, 'Utilisé par 1 univers');
 
   // a taken name (case ignored): the doc's message, no new toast
-  await p.waitForTimeout(300);
+  await attendre(p);
   const avant = await p.locator('.toasts .toast').count();
   await p.getByLabel('Nom du système').fill('cof toast');
   await p.getByRole('button', { name: rxExact('Créer et rattacher') }).click();

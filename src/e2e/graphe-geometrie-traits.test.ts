@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
 
-import { type Any, connecte, launch, skipBrowser, startServer, type Server } from './harnais.test.js';
+import { type Any, attendre, connecte, launch, skipBrowser, startServer, type Server } from './harnais.test.js';
 
 const opts = { skip: skipBrowser, timeout: 120000 };
 let srv: Server;
@@ -24,7 +24,7 @@ interface Geo {
 async function geo(page: Any): Promise<Geo> {
   await page.locator('.graphe-trait').first().waitFor({ state: 'attached' });
   await page.locator('.graphe .carte-token span').first().waitFor();
-  // wait until the layout has settled (pills placed above/below, labels slid): same reading twice in a row
+  // wait until the layout has settled (pills placed above/below, labels slid): the page is still for two frames
   const lire = (): Promise<Geo> => page.evaluate(`(() => {
     var svg = document.querySelector('.graphe-liens');
     function pt(el, x, y) { var p = svg.createSVGPoint(); p.x = x; p.y = y; var q = p.matrixTransform(el.getScreenCTM()); return { x: q.x, y: q.y }; }
@@ -40,15 +40,8 @@ async function geo(page: Any): Promise<Geo> {
       jetons: toks.map(rect)
     };
   })()`);
-  let prec = JSON.stringify(await lire());
-  for (let i = 0; i < 30; i++) {
-    await new Promise((r) => setTimeout(r, 150));
-    const g = await lire();
-    const s = JSON.stringify(g);
-    if (s === prec) return g;
-    prec = s;
-  }
-  return JSON.parse(prec);
+  await attendre(page);
+  return lire();
 }
 
 /** True when the segment crosses (or lies in) the box. */

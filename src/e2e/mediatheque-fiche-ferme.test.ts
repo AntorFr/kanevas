@@ -46,12 +46,9 @@ test('Léa lit une image et un document réservés au MJ en cadres neutres dans 
   await zone.getByText('secret-doc.pdf').first().waitFor();
   for (const nom of ['secret-image.png', 'secret-doc.pdf']) {
     // the name shows during the upload already: poll the server until the file really exists
-    let f: Any;
-    for (let i = 0; i < 50 && !f; i++) {
-      const liste = await (await antor.request.get(`/api/univers/${uid}/fichiers`)).json();
-      f = (liste.fichiers ?? liste).find((x: Any) => x.nom === nom);
-      if (!f) await antor.waitForTimeout(200);
-    }
+    await attendre(antor);
+    const liste = await (await antor.request.get(`/api/univers/${uid}/fichiers`)).json();
+    const f: Any = (liste.fichiers ?? liste).find((x: Any) => x.nom === nom);
     const r = await antor.request.patch(`/api/univers/${uid}/fichiers/${f.id}`, { data: { visibilite: 'mj' } });
     assert.equal(r.status(), 200);
   }

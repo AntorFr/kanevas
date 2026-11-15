@@ -84,7 +84,7 @@ test('fichier réservé choisi dans une section lue des joueurs : avertissement,
   const source: string = await champ.inputValue();
   const ligne = source.split('\n').find((l) => l.includes('fichier:'))!;
   await champ.fill(source.replace(ligne, `:::mj\n${ligne}\n:::`));
-  await antor.waitForTimeout(500);
+  await attendre(antor);
   assert.equal(await antor.getByText(AVERT).count(), 0, 'avertissement disparu');
   await antor.getByRole('button', { name: 'Enregistrer', exact: true }).click();
   await attendre(antor);

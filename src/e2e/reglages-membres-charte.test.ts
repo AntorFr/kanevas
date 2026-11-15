@@ -4,7 +4,7 @@
 // Panne visée : « Retirer » plein et permanent, rôle en champ encadré, hauteurs inégales sur la ligne.
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { type Any, allerMembres, ajouterMembre, attendre, connecte, creerUnivers, launch, skipBrowser, startServer } from './harnais.test.js';
+import { type Any, allerMembres, ajouterMembre, attendre, attendreTransitions, connecte, creerUnivers, launch, skipBrowser, startServer } from './harnais.test.js';
 
 const opts = { skip: skipBrowser, timeout: 120000 };
 let srv: Awaited<ReturnType<typeof startServer>>;
@@ -38,11 +38,11 @@ test('E-4 : Retirer est caché au repos, révélé au survol et au focus clavier
   await p.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   assert.equal(await opacite(), '0');
   await ligne().hover();
-  await p.waitForTimeout(400);
+  await attendreTransitions(p);
   assert.equal(await opacite(), '1');
   await p.mouse.move(2, 2);
   await p.getByRole('button', { name: 'Retirer lea', exact: true }).focus();
-  await p.waitForTimeout(400);
+  await attendreTransitions(p);
   assert.equal(await opacite(), '1');
 });
 
@@ -128,7 +128,7 @@ test('E-12 : le chevron du rôle reste caché au repos et apparaît au survol (n
     await admin.mouse.move(2, 2);
     assert.equal(await chevron(admin, 'lea'), '0');
     await admin.getByLabel('Rôle de lea').locator('xpath=ancestor::li').hover();
-    await admin.waitForTimeout(400);
+    await attendreTransitions(admin);
     assert.equal(await chevron(admin, 'lea'), '1');
   } finally {
     await admin.close();

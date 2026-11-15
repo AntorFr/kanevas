@@ -204,13 +204,19 @@ describe('E-17 « Recherche avancée » au navigateur', { skip: skipBrowser }, (
       .sort();
   // Waits (up to 15 s) for the list the user sees to be exactly `attendu`; the page is the proof, not the network.
   const voir = async (page: Any, attendu: string[]): Promise<void> => {
-    let derniere: string[] = [];
-    for (let n = 0; n < 150; n++) {
-      derniere = await rangees(page);
-      if (JSON.stringify(derniere) === JSON.stringify(attendu)) return;
-      await page.waitForTimeout(100);
-    }
-    assert.deepEqual(derniere, attendu);
+    await page
+      .waitForFunction(
+        (att: string[]) => {
+          const l = [...document.querySelectorAll('main a')]
+            .map((a) => (a as HTMLElement).innerText.replace(/\s+/g, ' ').trim().replace(/ (PNJ|PJ|Lieu|Faction|Objet|Créature)$/, ''))
+            .sort();
+          return JSON.stringify(l) === JSON.stringify(att);
+        },
+        attendu,
+        { timeout: 15_000 },
+      )
+      .catch(() => undefined);
+    assert.deepEqual(await rangees(page), attendu);
   };
   const ouvrir = async (page: Any, query: string) => {
     await page.goto(`/univers/${U}/recherche${query}`);
