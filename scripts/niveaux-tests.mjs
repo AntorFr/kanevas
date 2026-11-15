@@ -79,3 +79,12 @@ export function motif(nom) {
   if (!nom.includes(SEP)) return `(^| )${esc(nom)}$`;
   return `^${esc(nom.split(SEP).join(' '))}$|(^| )${esc(nom)}$`;
 }
+
+/**
+ * True when `source` can hold the qualified `nom`: some split of it at ' > ' leaves a declared title and
+ * declared describe titles before it. A path naming no describe of the file names no test (used by the replay).
+ */
+export function cheminDeclare(nom, source) {
+  const m = nom.split(SEP);
+  return m.some((_, i) => declare(source, m.slice(i).join(SEP)) && m.slice(0, i).every((s) => declare(source, s)));
+}

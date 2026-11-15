@@ -6,7 +6,8 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { choisirFichiers, motif, resoudre } from './niveaux-tests.mjs';
+import { readFileSync } from 'node:fs';
+import { cheminDeclare, choisirFichiers, motif, resoudre } from './niveaux-tests.mjs';
 
 const demandes = process.argv.slice(2);
 if (demandes.join('').trim() === '') {
@@ -18,6 +19,16 @@ const tous = choisirFichiers(
   ['src', 'frontend/src'].flatMap((r) => readdirSync(r, { recursive: true }).map((f) => join(r, String(f)))),
 );
 const { parFichier, introuvables } = resoudre(demandes, tous);
+// A qualified name whose describe path the file does not declare names no test: nothing would be replayed.
+for (const [f, noms] of [...parFichier]) {
+  const src = readFileSync(f, 'utf8');
+  for (const n of [...noms]) {
+    if (cheminDeclare(n, src)) continue;
+    noms.delete(n);
+    if (![...parFichier.values()].some((s) => s.has(n)) && !introuvables.includes(n)) introuvables.push(n);
+  }
+  if (noms.size === 0) parFichier.delete(f);
+}
 if (introuvables.length > 0) {
   for (const n of introuvables) console.error(`Test not found in any file: ${n}`);
   process.exit(1);
