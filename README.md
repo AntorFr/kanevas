@@ -18,6 +18,8 @@ src/wasm/, frontend/src/wasm/       Wasm loaders (server, browser) and their tes
 scripts/rust-wasm.sh              `npm run build:wasm`: compiles each crate of `rust/modules/` to Wasm into `rust/pkg/<module>/`
 scripts/faux-setup-token.mjs        Le `claude setup-token` du bouchon (copié dans l'image)
 scripts/tests-attestes.mjs           `npm run tests:attestes` : joue toute la suite sur l'arbre commité et écrit le TAP par test `resultats.tap` (ignoré par git) ; c'est la suite déclarée dans `.sdlc.yaml`, `attester` la joue et pose le statut
+scripts/niveaux-tests.mjs            Pure logic of the test levels (file choice for `--local`, name lookup for the replay), imported by the two scripts; tested in `src/scripts-tests/`
+scripts/rejouer-tests.mjs            `node scripts/rejouer-tests.mjs "<describe > test>"`: replays only the named tests (the `rejouer:` of `.sdlc.yaml`)
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
@@ -53,13 +55,12 @@ Tests sans Docker : `npm ci` d'abord (un `node_modules/` présent peut être inc
 
 ## Démarrage local
 
-To **view the screens**, use the command under « Sans Authelia : le mode bouchon » below (`npm ci && npm run build && KANEVAS_STUB=1 npm start`). The block below only serves the API (`/healthz`). `npm run build` writes to the repository's `dist/`: after renumbering a migration, run `rm -rf dist` first.
+To **view the screens**, use the command under « Sans Authelia : le mode bouchon » below (`npm ci && npm run build:wasm && npm run build && KANEVAS_STUB=1 npm start`; `build:wasm` needs Rust, see « Rust / WebAssembly » — the Docker block below has none, so it cannot build the screens). The block below only serves the API (`/healthz`). `npm run build` writes to the repository's `dist/`: after renumbering a migration, run `rm -rf dist` first.
 
 ```bash
 # écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
 # Sans `npm run build` préalable (fait dans l'hôte, hors de cette commande), cette voie ne sert que l'API : voir plus bas.
-# Pour voir les écrans (dont E-5, `/administration`) : même conteneur, mais `sh -c "npm ci && npm run build && KANEVAS_STUB=1 npm start"`
-# (ou, avec Node ≥ 20 sur l'hôte, `npm ci` puis la commande de la section « mode bouchon »).
+# Pour voir les écrans : le conteneur Node seul n'a pas Rust, donc pas de `npm run build:wasm` ni de `npm run build` ; utiliser la commande de la section « mode bouchon » sur un hôte avec Rust.
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 # (sans KANEVAS_STUB=1 ni les quatre OIDC_*, `/` mène à une connexion OIDC qui répond 404 : aucun écran, pour les voir lancer le mode bouchon ci-dessus)
@@ -79,6 +80,16 @@ cp .env.example .env
 npm run dev            # ou, sans rechargement : npm run build && npm start (`npm start` seul échoue sans `dist/`, ignoré par git)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
+
+`.sdlc.yaml` declares three levels of tests, from the cheapest:
+
+| Level | Command | What it plays | Duration |
+|---|---|---|---|
+| `rejouer:` | `node scripts/rejouer-tests.mjs "<describe > test>" ...` (e.g. `"niveaux de la suite > la suite entière garde tous les fichiers de test"`: the suite titles then the test title, as `resultats.tap` indents them) | only the named tests, in the files that contain them (found by name; names split on `\|` and line ends, never on spaces); exit non-zero if a name is found in no file | seconds |
+| `local:` | `npm run tests:local` | `build:wasm`, `typecheck`, `scripts/copier-wasm.mjs` (copies `rust/pkg` to `dist/wasm`, no `build`), then every test file except `src/e2e/` (no server, no browser, no Playwright install); same `resultats.tap` (overwritten: after a local run it no longer holds a whole-suite report), same test names | about 2-3 min (1 min 30 s to 3 min 36 s, 997 tests, 3-CPU pod; the font check of the built app is skipped when there is no dist/) |
+| `commande:` | `npm run tests:attestes` | everything, `src/e2e/` included, after `build` | about 36 min on a 12-CPU pod (see « Tests de bout en bout ») |
+
+`local:` and `commande:` share one file list and one script (`--local` only drops `src/e2e/`, `build` and Playwright), so they cannot drift apart. The e2e files stay in the attested run only. The one skipped test is the font check of the built app (« npm run build non lancé »): there is no `dist/` at this level. The replay finds a test by the literal title given to `it`/`test`/`describe`: a title built at run time (template literal, loop) is « not found », so replay its whole file or the `local:` level instead.
 
 The attested run is `attester --publier` (the chain's proof tool, installed in its pods and on the maintainer's workstation; it plays the suite declared in `.sdlc.yaml` on a clean checkout of the pushed commit), which calls `npm run tests:attestes` (no test skipped; you can run that one alone). `attester` refuses a dirty tree: commit first. It plays two test files at a time by default (`min(os.availableParallelism(), 2)`, the budget measured on the 3-CPU pod); `-- --concurrence N` (positive integer, otherwise exit 2) overrides it, and the log carries the effective value. During the run, server and Chromium startups of the e2e files go one at a time (`withStartupLock`, a lock under the run's temporary directory); ready servers and browsers then run their scenarios in parallel.
 
@@ -140,7 +151,7 @@ token belongs to the deleted universe and cannot be reused for the new one.
 Le « bouchon » (*stub*) est le mode `KANEVAS_STUB=1` : pas d'Authelia, des comptes de test et un script qui répond à la place du modèle. C'est la commande pour voir l'application ; le bloc `docker run … npm run dev` plus haut ne sert que l'API (`/healthz`).
 
 ```bash
-npm ci && npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
+npm ci && npm run build:wasm && npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
 # le semis précède l'écoute du port (moins d'une seconde ici) ; sans écrire dans ./data/ ni sur le port 3001 : npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start
 # The recipes below that name `http://localhost:3001` assume `npm start` without `PORT`; with the `PORT=3055` command, replace 3001 by 3055. Stop with Ctrl-C. In the background, `kill $!` stops only `npm`, not the server: kill the `node dist/server.js` process that listens on the port (simplest: start it with `PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 node dist/server.js &` instead of `npm start`, then `kill $!` stops it; `ss`, `ps` and `pgrep` may be missing in a pod) (a server left running keeps the port, the database and `session.key`). Delete /tmp/k.db to reset the database. Every recipe below assumes a fresh seeded database (ids such as universe 4 are those of a fresh seed; the deletion recipe destroys « Port-Sel » and the universe it is run on): delete /tmp/k.db before each.
 # `session.key` and `attachments/` are created beside the database: use a dedicated directory,

@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p frontend/tsconfig.json",
     "test": "node --import tsx --test $(find src frontend/src -name '*.test.ts')",
     "tests:attestes": "node scripts/tests-attestes.mjs",
+    "tests:local": "node scripts/tests-attestes.mjs --local",
     "dev:front": "vite --config frontend/vite.config.ts",
     "import:echantillon": "tsx src/bouchon/client-import.ts"
   },
