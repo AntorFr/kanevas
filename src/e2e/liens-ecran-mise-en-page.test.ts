@@ -78,7 +78,6 @@ for (const [l, h, th] of [[1440, 900, 'light'], [1440, 900, 'dark'], [390, 844, 
     const liste = page.getByRole('listbox', { name: 'Fiches à lier' });
     await liste.waitFor();
     await liste.getByRole('option').nth(1).waitFor();
-    await page.waitForTimeout(600);
     const bad = await page.evaluate(() => {
       const out: string[] = [];
       const cibles = [...document.querySelectorAll('[role=listbox] [role=option]')].map((e, i) => [`option ${i}`, e] as const);

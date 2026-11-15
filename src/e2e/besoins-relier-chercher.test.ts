@@ -92,7 +92,6 @@ async function chercher(page: Any, mot: string, type = 'personnages'): Promise<v
   await page.getByRole('button', { name: rxExact('Chercher') }).click();
   await page.waitForFunction(() => !/Recherche…/.test(document.body.innerText));
   await attendre(page);
-  await page.waitForTimeout(150);
 }
 const aucun = (mot: string, type = 'personnages') => `Aucun résultat pour « ${mot} » dans les ${type}.`;
 const liens = async (page: Any): Promise<string[]> =>
@@ -290,7 +289,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
         if (/[?&]q=/.test(r.url())) requetes.push(r.url());
       });
       await champ(m.antor).pressSequentially('Zzyzx', { delay: 30 });
-      await m.antor.waitForTimeout(600);
+      await attendre(m.antor);
       assert.equal(requetes.length, 0, 'recherche partie à la frappe');
       assert.ok((await liens(m.antor)).some((t) => t.includes('Maître Aldric')));
       await champ(m.antor).press('Enter');
@@ -509,7 +508,8 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await ouvrirFiche(m2.antor, m2, m2.aldric);
       const bloc = section(m2.antor, 'Apparence');
       await bloc.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
-      await bloc.getByLabel('Type de relation').fill('membre de');
+      await bloc.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+      await bloc.getByLabel('Qualificatif').fill('membre de');
       await bloc.getByLabel('Type de fiche').selectOption({ label: 'Faction' });
       await bloc.getByLabel(rx('Chercher dans les factions')).fill('Lames');
       await bloc.getByRole('button', { name: rxExact('Chercher') }).click();
@@ -534,16 +534,19 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await ouvrirFiche(m2.antor, m2, m2.aldric);
       const bloc = section(m2.antor, 'Apparence');
       await bloc.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
+      await bloc.getByLabel('Nature').selectOption({ label: 'Sans nature' });
       await bloc.getByLabel('Type de fiche').selectOption({ label: 'Faction' });
       await bloc.getByText('Lames Grises').first().waitFor();
       assert.equal(await bloc.getByRole('button', { name: rxExact('Relier') }).isDisabled(), true);
       await bloc.getByText('Lames Grises').first().click();
       await bloc.getByRole('button', { name: rxExact('Relier') }).click();
-      await bloc.getByText('Erreur : le type de relation est obligatoire.').waitFor();
-      await bloc.getByLabel('Type de relation').fill('x'.repeat(81));
+      await bloc.getByText('Erreur : le qualificatif est obligatoire sans nature.').waitFor();
+      await bloc.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+      await bloc.getByLabel('Qualificatif').fill('x'.repeat(81));
       await bloc.getByRole('button', { name: rxExact('Relier') }).click();
       await bloc.getByText('Erreur : 80 caractères au plus.').waitFor();
-      await bloc.getByLabel('Type de relation').fill('x'.repeat(80));
+      await bloc.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+      await bloc.getByLabel('Qualificatif').fill('x'.repeat(80));
       await bloc.getByRole('button', { name: rxExact('Relier') }).click();
       await ligneRelation(m2.antor, 'x'.repeat(80), 'Lames Grises').first().waitFor();
     });
@@ -553,7 +556,8 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await ouvrirFiche(m2.antor, m2, m2.aldric);
       const bloc = section(m2.antor, 'Apparence');
       await bloc.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
-      await bloc.getByLabel('Type de relation').fill('double de');
+      await bloc.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+      await bloc.getByLabel('Qualificatif').fill('double de');
       await bloc.getByText('Maître Aldric').first().waitFor();
       await bloc.getByText('Maître Aldric').first().click();
       await bloc.getByRole('button', { name: rxExact('Relier') }).click();
@@ -568,13 +572,15 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await ouvrirFiche(m2.antor, m2, m2.aldric);
       const bloc = section(m2.antor, 'Apparence');
       await bloc.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
-      await bloc.getByLabel('Type de relation').fill('membre de');
+      await bloc.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+      await bloc.getByLabel('Qualificatif').fill('membre de');
       await bloc.getByLabel('Type de fiche').selectOption({ label: 'Faction' });
       await bloc.getByRole('button', { name: /^Lames Grises/ }).click();
       await bloc.getByRole('button', { name: rxExact('Relier') }).click();
       await bloc.getByText('Cette relation existe déjà.').waitFor();
-      assert.equal(await bloc.getByLabel('Type de relation').inputValue(), 'membre de', 'saisie perdue');
-      await bloc.getByLabel('Type de relation').fill('espionne');
+      assert.equal(await bloc.getByLabel('Qualificatif').inputValue(), 'membre de', 'saisie perdue');
+      await bloc.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+      await bloc.getByLabel('Qualificatif').fill('espionne');
       await bloc.getByRole('button', { name: rxExact('Relier') }).click();
       await ligneRelation(m2.antor, 'espionne', 'Lames Grises').first().waitFor();
     });
@@ -585,7 +591,8 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await ouvrirFiche(m2.antor, m2, m2.aldric);
       const bloc = section(m2.antor, 'Apparence');
       await bloc.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
-      await bloc.getByLabel('Type de relation').fill('lien 101');
+      await bloc.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+      await bloc.getByLabel('Qualificatif').fill('lien 101');
       await bloc.getByLabel('Type de fiche').selectOption({ label: 'Faction' });
       await bloc.getByRole('button', { name: /^Lames Grises/ }).click();
       await bloc.getByRole('button', { name: rxExact('Relier') }).click();
@@ -597,6 +604,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await ouvrirFiche(m2.antor, m2, m2.aldric);
       const bloc = section(m2.antor, 'Apparence');
       await bloc.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
+      await bloc.getByLabel('Nature').selectOption({ label: 'Sans nature' });
       await bloc.getByLabel('Type de fiche').selectOption({ label: 'Objet' });
       await bloc.getByText('Aucun objet à relier.').waitFor();
       await m2.antor.route(/\/fiches\?.*type=lieu/, (r: Any) => r.abort('failed'));

@@ -22,6 +22,8 @@ async function monde() {
   await connecte(browser, s.base, 'Léa');
   await connecte(browser, s.base, 'Mira');
   const admin = await connecte(browser, s.base, 'Admin');
+  // Under load the page takes longer than the harness default (30 s) to show its titles.
+  admin.page.setDefaultTimeout(60000);
   const ids: Record<string, number> = {};
   for (const nom of ['Brume', "Lame d'Ébène", 'Solo']) {
     const r = await antor.ctx.request.post('/api/univers', { data: { nom, description: 'd' } });

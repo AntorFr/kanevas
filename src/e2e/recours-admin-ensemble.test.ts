@@ -210,20 +210,26 @@ describe('kanevas-recours-admin : B-6 / P-2 étape 3 / E-5 (navigateur)', { skip
   it('gestes : changer un rôle puis retirer un membre, la confirmation est demandée', async () => {
     const m = await monde();
     await ouvrirAdmin(m.admin.page, LAME);
-    await ligne(m.admin.page, 'lea').getByLabel('Rôle de lea').selectOption({ label: 'MJ' });
-    await attendre(m.admin.page);
-    await ouvrirAdmin(m.admin.page, LAME);
-    assert.equal(await ligne(m.admin.page, 'lea').getByLabel('Rôle de lea').inputValue(), 'mj');
-    await m.admin.page.getByRole('button', { name: 'Retirer lea' }).first().click();
-    await voir(m.admin.page, `Retirer lea de ${LAME} ?`);
+    const p = m.admin.page;
+    // Each gesture waits for its proof before the next one: the role is saved when the PATCH answers, not when the network is idle.
+    const enregistre = p.waitForResponse((r: Any) => r.request().method() === 'PATCH' && r.url().includes('/membres/'));
+    await ligne(p, 'lea').getByLabel('Rôle de lea').selectOption({ label: 'MJ' });
+    assert.ok((await enregistre).ok(), 'le rôle est enregistré');
+    await ouvrirAdmin(p, LAME);
+    await p.getByLabel('Rôle de lea').waitFor();
+    assert.equal(await ligne(p, 'lea').getByLabel('Rôle de lea').inputValue(), 'mj');
+    const retirerLea = p.getByRole('button', { name: 'Retirer lea' }).first();
+    await retirerLea.waitFor({ state: 'visible' });
+    await retirerLea.click();
+    await voir(p, `Retirer lea de ${LAME} ?`);
     // annuler ne retire pas
-    await m.admin.page.getByRole('button', { name: 'Annuler', exact: true }).click();
-    await attendre(m.admin.page);
-    assert.equal(await m.admin.page.getByText(rx(`Retirer lea de ${LAME} ?`)).count(), 0);
-    assert.equal(await ligne(m.admin.page, 'lea').count(), 1);
-    await retirer(m.admin.page, 'lea', LAME);
-    await ligne(m.admin.page, 'lea').waitFor({ state: 'detached' });
-    assert.equal(await ligne(m.admin.page, 'lea').count(), 0);
+    await p.getByRole('button', { name: 'Annuler', exact: true }).click();
+    await p.getByText(rx(`Retirer lea de ${LAME} ?`)).waitFor({ state: 'detached' });
+    assert.equal(await ligne(p, 'lea').count(), 1);
+    await retirer(p, 'lea', LAME);
+    await ligne(p, 'lea').waitFor({ state: 'detached' });
+    assert.equal(await ligne(p, 'lea').count(), 0);
+    await p.getByText(/1 membre\b/).first().waitFor();
     assert.match(await texte(m.admin.page), /1 membre\b/);
   });
 

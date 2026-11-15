@@ -162,11 +162,8 @@ test('un document ajouté par la barre d’outils est un lien dans le texte ; r�
   const [fc] = await Promise.all([antor.waitForEvent('filechooser'), antor.getByRole('menuitem', { name: /Ajouter depuis l/ }).click()]);
   await fc.setFiles({ name: 'grille-des-tarifs.pdf', mimeType: 'application/pdf', buffer: PDF });
   const ta = desc.getByRole('textbox');
-  let source = '';
-  for (let i = 0; i < 100 && !/\]\(fichier:\d+\)/.test(source); i++) {
-    await antor.waitForTimeout(100);
-    source = await ta.inputValue();
-  }
+  await antor.waitForFunction((el: HTMLTextAreaElement) => /\]\(fichier:\d+\)/.test(el.value), await ta.elementHandle(), { timeout: 10_000 });
+  const source = await ta.inputValue();
   assert.match(source, /\[[^\]]*grille-des-tarifs[^\]]*\]\(fichier:\d+\)/);
   assert.doesNotMatch(source, /!\[[^\]]*grille-des-tarifs/);
   await desc.getByRole('button', { name: 'Enregistrer', exact: true }).click();
@@ -183,6 +180,7 @@ test('un document ajouté par la barre d’outils est un lien dans le texte ; r�
   assert.equal((await antor.request.patch(api(`/fichiers/${f.id}`), { data: { visibilite: 'mj' } })).status(), 200);
   await lea.goto(`/univers/${uid}/fiche/${ids['Port-Sel']}`);
   await attendre(lea);
+  await lea.getByRole('region', { name: /Description/ }).getByText('Fichier réservé au MJ.').waitFor({ timeout: 20000 });
   await lea.screenshot({ path: '/tmp/scr/ver-document-reserve.png' });
   const lue = await lea.getByRole('region', { name: /Description/ }).innerText();
   assert.match(lue, /Fichier réservé au MJ\./);

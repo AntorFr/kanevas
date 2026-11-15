@@ -9,7 +9,7 @@ export type EntreeMenu =
   /** Free, non-interactive content (who is signed in, for instance). */
   | { contenu: ReactNode }
   /** A named row of exclusive choices shown as icon buttons (theme); choosing keeps the menu open. */
-  | { groupe: string; options: { libelle: string; icone: LucideIcon; actif: boolean; onChoisir: () => void }[] };
+  | { groupe: string; options: { libelle: string; icone: LucideIcon; actif: boolean; onChoisir: () => void; tailleIcone?: number }[] };
 
 const estAction = (e: EntreeMenu): e is Extract<EntreeMenu, { libelle: string }> => 'libelle' in e;
 
@@ -43,13 +43,22 @@ export function Menu({
   large,
   classe,
   desactive,
+  onOuvrir,
+  focusFermeture,
+  titreDeclencheur,
 }: {
   /** Accessible name of the trigger. */
   etiquette: string;
   /** Content of the trigger (an avatar and a name, for instance); absent: an icon-only trigger. */
   declencheur?: ReactNode;
   /** A quiet add action, using the same style as a small ghost button. */
-  varianteDeclencheur?: 'fantome-petit';
+  varianteDeclencheur?: 'fantome-petit' | 'outil';
+  /** Called as the menu opens (the editor freezes the textarea selection there). */
+  onOuvrir?: () => void;
+  /** Where the focus goes on closing, instead of the trigger (the editor's field). */
+  focusFermeture?: () => void;
+  /** Tooltip of a trigger that has content (the `outil` variant). */
+  titreDeclencheur?: string;
   icone?: LucideIcon;
   entrees: EntreeMenu[];
   aligne?: 'debut' | 'fin';
@@ -71,7 +80,7 @@ export function Menu({
   const items = () => Array.from(racine.current?.querySelectorAll<HTMLElement>('[role="menuitem"],[role="menuitemradio"]') ?? []);
   const fermer = (rendreFocus: boolean) => {
     setOuvert(false);
-    if (rendreFocus) bouton.current?.focus();
+    if (rendreFocus) (focusFermeture ?? (() => bouton.current?.focus()))();
   };
 
   // Opened: the focus goes to the first entry (a menu is opened to be used).
@@ -108,18 +117,22 @@ export function Menu({
       <button
         ref={bouton}
         type="button"
-        className={varianteDeclencheur === 'fantome-petit' ? 'bouton fantome petit' : declencheur ? 'menu-declencheur' : 'bouton-icone'}
+        className={varianteDeclencheur === 'fantome-petit' ? 'bouton fantome petit' : varianteDeclencheur === 'outil' ? 'outil-md' : declencheur ? 'menu-declencheur' : 'bouton-icone'}
         aria-haspopup="menu"
         aria-expanded={ouvert}
         disabled={desactive}
         aria-disabled={desactive || undefined}
         aria-controls={ouvert ? idMenu : undefined}
-        aria-label={declencheur ? undefined : etiquette}
-        title={declencheur ? undefined : etiquette}
-        onClick={() => setOuvert(!ouvert)}
+        aria-label={declencheur && varianteDeclencheur !== 'outil' ? undefined : etiquette}
+        title={titreDeclencheur ?? (declencheur ? undefined : etiquette)}
+        onClick={() => {
+          if (!ouvert) onOuvrir?.();
+          setOuvert(!ouvert);
+        }}
         onKeyDown={(e) => {
           if (e.key === 'ArrowDown' && !ouvert) {
             e.preventDefault();
+            onOuvrir?.();
             setOuvert(true);
           }
         }}
@@ -147,7 +160,7 @@ export function Menu({
                         tabIndex={-1}
                         onClick={o.onChoisir}
                       >
-                        <o.icone size={14} strokeWidth={1.75} aria-hidden="true" />
+                        <o.icone size={o.tailleIcone ?? 14} strokeWidth={1.75} aria-hidden="true" />
                       </button>
                     ))}
                   </div>

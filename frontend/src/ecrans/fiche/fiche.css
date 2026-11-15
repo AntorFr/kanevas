@@ -180,6 +180,7 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
   .entete.illustree { grid-template-columns: 96px minmax(0, 1fr); column-gap: var(--e-4); }
   .illustration { width: 96px; }
   .gestes-ill { right: 4px; bottom: 4px; }
+  .boite-ill:has(.marque-disparu) .gestes-ill { bottom: auto; top: 4px; }
   /* Narrow text column beside the illustration: the row stays on one line (the « ⋯ » never drops under it,
      which would lift the badges above the illustration); « MJ seul » shrinks to its padlock, its name and
      tooltip stay on the wrapper. */
@@ -199,7 +200,8 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 }
 
 /* « ⋯ » of the header (E-9): beside the type badge; its only line here is the origin of an imported sheet. */
-.tete-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
+.tete-ligne { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-2); }
+.tete-ligne .type { white-space: nowrap; }
 .tete-ligne > .menu-racine { margin-left: auto; }
 .menu .info-fiche { display: flex; align-items: flex-start; gap: var(--e-2); padding: 7px 10px 8px; font-size: var(--t-12); line-height: 1.45; color: var(--texte-3); white-space: normal; }
 .menu:has(.info-fiche) { width: max-content; max-width: calc(100vw - 24px); }
@@ -212,9 +214,20 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .menu .info-fiche code { font: 500 11.5px/1.3 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--texte-2); white-space: nowrap; }
 
 /* Sub-type in the badge (B-52): a button for the GM, plain text for a player; the list hangs under the badge. */
-.fiche .type .sous-type-bouton { background: none; border: 0; padding: 0 4px; margin: 0 -4px 0 -3px; font: inherit; color: inherit; cursor: pointer; border-radius: 4px; }
-.fiche .type .sous-type-bouton:hover { background: var(--surface-3); }
+/* Mirror the button's text inset around the dot; keep the full 6 px gap clear for its 4 px focus ring. */
+.fiche .type .point-type { flex: none; margin-left: var(--e-1); }
+.fiche .type > .sous-type { padding-left: var(--e-1); }
+.fiche .type .sous-type-bouton { background: none; border: 0; padding: 0 4px; margin: 0 -4px 0 0; font: inherit; color: inherit; cursor: text; border-radius: 4px; }
+.fiche .type .sous-type-bouton { display: inline-flex; align-items: center; gap: 4px; }
+.fiche .type .sous-type-bouton .crayon { flex: none; opacity: 0; color: var(--texte-2); }
+.fiche .type .sous-type-bouton:not(:disabled):hover, .fiche .type .sous-type-bouton:not(:disabled):focus-visible { background: var(--surface-3); }
+.fiche .type .sous-type-bouton:not(:disabled):hover .crayon, .fiche .type .sous-type-bouton:not(:disabled):focus-visible .crayon { opacity: 1; }
+.fiche .type .sous-type-bouton:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.fiche .type .sous-type-bouton:disabled { cursor: default; }
+.fiche .type .sous-type-bouton:disabled .crayon { display: none; }
 .fiche .type .sous-type-bouton.vide { color: var(--texte-3); }
+.fiche .type .sous-type-bouton.vide:not(:disabled):hover, .fiche .type .sous-type-bouton.vide:not(:disabled):focus-visible { color: var(--texte-2); }
+@media (hover: none) { .fiche .type .sous-type-bouton:not(:disabled) .crayon { opacity: 1; } }
 .fiche .type:has(.sous-type-edition) { position: relative; background: var(--surface); box-shadow: 0 0 0 1px var(--accent), 0 0 0 4px var(--accent-fond); }
 .fiche .type .sous-type-edition { display: inline-flex; align-items: center; }
 .fiche .type .sous-type-edition input { height: 20px; width: 13ch; max-width: 40vw; padding: 0 2px; font: inherit; color: var(--texte); background: transparent; border: 0; border-radius: 3px; }
@@ -284,6 +297,28 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
    (e09), the labels never wrap. */
 .menu-ajout-fichier .menu { min-width: 220px; }
 .menu-ajout-fichier .menu-entree { white-space: nowrap; }
+
+/* ---------- Bandeau d'une section gérée par un outil (S-7) ; `.bandeau` nomme déjà les messages de page ---------- */
+.bandeau-gere { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); margin-top: var(--e-3); padding: var(--e-2) var(--e-3);
+  border: 1px solid var(--accent-fond); border-radius: var(--rayon-champ); background: var(--accent-fond); font-size: var(--t-13); }
+.bandeau-gere.desactive { border-color: var(--bord-fort); background: var(--surface-2); color: var(--texte-2); }
+.bandeau-gere .bg-nom { color: var(--accent-texte); font-weight: 600; overflow-wrap: anywhere; }
+.bandeau-gere.desactive .bg-nom { color: var(--texte-2); }
+.bandeau-gere a.bg-nom { text-decoration: underline; }
+.bandeau-gere .bg-etat { color: var(--mj); }
+.bandeau-gere .bg-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-left: auto; }
+.bandeau-gere a.bouton { align-items: center; }
+.bg-note { margin-top: var(--e-2); font-size: var(--t-13); color: var(--texte-2); }
+.bg-annonce:empty { display: none; }
+.bg-annonce { margin-top: var(--e-2); font-size: var(--t-13); color: var(--table); }
+.composant-section { overflow: auto; max-width: 100%; }
+@media (max-width: 760px) {
+  .bandeau-gere { flex-direction: column; align-items: stretch; }
+  .bandeau-gere .bg-actions { flex-direction: column; margin-left: 0; }
+  .bandeau-gere .bg-actions .bouton { width: 100%; min-height: 44px; justify-content: center; }
+}
+
+.fiche .type.marque-badge { white-space: nowrap; }
 
 /* « Déplacer sous… » (E-9, kanevas-deplacer-arborescence): the two views, the path, the rows of the tree. */
 .fenetre:has(.deplacer) { display: flex; flex-direction: column; max-height: calc(100dvh - 2 * var(--e-5)); }

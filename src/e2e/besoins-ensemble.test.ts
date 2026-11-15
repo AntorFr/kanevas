@@ -35,7 +35,6 @@ const UNIVERS = "Lame d'Ébène";
 // writes in flight to finish before reading the screen.
 async function attendre(page: Any): Promise<void> {
   await attendreHarnais(page);
-  await page.waitForTimeout(200);
   await page.waitForFunction(() => ![...document.querySelectorAll('button')].some((b) => b.textContent?.trim() === '…'));
   await attendreHarnais(page);
 }
@@ -787,6 +786,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await p.unroute('**/api/univers/*/membres');
     await p.getByRole('button', { name: rxExact('Réessayer') }).first().click();
     await attendre(p);
+    await p.getByRole('button', { name: /^Retirer / }).first().waitFor({ state: 'visible' });
     await antor.ctx.setOffline(true);
     await voit(p, 'Connexion perdue.');
     assert.equal(await p.getByRole('button', { name: rxExact('Ajouter') }).isDisabled(), true);

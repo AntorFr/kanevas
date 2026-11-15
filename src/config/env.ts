@@ -45,6 +45,7 @@ const envSchema = z.object({
   // ANTHROPIC_MODEL is read, by the assistant's claude-agent adapter (AD-73).
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().min(1).default('claude-sonnet-4-6'),
+  // Wasm modules directory (AD-rust-4), tests: `<dir>/<module>/<module>_bg.wasm`. Absent = dist/wasm, then rust/pkg.
   LLM_PROVIDER: z.enum(['mock', 'anthropic', 'claude-agent']).default('mock'),
 });
 
@@ -86,3 +87,6 @@ export const codexHome = env.CODEX_HOME?.trim() || (dbPath === ':memory:' ? join
 // Disposable working directories of the image engine: `<racine>/<uuid>` (AD-90).
 export const imagesTmpDir =
   dbPath === ':memory:' ? join(tmpdir(), 'kanevas-images') : join(dirname(dbPath), 'tmp', 'images');
+
+// Read at each call (not frozen at import) so a test can point the loader elsewhere.
+export const wasmDir = (): string | undefined => process.env.WASM_DIR?.trim() || undefined;

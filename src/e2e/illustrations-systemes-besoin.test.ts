@@ -250,7 +250,7 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
     assert.match(t, /CoF Mini/);
     assert.match(t, /Lecture seule/);
     assert.match(t, /Lame d'Ébène\s*·?\s*Joueur/);
-    const sid = JSON.parse((await api(lea, 'GET', '/api/systemes')).corps)[0].id;
+    const sid = JSON.parse((await api(lea, 'GET', '/api/systemes')).corps).find((s: Any) => s.nom === 'CoF Mini').id;
     await lea.goto(`/systemes/${sid}`);
     await lea.getByRole('heading', { level: 1, name: /CoF Mini/ }).waitFor();
     await attendre(lea);
@@ -261,7 +261,7 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
 
   test('B-31 bords : Antor MJ d’un système et Joueur de l’autre, « Lecture seule » sur le second seulement', opts, async () => {
     const liste = JSON.parse((await api(antor, 'GET', '/api/systemes')).corps);
-    assert.equal(liste.length, 2);
+    assert.equal(liste.length, 3); // + « Système d'essai » (kanevas-outils-cadre)
     const cof = liste.find((s: Any) => s.nom === 'CoF Mini');
     const co = liste.find((s: Any) => s.nom === 'Chroniques Oubliées Fantasy');
     assert.equal(cof.peutEcrire, true);
@@ -290,13 +290,14 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
 
   test('B-31 : détacher l’univers fait disparaître CoF Mini de la liste de Léa et son adresse devient introuvable', opts, async () => {
     // Runs last among the systems tests: it changes the world.
-    const sid = JSON.parse((await api(lea, 'GET', '/api/systemes')).corps)[0].id;
+    const sid = JSON.parse((await api(lea, 'GET', '/api/systemes')).corps).find((s: Any) => s.nom === 'CoF Mini').id;
     const r = await antor.request.fetch(`${srv.base}/api/univers/${U}/systeme`, { method: 'PUT', data: { systemeId: null } });
     assert.ok(r.status() < 300, `detach status ${r.status()}`);
     assert.equal((await api(lea, 'GET', `/api/systemes/${sid}`)).statut, 404);
     await lea.goto(`/systemes/${sid}`);
     await lea.getByText('Page introuvable.').first().waitFor();
-    assert.equal(JSON.parse((await api(lea, 'GET', '/api/systemes')).corps).length, 0);
+    // Léa keeps the trial system of « Éneria d'essai » (kanevas-outils-cadre), not CoF Mini.
+    assert.deepEqual(JSON.parse((await api(lea, 'GET', '/api/systemes')).corps).map((x: Any) => x.nom), ["Système d'essai"]);
   });
 
   // --- E-1 ---
@@ -305,7 +306,7 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
     await antor.getByRole('heading', { level: 1, name: 'Mes univers' }).waitFor();
     await attendre(antor);
     const t = await texte(antor);
-    assert.match(t, /3 univers/); // + « Essai Kanka » (kanevas-import)
+    assert.match(t, /5 univers/); // + « Essai Kanka » (kanevas-import), + « Éneria d'essai » and « Univers voisin » (kanevas-outils-cadre)
     assert.match(t, /Chroniques Oubliées Fantasy/);
     assert.match(t, /2 membres/);
     const lame = antor.getByRole('link', { name: /Lame d.Ébène/ }).first();
