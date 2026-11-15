@@ -512,7 +512,7 @@ rule of the book, one by one, before any proposal, so that no conversion meets o
   it), and **no gap is left « to see at conversion »**. A rule that the designer shows without computing (a game effect) is
   stated on the element, never silently dropped. *(P-19, P-22)*
 - **B-89** — The **target of a modification is chosen on the design, at installation**, never stated by the catalogue
-  (E-14): a catalogue row says what the mod does, a design line says which weapon or fitting each installation aims at.
+  (gap EC-14 of the ledger): a catalogue row says what the mod does, a design line says which weapon or fitting each installation aims at.
   Several installations of one mod (specialised mountings, weapon overcharge, oversized mountings) may aim at **different**
   elements; a mod that aims at nothing (compact magazines) is not asked for a target. Specialised mountings take **half,
   rounded down, at least 1, of the power and of the mass of the target, per installation**; a weapon overcharge adds
@@ -948,6 +948,13 @@ the density of generated systems never changes based on a territory she cannot s
    In the first slice, Léa shares the ship link with Roxane, a player
    who has no design of her own on it: Roxane reads « Étoile du soir » (Léa's second design, on a hull of the system, which she may read) read-only, with « Enregistrer » and « Annuler »
    absent, and « Vent d'Orak » is « Page introuvable. » for her (not hers to read).
+6. *(kanevas-concepteur-vaisseaux, B-90 to B-94; Léa goes on with the design of step 2, saved.)* **First, the compatibility (B-94):** a design saved before this epic (a line of specialised mountings carrying one `vise` for the whole line, written by an earlier slice) opens without error: each installation of the line shows that target in its own « Visée » row, the totals are those shown before, and nothing is rewritten until she saves; a design whose line had no target opens with the blocking alert « Choisissez l'élément visé » on its rows. Then Léa puts a weapon of class 3 on a hull of class 2: the blocking
+   alert « Classe de coque inadaptée » refuses the save; she chooses a lighter weapon. She sets « dont joueurs » and « dont robots »
+   and reads the crew cost per day and the robots' one-off cost; the results show the capacities the fittings give (hidden cargo,
+   maximum crew, provisions, lifeboats) and each element's effect line. On a station there is no Spike drive to choose and the
+   speed reads « N/A ». She adds a specialised mounting and, in its « Visée » row (E-22), chooses which of her weapons it aims at (a second row for a second installation; a second specialised mounting on the same weapon is refused with « Cet élément est déjà visé par un montage spécialisé », while an overcharge may be aimed at it again); she adds a pretech modification, reads the components, the installation days and the Maintenance alert, and
+   makes one mod part of the hull (refit), then reads its cost. Antor changes the price divisor or the yard pace on E-20: her
+   design is « Calculée avec d'anciens réglages ».
 *Highlight*: budgets recalculate before their eyes, and the sheet's section stays consistent with what
 is calculated.
 *Failure*: a recalculation that fails — « Le recalcul n'a pas abouti. Réessayez. », the text unchanged; the usage removed meanwhile — « Vous ne pouvez plus recalculer cette section. »; connection lost — « Connexion perdue. », the buttons disabled. Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
@@ -985,8 +992,8 @@ refused (401/403 depending on the import API) and nothing written.
 2. **E-22** of « Éneria »: Antor opens a converted design, sees the price, HP, AC, power and mass of the prototype's
    reference figures, the capacities and the crew costs, and the sheet's section in step. The campaign's ships
    (`classe-hyperion`, `le-pie-rouge`, …) are opened and checked against their sheets.
-3. For a design with specialised mountings or an overcharge, **E-22** asks which weapon each installation aims at:
-   the choice is on the design line and the section shows it.
+3. Only if a converted design carries a specialised mounting or an overcharge (none of the prototype's ten examples carries any modification), **E-22** asks which weapon each installation aims at:
+   the choice is on the design line and the section shows it. Otherwise the step is empty, and the rule is proved on constructed designs by the construction tasks (B-95, § 13 of `vaisseaux-regles.md`).
 4. The report of the conversion says « 0 non converti »; the figures replayed on the real data are the proof of B-95.
 *Failure*: a rule of the book that the catalogue cannot state stops the conversion with the rule named (the ledger's
 row): this is what B-88 forbids to remain.
@@ -1141,7 +1148,7 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 | Cross-check | Result |
 |---|---|
 | Each need has a journey | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 · B-80 P-19, P-20 · B-81 P-18, P-20 · B-82 P-19, P-20 · B-83 P-19, P-20 · B-84 P-18, P-20 · B-85 P-19, P-20 · B-86 P-19, P-20 · B-87 P-19, P-20 · B-88 P-19, P-22 · B-89 P-19, P-22 · B-90 P-19 · B-91 P-19 · B-92 P-19 · B-93 P-19, P-22 · B-94 P-19, P-22 · B-95 P-22 — **holds**. |
-| Each human action in a journey has a screen | P-17: E-15, E-20, E-14 · P-18: E-10, E-21, E-9 (GM document) · P-19: E-8/E-9, E-22 · P-20: the script (outside the product, like Kanka import); its result is read on E-18; real tests are in the private repository · P-21: E-20 — **holds**, with one action without a screen: conversion and replay (Monsieur's decision). |
-| Each screen has its data | E-20: `outils_systeme`, `outils_univers`, owner, catalogues (version, counts) · E-21: `swn_systemes`, `swn_routes`, `swn_zones`, generated blocks (not stored), seed · E-22: `swn_conceptions`, catalogues, `sections.gere_par` · E-9: `gere_par`, `source_version` — **holds**. |
+| Each human action in a journey has a screen | P-17: E-15, E-20, E-14 · P-18: E-10, E-21, E-9 (GM document) · P-19: E-8/E-9, E-22, and E-20 for the settings changed in step 6 (`diviseur_prix`, `cadence_chantier`, `solde_jour`, `vivres_jour`) · P-20: the script (outside the product, like Kanka import); its result is read on E-18; real tests are in the private repository · P-21: E-20 · P-22: step 1 is the script (outside the product), steps 2-3 on E-22 — **holds**, with one action without a screen: conversion and replay (Monsieur's decision). |
+| Each screen has its data | E-20: `outils_systeme`, `outils_univers`, owner, catalogues (version, counts), the concepteur settings (`diviseur_prix`, `cadence_chantier`, `solde_jour`, `vivres_jour`) · E-21: `swn_systemes`, `swn_routes`, `swn_zones`, generated blocks (not stored), seed · E-22: `swn_conceptions` (with the per-installation `cibles`, `pj`, `robots`, `integre`), catalogues, `sections.gere_par` · E-9: `gere_par`, `source_version` — **holds**. |
 | Each entity serves a journey | tool setting P-17, P-21 · owner P-17 · managed section P-19 · token scope P-20 · catalogues P-17, P-19 · placed systems, routes, zones P-18 · design P-19 — **holds**. |
 | Gaps filled by a written choice | one `swn` module with two tools (AD-121); the galaxy map is a module table (`swn_galaxies`) that E-10 adds to its list, `cartes` does not change (AD-122); owner of a system created before the epic: any attached GM, since the creator is not stored; no real dependency between the two tools (the mechanism is exercised with a trial module); the GM document: a sheet chosen or created from E-21; a player sees all non-secret systems (no per-player “known systems”); the engine for a journey is chosen in the tool; who creates a ship (the GM creates the sheet, the player designs if they are its author: “a player does not create a sheet” rule retained); E-22 in two states (list, workshop); caching a block according to reading level ([TO VERIFY], AD-132). Tests on real data run in pods, never in CI (Monsieur's decision, 2026-10-16). |
