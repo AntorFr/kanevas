@@ -514,6 +514,80 @@ test('P-10 secret > Léa reads « Description » and nothing of « Vérité »: 
   assert.ok((await m.rest(m.antor, 'GET', `/api/univers/${m.essai}/fiches/${id}`)).body.includes(SECRET), 'the GM sees « Vérité »');
 });
 
+test('B-47 one sheet per origin key > a sheet without section is created, then replayed unchanged', async () => {
+  const m = await monde();
+  const jeton = await m.jeton();
+  const a = await m.pousser(jeton, 'objet:vide', { type: 'objet', titre: 'Objet vide', sections: [] });
+  const b = await m.pousser(jeton, 'objet:vide', { type: 'objet', titre: 'Objet vide', sections: [] });
+  assert.equal(a.json().etat, 'creee');
+  assert.equal(b.json().etat, 'inchangee');
+});
+
+test('B-48 protection > a human audience is kept both ways: opened by the GM Léa reads « Vérité », closed again it stays closed after a replay', async () => {
+  const m = await monde();
+  const jeton = await m.jeton();
+  const un = await m.lotComplet(jeton, [['lieu:port-sel', PORT_SEL]]);
+  const fid = un.reps[0]!.json().id;
+  const ver = (m.app.db.prepare('SELECT id FROM sections WHERE fiche_id = ? AND titre = ?').get(fid, 'Vérité') as { id: number }).id;
+  const titres = async () => ((await m.rest(m.lea, 'GET', `/api/univers/${m.essai}/fiches/${fid}`)).json().sections as Array<{ titre: string }>).map((s) => s.titre);
+  assert.deepEqual(await titres(), ['Description']);
+  const url = `/api/univers/${m.essai}/fiches/${fid}/sections/${ver}`;
+  assert.equal((await m.rest(m.antor, 'PATCH', url, { joueursLisent: true })).statusCode, 200);
+  await m.lotComplet(jeton, [['lieu:port-sel', PORT_SEL]]);
+  assert.ok((await titres()).includes('Vérité'), 'the import did not close again an audience a human opened');
+  assert.equal((await m.rest(m.antor, 'PATCH', url, { joueursLisent: false })).statusCode, 200);
+  await m.lotComplet(jeton, [['lieu:port-sel', PORT_SEL]]);
+  assert.ok(!(await titres()).includes('Vérité'), 'the replay does not open what the human closed');
+});
+
+test('B-48 protection > the rest is written: a modified section is left, another one changed by the script is written, the sheet title is kept and the lot warns', async () => {
+  const m = await monde();
+  const jeton = await m.jeton();
+  const un = await m.lotComplet(jeton, [['lieu:port-sel', PORT_SEL]]);
+  const fid = un.reps[0]!.json().id;
+  const lignes = m.app.db.prepare('SELECT id, titre FROM sections WHERE fiche_id = ?').all(fid) as { id: number; titre: string }[];
+  const desc = lignes.find((s) => s.titre === 'Description')!.id;
+  const ver = lignes.find((s) => s.titre === 'Vérité')!.id;
+  const lue = await m.rest(m.antor, 'GET', `/api/univers/${m.essai}/fiches/${fid}/sections/${desc}`);
+  assert.equal((await m.rest(m.antor, 'PUT', `/api/univers/${m.essai}/fiches/${fid}/sections/${desc}/contenu`, { contenu: 'Texte réécrit par le MJ.', version: lue.json().version })).statusCode, 200);
+  m.app.db.prepare('UPDATE fiches SET titre = ? WHERE id = ?').run('Port-Sel-sur-Brume', fid);
+  const corps = { ...PORT_SEL, sections: [PORT_SEL.sections[0], { ...PORT_SEL.sections[1], contenu: 'Nouvelle vérité du script.' }] };
+  const deux = await m.lotComplet(jeton, [['lieu:port-sel', corps]]);
+  assert.equal(deux.reps[0]!.json().etat, 'mise_a_jour');
+  assert.ok(deux.rapport.avertissements >= 1, 'the lot warns');
+  const section = async (id: number) => (await m.rest(m.antor, 'GET', `/api/univers/${m.essai}/fiches/${fid}/sections/${id}`)).json();
+  assert.equal((await section(ver)).contenu, 'Nouvelle vérité du script.');
+  assert.equal((await section(desc)).contenu, 'Texte réécrit par le MJ.');
+  assert.equal((m.app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(fid) as { titre: string }).titre, 'Port-Sel-sur-Brume');
+});
+
+test('B-50 origin date > without creeLe the creation date is the import day, an invalid creeLe is refused with nothing written', async () => {
+  const m = await monde();
+  const jeton = await m.jeton();
+  const r = await m.pousser(jeton, 'objet:sans-date', { type: 'objet', titre: 'Sans date', sections: [] });
+  const row = m.app.db.prepare('SELECT cree_le FROM fiches WHERE id = ?').get(r.json().id) as { cree_le: string };
+  assert.ok(new Date(row.cree_le).getFullYear() >= 2026, `not 1970: ${row.cree_le}`);
+  const avant = (await m.rest(m.antor, 'GET', `/api/univers/${m.essai}/fiches`)).body;
+  const folle = await m.pousser(jeton, 'objet:date-folle', { type: 'objet', titre: 'Date folle', creeLe: 'hier soir', sections: [] });
+  assert.equal(folle.statusCode, 400);
+  assert.equal((await m.rest(m.antor, 'GET', `/api/univers/${m.essai}/fiches`)).body, avant, 'nothing written');
+});
+
+test('P-10 secret > Léa receives the section « Description » only, as html without source, no origin key, and the search finds only its words', async () => {
+  const m = await monde();
+  const jeton = await m.jeton();
+  const { reps } = await m.lotComplet(jeton, [['lieu:port-sel', PORT_SEL]]);
+  const r = await m.rest(m.lea, 'GET', `/api/univers/${m.essai}/fiches/${reps[0]!.json().id}`);
+  assert.equal(r.statusCode, 200);
+  assert.deepEqual(r.json().sections.map((s: any) => s.titre), ['Description']);
+  assert.equal(r.json().sections[0].contenu, undefined, 'a reader gets the html, never the source');
+  assert.match(r.json().sections[0].html, /Un port de sel gris sous les brumes\./);
+  assert.ok(!r.body.includes(SECRET) && !r.body.includes('lieu:port-sel'));
+  const q = async (mot: string) => ((await m.rest(m.lea, 'GET', `/api/univers/${m.essai}/fiches?q=${encodeURIComponent(mot)}`)).json().fiches as unknown[]).length;
+  assert.equal(await q('sous-main'), 0);
+  assert.equal(await q('brumes'), 1);
+});
+
 // ---------------------------------------------------------------- stub world
 
 test('stub world > the token of the stub acts in « Essai Kanka », seeded with Antor GM and Léa a player', async () => {
