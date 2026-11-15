@@ -219,3 +219,21 @@ test('outil désactivé, étranger, et jeton : comme un chemin non enregistré',
   const imp = await w2.req('GET', null, `/api/import/v1/univers/${w2.E}/outils/battlemap/assets`, undefined, { authorization: `Bearer ${JETON_BOUCHON}` });
   assert.equal(imp.statusCode, 404);
 });
+
+test('recherche : ignore accents et casse (nom et étiquettes), joueur sans le MJ seul, comptes suivent la recherche', async () => {
+  const w = await monde();
+  const noms = async (who: string, q: string) => (await w.req('GET', who, `${w.R}/assets?q=${encodeURIComponent(q)}`)).json().assets.map((a: any) => a.nom);
+  for (const q of ['piege', 'PIÉGÉ', 'Piégé', 'pIeGe']) assert.deepEqual(await noms('antor', q), ['Coffre piégé'], q);
+  // accented letter in the query only matches by folding, a plain letter still matches
+  assert.ok((await noms('antor', 'coffre')).includes('Coffre piégé'));
+  assert.deepEqual(await noms('antor', 'zzz-rien'), []);
+  const cp = (await w.req('GET', 'antor', `${w.R}/assets?q=piege`)).json();
+  assert.equal(cp.comptes.total, 1);
+  // the GM-only asset stays out of the player's search
+  assert.ok(!(await noms('lea', 'piege')).includes('Coffre piégé'));
+  assert.deepEqual(await noms('lea', 'piege'), []);
+  // a label is searched too, folded
+  const tag = JSON.parse(one(w.app, "SELECT tags FROM bm_assets WHERE univers_id = ? AND nom = 'Tonneau'", w.E).tags)[0] as string;
+  const viaTag = await noms('antor', tag.toUpperCase());
+  assert.ok(viaTag.includes('Tonneau'), tag);
+});
