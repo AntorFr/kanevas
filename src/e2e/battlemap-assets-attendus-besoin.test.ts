@@ -62,14 +62,15 @@ const carte = (page: Any, nom: string) =>
   grille(page).getByRole('listitem').filter({ has: page.getByText(nom, { exact: true }) });
 /** Attend (sans délai fixe) que le nombre de cartes affichées atteigne la valeur attendue. */
 async function attendreCartes(page: Any, n: number): Promise<void> {
-  const limite = Date.now() + 20000;
-  let vu = -1;
-  while (Date.now() < limite) {
-    vu = await grille(page).getByRole('listitem').count();
-    if (vu === n) return;
-    await page.waitForTimeout(100);
-  }
-  assert.equal(vu, n, 'nombre de cartes affichées');
+  const sel = '[role="list"][aria-label="Assets"] > [role="listitem"], ul[aria-label="Assets"] > li';
+  await page
+    .waitForFunction(
+      ([s, k]: [string, number]) => document.querySelectorAll(s).length === k,
+      [sel, n],
+      { timeout: 20000 },
+    )
+    .catch(() => undefined);
+  assert.equal(await grille(page).getByRole('listitem').count(), n, 'nombre de cartes affichées');
 }
 const segment = (page: Any, nom: string, n: number) =>
   page.getByRole('radio', { name: new RegExp(`^${nom}\\s*${n}$`) });
