@@ -478,6 +478,10 @@ as is; `recherche_fiches` triggers are recreated.
 
 **Detail of `kanevas-outils-format-vaisseaux-ecarts` (`ARCHITECTURE.md` Y-1 to Y-6, B-85).** One migration: `swn_catalogue_defenses` is **rebuilt** (a `CHECK` cannot be widened by `ALTER`; the procedure of `0026-swn-masses.sql`) so that `bonus_vitesse` is −9 to 9; and three nullable columns are added by `ALTER TABLE … ADD COLUMN`: `swn_catalogue_modifications.reparation_min` (1–20), `swn_catalogue_amenagements.soute_par_classe` (JSON text of four integers 0–1 000 000, one per hull class) and `swn_catalogue_amenagements.reduction_cout_pct` (1–100). Cross-column rules (the effect `reparation_min` and the field are exclusive; the reduction belongs to the effect `moteur_systeme`) are the import's. `resultat` gains nothing new (`lignes[].cout` also appears on a line with a reduction); no row is rewritten and the catalogue version does not move at migration.
 
+**Detail of `kanevas-outils-format-vaisseaux-suite` (`ARCHITECTURE.md` Z-1 to Z-7, B-86).** One migration: `swn_catalogue_modifications` is **rebuilt** (its `effet` `CHECK` lists the codes and cannot be widened by `ALTER`; the procedure of `0026-swn-masses.sql`) and gains `effet_pct` (1–1 000), `armure_par_classe` (JSON text of four integers 0–9, one per hull class) and `echange_arrondi` (`installation`); `swn_catalogue_amenagements` gains `reduction_base` (`coque` or `amenagement`) by `ALTER TABLE … ADD COLUMN`. All nullable; the rules between columns (a parameter belongs to its effect, the targeted effects need `limite` 1, the rounded exchange does not) are the import's. `resultat` gains `ajuste` on the line of a targeted modification; no row is rewritten and the catalogue version does not move at migration.
+
+**Detail of `kanevas-outils-format-vaisseaux-regles-livre` (`ARCHITECTURE.md` W-1 to W-7, B-87).** One migration: `swn_catalogue_modifications` is rebuilt again (the `effet` `CHECK` takes the four new codes `soutes_optimisees_livre`, `blindage_renforce`, `montages_specialises`, `surcharge_cumulable`) and loses `armure_par_classe`; `effet_pct` stays for the overload alone. Rows with an old code are converted in the same transaction (`surcharge_arme` → `surcharge_cumulable`; the three other old effects are dropped, the row stays a plain modification). Nothing else is added; the rules between columns (`limite` 1 for three of the effects, none for the overload) are the import's.
+
 **What the database does not express, and the service enforces**, with the reason: same universe for parent,
 label, link and relation target (the rule spans two tables); no cycle (recursive); the
 type in the code list (Monsieur's choice, above); only a GM writing a section with a GM block
@@ -643,10 +647,6 @@ Monsieur, 2026-10-25 : he redoes the import once the model is delivered). Test :
 the previous schema, three relations (`src/bouchon/depart.ts`) ; after start-up the three are free,
 with their former text as qualifier, and the graph of Port-Sel still shows them.
 
-**Rule `kanevas-taille-images` (B-taille-1).** No column: an image's size and placement are the title of its
-reference in the text of a section (`![alt](fichier:N "moyen-droite")`, AD-taille-1). Same read and write
-rights as the text; a title that is not one of the nine `<size>-<placement>` pairs changes nothing.
-
 ## `kanevas-outils` scope: the model
 
 > Proposed on 2026-10-16 (`epic/kanevas-outils`). Decisions: AD-121 to AD-137. The **core** adds three
@@ -752,6 +752,9 @@ on restart without harm, AD-132). No generated data is stored.
 
 **`kanevas-outils-sections-gerees`** (one core migration, number taken at merge, AD-51): `sections.gere_par` (column `CHECK` on the form `module/outil/type`) and `sections.source_version`, both nullable, no backfill — set together or null together, held by the service; `propositions` rebuilt (procedure of migration 0009, foreign keys off then `foreign_key_check`) with `cr_id` nullable, `source_version TEXT` and `CHECK ((cr_id IS NULL) = (source_version IS NOT NULL))`: a proposal comes from a session report or from the recalculation of a managed section, never both. Rollback: an earlier image ignores the two columns and reads every section as free text (the text version is in `contenu`); before going back, delete the proposals whose `cr_id` is null (an earlier image expects a report on every proposal).
 Rollback: an earlier image ignores the new tables; managed sections keep their text (text version) and are read normally.
+**Rule `kanevas-taille-images` (B-taille-1).** No column: an image's size and placement are the title of its
+reference in the text of a section (`![alt](fichier:N "moyen-droite")`, AD-taille-1). Same read and write
+rights as the text; a title that is not one of the nine `<size>-<placement>` pairs changes nothing.
 
 ## `kanevas-battlemap` — data
 

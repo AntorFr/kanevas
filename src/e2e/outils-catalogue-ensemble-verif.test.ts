@@ -3,6 +3,7 @@
 // and the routes table of ARCHITECTURE.md (K-7). Expected values are literals taken from the exit criterion.
 // Worlds: the stub seed (« Éneria d'essai », « Univers voisin », « Système d'essai », tool essai/g).
 import assert from 'node:assert/strict';
+import { request } from 'node:http';
 import { after, describe, it } from 'node:test';
 import { startServer, type Any, type Server } from './harnais.test.ts';
 
@@ -190,8 +191,34 @@ describe('B-61 import du catalogue du système (P-17 étape 2)', () => {
 
   it('échec: plus de 8 Mio refusé (413 fichier_trop_gros)', async () => {
     const m = await monde();
-    const gros = JSON.stringify({ catalogue: 'essai/g', version: 'v', coques: [], armes: [], bourrage: 'x'.repeat(8 * 1024 * 1024 + 10) });
-    const r = await m.antor('POST', `${SYS(m.S)}/apercu`, gros);
+    // The declared length is over the limit; only a few bytes of body are sent and the answer is read
+    // without waiting for the body to be written: no 8 Mio transfer, so no EPIPE can fail the test.
+    const login = await fetch(`${m.base}/connexion-bouchon`, {
+      method: 'POST', redirect: 'manual',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: 'compte=antor',
+    });
+    const cookie = (login.headers.getSetCookie?.() ?? []).map((c) => c.split(';')[0]).join('; ');
+    assert.ok(cookie, 'no session cookie for antor');
+    const r = await new Promise<Rep>((resolve, reject) => {
+      const req = request(`${m.base}${SYS(m.S)}/apercu`, {
+        method: 'POST',
+        headers: { cookie, 'content-type': 'application/json', 'content-length': String(8 * 1024 * 1024 + 10) },
+      }, (res) => {
+        const morceaux: Buffer[] = [];
+        res.on('data', (c: Buffer) => morceaux.push(c));
+        res.on('end', () => {
+          req.destroy();
+          const texte = Buffer.concat(morceaux).toString('utf8');
+          let json: Any = null;
+          try { json = JSON.parse(texte); } catch { /* not json */ }
+          resolve({ status: res.statusCode ?? 0, json, texte });
+        });
+        res.on('error', reject);
+      });
+      req.on('error', (e) => { if ((e as NodeJS.ErrnoException).code !== 'EPIPE' && (e as NodeJS.ErrnoException).code !== 'ECONNRESET') reject(e); });
+      req.write('{"catalogue":"essai/g",');
+    });
     assert.equal(r.status, 413);
     assert.equal(r.json.code, 'fichier_trop_gros');
     assert.equal(r.json.message, 'Ce fichier est trop volumineux (8 Mio au plus).');
