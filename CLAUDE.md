@@ -8,13 +8,16 @@
   is just the suite (typecheck, build, every test, two files at a time by default, `--concurrence N` to change it) and writes
   the per-test TAP report `resultats.tap` (git-ignored); it writes no report and posts no status. The image build (tag `v*`
   only) and the `main` rule require the status; no workflow plays a test or runs on a branch push or a pull request.
+  Three levels in `.sdlc.yaml`: `commande:` (the whole suite, above), `local:` `npm ci && npm run tests:local` (every file but
+  `src/e2e/`, no `build`, no Playwright; about 3 min) and `rejouer:` `node scripts/rejouer-tests.mjs {tests}` (only the named
+  tests, `describe > test` as in `resultats.tap`; non-zero for a name no file declares as a literal test title). Test choice logic: `scripts/niveaux-tests.mjs`.
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
 - Build and test in containers (reference). In a pod without Docker, Node >= 20 on the host runs the same commands
   (`npm ci && npm run build:wasm && npm run typecheck && npm test`), see the README. The Node-only image
   (`docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"`)
-  has no Rust: it only works once `rust/pkg/` exists (see the Rust → Wasm item below).
+  has no Rust: it only works once `rust/pkg/` exists (see the Rust → Wasm item below), and neither Playwright nor Chromium: the e2e tests **fail** without them (AD-harnais-4), so that route covers typecheck and the non-e2e tests only; `npm ci && npm run tests:attestes` (which installs Playwright locally) plays everything.
 - Rust → Wasm (`rust/`, AD-rust-1 to 10): the Node-only Docker command above is not enough any more, it has no Rust; `npm run build:wasm` (needs `cargo`, the wasm target and `wasm-bindgen`, see README « Rust / WebAssembly ») must have run before `typecheck`, `build` and `npm test`; `tests:attestes` runs it itself.
 - `npm run typecheck` : `tsc --noEmit` on the API and on `frontend/`. `npm test` : `node --import tsx --test`
   on the files found by `find` in `src` and `frontend/src` — Node 20 (CI, image) does not expand globs
