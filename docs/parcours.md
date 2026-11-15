@@ -153,11 +153,11 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-46** — *(`kanevas-synchro`: a token is seen and revoked by its owner on E-23, B-94, and by the instance admin on E-5, B-95; a GM no longer sees nor revokes the tokens that reach his universe, and E-18 keeps the batches only; a revoked or expired token is still a 401; a lost role no longer refuses the token, it lowers it to the account's current rights there, AD-144)* Un MJ voit les jetons de son univers (nom, créé par, dernier usage, expiration) et en
   **révoque** un depuis E-18 ; si le jeton est révoqué, expiré, ou si son MJ a perdu ce rôle, alors
   toute requête qui le présente est refusée (401) et rien n'est écrit. *(P-11)*
-- **B-47** — *(`kanevas-synchro`: a replay writes every field it carries, B-86; « nothing changes if nothing changed » holds)* *(`kanevas-scenarios`: adventures go through this same route, B-61)* Quand un script pousse une fiche par l'API d'import avec une **clé d'origine**, Kanevas
+- **B-47** — *(`kanevas-synchro`: a replay writes every field it carries, B-111; « nothing changes if nothing changed » holds)* *(`kanevas-scenarios`: adventures go through this same route, B-61)* Quand un script pousse une fiche par l'API d'import avec une **clé d'origine**, Kanevas
   la crée si la clé est inconnue dans l'univers, la met à jour si elle est connue, et ne change rien si
   rien n'a changé — fiche, sections, relations, alias, étiquettes, parent, pièces jointes, illustration,
   campagnes et scénarios ; rejouer le même import ne crée aucun doublon. *(P-10)*
-- **B-48** — *(`kanevas-synchro`: **retired** — Kanevas no longer keeps what an import wrote; an import write may carry the fingerprint it read and is refused if it is no longer current, B-85, AD-138)* *(`kanevas-scenarios`: the `statut` of an adventure is protected like its sub-type and its parent)* Si ce qu'un import a écrit a été **modifié dans Kanevas** depuis (par un humain ou son
+- **B-48** — *(`kanevas-synchro`: **retired** — Kanevas no longer keeps what an import wrote; an import write may carry the fingerprint it read and is refused if it is no longer current, B-110, AD-138)* *(`kanevas-scenarios`: the `statut` of an adventure is protected like its sub-type and its parent)* Si ce qu'un import a écrit a été **modifié dans Kanevas** depuis (par un humain ou son
   assistant) — le titre, le type, le sous-type, le parent, les alias, les étiquettes d'une fiche ; le titre, le
   contenu, l'audience, les fichiers joints d'une section ; l'illustration d'une fiche ; le nom et le
   statut d'une campagne ; le titre et le contenu d'un scénario ; le nom et la **visibilité** d'un
@@ -224,12 +224,12 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 *Kanevas is the source of truth. The tools around it — an import script, an agent working with
 Monsieur — remember what they sent; Kanevas tells them that something moved, lets them write one
 thing at a time, and keeps the trace of who changed what (decisions of Monsieur, 2026-11-01).*
-- **B-80** — A script reads, with an import token, the **list of the universe's sheets**: for each,
+- **B-105** — A script reads, with an import token, the **list of the universe's sheets**: for each,
   its id, its key (B-99), whether it was **born in Kanevas** or created by an import, its type, its title, its
   **fingerprint** and its **header fingerprint** (the header fields alone), and its **date of last
   change**; the script may ask only the sheets changed since a date (`depuis`), a date that moves on
   every write to what the read returns (B-93); a thousand at a time, in a stable order. *(P-22)*
-- **B-81** — A script reads **one sheet** by its origin key or its id: its header fields (the typed ones and the fields its type carries in its
+- **B-106** — A script reads **one sheet** by its origin key or its id: its header fields (the typed ones and the fields its type carries in its
   charge — an adventure's status, the mark « disparu » —, PJ, origin creation date), its
   sections (key, title, Markdown content, audience, keys of the joined files, managed
   by a tool or not, fingerprint), the relations of its sections (id, section, target, nature,
@@ -245,31 +245,31 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   `joueurs` by default **at its creation only**; a replay without `visibilite` leaves the one Kanevas
   holds, so a file reserved to the GM in Kanevas never reopens by omission. *(P-22)*
 - **B-92** — A script **exports a whole universe in one call**: one line per sheet in the form of
-  B-81, one per file and per map in the form of B-90, as they are at one instant; a file's bytes
+  B-106, one per file and per map in the form of B-90, as they are at one instant; a file's bytes
   are downloaded apart, one by one, with the same token. *(P-24)*
 - **B-93** — The **date of last change** of a sheet moves on every write to anything its read
   returns (header, sections, relations, aliases, labels, parent, illustration), whoever writes;
   a false alarm is allowed (a waiting link that resolves), a missed change is not. *(P-22, P-24)*
-- **B-82** — A script changes **only the header fields it sends** of a sheet (title, type,
+- **B-107** — A script changes **only the header fields it sends** of a sheet (title, type,
   sub-type, PJ, parent, aliases, labels, illustration, origin creation date, and the charge fields
   of its type: an adventure's status, « disparu »); the others stay. *(P-22)*
-- **B-83** — A script **creates, rewrites or deletes one section** of a sheet, named by its
+- **B-108** — A script **creates, rewrites or deletes one section** of a sheet, named by its
   origin key, without sending the rest of the sheet. Deleting it removes its relations and its file
   joins; the files stay in the media library. A section born in Kanevas (no origin key) and a section
   managed by a tool are never written by the import: refused, with their code. *(P-22)* *(`kanevas-synchro`, extension: every section has a key, B-104 — only a tool-managed section stays refused.)*
-- **B-84** — A script **adds, modifies (nature, qualifier) or removes one relation**, the existing
+- **B-109** — A script **adds, modifies (nature, qualifier) or removes one relation**, the existing
   one named by the id the read gave. *(P-22)*
-- **B-85** — Every import write may carry the **fingerprint the script read**. If it is no longer
+- **B-110** — Every import write may carry the **fingerprint the script read**. If it is no longer
   the current one, the write is refused (412) and nothing is written; the batch counts it as refused
   with its key and the reason « modifiée depuis la lecture ». A write without a fingerprint applies.
   Adding a relation takes none (an identical one is « inchangée »); a creation may require that the
   key is new (`If-None-Match: *`), so a script never overwrites by mistake a sheet born in Kanevas
   that took the same key.
   *(P-22)*
-- **B-86** — Nothing is removed by omission (AD-104 holds): a full `PUT` of a sheet writes what it
-  carries and leaves what it does not name; removing is a targeted gesture (B-83, B-84, `DELETE`
+- **B-111** — Nothing is removed by omission (AD-104 holds): a full `PUT` of a sheet writes what it
+  carries and leaves what it does not name; removing is a targeted gesture (B-108, B-109, `DELETE`
   of a sheet). *(P-22)*
-- **B-87** — A script imports an **illustrated map** by origin key: title, visible to the players or
+- **B-112** — A script imports an **illustrated map** by origin key: title, visible to the players or
   not, background image, the sheet it belongs to (a key), a short text in Markdown with GM blocks.
   An unknown sheet key is refused with its field (`fiche`), counted, and nothing is written;
   `fiche` absent leaves the attachment, `null` detaches. The background travels with the map, not
@@ -298,7 +298,7 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
 - **B-97** — An agent reaches Kanevas through an **MCP server** (`/mcp`) with an API token: it lists
   the universes of the token, searches, reads a sheet or a section, lists the sheets that mention one,
   reads the history (B-102) where its account is GM, and — with « lecture + écriture » — creates a sheet and writes
-  through the targeted writes of B-82 to B-84, each with its precondition (B-85), directly. The tools are the assistant's (one catalogue); image generation
+  through the targeted writes of B-107 to B-109, each with its precondition (B-110), directly. The tools are the assistant's (one catalogue); image generation
   is not offered. *(P-24)*
 - **B-98** — A **text search returns passages**: for each match, the sheet, the section and an
   excerpt around the words (« …les troupes de **Sevrak** franchissent le col… »), paginated; a reader
@@ -317,7 +317,7 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
 - **B-104** — Every **section** has a key too, unique in its sheet: an imported one keeps its origin
   key; one born in Kanevas receives one at creation from its title (« Histoire » → `histoire`), stable
   across renames. The import and the MCP address any section by it — a section born in Kanevas is no
-  longer out of their reach (B-83 amended); a section managed by a tool stays refused. *(P-24)*
+  longer out of their reach (B-108 amended); a section managed by a tool stays refused. *(P-24)*
 - **B-100** — Every universe has a **readable identifier** (`eneria`), unique on the instance, set at
   creation from its name and changed by its GM on E-14 (lowercase letters, digits, dashes, 2–40, at
   least one letter, so it is never mistaken for an id; a name without a letter gives `univers-<id>`);
@@ -402,7 +402,7 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   (unchanged), « Préparation » (the open tasks of the adventures en cours, GM). *(P-3, P-4)*
 - **B-61** — *(kanevas-scenarios)* The **import API** pushes an adventure through the sheets
   route (`type: aventure`, `sousType`, `parent` by origin key, sections; `statut` too, built by `kanevas-scenarios-import-assistant`); a reimport
-  never overwrites a status, a sub-type or a parent changed in Kanevas (B-48 extended; *`kanevas-synchro`: B-48 retired, B-85*); a
+  never overwrites a status, a sub-type or a parent changed in Kanevas (B-48 extended; *`kanevas-synchro`: B-48 retired, B-110*); a
   compte-rendu names its adventure by its origin key as before. The former campaign and scenario
   routes of the import disappear. *(P-10)*
 - **B-62** — *(kanevas-scenarios)* The GM's **assistant** creates a sheet of any activated type
@@ -621,7 +621,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    écrasée » ; « lieu:port-sel : titre modifié dans Kanevas : non écrasé » ; de même un fichier que
    Antor a passé « Visible des joueurs » (E-19) n'est pas rétabli « Réservé au MJ » : « visibilité
    modifiée dans Kanevas : non écrasée ». *(`kanevas-synchro`: these warnings disappear with B-48; a
-   script that wants this protection sends the fingerprint it read, B-85; a file's visibility is not
+   script that wants this protection sends the fingerprint it read, B-110; a file's visibility is not
    reset by a replay that omits it, B-91.)*
 10. **Accès par API** (E-18) : il révoque le jeton (P-11). *(`kanevas-synchro` : il le révoque sur « Mes jetons d'API », E-23, P-25.)*
 *Moment fort* : le second lot « Fiches : 501 inchangées » et rien de créé dans aucune autre
@@ -759,19 +759,19 @@ dit exactement où les joueurs le perdent.
 introuvable. ».
 
 ### P-22 — Bring Kanevas up to date from the Éneria base (Monsieur, GM, a Saturday, Mac)
-1. The script opens a batch (`POST /lots`), then reads the lists of sheets, files and maps (B-80,
+1. The script opens a batch (`POST /lots`), then reads the lists of sheets, files and maps (B-105,
    B-90) and compares each fingerprint with the one it kept at its last run. A file sent again
    without its visibility keeps the one Kanevas holds (B-91).
-2. A sheet whose fingerprint moved: the script reads it (B-81), sees what the GM changed in Kanevas
+2. A sheet whose fingerprint moved: the script reads it (B-106), sees what the GM changed in Kanevas
    (« Velarion LUMA-7 » renamed, its Description rewritten), and tells Monsieur, who carries it into
    the base. A sheet born in Kanevas is listed too, with its key and marked « née dans Kanevas »; a
    sheet missing from the list was deleted (its line is in the history, B-102).
-3. For what changed in the base, the script writes only that: a renamed header field (B-82), the
-   section « Relations » deleted on 130 sheets (B-83), a relation whose nature changes (B-84) — each
-   with the fingerprint it read (B-85).
+3. For what changed in the base, the script writes only that: a renamed header field (B-107), the
+   section « Relations » deleted on 130 sheets (B-108), a relation whose nature changes (B-109) — each
+   with the fingerprint it read (B-110).
 4. A write refused because the sheet moved meanwhile: the script reads it again and retries, or
    leaves it to Monsieur. Nothing was written.
-5. The 17 « map » sheets of the base become maps (B-87), each attached to its place, ship class or
+5. The 17 « map » sheets of the base become maps (B-112), each attached to its place, ship class or
    adventure, with its caption as text; the batch is closed and E-18 shows its counts, maps included.
    Failure: a background over the instance's limit is refused with its key, the rest goes on.
 
@@ -787,7 +787,7 @@ introuvable. ».
 2. Monsieur asks for a coherence review of Sevrak: the agent searches the passages (B-98) through the
    MCP (B-97), reads the sheets that mention `personnage:sevrak` (B-97), and shows the contradictions.
 3. They decide together, in the agent's worktree; once Monsieur says go, the agent writes each change
-   through the MCP, with the fingerprints it read (B-82 to B-85). A write refused because the sheet
+   through the MCP, with the fingerprints it read (B-107 to B-110). A write refused because the sheet
    moved: the agent reads it again and asks Monsieur.
 4. The agent creates « Les Veilleurs », a faction: Kanevas gives it `faction:les-veilleurs` (B-99),
    which the agent writes into its faction data; the agent's data cite sheets by key
@@ -812,9 +812,9 @@ introuvable. ».
 ## Hors périmètre
 
 - *(`kanevas-synchro`)* **A list of the keys deleted since the import**, as such: refused — a script
-  sees a deleted sheet by its absence from the list (B-80), and the history keeps the deletion 90 days
+  sees a deleted sheet by its absence from the list (B-105), and the history keeps the deletion 90 days
   (B-102; B-40 amended by Monsieur, 2026-11-01). **Removal by omission** (« this list of sections is
-  complete »): refused, a removal is targeted (B-86). **A mark on the relations the import created**:
+  complete »): refused, a removal is targeted (B-111). **A mark on the relations the import created**:
   refused (2026-11-01). ~~The import writing a section born in Kanevas~~: every section has a key since the extension (B-104).
   **Importing map tokens and graph maps**; **one map per image** is the script's choice.
   **Free fields per sheet**: refused — positions of systems belong to the galaxy tool (`kanevas-outils`),
@@ -853,7 +853,7 @@ introuvable. ».
   2026-10-11)*
 - **Créatures et vaisseaux structurés** (caractéristiques en champs par système) : une autre epic ;
   ici, leurs fiches importées sont des sections en Markdown, tableaux compris. *(décision de Monsieur du 2026-10-11)*
-- *(`kanevas-synchro`: illustrated maps enter the import API, B-87; their tokens and graph maps stay out)* **Cartes dans l'API d'import** : une autre epic, « plus évoluée » ; ici, une carte Kanka s'importe
+- *(`kanevas-synchro`: illustrated maps enter the import API, B-112; their tokens and graph maps stay out)* **Cartes dans l'API d'import** : une autre epic, « plus évoluée » ; ici, une carte Kanka s'importe
   comme une fiche ordinaire avec son image. *(décision de Monsieur du 2026-10-11)*
 - **Chronologie comme type à part** (une frise) : une epic plus évoluée, comme les cartes ; ici, une
   chronologie est une fiche « Savoir ». *(décision de Monsieur du 2026-10-11)*
@@ -861,7 +861,7 @@ introuvable. ».
   pour un seul joueur reste une section à auteur (AD-19).
 - **Historique d'un import, annulation d'un lot** : un lot se rejoue, il ne se défait pas ; on
   supprime l'univers d'essai.
-- **Export vers Kanka ou un autre outil** : non trié. *(`kanevas-synchro`: the token read of the import API, B-80 and B-81, lets a script read back what it imports; no export screen, no export format.)*
+- **Export vers Kanka ou un autre outil** : non trié. *(`kanevas-synchro`: the token read of the import API, B-105 and B-106, lets a script read back what it imports; no export screen, no export format.)*
 - **Calendrier ou chronologie, lanceur de dés, usage sans connexion (PWA)** : non triés.
   Since `kanevas-icones` (AD-135), Kanevas is installable (manifest, icons) but ships **no service worker and no offline cache**: the installed app needs the network, and offline use stays untriaged.
 - **Historique des modifications, export, partage public.** *(`kanevas-synchro`: a history of writes enters, 90 days of lines and 30 of previous values, B-102, B-103; a whole-universe export by token, B-92; public sharing stays out.)*
