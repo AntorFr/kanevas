@@ -6,8 +6,8 @@
 //
 // Node's `tap` reporter names no file: a report is a flat list of top-level entries (a test, or a
 // `describe` with its children inside), each with its `duration_ms`. A file's duration is the sum of
-// the entries whose title the file declares literally at its top level (the same literal-title
-// reading as `scripts/rejouer-tests.mjs`). A title declared by several files (screen or not) is split
+// the entries whose title the file declares literally (the same literal-title
+// reading as `scripts/rejouer-tests.mjs`; a template title `${…}` counts as a pattern). A title declared by several files (screen or not) is split
 // evenly among them and counted as shared. The total is the sum over the screen files, i.e. the work
 // done, not the wall time of the run (files overlap when several run at a time).
 import { readdirSync, readFileSync } from 'node:fs';
@@ -33,25 +33,39 @@ export function lireEntrees(tap) {
   return entrees.filter((e) => e.duree !== null);
 }
 
-/** Literal titles of the tests and suites a source declares at its top level (column 0). */
+/**
+ * Titles of the tests and suites a source declares (at any depth; only top-level report entries are matched): `{ litteraux, modeles }`.
+ * A literal title is a string; a title with a `${…}` hole becomes a pattern (the hole matches anything).
+ */
 export function titresDeclares(source) {
-  const titres = new Set();
-  const re = /^(?:it|test|describe|suite)(?:\.\w+)?\(\s*(['"`])((?:\\.|(?!\1)[^\\])*)\1/gm;
-  for (const m of source.matchAll(re)) titres.add(m[2].replace(/\\(['"`\\])/g, '$1'));
-  return titres;
+  const litteraux = new Set();
+  const modeles = [];
+  const re = /^[ \t]*(?:it|test|describe|suite)(?:\.\w+)?\(\s*(['"`])((?:\\.|(?!\1)[^\\])*)\1/gm;
+  for (const m of source.matchAll(re)) {
+    const titre = m[2].replace(/\\(['"`\\])/g, '$1');
+    if (m[1] === '`' && titre.includes('${')) {
+      const morceaux = titre.split(/\$\{[^}]*\}/).map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      modeles.push(new RegExp(`^${morceaux.join('.+')}$`));
+    } else litteraux.add(titre);
+  }
+  return { litteraux, modeles };
 }
 
 /** Per-file durations (ms) of the screen files and the total, from a report and `{ fichier: source }`. */
 export function dureesEcran(tap, sources) {
   const parTitre = new Map();
+  const modeles = [];
   for (const [fichier, source] of Object.entries(sources)) {
-    for (const t of titresDeclares(source)) parTitre.set(t, [...(parTitre.get(t) ?? []), fichier]);
+    const { litteraux, modeles: m } = titresDeclares(source);
+    for (const t of litteraux) parTitre.set(t, [...(parTitre.get(t) ?? []), fichier]);
+    for (const re of m) modeles.push({ re, fichier });
   }
+  const fichiersDe = (nom) => parTitre.get(nom) ?? [...new Set(modeles.filter((m) => m.re.test(nom)).map((m) => m.fichier))];
   const ecran = Object.keys(sources).filter((f) => f.startsWith(DOSSIER));
   const duree = new Map(ecran.map((f) => [f, { chemin: f, duree: 0, ok: true }]));
   let partages = 0;
   for (const e of lireEntrees(tap)) {
-    const fichiers = parTitre.get(e.nom) ?? [];
+    const fichiers = fichiersDe(e.nom);
     if (fichiers.length > 1) partages++;
     for (const f of fichiers) {
       if (!duree.has(f)) continue;
