@@ -504,6 +504,41 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   a weapon** may be taken several times and the installations add up. The four effects of B-86 are replaced, not kept.
   A catalogue that employs none of them keeps working as before. *(P-19, P-20)*
 
+*(kanevas-concepteur-vaisseaux — the rule ledger is `docs/vaisseaux-regles.md`; Monsieur's instruction of 2026-11-15: every
+rule of the book, one by one, before any proposal, so that no conversion meets one more.)*
+
+- **B-88** — The designer shall carry **every rule of the book** on hulls, fittings, defences, weapons and modifications:
+  each rule has a row in the ledger with its verdict (carried, text, outside the designer, or gap and the change that closes
+  it), and **no gap is left « to see at conversion »**. A rule that the designer shows without computing (a game effect) is
+  stated on the element, never silently dropped. *(P-19, P-22)*
+- **B-89** — The **target of a modification is chosen on the design, at installation**, never stated by the catalogue
+  (E-14): a catalogue row says what the mod does, a design line says which weapon or fitting each installation aims at.
+  Several installations of one mod (specialised mountings, weapon overcharge, oversized mountings) may aim at **different**
+  elements; a mod that aims at nothing (compact magazines) is not asked for a target. Specialised mountings take **half,
+  rounded down, at least 1, of the power and of the mass of the target, per installation**; a weapon overcharge adds
+  50 % of the target's power per installation; oversized mountings let the ship mount a weapon or fitting of the class
+  above. *(P-19, P-22)*
+- **B-90** — The designer shall enforce the structure of the hulls and fittings as the book states it: a **weapon's minimum
+  class**; the **rounded-up** product of a hash multiplier; hulls **without a Spike drive** (stations); a fitting whose
+  count depends on another (auto-targeting: once per gun); a **speed that goes below 0**. *(P-19)*
+- **B-91** — The designer shall **compute the capacities** the book gives to fittings from the design (hidden cargo,
+  maximum crew, life-support duration, hydroponic and cold-sleep people, exodus colonists, lifeboats, luxury cabins, colony)
+  and **show the effect line** of every element; both read from the catalogue, never typed on the design. *(P-19)*
+- **B-92** — The designer shall give the **running cost of the crew** (pay and food per day, robots at 1 000 cr each, player
+  characters unpaid), a **build time** that follows the pace of the yard, and a **price divisor** (1, 2 or 4) for regions
+  where ships are easy to get; the three are settings of the module, kept by system, then universe. *(P-19)*
+- **B-93** — The designer shall carry the **modification rules of the book**: pretech components (flat or per hull class),
+  the engineer's **Maintenance** score and the alert when more mods are maintained than it allows, **installation days** (with
+  or without a yard), and the **refit** (a mod made part of the hull: no Maintenance, 5 × the credits, 2 × the components,
+  at most twice the Repair skill). *(P-19, P-22)*
+- **B-94** — A **design or catalogue saved before** this epic keeps working: a target stated as one for the whole line
+  stays valid, a catalogue that says none of the new fields reads as before, and no saved result changes without a new
+  save. *(P-19, P-22)*
+- **B-95** — The **ships of Éneria** (the ten examples and the four ships of the campaign) shall be converted by a replayable
+  script and pushed by the import API, **without any difference left open**: the reference figures (the prototype's prices,
+  HP, AC, power, mass, hardpoints, build days, upkeep) are replayed on the real data, and the report of what was not
+  converted is empty. *(P-22)*
+
 ### Cross-cutting
 - **B-28** — Every page requires sign-in; no content is served without an account, and
   `/healthz` only states the name and version. *(P-1)*
@@ -941,6 +976,21 @@ refused (401/403 depending on the import API) and nothing written.
    still using them.
 *Failure*: a GM who is not the system owner does not see system data deletion.
 
+### P-22 — Put Éneria's ships through the complete designer (Antor, GM, after the build)
+*(kanevas-concepteur-vaisseaux; the build waits for `kanevas-synchro`, Monsieur's decision of 2026-11-15)*
+1. At the Mac, **the conversion script** of the `eneria` repository (`_outils/kanevas`) reads the prototype's data and
+   writes the catalogue (12 hulls, 6 drives, 40 fittings, 9 defences, 19 weapons, 18 modifications, 10 examples) and the
+   14 designs; it states for each modification what it does, never which element it aims at. It pushes them through the
+   import API with the universe's token (P-20 steps 1 to 3; the script, the token and the report are P-20's).
+2. **E-22** of « Éneria »: Antor opens a converted design, sees the price, HP, AC, power and mass of the prototype's
+   reference figures, the capacities and the crew costs, and the sheet's section in step. The campaign's ships
+   (`classe-hyperion`, `le-pie-rouge`, …) are opened and checked against their sheets.
+3. For a design with specialised mountings or an overcharge, **E-22** asks which weapon each installation aims at:
+   the choice is on the design line and the section shows it.
+4. The report of the conversion says « 0 non converti »; the figures replayed on the real data are the proof of B-95.
+*Failure*: a rule of the book that the catalogue cannot state stops the conversion with the rule named (the ledger's
+row): this is what B-88 forbids to remain.
+
 ### From properties to sheets and links (`kanevas-fiches-liees`)
 
 > *Decisions of Monsieur, 2026-10-25: a relation carries a **nature** from a finite list of the
@@ -1090,7 +1140,7 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 
 | Cross-check | Result |
 |---|---|
-| Each need has a journey | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 · B-80 P-19, P-20 · B-81 P-18, P-20 · B-82 P-19, P-20 · B-83 P-19, P-20 · B-84 P-18, P-20 · B-85 P-19, P-20 · B-86 P-19, P-20 · B-87 P-19, P-20 — **holds**. |
+| Each need has a journey | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 · B-80 P-19, P-20 · B-81 P-18, P-20 · B-82 P-19, P-20 · B-83 P-19, P-20 · B-84 P-18, P-20 · B-85 P-19, P-20 · B-86 P-19, P-20 · B-87 P-19, P-20 · B-88 P-19, P-22 · B-89 P-19, P-22 · B-90 P-19 · B-91 P-19 · B-92 P-19 · B-93 P-19, P-22 · B-94 P-19, P-22 · B-95 P-22 — **holds**. |
 | Each human action in a journey has a screen | P-17: E-15, E-20, E-14 · P-18: E-10, E-21, E-9 (GM document) · P-19: E-8/E-9, E-22 · P-20: the script (outside the product, like Kanka import); its result is read on E-18; real tests are in the private repository · P-21: E-20 — **holds**, with one action without a screen: conversion and replay (Monsieur's decision). |
 | Each screen has its data | E-20: `outils_systeme`, `outils_univers`, owner, catalogues (version, counts) · E-21: `swn_systemes`, `swn_routes`, `swn_zones`, generated blocks (not stored), seed · E-22: `swn_conceptions`, catalogues, `sections.gere_par` · E-9: `gere_par`, `source_version` — **holds**. |
 | Each entity serves a journey | tool setting P-17, P-21 · owner P-17 · managed section P-19 · token scope P-20 · catalogues P-17, P-19 · placed systems, routes, zones P-18 · design P-19 — **holds**. |
