@@ -28,7 +28,12 @@ export const OUTILS_CLIENT: Record<string, OutilClient> = {
   'swn/galaxie': {
     icone: Carte,
     horsBarre: true,
-    verifier: (universId, cible, suffixe) => lire(`/api/univers/${universId}/outils/swn/galaxie/galaxies/${encodeURIComponent(cible ?? '')}${suffixe}`),
+    // The address of a system's inside (`…/:cible/interieur/:q/:r`, E-23) is read through its own route: the read is the check.
+    verifier: (universId, cible, suffixe) => {
+      const base = `/api/univers/${universId}/outils/swn/galaxie/galaxies/${encodeURIComponent(cible ?? '')}`;
+      const m = /\/interieur\/([^/]+)\/([^/]+)\/?$/.exec(window.location.pathname);
+      return lire(m ? `${base}/interieur/${encodeURIComponent(m[1] ?? '')}/${encodeURIComponent(m[2] ?? '')}${suffixe}` : `${base}${suffixe}`);
+    },
     charger: () => import('./swn/galaxie'),
   },
   'swn/vaisseaux': {
