@@ -32,7 +32,6 @@ async function recherche(page: Any, query: string, univers = LAME): Promise<void
   await page.goto(`/univers/${univers}/recherche${query}`);
   await page.getByRole('textbox').first().waitFor();
   await attendre(page);
-  await page.waitForTimeout(700); // 300 ms debounce + request
   await attendre(page);
 }
 const principal = async (page: Any): Promise<string> => ((await page.locator('main').innerText()) as string).replace(/’/g, "'");
@@ -85,7 +84,6 @@ describe('kanevas-import-recherche, E-17 en bouchon (B-37, B-52, P-12 étape 4)'
     await recherche(page, '?q=sous-main');
     await page.getByRole('radio', { name: 'Mode Joueur' }).click();
     await attendre(page);
-    await page.waitForTimeout(700);
     assert.match(await principal(page), new RegExp(AUCUNE));
     assert.match(page.url(), /mode=joueur/);
     await shot(page, 'antor-mode-joueur-sous-main');
@@ -132,11 +130,9 @@ describe('kanevas-import-recherche, E-17 en bouchon (B-37, B-52, P-12 étape 4)'
     await recherche(page, '?q=taverne');
     assert.match(await principal(page), /Le Pendu Joyeux/);
     await pastille(page, 'Lieux').click();
-    await page.waitForTimeout(700);
     await attendre(page);
     assert.match(await principal(page), /Le Pendu Joyeux/);
     await pastille(page, 'Personnages').click();
-    await page.waitForTimeout(700);
     await attendre(page);
     assert.match(await principal(page), new RegExp(AUCUNE));
     await shot(page, 'lea-taverne');
@@ -157,7 +153,6 @@ describe('kanevas-import-recherche, E-17 en bouchon (B-37, B-52, P-12 étape 4)'
     assert.match(await principal(page), /Cherchez un nom, un alias ou un mot\./);
     // Spaces only never leave: the starting state stays.
     await page.getByRole('textbox').first().fill('   ');
-    await page.waitForTimeout(800);
     assert.match(await principal(page), /Cherchez un nom, un alias ou un mot\./);
     assert.doesNotMatch(await principal(page), new RegExp(AUCUNE));
     // 101 characters by address: refused with the doc's words.
@@ -298,7 +293,6 @@ describe('kanevas-import-recherche, écriture des alias et étiquettes, types d�
     await groupe.getByRole('radio', { name: 'Désactivé' }).click();
     // A type that has sheets asks for confirmation (E-14).
     await antor.page.getByRole('alertdialog').getByRole('button', { name: rxExact('Désactiver') }).click();
-    await antor.page.waitForTimeout(800);
     await attendre(antor.page);
     assert.equal(await groupe.getByRole('radio', { name: 'Désactivé' }).getAttribute('aria-checked'), 'true');
     await antor.ctx.close();
@@ -352,7 +346,6 @@ describe('kanevas-import-recherche, écriture des alias et étiquettes, types d�
     // By address the unknown-to-her label is ignored and shows nothing hidden.
     await lea.page.goto(`${s2.base}/univers/${LAME}/recherche?etiquette=R%C3%A9serv%C3%A9%20aux%20ombres`);
     await attendre(lea.page);
-    await lea.page.waitForTimeout(700);
     assert.doesNotMatch(await principal(lea.page), /Cercle des Cendres/);
     await lea.ctx.close();
   });

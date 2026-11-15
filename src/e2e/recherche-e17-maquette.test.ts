@@ -18,7 +18,6 @@ async function recherche(page: Any, query: string): Promise<void> {
   await page.goto(`/univers/${LAME}/recherche${query}`);
   await page.getByRole('textbox').first().waitFor();
   await attendre(page);
-  await page.waitForTimeout(700); // 300 ms debounce + request
   await attendre(page);
 }
 

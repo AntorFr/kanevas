@@ -37,13 +37,9 @@ async function ouvrir(fid: number): Promise<Any> {
   await b.getByText('Chargement…').waitFor({ state: 'detached' });
   return b;
 }
-/** Waits (bounded) until the condition holds, polling the page. */
-async function jusque(cond: () => Promise<boolean>): Promise<void> {
-  for (let i = 0; i < 100; i++) {
-    if (await cond()) return;
-    await antor.waitForTimeout(50);
-  }
-  assert.fail('condition jamais atteinte');
+/** Waits until the condition holds in the page, on the block's element (the browser's own wait, no polling here). */
+async function jusque(b: Any, cond: (el: Element) => boolean): Promise<void> {
+  await antor.waitForFunction(cond, await b.elementHandle());
 }
 /** Buttons of the block that would answer a click (neither `disabled` nor `aria-disabled`), « Réessayer » aside. */
 const boutonsActifs = (b: Any): Promise<number> =>
@@ -102,7 +98,10 @@ describe('kanevas-fiches-liees-bloc, rafraîchissement du bloc « Fiches liées 
     });
     await b.getByRole('checkbox', { name: 'sous-lieux compris' }).click();
     try {
-      await jusque(async () => b.getByRole('checkbox', { name: 'sous-lieux compris' }).isDisabled());
+      await jusque(b, (el) => {
+        const c = el.querySelector<HTMLInputElement>('input[type=checkbox]');
+        return !!c && (c.disabled || c.getAttribute('aria-disabled') === 'true');
+      });
       assert.equal(await b.getByRole('checkbox', { name: 'sous-lieux compris' }).isDisabled(), true);
       assert.deepEqual(await titres(b), ['Le Prieur masqué', 'Maître Aldric']);
       assert.equal(await b.getByText('Chargement…').count(), 0);
@@ -115,7 +114,11 @@ describe('kanevas-fiches-liees-bloc, rafraîchissement du bloc « Fiches liées 
     await antor.unroute(/\/fiches\/\d+\/liees\?.*descendants=1/);
     assert.deepEqual(await titres(b), ['Le Kraken des Cales', 'Le Prieur masqué', 'Maître Aldric', 'Suie']);
     assert.equal(await b.getByRole('checkbox', { name: 'sous-lieux compris' }).isDisabled(), false);
-    await jusque(async () => (await opaciteDesLignes(b)) === 1);
+    await jusque(b, (el) => {
+      let o = 1;
+      for (let n: Element | null = el.querySelector('li.ligne-liee'); n && n.tagName !== 'BODY'; n = n.parentElement) o *= Number(getComputedStyle(n).opacity);
+      return o === 1;
+    });
     await antor.evaluate(() => localStorage.clear());
   });
 
@@ -132,7 +135,10 @@ describe('kanevas-fiches-liees-bloc, rafraîchissement du bloc « Fiches liées 
     await b.getByRole('button', { name: 'Afficher les 56' }).click();
     try {
       // the label during the re-read is not specified (it reads « Chargement… » today): only that no « more » button answers a click
-      await jusque(async () => (await boutonsActifs(b)) === 0 && (await b.getByRole('button', { name: 'Afficher les 56' }).count()) === 0);
+      await jusque(b, (el) => {
+        const l = [...el.querySelectorAll('button')];
+        return l.filter((x) => !x.disabled && x.getAttribute('aria-disabled') !== 'true' && x.textContent !== 'Réessayer').length === 0 && !l.some((x) => /^Afficher les 56$/.test(x.textContent?.trim() ?? ''));
+      });
       assert.equal((await titres(b)).length, 5);
     } finally {
       liberer();

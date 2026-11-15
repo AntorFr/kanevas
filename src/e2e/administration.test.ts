@@ -443,14 +443,10 @@ describe('E-5 Administration (B-6, P-2 étape 3)', { skip: raisonSaut }, () => {
       await page.getByRole('combobox', { name: 'Rôle de lea' }).selectOption({ label: 'Joueur' });
       // wait for the proof that the first demotion landed (lea's role read back as joueur),
       // not for the network to be idle: under load the second change would race the first
-      const debut = Date.now();
-      for (;;) {
-        const rep = await page.request.get(`/api/instance/univers/${w.lame}/membres`);
-        const membres = (await rep.json()) as { username: string; role: string }[];
-        if (membres.find((m) => m.username === 'lea')?.role === 'joueur') break;
-        assert.ok(Date.now() - debut < 8000, 'lea was not demoted to joueur in time');
-        await new Promise((r) => setTimeout(r, 100));
-      }
+      await page.waitForFunction(async (url: string) => {
+        const membres = (await (await fetch(url)).json()) as { username: string; role: string }[];
+        return membres.find((m) => m.username === 'lea')?.role === 'joueur';
+      }, `/api/instance/univers/${w.lame}/membres`, { timeout: 8000 });
       await page.getByRole('combobox', { name: 'Rôle de antor' }).selectOption({ label: 'Joueur' });
       await page.getByText(t("Impossible : l'univers doit garder au moins un MJ.")).waitFor();
       assert.equal(await page.getByRole('combobox', { name: 'Rôle de antor' }).inputValue(), 'mj');

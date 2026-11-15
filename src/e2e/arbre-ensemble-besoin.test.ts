@@ -254,8 +254,9 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
     await ligne.waitFor();
     assert.ok((await d.innerText()).includes('Événement'));
     await d.getByRole('button', { name: 'Recherche' }).click();
+    const reponse = antor.waitForResponse((r: Any) => /[?&]q=/.test(r.url()) && decodeURIComponent(r.url()).includes('Les Docks'));
     await d.getByLabel('Chercher une fiche').fill('Les Docks');
-    await antor.waitForTimeout(900);
+    await reponse;
     await attendre(antor);
     assert.equal(await d.getByLabel(/^Les Docks/).count(), 0, 'la fiche se propose à elle-même');
     await d.getByRole('button', { name: 'Annuler' }).click();

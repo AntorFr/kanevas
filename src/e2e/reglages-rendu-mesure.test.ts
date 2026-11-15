@@ -3,7 +3,7 @@
 // Panne visée : « Retirer » invisible garde sa largeur après la pastille (≈89 px de vide) ; blocs MJ à cadre ouvert (dégradé, filet 2 px).
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
-import { type Any, allerMembres, ajouterMembre, attendre, connecte, creerUnivers, launch, skipBrowser, startServer } from './harnais.test.js';
+import { type Any, allerMembres, ajouterMembre, attendre, attendreTransitions, connecte, creerUnivers, launch, skipBrowser, startServer } from './harnais.test.js';
 
 const opts = { skip: skipBrowser, timeout: 120000 };
 let srv: Awaited<ReturnType<typeof startServer>>;
@@ -46,7 +46,7 @@ test('E-4 : les pastilles de rôle finissent au bout du filet, au repos comme au
   }
   const repos = await mesure('lea');
   await p.locator('.liste-membres li').filter({ has: p.getByLabel('Rôle de lea') }).hover();
-  await p.waitForTimeout(400);
+  await attendreTransitions(p);
   assert.deepEqual(await mesure('lea'), repos, 'la pastille ne bouge pas au survol');
 });
 

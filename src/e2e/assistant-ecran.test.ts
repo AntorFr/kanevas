@@ -113,11 +113,9 @@ test('bouton : un membre l’a, l’admin sans rôle ne l’a pas, ni hors d’u
   await bouton(lea).waitFor();
   await admin.goto('/univers/1');
   await attendre(admin);
-  await admin.waitForTimeout(500);
   assert.equal(await bouton(admin).count(), 0);
   await antor.goto('/');
   await attendre(antor);
-  await antor.waitForTimeout(300);
   assert.equal(await bouton(antor).count(), 0);
 });
 

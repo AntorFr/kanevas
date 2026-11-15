@@ -10,7 +10,7 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { after, before, test } from 'node:test';
-import { type Any, connecte, launch, skipBrowser, startServer, texte } from './harnais.test.js';
+import { type Any, attendreAbsent, connecte, launch, skipBrowser, startServer, texte } from './harnais.test.js';
 
 const opts = { skip: skipBrowser };
 let srv: Awaited<ReturnType<typeof startServer>>;
@@ -229,7 +229,7 @@ test('envoi long : « Envoi… » + pourcentage + Annuler, qui n\'ajoute rien', 
   assert.match(await ligne.innerText(), /lent.*Envoi… \d+ %/s);
   await antor.screenshot({ path: '/tmp/scr/envoi.png' });
   await ligne.getByRole('button', { name: 'Annuler' }).click();
-  await antor.waitForTimeout(500);
+  await attendreAbsent(ligne);
   await antor.unroute('**/api/univers/*/fichiers');
   const apres = (await antor.request.get(`/api/univers/${uid}/fichiers`).then((r: Any) => r.json())).fichiers.length;
   assert.equal(apres, avant);
