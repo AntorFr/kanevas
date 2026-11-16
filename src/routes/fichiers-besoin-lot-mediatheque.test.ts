@@ -173,3 +173,30 @@ test('une section à 100 fichiers joints refuse le 101e : mots d’Antor, mots d
   assert.equal(await joints(m.antor, 'Port-Sel', 'Description'), 100);
   assert.ok(!(await m.noms(m.antor)).includes('antor-101.pdf'));
 });
+
+test('B-24 · retirer une section retire ses références, jamais le fichier : il reste en médiathèque, sans usage nommé, octets servis', async () => {
+  const m = await monter();
+  const fiche = (await m.app.inject({ method: 'POST', url: m.api('/fiches'), headers: m.antor, payload: { type: 'lieu', titre: 'Fiche à ranger' } })).json();
+  const sec = (await m.app.inject({ method: 'POST', url: m.api(`/fiches/${fiche.id}/sections`), headers: m.antor, payload: { titre: 'Annexes' } })).json();
+  const v = (await m.envoyer(m.antor, { section: String(sec.id), maniere: 'joint' }, 'annexe-orpheline.pdf', 'application/pdf', PDF)).json();
+  const lue = async () => (await m.json(m.antor, `/fiches/${fiche.id}`)).sections.find((x: Any) => x.titre === 'Annexes');
+  assert.equal((await lue()).piecesJointes.length, 1);
+  const d = await m.suppr(m.antor, `/fiches/${fiche.id}/sections/${sec.id}`);
+  assert.ok(d.statusCode >= 200 && d.statusCode < 300, String(d.statusCode));
+  assert.ok((await m.noms(m.antor)).includes('annexe-orpheline.pdf'), 'the file stays in the library');
+  assert.equal(JSON.stringify(await m.json(m.antor, `/fichiers/${v.id}/detail`)).includes('Annexes'), false, 'no usage names the removed section');
+  assert.equal((await m.get(m.antor, `/fichiers/${v.id}`)).statusCode, 200, 'the bytes are still served to the GM');
+});
+
+test('E-19 · un fichier utilisé dans 40 fiches : le détail en nomme 10 et en garde 30 pour la suite', async () => {
+  const m = await monter();
+  const f = (await m.envoyer(m.antor, {}, 'affiche-des-quarante.png', 'image/png', PNG)).json();
+  for (let i = 1; i <= 40; i++) {
+    const fiche = (await m.app.inject({ method: 'POST', url: m.api('/fiches'), headers: m.antor, payload: { type: 'lieu', titre: `Affichage ${String(i).padStart(2, '0')}` } })).json();
+    const r = await m.app.inject({ method: 'POST', url: m.api(`/fiches/${fiche.id}/sections`), headers: m.antor, payload: { titre: 'Mur', contenu: `![affiche](fichier:${f.id})` } });
+    assert.equal(r.statusCode, 201);
+  }
+  const detail = await m.json(m.antor, `/fichiers/${f.id}/detail`);
+  assert.equal(detail.usages.length, 10);
+  assert.equal(detail.restantes, 30);
+});
