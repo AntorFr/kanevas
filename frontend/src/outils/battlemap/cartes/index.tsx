@@ -368,7 +368,7 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
             </div>
           </>
         )}
-        {etroit && (
+        {etroit && !lecture && (
           <Bouton className="editeur-bouton-panneau" icone={PanelRight} aria-expanded={panneau} onClick={() => setPanneau((v) => !v)}>Panneau</Bouton>
         )}
         <Bouton variante="principal" disabled title="Disponible avec le jeu à table.">Jouer</Bouton>
