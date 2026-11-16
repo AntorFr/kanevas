@@ -45,6 +45,7 @@ describe('E-23 liste des corps d’un système', { skip: skipBrowser, timeout: 4
       const g = gid;
       const ouvert = ins.run(g, E, 'sl-ouvert', 'Ouvert-test', 42, 43, 0).lastInsertRowid;
       ins.run(g, E, 'sl-secret', 'Caché-test', 40, 41, 1);
+      ins.run(g, E, 'sl-vide', 'Vide-test', 44, 45, 0);
       const a2 = db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, type, nom, orbite, heure, taille) VALUES (?,?,?,?,?,?,?,?)');
       a2.run(ouvert, 'ano', 'planete', 'anomalie', null, 2.03, 4, 0.1);
       a2.run(ouvert, 'nomme', 'planete', 'tellurique', 'Nomée', 4, 7, 1);
@@ -104,6 +105,34 @@ describe('E-23 liste des corps d’un système', { skip: skipBrowser, timeout: 4
     await page.getByRole('radio', { name: /Joueur/ }).click();
     await page.getByText(INTROUVABLE).first().waitFor({ timeout: 8000 });
     assert.ok(!(await texte(page)).includes('Caché-test'));
+    await ctx.close();
+  });
+  it('état vide : cadre en pointillés, remplissage de 18 px, texte propre à chaque rôle', async () => {
+    for (const [compte, mot] of [['Antor', 'Ce système est vide.'], ['Léa', 'Rien à voir dans ce système pour l’instant.']] as const) {
+      const { page, ctx } = await connecte(browser, srv.base, compte);
+      await page.setViewportSize({ width: 390, height: 780 });
+      await page.goto(adr(44, 45));
+      await page.getByText(mot).waitFor();
+      const st = await page.locator('.gx-systeme-page .etat').evaluate((e: Any) => { const c = getComputedStyle(e); return { b: c.borderTopStyle, w: c.borderTopWidth, p: c.paddingTop, pl: c.paddingLeft, a: c.textAlign }; });
+      assert.deepEqual(st, { b: 'dashed', w: '1px', p: '18px', pl: '18px', a: 'center' }, compte);
+      assert.equal(await page.getByRole('heading', { name: /^Corps/ }).count(), 0, compte);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'pas de défilement horizontal');
+      await hors(page, `390-vide-${compte}`);
+      await ctx.close();
+    }
+  });
+
+  it('connexion perdue après la lecture : « Connexion perdue. » une seule fois', async () => {
+    const { page, ctx } = await connecte(browser, srv.base, 'Léa');
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(adr(42, 43));
+    await page.getByRole('heading', { name: 'Corps (2)' }).waitFor();
+    await ctx.setOffline(true);
+    await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+    await page.getByText(/Connexion perdue\./).first().waitFor();
+    assert.equal(await page.getByText(/Connexion perdue\./).count(), 1);
+    assert.equal((await lignes(page)).length, 2, 'la liste lue reste affichée');
+    await hors(page, 'bureau-hors-ligne');
     await ctx.close();
   });
 });
