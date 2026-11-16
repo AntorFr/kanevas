@@ -129,6 +129,8 @@ export function ouvrirLot(
 ): { lot: Lot; repris: boolean } {
   // The scope decides (K-6): a tool token opens a batch of one of its tools, a content token a content batch.
   if (outil === null ? jeton.outils.length > 0 : !jeton.outils.includes(outil)) throw introuvable();
+  // The role is read now (B-46): a token of an account that is no longer a GM opens no batch.
+  exigerMJ(db, jeton.universId, jeton.compteId);
   return db.transaction(() => {
     const ouvert = db
       .prepare('SELECT * FROM lots_import WHERE jeton_id = ? AND outil IS ? AND clos_le IS NULL ORDER BY id DESC LIMIT 1')

@@ -6,7 +6,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { LONGUEUR_ALIAS, LONGUEUR_ETIQUETTE, MAX_ALIAS, MAX_ETIQUETTES } from '../services/etiquettes.js';
 import { MAX_CONTENU_SECTION } from '../services/sections.js';
 import { ErreurService, introuvable } from '../services/erreurs.js';
-import { accesDe, verifierJeton, type Jeton, type JetonRequete } from '../services/jetons.js';
+import { niveauEffectif, verifierJeton, type Jeton, type JetonRequete } from '../services/jetons.js';
 import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import {
   appliquerCatalogueParJeton, apercuCatalogueParJeton, niveauDeRequete,
@@ -114,7 +114,7 @@ export async function registerImportRoutes(app: FastifyInstance) {
       const { id } = request.params as { id?: string };
       const universId = id !== undefined && /^\d+$/.test(id) ? Number(id) : -1;
       request.jeton = { ...jeton, universId };
-      if (id !== undefined && (universId < 0 || accesDe(app.db, jeton.id, universId) === 'aucun')) throw introuvable();
+      if (id !== undefined && (universId < 0 || niveauEffectif(app.db, jeton, universId).niveau === 'aucun')) throw introuvable();
     });
 
     const jetonDe = (request: FastifyRequest) => request.jeton!;
