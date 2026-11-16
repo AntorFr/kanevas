@@ -275,12 +275,18 @@ async function startServerUnlocked(extraEnv: Record<string, string>): Promise<Se
     throw new Error(`server died (${fin})\n--- server output (tail) ---\n${sortie}`);
   };
   const jetonOutils = async (compte: string, universId: number, nom: string, outils: string[]): Promise<string> => {
+    // Not `creerJeton` with `outils`: the tool registry of this process is empty (the stub is the server's, not the test's), so the
+    // service would find no tool to offer. The token is made as the stub world makes its own, then its tool rows are written.
     const { openDb } = await import('../db/db.js');
-    const { creerJeton } = await import('../services/jetons.js');
+    const { creerJetonDeValeur } = await import('../services/jetons.js');
     const { trouverCompte } = await import('../services/comptes.js');
+    const { randomBytes } = await import('node:crypto');
     const db = openDb(join(dir, 'k.db'));
     try {
-      return creerJeton(db, trouverCompte(db, compte)!.id, universId, { nom, dureeJours: 30, outils }).valeur;
+      const valeur = `kvs_${randomBytes(32).toString('base64url')}`;
+      const jeton = creerJetonDeValeur(db, trouverCompte(db, compte)!.id, universId, { nom, dureeJours: 30, valeur });
+      for (const outil of outils) db.prepare('INSERT INTO jetons_outils (jeton_id, outil) VALUES (?, ?)').run(jeton.id, outil);
+      return valeur;
     } finally {
       db.close();
     }
