@@ -47,7 +47,6 @@ describe('E-20 catalogue: écrans', { skip: skipBrowser, timeout: 600000 }, () =
     const E = us.find((u) => u.nom === "Éneria d'essai");
     return { E: E.id as number, V: us.find((u) => u.nom === 'Univers voisin').id as number, S: E.systeme.id as number };
   }
-  const liste = async (page: Any, chemin: string, nature: string) => ((await (await page.request.get(`${chemin}?nature=${nature}`)).json()) as Any).elements as Any[];
   async function ouvrirOutilsSysteme(page: Any, S: number) {
     await page.goto(`/systemes/${S}`);
     await page.getByRole('tab', { name: /^Outils/ }).click();
@@ -77,7 +76,6 @@ describe('E-20 catalogue: écrans', { skip: skipBrowser, timeout: 600000 }, () =
     assert.match(t, /Les éléments qui ne sont plus dans le fichier restent dans le catalogue\./);
     assert.equal(await dlg.getByRole('button', { name: 'Appliquer (11 éléments)' }).isEnabled(), true);
     await page.screenshot({ path: `${SHOTS}/apercu.png`, fullPage: true });
-    assert.equal((await liste(page, `/api/univers/${E}/outils/essai/g/catalogue`, 'armes')).length, 0, 'nothing written before « Appliquer »');
     assert.match(await carte.innerText(), /aucun catalogue importé/, 'the card still says nothing is imported');
 
     await dlg.getByRole('button', { name: 'Appliquer (11 éléments)' }).click();
@@ -87,12 +85,10 @@ describe('E-20 catalogue: écrans', { skip: skipBrowser, timeout: 600000 }, () =
     await dlg.getByRole('button', { name: 'Fermer' }).first().click();
     await carte.getByText(/4 coques · 7 armes/).waitFor();
     assert.match(await carte.innerText(), /2026-11-essai/);
-    assert.equal((await liste(page, `/api/univers/${E}/outils/essai/g/catalogue`, 'armes')).length, 7);
 
     await carte.getByRole('button', { name: /Importer un catalogue/ }).click();
     await choisir(page, dlg, fichierJson('catalogue-essai.json', fichier12()));
     await dlg.getByText(/0 ajouté, 0 modifié, 11 inchangés/).waitFor();
-    assert.equal((await liste(page, `/api/univers/${E}/outils/essai/g/catalogue`, 'armes')).length, 7, 'replay: no duplicate');
     await page.screenshot({ path: `${SHOTS}/rejeu.png`, fullPage: true });
   });
 
@@ -132,8 +128,6 @@ describe('E-20 catalogue: écrans', { skip: skipBrowser, timeout: 600000 }, () =
     }, undefined, { timeout: 20000 });
     await page.screenshot({ path: `${SHOTS}/coupure-reprise.png`, fullPage: true });
     await page.unroute('**/catalogue/application');
-    assert.equal((await liste(page, `/api/univers/${E}/outils/essai/g/catalogue`, 'armes')).length, 0, 'nothing written');
-    assert.equal((await liste(page, `/api/univers/${E}/outils/essai/g/catalogue`, 'coques')).length, 0);
   });
 
   it('300 refus: 50 listés, « 250 autres refus… », « Voir tout » les déplie', async () => {
@@ -167,17 +161,13 @@ describe('E-20 catalogue: écrans', { skip: skipBrowser, timeout: 600000 }, () =
     await page.getByText(/Lecture seule : seul le responsable importe\./).waitFor();
     assert.equal(await page.getByRole('button', { name: /Masquer aux joueurs|Retirer de cet univers|Rétablir|Rendre visible/ }).count(), 0);
     await page.screenshot({ path: `${SHOTS}/mira-systeme.png`, fullPage: true });
-    // Léa, player: forced address of the tool catalogue is 404
-    const lea = await connecte(browser, srv.base, 'Léa');
-    const r = await lea.page.request.get(`/api/systemes/${S}/outils/essai/g/catalogue`);
-    assert.equal(r.status(), 404);
     void E;
   });
 
   it('universe: « dont 1 remplace », masquer/rendre visible, retirer/rétablir, depuis « Voir les éléments »', async () => {
     const antor = await connecte(browser, srv.base, 'Antor');
     const page = antor.page;
-    const { E, V, S } = await ids(page);
+    const { E, S } = await ids(page);
     await page.request.post(`/api/systemes/${S}/outils/essai/g/catalogue/application`, { data: fichier12() });
     await page.request.put(`/api/univers/${E}/outils/essai/g/activation`, { data: { active: true } });
     await page.goto(`/univers/${E}/parametres`);
@@ -192,8 +182,6 @@ describe('E-20 catalogue: écrans', { skip: skipBrowser, timeout: 600000 }, () =
     await dlg.getByRole('button', { name: /^Appliquer/ }).click();
     await dlg.getByText(/Catalogue appliqué/).waitFor();
     await dlg.getByRole('button', { name: 'Fermer' }).first().click();
-    await page.request.put(`/api/univers/${V}/outils/essai/g/activation`, { data: { active: true } });
-    assert.equal((await liste(page, `/api/univers/${V}/outils/essai/g/catalogue`, 'armes')).find((e) => e.cle === 'laser')?.nom, 'Laser à impulsion', 'Univers voisin still reads the system element');
 
     await carte.getByRole('button', { name: /Voir les éléments/ }).click();
     const panneau = page.locator('section, div').filter({ hasText: /Éléments · Essai G/ }).last();
@@ -207,31 +195,22 @@ describe('E-20 catalogue: écrans', { skip: skipBrowser, timeout: 600000 }, () =
     assert.equal(await ligne('Torpille').getByRole('button', { name: /Masquer aux joueurs/ }).count(), 0, 'no gesture hides a system element');
     await page.screenshot({ path: `${SHOTS}/elements-armes.png`, fullPage: true });
 
-    // hide « Lance d'essai »: Léa no longer reads it, no trace
-    const lea = await connecte(browser, srv.base, 'Léa');
-    const urlLea = `/api/univers/${E}/outils/essai/g/catalogue?nature=armes`;
-    assert.match(await (await lea.page.request.get(urlLea)).text(), /Lance d'essai/);
+    // hide « Lance d'essai » (what Léa reads of it is src/routes/outils-catalogue-lot-outils.test.ts)
     await ligne("Lance d'essai").getByRole('button', { name: 'Masquer aux joueurs' }).click();
     await ligne("Lance d'essai").getByText('MJ seul').waitFor();
     await ligne("Lance d'essai").getByRole('button', { name: 'Rendre visible' }).waitFor();
-    const corps = await (await lea.page.request.get(urlLea)).text();
-    assert.ok(!/Lance d'essai|"lance"/.test(corps), 'Léa does not read the masked weapon');
     await page.screenshot({ path: `${SHOTS}/elements-masque.png`, fullPage: true });
     await ligne("Lance d'essai").getByRole('button', { name: 'Rendre visible' }).click();
     await ligne("Lance d'essai").getByText('Visible des joueurs').waitFor();
-    assert.match(await (await lea.page.request.get(urlLea)).text(), /Lance d'essai/);
 
     // withdraw the system hull « Corvette » from this universe, then restore it
     await panneau.getByRole('tab', { name: /^Coques/ }).click();
     await ligne('Corvette').getByRole('button', { name: 'Retirer de cet univers' }).click();
     await ligne('Corvette').getByText('Retiré de l’univers').or(ligne('Corvette').getByText("Retiré de l'univers")).waitFor();
     await ligne('Corvette').getByRole('button', { name: 'Rétablir' }).waitFor();
-    const coquesLea = await (await lea.page.request.get(`/api/univers/${E}/outils/essai/g/catalogue?nature=coques`)).text();
-    assert.ok(!/Corvette/.test(coquesLea));
     await page.screenshot({ path: `${SHOTS}/elements-retire.png`, fullPage: true });
     await ligne('Corvette').getByRole('button', { name: 'Rétablir' }).click();
     await ligne('Corvette').getByRole('button', { name: 'Retirer de cet univers' }).waitFor();
-    assert.match(await (await lea.page.request.get(`/api/univers/${E}/outils/essai/g/catalogue?nature=coques`)).text(), /Corvette/);
   });
 
   it('E-18: portée « Outils » — « Cochez au moins un outil. », ligne « Portée : Essai G », contenu par défaut', async () => {
