@@ -1,3 +1,4 @@
+// ecrans: carte
 // Review tests of the E-11 stroke geometry (docs/ecrans.md « Stroke geometry »), on « Carte de la côte »:
 // every stroke runs from the edge of a disc to the edge of another disc, passes under no node pill,
 // and every node keeps a tap zone of at least 44 px; at 1440, 768 and 390 px, light and dark.

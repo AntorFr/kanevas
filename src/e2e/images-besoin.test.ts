@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches
 // Black-box tests of the assembled feature kanevas-images, written from the need (docs/parcours.md
 // B-25, B-27, B-29, P-3 step 5; docs/ecrans.md « Détail des écrans de kanevas-images », E-12 block
 // « Image attachée ») and not from the code. Expected values are literals taken from those docs.

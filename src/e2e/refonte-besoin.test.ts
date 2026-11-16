@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of the feature `kanevas-refonte-visuelle`, written from its need only (fiche « Livre »
 // and « Critère de sortie », docs/ecrans.md « Détail de `kanevas-refonte-visuelle` », docs/charte.md,
 // B-29). Real server in stub mode + real Chromium (harnais.test.ts). Every expected value is a literal

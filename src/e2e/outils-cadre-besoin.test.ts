@@ -1,3 +1,4 @@
+// ecrans: outil, parametres, systeme, vue-ensemble
 // Black-box tests of kanevas-outils-cadre, written from the need (the feature sheet's « Livre » and
 // exit criterion, docs/parcours.md B-57 to B-60 and P-17, docs/ecrans.md E-20 and « What
 // `kanevas-outils-cadre` builds of E-20 »), never from the code. The stub server runs WITH its starting

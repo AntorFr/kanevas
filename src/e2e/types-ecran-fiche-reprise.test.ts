@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Browser tests of the E-9 rework of kanevas-types-ecran-fiche (docs/maquettes/e09-fiche-importee.html):
 // drawn sub-type list (combobox/listbox), « (actuel) » in the change-type box, badge on one line at 390 px.
 import assert from 'node:assert/strict';

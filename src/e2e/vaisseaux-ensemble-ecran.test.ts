@@ -1,3 +1,4 @@
+// ecrans: fiche, outil
 // Feature-level browser tests of kanevas-outils-vaisseaux (real server in stub mode with the stub's starting data,
 // real Chromium through Playwright). Written from the feature sheet (« Livre », exit criterion), docs/parcours.md
 // (P-19, B-68, B-70, B-75, B-76), docs/ecrans.md (E-22, E-9) and docs/maquettes/e22-concepteur-vaisseaux.html.

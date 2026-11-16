@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-recherche-e9 (E-9 header "Aussi appelée…", label pills and the box
 // « Alias et étiquettes… »), written from the task's exit criterion and docs/ecrans.md.
 // Real server in stub mode + real Chromium; expected values are literals from the doc.

@@ -1,3 +1,4 @@
+// ecrans: demo-composants
 // kanevas-rv-composants, in a real Chromium on /demo-composants (stub mode): the keyboard behaviour of
 // each shared component, as docs/charte.md § 4 states it. Expected values are literals from the charte.
 //

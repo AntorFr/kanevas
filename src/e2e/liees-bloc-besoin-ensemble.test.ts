@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Whole-feature tests of kanevas-fiches-liees-bloc (B-64, the « Mentionnée dans » part of B-69),
 // written from the feature sheet, docs/parcours.md (B-64, B-69, P-17), docs/ecrans.md (E-9 « Fiches liées »),
 // the mock-up e09-lieu-liees.html and the contract of the route GET …/fiches/:fid/liees in ARCHITECTURE.md.
