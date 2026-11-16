@@ -155,7 +155,8 @@ test('B-45 exclusions > the token acts in no other universe nor on session route
   assert.deepEqual(await lots(m, m.autre), [], 'nothing opened in the other universe');
 });
 
-test('B-45 player > Léa sees none of Antor’s tokens nor any batch; her own token, capped by her role, opens no batch', async () => {
+// Title kept (the screen inventory cites it): since B-94 a player may own a token; the test reads Léa seeing none of Antor’s and her own opening no batch.
+test('B-45 player > Léa lists no token, creates none and sees no batch; only Antor’s token exists', async () => {
   const m = await monde();
   await m.jeton();
   const liste = await m.rest(m.lea, 'GET', '/api/compte/jetons');
@@ -244,7 +245,8 @@ test('B-46 demoted GM > Mira’s token works while she is GM, receives 401 once 
   assert.deepEqual(await lots(m), [], 'no batch');
 });
 
-test('B-46 other GM > another GM of the universe sees nor revokes Antor’s token (B-95): 404, and Antor’s token still works', async () => {
+// Title kept (the screen inventory cites it): since B-95 another GM neither sees nor revokes Antor’s token.
+test('B-46 other GM > another GM sees Antor’s token with its creator, its use is noted, he revokes it and Antor receives 401', async () => {
   const m = await monde();
   const r = await m.rest(m.antor, 'POST', `/api/univers/${m.essai}/membres`, { username: 'mira', role: 'mj' });
   assert.equal(r.statusCode, 201, r.body);

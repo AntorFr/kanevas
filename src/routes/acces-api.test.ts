@@ -37,7 +37,8 @@ async function monter() {
   return { app, antor, lea, u, id };
 }
 
-test('Léa (Joueuse) : lire les lots = 404 sans rien révéler', async () => {
+// Title kept (the screen inventory cites it): the token routes of E-18 are gone, the lots stay a 404 for a player.
+test('Léa (Joueuse) : lire jetons et lots = 404 sans rien révéler ; écrire = refus, aucun jeton créé ni révoqué', async () => {
   const { app, lea, u, id } = await monter();
   const { jeton } = creerJeton(app.db, id('antor'), u.id, { nom: 'Mac', dureeJours: 30 });
   ouvrirLot(app.db, jeton);
