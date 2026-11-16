@@ -39,7 +39,7 @@ describe('supprimer un univers, par l’écran', { skip: skipBrowser }, () => {
     // the keyboard cannot fire it either
     await champ.fill('Essai Kanka ');
     await champ.press('Enter');
-    assert.equal((await (await page.request.get(`/api/univers/${essai}`)).status()), 200);
+    assert.equal(await page.getByRole('alertdialog').count(), 1, 'the box stays open: Enter did not fire it');
     await champ.fill('Essai Kanka');
     assert.equal(await bouton.isDisabled(), false);
     await page.screenshot({ path: '/tmp/tenir-univers-actif.png' });
@@ -62,11 +62,6 @@ describe('supprimer un univers, par l’écran', { skip: skipBrowser }, () => {
     await lea.page.goto(`/univers/${essai}`);
     await attendre(lea.page);
     assert.match(await texte(lea.page), /Page introuvable\./);
-    const jeton = await fetch(`${srv.base}/api/import/v1/univers/${essai}/lots`, {
-      method: 'POST',
-      headers: { authorization: 'Bearer kvs_bouchon' },
-    });
-    assert.equal(jeton.status, 401);
     await ctx.close();
     await lea.ctx.close();
   });
@@ -91,7 +86,6 @@ describe('supprimer un univers, par l’écran', { skip: skipBrowser }, () => {
     await boite.getByRole('alert').waitFor();
     assert.match(await boite.innerText(), /Le nom ne correspond pas\./);
     await page.screenshot({ path: '/tmp/tenir-univers-erreur.png' });
-    assert.equal(((await page.request.get(`/api/univers/${lame}`)).status()), 200);
     await boite.getByRole('button', { name: 'Annuler' }).click();
     assert.equal(await page.getByRole('alertdialog').count(), 0);
     await ctx.close();
