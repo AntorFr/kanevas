@@ -160,6 +160,10 @@ test('le jeton d’un compte retiré de l’univers n’écrit rien (le service 
     method: 'PUT', url: `/api/import/v1/univers/${u.id}/fiches/x`, headers: bearer(valeur), payload: { titre: 'T', type: 'personnage' },
   });
   assert.equal(r.statusCode, 404);
+  const ctx = await app.inject({ method: 'GET', url: `/api/import/v1/univers/${u.id}`, headers: bearer(valeur) });
+  assert.equal(ctx.statusCode, 404, 'the universe context is not readable either');
+  const lot = await app.inject({ method: 'POST', url: `/api/import/v1/univers/${u.id}/lots`, headers: bearer(valeur) });
+  assert.equal(lot.statusCode, 404);
   assert.equal((app.db.prepare('SELECT count(*) AS n FROM fiches WHERE univers_id = ?').get(u.id) as { n: number }).n, 0);
   assert.equal((app.db.prepare('SELECT count(*) AS n FROM lots_import').get() as { n: number }).n, 0);
 });
