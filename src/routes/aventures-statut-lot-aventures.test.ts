@@ -139,7 +139,9 @@ describe('Session reports, bounds', () => {
     const w = await monter();
     const c = await w.campagneOuverte('Couronne');
     const cr = (titre: string, n: number) => w.appel(w.lea, 'POST', `${w.base}/comptes-rendus`, { campagneId: c.id, titre, texte: 'a'.repeat(n) });
-    assert.equal((await cr('Pile', 100000)).statusCode, 201);
+    const pile = await cr('Pile', 100000);
+    assert.equal(pile.statusCode, 201);
+    assert.equal((await w.appel(w.lea, 'GET', `${w.base}/fiches/${pile.json().id}`)).json().sections[0].contenu, 'a'.repeat(100000), 'stored whole');
     const avant = w.n('fiches');
     assert.equal((await cr('Trop long', 100001)).statusCode, 400);
     assert.equal(w.n('fiches'), avant);
