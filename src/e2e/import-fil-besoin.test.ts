@@ -124,10 +124,10 @@ async function rest(m: Monde, cookie: string, methode: string, chemin: string, c
   return { statut: r.status, json, txt };
 }
 
-/** A token made by the service, for tests that are not about the screen. */
+/** A token of the account on this universe only, made through the session route of the account (E-23's door): E-18 no longer creates any. */
 async function jetonPar(m: Monde, compte: string, nom = 'Script Kanka — Mac', dureeJours = 30): Promise<string> {
   const c = await cookieDe(m, compte);
-  const r = await rest(m, c, 'POST', `/api/univers/${m.essai}/jetons`, { nom, dureeJours });
+  const r = await rest(m, c, 'POST', '/api/compte/jetons', { nom, dureeJours, acces: { tous: false, univers: [{ universId: m.essai, niveau: 'ecriture' }] } });
   assert.equal(r.statut, 201, r.txt);
   return r.json.valeur;
 }
@@ -193,96 +193,12 @@ async function capture(page: Any, nom: string): Promise<void> {
   await page.screenshot({ path: `${CAP}/${nom}.png`, fullPage: true });
 }
 
-/** Creates a token on E-18 as the signed-in GM; returns its value (read in the box), box closed. */
-async function creerJetonEcran(page: Any, m: Monde, nom: string, duree?: string): Promise<string> {
-  await allerE18(page, m);
-  await page.getByRole('button', { name: /Nouveau jeton/ }).first().click();
-  const boite = page.getByRole('dialog');
-  await boite.getByLabel('Nom').fill(nom);
-  if (duree) await boite.getByText(duree, { exact: true }).click();
-  await boite.getByRole('button', { name: 'Créer le jeton' }).click();
-  await boite.getByText(rx("Il ne sera plus jamais affiché.")).waitFor();
-  const valeur: string = await boite.evaluate((el: Element) => {
-    const champs = Array.from(el.querySelectorAll('input,textarea')).map((i) => (i as HTMLInputElement).value);
-    return ((el.textContent ?? '') + ' ' + champs.join(' ')).match(/kvs_[A-Za-z0-9_-]{43}/)?.[0] ?? '';
-  });
-  assert.match(valeur, TOKEN_RE);
-  await boite.getByRole('button', { name: rx("J'ai copié le jeton") }).click();
-  await boite.waitFor({ state: 'detached' });
-  await attendre(page);
-  return valeur;
-}
-
-function ligne(page: Any, nom: string): Any {
-  return page.locator('li, tr').filter({ hasText: nom }).first();
-}
 async function ouvrirFiche(page: Any, m: Monde, id: number): Promise<void> {
   await page.goto(`/univers/${m.essai}/fiche/${id}`);
   await attendre(page);
 }
 
 // ---------------------------------------------------------------- B-45
-
-test('B-45 · Antor crée le jeton sur E-18 : montré une fois, puis nom, « jamais » et l’expiration à 30 jours, la valeur nulle part', opts, async () => {
-  const m = await monde();
-  const { ctx, page } = await session(m, 'antor');
-  try {
-    await allerE18(page, m);
-    await page.getByRole('button', { name: /Nouveau jeton/ }).first().click();
-    const boite = page.getByRole('dialog');
-    await boite.getByLabel('Nom').fill('Script Kanka — Mac');
-    await boite.getByRole('button', { name: 'Créer le jeton' }).click();
-    await boite.getByText(rx('Il ne sera plus jamais affiché.')).waitFor();
-    await capture(page, 'b45-jeton-montre');
-    const texteBoite = norm(await boite.innerText());
-    assert.match(texteBoite, /Rangez-le dans la configuration de votre script/);
-    const valeur: string = await boite.evaluate((el: Element) =>
-      ((el.textContent ?? '') + ' ' + Array.from(el.querySelectorAll('input,textarea')).map((i) => (i as HTMLInputElement).value).join(' ')).match(/kvs_[A-Za-z0-9_-]{43}/)?.[0] ?? '');
-    assert.match(valeur, TOKEN_RE, 'the token is shown in the box');
-    // Only the button closes the box while the token is shown.
-    await page.keyboard.press('Escape');
-    assert.equal(await boite.isVisible(), true, 'Échap does not close the box');
-    await boite.getByRole('button', { name: rx("J'ai copié le jeton") }).click();
-    await boite.waitFor({ state: 'detached' });
-    await attendre(page);
-    await capture(page, 'b45-liste-apres');
-    const t = await lire(page);
-    assert.match(t, /Script Kanka — Mac/);
-    assert.match(t, /jamais/);
-    assert.match(t, /expire le 11 nov\. 2026/);
-    assert.ok(!t.includes(valeur), 'the value is no longer on screen');
-    await page.reload();
-    await attendre(page);
-    assert.ok(!(await lire(page)).includes(valeur), 'nor after a reload');
-  } finally {
-    await ctx.close();
-    await m.app.close();
-  }
-});
-
-test('B-45 bords · la durée par défaut est 30 jours, 7 jours et 1 an se choisissent, un nom vide est refusé', opts, async () => {
-  const m = await monde();
-  const { ctx, page } = await session(m, 'antor');
-  try {
-    await creerJetonEcran(page, m, 'Court', '7 jours');
-    await creerJetonEcran(page, m, 'Long', '1 an');
-    await allerE18(page, m);
-    const t = await lire(page);
-    assert.match(norm(await ligne(page, 'Court').innerText()), /expire le 19 oct\. 2026/);
-    assert.match(norm(await ligne(page, 'Long').innerText()), /expire le 12 oct\. 2027/);
-    assert.ok(t.includes('Jeton du bouchon'));
-    // Empty name.
-    await page.getByRole('button', { name: /Nouveau jeton/ }).first().click();
-    const boite = page.getByRole('dialog');
-    await boite.getByRole('button', { name: 'Créer le jeton' }).click();
-    await boite.getByText(rx('Erreur : le nom est obligatoire.')).waitFor();
-    await capture(page, 'b45-nom-vide');
-    assert.ok(!TOKEN_RE.test(norm(await boite.innerText())), 'no token shown');
-  } finally {
-    await ctx.close();
-    await m.app.close();
-  }
-});
 
 test('B-45 / P-11 refus · Léa (Joueuse) lit « Page introuvable. » sur E-18 et n’a pas l’item ; Antor l’a sous « Univers »', opts, async () => {
   const m = await monde();
@@ -295,7 +211,6 @@ test('B-45 / P-11 refus · Léa (Joueuse) lit « Page introuvable. » sur E-18 e
     assert.equal(await barre.getByRole('link', { name: 'Accès par API' }).count(), 0, 'no item for a player');
     await allerE18(lea.page, m);
     assert.match(await lire(lea.page), /Page introuvable\./);
-    assert.ok(!(await lire(lea.page)).includes('Nouveau jeton'));
     await capture(lea.page, 'p11-lea-introuvable');
     await antor.page.goto(`/univers/${m.essai}`);
     await attendre(antor.page);
@@ -303,8 +218,9 @@ test('B-45 / P-11 refus · Léa (Joueuse) lit « Page introuvable. » sur E-18 e
     await attendre(antor.page);
     await antor.page.getByRole('heading', { name: 'Accès par API', level: 1 }).waitFor();
     const t = await lire(antor.page);
-    assert.match(t, /Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import\./);
-    assert.match(t, /\/api\/import\/v1\/univers\/[^\/\s]+/, 'the base address');
+    assert.match(t, /Un script écrit dans cet univers avec vos droits, par l'API d'import\. Ses jetons se gèrent dans Mes jetons d'API\./);
+    assert.match(t, /\/api\/v1\/univers\/[^\/\s]+/, 'the base address');
+    assert.doesNotMatch(t, /Nouveau jeton|Aucun jeton/, 'no « Jetons » panel any more');
   } finally {
     await lea.ctx.close();
     await antor.ctx.close();
@@ -313,102 +229,6 @@ test('B-45 / P-11 refus · Léa (Joueuse) lit « Page introuvable. » sur E-18 e
 });
 
 // ---------------------------------------------------------------- B-46
-
-test('B-46 · révoquer sur E-18 (confirmation, « Révoqué »), puis l’appel reçoit 401 et aucun lot n’apparaît', opts, async () => {
-  const m = await monde();
-  const { ctx, page } = await session(m, 'antor');
-  try {
-    await creerJetonEcran(page, m, 'Script Kanka — Mac');
-    await allerE18(page, m);
-    await ligne(page, 'Script Kanka — Mac').getByRole('button', { name: /Révoquer/ }).click();
-    const boite = page.getByRole('alertdialog').or(page.getByRole('dialog'));
-    await boite.waitFor();
-    assert.match(norm(await boite.innerText()), /Révoquer « Script Kanka — Mac » \?\s+Le script qui l'utilise ne pourra plus rien écrire\./);
-    await capture(page, 'b46-confirmation');
-    await boite.getByRole('button', { name: 'Révoquer le jeton' }).click();
-    await page.getByText(rx('Jeton révoqué.')).first().waitFor();
-    await attendre(page);
-    // The toast shows before the list is reloaded: wait for the badge instead of reading the row once.
-    await ligne(page, 'Script Kanka — Mac').getByText('Révoqué', { exact: true }).waitFor();
-    assert.match(norm(await ligne(page, 'Script Kanka — Mac').innerText()), /Révoqué/);
-    await allerE18(page, m);
-    assert.match(await lire(page), /Aucun lot d'import pour l'instant\./);
-    await capture(page, 'b46-revoque');
-  } finally {
-    await ctx.close();
-    await m.app.close();
-  }
-});
-
-test('B-46 bords · un jeton de 7 jours, 7 j 1 h après, la ligne dit « Expiré » et aucun lot n’apparaît', opts, async () => {
-  const m = await monde();
-  await jetonPar(m, 'antor', 'Court', 7);
-  m.regler(T0 + 7 * JOUR + 3600_000);
-  const { ctx, page } = await session(m, 'antor');
-  try {
-    await allerE18(page, m);
-    assert.match(norm(await ligne(page, 'Court').innerText()), /Expiré/);
-    assert.match(await lire(page), /Aucun lot d'import pour l'instant\./, 'a refusal opens no batch');
-    await capture(page, 'b46-expire');
-  } finally {
-    await ctx.close();
-    await m.app.close();
-  }
-});
-
-test('B-46 échec · Mira, ajoutée MJ puis passée Joueuse par Antor : la ligne dit « Inactif », Mira lit « Page introuvable. »', opts, async () => {
-  const m = await monde();
-  const antor = await session(m, 'antor');
-  const mira = await session(m, 'mira');
-  try {
-    await creerJetonEcran(antor.page, m, 'Script Kanka — Mac');
-    await antor.page.goto(`/univers/${m.essai}/membres`);
-    await attendre(antor.page);
-    await antor.page.getByLabel('Identifiant du compte').fill('mira');
-    await antor.page.getByLabel('Rôle', { exact: true }).selectOption({ label: 'MJ' });
-    await antor.page.getByRole('button', { name: /^Ajouter$/ }).click();
-    await attendre(antor.page);
-    await creerJetonEcran(mira.page, m, 'Jeton de Mira');
-    // Arm the wait for the role change's response before the gesture: the API call below must see it saved.
-    const roleEnregistre = antor.page.waitForResponse((r: Any) => r.request().method() === 'PATCH' && r.url().includes('/membres/'));
-    await antor.page.getByLabel('Rôle de mira').selectOption({ label: 'Joueur' });
-    assert.equal((await roleEnregistre).status(), 200);
-    await attendre(antor.page);
-    await allerE18(antor.page, m);
-    assert.match(norm(await ligne(antor.page, 'Jeton de Mira').innerText()), /Inactif/);
-    assert.match(await lire(antor.page), /Aucun lot d'import pour l'instant\./);
-    await capture(antor.page, 'b46-inactif');
-    await allerE18(mira.page, m);
-    assert.match(await lire(mira.page), /Page introuvable\./, 'Mira, now a player, no longer sees E-18');
-  } finally {
-    await antor.ctx.close();
-    await mira.ctx.close();
-    await m.app.close();
-  }
-});
-
-test('B-46 · un autre MJ voit le jeton d’Antor, le dernier usage n’est plus « jamais », il le révoque et le toast le dit', opts, async () => {
-  const m = await monde();
-  const cAntor = await cookieDe(m, 'antor');
-  const r = await rest(m, cAntor, 'POST', `/api/univers/${m.essai}/membres`, { username: 'mira', role: 'mj' });
-  assert.equal(r.statut, 201, r.txt);
-  const jeton = await jetonPar(m, 'antor', 'Script Kanka — Mac');
-  await imp(m, jeton, 'GET', ''); // one use, so that the line no longer says « jamais »
-  const mira = await session(m, 'mira');
-  try {
-    await allerE18(mira.page, m);
-    const l = ligne(mira.page, 'Script Kanka — Mac');
-    const txt = norm(await l.innerText());
-    assert.match(txt, /antor/);
-    assert.ok(!/dernier usage\s*:?\s*jamais/i.test(txt) && !/jamais/.test(txt), `used once: ${txt}`);
-    await l.getByRole('button', { name: /Révoquer/ }).click();
-    await mira.page.getByRole('button', { name: 'Révoquer le jeton' }).click();
-    await mira.page.getByText(rx('Jeton révoqué.')).first().waitFor();
-  } finally {
-    await mira.ctx.close();
-    await m.app.close();
-  }
-});
 
 // ---------------------------------------------------------------- B-47
 
@@ -451,7 +271,7 @@ test('B-49 · E-18 : deux lots, le plus récent d’abord, « Fiches : 1 créée
   try {
     await allerE18(page, m);
     assert.match(await lire(page), /Aucun lot d'import pour l'instant\./);
-    const jeton = await creerJetonEcran(page, m, 'Script Kanka — Mac');
+    const jeton = await jetonPar(m, 'antor', 'Script Kanka — Mac');
     await lotComplet(m, jeton, [['lieu:port-sel', PORT_SEL]]);
     m.regler(T0 + 3600_000);
     await lotComplet(m, jeton, [['lieu:port-sel', PORT_SEL]]);
@@ -464,7 +284,7 @@ test('B-49 · E-18 : deux lots, le plus récent d’abord, « Fiches : 1 créée
     assert.ok(i1 < i2, 'the most recent batch first');
     assert.ok(!/Aucun lot d'import/.test(t));
     assert.ok((t.match(/Clos/g) ?? []).length >= 2, 'both closed');
-    assert.ok((t.match(/Script Kanka — Mac/g) ?? []).length >= 3, 'the token is named on each batch (list + 2 batches)');
+    assert.ok((t.match(/Script Kanka — Mac/g) ?? []).length >= 2, 'the token is named on each batch');
   } finally {
     await ctx.close();
     await m.app.close();
@@ -531,7 +351,7 @@ test('B-49 · E-18 d’un univers sans jeton ni lot : les deux textes vides', op
     await page.goto(`/univers/${nu.json.id}/acces-api`);
     await attendre(page);
     const t = await lire(page);
-    assert.match(t, /Aucun jeton\. Créez-en un pour qu'un script écrive dans cet univers\./);
+    assert.doesNotMatch(t, /Aucun jeton/);
     assert.match(t, /Aucun lot d'import pour l'instant\./);
     await capture(page, 'e18-vide');
   } finally {
@@ -594,7 +414,7 @@ test('critère de sortie · Antor crée le jeton, pousse Port-Sel, rejoue ; Léa
   const antor = await session(m, 'antor');
   const lea = await session(m, 'lea');
   try {
-    const jeton = await creerJetonEcran(antor.page, m, 'Script Kanka — Mac');
+    const jeton = await jetonPar(m, 'antor', 'Script Kanka — Mac');
     const premier = await imp(m, jeton, 'PUT', `/fiches/${CLE_PS}`, PORT_SEL);
     const lot1 = await ouvrirLot(m, jeton);
     await imp(m, jeton, 'PUT', `/fiches/${CLE_PS}?lot=${lot1}`, PORT_SEL);

@@ -64,7 +64,7 @@ async function monde(): Promise<Monde> {
   };
   const E = ((await api('antor', 'GET', '/api/univers')).json as Any[]).find((u) => u.nom === "Éneria d'essai").id as number;
   const V = `/api/univers/${E}/outils/swn/vaisseaux`;
-  const jeton = (await api('antor', 'POST', `/api/univers/${E}/jetons`, { nom: 'Script masses', dureeJours: 30, outils: ['swn/vaisseaux'] })).json.valeur as string;
+  const jeton = await srv.jetonOutils('antor', E, 'Script masses', ['swn/vaisseaux']);
   const imp = async (methode: string, chemin: string, corps?: unknown): Promise<Rep> => {
     const r = await fetch(`${srv.base}/api/import/v1/univers/${E}${chemin}`, { method: methode, headers: { authorization: `Bearer ${jeton}`, ...(corps === undefined ? {} : { 'content-type': 'application/json' }) }, body: corps === undefined ? undefined : JSON.stringify(corps) });
     const texte = await r.text();

@@ -117,6 +117,11 @@ export interface Server {
   sorti: () => string | null;
   /** The tail of the server output. */
   sortie: () => string;
+  /**
+   * A token of an account with its tools (K-6), made by the service on the server's own database file: the session route of the
+   * account has no tool choice yet (E-23 will), and nothing but a test needs one here. Returns the value.
+   */
+  jetonOutils: (compte: string, universId: number, nom: string, outils: string[]) => Promise<string>;
   /** Rejects as soon as the server dies by itself (never when `stop` ends it), with `diagnostic`. */
   surveille: () => Promise<never>;
 }
@@ -269,7 +274,18 @@ async function startServerUnlocked(extraEnv: Record<string, string>): Promise<Se
     if (fin === null) return new Promise<never>(() => {});
     throw new Error(`server died (${fin})\n--- server output (tail) ---\n${sortie}`);
   };
-  return { base, pid: child.pid!, stop, sorti: () => fin, sortie: () => sortie, surveille };
+  const jetonOutils = async (compte: string, universId: number, nom: string, outils: string[]): Promise<string> => {
+    const { openDb } = await import('../db/db.js');
+    const { creerJeton } = await import('../services/jetons.js');
+    const { trouverCompte } = await import('../services/comptes.js');
+    const db = openDb(join(dir, 'k.db'));
+    try {
+      return creerJeton(db, trouverCompte(db, compte)!.id, universId, { nom, dureeJours: 30, outils }).valeur;
+    } finally {
+      db.close();
+    }
+  };
+  return { base, pid: child.pid!, stop, sorti: () => fin, sortie: () => sortie, surveille, jetonOutils };
 }
 
 /**

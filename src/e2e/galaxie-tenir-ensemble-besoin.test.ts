@@ -23,6 +23,7 @@ interface Monde {
   uid: number;
   gid: number;
   cookies: Record<string, string>;
+  jetonOutils: (compte: string, universId: number, nom: string, outils: string[]) => Promise<string>;
 }
 
 async function connexion(base: string, compte: string): Promise<string> {
@@ -40,7 +41,7 @@ async function monde(): Promise<Monde> {
   tmpDirs.push(dir);
   const srv = await startServer({ KANEVAS_SANS_SEMIS: '', DB_PATH: join(dir, 'k.db') });
   servers.push(srv);
-  const m: Monde = { base: srv.base, uid: 0, gid: 0, cookies: {} };
+  const m: Monde = { base: srv.base, uid: 0, gid: 0, cookies: {}, jetonOutils: srv.jetonOutils };
   for (const c of ['antor', 'lea', 'teo', 'mira', 'roxane']) m.cookies[c] = await connexion(m.base, c);
   const univers = (await (await fetch(`${m.base}/api/univers`, { headers: { cookie: m.cookies.antor } })).json()) as Any[];
   m.uid = univers.find((u) => u.nom === "Éneria d'essai").id;
@@ -111,7 +112,11 @@ async function listeCartes(m: Monde, compte: string): Promise<string[]> {
 // ---------------------------------------------------------------- B-65 : import par l'API
 
 async function jeton(m: Monde, outils: string[] | undefined): Promise<string> {
-  const r = await appel(m, 'antor', 'POST', `/api/univers/${m.uid}/jetons`, { nom: 'Script galaxie', dureeJours: 30, ...(outils ? { outils } : {}) });
+  // A tool token has no session door any more (E-23 will offer the tools): the service, on the server's database.
+  if (outils) return m.jetonOutils('antor', m.uid, 'Script galaxie', outils);
+  const r = await appel(m, 'antor', 'POST', '/api/compte/jetons', {
+    nom: 'Script galaxie', dureeJours: 30, acces: { tous: false, univers: [{ universId: m.uid, niveau: 'ecriture' }] },
+  });
   assert.equal(r.status, 201, r.texte);
   return r.json.valeur;
 }

@@ -2,7 +2,7 @@
 // Browser checks of the E-18 / E-9 alignment on the mock-ups (docs/maquettes/e18-acces-api.html, e09-fiche-importee.html).
 //
 // TEST PLAN
-//   E-18 à plat   : Jetons and Lots sections are not cards (no .panneau); a token row has a transparent background
+//   E-18 à plat   : the Lots section is not a card (no .panneau)
 //   lot replié    : the « N refusées » count is in the danger colour, the « Clos » pill carries an icon
 //   E-9 menu ⋯    : « Importée · clé … · créée le … » holds on one line (desktop), clé not split from its « · »
 import assert from 'node:assert/strict';
@@ -20,12 +20,6 @@ let ficheId = 0;
 // Every test body runs under the server's watch: a server that dies mid-file fails the running test at once,
 // with its exit (code or signal) and the tail of its output, instead of a mute 30 s page timeout.
 const cas = (nom: string, o: typeof opts, corps: () => Promise<void>) => test(nom, o, () => avecServeur(srv, corps));
-
-/** Creates an active token through the API (the page's session) so a test never relies on another one. */
-async function poserJeton(nom: string): Promise<void> {
-  const r = await antor.request.post(`/api/univers/${uid}/jetons`, { data: { nom, dureeJours: 30 } });
-  assert.equal(r.status(), 201, `création du jeton « ${nom} »`);
-}
 
 before(async () => {
   if (skipBrowser) return;
@@ -68,19 +62,6 @@ cas('E-18 : sections à plat, refusées en rouge, pastille Clos avec icône', op
   assert.equal(await pastilleClos.locator('svg').count(), 1, 'la pastille Clos porte une icône');
 });
 
-cas('E-18 : la clé d’un jeton est dans une tuile 28 px bordée, estompée si révoqué', opts, async () => {
-  await poserJeton('Script tuile');
-  await antor.setViewportSize({ width: 1280, height: 800 });
-  await antor.goto(`/univers/${uid}/acces-api`);
-  const tuile = antor.locator('li[data-jeton="Script tuile"] .ic-ligne').first();
-  await tuile.waitFor();
-  const t = await tuile.evaluate((e: Element) => { const r = e.getBoundingClientRect(); const c = getComputedStyle(e); return { w: r.width, h: r.height, ombre: c.boxShadow, fond: c.backgroundColor }; });
-  assert.equal(Math.round(t.w), 28);
-  assert.equal(Math.round(t.h), 28);
-  assert.notEqual(t.ombre, 'none');
-  assert.notEqual(t.fond, 'rgba(0, 0, 0, 0)', 'un jeton actif a une tuile pleine');
-});
-
 cas('E-18 : au téléphone la clé d’origine d’un lot déplié reste entière', opts, async () => {
   await antor.setViewportSize({ width: 390, height: 800 });
   await antor.goto(`/univers/${uid}/acces-api`);
@@ -114,52 +95,6 @@ cas('E-9 : au téléphone le menu ⋯ garde 12 px de marge de chaque côté', op
   assert.ok(r.left >= 12 && r.right <= 390 - 12, `menu sans marge de 12 px: ${r.left}..${r.right}`);
 });
 
-cas('E-18 : boîte du jeton montré — nom, valeur seule, encadré d’avertissement avec icône, Copier avant « J’ai copié »', opts, async () => {
-  await antor.setViewportSize({ width: 390, height: 800 });
-  await antor.goto(`/univers/${uid}/acces-api`);
-  await antor.getByRole('button', { name: /Nouveau jeton/ }).first().click();
-  const boite = antor.getByRole('dialog');
-  await boite.getByRole('textbox', { name: /Nom/ }).fill('Script boîte');
-  await boite.getByRole('button', { name: 'Créer le jeton' }).click();
-  const face = antor.locator('.face-jeton');
-  await face.waitFor();
-  assert.equal((await face.locator('.lib').innerText()).trim(), 'Script boîte');
-  const valeur = face.locator('code.valeur');
-  const v = await valeur.evaluate((e: Element) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height, lh: parseFloat(getComputedStyle(e).lineHeight) }; });
-  assert.ok(v.h <= v.lh * 1.2 + 14, `valeur sur plusieurs lignes: ${v.h}`);
-  assert.equal(await face.locator('.unefois svg').count(), 1, 'encadré avec icône');
-  assert.match(await face.locator('.unefois').innerText(), /Il ne sera plus jamais affiché/);
-  const fond = await face.locator('.unefois').evaluate((e: Element) => getComputedStyle(e).backgroundColor);
-  assert.notEqual(fond, 'rgba(0, 0, 0, 0)', 'encadré avec fond');
-  const noms = await face.locator('.boite-actions button').allInnerTexts();
-  assert.deepEqual(noms.map((n: string) => n.trim()), ['Copier', 'J’ai copié le jeton']);
-  assert.equal(await face.locator('.boite-actions button').first().locator('svg').count(), 1, 'Copier porte son icône');
-  await face.getByRole('button', { name: 'J’ai copié le jeton' }).click();
-});
-
-cas('E-18 : « Révoqué » en teinte danger, mentions d’une ligne séparées par « · »', opts, async () => {
-  await poserJeton('Script révocation');
-  await antor.setViewportSize({ width: 1280, height: 800 });
-  await antor.goto(`/univers/${uid}/acces-api`);
-  const ligne = antor.locator('li[data-jeton="Script révocation"]');
-  await ligne.waitFor();
-  const sep = await ligne.locator('.meta > span').evaluateAll((els: Element[]) => els.map((e) => getComputedStyle(e, '::after').content));
-  assert.ok(sep.length >= 2);
-  assert.deepEqual(sep.slice(0, -1), sep.slice(0, -1).map(() => '"·"'), 'un « · » après chaque mention sauf la dernière');
-  assert.equal(sep[sep.length - 1], 'none');
-  await ligne.getByRole('button', { name: /Révoquer/ }).click();
-  await antor.getByRole('alertdialog').getByRole('button', { name: 'Révoquer le jeton' }).click();
-  const rev = ligne.locator('.pastille', { hasText: 'Révoqué' });
-  await rev.waitFor();
-  const couleur = (sel: Any) => sel.evaluate((e: Element) => { const c = getComputedStyle(e); return [c.color, c.backgroundColor]; });
-  const [rc, rf] = await couleur(rev);
-  const [nc, nf] = await couleur(antor.locator('.pastille', { hasText: 'Clos' }).first());
-  assert.notEqual(rc, nc, 'texte Révoqué ≠ pastille neutre');
-  assert.notEqual(rf, nf, 'fond Révoqué ≠ pastille neutre');
-  const danger = await antor.evaluate(() => { const d = document.createElement('i'); d.style.color = 'var(--danger)'; document.body.append(d); const c = getComputedStyle(d).color; d.remove(); return c; });
-  assert.equal(rc, danger, 'Révoqué utilise --danger');
-});
-
 cas('E-18 : lot déplié — les raisons des refus partagent la même abscisse (grille de la maquette)', opts, async () => {
   await antor.setViewportSize({ width: 1280, height: 800 });
   await antor.goto(`/univers/${uid}/acces-api`);
@@ -177,47 +112,6 @@ cas('E-18 : lot déplié — les raisons des refus partagent la même abscisse (
   assert.equal(new Set(mesures.map((m: Any) => Math.round(m.cleLeft))).size, 1, 'clés alignées à gauche');
   assert.equal(new Set(mesures.map((m: Any) => Math.round(m.raisonLeft))).size, 1,
     `raisons non alignées : ${JSON.stringify(mesures.map((m: Any) => m.raisonLeft))}`);
-});
-
-cas('E-18 : au téléphone les mentions d’un jeton sont en colonne, sans « · » pendant', opts, async () => {
-  await poserJeton('Script mentions');
-  await antor.setViewportSize({ width: 390, height: 800 });
-  await antor.goto(`/univers/${uid}/acces-api`);
-  const meta = antor.locator('li[data-jeton="Script mentions"] .meta').first();
-  await meta.waitFor();
-  assert.equal(await meta.evaluate((e: Element) => getComputedStyle(e).flexDirection), 'column');
-  const m = await meta.locator('> span').evaluateAll((els: Element[]) => els.map((e) => ({ after: getComputedStyle(e, '::after').content, top: e.getBoundingClientRect().top, left: e.getBoundingClientRect().left })));
-  assert.ok(m.length >= 2, 'au moins deux mentions');
-  assert.ok(m.every((x: Any) => x.after === 'none' || x.after === 'normal'), `séparateur rendu: ${JSON.stringify(m)}`);
-  assert.ok(m.every((x: Any, i: number) => i === 0 || x.top > m[i - 1].top), 'mentions empilées');
-  assert.equal(new Set(m.map((x: Any) => Math.round(x.left))).size, 1, 'mentions alignées à gauche');
-});
-
-cas('E-18 : boîte « Nouveau jeton » — tuile de clé, titre sans empattement, champs espacés une fois, bascule de durée sans puce cernée', opts, async () => {
-  await antor.setViewportSize({ width: 1280, height: 800 });
-  await antor.goto(`/univers/${uid}/acces-api`);
-  await antor.getByRole('button', { name: /Nouveau jeton/ }).first().click();
-  const boite = antor.getByRole('dialog');
-  await boite.locator('h2').waitFor();
-  assert.equal(await boite.locator('.tuile-jeton svg').count(), 1, 'tuile avec l’icône clé');
-  const titre = await boite.locator('h2').evaluate((e: Element) => getComputedStyle(e).fontFamily);
-  assert.ok(!/Fraunces|serif/i.test(titre.replace(/sans-serif/gi, '')), `titre en police à empattement : ${titre}`);
-  const g = await boite.locator('form').evaluate((f: Element) => {
-    const champs = [...f.querySelectorAll('.champ')] as HTMLElement[];
-    return { gap: parseFloat(getComputedStyle(f).rowGap), margins: champs.map((c) => parseFloat(getComputedStyle(c).marginBottom) + parseFloat(getComputedStyle(c).marginTop)) };
-  });
-  assert.equal(g.gap, 16, 'écart de 16 px de la maquette');
-  assert.ok(g.margins.every((m: number) => m === 0), `marges de champ en plus du gap : ${g.margins}`);
-  const choisi = boite.locator('.segments label:has(input:checked)');
-  const c = await choisi.evaluate((e: Element) => {
-    const s = getComputedStyle(e);
-    return { fond: s.backgroundColor, ombre: s.boxShadow, rayon: parseFloat(s.borderTopLeftRadius), h: e.getBoundingClientRect().height };
-  });
-  assert.notEqual(c.fond, 'rgba(0, 0, 0, 0)', 'segment choisi plein');
-  assert.ok(c.ombre.includes('1px'), `segment choisi sans cerne : ${c.ombre}`);
-  assert.equal(c.h, 28);
-  assert.ok(c.rayon < 14, `puce arrondie (${c.rayon}px)`);
-  await boite.getByRole('button', { name: /Annuler/ }).click();
 });
 
 cas('E-9 : le menu ⋯ est à l’extrémité droite de l’en-tête et ne recouvre pas le titre', opts, async () => {

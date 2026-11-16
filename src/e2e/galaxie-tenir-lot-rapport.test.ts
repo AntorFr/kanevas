@@ -46,9 +46,7 @@ async function preparer(): Promise<{ page: Any; E: number; bord: number; valeur:
   const us = (await (await page.request.get('/api/univers')).json()) as Any[];
   const E = us.find((u) => u.nom === "Éneria d'essai").id as number;
   const bord = ((await (await page.request.post(`/api/univers/${E}/outils/swn/galaxie/cartes`, { data: { titre: 'Galaxie du bord' } })).json()) as Any).id as number;
-  const j = await page.request.post(`/api/univers/${E}/jetons`, { data: { nom: 'Script galaxie', dureeJours: 30, outils: ['swn/galaxie'] } });
-  assert.equal(j.status(), 201);
-  const valeur = ((await j.json()) as Any).valeur as string;
+  const valeur = await srv.jetonOutils('antor', E, 'Script galaxie', ['swn/galaxie']);
   return { page, E, bord, valeur, base: srv.base };
 }
 async function pousser(page: Any, E: number, bord: number, valeur: string, lotId: number, corps: unknown): Promise<Any> {
