@@ -73,7 +73,7 @@ export function placerEtiquettes(corps: CorpsEtiquette[], vue: VueEtiquettes, me
     if (!replie && plein) {
       const longueurs = [...Array(Math.max(0, [...plein].length - 2)).keys()].map((k) => [...plein].length - k);
       for (let k = 0; k < longueurs.length && !trouve; k++) {
-        const texte = k === 0 ? plein : raccourci(plein, longueurs[k]);
+        const texte = k === 0 ? plein : raccourci(plein, longueurs[k] ?? 2);
         const m = mesurer(texte);
         for (const d of DISTANCES) {
           const r = candidats(c, m, d).find(libre);
