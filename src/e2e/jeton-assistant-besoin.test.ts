@@ -1,3 +1,4 @@
+// ecrans: administration
 // Black-box tests of `kanevas-import-jeton-assistant` written from the need only (B-51, P-15, E-5 panel,
 // docs/ecrans.md "Détail de l'écran de kanevas-import-jeton-assistant", AD-112 route contract), not from the code.
 // Real server in stub mode (the stub `setup-token` accepts the code `bouchon`), real Chromium.

@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Feature-level check of kanevas-import-mediatheque, from the last sentence of its exit criterion:
 // « Les pièces jointes et illustrations du bouchon d'avant la migration s'affichent toujours, une pièce secrète
 // réservée au MJ. » (docs/donnees.md: a pièce `secrete`, or one in a section players do not read, becomes « mj »).

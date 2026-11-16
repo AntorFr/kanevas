@@ -1,3 +1,4 @@
+// ecrans: fiche
 // The « Fiches liées » block shows no group before the types of the universe are known (B-64, AD-120):
 // the plural label must never fall back to the raw type (« personnage (2) ») while the list loads.
 import assert from 'node:assert/strict';

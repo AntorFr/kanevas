@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Revérification de kanevas-images (B-25, échec) : écrit depuis le besoin (docs/ecrans.md, « Les échecs,
 // dits par l'assistant » et critère « en bouchon, sa demande contient « échec » »), pas depuis le code.
 // Une génération en échec est une réponse de l'assistant (message normal du fil), jamais la bulle

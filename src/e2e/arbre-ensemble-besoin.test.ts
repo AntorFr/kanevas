@@ -1,3 +1,4 @@
+// ecrans: fiche, vue-ensemble
 // Feature-level tests of kanevas-import-arbre (B-35, P-12, P-14, P-10; E-8 tree, E-9 trail, « Contient »,
 // « Déplacer sous… »; AD-99, AD-104), written from the feature's exit criterion and docs/parcours.md /
 // docs/ecrans.md only. World: the stub seed (« Lame d'Ébène », « Essai Kanka »). Real server in stub mode,

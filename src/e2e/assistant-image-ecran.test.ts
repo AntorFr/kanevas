@@ -1,3 +1,4 @@
+// ecrans: fiche, vue-ensemble
 // Black-box tests of kanevas-im-ecran-image: the « Image attachée » block of E-12 and the long wait
 // (docs/ecrans.md § `kanevas-images`), in a real Chromium against the real server in stub mode.
 //

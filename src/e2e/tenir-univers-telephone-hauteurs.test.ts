@@ -1,3 +1,4 @@
+// ecrans: parametres
 // E-14 « Supprimer l'univers » box on a phone: the danger button is as tall as « Annuler », its label on one line, nothing overflows.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';

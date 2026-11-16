@@ -1,3 +1,4 @@
+// ecrans: parametres
 // Browser test of kanevas-outils-textes (E-20, « Import refusals »), written from the fiche and docs/ecrans.md — not from the code.
 // Need: the import refusal of an element whose `vise` is missing reads « … champ vise : élément visé exigé. Cet élément n’est pas appliqué. »
 // on the report screen, with ONE full stop after « exigé ». Invented trial catalogue; screenshots in /tmp/cap-textes (never in the workspace).

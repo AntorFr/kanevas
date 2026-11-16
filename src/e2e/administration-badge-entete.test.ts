@@ -1,3 +1,4 @@
+// ecrans: administration
 // Independent black-box tests of the re-check of `kanevas-recours-admin` (E-5), written from the need only
 // (docs/ecrans.md E-5, docs/charte.md, docs/maquettes/e05-administration.html). Real server in stub mode,
 // real Chromium. Expected colours are the charte's literals, not read back from the product.

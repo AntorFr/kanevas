@@ -1,3 +1,4 @@
+// ecrans: cartes, outil-cible, systeme
 // Black-box tests of the feature kanevas-outils-galaxie-lire (the galaxy map, read side), written from its
 // sheet (« Livre », exit criterion), docs/parcours.md (B-68 to B-72, P-18 steps 1 to 3) and docs/ecrans.md
 // (E-21, E-10) — not from the code. Real server in stub mode WITH its starting world (« Éneria d'essai »,
