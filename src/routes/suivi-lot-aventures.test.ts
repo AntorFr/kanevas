@@ -22,6 +22,35 @@ describe('Preparation tasks, rights and bounds', () => {
     assert.equal(w.n('taches_preparation'), 1, 'only the accepted one is written');
   });
 
+  test('every category of the list is accepted; a blank label or an unknown category is refused (400)', async () => {
+    const w = await monter();
+    const c = await w.campagneOuverte('Couronne');
+    const url = `${w.base}/fiches/${c.id}/taches`;
+    for (const cat of ['monstres', 'pnj', 'cartes', 'deroulements', 'autre']) {
+      assert.equal((await w.appel(w.antor, 'POST', url, { categorie: cat, libelle: `Tâche ${cat}` })).statusCode, 201, cat);
+    }
+    for (const [cat, lib] of [['autre', '   '], ['magie', 'Un libellé']] as const) {
+      assert.equal((await w.appel(w.antor, 'POST', url, { categorie: cat, libelle: lib })).statusCode, 400, `${cat}/${lib}`);
+    }
+    assert.equal(w.n('taches_preparation'), 5);
+  });
+
+  test('a GM of another universe, an unknown id, a non-adventure sheet and the path of another universe get the same 404 on tasks, nothing is written', async () => {
+    const w = await monter();
+    const c = await w.campagneOuverte('Couronne');
+    const lieu = await w.creer(w.antor, { type: 'lieu', titre: 'Port-Test' });
+    await w.appel(w.antor, 'POST', `${w.base}/fiches/${c.id}/taches`, { categorie: 'autre', libelle: 'Plan de la crypte' });
+    const autre = (await w.appel(w.mira, 'POST', '/api/univers', { nom: 'Ailleurs' })).json();
+    for (const [h, id] of [[w.lea, c.id], [w.mira, c.id], [w.antor, lieu.id], [w.antor, 999999]] as const) {
+      const g = await w.appel(h, 'GET', `${w.base}/fiches/${id}/taches`);
+      assert.equal(g.statusCode, 404);
+      assert.ok(!g.body.includes('Plan de la crypte'));
+      assert.equal((await w.appel(h, 'POST', `${w.base}/fiches/${id}/taches`, { categorie: 'autre', libelle: 'Intrus' })).statusCode, 404);
+    }
+    assert.equal((await w.appel(w.antor, 'GET', `/api/univers/${autre.id}/fiches/${c.id}/taches`)).statusCode, 404);
+    assert.equal(w.n('taches_preparation'), 1);
+  });
+
   test('a player lists and checks no task (404) and the task stays unchecked', async () => {
     const w = await monter();
     const c = await w.campagneOuverte('Couronne');
@@ -58,6 +87,22 @@ describe('Session reports, refusals and what a player reads', () => {
     }
     assert.equal(w.n('fiches'), avant);
     assert.ok(!(await w.appel(w.antor, 'GET', `${w.base}/comptes-rendus`)).body.includes('Pirate'));
+  });
+
+  test('the filter by adventure gives only its reports for a reader, and 404 for an adventure the caller cannot read (closed, other campaign)', async () => {
+    const w = await monter();
+    const c = await w.campagneOuverte('Couronne');
+    const acte = await w.scenarioFerme(c.id, 'Acte II');
+    const fermee = await w.creer(w.antor, { type: 'aventure', titre: 'Brumes', sections: [{ titre: 'P', joueursLisent: false }] });
+    await w.appel(w.antor, 'POST', `${w.base}/comptes-rendus`, { campagneId: c.id, titre: 'Séance Couronne', texte: 'x' });
+    await w.appel(w.antor, 'POST', `${w.base}/comptes-rendus`, { campagneId: acte.id, titre: 'Séance Acte II', texte: 'x' });
+    const ok = await w.appel(w.lea, 'GET', `${w.base}/comptes-rendus?campagne=${c.id}`);
+    assert.equal(ok.statusCode, 200);
+    const l = ok.json().comptesRendus as { campagneId: number }[];
+    assert.ok(l.length >= 1 && l.every((x) => x.campagneId === c.id));
+    assert.ok(!ok.body.includes('Séance Acte II'));
+    assert.equal((await w.appel(w.lea, 'GET', `${w.base}/comptes-rendus?campagne=${acte.id}`)).statusCode, 404);
+    assert.equal((await w.appel(w.lea, 'GET', `${w.base}/comptes-rendus?campagne=${fermee.id}`)).statusCode, 404);
   });
 
   test('a failed creation of a report leaves no trace in the list', async () => {

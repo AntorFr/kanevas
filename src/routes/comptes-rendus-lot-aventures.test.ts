@@ -58,6 +58,17 @@ describe('Session reports lists', () => {
     assert.equal(JSON.stringify(await lire(w.lea)), avantLea, 'closed and deleted look the same to a player');
   });
 
+  test('the GM outside player mode reads « campagneSupprimee »; in player mode the server does not say it', async () => {
+    const w = await monter();
+    const c = await w.campagneOuverte('Couronne');
+    await w.appel(w.antor, 'POST', `${w.base}/comptes-rendus`, { campagneId: c.id, titre: 'CR orphelin MJ', texte: 'a' });
+    assert.equal((await w.appel(w.antor, 'DELETE', `${w.base}/fiches/${c.id}`)).statusCode, 204);
+    const mj = (await w.appel(w.antor, 'GET', `${w.base}/comptes-rendus`)).json().comptesRendus as Record<string, unknown>[];
+    assert.equal(mj.find((x) => x.titre === 'CR orphelin MJ')!.campagneSupprimee, true);
+    const joueur = await w.appel(w.antor, 'GET', `${w.base}/comptes-rendus?mode=joueur`);
+    assert.doesNotMatch(joueur.body, /"campagneSupprimee":true/);
+  });
+
   test('the player-visible list excludes an account with no role: 404 for Mira, who is not a member of this universe', async () => {
     const w = await monter();
     assert.equal((await w.appel(w.mira, 'GET', `${w.base}/comptes-rendus`)).statusCode, 404);
