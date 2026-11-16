@@ -62,3 +62,5 @@ main.principal:has(> .editeur-carte), body.asst-present main.principal:has(> .ed
 .editeur-choix-fiche-ligne { width: 100%; text-align: left; padding: var(--e-2) var(--e-3); background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-item); color: var(--texte); font: inherit; cursor: pointer; }
 .editeur-choix-fiche-ligne:hover { background: var(--surface-2); }
 .editeur-choix-fiche-ligne small { color: var(--texte-3); }
+.editeur-panneau > .onglets { display: flex; margin: 0; }
+.editeur-panneau > .onglets button { flex: 1 1 0; min-width: 0; padding: 0 var(--e-1); font-size: var(--t-13); white-space: nowrap; }
