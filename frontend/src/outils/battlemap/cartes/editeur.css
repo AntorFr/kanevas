@@ -64,3 +64,15 @@ main.principal:has(> .editeur-carte), body.asst-present main.principal:has(> .ed
 .editeur-choix-fiche-ligne small { color: var(--texte-3); }
 .editeur-panneau > .onglets { display: flex; margin: 0; }
 .editeur-panneau > .onglets button { flex: 1 1 0; min-width: 0; padding: 0 var(--e-1); font-size: var(--t-13); white-space: nowrap; }
+
+/* Library: the category bar wraps instead of being cut in the 296 px panel; the top bar stays within 390 px. */
+.editeur-bibliotheque .segments { flex-wrap: wrap; }
+.editeur-bibliotheque .segments [role="radio"] { flex: 1 1 auto; min-width: 0; padding: 0 var(--e-3); }
+@media (max-width: 600px) {
+  .editeur-haut { gap: var(--e-2); }
+  .editeur-visibilite { width: 100%; flex: 1 1 100%; }
+}
+/* Phone / tablet: the panel is an overlay, so the global assistant button would cover the zoom « + »: lift the zoom above it. */
+@media (max-width: 768px) {
+  body.asst-present .canevas-zoom { bottom: calc(var(--e-5) + 48px + var(--e-3)); }
+}

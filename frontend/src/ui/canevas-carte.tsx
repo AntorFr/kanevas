@@ -7,7 +7,7 @@ import type { Empreintes, Point } from '../outils/battlemap/cartes/geometrie';
 import { boiteElement } from '../outils/battlemap/cartes/geometrie';
 import './carte-editeur.css';
 
-export const ZOOM_PETIT = 0.25;
+export const ZOOM_PETIT = 0.1;
 export const ZOOM_GRAND = 4;
 
 /** The image of an asset: loading, a placeholder for a removed one, or the picture. */
@@ -24,7 +24,7 @@ function jeton(el: Element, nom: string): string {
 
 /**
  * The canvas of the map (charte, « Canevas de carte »): Canvas 2D drawn from the document it is given (the server sent it
- * filtered; this draws, it filters nothing). Wheel / pinch zoom 25–400 %, pan by space-drag, middle-drag or two fingers.
+ * filtered; this draws, it filters nothing). Wheel / pinch zoom 10–400 %, pan by space-drag, middle-drag or two fingers.
  * The tools' gestures are `Interaction`s made by `commencer`; this component only turns the pointer into cell units.
  */
 export function CanevasCarte({
