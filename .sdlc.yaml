@@ -11,7 +11,9 @@ deploiement:
 tests:
   commande: npm ci && npm run tests:attestes
   local: npm ci && npm run tests:local
-  rejouer: node scripts/rejouer-tests.mjs {tests}
+  ecrans: npm ci && npm run tests:ecrans -- {base}
+  fiche: npm ci && npm run tests:fiche -- {base}
+  rejouer: npm ci && node scripts/rejouer-tests.mjs {tests}
   rapport: resultats.tap
   format: tap
   delai: 90m

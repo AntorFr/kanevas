@@ -1,3 +1,4 @@
+// ecrans: carte, cartes, fiche, vue-ensemble
 // Black-box tests of kanevas-cartes-graphes written from the need (docs/parcours.md B-12 (carte), B-22,
 // B-23, B-29 ; P-3 step 6, P-6 step 3, P-9 ; docs/ecrans.md "Détail des écrans de kanevas-cartes-graphes"
 // : E-10, E-11, bloc « Cartes visibles » de E-3), not from the code. Expected values are literals taken

@@ -1,3 +1,4 @@
+// ecrans: carte, cartes
 // Black-box tests of kanevas-cg-ecran-graphe, written from its exit criterion and
 // docs/ecrans.md « E-11 Carte » (graphe). Real server in stub mode + real Chromium.
 import assert from 'node:assert/strict';

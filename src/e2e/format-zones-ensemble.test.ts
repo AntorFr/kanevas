@@ -1,3 +1,4 @@
+// ecrans: outil-cible
 // Feature-level black-box tests of kanevas-outils-format-zones (B-84): written from the feature sheet (« Livre », exit
 // criterion), docs/parcours.md (B-84, P-18) and docs/ecrans.md (E-21), then from the T-8 / T-9 / Z-2 / Z-3 / Z-5 / Z-7 contracts of
 // ARCHITECTURE.md for what is delivered without a screen (session API, import by the API, GM document). Real server in stub

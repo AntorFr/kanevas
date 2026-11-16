@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Browser check of the « Choisir un fichier » picker (kanevas-mediatheque-fiche, B2 + B4), written from the
 // arbitration and docs/maquettes/e19-mediatheque.html, not from the code. Real server in stub mode, real Chromium.
 //

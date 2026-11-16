@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-monde at the screen (E-12 block « Mise à jour proposée », docs/ecrans.md
 // § `kanevas-monde`; critère de sortie of the feature), in a real Chromium against the real server in stub mode.
 // Captures go to $MONDE_CAPTURES (default /tmp/monde-captures), outside the tree: proofs of the moment.

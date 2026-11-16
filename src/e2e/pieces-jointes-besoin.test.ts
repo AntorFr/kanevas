@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of kanevas-fichiers at the level of the whole feature (B-24, P-3 step 4, P-7,
 // E-9 « bloc Pièces jointes »), written from docs/parcours.md and docs/ecrans.md, not from the code.
 // Real server in stub mode (AD-55), real Chromium. Antor is the GM; Léa, Teo players; admin the instance admin.

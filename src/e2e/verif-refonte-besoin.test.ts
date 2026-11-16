@@ -1,3 +1,4 @@
+// ecrans: accueil, comptes-rendus, creer-univers, fiche, fiches, membres, parametres, vue-ensemble
 // kanevas-refonte-visuelle, ensemble level: written from the feature's « Livre », its critère de sortie,
 // docs/ecrans.md (« Détail de kanevas-refonte-visuelle », barre latérale, états) and docs/charte.md,
 // without reading the code. A real Chromium on the stub app (seeded world: Lame d'Ébène, Antor MJ,

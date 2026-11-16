@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Tests d'ensemble de la feature kanevas-harnais-preuve, écrits depuis son « Livre » :
 //  L1  attendre() attend un signe visible du résultat, plus le silence du réseau ;
 //  L2  les attentes fixes de page sont retirées ;

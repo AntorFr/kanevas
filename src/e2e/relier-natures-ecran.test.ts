@@ -1,3 +1,4 @@
+// ecrans: carte, fiche, vue-ensemble
 // Black-box tests of kanevas-fiches-liees-natures-ecran, from the task's exit criterion and
 // docs/ecrans.md « E-9 — Relier à une fiche, with a nature » (« The form, state by state »), not from the code.
 // Real server in stub mode WITH its starting world + real Chromium. Expected texts are literals of the doc.

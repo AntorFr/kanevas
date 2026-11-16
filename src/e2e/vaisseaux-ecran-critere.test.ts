@@ -1,3 +1,4 @@
+// ecrans: fiche, outil, vue-ensemble
 // Browser test of kanevas-outils-vaisseaux-ecran, written from the exit criterion and docs/ecrans.md (E-22, E-9)
 // — not from the code. Stub world with the seed. Screenshots go to /tmp/cap-vx (never into the workspace).
 import assert from 'node:assert/strict';
