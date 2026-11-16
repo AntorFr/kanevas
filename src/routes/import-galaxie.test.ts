@@ -155,7 +155,7 @@ test('lot clos : 409 lot_clos ; sans lot : aucun lot créé, rapport dans la ré
   assert.equal(s.json().natures.systemes.creees, 4);
 });
 
-test('portées : contenu, autre outil, révoqué, expiré, plus MJ → 401 sans lot ; autre univers → 404', async () => {
+test('portées : contenu, autre outil, révoqué, expiré → 401 sans lot ; compte devenu joueur → refusé sans lot, plus 401 ; autre univers → 404', async () => {
   const w = await monde();
   const lots0 = w.nb('lots_import');
   const non = async (valeur: string) => {
@@ -178,7 +178,11 @@ test('portées : contenu, autre outil, révoqué, expiré, plus MJ → 401 sans 
   (w.app as any).horloge = ancienne;
   const mira = w.tok('mira', [G]).valeur;
   w.app.db.prepare("UPDATE membres SET role = 'joueur' WHERE compte_id = ? AND univers_id = ?").run(w.id('mira'), w.E);
-  await non(mira);
+  // B-46 revised: a lost role is no longer a 401, the token falls to what a player may (import writes need a GM).
+  const ecrit = await w.put(mira, fichier());
+  assert.ok([403, 404].includes(ecrit.statusCode), `write ${ecrit.statusCode}`);
+  const lot = await w.req(mira, 'POST', `/lots?outil=${G}`);
+  assert.ok([403, 404].includes(lot.statusCode), `a player opens no batch: ${lot.statusCode}`);
   assert.equal(w.nb('lots_import'), lots0);
   const t = w.tok('antor', [G]).valeur;
   const autre = await w.req(t, 'PUT', `/outils/swn/galaxie/galaxies/${w.gal}`, fichier(), w.K);

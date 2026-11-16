@@ -161,7 +161,7 @@ test('B-45 player > Léa lists no token, creates none and sees no batch; only An
   const cree = await m.rest(m.lea, 'POST', `/api/univers/${m.essai}/jetons`, { nom: 'x', dureeJours: 30 });
   assert.notEqual(cree.statusCode, 201, 'a player creates no token');
   assert.ok(!/kvs_/.test(cree.body));
-  assert.equal((m.app.db.prepare('SELECT COUNT(*) AS n FROM jetons_api WHERE univers_id = ?').get(m.essai) as { n: number }).n, 1);
+  assert.equal((m.app.db.prepare('SELECT COUNT(*) AS n FROM jetons_univers WHERE univers_id = ?').get(m.essai) as { n: number }).n, 1);
 });
 
 // ---------------------------------------------------------------- B-46
@@ -215,7 +215,7 @@ test('B-46 refusals > an absent, unknown or malformed token always gets the same
   assert.ok(!(await m.rest(m.antor, 'GET', `/api/univers/${m.essai}/fiches?type=lieu`)).body.includes('Port-Sel'));
 });
 
-test('B-46 demoted GM > Mira’s token works while she is GM, receives 401 once a player, and is listed inactive; Antor’s token still works', async () => {
+test('B-46 demoted GM > Mira’s token works while she is GM, falls to a player’s rights (no 401, no batch, no write) once a player, and is listed inactive; Antor’s token still works', async () => {
   const m = await monde();
   const jetonAntor = await m.jeton();
   const ajout = await m.rest(m.antor, 'POST', `/api/univers/${m.essai}/membres`, { username: 'mira', role: 'mj' });
@@ -225,10 +225,13 @@ test('B-46 demoted GM > Mira’s token works while she is GM, receives 401 once 
   const miraId = (m.app.db.prepare('SELECT id FROM comptes WHERE username = ?').get('mira') as { id: number }).id;
   const pa = await m.rest(m.antor, 'PATCH', `/api/univers/${m.essai}/membres/${miraId}`, { role: 'joueur' });
   assert.equal(pa.statusCode, 200, pa.body);
+  // B-46 revised (AD-144, AD-jetons-1): a lost role is no longer a 401; the token falls to what a player may,
+  // and the batch and import writers need a GM.
+  assert.equal((await m.imp(jetonMira, 'GET', '')).statusCode, 200, 'a player still reads the context');
   const r = await m.imp(jetonMira, 'POST', '/lots');
-  assert.equal(r.statusCode, 401);
-  assert.deepEqual(r.json(), UNIQUE);
-  assert.equal((await m.pousser(jetonMira, 'lieu:port-sel', PORT_SEL)).statusCode, 401);
+  assert.ok([403, 404].includes(r.statusCode), `a player opens no batch: ${r.statusCode}`);
+  const p = await m.pousser(jetonMira, 'lieu:port-sel', PORT_SEL);
+  assert.ok([403, 404].includes(p.statusCode), `a player writes no sheet: ${p.statusCode}`);
   assert.equal((await m.imp(jetonAntor, 'GET', '')).statusCode, 200, 'Antor’s token is untouched');
   const ligne = (await jetons(m)).find((j) => j.nom === 'Jeton de Mira')!;
   assert.equal(ligne.actif, false, 'listed as inactive');

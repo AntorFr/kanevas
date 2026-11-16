@@ -530,16 +530,18 @@ describe('B-65 jeton à portée d’outil', () => {
     assert.equal((await sys(miraJeton, 'm2')).status, 200);
   });
 
-  it('Antor devenu Joueur: son jeton reçoit 401 sur le catalogue du système comme de l’univers', async () => {
+  it('Antor devenu Joueur: plus de 401 (B-46 révisé) ; le catalogue de l’univers lui est refusé, celui du système reste à son responsable', async () => {
     const m = await monde();
     const antorJeton = await creer(m, { nom: 'antor', dureeJours: 7, outils: ['essai/g'] });
     const antorId = (await m.antor('GET', `/api/univers/${m.E}/membres`)).json.find((x: Any) => x.username === 'antor').compteId;
     const r = await m.mira('PATCH', `/api/univers/${m.E}/membres/${antorId}`, { role: 'joueur' });
     assert.ok(r.status < 300, `demotion ${r.status} ${r.texte}`);
-    for (const niveau of ['systeme', 'univers']) {
-      const x = await jeton(m.base, 'PUT', `${IMP(m)}?niveau=${niveau}`, antorJeton, fichier12());
-      assert.equal(x.status, 401, niveau);
-    }
-    assert.deepEqual(await tout(m.mira, CAT(m.E)), []);
+    // The universe level needs a GM of that universe: the player's token is refused, never a 401.
+    const u = await jeton(m.base, 'PUT', `${IMP(m)}?niveau=univers`, antorJeton, fichier12());
+    assert.ok([403, 404].includes(u.status), `univers ${u.status}`);
+    // The system level is its responsible's, who is still a GM of another universe attached to it: the account's right.
+    const s = await jeton(m.base, 'PUT', `${IMP(m)}?niveau=systeme`, antorJeton, fichier12());
+    assert.equal(s.status, 200);
+    assert.deepEqual((await tout(m.mira, CAT(m.E))).filter((e: Any) => e.origine === 'univers'), [], 'nothing written at the universe level');
   });
 });
