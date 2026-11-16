@@ -207,6 +207,7 @@ test('Documents : un PDF de 2,4 Mo dit « 2,4 Mo » et « Document PDF »', opts
 
 test('envoi long : « Envoi… » + pourcentage + Annuler, qui n\'ajoute rien', opts, async () => {
   await ouvrir(antor);
+  const avant = (await antor.request.get(`/api/univers/${uid}/fichiers`).then((r: Any) => r.json())).fichiers.length;
   await antor.route('**/api/univers/*/fichiers', async (route: Any) => {
     if (route.request().method() !== 'POST') return route.continue();
     await new Promise((r) => setTimeout(r, 15000)).catch(() => undefined);
@@ -221,6 +222,8 @@ test('envoi long : « Envoi… » + pourcentage + Annuler, qui n\'ajoute rien', 
   await ligne.getByRole('button', { name: 'Annuler' }).click();
   await attendreAbsent(ligne);
   await antor.unroute('**/api/univers/*/fichiers');
+  const apres = (await antor.request.get(`/api/univers/${uid}/fichiers`).then((r: Any) => r.json())).fichiers.length;
+  assert.equal(apres, avant);
   assert.equal(await antor.getByText(/Envoi…/).count(), 0);
 });
 
