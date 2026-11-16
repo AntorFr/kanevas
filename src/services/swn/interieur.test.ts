@@ -67,6 +67,20 @@ function definir(w: W, o: { secret?: boolean; transition?: number | null } = {})
   return sid;
 }
 
+type L = { cle: string; genre: string; type: string; parent_cle: string | null; etoile_rang: number; orbite: number | null };
+/** Independent reference of E-23's order: star, companions; planets by orbit each followed by its moons; comets and anomalies by orbit. */
+function ordreE23(as: L[]): L[] {
+  const o = (x: L) => x.orbite ?? 0;
+  const etoiles = as.filter((x) => x.genre === 'etoile').sort((x, y) => x.etoile_rang - y.etoile_rang);
+  const planetes = as.filter((x) => x.genre === 'planete' && x.type !== 'anomalie').sort((x, y) => o(x) - o(y));
+  const autres = as.filter((x) => x.genre === 'comete' || (x.genre === 'planete' && x.type === 'anomalie')).sort((x, y) => o(x) - o(y));
+  return [...etoiles, ...planetes.flatMap((p) => [p, ...as.filter((l) => l.genre === 'lune' && l.parent_cle === p.cle)]), ...autres];
+}
+const ordreZones = <T extends { forme: string; parametres: Record<string, unknown> }>(fs: T[]): T[] => {
+  const o = (f: T) => Number(f.forme === 'anneau' ? f.parametres.de : f.parametres.orbite);
+  return [...fs].sort((x, y) => o(x) - o(y) || (x.forme === y.forme ? 0 : x.forme === 'anneau' ? -1 : 1));
+};
+
 test('système tiré : deux lectures identiques, état tire, nom nul, MJ et joueuse mêmes corps', () => {
   const w = monde();
   const { q, r } = cible;
@@ -81,7 +95,7 @@ test('système tiré : deux lectures identiques, état tire, nom nul, MJ et joue
   assert.ok(a.transition > 0);
 });
 
-test('vingt systèmes de la graine neutre : structure, comptes et réels des fixtures (1e-9), ordre par rang puis planètes/lunes/comètes', () => {
+test('vingt systèmes de la graine neutre : structure, comptes et réels des fixtures (1e-9), ordre E-23', () => {
   const w = monde();
   assert.equal(FS.systemes.length, 20);
   for (const s of FS.systemes) {
@@ -106,23 +120,17 @@ test('vingt systèmes de la graine neutre : structure, comptes et réels des fix
       assert.equal(x.forme, e.forme); assert.equal(x.etoile_rang, e.etoile_rang);
     }
     assert.ok(Math.abs(v.transition - att.transition) < 1e-9);
-    // Order: rank non-decreasing; a moon right after its planet or a sibling moon; comets after planets of the same rank.
-    for (let i = 1; i < v.astres.length; i++) {
-      const p = v.astres[i - 1]!, c = v.astres[i]!;
-      assert.ok(p.etoile_rang <= c.etoile_rang, 'rang');
-      if (c.genre === 'lune') assert.ok(p.cle === c.parent_cle || (p.genre === 'lune' && p.parent_cle === c.parent_cle), 'lune après sa planète');
-    }
-    const ps = v.astres.filter((x) => x.genre === 'planete' && x.etoile_rang === 0).map((x) => x.orbite!);
-    assert.deepEqual(ps, [...ps].sort((x, y) => x - y));
+    assert.deepEqual(v.astres.map((x) => x.cle), ordreE23(v.astres).map((x) => x.cle), `${s.entree.q},${s.entree.r} ordre E-23`);
+    assert.deepEqual(v.formations.map((x) => x.cle), ordreZones(v.formations).map((x) => x.cle), 'zones');
   }
 });
 
-test('système défini : ses lignes (anomalie et lune comprises), état defini, pas le tirage, ordre AD-systeme-3', () => {
+test('système défini : ses lignes (anomalie et lune comprises), état defini, pas le tirage, ordre E-23', () => {
   const w = monde();
   definir(w);
   const v = lireInterieur(w.db, w.a('lea'), w.univers, w.g, cible.q, cible.r);
   assert.equal(v.etat, 'defini'); assert.equal(v.nom, 'Port défini');
-  assert.deepEqual(v.astres.map((x) => x.cle), ['e', 'p-proche', 'l1', 'ano', 'p-loin', 'c']);
+  assert.deepEqual(v.astres.map((x) => x.cle), ['e', 'p-proche', 'l1', 'p-loin', 'ano', 'c']);
   assert.equal(v.astres.find((x) => x.cle === 'ano')!.type, 'anomalie');
   const lune = v.astres[2]!;
   assert.equal(lune.parent_cle, 'p-proche'); assert.equal(lune.orbite, null); assert.equal(lune.nom, 'Petite lune');
@@ -254,4 +262,28 @@ test('0038 : montée depuis 0037 avec le semis, systèmes inchangés, transition
   assert.ok(apres.every((l) => l.transition === null));
   for (const t of ['swn_astres', 'swn_formations']) assert.equal((db.prepare(`SELECT COUNT(*) n FROM ${t}`).get() as any).n, 0);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
+});
+
+test('ordre exact E-23 : étoile, 2 compagnes, 3 planètes dont une anomalie, lunes, comète, zones (système défini)', () => {
+  const w = monde();
+  const sid = w.poser(cible.q, cible.r, { nom: 'Ordre' });
+  // Inserted in a deliberately wrong order.
+  w.astre(sid, 'c1', 'comete', 'comete', { orbite: 2 });
+  w.astre(sid, 'ano', 'planete', 'anomalie', { orbite: 3.5 });
+  const p3 = w.astre(sid, 'p3', 'planete', 'glace', { orbite: 5 });
+  w.astre(sid, 'l3', 'lune', 'glace', { parent: p3, orbite: null });
+  const p2 = w.astre(sid, 'p2', 'planete', 'gazeux', { orbite: 3 });
+  w.astre(sid, 'l2b', 'lune', 'rocheux', { parent: p2, orbite: null });
+  w.astre(sid, 'k2', 'etoile', 'naine_rouge', { rang: 2, orbite: 0.8 });
+  const p1 = w.astre(sid, 'p1', 'planete', 'rocheux', { orbite: 1 });
+  w.astre(sid, 'l1', 'lune', 'rocheux', { parent: p1, orbite: null });
+  w.astre(sid, 'k1', 'etoile', 'naine_rouge', { rang: 1, orbite: 0.5 });
+  w.astre(sid, 'e', 'etoile', 'jaune', { orbite: 0 });
+  const f = w.db.prepare('INSERT INTO swn_formations (systeme_id, cle, forme, nom, parametres) VALUES (?,?,?,?,?)');
+  f.run(sid, 'nuage-2', 'nuage', null, '{"orbite":2,"rayon":0.5}');
+  f.run(sid, 'anneau-5', 'anneau', null, '{"de":5,"a":5.5}');
+  f.run(sid, 'anneau-2', 'anneau', null, '{"de":2,"a":2.4}');
+  const v = lireInterieur(w.db, w.a('lea'), w.univers, w.g, cible.q, cible.r);
+  assert.deepEqual(v.astres.map((x) => x.cle), ['e', 'k1', 'k2', 'p1', 'l1', 'p2', 'l2b', 'p3', 'l3', 'c1', 'ano']);
+  assert.deepEqual(v.formations.map((x) => x.cle), ['anneau-2', 'nuage-2', 'anneau-5']);
 });
