@@ -3,12 +3,12 @@
 Inventory of the screen files of `src/e2e/` whose name starts with `outils-`, `systemes-`, `reglages-`, `pieces-`, `tenir-`, `types-`, `natures-`, `sous-`, `sections-`, `markdown-`, `alias-` or `recherche-` (58 files at the start of the lot). Form and classes: [README](README.md).
 The doors written by this lot are `src/routes/*-lot-outils.test.ts` and `src/services/outils-assistant-lot-outils.test.ts`; the others were already there (`src/routes/outils.test.ts`, `outils-suppression.test.ts`, `sections-gerees-api.test.ts`, `natures-relations.test.ts`, `fichiers*.test.ts`, `systemes.test.ts`, `tenir-*.test.ts`, …).
 
-**State of the lot: partial.** 523 tests listed: 371 `affichage`, 91 `effet`, 61 `les deux`.
-- Decision `retiré` (73): the screen test is gone from `src/e2e/`, its door is green (replayed). The natures, Markdown, tool-frame guards, universe deletion and managed-section guards went to new or existing route tests; `outils-catalogue-ensemble-verif` and `outils-cadre-assistant-besoin` never opened a browser (a real server and fetch, an in-memory database): they were moved to `src/routes/` and `src/services/` with their titles unchanged.
-- Decision `allégé` (9): the effect expectations went to the door, the display stays.
-- Decision `gardé` on a line that is not `affichage`: **work left**. The test still asserts an effect on screen. The door is named when it already exists (never checked to cover every expectation of the test); `—` means none is written yet. `les deux` lines with `—` were flagged by a scan for API or database reads in the body: some only seed the page and are really `affichage`; a line that was not flagged (a write whose status is asserted through a helper) may still hide an effect.
-- Every other `gardé` line is `affichage`: nothing to do.
-- **Not replayed here**: this pod has no Chromium, so the lightened screen files were checked for types only (`tsc`); the doors were replayed.
+**State of the lot: complete.** 523 tests listed: 383 `affichage`, 93 `effet`, 47 `les deux`.
+- Decision `retiré` (93): the screen test is gone from `src/e2e/`, its door is green. Several never opened a browser (a real server and fetch, an in-memory database: the catalogue ensemble, the tool-frame assistant, the types migration and import API, the alias import cases): they were moved to `src/routes/` or `src/services/` as they were.
+- Decision `allégé` (46): the effect expectations (status codes, rows, what another account reads through the API, the database) went to the door; the display stays. An API call kept in a screen test only seeds the page (a setting, a catalogue, a proposal) and is no more asserted.
+- Decision `gardé`: 383 `affichage` lines, and one `les deux` line kept expressly: the counts « Port (2) » / « Port (3) » of the sub-type filter of `types-besoin-verification` are what the user sees, the server rule being its door (`types-besoin-ensemble.test.ts`).
+- The doors written by this lot are the `src/routes/*-lot-outils.test.ts` and `src/services/outils-assistant-lot-outils.test.ts`; the others were already there.
+- **Not replayed here**: this pod has no Chromium. The lightened screen files were checked for types (`tsc`) and for their titles against this table; the doors and the whole local level (`npm run tests:local`, 2049 green, 1 skipped) were replayed. The screens are replayed by the attestation.
 
 | File | Test (`describe > test`) | Class | Door | Decision |
 | --- | --- | --- | --- | --- |
