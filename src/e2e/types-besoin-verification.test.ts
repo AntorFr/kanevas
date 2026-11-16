@@ -18,6 +18,8 @@ import {
   type Server,
 } from './harnais.test.js';
 
+const JETON = 'kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue';
+
 describe('kanevas-import-types : écrans', { skip: skipBrowser }, () => {
   let srv: Server;
   let browser: Any;

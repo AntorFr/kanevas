@@ -3,10 +3,10 @@
 Inventory of the screen files of `src/e2e/` whose name starts with `outils-`, `systemes-`, `reglages-`, `pieces-`, `tenir-`, `types-`, `natures-`, `sous-`, `sections-`, `markdown-`, `alias-` or `recherche-` (58 files at the start of the lot). Form and classes: [README](README.md).
 The doors written by this lot are `src/routes/*-lot-outils.test.ts` and `src/services/outils-assistant-lot-outils.test.ts`; the others were already there (`src/routes/outils.test.ts`, `outils-suppression.test.ts`, `sections-gerees-api.test.ts`, `natures-relations.test.ts`, `fichiers*.test.ts`, `systemes.test.ts`, `tenir-*.test.ts`, …).
 
-**State of the lot: complete.** 523 tests listed: 383 `affichage`, 93 `effet`, 47 `les deux`.
+**State of the lot: complete.** 525 tests listed: 385 `affichage`, 93 `effet`, 47 `les deux`.
 - Decision `retiré` (93): the screen test is gone from `src/e2e/`, its door is green. Several never opened a browser (a real server and fetch, an in-memory database: the catalogue ensemble, the tool-frame assistant, the types migration and import API, the alias import cases): they were moved to `src/routes/` or `src/services/` as they were.
 - Decision `allégé` (46): the effect expectations (status codes, rows, what another account reads through the API, the database) went to the door; the display stays. An API call kept in a screen test only seeds the page (a setting, a catalogue, a proposal) and is no more asserted.
-- Decision `gardé`: 383 `affichage` lines, and one `les deux` line kept expressly: the counts « Port (2) » / « Port (3) » of the sub-type filter of `types-besoin-verification` are what the user sees, the server rule being its door (`types-besoin-ensemble.test.ts`).
+- Decision `gardé`: 385 `affichage` lines, and one `les deux` line kept expressly: the counts « Port (2) » / « Port (3) » of the sub-type filter of `types-besoin-verification` are what the user sees, the server rule being its door (`types-besoin-ensemble.test.ts`).
 - The doors written by this lot are the `src/routes/*-lot-outils.test.ts` and `src/services/outils-assistant-lot-outils.test.ts`; the others were already there.
 - **Not replayed here**: this pod has no Chromium. The lightened screen files were checked for types (`tsc`) and for their titles against this table; the doors and the whole local level (`npm run tests:local`, 2049 green, 1 skipped) were replayed. The screens are replayed by the attestation.
 
@@ -127,6 +127,8 @@ The doors written by this lot are `src/routes/*-lot-outils.test.ts` and `src/ser
 | `src/e2e/outils-cadre-besoin.test.ts` | `transfert : le dialogue liste les MJ des univers rattachés (jamais Antor), avec la phrase, « Annuler » ne change rien` | affichage | — | gardé |
 | `src/e2e/outils-cadre-besoin.test.ts` | `transfert : Antor transfère à Mira ; elle a l’interrupteur au système, lui non, il garde ses gestes d’univers` | affichage | — | gardé |
 | `src/e2e/outils-cadre-besoin.test.ts` | `transfert : une cible qui n’est pas MJ d’un univers de ce système est refusée, le responsable ne bouge pas` | affichage | — | gardé |
+| `src/e2e/outils-catalogue-acces-api-critere.test.ts` | `E-18 : portée du jeton et lots d’outil > bureau` | affichage | — | allégé — the import status is no more asserted (it only seeds the batch the page shows); the token dialog, the batch line and the access stay |
+| `src/e2e/outils-catalogue-acces-api-critere.test.ts` | `E-18 : portée du jeton et lots d’outil > 360` | affichage | — | allégé — the import status is no more asserted (it only seeds the batch the page shows); the token dialog, the batch line and the access stay |
 | `src/e2e/outils-catalogue-ecrans-verif.test.ts` | `E-20 catalogue: écrans > Antor, responsable: aperçu 11 ajoutés / 1 refusé, rien d’écrit, application, rejeu 11 inchangés` | affichage | — | gardé |
 | `src/e2e/outils-catalogue-ecrans-verif.test.ts` | `E-20 catalogue: écrans > fichier illisible: « Ce fichier n’est pas un catalogue valide. », pas de bouton Appliquer` | affichage | — | gardé |
 | `src/e2e/outils-catalogue-ecrans-verif.test.ts` | `E-20 catalogue: écrans > coupure pendant « Appliquer »: rien n’est appliqué à moitié, le message le dit, « Appliquer » revient` | affichage | — | gardé |

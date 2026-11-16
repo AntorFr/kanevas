@@ -158,7 +158,7 @@ test('E-12 : proposition rendue, « Source » brut dans les deux zones, « Rendu
   const rep = await api(C.antor, 'post', `${b}/assistant/messages`, {
     message: 'Mets à jour la section « Vérité » de « Maître Aldric » d\'après le compte-rendu « Séance 3 »',
   });
-  void rep;
+  const prop = await api(C.antor, 'get', `${b}/propositions/${rep.evenements[0].cible.propositionId}`); // seeds the expected text only
 
   const page = await C.antor.ctx.newPage();
   await page.goto(`${srv.base}/univers/${u.id}/fiche/${f.id}`);
