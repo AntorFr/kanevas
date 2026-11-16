@@ -216,3 +216,34 @@ test('B-21 bord : un contenu proposé de 20 000 caractères ou moins se lit et s
   assert.equal(apres.startsWith('A'.repeat(9000) + '\n\n' + 'B'.repeat(9000)), true);
   assert.equal(apres.length > 18002, true, 'the proposed content (longer than the old one) was written');
 });
+
+// --- monde-mode-joueur and monde-besoin-ecran (lot « écrans ») ---
+test('B-27 : Antor en mode Joueur propose et applique, comme hors mode (monde-mode-joueur)', async () => {
+  const m = await bati();
+  const r = await dire(antor, 'POST', `${m.base}/assistant/messages?mode=joueur`, { message: CR_DEMANDE });
+  assert.equal(r.status, 200);
+  assert.equal(r.corps.evenements.length, 1);
+  assert.equal(r.corps.evenements[0].type, 'proposition_creee');
+  assert.equal((await lireSection(m)).contenu, VERITE);
+  const pid = idProposition(r.corps);
+  const lu = await dire(antor, 'GET', `${propUrl(m, pid)}?mode=joueur`);
+  assert.equal(lu.status, 200);
+  assert.equal(lu.corps.etat, 'en_attente');
+  const ap = await dire(antor, 'POST', `${propUrl(m, pid)}/appliquer?mode=joueur`);
+  assert.equal(ap.status, 200);
+  assert.equal(ap.corps.etat, 'appliquee');
+  assert.match((await lireSection(m)).contenu, /^Il sert la Couronne\.\s+Mise à jour d'après « Séance 3 »\.$/);
+});
+
+test('geste fait ailleurs : une proposition abandonnée n’existe plus (404) et ne touche pas la section ; une appliquée ne s’écrit qu’une fois', async () => {
+  const m = await bati();
+  const a = idProposition(await demander(antor, m));
+  assert.equal((await post(antor, propUrl(m, a) + '/abandonner')).status, 204);
+  assert.equal((await post(antor, propUrl(m, a) + '/appliquer')).status, 404);
+  assert.equal((await lireSection(m)).contenu, VERITE);
+  const b = idProposition(await demander(antor, m));
+  assert.equal((await post(antor, propUrl(m, b) + '/appliquer')).status, 200);
+  const apres = await lireSection(m);
+  assert.equal((await post(antor, propUrl(m, b) + '/appliquer')).status, 409);
+  assert.equal((await lireSection(m)).version, apres.version, 'written once');
+});
