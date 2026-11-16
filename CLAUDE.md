@@ -8,9 +8,11 @@
   is just the suite (typecheck, build, every test, two files at a time by default, `--concurrence N` to change it) and writes
   the per-test TAP report `resultats.tap` (git-ignored); it writes no report and posts no status. The image build (tag `v*`
   only) and the `main` rule require the status; no workflow plays a test or runs on a branch push or a pull request.
-  Three levels in `.sdlc.yaml`: `commande:` (the whole suite, above), `local:` `npm ci && npm run tests:local` (every file but
-  `src/e2e/`, no `build`, no Playwright; about 3 min) and `rejouer:` `node scripts/rejouer-tests.mjs {tests}` (only the named
-  tests, `describe > test` as in `resultats.tap`; non-zero for a name no file declares as a literal test title). Test choice logic: `scripts/niveaux-tests.mjs`.
+  Five levels in `.sdlc.yaml`: `commande:` (the whole suite, above, about 37 min), `fiche:` `npm ci && npm run tests:fiche -- {base}` (the suite minus the screen
+  tests the change does not touch), `ecrans:` `npm ci && npm run tests:ecrans -- {base}` (only the chosen screen tests), `local:` `npm ci && npm run tests:local` (every file but
+  `src/e2e/`, no `build`, no Playwright; about 4 min) and `rejouer:` `npm ci && node scripts/rejouer-tests.mjs {tests}` (only the named
+  tests, `describe > test` as in `resultats.tap`; non-zero for a name no file declares as a literal test title). A screen test declares its screens on its first line (`// ecrans: a, b`);
+  read a choice without playing it: `node scripts/niveaux-tests.mjs --liste ecrans|fiche <base>`; durations measured in the README. The `tests-complets` status says its level (description starting with « niveau »), the tag build refuses one that does not. Test choice logic: `scripts/niveaux-tests.mjs`.
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.

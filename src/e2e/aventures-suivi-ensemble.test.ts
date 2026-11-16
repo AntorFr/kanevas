@@ -1,3 +1,4 @@
+// ecrans: acces-api, fiche, fiches, parametres, vue-ensemble
 import assert from 'node:assert/strict';
 import { type ChildProcess, spawn, spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';

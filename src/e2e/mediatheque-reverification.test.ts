@@ -1,3 +1,4 @@
+// ecrans: mediatheque
 // Re-verification of kanevas-import-mediatheque, written from the brief of the re-check
 // (B3 : « Utilisé dans » and the impact boxes follow the single reference grammar
 // `![x](fichier:3 "titre")`) and docs/ecrans.md (E-19 panel and boxes). Not from the code.

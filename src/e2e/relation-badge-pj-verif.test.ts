@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Independent acceptance tests of kanevas-relation-badge-pj, written from the need only (fiche, messages « Livre » and
 // « Précision » of Monsieur, docs/ecrans.md E-9 « le bloc Relations », the AD-64 amendment and the route line of ARCHITECTURE.md).
 // Real server in stub mode, real SQLite, real Chromium; every expected value is a literal.

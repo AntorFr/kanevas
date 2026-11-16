@@ -1,3 +1,4 @@
+// ecrans: fiches, systeme, systemes, vue-ensemble
 // Black-box tests of kanevas-import-types written from the need only (docs/parcours.md P-13, P-10 step 2,
 // P-14 step 2; docs/ecrans.md E-8, E-9, E-14, E-15 and « Les types »; the feature's « Critère de sortie »).
 // Expected values are literals taken from those documents. Real server in stub mode (AD-55, seeded world) +

@@ -1,3 +1,4 @@
+// ecrans: outil
 // Revue de kanevas-outils-format-vaisseaux-suite-atelier (E-22, B-86, Z-5, Z-7): navigateur piloté, catalogue d'essai Z-5 écrit par le test.
 import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';

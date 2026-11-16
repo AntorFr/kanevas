@@ -1,3 +1,4 @@
+// ecrans: acces-api, fiche, mediatheque
 // Black-box tests of kanevas-import-fichiers, written from the need (docs/parcours.md B-48, B-49, B-56, P-10 steps 4, 5, 7;
 // docs/ecrans.md E-9 « Référence de fichier en attente », E-18, E-19; the feature's critère de sortie), not from the code.
 // The real app runs in this process in stub mode on an in-memory SQLite and is driven over HTTP (the import API with the

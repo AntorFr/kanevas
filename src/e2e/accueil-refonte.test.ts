@@ -1,3 +1,4 @@
+// ecrans: accueil, creer-univers, vue-ensemble
 // Black-box tests of kanevas-rv-accueil: E-1, E-2, E-3 redone (docs/ecrans.md § E-1, E-2, E-3 and
 // § Détail de `kanevas-refonte-visuelle` « Partout »: one toast per successful action, a failure stays
 // an inline message). Expected values are literals of those sections. Real server in stub mode + real

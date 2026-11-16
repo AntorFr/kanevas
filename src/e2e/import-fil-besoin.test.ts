@@ -1,3 +1,4 @@
+// ecrans: acces-api, fiche, membres, vue-ensemble
 // Black-box tests of kanevas-import-fil, written from the need (docs/parcours.md B-45 to B-50, P-10, P-11;
 // docs/ecrans.md E-18 and the « Importée » line of E-9; the feature's critère de sortie), not from the code.
 // The real app runs in this process in stub mode on an in-memory SQLite (so the test can move the server

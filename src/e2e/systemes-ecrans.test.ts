@@ -1,3 +1,4 @@
+// ecrans: systeme, systemes
 // Black-box tests of kanevas-il-systemes-ecrans, written from docs/ecrans.md « Systèmes de jeu, hors des
 // univers » and « E-1 en cartes » (critères), not from the code. Real server in stub mode WITH its starting
 // world + real Chromium. Expected values are literals from the doc. Screenshots go to /tmp.

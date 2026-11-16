@@ -1,3 +1,4 @@
+// ecrans: outil
 // Revue de kanevas-outils-format-vaisseaux-ecarts-atelier (E-22, B-85, Y-6): navigateur piloté, catalogue d'essai inventé (Y-4) écrit ici.
 // TEST PLAN (Éneria d'essai, bouchon, Antor MJ / Léa joueur lectrice)
 //   nominal  : défense « vitesse −2 » (U+2212), vitesse 1; modification « armure +2 · réparation 2 au moins », bloc réparation,

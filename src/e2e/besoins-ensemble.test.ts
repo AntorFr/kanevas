@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of kanevas-premiere-fiche written from the need (docs/parcours.md B-n,
 // docs/ecrans.md), not from the code. Expected values are literals taken from the docs.
 // Same harness as the other e2e files: real server in stub mode + real Chromium.

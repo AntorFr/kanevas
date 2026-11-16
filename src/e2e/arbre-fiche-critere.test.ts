@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-arbre-fiche (E-9: ancestor trail, « Contient », « Déplacer sous… »),
 // written from the task's exit criterion and docs/ecrans.md. The world is the stub seed ("Lame d'Ébène").
 // Real server in stub mode + real Chromium; expected values are literals from the criterion.

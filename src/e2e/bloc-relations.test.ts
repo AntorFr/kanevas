@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-rc-ecran-relations, from docs/ecrans.md "E-9 — le bloc Relations" and
 // the task's exit criterion (B-10, B-29, P-3 step 4). Real server in stub mode + real Chromium.
 import assert from 'node:assert/strict';
