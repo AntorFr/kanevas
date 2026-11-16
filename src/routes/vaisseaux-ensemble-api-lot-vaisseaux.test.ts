@@ -216,6 +216,7 @@ describe('B-76 · P-19 : « Nouvelle conception » et les droits d’écriture',
     const sauve = await m.lea('PUT', `${m.V}/conceptions/${m.aube}`, { coque: 'eclaireur', choix: [l('moteurs', 'moteur-1')], version: c.json.version });
     assert.equal(sauve.status, 200, sauve.texte);
     assert.equal(sauve.json.resultat.prix, 25000);
+    assert.equal((await m.lea('GET', `${m.V}/conceptions/${m.aube}`)).json.peutEcrire, true, 'Léa is the author');
     const bis = await m.antor('POST', `${m.V}/conceptions`, { ficheId: m.aube, coque: 'eclaireur' });
     assert.equal(bis.status, 409);
     assert.equal(bis.json.message, 'Cette fiche a déjà une conception.');
@@ -238,6 +239,17 @@ describe('B-76 · P-19 : « Nouvelle conception » et les droits d’écriture',
     assert.equal(b.status, 409, b.texte);
     assert.equal(b.json.message, "Cette conception a changé depuis que vous l'avez ouverte.");
     assert.equal((await m.lea('GET', `${m.V}/conceptions/${m.orak}`)).json.resultat.prix, 685000, 'the second save wrote nothing');
+  });
+
+  it('deux onglets : le premier retire la Lance (535 000 cr), le second, parti de la même version, est refusé et n’écrit rien', async () => {
+    const m = await monde();
+    const vue = (await m.lea('GET', `${m.V}/conceptions/${m.orak}`)).json;
+    const sansLance = ORAK().filter((x: Any) => x.cle !== 'lance-d-essai');
+    const sansLaser = ORAK().filter((x: Any) => x.cle !== 'laser');
+    assert.equal((await m.lea('PUT', `${m.V}/conceptions/${m.orak}`, { coque: 'fregate', choix: sansLance, version: vue.version })).status, 200);
+    const b = await m.lea('PUT', `${m.V}/conceptions/${m.orak}`, { coque: 'fregate', choix: sansLaser, version: vue.version });
+    assert.equal(b.status, 409, b.texte);
+    assert.equal((await m.lea('GET', `${m.V}/conceptions/${m.orak}`)).json.resultat.prix, 535000, 'only the first save wrote: 300 000 + 60 000 + 50 000 + 125 000');
   });
 });
 
