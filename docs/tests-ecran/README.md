@@ -33,7 +33,7 @@ browser replaced by an `inject` call, it is an effect.
 
 ## An inventory line
 
-Each lot writes one file, `docs/tests-ecran/<lot>.md`, a Markdown table with one line per test:
+Each lot writes one file, `docs/tests-ecran/lot-<name>.md` (the `lot-` prefix is what the guard reads), a Markdown table with one line per test:
 
 ```
 | File | Test (`describe > test`) | Class | Door | Decision |
