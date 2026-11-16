@@ -143,3 +143,33 @@ test('E-19 contenu long · 102 fichiers : 100 puis la suite par le curseur, le t
   assert.equal((await m.json(m.antor, '/fichiers')).total, avant + 102);
   assert.equal((await m.json(m.lea, '/fichiers')).total, 10 + 102);
 });
+
+test('une section à 100 fichiers joints refuse le 101e : mots d’Antor, mots de Léa, et rien n’entre dans la médiathèque', async () => {
+  const m = await monter();
+  const sectionDe = async (h: Any, titre: string, section: string) =>
+    (await m.json(h, `/fiches/${m.ficheId(titre)}`)).sections.find((x: Any) => x.titre === section);
+  const joints = async (h: Any, titre: string, section: string) => (await sectionDe(h, titre, section)).piecesJointes.length as number;
+  const pdf = (i: number) => Buffer.from(`%PDF-1.4\n% ${i}\n%%EOF\n`);
+
+  const notes = await sectionDe(m.lea, 'Léa Brisefer', 'Notes de la table');
+  let n = notes.piecesJointes.length;
+  for (let i = 0; n < 100; i++, n++) {
+    assert.equal((await m.envoyer(m.lea, { section: String(notes.id), maniere: 'joint' }, `lea-${i}.pdf`, 'application/pdf', pdf(i))).statusCode, 201);
+  }
+  const refusLea = await m.envoyer(m.lea, { section: String(notes.id), maniere: 'joint' }, 'lea-101.pdf', 'application/pdf', pdf(101));
+  assert.ok(refusLea.statusCode >= 400 && refusLea.statusCode < 500, String(refusLea.statusCode));
+  assert.ok(refusLea.body.includes('Cette section ne peut pas recevoir d’autre fichier.') || refusLea.body.includes("Cette section ne peut pas recevoir d'autre fichier."), refusLea.body);
+  assert.equal(await joints(m.lea, 'Léa Brisefer', 'Notes de la table'), 100);
+  assert.ok(!(await m.noms(m.lea)).includes('lea-101.pdf'));
+
+  const desc = await sectionDe(m.antor, 'Port-Sel', 'Description');
+  n = desc.piecesJointes.length;
+  for (let i = 0; n < 100; i++, n++) {
+    assert.equal((await m.envoyer(m.antor, { section: String(desc.id), maniere: 'joint' }, `antor-${i}.pdf`, 'application/pdf', pdf(1000 + i))).statusCode, 201);
+  }
+  const refus = await m.envoyer(m.antor, { section: String(desc.id), maniere: 'joint' }, 'antor-101.pdf', 'application/pdf', pdf(1101));
+  assert.ok(refus.statusCode >= 400 && refus.statusCode < 500);
+  assert.ok(refus.body.includes('Cette section porte déjà 100 fichiers joints.'), refus.body);
+  assert.equal(await joints(m.antor, 'Port-Sel', 'Description'), 100);
+  assert.ok(!(await m.noms(m.antor)).includes('antor-101.pdf'));
+});

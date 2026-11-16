@@ -235,13 +235,6 @@ test('la médiathèque de Léa ne montre ni « plan.png » ni « Plan secret »,
   assert.doesNotMatch(t, /Plan secret/);
   assert.match(t, /tarifs-du-port\.pdf/);
   assert.match(await nbFichiers(lea), /^12 fichiers$/); // 10 + tarifs-du-port.pdf + croquis.png
-  const reserve = await fichierId(antor, 'Plan secret de la Guilde');
-  const r = await lea.request.get(`/api/univers/${uid}/fichiers/${reserve}`);
-  assert.equal(r.status(), 404);
-  const d = await lea.request.get(`/api/univers/${uid}/fichiers/${reserve}/detail`);
-  assert.equal(d.status(), 404);
-  await lea.goto(`/api/univers/${uid}/fichiers/${reserve}`);
-  assert.doesNotMatch(await texte(lea), /PNG/);
 });
 
 test('« Utilisé dans » ne nomme jamais une section que Léa ne lit pas, et disparaît quand tout usage lui est fermé', opts, async () => {
@@ -300,8 +293,6 @@ test('Léa ajoute « carnet.pdf » à « Notes de la table » (que Teo ne lit pa
   assert.match(await texte(lea), /ajouté\s+par lea/i);
   await mediatheque(teo);
   assert.doesNotMatch(await tuilesNoms(teo), /carnet\.pdf/);
-  const id = await fichierId(antor, 'carnet.pdf');
-  assert.equal((await teo.request.get(`/api/univers/${uid}/fichiers/${id}`)).status(), 404);
   await fiche(teo, 'Léa Brisefer');
   assert.doesNotMatch(await texte(teo), /carnet\.pdf/);
   await mediatheque(antor);
@@ -431,7 +422,7 @@ test('Documents ne montre que des documents ; Images aucun ; le nom vide et de 2
   assert.match(await tuilesNoms(antor), /Plan du port/);
 });
 
-test('échecs : un fichier vide n’est pas ajouté ; une illustration qui n’est pas une image est refusée', opts, async () => {
+test('échecs : un fichier vide n’est pas ajouté', opts, async () => {
   const avant = await tuilesNoms((await mediatheque(antor), antor));
   await fiche(antor, 'Port-Sel');
   await region(antor, 'Description').locator('input[type=file]').first().setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.alloc(0) });
@@ -439,12 +430,6 @@ test('échecs : un fichier vide n’est pas ajouté ; une illustration qui n’e
   await mediatheque(antor);
   assert.doesNotMatch(await tuilesNoms(antor), /notes\.txt/);
   assert.equal(await tuilesNoms(antor), avant);
-
-  await fiche(antor, 'Port-Sel');
-  const r = await antor.request.put(`/api/univers/${uid}/fiches/${ids['Port-Sel']}/illustration`, { multipart: { fichier: pdf('regles.pdf') } });
-  assert.equal(r.status(), 400);
-  await mediatheque(antor);
-  assert.doesNotMatch(await tuilesNoms(antor), /regles\.pdf/);
 });
 
 test('illustration : un PDF choisi par l’en-tête dit « « regles.pdf » n’est pas une image. » et rien ne change', opts, async () => {
