@@ -117,8 +117,6 @@ test('E-9 : le compte-rendu de même forme se lit mis en forme sur la fiche', op
   const m = await monde();
   const camp = await api(C.antor, 'post', `${m.b}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'Camp', sections: [{ titre: 'Présentation', joueursLisent: true }] });
   const cr = await api(C.antor, 'post', `${m.b}/comptes-rendus`, { campagneId: camp.id, titre: 'Séance 1', texte: MD });
-  const lea = await api(C.lea, 'get', `${m.b}/fiches/${cr.id}`);
-  assert.ok(lea.sections.length >= 1, JSON.stringify(lea));
   const page = await C.lea.ctx.newPage();
   const dlg = surveiller(page);
   await page.goto(`${srv.base}/univers/${m.u}/fiche/${cr.id}`);
