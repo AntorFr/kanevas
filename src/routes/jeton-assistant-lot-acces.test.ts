@@ -2,7 +2,8 @@
 // AD-86): the token file, the availability, the leaks, the refusals and the player's 404 are proved through `inject`.
 // The token value is never written here but the stub's own (`bouchon`).
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
@@ -26,6 +27,16 @@ async function connecter(app: App, compte: string): Promise<H> {
   return { cookie: `kanevas_session=${res.cookies.find((x) => x.name === 'kanevas_session')!.value}` };
 }
 
+/**
+ * A private copy of the stub `setup-token` script under another name: `instance-connexion.test.ts` counts the processes of the
+ * original by name over the whole machine, so a test of this file that spawned it could fail that one when both run together.
+ */
+function fauxProgramme() {
+  const copie = join(mkdtempSync(join(tmpdir(), 'faux-lot-acces-')), 'faux-lot-acces.mjs');
+  copyFileSync(fileURLToPath(new URL('../../scripts/faux-setup-token.mjs', import.meta.url)), copie);
+  return { commande: process.execPath, args: [copie] };
+}
+
 async function monter(env: { deploiement?: string } = {}) {
   const dir = join(mkdtempSync(join(tmpdir(), 'jeton-lot-acces-')), 'claude');
   const app = await buildApp();
@@ -34,6 +45,7 @@ async function monter(env: { deploiement?: string } = {}) {
   const config = { CLAUDE_DIR: dir, CLAUDE_CODE_OAUTH_TOKEN: env.deploiement ?? '', KANEVAS_STUB: '1' };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   app.assistantDeps.config = config as any;
+  app.connexionClaude.options.programme = fauxProgramme();
   const corps: string[] = [];
   const appel = async (h: H, methode: 'GET' | 'POST' | 'DELETE', url: string, payload?: object) => {
     const r = await app.inject({ method: methode, url, headers: h, payload });

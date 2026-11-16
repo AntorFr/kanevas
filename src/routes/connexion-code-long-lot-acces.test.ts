@@ -2,7 +2,8 @@
 // (87 characters, `xxxx#yyyy`) pasted in the panel poses the token without leaking it; one more character is refused fast
 // and poses nothing; the short stub code still works afterwards. The route is driven with `inject`, no browser.
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -20,6 +21,16 @@ const CODE87 = `${MOITIE_A}#${MOITIE_B}`;
 const CODE88 = `${CODE87}z`;
 const BASE = '/api/instance/assistant/jeton';
 
+/**
+ * A private copy of the stub `setup-token` script under another name: `instance-connexion.test.ts` counts the processes of the
+ * original by name over the whole machine, so a test of this file that spawned it could fail that one when both run together.
+ */
+function fauxProgramme() {
+  const copie = join(mkdtempSync(join(tmpdir(), 'faux-lot-acces-')), 'faux-lot-acces.mjs');
+  copyFileSync(fileURLToPath(new URL('../../scripts/faux-setup-token.mjs', import.meta.url)), copie);
+  return { commande: process.execPath, args: [copie] };
+}
+
 async function monter() {
   const dir = join(mkdtempSync(join(tmpdir(), 'connexion-code-long-')), 'claude');
   const app: App = await buildApp();
@@ -27,6 +38,7 @@ async function monter() {
   const admin = { cookie: `kanevas_session=${res.cookies.find((x) => x.name === 'kanevas_session')!.value}` };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   app.assistantDeps.config = { CLAUDE_DIR: dir, CLAUDE_CODE_OAUTH_TOKEN: '', KANEVAS_STUB: '1' } as any;
+  app.connexionClaude.options.programme = fauxProgramme();
   const ouvrir = async () => (await app.inject({ method: 'POST', url: `${BASE}/connexion`, headers: admin })).json().connexionId as string;
   const code = (connexionId: string, c: string) => app.inject({ method: 'POST', url: `${BASE}/code`, headers: admin, payload: { connexionId, code: c } });
   return { app, admin, fichier: join(dir, 'oauth-token'), ouvrir, code };
