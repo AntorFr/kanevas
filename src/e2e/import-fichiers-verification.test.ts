@@ -155,19 +155,6 @@ test('critère · fiche poussée avant ses fichiers : Antor lit deux tuiles « e
     }
   }
 });
-  const r3 = await m.fichier('doc:tarifs', { nom: 'tarifs.pdf', octets: PDF, lot: lot2 });
-  assert.equal(r1.json.etat, 'inchangee', JSON.stringify(r1.json));
-  assert.equal(r2.json.etat, 'inchangee');
-  assert.equal(r3.json.etat, 'inchangee');
-  assert.deepEqual(r1.json.avertissements, []);
-  const clos2 = await m.clore(lot2);
-  assert.equal(clos2.compteurs.fiches.inchangees, 1);
-  assert.equal(clos2.compteurs.fichiers.inchangees, 2);
-  assert.equal(clos2.compteurs.fichiers.creees, 0);
-  // The stub universe already carries one waiting link of its own (« Anse-aux-Sels » -> faction:repaire): 1, not 0.
-  assert.equal(clos2.enAttente, 1);
-});
-
 test('B-49 · E-18 : « Fichiers : 2 créés · 1 refusé », « 3 liens et références en attente » (2 + 1 du semis) avec clé et raison', { skip: skipBrowser }, async () => {
   // Fails if the batch does not count files by nature, forgets the waiting references, or hides a refusal's key/reason.
   const m = await monde();
