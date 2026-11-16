@@ -1,3 +1,4 @@
+// ecrans: accueil
 // kanevas-rv-fondations, in a real Chromium on the stub app: the charte tokens apply in both
 // themes, the three fonts are loaded from our own origin and the browser makes no request to
 // another host.

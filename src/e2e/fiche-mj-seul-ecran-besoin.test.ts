@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches, recherche
 // Black-box tests of kanevas-fiche-mj-seul-ecran (B-57), written from the task's exit criterion:
 // the « MJ seul » badge on the E-8 card, the tree row, the E-9 header, the « Relier » card and the
 // E-17 result, and the « Visibilité » filter of the E-8 grid. Real server in stub mode + real Chromium.

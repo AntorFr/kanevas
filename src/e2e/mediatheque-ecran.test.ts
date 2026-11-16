@@ -1,3 +1,4 @@
+// ecrans: accueil, mediatheque, vue-ensemble
 // Browser check of E-19 (kanevas-mediatheque-ecran), after the exit criterion of the task.
 //
 // TEST PLAN (literal expectations from the criterion / docs/ecrans.md)

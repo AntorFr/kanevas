@@ -1,3 +1,4 @@
+// ecrans: accueil, membres, parametres, systeme, systeme-ancien, vue-ensemble
 // Black-box tests of kanevas-systemes written from the need (docs/parcours.md B-13, B-14, B-29,
 // P-8; docs/ecrans.md E-14, E-15, bloc « Système de jeu » de E-3), not from the code. Expected
 // values are literals taken from those docs. Same harness as the other e2e files: real server in

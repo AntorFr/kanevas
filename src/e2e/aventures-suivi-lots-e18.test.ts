@@ -1,3 +1,4 @@
+// ecrans: acces-api
 // E-18 « Lots d'import » after kanevas-scenarios-suivi, at the browser: a batch that imports a campaign and its
 // scenario (both sheets of type aventure) counts them in « Fiches » and shows no « Campagnes » nor « Scénarios » line.
 //

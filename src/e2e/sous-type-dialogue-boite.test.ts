@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Browser tests of kanevas-sous-type-dialogue-boite, from its exit criterion: E-9 « Changer le type… » changes
 // the sub-type alone while the type stays the current one (PATCH {sousType}); another type keeps the old behaviour.
 import assert from 'node:assert/strict';

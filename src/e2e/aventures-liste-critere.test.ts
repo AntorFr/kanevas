@@ -1,3 +1,4 @@
+// ecrans: fiches, recherche, vue-ensemble
 // Black-box tests of kanevas-scenarios-type-liste (E-8 « Aventures », E-17 badge), written from the task's
 // exit criterion and docs/ecrans.md. Real server in stub mode + real Chromium; expected values are literals.
 import { mkdirSync } from 'node:fs';

@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque, vue-ensemble
 // Feature-level check of kanevas-import-mediatheque, written from the sheet of the feature (« Livre » and
 // exit criterion), docs/parcours.md (B-24, B-44, B-53 to B-55, P-16) and docs/ecrans.md (E-9 « Fichiers »,
 // E-19), not from the code. Real server in stub mode on the seed (Lame d'Ébène), real Chromium.

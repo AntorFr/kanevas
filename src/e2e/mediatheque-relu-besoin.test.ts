@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque, vue-ensemble
 // Black-box tests of the media library feature (kanevas-import-mediatheque), written from the need alone
 // (docs/parcours.md B-24, B-44, B-53 to B-55, P-16; docs/ecrans.md E-9, E-19; the feature's exit criterion).
 // Seeded stub world « Lame d'Ébène » (Antor GM, Léa player). Expected values are literal.

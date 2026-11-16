@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Feature-level check of kanevas-import-mediatheque, written from the need only (docs/parcours.md B-25, B-53, B-54,
 // docs/ecrans.md E-19 « Assistant-added file » and its state table), not from the code. Real server in stub mode,
 // real Chromium. It completes what the other mediatheque-* files leave unchecked: the assistant's image seen from E-19,

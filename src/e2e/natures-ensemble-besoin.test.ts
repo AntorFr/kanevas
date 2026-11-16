@@ -1,3 +1,4 @@
+// ecrans: carte, fiche, vue-ensemble
 // Tests d'ensemble de kanevas-fiches-liees-natures, écrits depuis le besoin (la fiche de la feature, B-63, B-66,
 // B-69, docs/parcours.md P-17, docs/ecrans.md E-9 « Relier avec une nature », E-11, maquette e09-fiche) et non depuis le code.
 // Vrai serveur en mode bouchon AVEC son monde de départ, vrai Chromium. Les attendus sont des littéraux du besoin.

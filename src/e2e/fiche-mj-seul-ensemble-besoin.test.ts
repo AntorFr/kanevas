@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches
 // Independent black-box tests of the assembled feature `kanevas-fiche-mj-seul` (B-57), written from the need only
 // (docs/parcours.md B-57 and P-3 step 4, docs/ecrans.md E-8/E-9 « Visibility », docs/donnees.md rule 11).
 // Real server in stub mode (API part: real HTTP; screen part: real Chromium). Expected values are literals

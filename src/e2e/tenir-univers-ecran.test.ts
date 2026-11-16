@@ -1,3 +1,4 @@
+// ecrans: accueil, parametres, vue-ensemble
 // Browser test of kanevas-tenir-univers (P-10 step 8, E-14 « Supprimer l'univers »), written from the exit criterion.
 // Seeded stub world: « Essai Kanka » (Antor GM, Léa player, the stub token).
 import assert from 'node:assert/strict';

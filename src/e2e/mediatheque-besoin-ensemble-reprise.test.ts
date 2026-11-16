@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Independent complements for kanevas-import-mediatheque, written from the sheet of the feature
 // (« Livre », exit criterion), docs/parcours.md (B-24, B-53, B-54, P-16) and docs/ecrans.md
 // (E-19, E-9 « Le bloc Pièces jointes »), NOT from the code. Real server in stub mode with the

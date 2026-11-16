@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Whole-feature tests of rouge-kanevas-5 on B-64 (docs/ecrans.md, E-9 « Fiches liées »): the group titles read
 // « Personnages (n) » (the type's plural label), never the raw type « personnage (n) », even when the list of types
 // reaches the browser after the block's own data. Real server on the stub with the seed + real Chromium.

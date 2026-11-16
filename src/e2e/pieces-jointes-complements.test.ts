@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box complements for kanevas-fichiers (B-24, P-3, P-7, E-9 « bloc Pièces jointes »), written from
 // docs/parcours.md and docs/ecrans.md only. Cases the other piece-jointe tests leave open.
 //

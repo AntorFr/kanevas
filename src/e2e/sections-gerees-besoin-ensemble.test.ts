@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Feature-level tests of kanevas-outils-sections-gerees (B-66, B-67, E-9), written from the exit
 // criterion of the feature sheet and docs/ecrans.md (« Screen details for kanevas-outils-sections-gerees »),
 // without reading the implementation. The real server in stub mode, the seeded world (« Éneria d'essai »:

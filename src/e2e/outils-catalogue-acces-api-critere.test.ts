@@ -1,3 +1,4 @@
+// ecrans: acces-api
 // Browser test of kanevas-outils-catalogue-acces-api, written from the exit criterion and docs/ecrans.md
 // (E-18, « the scope of a token and tool batches »). Stub world with the seed. Screenshots: /tmp/cap-acces-api.
 import assert from 'node:assert/strict';

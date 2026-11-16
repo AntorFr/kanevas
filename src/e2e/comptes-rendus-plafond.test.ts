@@ -1,3 +1,4 @@
+// ecrans: fiche
 // E-9 report window: the content ceiling comes from /api/moi, as for section editing.
 // Browser proof of the boundary lost with E-6; no networkidle waits.
 import assert from 'node:assert/strict';

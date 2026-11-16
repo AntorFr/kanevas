@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-markdown-lecture (exit criterion): Markdown written through the API is read
 // formatted on E-9 (section + report), E-7 (scenario), E-15 (entry) and E-12 (Rendu / Source), in a real
 // Chromium against the real server in stub mode. Hostile text is shown as text and opens no dialog.

@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Whole-feature tests of kanevas-fiches-liees-bloc, state « rafraîchissement » of E-9 « Fiches liées » (B-64),
 // written from docs/ecrans.md (E-9 states table and its criteria) only. Real server on the stub, real Chromium.
 // Expected values are literals of the need.

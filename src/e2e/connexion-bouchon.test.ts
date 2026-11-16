@@ -1,3 +1,4 @@
+// ecrans: accueil, creer-univers, fiche, vue-ensemble
 // Black-box tests of the session and of the stub mode (B-28, AD-55, docs/ecrans.md « Session et
 // connexion »). Real server process, real HTTP, real Chromium.
 //

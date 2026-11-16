@@ -1,3 +1,4 @@
+// ecrans: accueil, administration, vue-ensemble
 // Black-box tests of `kanevas-recours-admin` written from the need only (B-6, P-2 step 3, E-5,
 // docs/ecrans.md "Détail des écrans de kanevas-recours-admin"), not from the code. Real server in stub
 // mode, real Chromium. The expected texts are literals copied from the doc.

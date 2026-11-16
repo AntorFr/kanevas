@@ -1,3 +1,4 @@
+// ecrans: administration
 // Black-box tests of `kanevas-connexion-claude-com`, written from the need only (B-51 / E-5 "Jeton de l'assistant",
 // Livre of the triage: « Connecter » shows the sign-in address with the embedded CLI 2.1.287, whose address is on
 // claude.com; any host outside claude.com / claude.ai / anthropic.com (and their subdomains) is refused as a

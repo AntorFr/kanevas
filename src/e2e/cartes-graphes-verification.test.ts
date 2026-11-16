@@ -1,3 +1,4 @@
+// ecrans: carte, cartes, vue-ensemble
 // Independent verification of kanevas-cartes-graphes, written from the need only (docs/parcours.md B-12
 // (carte), B-22, B-23, B-29 ; P-3 step 6, P-6 step 3, P-9 ; docs/ecrans.md « Détail des écrans de
 // kanevas-cartes-graphes »). It complements cartes-graphes-besoin.test.ts (which it does not touch):

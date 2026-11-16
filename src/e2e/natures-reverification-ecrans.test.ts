@@ -1,3 +1,4 @@
+// ecrans: carte, fiche
 // Black-box tests of the re-check of kanevas-fiches-liees-natures, from the need and not from the code:
 //  (1) E-11, « Carte de la côte »: Aldric has two links to Port-Sel, « se situe à — habite » and « maître de port »;
 //      the label of each link sits against its own stroke, readable, never struck through by a stroke

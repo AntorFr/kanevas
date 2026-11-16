@@ -1,3 +1,4 @@
+// ecrans: vue-ensemble
 // Browser test of kanevas-outils-catalogue-elements, written from the exit criterion and docs/ecrans.md
 // (E-20 « Voir les éléments ») — not from the code. Stub world with the seed. Screenshots go to
 // /tmp/cap-catalogue-elements (never into the workspace). Léa has no screen: her reads are API calls.

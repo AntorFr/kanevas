@@ -1,3 +1,4 @@
+// ecrans: acces-api, comptes-rendus, fiche, fiches, parametres, vue-ensemble
 // Tests d'ensemble de `kanevas-scenarios-suivi`, écrits depuis le besoin (fiche de la feature, docs/parcours.md B-60/B-18/B-19,
 // docs/ecrans.md E-3, E-9, E-13) et non depuis le code. Vrai serveur en mode bouchon + Chromium piloté (harnais.test.ts).
 // Les attendus sont des littéraux tirés du besoin ; les écarts à ce besoin rendent le test rouge, ils ne se corrigent pas ici.

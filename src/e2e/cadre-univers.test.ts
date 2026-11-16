@@ -1,3 +1,4 @@
+// ecrans: vue-ensemble
 // Black-box tests of kanevas-rv-cadre: the frame of a universe screen (docs/ecrans.md § Barre
 // latérale, § Détail de `kanevas-refonte-visuelle`, « États des composants du cadre »).
 //

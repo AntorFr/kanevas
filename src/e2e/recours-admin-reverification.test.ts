@@ -1,3 +1,4 @@
+// ecrans: accueil, administration, vue-ensemble
 // Independent black-box tests of `kanevas-recours-admin` (B-6, P-2 step 3, E-5), written from the need
 // only (fiche, docs/parcours.md, docs/ecrans.md). They complete recours-admin-ensemble.test.ts with the
 // consequences of a repair seen from the other accounts. Real server in stub mode, real Chromium.

@@ -1,3 +1,4 @@
+// ecrans: accueil, assistant, fiche, fiches, vue-ensemble
 // Black-box tests of kanevas-assistant-membre written from the need (docs/parcours.md B-26, B-27,
 // B-29 ; docs/ecrans.md "Détail des écrans de kanevas-assistant-membre", E-12), not from the code.
 // Expected values are literals taken from those docs. Real server in stub mode (AD-55, assistant

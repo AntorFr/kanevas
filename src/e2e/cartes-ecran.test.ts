@@ -1,3 +1,4 @@
+// ecrans: cartes, vue-ensemble
 // Black-box tests of kanevas-cg-ecran-cartes, written from its exit criterion and
 // docs/ecrans.md « E-10 Cartes », « E-3 — le bloc Cartes visibles ».
 // Real server in stub mode + real Chromium. Expected texts are literals from the doc.

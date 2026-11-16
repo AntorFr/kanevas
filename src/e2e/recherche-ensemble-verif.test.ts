@@ -1,3 +1,4 @@
+// ecrans: recherche, vue-ensemble
 // Feature-level black-box tests of kanevas-import-recherche (E-17 search, aliases and labels of E-9,
 // the import API's `alias`/`etiquettes`, the assistant's `chercher`), written from the feature's exit
 // criterion, docs/parcours.md (B-37, B-38, B-52, P-12 step 4) and docs/ecrans.md (E-17, E-9).

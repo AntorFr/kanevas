@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-relation-badge-pj, from the need alone (Monsieur's "Livre" / "Précision"
 // messages and docs/ecrans.md, E-9 bloc Relations): a sheet with a relation to a character opens, and
 // the relation line carries « PJ » / « PNJ » of the target, the type label otherwise.

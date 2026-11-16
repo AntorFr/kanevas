@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches
 // Black-box tests of kanevas-relier-chercher written from the need (docs/parcours.md B-10, B-11,
 // B-29 ; docs/ecrans.md "Détail des écrans de kanevas-relier-chercher"), not from the code.
 // Expected values are literals taken from those docs. Real server in stub mode + real Chromium

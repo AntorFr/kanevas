@@ -1,3 +1,4 @@
+// ecrans: outil-cible
 // Verification tests of kanevas-outils-galaxie-tenir, written from the feature sheet and from the states of
 // docs/ecrans.md (E-21 in writing, E-10) — not from the code. Complements the integration tests: these cover the
 // states of the table « State (adds to the table of E-21) » and the delete / remove confirmations.

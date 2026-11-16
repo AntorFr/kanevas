@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Tests d'ensemble de kanevas-fiches-liees-natures : le semis du bouchon lu à l'écran (fiche de la feature, « Livre »).
 // Aldric, Ombeline et Bran sont déjà vus dans natures-ensemble-besoin ; ici Suie, le Prieur masqué, et ce que Léa n'en lit pas.
 // Attendus littéraux tirés du besoin : « Suie se situe aux Docks », « le Prieur se situe à Port-Sel (se cache, depuis

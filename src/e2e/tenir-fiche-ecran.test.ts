@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Browser test of kanevas-tenir-fiche-ecran (P-14 steps 2-3, E-9 title and deletion), written from the exit criterion.
 // Seeded stub world: « Lame d'Ébène » (Antor GM, Léa player), where Port-Sel is seeded.
 import assert from 'node:assert/strict';

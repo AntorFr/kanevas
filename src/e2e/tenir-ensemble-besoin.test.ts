@@ -1,3 +1,4 @@
+// ecrans: accueil, fiche, fiches, parametres, vue-ensemble
 // Feature-level tests of kanevas-import-tenir (B-39 title, B-40, B-41, P-14 steps 2-3, P-10 step 8; E-9 title and
 // deletion, E-14 « Supprimer l'univers »; AD-105), written from the feature's exit criterion and docs/parcours.md /
 // docs/ecrans.md only. World: the stub seed (« Lame d'Ébène », « Essai Kanka »), real server in stub mode, real

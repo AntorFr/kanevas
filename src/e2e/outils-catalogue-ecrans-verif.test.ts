@@ -1,3 +1,4 @@
+// ecrans: acces-api, parametres, systeme
 // Feature-level browser tests of kanevas-outils-catalogue: E-20 (catalogue block, import dialog, « Voir les éléments »)
 // and E-18 (scope of a token), written from docs/ecrans.md and the feature's exit criterion. Stub world with the seed.
 // Screenshots: /tmp/cap-catalogue-verif (proofs of the moment, not committed).

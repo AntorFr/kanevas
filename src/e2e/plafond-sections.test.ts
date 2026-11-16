@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-plafond-sections, written from the need (docs/ecrans.md "contenu
 // long" + its criterion, docs/donnees.md `sections.contenu`, ARCHITECTURE.md routes), not from the
 // code. Real server in stub mode + real Chromium; expectations are literals taken from the docs.

@@ -1,3 +1,4 @@
+// ecrans: comptes-rendus, recherche
 // Black-box tests of kanevas-import-reprise, written from the need (docs/parcours.md B-47 to B-50, P-10;
 // docs/ecrans.md E-13, E-7; the feature's critère de sortie), not from the code.
 // The real app runs in this process in stub mode (in-memory SQLite) and is driven over HTTP, by the

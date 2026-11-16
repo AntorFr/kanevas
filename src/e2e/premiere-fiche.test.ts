@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of kanevas-premiere-fiche, from the need (docs/parcours.md B-1..B-5, B-7..B-9,
 // B-12 ; docs/ecrans.md E-1..E-4, E-8, E-9) and not from the code. The real server runs in stub
 // mode (AD-55), a real Chromium plays the users Antor (MJ), Léa and Teo (players), Mira.

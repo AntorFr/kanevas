@@ -1,3 +1,4 @@
+// ecrans: parametres
 // Feature-level test of kanevas-illustrations, B-13 (docs/parcours.md, docs/ecrans.md E-14 « Critères »), written from
 // the need, not from the code. Real server in stub mode WITH its starting world, real Chromium. Expected values are literals.
 import assert from 'node:assert/strict';
