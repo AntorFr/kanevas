@@ -25,7 +25,7 @@ export function itemCourant(item: Item, id: number | string, pathname: string, s
   return pathname === chemin || (chemin !== `/univers/${id}` && pathname.startsWith(`${chemin}/`));
 }
 
-/** A sheet's address: `/fiche/<id or key>`, or `/<type>/<name>` for a key `type:name` whose type is registered (B-101). */
+/** A sheet's address: `/fiche/<id or key>`, or `/<type>/<name>` (the type word, not the plural slug) for a key `type:name` whose type is registered (B-101). */
 export function estAdresseFiche(pathname: string, id: number | string, slugs: string[] = []): boolean {
   if (pathname.startsWith(`/univers/${id}/fiche/`)) return true;
   const m = matchPath({ path: '/univers/:u/:a/:b' }, pathname);
@@ -310,7 +310,7 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
             )}
             {(s === 'Lore' ? lore : s === 'Outils' ? outils : items.filter((i) => (i.section ?? '') === s))
               .map((i) => (
-                <Link key={i.libelle} to={i.chemin(id) + (i.garderMode && mode === 'joueur' ? '?mode=joueur' : '')} className="item" aria-current={itemCourant(i, id, pathname, section, typesLu.types.map((t) => t.slug)) ? 'page' : undefined}>
+                <Link key={i.libelle} to={i.chemin(id) + (i.garderMode && mode === 'joueur' ? '?mode=joueur' : '')} className="item" aria-current={itemCourant(i, id, pathname, section, typesLu.types.map((t) => t.type)) ? 'page' : undefined}>
                   <i.icone size={16} strokeWidth={1.75} aria-hidden="true" />
                   {i.libelle}
                 </Link>
