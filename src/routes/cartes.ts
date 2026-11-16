@@ -55,6 +55,7 @@ export function registerCartesRoutes(app: FastifyInstance) {
       type: 'outil' as const, id: c.id, universId: univers, titre: c.titre, module: c.module,
       outil: { module: c.module, outil: c.outil },
       adresse: `/univers/${univers}/outils/${c.module}/${c.outil}/${c.id}`,
+      ...(c.largeur !== undefined ? { largeur: c.largeur } : {}), ...(c.hauteur !== undefined ? { hauteur: c.hauteur } : {}),
       ...(mj ? { visible: c.visible, ...(c.version === undefined ? {} : { version: c.version }) } : {}),
     }));
     return { ...page, cartes: [...page.cartes, ...outils], formes: formesCreablesOutils(app.db, a, univers) };
