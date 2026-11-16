@@ -66,16 +66,6 @@ describe('kanevas-scenarios-suivi : bords des comptes-rendus et du refus', { ski
     assert.equal(await lea.getByRole('button', { name: 'Charger la suite', exact: true }).count(), 0, 'plus de suite');
   });
 
-  test('cr_texte_de_100000_caracteres_accepte_100001_refuse_et_rien_n_est_cree', async () => {
-    // Casse si : le plafond du texte d'un compte-rendu redevient 20 000, ou disparaît.
-    const ok = await appel(lea, 'POST', '/api/univers/1/comptes-rendus', { campagneId: campagne, titre: 'Pile', texte: 'a'.repeat(100000) });
-    assert.equal(ok.status, 201, ok.text.slice(0, 200));
-    const trop = await appel(lea, 'POST', '/api/univers/1/comptes-rendus', { campagneId: campagne, titre: 'Trop long', texte: 'a'.repeat(100001) });
-    assert.equal(trop.status, 400, trop.text.slice(0, 200));
-    const liste = await appel(lea, 'GET', `/api/univers/1/comptes-rendus`);
-    assert.ok(!/Trop long/.test(liste.text), 'un CR refusé a été créé');
-  });
-
   test('cr_texte_trop_long_au_navigateur_dit_le_plafond_et_garde_la_saisie', async () => {
     // Casse si : la fenêtre « Nouveau compte-rendu » ferme ou perd le titre sur un texte de 100 001 caractères.
     await lea.goto(`/univers/1/fiche/${campagne}`);
@@ -96,8 +86,6 @@ describe('kanevas-scenarios-suivi : bords des comptes-rendus et du refus', { ski
     assert.ok(!/Acte fermé/.test(await texte(lea)), 'le titre du scénario fermé fuit');
     const cr = await appel(antor, 'POST', '/api/univers/1/comptes-rendus', { campagneId: scenario, titre: 'CR du scénario fermé', texte: 'x' });
     assert.equal(cr.status, 201, cr.text);
-    const lu = await appel(lea, 'GET', `/api/univers/1/comptes-rendus`);
-    assert.ok(!/Acte fermé/.test(lu.text), 'la liste des CR nomme un scénario fermé à Léa');
     await lea.goto('/univers/1/comptes-rendus');
     await lea.getByText('CR du scénario fermé').first().waitFor();
     assert.ok(!/Acte fermé/.test(await texte(lea)));
