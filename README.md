@@ -85,17 +85,38 @@ npm run dev            # or, without reload: npm run build && npm start (`npm st
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
-`.sdlc.yaml` declares three levels of tests, from the cheapest:
+`.sdlc.yaml` declares five levels of tests, from the cheapest. `attester` picks the level a branch owes; `{base}` is the commit the change is measured from (`git diff --name-only {base} HEAD`).
 
-| Level | Command | What it plays | Duration |
+| Level | Command | What it plays | Measured (2026-11-16, 18-CPU pod) |
 |---|---|---|---|
-| `rejouer:` | `node scripts/rejouer-tests.mjs "<describe > test>" ...` (e.g. `"niveaux de la suite > la suite entière garde tous les fichiers de test"`: the suite titles then the test title, as `resultats.tap` indents them) | only the named tests, in the files that contain them (found by name; names split on `\|` and line ends, never on spaces); exit non-zero if a name is found in no file | seconds |
-| `local:` | `npm run tests:local` | `build:wasm`, `typecheck`, `scripts/copier-wasm.mjs` (copies `rust/pkg` to `dist/wasm`, no `build`), then every test file except `src/e2e/` (no server, no browser, no Playwright install); same `resultats.tap` (overwritten: after a local run it no longer holds a whole-suite report), same test names | about 2-3 min (1 min 30 s to 3 min 36 s, 997 tests, 3-CPU pod; the font check of the built app is skipped when there is no dist/) |
-| `commande:` | `npm run tests:attestes` | everything, `src/e2e/` included, after `build` | about 36 min on a 12-CPU pod (see « Tests de bout en bout ») |
+| `rejouer:` | `npm ci && node scripts/rejouer-tests.mjs {tests}` (e.g. `"niveaux de la suite > la suite entière garde tous les fichiers de test"`: the suite titles then the test title, as `resultats.tap` indents them) | only the named tests, in the files that contain them (found by name; names split on `\|` and line ends, never on spaces); builds what those files ask for (wasm for `src/wasm/`, `build` for `src/e2e/`, Playwright for a screen test), decides nothing from a leftover `dist/`; exit non-zero if a name is found in no file | 23 s from a fresh clone (`npm ci` 6 s, one `src/e2e/` test and one other, 2 tests); the same two green again after `rm -rf dist`, and a name no file declares exits 1 |
+| `ecrans:` | `npm ci && npm run tests:ecrans -- {base}` | `build:wasm` and `build`, then only the screen tests (`src/e2e/`) chosen for the change: the files whose `// ecrans:` line names a touched screen and the ones with no line (see « Screens touched »); nothing else (the rest is `local:`) | 602 s for the « Administration screen touched » case below (75 files, 285 top-level TAP lines) |
+| `fiche:` | `npm ci && npm run tests:fiche -- {base}` | what `commande:` plays minus the screen tests not chosen (no test skipped, same names) | 261 s for the « server alone » case below (192 files, 1 568 top-level TAP lines); the whole suite (467 files) when a shared file is touched |
+| `local:` | `npm run tests:local` | `build:wasm`, `typecheck`, `scripts/copier-wasm.mjs` (copies `rust/pkg` to `dist/wasm`, no `build`), then every test file except `src/e2e/` (no server, no browser, no Playwright install); same `resultats.tap` (overwritten: after a local run it no longer holds a whole-suite report), same test names | 250 s (192 files, 1 568 top-level TAP lines); the font check of the built app is skipped when there is no dist/ |
+| `commande:` | `npm run tests:attestes` | everything, `src/e2e/` included, after `build` | 2 240 s (about 37 min; 467 files, 2 842 top-level TAP lines). See « Tests de bout en bout » |
 
-`local:` and `commande:` share one file list and one script (`--local` only drops `src/e2e/`, `build` and Playwright), so they cannot drift apart. The e2e files stay in the attested run only. The one skipped test is the font check of the built app (« npm run build non lancé »): there is no `dist/` at this level. The replay finds a test by the literal title given to `it`/`test`/`describe`: a title built at run time (template literal, loop) is « not found », so replay its whole file or the `local:` level instead.
+Each figure is one pass of the declared command on a scratch clone of the feature tip (`feature/kanevas-niveau-fiche`, commit `88904f3a`), 2026-11-16, two files at a time, `npm ci` included; « TAP lines » counts the `ok` / `not ok` lines at the left margin of `resultats.tap` (a suite counts one). The `ecrans:` pass and the `commande:` pass had red tests of their own, not the level's (see `.agent/status.md`): the duration is the one of the run, red included.
 
-The attested run is `attester --publier` (the chain's proof tool, installed in its pods and on the maintainer's workstation; it plays the suite declared in `.sdlc.yaml` on a clean checkout of the pushed commit), which calls `npm run tests:attestes` (no test skipped; you can run that one alone). `attester` refuses a dirty tree: commit first. It plays two test files at a time by default (`min(os.availableParallelism(), 2)`, the budget measured on the 3-CPU pod); `-- --concurrence N` (positive integer, otherwise exit 2) overrides it, and the log carries the effective value. During the run, server and Chromium startups of the e2e files go one at a time (`withStartupLock`, a lock under the run's temporary directory); ready servers and browsers then run their scenarios in parallel.
+### Screens touched
+
+A screen is a file of `frontend/src/ecrans/` registered in `registre.ts`; a screen test declares its screens on its first line, `// ecrans: administration` (several names separated by commas; an unknown name is an error, `src/scripts-tests/` checks it; `scripts/proposer-ecrans.mjs` proposes the lines from the addresses a test opens). 214 of the 275 `src/e2e/` files declare; the 61 others play for any touched screen. Read a choice without playing it:
+
+```
+node scripts/niveaux-tests.mjs --liste ecrans <base>   # the screen tests `ecrans:` plays
+node scripts/niveaux-tests.mjs --liste fiche <base>    # every test `fiche:` plays
+```
+
+One file per line. Rules, in short: a file only one page imports touches that screen; a file several pages import touches all of them; a file no page imports and no `HORS_ECRAN` rule names (`frontend/src/Cadre.tsx`, `package.json`, `registre.ts`…) touches every screen; `src/` alone (services, routes, migrations) touches none; a screen test changed itself always plays. Three choices measured on the diff of real `main` commits, replayed on the feature tip (a `main` commit as `{base}` would also carry the feature's own `package.json` and `scripts/` changes, which touch every screen):
+
+| Change (real commit of `main`) | `--liste ecrans` | `--liste fiche` |
+|---|---|---|
+| The Administration screen (`ace735e5`: `administration.tsx` and `.css`) | 75 files: the 14 declaring `administration` and the 61 without a line | 267 of 467 |
+| A shared file (`package.json`, from `05f51b56`) | 275 files: every screen test | 467: the whole suite |
+| The server alone (`07ab0708`: `src/services/swn/catalogue-vaisseaux.ts`) | 0 | 192 (no screen test) |
+
+`local:`, `ecrans:`, `fiche:` and `commande:` share one script and one report name (`--local` only drops `src/e2e/`, `build` and Playwright), so they cannot drift apart. The e2e files stay in the attested run only. The one skipped test is the font check of the built app (« npm run build non lancé »): there is no `dist/` at this level. The replay finds a test by the literal title given to `it`/`test`/`describe`: a title built at run time (template literal, loop) is « not found », so replay its whole file or the `local:` level instead.
+
+The attested run is `attester --publier` (the chain's proof tool, installed in its pods and on the maintainer's workstation; it plays the suite declared in `.sdlc.yaml` on a clean checkout of the pushed commit), which calls `npm run tests:attestes` (no test skipped; you can run that one alone). `attester` refuses a dirty tree: commit first. It plays two test files at a time by default (`min(os.availableParallelism(), 2)`, the budget measured on the 3-CPU pod); `-- --concurrence N` (positive integer, otherwise exit 2) overrides it, and the log carries the effective value. During the run, server and Chromium startups of the e2e files go one at a time (`withStartupLock`, a lock under the run's temporary directory); ready servers and browsers then run their scenarios in parallel. The `tests-complets` status says the level it was played at (a description starting with « niveau », e.g. « niveau fiche · … »): the image build of a `v*` tag accepts a `success` status only if it does (`.github/workflows/docker-publish.yml`).
 
 This block serves `/healthz` and the API only; to log in and see the screens, use the stub-mode command under “Without Authelia: stub mode” (`KANEVAS_STUB=1`).
 
