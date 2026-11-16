@@ -1,3 +1,4 @@
+// ecrans: systeme, systemes
 // Black-box tests of kanevas-il-systemes-ecrans, written from docs/ecrans.md « Systèmes de jeu, hors des
 // univers » and « E-1 en cartes » (critères), not from the code. Real server in stub mode WITH its starting
 // world + real Chromium. Expected values are literals from the doc. Screenshots go to /tmp.
@@ -20,7 +21,6 @@ async function api(page: Any, url: string): Promise<Any> {
 async function va(page: Any, url: string): Promise<string> {
   await page.goto(url);
   await attendre(page);
-  await page.waitForTimeout(400);
   return texte(page);
 }
 async function cliqueEntete(carte: Any): Promise<void> {

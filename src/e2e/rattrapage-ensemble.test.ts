@@ -1,3 +1,4 @@
+// ecrans: fiche, recherche
 // Whole-feature tests of kanevas-fiches-liees-rattrapage, written from the merge task's exit criterion:
 // "in the stub, in Antor, « Port-Sel » still opens its sheet with its relations carrying nature and qualifier, E-17 still
 // filters by « Lié à », and a scenario's screen and the sheet block registry are `main`'s"

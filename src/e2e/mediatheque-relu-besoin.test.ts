@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque, vue-ensemble
 // Black-box tests of the media library feature (kanevas-import-mediatheque), written from the need alone
 // (docs/parcours.md B-24, B-44, B-53 to B-55, P-16; docs/ecrans.md E-9, E-19; the feature's exit criterion).
 // Seeded stub world « Lame d'Ébène » (Antor GM, Léa player). Expected values are literal.
@@ -6,7 +7,7 @@ import { cpSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
-import { allerMembres, ajouterMembre, attendre, launch, playwright, rx, skipBrowser, startServer, texte, type Any, type Server } from './harnais.test.ts';
+import { allerMembres, ajouterMembre, attendre, attendreTexte, launch, playwright, rx, skipBrowser, startServer, texte, type Any, type Server } from './harnais.test.ts';
 
 const PDF = (nom: string, n = 0) => ({ name: nom, mimeType: 'application/pdf', buffer: Buffer.from(`%PDF-1.4\n% ${nom} ${n}\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n`) });
 const PNG_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEElEQVR4nGP4z8CAFTEMLQkAbsP/AQ6EtMEAAAAASUVORK5CYII=';
@@ -47,7 +48,6 @@ async function viaMenu(page: Any, declencheur: Any, entree: RegExp, fichier: Any
   const [fc] = await Promise.all([page.waitForEvent('filechooser'), page.getByRole('menuitem', { name: entree }).click()]);
   await fc.setFiles(fichier);
   await attendre(page);
-  await page.waitForTimeout(600);
 }
 async function ouvrirMediatheque(page: Any): Promise<void> {
   await page.goto('/univers/1/mediatheque');
@@ -127,7 +127,7 @@ describe('médiathèque — le parcours du critère de sortie (bouchon, monde se
     await boite.waitFor();
     await boite.getByRole('button', { name: rx('Plan secret de la Guilde') }).first().click();
     await attendre(p);
-    await p.waitForTimeout(500);
+    await attendreTexte(p, /Ce fichier est réservé au MJ : les joueurs qui lisent cette section ne le verront pas\./);
     assert.match(await texte(p), /Ce fichier est réservé au MJ : les joueurs qui lisent cette section ne le verront pas\./);
     await p.screenshot({ path: '/tmp/work/shots/avertissement.png', fullPage: true });
     await s.getByRole('button', { name: 'Enregistrer' }).click();
@@ -173,7 +173,6 @@ describe('médiathèque — le parcours du critère de sortie (bouchon, monde se
     const boite = p.getByRole('dialog', { name: /Choisir un fichier/ });
     await boite.getByRole('button', { name: rx('Carte des Sphères') }).first().click();
     await attendre(p);
-    await p.waitForTimeout(600);
     assert.match(await s.innerText(), /Carte des Sphères/);
     const q = lea.page;
     await ouvrirMediatheque(q);
@@ -261,7 +260,7 @@ describe('médiathèque — réserver et supprimer « Carte des Sphères »', { 
     await p.getByText('Réservé au MJ', { exact: true }).first().click();
     await p.getByRole('alertdialog').or(p.getByRole('dialog')).getByRole('button', { name: /^Réserver au MJ$/ }).click();
     await attendre(p);
-    await p.waitForTimeout(500);
+    await attendreTexte(p, /Fichier réservé au MJ\./);
     assert.match(await texte(p), /Fichier réservé au MJ\./);
     for (const id of [8, 1, 12]) {
       await ouvrirFiche(l.page, id);
@@ -293,7 +292,7 @@ describe('médiathèque — réserver et supprimer « Carte des Sphères »', { 
     assert.match(t, /Maître Aldric \(pièces jointes de « Apparence »\)/);
     await boite.getByRole('button', { name: /^Supprimer le fichier$/ }).click();
     await attendre(p);
-    await p.waitForTimeout(500);
+    await attendreTexte(p, /Fichier supprimé\./);
     assert.match(await texte(p), /Fichier supprimé\./);
     await ouvrirFiche(p, 8);
     assert.match((await texte(p)).replace(/’/g, "'"), /Fichier supprimé de la médiathèque\./);
@@ -384,7 +383,6 @@ describe('médiathèque — bords, refus et exclusions', { skip: skipBrowser }, 
     const [fc] = await Promise.all([p.waitForEvent('filechooser'), p.getByRole('button', { name: 'Ajouter des fichiers' }).click()]);
     await fc.setFiles(PDF('barème.pdf'));
     await attendre(p);
-    await p.waitForTimeout(800);
     const f = (await fichiers(srv.base, ckA)).find((x) => x.nom === 'barème.pdf');
     assert.ok(f);
     assert.equal(f.visibilite, 'joueurs');
@@ -395,7 +393,6 @@ describe('médiathèque — bords, refus et exclusions', { skip: skipBrowser }, 
     await p.getByRole('menuitem', { name: /Choisir dans la médiathèque/ }).click();
     await p.getByRole('dialog', { name: /Choisir un fichier/ }).getByRole('button', { name: rx('barème.pdf') }).first().click();
     await attendre(p);
-    await p.waitForTimeout(600);
     assert.match(await s.innerText(), /barème\.pdf/);
     assert.equal((await fichiers(srv.base, ckA)).find((x) => x.nom === 'barème.pdf').visibilite, 'joueurs');
     const q = lea.page;
@@ -441,7 +438,7 @@ describe('médiathèque — bords, refus et exclusions', { skip: skipBrowser }, 
     const [fc] = await Promise.all([p.waitForEvent('filechooser'), p.getByRole('button', { name: 'Ajouter des fichiers' }).click()]);
     await fc.setFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.alloc(0) });
     await attendre(p);
-    await p.waitForTimeout(800);
+    await attendreTexte(p, /« notes\.txt » est vide\./);
     assert.match((await texte(p)).replace(/’/g, "'"), /« notes\.txt » est vide\./);
     assert.equal((await fichiers(srv.base, ckA)).length, avant);
     // même refus pour un fichier vide joint à une section
@@ -459,17 +456,16 @@ describe('médiathèque — bords, refus et exclusions', { skip: skipBrowser }, 
     const champ = p.getByRole('textbox').last();
     await champ.fill('');
     await champ.press('Enter');
-    await p.waitForTimeout(500);
+    await attendreTexte(p, /Erreur : le nom est obligatoire\./);
     assert.match(await texte(p), /Erreur : le nom est obligatoire\./);
     await champ.fill('x'.repeat(201));
     await champ.press('Enter');
-    await p.waitForTimeout(500);
+    await attendreTexte(p, /Erreur : 200 caractères au plus\./);
     assert.match(await texte(p), /Erreur : 200 caractères au plus\./);
     assert.ok(!(await fichiers(srv.base, ckA)).some((x) => x.nom.startsWith('xxxx')));
     await champ.fill('y'.repeat(200));
     await champ.press('Enter');
     await attendre(p);
-    await p.waitForTimeout(600);
     assert.ok((await fichiers(srv.base, ckA)).some((x) => x.nom === 'y'.repeat(200)));
   });
 
@@ -478,7 +474,6 @@ describe('médiathèque — bords, refus et exclusions', { skip: skipBrowser }, 
     await ouvrirMediatheque(p);
     await p.getByRole('radio', { name: 'Documents' }).click();
     await attendre(p);
-    await p.waitForTimeout(500);
     const t = await texte(p);
     assert.match(t, /barème\.pdf/);
     assert.doesNotMatch(t, /Carte des Sphères/);
@@ -494,7 +489,6 @@ describe('médiathèque — bords, refus et exclusions', { skip: skipBrowser }, 
     await p.getByRole('menuitem', { name: /Retirer/ }).click();
     await p.getByRole('alertdialog').getByRole('button', { name: 'Retirer', exact: true }).click();
     await attendre(p);
-    await p.waitForTimeout(600);
     assert.doesNotMatch(await s.innerText(), /port-sel-quais\.webp/);
     assert.ok((await fichiers(srv.base, ckA)).some((x) => x.nom === 'port-sel-quais.webp'));
   });
@@ -507,7 +501,7 @@ describe('médiathèque — bords, refus et exclusions', { skip: skipBrowser }, 
     const boite = p.getByRole('dialog', { name: /Choisir un fichier/ });
     await boite.getByRole('button', { name: rx('Plan secret de la Guilde') }).first().click();
     await attendre(p);
-    await p.waitForTimeout(800);
+    await attendreTexte(p, /Ce fichier est réservé au MJ : les joueurs qui lisent cette section ne le verront pas\./);
     assert.match(await texte(p), /Ce fichier est réservé au MJ : les joueurs qui lisent cette section ne le verront pas\./);
     await p.screenshot({ path: '/tmp/work/shots/illustration-avertie.png', fullPage: true });
     await ouvrirFiche(lea.page, 15);

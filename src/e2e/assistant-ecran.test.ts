@@ -1,3 +1,4 @@
+// ecrans: accueil, fiche, vue-ensemble
 // Black-box tests of kanevas-am-ecran: E-12 Assistant (docs/ecrans.md § `kanevas-assistant-membre`),
 // driven in a real Chromium against the real server in stub mode (AD-55, AD-78).
 //
@@ -113,11 +114,9 @@ test('bouton : un membre l’a, l’admin sans rôle ne l’a pas, ni hors d’u
   await bouton(lea).waitFor();
   await admin.goto('/univers/1');
   await attendre(admin);
-  await admin.waitForTimeout(500);
   assert.equal(await bouton(admin).count(), 0);
   await antor.goto('/');
   await attendre(antor);
-  await antor.waitForTimeout(300);
   assert.equal(await bouton(antor).count(), 0);
 });
 

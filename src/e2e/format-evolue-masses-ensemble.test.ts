@@ -1,3 +1,4 @@
+// ecrans: outil, parametres
 // Feature-level black-box tests of kanevas-outils-format-evolue, masses side (B-80): written from the feature sheet
 // (« Livre », exit criterion), docs/parcours.md and docs/ecrans.md (E-22, E-20 « Voir les éléments »), then from the
 // V-2 / V-10 contract of ARCHITECTURE.md for what is delivered without a screen (catalogue import, calculation). Real

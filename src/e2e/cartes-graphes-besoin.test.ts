@@ -1,3 +1,4 @@
+// ecrans: carte, cartes, fiche, vue-ensemble
 // Black-box tests of kanevas-cartes-graphes written from the need (docs/parcours.md B-12 (carte), B-22,
 // B-23, B-29 ; P-3 step 6, P-6 step 3, P-9 ; docs/ecrans.md "Détail des écrans de kanevas-cartes-graphes"
 // : E-10, E-11, bloc « Cartes visibles » de E-3), not from the code. Expected values are literals taken
@@ -143,13 +144,11 @@ async function ouvrirCarte(page: Any, m: Monde, id: number): Promise<void> {
   await page.goto(`/univers/${m.U}/cartes/${id}`);
   await page.getByRole('heading', { level: 1 }).waitFor();
   await attendre(page);
-  await page.waitForTimeout(200);
 }
 async function ouvrirListe(page: Any, m: Monde): Promise<void> {
   await page.goto(`/univers/${m.U}/cartes`);
   await page.getByRole('heading', { name: 'Cartes', level: 1 }).waitFor();
   await attendre(page);
-  await page.waitForTimeout(200);
 }
 const enTete = (page: Any, label: string) => page.getByRole('button', { name: rxExact(label) });
 const liste = (page: Any) => page.getByRole('region', { name: rx('Sur la carte') });
@@ -291,7 +290,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       for (let i = 0; i < 3; i++) await m.antor.keyboard.press('ArrowRight');
       await m.antor.keyboard.press('Shift+ArrowDown');
       await attendre(m.antor);
-      await m.antor.waitForTimeout(400);
       await ouvrirCarte(m.antor, m, carte);
       const lue = await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`);
       const aldric = lue.elements.find((e: Any) => e.ficheId === m.aldric);
@@ -317,7 +315,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await m.antor.mouse.move(cx + 100, cy, { steps: 5 });
       await m.antor.mouse.up();
       await attendre(m.antor);
-      await m.antor.waitForTimeout(400);
       const apres = (await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`)).elements.find((e: Any) => e.ficheId === m.aldric);
       const attendu = avant.x + (100 / cadre.w) * 100;
       assert.ok(Math.abs(apres.x - attendu) < 1.5, `x ${apres.x}, attendu ${attendu}`);
@@ -329,7 +326,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await m.antor.mouse.move(cadre.x + cadre.w + 300, cadre.y - 200, { steps: 8 });
       await m.antor.mouse.up();
       await attendre(m.antor);
-      await m.antor.waitForTimeout(400);
       const bord = (await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`)).elements.find((e: Any) => e.ficheId === m.aldric);
       assert.equal(bord.x, 100);
       assert.equal(bord.y, 0);
@@ -373,7 +369,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       assert.deepEqual(Buffer.from(await r.body()), PAYSAGE);
       await m.antor.locator('input[type=file]').setInputFiles(fichierPng(PORTRAIT, 'portrait.png'));
       await attendre(m.antor);
-      await m.antor.waitForTimeout(400);
       r = await m.antor.request.fetch(`${srv.base}${urlCartes(m)}/${carte}/fond`);
       assert.deepEqual(Buffer.from(await r.body()), PORTRAIT);
     });
@@ -579,7 +574,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await ouvrirCarte(m.antor, m, carte);
       await m.antor.getByRole('radio', { name: rxExact('Mode Joueur') }).check();
       await attendre(m.antor);
-      await m.antor.waitForTimeout(300);
       try {
         const t = await texte(m.antor);
         assert.ok(t.includes('Maître Aldric'));
@@ -755,7 +749,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await ouvrirCarte(m.antor, m, graphe);
       await m.antor.getByRole('radio', { name: rxExact('Mode Joueur') }).check();
       await attendre(m.antor);
-      await m.antor.waitForTimeout(300);
       try {
         assert.deepEqual((await surLaCarte(m.antor)).sort(), ['La Guilde', 'Les Lames Grises']);
         assert.deepEqual(await liens(m.antor), ['Les Lames Grises — rival de → La Guilde']);
@@ -842,7 +835,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await page.goto(`/univers/${m.U}`);
       await page.getByRole('heading', { level: 1 }).waitFor();
       await attendre(page);
-      await page.waitForTimeout(300);
     };
 
     // Si Léa voit un bloc vide, ou un compteur, quand rien n'est visible.
@@ -892,7 +884,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await m2.antor.goto(`/univers/${m2.U}`);
       await m2.antor.getByRole('heading', { level: 1 }).waitFor();
       await attendre(m2.antor);
-      await m2.antor.waitForTimeout(300);
       const bloc = m2.antor.locator('main').getByRole('region', { name: rx('Cartes visibles') });
       const titres = (await bloc.getByRole('link').allInnerTexts()).map((x: string) => x.split('\n')[0]!.trim()).filter((x: string) => x !== 'Toutes');
       assert.deepEqual(titres, ['Alpha', 'Bêta', 'Carte Cinq', 'Delta', 'Epsilon']);
@@ -1117,7 +1108,7 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await noeud(m.antor, 'Maître Aldric').click();
       for (let i = 0; i < 5; i++) await m.antor.keyboard.press('ArrowRight');
       await m.antor.getByText(rx(PAS_ABOUTI)).first().waitFor();
-      await m.antor.waitForTimeout(300);
+      await attendre(m.antor);
       assert.deepEqual(await place(), avant);
       await m.antor.unroute(`**${urlCartes(m)}/${carte}/elements/*`);
       const e = (await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`)).elements[0];

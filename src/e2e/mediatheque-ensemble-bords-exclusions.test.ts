@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Feature-level check of kanevas-import-mediatheque, second pass: the bords, échecs and exclusions of the needs
 // (docs/parcours.md B-24, B-44, B-53, B-54, B-55, P-16; docs/ecrans.md E-19, E-9 « Fichiers »), written from the needs only.
 // Real server in stub mode on the seed (« Lame d'Ébène », 13 files, 3 reserved to the GM), real Chromium for what is seen.
@@ -22,7 +23,7 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { after, before, test } from 'node:test';
-import { type Any, attendre, connecte, launch, rx, skipBrowser, startServer, texte } from './harnais.test.js';
+import { type Any, attendre, attendreTransitions, connecte, launch, rx, skipBrowser, startServer, texte } from './harnais.test.js';
 
 const opts = { skip: skipBrowser };
 let srv: Awaited<ReturnType<typeof startServer>>;
@@ -197,12 +198,10 @@ test('renommer : nom vide et 201 caractères refusés avec leurs mots, 200 carac
   await champ.fill('b'.repeat(200));
   await champ.press('Enter');
   await attendre(antor);
-  await antor.waitForTimeout(500);
   assert.equal((await liste(antor)).find((x: Any) => x.id === f.id).nom, 'b'.repeat(200));
   await champ.fill('Règles de la Guilde.txt');
   await champ.press('Enter');
   await attendre(antor);
-  await antor.waitForTimeout(500);
   assert.equal((await liste(antor)).find((x: Any) => x.id === f.id).nom, 'Règles de la Guilde.txt');
 });
 
@@ -218,7 +217,6 @@ test('réserver un fichier sans usage : pas de boîte, toast « Fichier réserv�
   await antor.getByText('Fichier réservé au MJ.').first().waitFor({ state: 'hidden', timeout: 15000 });
   await antor.getByText('Visible des joueurs', { exact: true }).click();
   await attendre(antor);
-  await antor.waitForTimeout(800);
   assert.equal((await parNom(antor, 'regles-guilde.pdf')).visibilite, 'joueurs');
   assert.doesNotMatch(norm(await texte(antor)), /Fichier réservé au MJ\.|Fichier visible/);
 });
@@ -300,7 +298,7 @@ test('B-55 menu de l\'illustration : « Ajouter depuis l\'appareil » et « Choi
   await attendre(antor);
   await antor.getByRole('button', { name: /Remplacer/ }).first().click();
   await antor.getByText(rx("Ajouter depuis l'appareil")).first().waitFor();
-  await antor.waitForTimeout(500);
+  await attendreTransitions(antor);
   await antor.screenshot({ path: '/tmp/shots/antor-menu-illustration.png' });
   // the point at the right end of each label must belong to the label itself: not clipped, not covered
   const coupes: string[] = await antor.evaluate(() => {

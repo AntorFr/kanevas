@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of kanevas-fichiers at the level of the whole feature (B-24, P-3 step 4, P-7,
 // E-9 « bloc Pièces jointes »), written from docs/parcours.md and docs/ecrans.md, not from the code.
 // Real server in stub mode (AD-55), real Chromium. Antor is the GM; Léa, Teo players; admin the instance admin.
@@ -135,11 +136,7 @@ async function choisir(page: Any, panneau: Any, fichiers: { name: string; mimeTy
 }
 /** Waits until no upload line (« Envoi… ») is left in the panel. */
 async function finEnvois(panneau: Any): Promise<void> {
-  for (let i = 0; i < 100; i++) {
-    if (!(await panneau.innerText()).includes('Envoi…')) return;
-    await panneau.page().waitForTimeout(100);
-  }
-  throw new Error('uploads did not finish');
+  await panneau.page().waitForFunction((el: HTMLElement) => !el.innerText.includes('Envoi…'), await panneau.elementHandle(), { timeout: 10_000 });
 }
 const fichier = (name: string, buffer: Buffer) => ({ name, mimeType: 'application/octet-stream', buffer });
 
@@ -361,7 +358,7 @@ describe('kanevas-fichiers — besoin B-24', () => {
       await ligne.getByText(rx('Envoi')).waitFor();
       await plan.getByRole('button', { name: rxExact('Annuler') }).click();
       await ligne.getByText(rx('Envoi')).waitFor({ state: 'detached' });
-      await antor.page.waitForTimeout(1500);
+      await attendre(antor.page);
       const f = await (await api(antor.ctx, 'get', `/api/univers/${m.u}/fiches/${m.f}`)).text();
       assert.ok(!f.includes('gros.bin'), 'nothing attached');
       assert.ok(!(await plan.innerText()).includes('gros.bin'));

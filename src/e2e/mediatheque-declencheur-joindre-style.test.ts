@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Ensemble, E-9 Pièces jointes, mockup e09-fiche-importee.html: « Joindre un fichier » is the quiet add link
 // of « Relier à une fiche », not a larger or darker control.
 //

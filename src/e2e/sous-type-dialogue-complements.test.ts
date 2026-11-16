@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Compléments d'ensemble de kanevas-sous-type-dialogue, écrits depuis le besoin seul (Livre de Monsieur du
 // 2026-10-29 ; docs/ecrans.md E-8 / E-9). Serveur réel en bouchon avec le monde de départ, Chromium réel.
 // Attendus en dur. Cas ajoutés à sous-type-dialogue-ensemble.test.ts : persistance après rechargement,

@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Browser check of kanevas-mediatheque-fiche (E-9 « Fichiers »), written from the exit criterion of the
 // task and docs/ecrans.md, not from the code. Real server in stub mode on the seed, real Chromium.
 //
@@ -84,7 +85,7 @@ test('fichier réservé choisi dans une section lue des joueurs : avertissement,
   const source: string = await champ.inputValue();
   const ligne = source.split('\n').find((l) => l.includes('fichier:'))!;
   await champ.fill(source.replace(ligne, `:::mj\n${ligne}\n:::`));
-  await antor.waitForTimeout(500);
+  await attendre(antor);
   assert.equal(await antor.getByText(AVERT).count(), 0, 'avertissement disparu');
   await antor.getByRole('button', { name: 'Enregistrer', exact: true }).click();
   await attendre(antor);

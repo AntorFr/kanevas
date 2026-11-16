@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches, vue-ensemble
 // Migration AD-127 vue de l'extérieur : une base au schéma précédent (migrations 0001 à 0016 seules, puis des lignes écrites en SQL
 // brut dans `campagnes`, `scenarios`, `taches_preparation` et des fiches compte_rendu) est ouverte par le vrai serveur, qui
 // convertit au démarrage ; le navigateur et l'API disent ensuite ce que le critère de la feature annonce.
@@ -228,8 +229,9 @@ describe('kanevas-scenarios-suivi : migration de la base d\'exemple (campagnes e
 
   test('un_second_demarrage_ne_reconvertit_rien', async () => {
     // Casse si : la conversion se rejoue (doublons) ou empêche le redémarrage.
+    const sorti = new Promise((r) => enfant.once('exit', r));
     arreter();
-    await new Promise((r) => setTimeout(r, 500));
+    await sorti;
     await demarrer();
     const a = await connecte(browser, base, 'antor');
     const liste = await appel(a.page, '/api/univers/1/fiches?type=aventure');

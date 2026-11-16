@@ -1,3 +1,4 @@
+// ecrans: mediatheque
 // Review of the E-19 panel correction (aperçu d'un document, libellés « Utilisé dans »).
 //
 // TEST PLAN

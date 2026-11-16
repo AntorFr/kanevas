@@ -1,3 +1,4 @@
+// ecrans: cartes, outil-cible, systeme
 // Black-box tests of the feature kanevas-outils-galaxie-lire (the galaxy map, read side), written from its
 // sheet (« Livre », exit criterion), docs/parcours.md (B-68 to B-72, P-18 steps 1 to 3) and docs/ecrans.md
 // (E-21, E-10) — not from the code. Real server in stub mode WITH its starting world (« Éneria d'essai »,
@@ -11,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, test } from 'node:test';
 import Database from 'better-sqlite3';
-import { type Any, launch, skipBrowser, startServer } from './harnais.test.js';
+import { attendre, type Any, launch, skipBrowser, startServer } from './harnais.test.js';
 
 const opts = { skip: skipBrowser, timeout: 180000 };
 const tmpDirs: string[] = [];
@@ -551,7 +552,7 @@ test('P-18 échec / critère : Léa tape « fant » : « Aucun système ne corre
   await s.page.screenshot({ path: '/tmp/shots/galaxie-recherche-fant.png' });
   // une seule lettre : aucun message, aucun résultat
   await s.page.getByLabel('Rechercher un système', { exact: true }).first().fill('v');
-  await s.page.waitForTimeout(600);
+  await attendre(s.page);
   assert.ok(!(await texteDe(s.page)).includes('Aucun système ne correspond.'));
   await s.ctx.close();
 });

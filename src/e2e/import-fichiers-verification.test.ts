@@ -1,3 +1,4 @@
+// ecrans: acces-api, fiche
 // Independent verification of kanevas-import-fichiers, written from the need only (docs/parcours.md B-48, B-49,
 // B-56, P-10 steps 4-7; docs/ecrans.md E-9 « Pending file reference », E-18 « Import batches »; the criterion of the
 // feature sheet). Every expectation is a literal from those documents. Real app, real SQLite (in memory), stub mode

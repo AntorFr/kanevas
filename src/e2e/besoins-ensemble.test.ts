@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of kanevas-premiere-fiche written from the need (docs/parcours.md B-n,
 // docs/ecrans.md), not from the code. Expected values are literals taken from the docs.
 // Same harness as the other e2e files: real server in stub mode + real Chromium.
@@ -35,7 +36,6 @@ const UNIVERS = "Lame d'Ébène";
 // writes in flight to finish before reading the screen.
 async function attendre(page: Any): Promise<void> {
   await attendreHarnais(page);
-  await page.waitForTimeout(200);
   await page.waitForFunction(() => ![...document.querySelectorAll('button')].some((b) => b.textContent?.trim() === '…'));
   await attendreHarnais(page);
 }
@@ -787,6 +787,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await p.unroute('**/api/univers/*/membres');
     await p.getByRole('button', { name: rxExact('Réessayer') }).first().click();
     await attendre(p);
+    await p.getByRole('button', { name: /^Retirer / }).first().waitFor({ state: 'visible' });
     await antor.ctx.setOffline(true);
     await voit(p, 'Connexion perdue.');
     assert.equal(await p.getByRole('button', { name: rxExact('Ajouter') }).isDisabled(), true);

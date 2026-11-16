@@ -1,3 +1,4 @@
+// ecrans: accueil, systemes
 // Black-box tests of `kanevas-icones`, written from the need (the "Livre" and "Précision" messages of the
 // feature, docs/charte.md « The brand », docs/ecrans.md E-1 and sidebar). Expected values are literals.
 // Real server in stub mode + real Chromium (harnais.test.ts); the dev server is vite itself.
@@ -222,19 +223,22 @@ test('B-exclusion : sans session, la page et les autres fichiers du pack ne sont
 
 test('B-dev : le serveur de dev (vite) sert les mêmes 7 fichiers et la page les déclare', opts, async () => {
   const port = await freePort();
-  const enfant: ChildProcess = spawn('node_modules/.bin/vite', ['--config', 'frontend/vite.config.ts', '--port', String(port), '--strictPort', '--host', '127.0.0.1'], { stdio: 'ignore' });
+  const enfant: ChildProcess = spawn('node_modules/.bin/vite', ['--config', 'frontend/vite.config.ts', '--port', String(port), '--strictPort', '--host', '127.0.0.1'], { stdio: ['ignore', 'pipe', 'ignore'] });
   const base = `http://127.0.0.1:${port}`;
   try {
-    const limite = Date.now() + 30000;
-    for (;;) {
-      try {
-        await fetch(base + '/');
-        break;
-      } catch {
-        if (Date.now() > limite) throw new Error('vite did not start');
-        await new Promise((r) => setTimeout(r, 200));
-      }
-    }
+    // vite announces its address on stdout once it serves: that line is the proof, not a retry loop
+    await new Promise<void>((ok, ko) => {
+      const limite = setTimeout(() => ko(new Error('vite did not start')), 30000);
+      let vu = '';
+      enfant.stdout!.on('data', (d: Buffer) => {
+        vu += d.toString();
+        if (vu.includes(`127.0.0.1:${port}`)) {
+          clearTimeout(limite);
+          ok();
+        }
+      });
+      enfant.once('exit', () => ko(new Error('vite did not start')));
+    });
     await verifierFichiers(base);
     const html = await (await fetch(base + '/')).text();
     for (const motif of [/rel="icon"[^>]*href="\/favicon\.ico"/, /href="\/favicon\.svg"/, /rel="apple-touch-icon"[^>]*href="\/apple-touch-icon\.png"/, /rel="manifest"[^>]*href="\/site\.webmanifest"/]) {

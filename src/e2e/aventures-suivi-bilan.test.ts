@@ -1,3 +1,4 @@
+// ecrans: comptes-rendus, fiche, fiches, parametres, vue-ensemble
 // Browser proof of kanevas-scenarios-suivi-bilan, written from its exit criterion: the whole journey of the slice in
 // Antor's hands on adventures seeded through the routes (stub server, real Chromium). Order matters: one story.
 //
@@ -69,7 +70,6 @@ before(async () => {
   for (const [camp, titre] of [[couronne, 'Séance un'], [couronne, 'Séance deux'], [acte2, 'Séance du sceau']] as const) {
     const r = await api(antor, 'POST', `/api/univers/${uid}/comptes-rendus`, { campagneId: camp, titre, texte: 'Texte.' });
     assert.equal(r.status, 201, JSON.stringify(r.body));
-    await new Promise((res) => setTimeout(res, 1100));
   }
 }, { timeout: 120000 });
 

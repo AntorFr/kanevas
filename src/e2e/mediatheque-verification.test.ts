@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Independent check of kanevas-import-mediatheque, written from the sheet of the feature (« Livre », exit criterion),
 // docs/parcours.md (B-24, B-44, B-53 to B-55, P-16) and docs/ecrans.md (E-9 « Fichiers », E-19) — not from the code.
 // Real server in stub mode on the seed (Lame d'Ébène), real Chromium. It complements mediatheque-ensemble.test.ts.
@@ -162,11 +163,8 @@ test('un document ajouté par la barre d’outils est un lien dans le texte ; r�
   const [fc] = await Promise.all([antor.waitForEvent('filechooser'), antor.getByRole('menuitem', { name: /Ajouter depuis l/ }).click()]);
   await fc.setFiles({ name: 'grille-des-tarifs.pdf', mimeType: 'application/pdf', buffer: PDF });
   const ta = desc.getByRole('textbox');
-  let source = '';
-  for (let i = 0; i < 100 && !/\]\(fichier:\d+\)/.test(source); i++) {
-    await antor.waitForTimeout(100);
-    source = await ta.inputValue();
-  }
+  await antor.waitForFunction((el: HTMLTextAreaElement) => /\]\(fichier:\d+\)/.test(el.value), await ta.elementHandle(), { timeout: 10_000 });
+  const source = await ta.inputValue();
   assert.match(source, /\[[^\]]*grille-des-tarifs[^\]]*\]\(fichier:\d+\)/);
   assert.doesNotMatch(source, /!\[[^\]]*grille-des-tarifs/);
   await desc.getByRole('button', { name: 'Enregistrer', exact: true }).click();

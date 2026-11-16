@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches
 // Black-box tests of the assembled feature kanevas-images, written from the need (docs/parcours.md
 // B-25, B-27, B-29, P-3 step 5; docs/ecrans.md « Détail des écrans de kanevas-images », E-12 block
 // « Image attachée ») and not from the code. Expected values are literals taken from those docs.
@@ -151,7 +152,6 @@ describe('kanevas-images : générer un portrait (B-25, B-27, P-3 étape 5)', { 
     await demander(m.antor, DEMANDE);
     await bloc(m.antor).getByRole('link', { name: 'Ouvrir la section' }).click();
     await attendre(m.antor);
-    await m.antor.waitForTimeout(500);
     assert.equal(await m.antor.locator('main img[src*="/fichiers/"]').count(), 1);
   });
 

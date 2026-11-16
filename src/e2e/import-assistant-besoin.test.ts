@@ -1,3 +1,4 @@
+// ecrans: acces-api, fiche, vue-ensemble
 // Need-based tests of kanevas-scenarios-import-assistant (B-61, B-62), written from the feature sheet and
 // docs/parcours.md / docs/ecrans.md only. The real server in stub mode WITH its starting data (token of the
 // stub, « Essai Kanka » id 4, « Lame d'Ébène » id 1), real SQLite, a real Chromium for E-12 and E-18.
@@ -262,9 +263,11 @@ test('B-62 critère : Antor crée une campagne puis un scénario dans E-12, « O
 test('B-62 exclusion : Léa n’a pas l’outil — rien n’est créé, aucun bloc d’écriture ; elle ne voit pas les fiches d’Antor', opts, async () => {
   // Panne visée : l'outil de création est offert au Joueur, ou une aventure du MJ fuit vers lui.
   await ouvrir(lea, lame);
+  const reponse = lea.waitForResponse((r: Any) => /\/assistant\/messages/.test(r.url()));
   await demander(lea, 'Crée une campagne « Les Braises »');
   await panneau(lea).getByText('Crée une campagne « Les Braises »').waitFor();
-  await lea.waitForTimeout(1500); // rien à attendre : on vérifie une absence ; la réponse du bouchon est synchrone
+  await reponse; // l'absence se vérifie sur la page posée, une fois la réponse du bouchon rendue
+  await attendre(lea);
   assert.equal(await panneau(lea).getByText('Écrit par l’assistant').count(), 0);
   assert.equal(await panneau(lea).getByText(/^Fiche « .* » créée$/).count(), 0);
   await lea.screenshot({ path: '/tmp/captures-import-assistant-lea.png' });
@@ -298,9 +301,11 @@ test('B-61 / B-62 exclusion : type « aventure » désactivé -> l’import aver
     // Trou : le besoin ne dit pas si l'import écrit quand même la fiche avec l'avertissement ; pas d'attendu là-dessus.
 
     await ouvrir(antor, kanka);
+    const reponse = antor.waitForResponse((r: Any) => /\/assistant\/messages/.test(r.url()));
     await demander(antor, 'Crée une campagne « Fermée aussi »');
     await panneau(antor).getByText('Crée une campagne « Fermée aussi »').waitFor();
-    await antor.waitForTimeout(1500);
+    await reponse;
+    await attendre(antor);
     assert.equal(await panneau(antor).getByText('Fiche « Fermée aussi » créée').count(), 0);
     assert.equal(parTitre(await aventures(antor, kanka), 'Fermée aussi'), undefined);
   } finally {

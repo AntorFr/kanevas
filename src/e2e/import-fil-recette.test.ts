@@ -1,3 +1,4 @@
+// ecrans: acces-api, fiche, vue-ensemble
 // Independent acceptance tests of kanevas-import-fil, written from the need only (docs/parcours.md
 // B-45..B-50, P-10, P-11; docs/ecrans.md E-18, E-9 « Importée »; the criterion of the feature sheet).
 // Every expected value is a literal taken from those documents. The product runs for real in stub mode
@@ -25,7 +26,7 @@
 //  P-10 / critère Léa reads « Description » and nothing of « Vérité » (page, API, search).
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
-import { after, before, describe, test } from 'node:test';
+import { after, afterEach, before, describe, test } from 'node:test';
 
 process.env.NODE_ENV = 'test';
 process.env.KANEVAS_STUB = '1';
@@ -535,7 +536,6 @@ describe('B-50 clé et date d’origine', () => {
       const t = ((await menu.innerText()) as string).replace(/\s+/g, ' ').trim();
       // kanevas-types-ecran-fiche adds « Changer le type… », kanevas-recherche-e9 « Alias et étiquettes… »; the origin line stays.
       assert.equal(t, 'Changer le type… Marquer détruit Déplacer sous… Alias et étiquettes… Importée · clé lieu:port-sel · créée le 3 mars 2021 Supprimer la fiche…');
-      await page.waitForTimeout(600);
       await page.screenshot({ path: join(SHOTS, 'antor-menu-importee.png') });
       // a fiche without origin key: no « ⋯ » menu at all (this slice)
       await ctx.close();
@@ -609,6 +609,10 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
   after(async () => {
     await browser?.close();
     await m.stop();
+  });
+  // No test of the block leaves a server clock behind: the tokens of the next ones are created at the real date.
+  afterEach(() => {
+    m.app.horloge = () => new Date();
   });
 
   test('P-11 / critère : Antor crée « Script Kanka — Mac », le jeton ne s’affiche qu’une fois, la ligne dit « jamais » et l’expiration', async () => {
