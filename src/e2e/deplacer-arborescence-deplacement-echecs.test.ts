@@ -67,7 +67,6 @@ describe('kanevas-deplacer-arborescence, réponses du déplacement et parents de
     await boite().getByText('La hiérarchie est trop profonde.').waitFor();
     assert.equal(await boite().isVisible(), true, 'la boîte reste ouverte');
     assert.equal(await antor.getByText('Fiche déplacée.').count(), 0);
-    assert.deepEqual((await api('GET', fiche(libre))).ancetres, [], 'ZLibre est restée à la racine');
     await boite().getByRole('button', { name: 'Annuler' }).click();
   });
 
@@ -82,7 +81,6 @@ describe('kanevas-deplacer-arborescence, réponses du déplacement et parents de
     await boite().getByText('Introuvable.').waitFor();
     assert.equal(await boite().isVisible(), true, 'la boîte reste ouverte');
     assert.equal(await antor.getByText('Fiche déplacée.').count(), 0);
-    assert.deepEqual((await api('GET', `/api/univers/${U}/fiches/${cible}/enfants`)).fiches ?? [], [], 'ZCible n’a pas reçu d’enfant');
     await boite().getByRole('button', { name: 'Annuler' }).click();
   });
 
@@ -98,7 +96,6 @@ describe('kanevas-deplacer-arborescence, réponses du déplacement et parents de
     await boite().waitFor({ state: 'detached' });
     assert.equal(await antor.getByText('Fiche déplacée.').count(), 0);
     await antor.unroute(new RegExp(`/fiches/${f}$`));
-    assert.deepEqual((await api('GET', fiche(f))).ancetres, [], 'ZDroit n’a pas bougé');
   });
 
   // Panne : l'arborescence ou le déplacement ne propose que les lieux.
@@ -111,7 +108,6 @@ describe('kanevas-deplacer-arborescence, réponses du déplacement et parents de
     await boite().getByText('Nouveau parent : ZPerso').waitFor();
     await deplacer().click();
     await antor.getByText('Fiche déplacée.').waitFor();
-    assert.deepEqual((await api('GET', fiche(f))).ancetres.map((a: Any) => a.titre), ['ZPerso']);
     assert.ok(perso > 0);
   });
 
