@@ -59,6 +59,8 @@ export interface Jeton {
 /** The token of a request: the guard gives it the universe of the address (transitional, until the guard task). */
 export interface JetonRequete extends Jeton {
   universId: number;
+  /** The level of the request: the token's access and its account's current role (never `aucun` past the guard). */
+  niveau: NiveauAcces;
 }
 
 export type EtatJeton = 'actif' | 'revoque' | 'expire';
