@@ -433,18 +433,18 @@ test('Documents ne montre que des documents ; Images aucun ; le nom vide et de 2
 });
 
 // Relevé stable de la liste : attend que le compteur « N fichiers » soit affiché, puis que les noms des tuiles ne bougent plus
-// (deux relevés identiques à la suite) ; le texte entier de `main` n'est jamais comparé.
+// (deux relevés identiques à la suite, pris dans la page par le sondage de Playwright) ; le texte entier de `main` n'est jamais comparé.
 const releveListe = async (p: Any): Promise<string> => {
   await p.getByText(/\d[\d\s  ]* fichiers?/).first().waitFor({ timeout: 15_000 });
-  const lire = async () => JSON.stringify([await nbFichiers(p), await p.locator('main button').allInnerTexts()]);
-  let precedent = await lire();
-  for (let i = 0; i < 40; i++) {
-    await p.waitForTimeout(250);
-    const courant = await lire();
-    if (courant === precedent) return courant;
-    precedent = courant;
-  }
-  throw new Error('la liste de la médiathèque ne se stabilise pas');
+  await p.evaluate(() => { delete (window as Any).__releveListe; });
+  await p.waitForFunction(() => {
+    const w = window as Any;
+    const courant = JSON.stringify([...document.querySelectorAll('main button')].map((e) => (e as HTMLElement).innerText));
+    const stable = w.__releveListe === courant;
+    w.__releveListe = courant;
+    return stable;
+  }, undefined, { polling: 250, timeout: 15_000 });
+  return JSON.stringify([await nbFichiers(p), await p.locator('main button').allInnerTexts()]);
 };
 
 test('échecs : un fichier vide n’est pas ajouté ; une illustration qui n’est pas une image est refusée', opts, async () => {
