@@ -13,6 +13,7 @@
 .canevas-carte { display: block; touch-action: none; cursor: crosshair; }
 .canevas-carte:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 .canevas-conseil { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); margin: 0; color: var(--texte-3); text-align: center; pointer-events: none; }
+.canevas-retire { position: absolute; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; color: var(--texte); pointer-events: none; font-weight: 500; line-height: 1.1; }
 .canevas-zoom { position: absolute; right: var(--e-3); bottom: var(--e-3); display: flex; align-items: center; gap: var(--e-1); padding: var(--e-1);
   background: var(--surface); border: 1px solid var(--bord-fort); border-radius: var(--rayon-champ); box-shadow: var(--ombre-flottant); }
 .canevas-zoom-bouton { width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: var(--rayon-item); background: transparent; color: var(--texte-2); cursor: pointer; }

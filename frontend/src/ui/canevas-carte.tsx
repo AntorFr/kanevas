@@ -214,7 +214,7 @@ export function CanevasCarte({
     if (!c) return;
     const t = {
       sol: jeton(el, '--surface-2'), carte: jeton(el, '--surface'), grille: jeton(el, '--bord'), accent: jeton(el, '--accent'),
-      mj: jeton(el, '--mj-bord'), trame: jeton(el, '--mj-trame'), texte: jeton(el, '--texte-3'), neutre: jeton(el, '--surface-3'), libelle: jeton(el, '--texte'),
+      mj: jeton(el, '--mj-bord'), trame: jeton(el, '--mj-trame'), texte: jeton(el, '--texte-3'), neutre: jeton(el, '--surface-3'),
     };
     c.fillStyle = t.sol;
     c.fillRect(0, 0, el.width, el.height);
@@ -288,16 +288,6 @@ export function CanevasCarte({
           c.strokeStyle = t.texte;
           c.lineWidth = px;
           c.strokeRect(-w / 2, -h / 2, w, h);
-          // The label stays upright and readable whatever the rotation, mirror or scale of the element.
-          c.restore();
-          c.save();
-          c.translate(e.x, e.y);
-          const taillePx = Math.min(12 * px, h * 0.45, w / 5);
-          c.font = `${taillePx}px sans-serif`;
-          c.textAlign = 'center';
-          c.textBaseline = 'middle';
-          c.fillStyle = t.libelle;
-          c.fillText('Asset retiré', 0, 0, w * 0.95);
         }
         c.restore();
         if (calque.mj_seul) {
@@ -362,6 +352,21 @@ export function CanevasCarte({
         onDragOver={surDepot ? (ev) => { ev.preventDefault(); ev.dataTransfer.dropEffect = 'copy'; } : undefined}
         onDrop={surDepot ? (ev) => { ev.preventDefault(); surDepot(pointDe(ev), ev); } : undefined}
       />
+      {doc.elements.map((e) => {
+        // « Asset retiré »: the label of the hatched placeholder is real text over the canvas (read by a screen reader, never clipped by the canvas).
+        if (image(e.asset_id) !== 'retire' || doc.calques.find((c) => c.id === e.calque)?.visible === false) return null;
+        const { largeur, hauteur } = empreinte(e.asset_id);
+        const [w, h] = [largeur * (e.echelle ?? 1) * echelle, hauteur * (e.echelle ?? 1) * echelle];
+        return (
+          <span
+            key={e.id}
+            className="canevas-retire"
+            style={{ left: vue.ox + e.x * echelle - w / 2, top: vue.oy + e.y * echelle - h / 2, width: w, height: h, fontSize: Math.max(9, Math.min(13, h / 3)) }}
+          >
+            Asset retiré
+          </span>
+        );
+      })}
       <div className="sr-carte" role="status" aria-live="polite">{annonce}</div>
       {message !== '' && <div className="canevas-message" role="status">{message}</div>}
       {vide && <p className="canevas-conseil">Choisissez un outil à gauche, puis cliquez sur la grille.</p>}
