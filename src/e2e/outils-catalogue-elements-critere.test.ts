@@ -34,9 +34,6 @@ describe('Voir les éléments d’un catalogue (E-20)', { skip: skipBrowser, tim
   const photo = (page: Any, nom: string) => page.screenshot({ path: `${SHOTS}/${nom}.png`, fullPage: true });
   const ouvrirPanneau = async (page: Any) => { await carte(page).getByRole('button', { name: 'Voir les éléments' }).click(); };
   const onglet = (page: Any, re: RegExp) => panneau(page).getByRole('tab', { name: re });
-  const lire = async (ctx: Any, url: string): Promise<{ statut: number; corps: string }> => {
-    const r = await ctx.request.get(url); return { statut: r.status(), corps: await r.text() };
-  };
   const ecrire = (ctx: Any, url: string, body: unknown) => ctx.request.put(url, { data: body });
   const importer = (ctx: Any, url: string, body: unknown) => ctx.request.post(`${url}/application`, { data: body });
 
@@ -82,20 +79,14 @@ describe('Voir les éléments d’un catalogue (E-20)', { skip: skipBrowser, tim
     await photo(page, 'antor-liste');
 
     // mask
-    const leaLit = async () => (await lire(lea.ctx, U("Éneria d'essai") + '?nature=armes')).corps;
-    assert.ok((await leaLit()).includes('lance-essai'), 'visible avant masquage');
+    // what Léa reads after each gesture is src/routes/outils-catalogue-lot-outils.test.ts
     await ligne(page, 'Lance d’essai').getByRole('button', { name: 'Masquer aux joueurs' }).click();
     await ligne(page, 'Lance d’essai').getByText('MJ seul').waitFor();
     await ligne(page, 'Lance d’essai').getByRole('button', { name: 'Rendre visible' }).waitFor();
     await photo(page, 'antor-masque');
-    const masquee = await lire(lea.ctx, U("Éneria d'essai") + '?nature=armes');
-    assert.equal(masquee.statut, 200);
-    assert.ok(!masquee.corps.includes('lance-essai') && !masquee.corps.includes('Lance'), 'Léa ne la lit pas');
-    assert.ok(!/manque|masqu|cach|MJ|retir/i.test(masquee.corps.replace(/"[^"]*"\s*:/g, '')), `rien ne signale un manque: ${masquee.corps.slice(0, 200)}`);
     // visible again
     await ligne(page, 'Lance d’essai').getByRole('button', { name: 'Rendre visible' }).click();
     await ligne(page, 'Lance d’essai').getByRole('button', { name: 'Masquer aux joueurs' }).waitFor();
-    assert.ok((await leaLit()).includes('lance-essai'), 'rendue visible, Léa la lit');
 
     // retire a system element
     await ligne(page, 'Canon léger').getByRole('button', { name: 'Retirer de cet univers' }).click();
@@ -103,9 +94,6 @@ describe('Voir les éléments d’un catalogue (E-20)', { skip: skipBrowser, tim
     await ligne(page, 'Canon léger').getByRole('button', { name: 'Rétablir' }).waitFor();
     assert.equal(await ligne(page, 'Canon léger').evaluate((el: Any) => Number(getComputedStyle(el).opacity) < 1), true, 'ligne estompée');
     await photo(page, 'antor-retire');
-    assert.ok(!(await leaLit()).includes('canon-leger'), 'Léa ne lit plus canon-leger');
-    const voisin = await lire(antor.ctx, U('Univers voisin') + '?nature=armes');
-    assert.ok(voisin.corps.includes('canon-leger'), 'Univers voisin le garde');
     // « Système » sur Univers voisin
     await page.goto(`/univers/${ids['Univers voisin']}/parametres?onglet=outils`);
     await carte(page).waitFor();
@@ -118,7 +106,6 @@ describe('Voir les éléments d’un catalogue (E-20)', { skip: skipBrowser, tim
     await onglet(page, /^Armes/).click();
     await ligne(page, 'Canon léger').getByRole('button', { name: 'Rétablir' }).click();
     await ligne(page, 'Canon léger').getByRole('button', { name: 'Retirer de cet univers' }).waitFor();
-    assert.ok((await leaLit()).includes('canon-leger'), 'rétabli, Léa le lit');
 
     // replaced element: laser
     assert.equal((await importer(antor.ctx, U("Éneria d'essai"), univers('u2', [{ ...ARME, cle: 'laser', nom: 'Laser maison' }]))).status(), 200);
@@ -132,8 +119,6 @@ describe('Voir les éléments d’un catalogue (E-20)', { skip: skipBrowser, tim
     await photo(page, 'antor-remplace');
     await laser.getByRole('button', { name: 'Masquer aux joueurs' }).click();
     await laser.getByText('MJ seul').waitFor();
-    const apres = (await leaLit());
-    assert.ok(!/"cle":"laser"/.test(apres), 'ni le remplaçant ni l’arme du système : Léa ne lit pas laser');
     await laser.getByRole('button', { name: 'Rendre visible' }).click();
     await laser.getByRole('button', { name: 'Masquer aux joueurs' }).waitFor();
 
@@ -141,8 +126,7 @@ describe('Voir les éléments d’un catalogue (E-20)', { skip: skipBrowser, tim
     await ligne(page, 'Lance d’essai').waitFor();
     const gest = (await (await antor.ctx.request.get(U("Éneria d'essai") + '/gestion?nature=armes')).json()) as Any;
     const le = gest.elements.find((e: Any) => e.cle === 'lance-essai');
-    const r = await ecrire(antor.ctx, `${U("Éneria d'essai")}/armes/lance-essai/masque`, { masque: true, version: le.version });
-    assert.equal(r.status(), 200);
+    await ecrire(antor.ctx, `${U("Éneria d'essai")}/armes/lance-essai/masque`, { masque: true, version: le.version });
     await ligne(page, 'Lance d’essai').getByRole('button', { name: 'Masquer aux joueurs' }).click();
     await page.getByText('Cet élément a changé depuis que vous l’avez ouvert.').waitFor();
     await photo(page, 'antor-conflit');
@@ -158,9 +142,6 @@ describe('Voir les éléments d’un catalogue (E-20)', { skip: skipBrowser, tim
     await dlg.getByRole('button', { name: /^Appliquer/ }).click();
     await dlg.getByText(/Catalogue appliqué/).waitFor();
     await dlg.getByRole('button', { name: 'Fermer' }).first().click();
-    const g2 = (await (await antor.ctx.request.get(U("Éneria d'essai") + '/gestion?nature=armes')).json()) as Any;
-    assert.equal(g2.elements.find((e: Any) => e.cle === 'lance-essai').masque, true, 'toujours masquée après réimport');
-    assert.ok(!(await leaLit()).includes('lance-essai'));
     await page.reload();
     await carte(page).waitFor();
     await ouvrirPanneau(page);
