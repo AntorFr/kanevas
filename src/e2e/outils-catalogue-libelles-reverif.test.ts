@@ -1,3 +1,4 @@
+// ecrans: acces-api, systeme
 // Revérification of kanevas-outils-catalogue, written from docs/ecrans.md (E-20 « Voir les éléments », E-18 « Portée »),
 // not from the code. Expected strings are literals. Screenshots: /tmp/cap-catalogue-libelles (not committed).
 import assert from 'node:assert/strict';

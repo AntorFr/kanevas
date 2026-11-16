@@ -1,3 +1,4 @@
+// ecrans: outil, outil-cible
 // Feature-level black-box tests of kanevas-outils-format-evolue for the criterion as AMENDED on 2026-11-06: written from the
 // feature sheet's exit criterion and docs/ecrans.md (E-21, E-22), not from the code. Real server in stub mode with the stub's
 // starting world (« Éneria d'essai », « Galaxie d'essai »), real SQLite, real Chromium. Expected values are literals.

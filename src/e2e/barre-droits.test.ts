@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of kanevas-premiere-fiche written from the need (docs/parcours.md B-3, B-4,
 // B-8, B-9; docs/ecrans.md "Barre latérale", "Rôles × écrans × actions"). Expected values are
 // literals taken from the docs. Same harness as the other e2e files: real server in stub mode

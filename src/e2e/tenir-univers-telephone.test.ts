@@ -1,3 +1,4 @@
+// ecrans: parametres
 // E-14 « Supprimer l'univers » box on a phone (390×844) and on a desktop: label on one line, buttons aligned/stacked.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';

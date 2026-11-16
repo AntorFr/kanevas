@@ -1,3 +1,4 @@
+// ecrans: outil
 // Review tests of kanevas-outils-format-vaisseaux-fiches-atelier (E-22, F-6, B-82): the crew stepper, Vitesse / Armure / Équipage rows,
 // the « Classe » mark, the captions, the read-only figure and the 390 px width, on a trial catalogue written by the test (F-8).
 import assert from 'node:assert/strict';

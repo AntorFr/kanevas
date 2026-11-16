@@ -1,3 +1,4 @@
+// ecrans: acces-api, fiche, vue-ensemble
 // Independent acceptance tests of kanevas-import-fil, written from the need only (docs/parcours.md
 // B-45..B-50, P-10, P-11; docs/ecrans.md E-18, E-9 « Importée »; the criterion of the feature sheet).
 // Every expected value is a literal taken from those documents. The product runs for real in stub mode

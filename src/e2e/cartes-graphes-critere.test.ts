@@ -1,3 +1,4 @@
+// ecrans: carte, cartes, vue-ensemble
 // Black-box test of the exit criterion of kanevas-cartes-graphes, played as the user plays it
 // (docs/parcours.md P-3 step 6, P-6 step 3, P-9 ; docs/ecrans.md E-10, E-11, bloc « Cartes visibles » de E-3).
 // Antor's gestures go through the screens; only the lore (sheets, sections, relations), which belongs to

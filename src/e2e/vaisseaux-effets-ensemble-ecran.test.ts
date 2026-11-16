@@ -1,3 +1,4 @@
+// ecrans: outil
 // Feature-level browser tests of kanevas-outils-format-vaisseaux-effets (B-83, E-22), real server in stub mode, real Chromium.
 // Written from the feature sheet (exit criterion), docs/parcours.md (P-19 step 2) and docs/ecrans.md (« What
 // kanevas-outils-format-vaisseaux-effets builds of E-22 »). Selectors are roles and visible texts; each gesture waits for what

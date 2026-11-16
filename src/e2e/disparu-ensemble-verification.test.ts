@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches
 // Black-box tests of kanevas-fiches-liees-disparu (B-67, B-68 part `disparu`), written from the
 // feature's exit criterion, docs/parcours.md and docs/ecrans.md « the gone mark » — not from the code.
 // Real server in stub mode with the seed + real Chromium. Every expected value is a literal of the docs.

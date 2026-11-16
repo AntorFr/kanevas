@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Browser check of kanevas-mediatheque-fiche (E-9 « Fichiers »), written from the exit criterion of the
 // task and docs/ecrans.md, not from the code. Real server in stub mode on the seed, real Chromium.
 //
