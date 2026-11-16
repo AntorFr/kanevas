@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box re-check of kanevas-rv-cadre, finding « E-9 MJ, 390×526, clair et sombre : le tiroir s'arrête à
 // « Membres », « Paramètres » est sous le pied » (docs/ecrans.md § Barre latérale: the MJ's bar ends with
 // « Paramètres »; on a phone the bar is a drawer under « Menu »).
@@ -53,9 +54,11 @@ after(async () => {
 
 const barre = (p: Any) => p.getByRole('complementary', { name: 'Barre latérale' });
 
-async function ouvrirTiroir(p: Any, hauteur: number): Promise<void> {
+// A player cannot read the sheet (no section for the players): the server answers its bare « Page introuvable. » to the
+// numeric address (B-101), without the bar; the drawer is then opened on the universe page.
+async function ouvrirTiroir(p: Any, hauteur: number, adresse = FICHE): Promise<void> {
   await p.setViewportSize({ width: 390, height: hauteur });
-  await p.goto(FICHE);
+  await p.goto(adresse);
   await attendre(p);
   await p.getByRole('button', { name: 'Menu', exact: true }).click();
   await barre(p).waitFor({ state: 'visible' });
@@ -103,7 +106,7 @@ test('tiroir MJ sombre 390×526 : le compte du pied reste atteignable', opts, as
 });
 
 test('tiroir Joueur 390×526 : pas de « Paramètres », la dernière entrée « Quêtes » est atteignable', opts, async () => {
-  await ouvrirTiroir(lea, 526);
+  await ouvrirTiroir(lea, 526, '/univers/1');
   assert.equal(await barre(lea).getByRole('link', { name: rxExact('Paramètres') }).count(), 0);
   const r = await atteignable(lea, 'Quêtes');
   assert.ok(r.ok, `Quêtes inatteignable : ${r.info}`);

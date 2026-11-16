@@ -12,6 +12,8 @@ import { creerUnivers } from '../services/univers.js';
 import { migrate, openDb, type Db } from './db.js';
 
 const SRC = new URL('./migrations/', import.meta.url).pathname;
+const NUMEROS = readdirSync(SRC).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))).sort((a, b) => a - b);
+const depuis = (n: number) => NUMEROS.filter((x) => x >= n);
 const TABLES = [
   'fiches',
   'sections',
@@ -47,8 +49,20 @@ function avant10(): Db {
   db.exec('CREATE TABLE fichiers_sections (fichier_id, section_id, joint, dans_texte, dans_bloc_mj, PRIMARY KEY (fichier_id, section_id))');
   db.exec('CREATE TABLE fichiers_attente (id INTEGER PRIMARY KEY, univers_id, cle, section_id, fiche_id, maniere)');
   db.exec('ALTER TABLE fiches ADD COLUMN illustration_fichier_id INTEGER');
+  // Same for the keys (0037): the seed draws them, the columns and tables come only with 0037.
+  db.exec('ALTER TABLE univers ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN creee_via TEXT; ALTER TABLE sections ADD COLUMN cle TEXT');
+  db.exec('CREATE TABLE cles_anciennes (univers_id, cle, fiche_id); CREATE TABLE univers_cles_anciennes (cle, univers_id)');
+  // Likewise `relations` (0018): the seed writes `nature` / `qualificatif`, which this schema (`type`) lacks.
+  db.exec('ALTER TABLE relations RENAME COLUMN type TO qualificatif');
+  db.exec("ALTER TABLE relations ADD COLUMN nature TEXT NOT NULL DEFAULT ''");
+  // Same for the owner of a system (0017), which the current services write.
+  db.exec('ALTER TABLE systemes_jeu ADD COLUMN responsable_id INTEGER');
   semerBouchon(db);
+  db.exec('DROP TABLE cles_anciennes; DROP TABLE univers_cles_anciennes; ALTER TABLE univers DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN creee_via; ALTER TABLE sections DROP COLUMN cle');
+  db.exec('ALTER TABLE relations DROP COLUMN nature');
+  db.exec('ALTER TABLE relations RENAME COLUMN qualificatif TO type');
   db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers');
+  db.exec('ALTER TABLE systemes_jeu DROP COLUMN responsable_id');
   return db;
 }
 
@@ -61,7 +75,7 @@ test('0013: comptes, identifiants, clés étrangères et recherche conservés', 
   const titre = (ids0[0] as { titre: string }).titre;
   const mot = titre.split(/\s+/)[0]!.replace(/[^\p{L}\p{N}]/gu, '');
 
-  assert.deepEqual(migrate(db), [13, 14, 15, 16, 17]);
+  assert.deepEqual(migrate(db), depuis(13));
 
   assert.deepEqual(comptes(db), c0);
   assert.deepEqual(db.prepare('SELECT id, titre, type FROM fiches ORDER BY id').all(), ids0);
@@ -95,7 +109,7 @@ test('0013: les déclencheurs de recherche et les index survivent à la recréat
   db.prepare('DELETE FROM fiches WHERE id = ?').run(f.id);
   assert.equal(cherche('quuxplorp'), 0);
   const index = (db.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'fiches'").all() as { name: string }[]).map((r) => r.name);
-  for (const n of ['fiches_par_univers', 'fiches_illustration_fichier', 'fiches_cle_origine']) {
+  for (const n of ['fiches_par_univers', 'fiches_illustration_fichier', 'fiches_cle']) {
     assert.ok(index.includes(n), n);
   }
 });
@@ -141,7 +155,7 @@ test('creerFiche: savoir créé, monde refusé, insertion directe sans contraint
     );
   }
   assert.equal(listerFiches(db, { compteId: marc.id }, u.id, { type: 'savoir' }).fiches.length, 1);
-  db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'nimporte', 'T', '{}', 'a', 'a')").run(u.id);
+  db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k:nimporte', 'ecran', ?, 'nimporte', 'T', '{}', 'a', 'a')").run(u.id);
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM fiches WHERE type = 'nimporte'").get()?.n, 1);
 });
 

@@ -1,3 +1,4 @@
+// ecrans: vue-ensemble
 // Black-box tests of the re-verification of `kanevas-refonte-visuelle`, from the need only
 // (docs/charte.md « Échap le ferme et rend le focus à la pastille »; docs/ecrans.md « le fil garde son
 // dernier maillon entier », E-3 « univers › Vue d'ensemble »). Real stub server + Chromium (harnais.test.ts).

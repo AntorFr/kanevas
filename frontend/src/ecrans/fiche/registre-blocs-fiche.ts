@@ -17,6 +17,8 @@ export interface BlocFiche {
   types: string[];
   roles: Role[];
   rang: number;
+  /** `haut` (default): above the sections; `bas`: after « Contient », before « Mentionnée dans » (E-9). */
+  place?: 'haut' | 'bas';
   composant: ComponentType<PropsBlocFiche>;
 }
 
@@ -28,3 +30,5 @@ export function blocsFicheVisibles(type: string, role: Role, registre: BlocFiche
   return registre.filter((b) => b.types.includes(type) && b.roles.includes(role))
     .sort((a, b) => a.rang - b.rang || a.id.localeCompare(b.id));
 }
+
+export const placeDe = (b: BlocFiche): 'haut' | 'bas' => b.place ?? 'haut';

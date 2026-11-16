@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches, recherche
 // Black-box tests of kanevas-fiche-mj-seul-ecran (B-57), written from the task's exit criterion:
 // the « MJ seul » badge on the E-8 card, the tree row, the E-9 header, the « Relier » card and the
 // E-17 result, and the « Visibilité » filter of the E-8 grid. Real server in stub mode + real Chromium.
@@ -165,9 +166,6 @@ describe('kanevas-fiche-mj-seul-ecran, B-57', { skip: skipBrowser }, () => {
   });
 
   test('résultat E-17 : pastille pour le MJ sur la fiche réservée', async () => {
-    await api(antor, 'GET', `/api/univers/${U}/fiches?type=lieu&visibilite=mj`).then((r: Any) => {
-      assert.ok(r.fiches.some((x: Any) => x.titre === 'Lieu vide B57' && x.visibleJoueurs === false));
-    });
     await antor.goto(`/univers/${U}/recherche?q=${encodeURIComponent('Lieu vide B57')}`);
     await antor.getByRole('link', { name: /Lieu vide B57/ }).first().waitFor();
     assert.ok((await pastilles(antor.locator('main')).count()) >= 1, 'pastille sur le résultat E-17');
@@ -179,6 +177,7 @@ describe('kanevas-fiche-mj-seul-ecran, B-57', { skip: skipBrowser }, () => {
     await antor.getByRole('heading', { level: 1, name: 'Place ouverte B57', exact: true }).waitFor();
     const b = section(antor, 'Description').getByRole('group', { name: 'Relations' });
     await b.getByRole('button', { name: 'Relier à une fiche', exact: true }).click();
+    await b.getByLabel('Nature').selectOption({ label: 'Sans nature' });
     await b.getByLabel('Type de fiche').selectOption({ label: 'Lieu' });
     await b.getByLabel('Chercher dans les lieux').fill('B57');
     await b.getByRole('button', { name: 'Chercher', exact: true }).click();

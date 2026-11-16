@@ -1,5 +1,6 @@
 import type { Db } from '../db/db.js';
 import { aventureLue, campagneDuCompteRendu, exigerMJ, exigerRole } from './droits.js';
+import { tirerCleFiche } from './cles.js';
 import { introuvable, invalide } from './erreurs.js';
 import { LIMITE_LISTE, lireFiche, validerTitre } from './fiches.js';
 import { preparerContenu } from './liens.js';
@@ -25,6 +26,8 @@ export function creerCompteRendu(
     texte?: string;
     /** Import only: origin metadata, validated by the import service before creation. */
     origine?: { cle: string; creeLe?: string; modifieLe?: string; dernierImport: unknown };
+    /** Where the report is created from (`creee_via`); the import is `import`, else `ecran` by default. */
+    via?: 'ecran' | 'assistant' | 'mcp';
   },
 ): FicheVue {
   const role = exigerRole(db, universId, compteId);
@@ -40,11 +43,12 @@ export function creerCompteRendu(
   const ficheId = db.transaction(() => {
     const f = db
       .prepare(
-        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, dernier_import)
-         VALUES (?, 'compte_rendu', ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle, creee_via, dernier_import)
+         VALUES (?, 'compte_rendu', ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(universId, titre, JSON.stringify({ v: 1, campagne_id: campagneId }),
-        o?.creeLe ?? now, o?.modifieLe ?? now, o?.cle ?? null,
+        o?.creeLe ?? now, o?.modifieLe ?? now, o?.cle ?? tirerCleFiche(db, universId, 'compte_rendu', titre),
+        o ? 'import' : (entree.via ?? 'ecran'),
         o ? JSON.stringify(o.dernierImport) : null);
     const id = Number(f.lastInsertRowid);
     const joueur = role === 'joueur';

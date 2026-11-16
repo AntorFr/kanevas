@@ -105,7 +105,7 @@ test('lecture : une clé connue mais illisible est du texte pour Léa, jamais «
   // The sheet exists with the key, but its only section is GM-only.
   const cachee = creerFiche(app.db, a, kanka.id, { type: 'faction', titre: 'Cachée' });
   ajouterSection(app.db, a, kanka.id, cachee.id, { titre: 'Secret' });
-  app.db.prepare('UPDATE fiches SET cle_origine = ? WHERE id = ?').run('faction:cachee', cachee.id);
+  app.db.prepare('UPDATE fiches SET cle = ? WHERE id = ?').run('faction:cachee', cachee.id);
   const anse = (app.db.prepare("SELECT id FROM fiches WHERE titre = 'Anse-aux-Sels'").get() as { id: number }).id;
   const sid = section(anse, 'Description');
   const v = (app.db.prepare('SELECT version FROM sections WHERE id = ?').get(sid) as { version: number }).version;

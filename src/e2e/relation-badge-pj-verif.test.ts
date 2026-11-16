@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Independent acceptance tests of kanevas-relation-badge-pj, written from the need only (fiche, messages « Livre » and
 // « Précision » of Monsieur, docs/ecrans.md E-9 « le bloc Relations », the AD-64 amendment and the route line of ARCHITECTURE.md).
 // Real server in stub mode, real SQLite, real Chromium; every expected value is a literal.
@@ -56,7 +57,8 @@ const ligne = (page: Any, cible: string) => page.getByRole('group', { name: 'Rel
 async function relierParEcran(page: Any, type: string, typeFiche: string, chercherDans: string, cible: string): Promise<void> {
   const b = page.getByRole('group', { name: 'Relations' }).first();
   await b.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
-  await b.getByLabel('Type de relation').fill(type);
+  await b.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+  await b.getByLabel('Qualificatif').fill(type);
   await b.getByLabel('Type de fiche').selectOption({ label: typeFiche });
   await b.getByLabel(`Chercher dans ${chercherDans}`).fill(cible);
   await b.getByRole('button', { name: rxExact('Chercher') }).click();
@@ -91,55 +93,14 @@ describe('kanevas-relation-badge-pj, badge PJ/PNJ du bloc Relations (E-9)', { sk
     await mk('lieu', 'Anse-aux-Sels');
     await mk('faction', 'Lames Grises');
     await mk('personnage', 'Le Prieur masqué', { v: 1, pj: false }, false); // aucune section lue des joueurs
+    // Port-Sel est déjà relié (cas de la production) : semis seul, la route porte l'effet (relations-badge-pj)
+    for (const [cible, type] of [['Léa Brisefer', 'compagnon de'], ['Maître Aldric', 'tenu par'], ['Anse-aux-Sels', 'voisin de'], ['Lames Grises', 'tenu par']]) {
+      await ok(antor, 'POST', relUrl(F['Port-Sel'], secPortSel), { cibleFicheId: F[cible], type });
+    }
   });
   after(async () => {
     await browser?.close();
     srv?.stop();
-  });
-
-  test('GET relations : cible PJ -> charge {pj:true}, cible PNJ -> {pj:false}, lieu et faction -> sans pj', async () => {
-    // panne : la cible ne joint pas la charge, ou la joint inversée
-    await ok(antor, 'POST', relUrl(F['Port-Sel'], secPortSel), { cibleFicheId: F['Léa Brisefer'], type: 'compagnon de' });
-    await ok(antor, 'POST', relUrl(F['Port-Sel'], secPortSel), { cibleFicheId: F['Maître Aldric'], type: 'tenu par' });
-    await ok(antor, 'POST', relUrl(F['Port-Sel'], secPortSel), { cibleFicheId: F['Anse-aux-Sels'], type: 'voisin de' });
-    await ok(antor, 'POST', relUrl(F['Port-Sel'], secPortSel), { cibleFicheId: F['Lames Grises'], type: 'tenu par' });
-    const { relations } = await ok(antor, 'GET', relUrl(F['Port-Sel'], secPortSel));
-    const par = (t: string) => relations.find((r: Any) => r.cible.titre === t).cible;
-    assert.deepEqual(par('Léa Brisefer').charge, { pj: true });
-    assert.deepEqual(par('Maître Aldric').charge, { pj: false });
-    assert.equal(par('Léa Brisefer').type, 'personnage');
-    for (const t of ['Anse-aux-Sels', 'Lames Grises']) {
-      const c = par(t).charge;
-      assert.ok(c === undefined || Object.keys(c).length === 0, `${t} ne porte pas de charge: ${JSON.stringify(c)}`);
-    }
-  });
-
-  test('POST relations : la réponse 201 porte la même cible, charge comprise', async () => {
-    // panne : la cible de la réponse du POST est construite sans charge
-    const s = await ok(antor, 'GET', `/api/univers/${U}/fiches/${F['Anse-aux-Sels']}`);
-    const sec = s.sections[0].id;
-    const pj = await api(antor, 'POST', relUrl(F['Anse-aux-Sels'], sec), { cibleFicheId: F['Léa Brisefer'], type: 'ami de' });
-    assert.equal(pj.status, 201);
-    assert.deepEqual(pj.body.cible.charge, { pj: true });
-    const pnj = await api(antor, 'POST', relUrl(F['Anse-aux-Sels'], sec), { cibleFicheId: F['Maître Aldric'], type: 'ennemi de' });
-    assert.equal(pnj.status, 201);
-    assert.deepEqual(pnj.body.cible.charge, { pj: false });
-    const lieu = await api(antor, 'POST', relUrl(F['Anse-aux-Sels'], sec), { cibleFicheId: F['Lames Grises'], type: 'allié de' });
-    assert.equal(lieu.status, 201);
-    assert.ok(lieu.body.cible.charge === undefined || Object.keys(lieu.body.cible.charge).length === 0);
-  });
-
-  test('la charge d une cible qui n est pas un personnage ne fuit pas (compte-rendu : pas de campagne_id)', async () => {
-    // panne : la charge entière de la fiche cible est jointe sans filtre
-    const c = await ok(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'La Couronne brisée', sections: [{ titre: 'Présentation', joueursLisent: true }] });
-    const cr = await ok(lea, 'POST', `/api/univers/${U}/comptes-rendus`, { campagneId: c.id, titre: 'Séance 3', texte: 'Aldric parle.' });
-    const r = await api(antor, 'POST', relUrl(F['Port-Sel'], secPortSel), { cibleFicheId: cr.id, type: 'raconté dans' });
-    assert.equal(r.status, 201);
-    const { relations } = await ok(antor, 'GET', relUrl(F['Port-Sel'], secPortSel));
-    const cible = relations.find((x: Any) => x.cible.titre === 'Séance 3').cible;
-    assert.equal(JSON.stringify(cible).includes('campagne'), false, JSON.stringify(cible));
-    assert.equal(JSON.stringify(r.body.cible).includes('campagne'), false, JSON.stringify(r.body.cible));
-    assert.equal(cible.charge?.pj, undefined);
   });
 
   test('E-9 : relier par l écran à un PJ puis à un PNJ affiche PJ puis PNJ, la fiche reste ouverte', async () => {

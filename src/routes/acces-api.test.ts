@@ -169,7 +169,7 @@ test('B-50 : cleOrigine dans la fiche du MJ, jamais dans celle de Léa ni en mod
   const { app, antor, lea, u } = await monter();
   const f = (await app.inject({ method: 'POST', url: `/api/univers/${u.id}/fiches`, headers: antor, payload: { type: 'lieu', titre: 'Port' } })).json();
   const s = f.sections?.[0];
-  app.db.prepare('UPDATE fiches SET cle_origine = ? WHERE id = ?').run('lieu:port-sel', f.id);
+  app.db.prepare("UPDATE fiches SET cle = ?, creee_via = 'import' WHERE id = ?").run('lieu:port-sel', f.id);
   // make a section readable by players so Léa can open the sheet
   if (s) app.db.prepare('UPDATE sections SET joueurs_lisent = 1 WHERE id = ?').run(s.id);
   else {
@@ -188,7 +188,7 @@ test('B-50 : cleOrigine dans la fiche du MJ, jamais dans celle de Léa ni en mod
   assert.ok(!j.body.includes('lieu:port-sel'));
   const liste = await app.inject({ method: 'GET', url: `/api/univers/${u.id}/fiches`, headers: lea });
   assert.ok(!liste.body.includes('lieu:port-sel'));
-  // a sheet without origin key: no field at all
+  // a sheet made on screen (its key is drawn, not an origin key): no field at all
   const g = (await app.inject({ method: 'POST', url: `/api/univers/${u.id}/fiches`, headers: antor, payload: { type: 'lieu', titre: 'Autre' } })).json();
   const rg = await app.inject({ method: 'GET', url: `/api/univers/${u.id}/fiches/${g.id}`, headers: antor });
   assert.ok(!('cleOrigine' in rg.json()));

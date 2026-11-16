@@ -11,9 +11,10 @@ export interface Ecran {
   composant: ComponentType;
 }
 
-const modules = import.meta.glob<{ default: Ecran }>('./ecrans/*.tsx', { eager: true });
+const modules = import.meta.glob<{ default: Ecran | Ecran[] }>('./ecrans/*.tsx', { eager: true });
 
-export const ecrans: Ecran[] = Object.values(modules).map((m) => m.default);
+// A screen file answers one address, or several when one screen has more than one form (B-101: a sheet).
+export const ecrans: Ecran[] = Object.values(modules).flatMap((m) => m.default);
 
 /** True when a registered screen answers this concrete address. */
 export function ecranEnregistre(url: string, registre: Ecran[] = ecrans): boolean {

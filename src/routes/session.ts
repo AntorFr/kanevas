@@ -4,9 +4,11 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 import { env } from '../config/env.js';
 import { assurerCompte, lireCompte } from '../services/comptes.js';
+import { resoudreFiche, resoudreUnivers } from '../services/cles.js';
 import { invalide } from '../services/erreurs.js';
 import { contenuPublic, rendreApercu } from '../services/markdown.js';
 import { exigerRole, resolveurLiens } from '../services/droits.js';
+import { resolveurFichiers, resolveurFichiersEnAttente } from '../services/fichiers-lecture.js';
 import { MAX_CONTENU_SECTION, validerContenu } from '../services/sections.js';
 import {
   decoderSession,
@@ -26,8 +28,9 @@ import { registerSystemesRoutes } from './systemes.js';
 import { registerSuiviRoutes } from './suivi.js';
 import { registerAssistantRoutes } from './assistant.js';
 import { registerAccesApiRoutes } from './acces-api.js';
+import { registerOutilsRoutes } from './outils.js';
 import { registerPropositionsRoutes } from './propositions.js';
-import { chargerFrontend } from './frontend.js';
+import { adresseLisible, chargerFrontend } from './frontend.js';
 import { pageIntrouvable, urlConnexion } from './pages.js';
 
 declare module 'fastify' {
@@ -106,6 +109,12 @@ export async function registerSessionRoutes(app: FastifyInstance) {
       return reply.redirect(urlConnexion());
     }
     // The components demo page exists only in stub mode (docs/ecrans.md, « Maquettes »): otherwise it is unknown.
+    // A numeric screen address leads to its readable one (B-101, AD-146); an unreadable sheet answers like an unknown one.
+    if (frontend && request.session && request.method === 'GET') {
+      const lisible = adresseLisible(app.db, request.session.id, chemin, request.url.slice(chemin.length));
+      if (lisible === 'introuvable') return reply.code(404).type('text/html; charset=utf-8').send(pageIntrouvable());
+      if (lisible !== null) return reply.redirect(lisible, 302);
+    }
     const demoAbsente = chemin.replace(/\/+$/, '') === '/demo-composants' && !env.KANEVAS_STUB;
     // An address no server route owns is a frontend screen (or its "Page introuvable.", AD-57).
     if (frontend && !demoAbsente && request.method === 'GET' && !chemin.startsWith('/api') && !chemin.startsWith('/assets/')) {
@@ -128,6 +137,21 @@ export async function registerSessionRoutes(app: FastifyInstance) {
       return reply.redirect(urlConnexion());
     });
     registerErreurs(garde);
+    // A universe or a sheet is named in a path by its id, its key or a former key (AD-146, B-99, B-100): the handlers
+    // below only ever see ids. A reference that names nothing is left as it came: the handler (or the tool's own
+    // « not found », which is not ours to change) answers as it always did, « introuvable » for an unknown name.
+    garde.addHook('preHandler', async (request) => {
+      const p = request.params as Record<string, string> | undefined;
+      const modele = request.routeOptions.url ?? '';
+      if (!p || !modele.startsWith('/api/univers/:id')) return;
+      const u = resoudreUnivers(app.db, p.id!);
+      if (!u) return;
+      p.id = String(u.id);
+      if (p.fid !== undefined && modele.startsWith('/api/univers/:id/fiches/:fid')) {
+        const f = resoudreFiche(app.db, u.id, p.fid);
+        if (f) p.fid = String(f.id);
+      }
+    });
     // Uploads are streamed to the service, never buffered: no size cap on the file (AD-65),
     // one file and a couple of small fields per request.
     await garde.register(multipart, {
@@ -153,6 +177,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     registerAssistantRoutes(garde);
     registerPropositionsRoutes(garde);
     registerAccesApiRoutes(garde);
+    await registerOutilsRoutes(garde);
   });
 }
 
@@ -184,6 +209,12 @@ function registerGuardedRoutes(app: FastifyInstance) {
     const mj = role === 'mj' && !acteur.modeJoueur;
     // The links resolve against what the preview shows: the public text for a non-GM.
     const liens = resolveurLiens(app.db, ctx.univers_id as number, role, acteur, mj ? texte : contenuPublic(texte));
-    return { html: rendreApercu(texte, mj, liens) };
+    // The files resolve like the reading does, so the preview shows an image at its size and placement.
+    const lisible = mj ? texte : contenuPublic(texte);
+    const fichiers = {
+      fichiers: resolveurFichiers(app.db, ctx.univers_id as number, role, acteur, lisible),
+      fichiersEnAttente: resolveurFichiersEnAttente(role, acteur),
+    };
+    return { html: rendreApercu(texte, mj, liens, 'texte', fichiers) };
   });
 }

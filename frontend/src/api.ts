@@ -57,6 +57,8 @@ export class ErreurApi extends Error {
     public statut: number,
     message: string,
     public code?: string,
+    /** Structured refusal fields, when an API provides a cause or a field to explain. */
+    public details?: Record<string, unknown>,
   ) {
     super(message);
   }
@@ -88,12 +90,19 @@ export async function appeler<T>(methode: string, chemin: string, corps?: unknow
     throw new ErreurApi(401, 'Non authentifié.');
   }
   const texte = await reponse.text();
-  const json = texte ? (JSON.parse(texte) as Record<string, unknown>) : {};
+  let json: Record<string, unknown> = {};
+  try {
+    json = texte ? (JSON.parse(texte) as Record<string, unknown>) : {};
+  } catch (erreur) {
+    // Error pages may be HTML: preserve their HTTP status for the caller.
+    if (reponse.ok) throw erreur;
+  }
   if (!reponse.ok) {
     throw new ErreurApi(
       reponse.status,
       typeof json.message === 'string' ? json.message : 'Erreur.',
       typeof json.code === 'string' ? json.code : undefined,
+      json,
     );
   }
   return json as T;

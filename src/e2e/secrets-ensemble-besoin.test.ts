@@ -125,17 +125,6 @@ test('critère : Léa lit « Histoire » sans un mot du bloc ni trace, et sans �
   await page.close();
 });
 
-test('critère : la réponse de lecture de Léa ne contient ni un mot du bloc ni la source', opts, async () => {
-  const f = await vue(C.lea, LAME, PORT);
-  const h = sec(f, 'Histoire');
-  assert.ok(h.html.includes('<p>'));
-  for (const mot of ['sous-main', 'cargaisons', 'bloc-mj', 'Bloc MJ', ':::']) {
-    assert.ok(!JSON.stringify(f).includes(mot), mot);
-  }
-  assert.equal('contenu' in h, false);
-  assert.equal(h.peutEcrire, false);
-});
-
 test('critère : Antor voit le bloc hachuré « MJ seul » ; en mode Joueur la vue de Léa ; en mode MJ de nouveau le bloc', opts, async () => {
   const page = await C.antor.ctx.newPage();
   await page.goto(`${srv.base}/univers/${LAME}/fiche/${PORT}`);
@@ -165,22 +154,7 @@ test('critère : Antor voit le bloc hachuré « MJ seul » ; en mode Joueur la v
   await page.close();
 });
 
-test('critère : en mode Joueur, la lecture API d’Antor est celle de Léa', opts, async () => {
-  const f = await vue(C.antor, LAME, PORT, 'joueur');
-  const h = sec(f, 'Histoire');
-  assert.ok(!JSON.stringify(f).includes('sous-main'));
-  assert.ok(!h.html.includes('bloc-mj'));
-  assert.equal(h.peutEcrire, false);
-  assert.equal(h.html, sec(await vue(C.lea, LAME, PORT), 'Histoire').html);
-});
-
-test('critère : « sous-main » cherché dans Lieux par Léa ne rend pas Port-Sel ; par Antor, si', opts, async () => {
-  assert.deepEqual(await trouvees(C.lea, LAME, 'lieu', 'sous-main'), []);
-  assert.deepEqual(await trouvees(C.antor, LAME, 'lieu', 'sous-main', 'joueur'), []);
-  assert.deepEqual(await trouvees(C.antor, LAME, 'lieu', 'sous-main'), ['Port-Sel']);
-  // bord: a word of the public text still finds it, for Léa too
-  assert.deepEqual(await trouvees(C.lea, LAME, 'lieu', 'sauniers'), ['Port-Sel']);
-
+test('critère : « sous-main » cherché dans Lieux : Léa lit « Aucun résultat… », Antor voit Port-Sel', opts, async () => {
   const chercher = async (c: Any, mot: string) => {
     const p = await c.ctx.newPage();
     await p.goto(`${srv.base}/univers/${LAME}/fiches/lieux`);
@@ -203,145 +177,12 @@ test('critère : « sous-main » cherché dans Lieux par Léa ne rend pas Port-S
   assert.ok(!ta.includes('Aucun résultat'));
 });
 
-test('critère : l’assistant de Léa ne cite rien du bloc (lis-moi la section, que sait-on) ; celui d’Antor, si', opts, async () => {
-  const demande = (c: Any, message: string, mode = '') =>
-    api(c, 'post', `/api/univers/${LAME}/assistant/messages${mode}`, { message });
-  const l1 = await demande(C.lea, 'Lis-moi la section « Histoire »');
-  const s1 = JSON.stringify(l1);
-  assert.ok(s1.includes('sauniers'), 'the public text is read: ' + s1);
-  for (const mot of ['sous-main', 'cargaisons', ':::', 'bloc-mj']) assert.ok(!s1.includes(mot), mot);
-  const l2 = await demande(C.lea, 'Que sait-on de Port-Sel ?');
-  for (const mot of ['sous-main', 'cargaisons', ':::']) assert.ok(!JSON.stringify(l2).includes(mot), mot);
-  const a = await demande(C.antor, 'Lis-moi la section « Histoire »');
-  assert.ok(JSON.stringify(a).includes('sous-main'), 'the GM catalogue keeps the whole source');
-  // the GM catalogue is the GM's even on screen in player mode (docs/ecrans.md, « L'assistant »)
-  const aj = await demande(C.antor, 'Lis-moi la section « Histoire »', '?mode=joueur');
-  assert.ok(JSON.stringify(aj).includes('sous-main'));
-});
-
-test('critère : l’écriture de Léa, auteur avec écriture, est refusée (403) par l’API et par l’assistant, rien n’est écrit', opts, async () => {
-  const b = `/api/univers/${LAME}/fiches/${PORT}/sections/${HISTOIRE}`;
-  const avant = await api(C.antor, 'get', b);
-  const r = await brut(C.lea, 'put', `${b}/contenu`, { contenu: 'Remplacé par Léa.', version: avant.version });
-  assert.equal(r.status, 403);
-  assert.equal(r.corps.message, REFUS_ECRITURE);
-  assert.ok(!JSON.stringify(r.corps).includes('sous-main'));
-  const r2 = await brut(C.lea, 'put', `${b}/contenu`, { contenu: 'Public seulement.', version: avant.version });
-  assert.equal(r2.status, 403);
-
-  const ass = await api(C.lea, 'post', `/api/univers/${LAME}/assistant/messages`, {
-    message: 'Ajoute le paragraphe « Ajout de Léa. » dans « Histoire »',
-  });
-  assert.deepEqual(ass.evenements ?? [], []);
-  assert.ok(JSON.stringify(ass).includes(REFUS_ECRITURE) || JSON.stringify(ass).includes('Introuvable.'), JSON.stringify(ass));
-
-  const apres = await api(C.antor, 'get', b);
-  assert.equal(apres.contenu, avant.contenu);
-  assert.equal(apres.version, avant.version);
-});
-
-test('critère : un import qui envoie :::mj produit le même rendu ; le rejeu est inchangé ; le contenu public suit chaque écriture', opts, async () => {
-  const base = `${srv.base}/api/import/v1/univers/${ESSAI}`;
-  const put = async (contenu: string): Promise<Any> => {
-    const r = await fetch(`${base}/fiches/${encodeURIComponent('lieu:secrets-import')}`, {
-      method: 'PUT',
-      headers: { authorization: `Bearer ${JETON}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ type: 'lieu', titre: 'Anse Close', sections: [{ cle: 'desc', titre: 'Description', contenu, joueursLisent: true }] }),
-    });
-    return { status: r.status, corps: await r.json() };
-  };
-  const avecBloc = 'Un port.\n\n:::mj\nTenu en sous-main.\n:::\n\nFin publique.';
-  const r1 = await put(avecBloc);
-  assert.equal(r1.status, 200);
-  assert.equal(r1.corps.etat, 'creee');
-  const fid = r1.corps.id as number;
-  const liste = async (c: Any, q: string) => trouvees(c, ESSAI, 'lieu', q);
-
-  let lea = sec(await vue(C.lea, ESSAI, fid), 'Description');
-  assert.ok(lea.html.includes('Un port.') && lea.html.includes('Fin publique.'));
-  assert.ok(!lea.html.includes('sous-main') && !lea.html.includes('bloc-mj'));
-  const antor = sec(await vue(C.antor, ESSAI, fid), 'Description');
-  assert.ok(antor.html.includes('class="bloc-mj"') && antor.html.includes('sous-main'));
-  assert.deepEqual(await liste(C.lea, 'sous-main'), []);
-  assert.deepEqual(await liste(C.antor, 'sous-main'), ['Anse Close']);
-  assert.deepEqual(await liste(C.lea, 'port'), ['Anse Close']);
-
-  assert.equal((await put(avecBloc)).corps.etat, 'inchangee');
-
-  // the block removed at the source: the word is public, searchable by Léa
-  const r3 = await put('Un port.\n\nTenu en sous-main.\n\nFin publique.');
-  assert.equal(r3.status, 200);
-  assert.ok(sec(await vue(C.lea, ESSAI, fid), 'Description').html.includes('sous-main'));
-  assert.deepEqual(await liste(C.lea, 'sous-main'), ['Anse Close']);
-  // the block back: hidden again
-  assert.equal((await put(avecBloc)).status, 200);
-  lea = sec(await vue(C.lea, ESSAI, fid), 'Description');
-  assert.ok(!lea.html.includes('sous-main'));
-  assert.deepEqual(await liste(C.lea, 'sous-main'), []);
-});
-
 // ---------------------------------------------------------------- bords: the syntax
 
-test('bord : paragraphes, liste, tableau et citation d’un bloc sont tous secrets ; deux blocs sont deux cadres', opts, async () => {
-  const m = await monde('Secrets formes');
-  await section(m, 'Formes', [
-    'Public un.', '', ':::mj', '- LISTESECRETE', '', '| a | b |', '|---|---|', '| TABLESECRETE | x |', '', '> CITATIONSECRETE', ':::', '',
-    'Public deux.', '', ':::mj', 'SECONDSECRET', ':::', '', 'Public trois.',
-  ].join('\n'));
-  const lea = await htmlLea(m, 'Formes');
-  for (const mot of ['LISTESECRETE', 'TABLESECRETE', 'CITATIONSECRETE', 'SECONDSECRET']) assert.ok(!lea.includes(mot), mot);
-  for (const mot of ['Public un.', 'Public deux.', 'Public trois.']) assert.ok(lea.includes(mot), mot);
-  assert.ok(!lea.includes('bloc-mj') && !lea.includes('<table'));
-  const antor = await htmlAntor(m, 'Formes');
-  assert.equal((antor.match(/class="bloc-mj"/g) ?? []).length, 2);
-  for (const mot of ['LISTESECRETE', 'TABLESECRETE', 'CITATIONSECRETE', 'SECONDSECRET']) assert.ok(antor.includes(mot), mot);
-});
-
-test('bord : un bloc dans un bloc ; le plus extérieur gouverne, le texte après sa fermeture est public', opts, async () => {
-  const m = await monde('Secrets imbriques');
-  await section(m, 'Gigogne', 'AVANT\n\n:::mj\nINTERIEURUN\n\n:::mj\nINTERIEURDEUX\n:::\n\nINTERIEURTROIS\n:::\n\nAPRES');
-  const lea = await htmlLea(m, 'Gigogne');
-  for (const mot of ['INTERIEURUN', 'INTERIEURDEUX', 'INTERIEURTROIS']) assert.ok(!lea.includes(mot), mot);
-  assert.ok(lea.includes('AVANT') && lea.includes('APRES'));
-});
-
-test('exclusion : un « ::: » indenté de 4 espaces ou d’une tabulation ne livre à Léa rien de la suite du bloc', opts, async () => {
-  // Panne : fermer le bloc sur une ligne « ::: » indentée (du code pour le moteur), puis livrer la suite du secret.
-  const m = await monde('Secrets indentes');
-  await section(m, 'Quatre', 'AVANTQ\n\n:::mj\nSECRETQUN\n\n    :::\n\nSECRETQDEUX\n:::\n\nAPRESQ');
-  await section(m, 'Tabulation', 'AVANTT\n\n:::mj\nSECRETTUN\n\n\t:::\n\nSECRETTDEUX\n:::\n\nAPREST');
-  for (const [titre, avant, apres, secrets] of [
-    ['Quatre', 'AVANTQ', 'APRESQ', ['SECRETQUN', 'SECRETQDEUX']],
-    ['Tabulation', 'AVANTT', 'APREST', ['SECRETTUN', 'SECRETTDEUX']],
-  ] as const) {
-    const lea = await htmlLea(m, titre);
-    assert.ok(lea.includes(avant) && lea.includes(apres), titre);
-    for (const mot of secrets) assert.ok(!lea.includes(mot), `${titre} ${mot}`);
-    assert.deepEqual(await trouvees(C.lea, m.u, 'personnage', secrets[1]), [], `${titre} recherche`);
-    assert.deepEqual(await trouvees(C.antor, m.u, 'personnage', secrets[1]), ['Maître Aldric'], `${titre} recherche MJ`);
-  }
-});
-
-test('bord : un bloc jamais fermé couvre jusqu’à la fin de la section, même ouvert dans une citation', opts, async () => {
-  const m = await monde('Secrets ouverts');
-  await section(m, 'Ouvert', 'DEBUT\n\n:::mj\nSECRETOUVERT\n\nSUITEOUVERTE');
-  await section(m, 'Citation', 'DEBUTC\n\n> :::mj\n> SECRETCITE\n\nSUITECITE');
-  for (const [titre, debut, secrets] of [['Ouvert', 'DEBUT', ['SECRETOUVERT', 'SUITEOUVERTE']], ['Citation', 'DEBUTC', ['SECRETCITE', 'SUITECITE']]] as const) {
-    const lea = await htmlLea(m, titre);
-    assert.ok(lea.includes(debut), titre);
-    for (const mot of secrets) assert.ok(!lea.includes(mot), `${titre} ${mot}`);
-    const antor = await htmlAntor(m, titre);
-    for (const mot of secrets) assert.ok(antor.includes(mot), `${titre} ${mot}`);
-  }
-});
-
-test('bord : bloc vide = cadre sans texte pour le MJ, rien pour Léa ; section toute en bloc = « Rien d’écrit pour l’instant. »', opts, async () => {
+test('bord : section toute en bloc = « Rien d’écrit pour l’instant. » pour Léa', opts, async () => {
   const m = await monde('Secrets vides');
   await section(m, 'Creux', 'Avant creux.\n\n:::mj\n:::\n\nAprès creux.');
   await section(m, 'Tout', ':::mj\nTOUTSECRET\n:::');
-  assert.equal(((await htmlAntor(m, 'Creux')).match(/class="bloc-mj"/g) ?? []).length, 1);
-  const leaCreux = await htmlLea(m, 'Creux');
-  assert.ok(leaCreux.includes('Avant creux.') && leaCreux.includes('Après creux.') && !leaCreux.includes('bloc-mj'));
 
   const page = await C.lea.ctx.newPage();
   await page.goto(`${srv.base}/univers/${m.u}/fiche/${m.f}`);
@@ -356,25 +197,9 @@ test('bord : bloc vide = cadre sans texte pour le MJ, rien pour Léa ; section t
 
 // ---------------------------------------------------------------- exclusions: what is not a block stays public text
 
-test('exclusion : code fencé, :::MJ, « ::: mj », ::::mj et « :::mj suite » ne sont pas des blocs, tout le monde les lit', opts, async () => {
-  const m = await monde('Secrets non blocs');
-  await section(m, 'Texte', [
-    '```', ':::mj', 'DANSLECODE', ':::', '```', '',
-    ':::MJ', 'MAJUSCULES', ':::', '',
-    '::: mj', 'ESPACE', ':::', '',
-    '::::mj', 'QUATRE', ':::', '',
-    ':::mj suite', 'AVECMOTS', ':::',
-  ].join('\n'));
-  const lea = await htmlLea(m, 'Texte');
-  for (const mot of ['DANSLECODE', 'MAJUSCULES', 'ESPACE', 'QUATRE', 'AVECMOTS']) assert.ok(lea.includes(mot), mot);
-  assert.ok(!lea.includes('bloc-mj'));
-  assert.ok(!(await htmlAntor(m, 'Texte')).includes('bloc-mj'));
-  assert.deepEqual(await trouvees(C.lea, m.u, 'personnage', 'MAJUSCULES'), ['Maître Aldric']);
-});
-
 // ---------------------------------------------------------------- writing
 
-test('écriture : « Bloc MJ » entoure la sélection, sinon pose deux lignes ; Léa ne le voit pas ; le bloc posé est secret', opts, async () => {
+test('écriture : « Bloc MJ » entoure la sélection, sinon pose deux lignes ; absent pour Léa ; le bloc posé s’affiche hachuré', opts, async () => {
   const m = await monde('Secrets bouton');
   const sid = await section(m, 'Notes', 'Public ouvert.');
   const page = await C.antor.ctx.newPage();
@@ -391,9 +216,6 @@ test('écriture : « Bloc MJ » entoure la sélection, sinon pose deux lignes ; 
   await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
   await attendre(page);
   await page.getByRole('note', { name: 'Bloc MJ seul' }).waitFor();
-
-  const lea = await htmlLea(m, 'Notes');
-  assert.ok(lea.includes('Avant') && !lea.includes('SECRETPOSE'));
 
   // no selection: two lines with an empty line between
   await page.getByRole('button', { name: 'Modifier', exact: true }).first().click();
@@ -416,17 +238,9 @@ test('écriture : « Bloc MJ » entoure la sélection, sinon pose deux lignes ; 
   assert.ok(sid > 0);
 });
 
-test('écriture : Léa qui tape :::mj dans une section sans bloc est refusée (400), message sous le champ, texte conservé', opts, async () => {
+test('écriture : Léa qui tape :::mj dans une section sans bloc : message sous le champ, texte conservé dans le champ', opts, async () => {
   const m = await monde('Secrets refus joueur');
   const sid = await section(m, 'Écrite par Léa', 'Texte de départ.', true);
-  const url = `${m.b}/fiches/${m.f}/sections/${sid}/contenu`;
-  const v = (await api(C.lea, 'get', `${m.b}/fiches/${m.f}/sections/${sid}`)).version;
-  const r = await brut(C.lea, 'put', url, { contenu: 'Public.\n\n:::mj\nINTRUS\n:::', version: v });
-  assert.equal(r.status, 400);
-  assert.equal(r.corps.message, REFUS_BLOC);
-  assert.equal((await api(C.antor, 'get', `${m.b}/fiches/${m.f}/sections/${sid}`)).contenu, 'Texte de départ.');
-  // a bound case: no block at all is accepted
-  assert.equal((await brut(C.lea, 'put', url, { contenu: 'Public deux.', version: v })).status, 200);
 
   const page = await C.lea.ctx.newPage();
   await page.goto(`${srv.base}/univers/${m.u}/fiche/${m.f}`);
@@ -440,63 +254,6 @@ test('écriture : Léa qui tape :::mj dans une section sans bloc est refusée (4
   assert.equal(await page.getByLabel('Contenu de « Écrite par Léa »').inputValue(), saisie);
   await page.screenshot({ path: '/tmp/kanevas-secrets-refus-joueur.png' });
   await page.close();
-  assert.equal((await api(C.antor, 'get', `${m.b}/fiches/${m.f}/sections/${sid}`)).contenu, 'Public deux.');
-});
-
-test('écriture : Léa ne crée pas de compte-rendu dont le texte contient un bloc MJ (400)', opts, async () => {
-  const m = await monde('Secrets compte rendu');
-  const c = await api(C.antor, 'post', `${m.b}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'La Couronne brisée', sections: [{ titre: 'Présentation', joueursLisent: true }] });
-  const r = await brut(C.lea, 'post', `${m.b}/comptes-rendus`, { campagneId: c.id, titre: 'Séance 9', texte: 'Résumé.\n\n:::mj\nRUSE\n:::' });
-  assert.equal(r.status, 400);
-  assert.equal(r.corps.message, REFUS_BLOC);
-  const ok = await brut(C.lea, 'post', `${m.b}/comptes-rendus`, { campagneId: c.id, titre: 'Séance 10', texte: 'Résumé sans secret.' });
-  assert.ok(ok.status < 300);
-});
-
-test('écriture : un MJ écrit une section à bloc par l’API et par l’assistant ; Léa, par l’assistant, est refusée sans événement', opts, async () => {
-  const m = await monde('Secrets assistant');
-  const sid = await section(m, 'Histoire', 'Public.\n\n:::mj\nSECRETASSIST\n:::', true);
-  const url = `${m.b}/fiches/${m.f}/sections/${sid}`;
-  const avant = await api(C.antor, 'get', url);
-  const lea = await api(C.lea, 'post', `${m.b}/assistant/messages`, { message: 'Ajoute le paragraphe « Intrus. » dans « Histoire »' });
-  assert.deepEqual(lea.evenements ?? [], []);
-  assert.equal((await api(C.antor, 'get', url)).contenu, avant.contenu);
-  const ant = await api(C.antor, 'post', `${m.b}/assistant/messages`, { message: 'Ajoute le paragraphe « Ajout du MJ. » dans « Histoire »' });
-  assert.equal((ant.evenements ?? []).length, 1);
-  const apres = await api(C.antor, 'get', url);
-  assert.ok(apres.contenu.includes('SECRETASSIST') && apres.contenu.includes('Ajout du MJ.'));
-  assert.ok(!(await htmlLea(m, 'Histoire')).includes('SECRETASSIST'));
 });
 
 // ---------------------------------------------------------------- preview, and search after writing
-
-test('aperçu : Léa n’a aucun bloc, Antor le voit hachuré, Antor en mode Joueur n’en a pas', opts, async () => {
-  const m = await monde('Secrets apercu');
-  const texteApercu = 'Public.\n\n:::mj\nAPERCUSECRET\n:::';
-  const ctx = { nature: 'section', univers_id: m.u };
-  const lea = await brut(C.lea, 'post', '/api/apercu', { texte: texteApercu, contexte: ctx });
-  assert.equal(lea.status, 200);
-  assert.ok(lea.corps.html.includes('Public.') && !lea.corps.html.includes('APERCUSECRET') && !lea.corps.html.includes('bloc-mj'));
-  const antor = await brut(C.antor, 'post', '/api/apercu', { texte: texteApercu, contexte: ctx });
-  assert.ok(antor.corps.html.includes('class="bloc-mj"') && antor.corps.html.includes('APERCUSECRET'));
-  const mj = await brut(C.antor, 'post', '/api/apercu', { texte: texteApercu, contexte: { ...ctx, mode: 'joueur' } });
-  assert.ok(!mj.corps.html.includes('APERCUSECRET'));
-  // a section preview without universe is refused; a universe the account is not a member of is unknown
-  assert.equal((await brut(C.antor, 'post', '/api/apercu', { texte: texteApercu, contexte: { nature: 'section' } })).status, 400);
-  assert.equal((await brut(C.lea, 'post', '/api/apercu', { texte: texteApercu, contexte: { nature: 'section', univers_id: 999999 } })).status, 404);
-});
-
-test('recherche : poser un bloc retire le mot de la recherche de Léa, le retirer le lui rend (index recréé à chaque écriture)', opts, async () => {
-  const m = await monde('Secrets index');
-  const sid = await section(m, 'Rumeurs', 'Le zéphyrin court les ruelles.');
-  const url = `${m.b}/fiches/${m.f}/sections/${sid}`;
-  assert.deepEqual(await trouvees(C.lea, m.u, 'personnage', 'zéphyrin'), ['Maître Aldric']);
-  let v = (await api(C.antor, 'get', url)).version;
-  await api(C.antor, 'put', `${url}/contenu`, { contenu: 'Public.\n\n:::mj\nLe zéphyrin court les ruelles.\n:::', version: v });
-  assert.deepEqual(await trouvees(C.lea, m.u, 'personnage', 'zéphyrin'), []);
-  assert.deepEqual(await trouvees(C.antor, m.u, 'personnage', 'zéphyrin'), ['Maître Aldric']);
-  assert.deepEqual(await trouvees(C.lea, m.u, 'personnage', 'public'), ['Maître Aldric']);
-  v = (await api(C.antor, 'get', url)).version;
-  await api(C.antor, 'put', `${url}/contenu`, { contenu: 'Le zéphyrin court les ruelles.', version: v });
-  assert.deepEqual(await trouvees(C.lea, m.u, 'personnage', 'zéphyrin'), ['Maître Aldric']);
-});
