@@ -41,12 +41,12 @@ test('0023 : montée depuis 0022 peuplée, rien de perdu, version_importee nulle
     // 0029 (B-84) adds the nullable `plages` to the zones: null for a polygon zone written before.
     const { plages, ...sansPlages } = sansType;
     assert.equal(plages === null || plages === undefined, true);
-    // 0036 adds the nullable `transition` to the systems (AD-systeme-4): null for a row written before.
+    // 0038 adds the nullable `transition` to the systems (AD-systeme-4): null for a row written before.
     const { transition, ...reste } = sansPlages;
     assert.equal(transition === null || transition === undefined, true);
     assert.deepEqual(reste, (avant[i + 1] as any[])[j]);
   }));
-  // 0035 (AD-etoiles-7) moves a galaxy left at the former default 0.2 to the core's 0.68; nothing else of the row moves.
+  // 0037 (AD-etoiles-7) moves a galaxy left at the former default 0.2 to the core's 0.68; nothing else of the row moves.
   assert.deepEqual(apres[0], (avant[0] as any[]).map((g) => ({ ...g, densite_defaut: 0.68 })));
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   assert.deepEqual(migrate(db), []);
