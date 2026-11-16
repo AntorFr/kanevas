@@ -322,7 +322,7 @@ describe('E-5 panneau « Jeton de l\'assistant » (B-51, P-15)', { skip: raisonS
       await p.getByRole('button', { name: 'Connecter l’abonnement' }).click();
       await p.getByLabel('Code').fill('bou');
       await page.getByText('Alpha', { exact: true }).first().click();
-      await page.waitForURL(/\/administration\/univers\/\d+/);
+      await page.waitForURL(/\/administration\/univers\/[^/]+/);
       assert.equal(await p.getByLabel('Code').inputValue(), 'bou');
       await page.getByText('Beta', { exact: true }).first().click();
       await page.waitForLoadState('networkidle');

@@ -571,7 +571,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   test('erreur_de_la_route_dit_impossible_de_charger_et_reessayer_relit', async () => {
     // failure: error swallowed, block that disappears, or « Réessayer » without effect; the rest of the sheet stays readable
     let panne = true;
-    await antor.route(/\/fiches\/\d+\/liees/, (route: Any) =>
+    await antor.route(/\/fiches\/[^/]+\/liees/, (route: Any) =>
       panne ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"boum"}' }) : route.continue());
     await ouvrir(antor, 'Port-Sel');
     const b = bloc(antor);
@@ -582,14 +582,14 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
     await b.getByRole('button', { name: 'Réessayer' }).click();
     await b.getByText('Maître Aldric').waitFor();
     assert.equal(await b.getByText('Impossible de charger les fiches liées.').count(), 0);
-    await antor.unroute(/\/fiches\/\d+\/liees/);
+    await antor.unroute(/\/fiches\/[^/]+\/liees/);
   });
 
   test('chargement_dit_chargement_dans_le_bloc_et_la_fiche_reste_lisible', async () => {
     // failure: block invisible until the response
     let lacher: () => void = () => undefined;
     const attente = new Promise<void>((r) => (lacher = r));
-    await antor.route(/\/fiches\/\d+\/liees/, async (route: Any) => {
+    await antor.route(/\/fiches\/[^/]+\/liees/, async (route: Any) => {
       await attente;
       await route.continue();
     });
@@ -599,7 +599,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
     await antor.getByText('Un port de sel et de brume').waitFor();
     lacher();
     await b.getByText('Maître Aldric').waitFor();
-    await antor.unroute(/\/fiches\/\d+\/liees/);
+    await antor.unroute(/\/fiches\/[^/]+\/liees/);
   });
 
   test('relecture_echouee_garde_le_contenu_et_remet_la_case_dans_l_etat_affiche', async () => {
@@ -607,12 +607,12 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
     await antor.evaluate(() => localStorage.clear());
     await ouvrir(antor, 'Port-Sel');
     const b = await blocPret(antor);
-    await antor.route(/\/fiches\/\d+\/liees\?.*descendants=1/, (route: Any) => route.fulfill({ status: 500, body: '{}' }));
+    await antor.route(/\/fiches\/[^/]+\/liees\?.*descendants=1/, (route: Any) => route.fulfill({ status: 500, body: '{}' }));
     await b.getByRole('checkbox', { name: 'sous-lieux compris' }).click();
     await b.getByText('Impossible de charger les fiches liées.').waitFor();
     assert.deepEqual(await titres(b), ['Le Prieur masqué', 'Maître Aldric']);
     assert.equal(await b.getByRole('checkbox', { name: 'sous-lieux compris' }).isChecked(), false);
-    await antor.unroute(/\/fiches\/\d+\/liees\?.*descendants=1/);
+    await antor.unroute(/\/fiches\/[^/]+\/liees\?.*descendants=1/);
     await b.getByRole('button', { name: 'Réessayer' }).click();
     await b.getByText('Impossible de charger les fiches liées.').waitFor({ state: 'detached' });
     assert.deepEqual(await titres(b), ['Le Prieur masqué', 'Maître Aldric']);

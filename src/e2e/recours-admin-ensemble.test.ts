@@ -250,7 +250,7 @@ describe('kanevas-recours-admin : B-6 / P-2 étape 3 / E-5 (navigateur)', { skip
     await ligne(m.admin.page, 'mira').waitFor();
     await retirer(m.admin.page, 'admin', 'Brume');
     await ligne(m.admin.page, 'mira').waitFor();
-    assert.match(m.admin.page.url(), /\/administration\/univers\/\d+$/);
+    assert.match(m.admin.page.url(), /\/administration\/univers\/[^/]+$/);
     await ligne(m.admin.page, 'admin').waitFor({ state: 'detached' });
     assert.equal(await ligne(m.admin.page, 'admin').count(), 0);
     assert.equal(await ligne(m.admin.page, 'mira').count(), 1);
@@ -267,7 +267,7 @@ describe('kanevas-recours-admin : B-6 / P-2 étape 3 / E-5 (navigateur)', { skip
     await ouvrirAdmin(m.admin.page);
     await m.admin.page.getByRole('listitem').filter({ hasText: 'Brume' }).getByRole('link', { name: /^Ouvrir/ }).click();
     await attendre(m.admin.page);
-    assert.match(m.admin.page.url(), /\/univers\/\d+/);
+    assert.match(m.admin.page.url(), /\/univers\/[^/]+/);
     assert.ok(!/Page introuvable/.test(await texte(m.admin.page)));
     const barre = m.admin.page.getByRole('complementary', { name: 'Barre latérale' });
     await barre.getByRole('link', { name: 'Personnages' }).waitFor();

@@ -95,7 +95,7 @@ describe('kanevas-premiere-fiche, barre latérale et droits', { skip: skipBrowse
     await sIdentifier('Léa');
     const antor = await compte('Antor');
     await creerUnivers(antor.page, 'Barre Joueur');
-    await antor.page.waitForURL(/\/univers\/\d+$/);
+    await antor.page.waitForURL(/\/univers\/[^/]+$/);
     const chemin = new URL(antor.page.url()).pathname;
     await allerMembres(antor.page);
     await ajouter(antor.page, 'lea');
@@ -141,19 +141,21 @@ describe('kanevas-premiere-fiche, barre latérale et droits', { skip: skipBrowse
     await sIdentifier('Léa', 'Teo');
     const antor = await compte('Antor');
     await creerUnivers(antor.page, 'Droits API');
-    await antor.page.waitForURL(/\/univers\/\d+$/);
+    await antor.page.waitForURL(/\/univers\/[^/]+$/);
     const id = new URL(antor.page.url()).pathname.split('/').filter(Boolean).pop();
     await allerMembres(antor.page);
     await ajouter(antor.page, 'lea');
     await creerFiche(antor.page, 'personnage', 'Maître Aldric');
-    await antor.page.waitForURL(/\/fiche\/\d+$/);
+    await antor.page.waitForURL(/\/univers\/[^/]+\/(fiche\/[^/]+|(?!fiches\/|cartes\/|outils\/)[^/]+\/[^/]+)$/);
     await ajouterSection(antor.page, 'Apparence');
     await ajouterSection(antor.page, 'Vérité — MJ seul');
     await regler(antor.page, 'Apparence', 'Les joueurs la lisent', true);
     const fichePage = antor.page.url();
 
     const base = `/api/univers/${id}`;
-    const fid = new URL(fichePage).pathname.split('/').filter(Boolean).pop();
+    // B-101: the address is `<type>/<name>` (the sheet key `<type>:<name>`) or `fiche/<ref>`; both are references of the API
+    const seg = new URL(fichePage).pathname.split('/').filter(Boolean);
+    const fid = encodeURIComponent(seg[seg.length - 2] === 'fiche' ? seg[seg.length - 1]! : `${seg[seg.length - 2]}:${seg[seg.length - 1]}`);
     const lea = await compte('Léa');
     const r = lea.page.request;
     const refus = async (promesse: Promise<Any>, quoi: string) => {

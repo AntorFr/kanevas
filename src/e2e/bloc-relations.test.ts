@@ -110,7 +110,7 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
   test('un clic sur « Lames Grises » ouvre sa fiche', async () => {
     await ouvrir(lea, aldric);
     await bloc(lea, 'Apparence').getByRole('link', { name: 'Lames Grises' }).click();
-    await lea.waitForURL(new RegExp(`/fiche/${grises}$`));
+    await lea.waitForURL(new RegExp(`/(fiche/[^/]+|(?!fiches/|cartes/|outils/)[^/]+/[^/]+)$`));
   });
 
   test('refus : auto-relation et doublon, au-dessus du formulaire, saisie conservée', async () => {

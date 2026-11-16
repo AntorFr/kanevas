@@ -48,7 +48,7 @@ async function creerUnivers(page: Any, nom: string, description = ''): Promise<v
   await page.getByLabel('Nom', { exact: true }).fill(nom);
   if (description) await page.getByLabel('Description').fill(description);
   await page.getByRole('button', { name: rxExact("Créer l'univers") }).click();
-  await page.waitForURL(/\/univers\/\d+$/);
+  await page.waitForURL(/\/univers\/[^/]+$/);
   await attendre(page);
 }
 
@@ -186,7 +186,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await voit(p, 'Erreur : 80 caractères au plus.');
     await p.getByLabel(/^Nom/).fill('y'.repeat(80));
     await p.getByRole('button', { name: rxExact("Créer l'univers") }).click();
-    await p.waitForURL(/\/univers\/\d+$/);
+    await p.waitForURL(/\/univers\/[^/]+$/);
     await attendre(p);
     assert.ok((await texte(p)).includes('y'.repeat(80)));
   });
@@ -497,9 +497,11 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     const { urlFiche } = await aldric(UNIVERS + ' B9a');
     const lea = await compte('lea');
     const cookie = (await lea.ctx.cookies()).map((c: Any) => `${c.name}=${c.value}`).join('; ');
-    const ids = new URL(urlFiche).pathname.match(/univers\/(\d+)\/fiche\/(\d+)$/);
+    // B-101: the address carries references (universe key, then <type>/<name> = sheet key <type>:<name>, or fiche/<ref>)
+    const ids = new URL(urlFiche).pathname.match(/univers\/([^/]+)\/(?:fiche\/([^/]+)|([^/]+)\/([^/]+))$/);
     assert.ok(ids, urlFiche);
-    const res = await fetch(`${srv.base}/api/univers/${ids![1]}/fiches/${ids![2]}`, { headers: { cookie } });
+    const refFiche = ids![2] ?? `${ids![3]}:${ids![4]}`;
+    const res = await fetch(`${srv.base}/api/univers/${ids![1]}/fiches/${encodeURIComponent(refFiche)}`, { headers: { cookie } });
     assert.equal(res.status, 200);
     const corps = await res.text();
     assert.ok(corps.includes('Apparence'));

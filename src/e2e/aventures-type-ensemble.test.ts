@@ -213,7 +213,7 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await dlg.getByLabel('Titre').fill('La Couronne brisée');
     await dlg.getByLabel('Sous-type').fill('Campagne');
     await dlg.getByRole('button', { name: "Créer l'aventure" }).click();
-    await p.waitForURL(/\/fiche\/\d+$/);
+    await p.waitForURL(/\/univers\/[^/]+\/(fiche\/[^/]+|(?!fiches\/|cartes\/|outils\/)[^/]+\/[^/]+)$/);
     await p.getByRole('heading', { name: 'La Couronne brisée' }).waitFor();
     await declencheur(p, 'La Couronne brisée', 'En préparation').waitFor();
     await p.getByRole('heading', { name: 'Présentation' }).waitFor();
@@ -228,7 +228,7 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await dlg.getByLabel('Dans').click();
     await dlg.getByRole('radio', { name: 'La Couronne brisée' }).check();
     await dlg.getByRole('button', { name: "Créer l'aventure" }).click();
-    await p.waitForURL(/\/fiche\/\d+$/);
+    await p.waitForURL(/\/univers\/[^/]+\/(fiche\/[^/]+|(?!fiches\/|cartes\/|outils\/)[^/]+\/[^/]+)$/);
     await declencheur(p, 'Acte II — Le sceau brisé', 'En préparation').waitFor();
 
     // In the tree: the scenario is under the campaign, not at the root.
@@ -286,7 +286,7 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await dlg.getByLabel('Sous-type').fill('Campagne');
     await dlg.getByRole('checkbox', { name: 'Visible des joueurs' }).check();
     await creer.click();
-    await p.waitForURL(/\/fiche\/\d+$/);
+    await p.waitForURL(/\/univers\/[^/]+\/(fiche\/[^/]+|(?!fiches\/|cartes\/|outils\/)[^/]+\/[^/]+)$/);
     await p.getByRole('heading', { name: 'Présentation' }).waitFor();
     // Léa now reads it (the section is open), with the status.
     assert.deepEqual(await titresListes(monde.lea, u, 'type=aventure'), [titre120]);
@@ -303,7 +303,7 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     const dlg = await ouvrirCreation(p);
     await dlg.getByLabel('Titre').fill('Jamais créée');
     await dlg.getByLabel('Sous-type').fill('Campagne');
-    await p.route(new RegExp(`/api/univers/${u}/fiches$`), (route) => {
+    await p.route(new RegExp(`/api/univers/[^/]+/fiches$`), (route) => {
       if (route.request().method() === 'POST') return route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"boum"}' });
       return route.continue();
     });
@@ -311,7 +311,7 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await dlg.getByText(ECHEC).waitFor();
     assert.equal(await dlg.getByLabel('Titre').inputValue(), 'Jamais créée', 'la saisie est gardée');
     await capture(p, 'creation-echec');
-    await p.unroute(new RegExp(`/api/univers/${u}/fiches$`));
+    await p.unroute(new RegExp(`/api/univers/[^/]+/fiches$`));
     assert.deepEqual(await titresListes(monde.antor, u, 'type=aventure'), []);
   });
 
@@ -416,7 +416,7 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     const id = await aventure(u, 'La Couronne brisée', { sousType: 'Campagne' });
     const p = await page(monde.antor, `/univers/${u}/fiche/${id}`);
     await declencheur(p, 'La Couronne brisée', 'En préparation').waitFor();
-    await p.route(new RegExp(`/api/univers/${u}/fiches/${id}$`), (route) => {
+    await p.route(new RegExp(`/api/univers/[^/]+/fiches/[^/]+$`), (route) => {
       if (route.request().method() === 'PATCH') return route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"boum"}' });
       return route.continue();
     });
@@ -425,7 +425,7 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await p.getByText(ECHEC).first().waitFor();
     await declencheur(p, 'La Couronne brisée', 'En préparation').waitFor();
     await capture(p, 'statut-echec');
-    await p.unroute(new RegExp(`/api/univers/${u}/fiches/${id}$`));
+    await p.unroute(new RegExp(`/api/univers/[^/]+/fiches/[^/]+$`));
     assert.deepEqual(await titresListes(monde.antor, u, 'type=aventure&statut=en_preparation'), ['La Couronne brisée']);
   });
 
@@ -565,7 +565,7 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     // The sidebar reads the types after the page has loaded: arm the wait for that response before navigating,
     // then assert on the main navigation only (the breadcrumb of the existing sheet legitimately keeps « Aventures »).
     const p = await monde.antor.newPage();
-    const types = p.waitForResponse((r) => r.url().includes(`/api/univers/${u}/types`) && r.request().method() === 'GET');
+    const types = p.waitForResponse((r) => /\/api\/univers\/[^/]+\/types$/.test(new URL(r.url()).pathname) && r.request().method() === 'GET');
     await p.goto(`/univers/${u}/fiche/${id}`);
     await types;
     await declencheur(p, 'La Couronne brisée', 'En préparation').waitFor();

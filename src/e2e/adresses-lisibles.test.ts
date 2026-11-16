@@ -126,7 +126,7 @@ describe('kanevas-synchro-cles-adresses, adresses lisibles', { skip: skipBrowser
     await page.goto('/univers');
     await page.evaluate((u: string) => { history.pushState({}, '', u); window.dispatchEvent(new PopStateEvent('popstate')); }, `/univers/${U}/fiche/${cible.id}`);
     await page.getByRole('heading', { level: 1, name: 'Port-Sel', exact: true }).waitFor();
-    await page.waitForTimeout(800);
+    await page.waitForLoadState('networkidle'); // the replace, if any, would have happened with the load
     assert.equal(new URL(page.url()).pathname, `/univers/${U}/fiche/${cible.id}`);
     await ctx.close();
   });

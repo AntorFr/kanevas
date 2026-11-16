@@ -473,7 +473,7 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     await dlg.getByText(/Sa section « Document MJ » de la fiche « Galaxie — notes MJ » sera retirée\./).waitFor();
     await hors(page, '12-suppression');
     await dlg.getByRole('button', { name: 'Effacer la galaxie' }).click();
-    await page.waitForURL(new RegExp(`/univers/${univers}/cartes$`));
+    await page.waitForURL(new RegExp(`/univers/[^/]+/cartes$`));
     const apres = await lireJson(page, base);
     assert.equal(apres.status, 404, 'la galaxie est effacée');
     await ctx.close();

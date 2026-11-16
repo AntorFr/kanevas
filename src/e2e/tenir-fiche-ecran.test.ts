@@ -88,7 +88,7 @@ describe('renommer et supprimer une fiche depuis son en-tête', { skip: skipBrow
     await boite.getByText(/3 sections/).waitFor();
     await boite.getByRole('button', { name: /^Supprimer la fiche$/ }).click();
     await page.getByText('Fiche supprimée.').first().waitFor();
-    assert.match(new URL(page.url()).pathname, /^\/univers\/\d+\/fiches\/lieux$/);
+    assert.match(new URL(page.url()).pathname, /^\/univers\/[^/]+\/fiches\/lieux$/);
     assert.equal((await page.request.get(`/api/univers/${univers}/fiches/${port}`)).status(), 404);
     await page.goto(`/univers/${univers}/fiche/${port}`);
     await attendre(page);

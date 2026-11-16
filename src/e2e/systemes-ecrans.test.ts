@@ -172,8 +172,8 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
     assert.match(antor.url(), new RegExp(`/systemes/${ids['Chroniques Oubliées Fantasy']}$`));
     await va(antor, '/');
     await cliqueEntete(antor.locator('.carte-dessin').first());
-    await antor.waitForURL(/\/univers\/\d+$/);
-    assert.match(antor.url(), /\/univers\/\d+$/);
+    await antor.waitForURL(/\/univers\/[^/]+$/);
+    assert.match(antor.url(), /\/univers\/[^/]+$/);
   });
 
   test('erreur : E-16 et E-1 disent leur message et « Réessayer » relance', opts, async () => {

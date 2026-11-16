@@ -38,7 +38,7 @@ const ligne = async (page: Any, titre: string): Promise<string> =>
 const typeAventure = (page: Any) => page.locator('li[data-type="aventure"]');
 
 async function reglerType(etat: 'Désactivé' | 'Activé') {
-  const r = antor.waitForResponse((x: Any) => x.url().includes(`/api/univers/${uid}/types/aventure`) && x.request().method() === 'PUT');
+  const r = antor.waitForResponse((x: Any) => /\/api\/univers\/[^/]+\/types\/aventure/.test(x.url()) && x.request().method() === 'PUT');
   await typeAventure(antor).getByRole('radio', { name: rxExact(etat) }).click();
   if (etat === 'Désactivé') await antor.getByRole('alertdialog').getByRole('button', { name: rxExact('Désactiver') }).click();
   assert.equal((await r).status(), 200);
@@ -86,7 +86,7 @@ test('type « Aventure » désactivé : l’entrée et « Nouvelle aventure » p
   await shot(antor, 'e14-desactive');
 
   // The bar is read after the page has loaded the types: wait for that answer, then assert on the main navigation.
-  const types = antor.waitForResponse((r: Any) => r.url().includes(`/api/univers/${uid}/types`) && r.request().method() === 'GET');
+  const types = antor.waitForResponse((r: Any) => /\/api\/univers\/[^/]+\/types$/.test(new URL(r.url()).pathname) && r.request().method() === 'GET');
   await antor.goto(`/univers/${uid}`);
   await types;
   await barre(antor).getByRole('link', { name: rxExact('Cartes') }).waitFor();
@@ -115,7 +115,7 @@ test('type « Aventure » désactivé : l’entrée et « Nouvelle aventure » p
   await typeAventure(antor).waitFor();
   await reglerType('Activé');
   await antor.getByText(/Aventure : activé dans Bilan\./).waitFor();
-  const types2 = antor.waitForResponse((r: Any) => r.url().includes(`/api/univers/${uid}/types`) && r.request().method() === 'GET');
+  const types2 = antor.waitForResponse((r: Any) => /\/api\/univers\/[^/]+\/types$/.test(new URL(r.url()).pathname) && r.request().method() === 'GET');
   await antor.goto(`/univers/${uid}/fiches/aventures`);
   await types2;
   await barre(antor).getByRole('link', { name: rxExact('Aventures') }).waitFor();

@@ -45,7 +45,7 @@ async function creerUnivers(page: Any, nom: string): Promise<number> {
   await page.getByRole('link', { name: rxExact('Créer un univers') }).or(page.getByRole('button', { name: rxExact('Créer un univers') })).first().click();
   await page.getByLabel(NOM).fill(nom);
   await page.getByRole('button', { name: rxExact("Créer l'univers") }).click();
-  await page.waitForURL(/\/univers\/\d+$/);
+  await page.waitForURL(/\/univers\/[^/]+$/);
   await attendre(page);
   return Number(/\/univers\/(\d+)/.exec(page.url())![1]);
 }
@@ -508,7 +508,7 @@ describe('B-29 états de E-14 et E-15', opts, () => {
     const page = await antor.context().newPage();
     page.setDefaultTimeout(8000);
     await parametres(page, idLame);
-    await page.route(/\/api\/univers\/\d+\/systeme-nouveau$/, (route: Any) => route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"boom"}' }));
+    await page.route(/\/api\/univers\/[^/]+\/systeme-nouveau$/, (route: Any) => route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"boom"}' }));
     await page.getByLabel('Nom du système').fill('Système raté');
     await page.getByRole('button', { name: rxExact('Créer et rattacher') }).click();
     await voit(page, "L'action n'a pas abouti. Réessayez.");

@@ -29,7 +29,7 @@ describe('kanevas-fiches-liees-bloc, types lus tardivement (B-64)', { skip: skip
 
   test('le_libelle_n_est_jamais_le_type_brut_pendant_que_les_types_chargent', async () => {
     // failure: a group « personnage (2) » is on screen before /types answers
-    await antor.route(/\/api\/univers\/\d+\/types$/, async (route: Any) => {
+    await antor.route(/\/api\/univers\/[^/]+\/types$/, async (route: Any) => {
       await new Promise((r) => setTimeout(r, 1500));
       await route.continue();
     });
@@ -45,15 +45,15 @@ describe('kanevas-fiches-liees-bloc, types lus tardivement (B-64)', { skip: skip
     assert.ok(vus.every((t) => !/personnage \(2\)/.test(t)), 'le type brut a été affiché');
     assert.ok(vus.every((t) => !/Personnages \(2\)/.test(t)), 'un groupe a été affiché avant les types');
     await b.getByText('Personnages (2)').waitFor();
-    await antor.unroute(/\/api\/univers\/\d+\/types$/);
+    await antor.unroute(/\/api\/univers\/[^/]+\/types$/);
   });
 
   test('le_bloc_se_montre_avec_le_type_brut_quand_les_types_ne_chargent_pas', async () => {
     // failure: the block stays on « Chargement… » forever when /types fails
-    await antor.route(/\/api\/univers\/\d+\/types$/, (route: Any) => route.fulfill({ status: 500, body: '{}' }));
+    await antor.route(/\/api\/univers\/[^/]+\/types$/, (route: Any) => route.fulfill({ status: 500, body: '{}' }));
     await antor.goto(`/univers/${U}/fiche/${portSel}`);
     const b = antor.getByRole('region', { name: /^Fiches liées$/ });
     await b.getByText(/personnage \(2\)/).waitFor({ timeout: 8000 });
-    await antor.unroute(/\/api\/univers\/\d+\/types$/);
+    await antor.unroute(/\/api\/univers\/[^/]+\/types$/);
   });
 });

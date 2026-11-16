@@ -93,7 +93,7 @@ describe('kanevas-fiches-liees-bloc, rafraîchissement du bloc « Fiches liées 
     assert.deepEqual(await titres(b), ['Le Prieur masqué', 'Maître Aldric']);
     let liberer: () => void = () => {};
     const tenue = new Promise<void>((r) => (liberer = r));
-    await antor.route(/\/fiches\/\d+\/liees\?.*descendants=1/, async (route: Any) => {
+    await antor.route(/\/fiches\/[^/]+\/liees\?.*descendants=1/, async (route: Any) => {
       await tenue;
       await route.continue();
     });
@@ -112,7 +112,7 @@ describe('kanevas-fiches-liees-bloc, rafraîchissement du bloc « Fiches liées 
       liberer();
     }
     await b.getByText('Suie').waitFor();
-    await antor.unroute(/\/fiches\/\d+\/liees\?.*descendants=1/);
+    await antor.unroute(/\/fiches\/[^/]+\/liees\?.*descendants=1/);
     assert.deepEqual(await titres(b), ['Le Kraken des Cales', 'Le Prieur masqué', 'Maître Aldric', 'Suie']);
     assert.equal(await b.getByRole('checkbox', { name: 'sous-lieux compris' }).isDisabled(), false);
     await jusque(b, (el) => {
@@ -129,7 +129,7 @@ describe('kanevas-fiches-liees-bloc, rafraîchissement du bloc « Fiches liées 
     assert.equal((await titres(b)).length, 5);
     let liberer: () => void = () => {};
     const tenue = new Promise<void>((r) => (liberer = r));
-    await antor.route(/\/fiches\/\d+\/liees\?.*nature=/, async (route: Any) => {
+    await antor.route(/\/fiches\/[^/]+\/liees\?.*nature=/, async (route: Any) => {
       await tenue;
       await route.continue();
     });
@@ -145,7 +145,7 @@ describe('kanevas-fiches-liees-bloc, rafraîchissement du bloc « Fiches liées 
       liberer();
     }
     await b.getByRole('button', { name: /^Afficher les \d+ suivants$/ }).waitFor();
-    await antor.unroute(/\/fiches\/\d+\/liees\?.*nature=/);
+    await antor.unroute(/\/fiches\/[^/]+\/liees\?.*nature=/);
     const n = (await titres(b)).length;
     assert.ok(n >= 50 && n < 56, `une page de 50 de plus : ${n} lignes`);
   });
@@ -153,12 +153,12 @@ describe('kanevas-fiches-liees-bloc, rafraîchissement du bloc « Fiches liées 
   test('afficher_les_56_echoue_les_cinq_lignes_restent_avec_message_et_reessayer', async () => {
     // failure: lines lost on failure, message absent, « Réessayer » without effect
     const b = await ouvrir(ids.cite);
-    await antor.route(/\/fiches\/\d+\/liees\?.*nature=/, (route: Any) => route.fulfill({ status: 500, body: '{}' }));
+    await antor.route(/\/fiches\/[^/]+\/liees\?.*nature=/, (route: Any) => route.fulfill({ status: 500, body: '{}' }));
     await b.getByRole('button', { name: 'Afficher les 56' }).click();
     await b.getByText('Impossible de charger les fiches liées.').waitFor();
     assert.equal((await titres(b)).length, 5);
     await antor.screenshot({ path: `${SHOTS}/afficher-echoue.png`, fullPage: true });
-    await antor.unroute(/\/fiches\/\d+\/liees\?.*nature=/);
+    await antor.unroute(/\/fiches\/[^/]+\/liees\?.*nature=/);
     await b.getByRole('button', { name: 'Réessayer' }).click();
     await b.getByText('Impossible de charger les fiches liées.').waitFor({ state: 'detached' });
     assert.ok((await titres(b)).length >= 5);

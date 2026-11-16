@@ -187,7 +187,7 @@ test('écriture : Léa complète « Notes de la table », « Ouvrir » mène à 
   const lien = panneau(lea).getByRole('link', { name: /^Ouvrir/ });
   assert.equal(await lien.count(), 1);
   await lien.click();
-  await lea.waitForURL(/\/univers\/1\/fiche\/1$/);
+  await lea.waitForURL(/\/univers\/[^/]+\/fiche\/1$/);
   await attendre(lea);
   await voit(lea, 'Elle cherche son frère.');
   assert.ok(!(await texte(lea)).includes('régent déchu'));
@@ -205,7 +205,7 @@ test('création : Antor demande une campagne puis un scénario → bloc « Fiche
   await panneau(antor).getByText('Fiche « Acte Trois » créée').waitFor();
   const liens = panneau(antor).getByRole('link', { name: /^Ouvrir/ });
   await liens.last().click();
-  await antor.waitForURL(/\/univers\/1\/fiche\/\d+$/);
+  await antor.waitForURL(/\/univers\/[^/]+\/fiche\/\d+$/);
   await attendre(antor);
   await voit(antor, 'Acte Trois');
   const r = await antor.request.get(srv.base + '/api/univers/1/fiches?type=aventure');
