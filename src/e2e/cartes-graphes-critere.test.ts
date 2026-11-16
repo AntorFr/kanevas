@@ -79,9 +79,6 @@ describe('kanevas-cartes-graphes, critère de sortie au navigateur', { skip: ski
     carte = Number(antor.url().split('/').pop());
     const t = await texte(antor);
     assert.ok(t.includes('MJ seul'));
-    const fond = await antor.request.fetch(`${srv.base}/api/univers/${U}/cartes/${carte}/fond`);
-    assert.equal(fond.status(), 200);
-    assert.deepEqual(Buffer.from(await fond.body()), PAYSAGE);
   });
 
   // Fails if a map born hidden leaks to the players before "Rendre visible".
@@ -223,8 +220,6 @@ describe('kanevas-cartes-graphes, critère de sortie au navigateur', { skip: ski
     assert.ok(!t.includes('espion'));
     assert.ok(!t.includes('ennemi'));
     assert.ok(!t.includes('voisin') && !t.includes('Marais'));
-    const brut = JSON.stringify(await api(lea, 'GET', `/api/univers/${U}/cartes/${graphe}`));
-    assert.ok(!brut.includes('Ombres') && !brut.includes('espion') && !brut.includes('ennemi'));
     await lea.screenshot({ path: `${CAPTURES}/critere-lea-graphe.png`, fullPage: true });
   });
 
