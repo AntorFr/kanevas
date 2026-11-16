@@ -270,3 +270,79 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/taille-images-import-besoin.test.ts` | `B-taille-1 import : le réglage « petit-gauche » poussé avec la fiche est écrit tel quel dans le texte et lu en petit à gauche, par le MJ comme par la joueuse` | affichage | — | gardé |
 | `src/e2e/taille-images-import-besoin.test.ts` | `B-taille-1 import : fiche poussée avant son fichier (clé en attente) puis fichier : le réglage est conservé ; le rejeu ne change rien` | affichage | — | gardé |
 | `src/e2e/taille-images-import-besoin.test.ts` | `B-taille-1 import : un titre qui n’est pas un réglage reste dans le texte et ne style pas l’image ; sans titre, aucune classe` | affichage | — | gardé |
+
+**Fichiers de l’epic `kanevas-battlemap`** (bibliothèque d’assets et direction artistique, E-25 et E-26, ajoutés après l’inventaire) : 73 tests, classés `affichage` et gardés tels quels ; leurs effets (droits, comptes, empreinte, retrait) sont déjà prouvés par les tests de routes et de services du module `battlemap`, non reclassés ici.
+
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Léa lit la bibliothèque : neuf assets semés moins le MJ seul, aucun contrôle d’écriture` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Léa cherche « Coffre piégé » (MJ seul) : aucun résultat, et « coffre » ne trouve que « Coffre »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Léa lit l’image d’un asset visible, mais pas les octets d’un asset MJ seul` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `E-26 · Léa : « Page introuvable. » sur la direction artistique, et l’API la lui refuse` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · Antor dépose trois images en « Objets », les sélectionne et règle l’empreinte « 2×1 »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · le dépôt prend la catégorie choisie : « Murs » donne des assets sans empreinte` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · un fichier qui n’est pas une image est refusé par son nom sans bloquer les autres` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · une empreinte sur un sol est refusée et le sol reste sans empreinte` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · la recherche ignore la casse (« COFFRE » trouve « Coffre » et « Coffre piégé »)` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · la recherche ignore les accents (« piege » trouve « Coffre piégé »)` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · la recherche ignore la casse des lettres accentuées (« PIÉGÉ » trouve « Coffre piégé »)` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · les étiquettes « bois » et « taverne » se combinent en ET : seul « Tonneau » porte les deux` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Antor rend « couchette-b » MJ seul : Léa ne le voit plus, ni dans la grille, ni en octets` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · « Retirer… » dit « Utilisé sur 0 carte »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · « Retirer… » compte les cartes, annule sans rien faire, confirme et laisse le fichier` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · « Choisir dans la médiathèque » : le fichier choisi garde sa visibilité (MJ seul reste MJ seul)` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · Antor écrit la direction artistique, enregistre, et la retrouve après rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · une image de référence ajoutée est un fichier MJ seul que Léa ne peut pas lire` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · une image de la médiathèque choisie comme référence devient MJ seul` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · la neuvième image de référence est refusée : « 8 images au plus. »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · deux fenêtres : la seconde à enregistrer lit « Ce texte a changé depuis que vous l’avez ouvert. » et « Recharger »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `E-26 · « Demander à l’assistant » reste désactivé` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · par l’API, Léa qui écrit un asset ou la direction reçoit « introuvable » (404) et rien ne change` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Antor en mode Joueur lit comme une joueuse : pas d’onglet, E-26 « Page introuvable. », écriture refusée` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-110 · outil éteint : ni entrée « Bibliothèque » dans la barre, ni écran, ni API` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-110 · le MJ active l’outil dans les réglages : l’entrée paraît, la bibliothèque est vide (MJ et joueuse)` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-110 · masquer la bibliothèque aux joueurs la retire de leur barre et de leur écran, pas de celle du MJ` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-110 · « Supprimer les données de l’outil… » compte 3 assets, 1 image de référence et 1 direction puis les efface sans toucher aux fichiers` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-110 · désactiver l’outil garde tout : les assets reparaissent à la réactivation` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · bibliothèque pleine à 5 000 assets : le 5 001e est refusé et l’écran le dit` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `desactive : tant que l’outil n’est pas activé, l’API et l’écran répondent « introuvable »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `vide : chaque rôle lit son texte d’état` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `nominal : Antor dépose trois images « Objets », nommées d’après leur fichier` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `refus : un fichier qui n’est pas une image est refusé par son nom sans bloquer les autres` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `nom 80 : le nom tiré d’un fichier long est coupé à 80 caractères` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `empreinte : « 2×1 » réglée dans une sélection ne touche que la sélection` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `sol : une empreinte sur un sol est refusée, le sol n’en a pas` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `direction : texte enregistré, image de la médiathèque devenue MJ seul, image déposée MJ seul` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `limites : neuvième référence refusée, 5 000 caractères acceptés et 5 001 refusés, version périmée refusée` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `joueuse : Léa voit les assets laissés visibles, sans aucun contrôle d’écriture` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `joueuse E-26 : « Page introuvable. », et l’API de la direction est introuvable` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `écriture : un joueur qui écrit un asset reçoit « introuvable », un MJ en mode Joueur « refuse »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `univers voisin : la bibliothèque d’un univers n’apparaît pas dans un autre` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `fichier adossé : un fichier d’asset ne se supprime pas depuis la médiathèque` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `suppression des données : compte les assets, les efface, laisse les fichiers de la médiathèque` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `visibilité : outil caché aux joueurs, Léa n’a ni entrée, ni écran, ni API` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `non membre : l’admin de l’instance reçoit « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `vide : les deux rôles voient leur texte d’état` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `depot : trois images « Objets » arrivent sur la grille, le PDF est refusé par son nom` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `empreinte : « 2×1 » réglée par la barre de sélection s’affiche sur la carte` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `sol : une empreinte sur un sol est refusée` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `recherche : sans résultat, « Aucun asset ne correspond. »` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `joueuse : assets visibles seulement, comptes sans MJ seul ni brouillon, aucun contrôle d’écriture` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `mode joueur du MJ : lit comme une joueuse, sans onglets ni cases` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `retrait : « Utilisé sur 0 carte », puis l’asset disparaît (le fichier reste)` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `médiathèque : ne liste que les images sans asset, en ajoute une` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `pleine : bibliothecque_pleine simulée → message, ajouts désactivés` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `pleine : 5 000 assets annoncés par la liste → message dès l’ouverture` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `erreur : la liste en échec dit « Impossible de charger la bibliothèque. » + Réessayer` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `chargement : le texte s’affiche tant que la liste n’a pas répondu` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `refus d’un tiers : un compte hors univers voit « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `captures : MJ et joueuse, deux thèmes, 1440 / 768 / 390` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `vide : états vides et « Demander à l’assistant » désactivé` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `nominal : texte + image choisie dans la médiathèque (devenue MJ seul), enregistré, retrouvé au rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `légende : modifiée, elle se retrouve après rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `périmé : une modification faite dans un second onglet donne « Ce texte a changé… » + Recharger` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `limite : la 9e image est refusée (« 8 images au plus. »), déposée comme choisie` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `retirer : une référence retirée disparaît et libère une place` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `joueuse : adresse forcée → « Page introuvable. » et l’API répond 404` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `mode joueur du MJ : « Page introuvable. » sur l’onglet` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `erreur : lecture en échec → message + Réessayer` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `chargement : le texte s’affiche tant que la lecture n’a pas répondu` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `captures : deux thèmes, 1440 / 768 / 390` | affichage | — | gardé |
