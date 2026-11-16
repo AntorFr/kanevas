@@ -360,7 +360,7 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 
 /* E-9: the readable key under the title (B-99). */
 .cle-fiche { margin-top: var(--e-2); display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
-.cle-fiche-valeur { font: 500 var(--t-13)/1.4 var(--police-code); color: var(--texte-2); overflow-wrap: anywhere; min-width: 0; }
+.cle-fiche-valeur { font: 500 var(--t-12)/1.4 var(--police-code); color: var(--texte-2); background: var(--surface-2); padding: 2px var(--e-2); border-radius: var(--rayon-item); overflow-wrap: anywhere; min-width: 0; }
 .cle-fiche-actions { display: flex; gap: var(--e-1); flex-wrap: wrap; }
 .cle-fiche.edition { display: block; max-width: 520px; }
 .cle-fiche.edition input { font-family: var(--police-code); }
