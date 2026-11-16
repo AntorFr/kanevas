@@ -110,3 +110,11 @@ export function calqueActif(doc: Document, type: Calque['type']): CalqueActif {
   if (libre) return { calque: libre };
   return { message: du.some((c) => c.visible && c.verrouille) ? MESSAGE_VERROUILLE : MESSAGE_AUCUN_CALQUE };
 }
+
+/** The layer the « Poser » tool writes to: the one chosen in the panel when it can take an element, else the first free one. */
+export function calqueObjet(doc: Document, choisi: string | null | undefined): CalqueActif {
+  const c = choisi ? doc.calques.find((x) => x.id === choisi && x.type === 'objet') : undefined;
+  if (c) return c.visible && !c.verrouille ? { calque: c } : { message: c.verrouille ? MESSAGE_VERROUILLE : MESSAGE_CACHE };
+  return calqueActif(doc, 'objet');
+}
+export const MESSAGE_CACHE = 'Ce calque est masqué.';

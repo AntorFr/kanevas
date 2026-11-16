@@ -28,7 +28,7 @@ function jeton(el: Element, nom: string): string {
  * The tools' gestures are `Interaction`s made by `commencer`; this component only turns the pointer into cell units.
  */
 export function CanevasCarte({
-  doc, tailleCase, empreinte, image, selection, commencer, surIssue, lecture, annonce, message, vide, enChargement, surTouche,
+  doc, tailleCase, empreinte, image, selection, commencer, surIssue, lecture, annonce, message, vide, enChargement, surTouche, surDepot,
 }: {
   doc: Document;
   /** Pixels of a cell at 100 %. */
@@ -49,6 +49,8 @@ export function CanevasCarte({
   /** Bumped by the parent when an image arrives: redraw. */
   enChargement: number;
   surTouche: (ev: React.KeyboardEvent) => void;
+  /** Something dragged from a panel dropped on the map, at that point in cell units. */
+  surDepot?: (p: Point, ev: React.DragEvent) => void;
 }) {
   const zone = useRef<HTMLDivElement>(null);
   const toile = useRef<HTMLCanvasElement>(null);
@@ -269,6 +271,19 @@ export function CanevasCarte({
         else {
           c.fillStyle = t.neutre;
           c.fillRect(-w / 2, -h / 2, w, h);
+          // « Asset retiré »: hatched, still selectable and removable.
+          c.save();
+          c.beginPath();
+          c.rect(-w / 2, -h / 2, w, h);
+          c.clip();
+          c.strokeStyle = t.texte;
+          c.lineWidth = px;
+          c.setLineDash([]);
+          c.beginPath();
+          const pas = 8 * px;
+          for (let k = -h; k < w; k += pas) { c.moveTo(-w / 2 + k, h / 2); c.lineTo(-w / 2 + k + h, -h / 2); }
+          c.stroke();
+          c.restore();
           c.setLineDash([4 * px, 3 * px]);
           c.strokeStyle = t.texte;
           c.lineWidth = px;
@@ -334,6 +349,8 @@ export function CanevasCarte({
         onPointerUp={haut}
         onPointerCancel={annuler}
         onKeyDown={surTouche}
+        onDragOver={surDepot ? (ev) => { ev.preventDefault(); ev.dataTransfer.dropEffect = 'copy'; } : undefined}
+        onDrop={surDepot ? (ev) => { ev.preventDefault(); surDepot(pointDe(ev), ev); } : undefined}
       />
       <div className="sr-carte" role="status" aria-live="polite">{annonce}</div>
       {message !== '' && <div className="canevas-message" role="status">{message}</div>}

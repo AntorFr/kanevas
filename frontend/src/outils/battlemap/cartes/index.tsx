@@ -1,17 +1,19 @@
-import { Eraser, Keyboard, MousePointer2, PanelRight, Paintbrush, Redo2, Undo2, DoorOpen, BrickWall } from 'lucide-react';
+import { Eraser, Keyboard, MousePointer2, PanelRight, Paintbrush, Redo2, Undo2, DoorOpen, BrickWall, Stamp } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
 import { appeler, lire } from '../../../api';
 import { useTitreAriane } from '../../../cadre-contexte';
 import {
-  Alerte, Bandeau, Bouton, BoutonIcone, CanevasCarte, Champ, Chargement, ColonneOutils, ErreurChargement, Interrupteur, PageIntrouvable, Pastille,
+  Alerte, Bandeau, Bouton, BoutonIcone, CanevasCarte, Champ, Chargement, ColonneOutils, ErreurChargement, Interrupteur, Onglets, PageIntrouvable, Pastille,
   type EntreeOutil, type ImageAsset,
 } from '../../../ui';
 import type { PropsOutil } from '../../types';
-import { Bibliotheque, urlImage } from './bibliotheque';
-import { type Coeur, chargerCoeur } from './coeur';
+import { Bibliotheque, TYPE_GLISSE, urlImage } from './bibliotheque';
+import { PanneauCalques } from './calques';
+import { type Bornes, type Coeur, chargerBornes, chargerCoeur } from './coeur';
+import { PanneauProprietes } from './proprietes';
 import { type Enregistreur as EnregistreurT, Enregistreur } from './enregistreur';
-import { calqueActif, type Empreintes, type Point } from './geometrie';
+import { calqueActif, calqueObjet, type Empreintes, type Point } from './geometrie';
 import { Interaction, type Contexte, type Issue, type Outil, elementSous, surSelection } from './interaction';
 import { Moteur } from './moteur';
 import { erreurTaille, messageRefusTaille } from './taille';
@@ -23,15 +25,23 @@ const OUTILS: readonly EntreeOutil<Outil>[] = [
   { valeur: 'sol', libelle: 'Sol', touche: 'F', icone: Paintbrush },
   { valeur: 'mur', libelle: 'Mur', touche: 'W', icone: BrickWall },
   { valeur: 'porte', libelle: 'Porte', touche: 'D', icone: DoorOpen },
+  { valeur: 'poser', libelle: 'Poser un asset', touche: 'A', icone: Stamp },
   { valeur: 'gomme', libelle: 'Gomme', touche: 'E', icone: Eraser },
 ];
-const TOUCHES: Record<string, Outil> = { v: 'selection', f: 'sol', w: 'mur', d: 'porte', e: 'gomme' };
+const TOUCHES: Record<string, Outil> = { v: 'selection', f: 'sol', w: 'mur', d: 'porte', a: 'poser', e: 'gomme' };
 const RACCOURCIS: readonly [string, string][] = [
-  ['V', 'Sélection'], ['F', 'Sol'], ['W', 'Mur'], ['D', 'Porte'], ['E', 'Gomme'],
-  ['R', 'Pivoter la sélection'], ['M', 'Retourner la sélection'], ['Suppr', 'Supprimer la sélection'], ['Flèches', 'Déplacer d’une case'],
+  ['V', 'Sélection'], ['F', 'Sol'], ['W', 'Mur'], ['D', 'Porte'], ['A', 'Poser un asset'], ['E', 'Gomme'],
+  ['R', 'Pivoter la sélection (ou l’asset à poser)'], ['Ctrl+C / Ctrl+V', 'Copier / coller'], ['Ctrl+D', 'Dupliquer la sélection'], ['M', 'Retourner la sélection'], ['Suppr', 'Supprimer la sélection'], ['Flèches', 'Déplacer d’une case'],
   ['Ctrl+Z', 'Annuler'], ['Ctrl+Maj+Z', 'Rétablir'], ['Espace + glisser', 'Déplacer la vue'], ['Molette', 'Zoom'], ['Maj + glisser', 'Rectangle (Sol), contour (Mur)'],
 ];
 const MESSAGE_TELEPHONE = 'Le dessin demande un pointeur : utilisez un écran plus large.';
+
+type OngletPanneau = 'bibliotheque' | 'calques' | 'proprietes';
+const ONGLETS: readonly { valeur: OngletPanneau; libelle: string }[] = [
+  { valeur: 'bibliotheque', libelle: 'Bibliothèque' },
+  { valeur: 'calques', libelle: 'Calques' },
+  { valeur: 'proprietes', libelle: 'Propriétés' },
+];
 
 function useMedia(requete: string): boolean {
   const lireMedia = () => typeof window !== 'undefined' && window.matchMedia?.(requete).matches === true;
@@ -120,6 +130,12 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
   const [assets, setAssets] = useState<AssetCarte[] | null>(null);
   const [assetSol, setAssetSol] = useState<string | null>(null);
   const [assetMur, setAssetMur] = useState<string | null>(null);
+  const [assetObjet, setAssetObjet] = useState<string | null>(null);
+  const [calqueChoisi, setCalqueChoisi] = useState<string | null>(null);
+  const [rotation, setRotation] = useState(0);
+  const [onglet, setOnglet] = useState<OngletPanneau>('bibliotheque');
+  const [bornes, setBornes] = useState<Bornes | null>(null);
+  const presse = useRef<{ ids: string[]; decalage: number } | null>(null);
   const [message, setMessage] = useState('');
   const [images, setImages] = useState(0);
   const [panneau, setPanneau] = useState(false);
@@ -130,6 +146,8 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
   const etroit = useMedia('(max-width: 768px)');
   const cache = useRef(new Map<string, HTMLImageElement>());
   const minuteurMessage = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => { chargerBornes().then(setBornes, () => setBornes(null)); }, []);
 
   useEffect(() => {
     let actif = true;
@@ -169,17 +187,28 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
   const ids = useMemo(() => new Set(doc.elements.map((e) => e.id)), [doc]);
   const choix = useMemo(() => selection.filter((id) => ids.has(id)), [selection, ids]);
 
-  const geste = useCallback((commandes: Commande[]) => {
+  /** One gesture. `refus` is the sentence of a refusal by the core (empty: say nothing, the caller does). */
+  const geste = useCallback((commandes: Commande[], refus?: string): boolean => {
     const r = moteur.geste(commandes);
     if (!r.ok) {
-      dire(r.code === 'carte_pleine' ? 'Carte pleine. Retirez des éléments ou agrandissez la carte.' : 'Ce geste n’est pas possible ici.');
-      return;
+      if (refus !== undefined) { if (refus !== '') dire(refus); }
+      else dire(r.code === 'carte_pleine' ? 'Carte pleine. Retirez des éléments ou agrandissez la carte.' : 'Ce geste n’est pas possible ici.');
+      return false;
     }
     enr.noter();
     rafraichir();
+    return true;
   }, [moteur, enr, rafraichir, dire]);
 
-  const contexte = (sel: readonly string[]): Contexte => ({ doc: moteur.document, aimanter, empreinte, assetSol, assetMur, selection: sel });
+  /** Copies of elements, one cell further each time (the core gives them new ids' state: we only name them). */
+  const dupliquer = useCallback((sources: readonly string[], decalage = 1) => {
+    const existants = sources.filter((id) => moteur.document.elements.some((e) => e.id === id));
+    if (existants.length === 0) return;
+    const nouveaux = existants.map(() => crypto.randomUUID());
+    if (geste([{ type: 'dupliquer_elements', ids: existants, nouveaux_ids: nouveaux, dx: decalage, dy: decalage }])) setSelection(nouveaux);
+  }, [moteur, geste]);
+
+  const contexte = (sel: readonly string[]): Contexte => ({ doc: moteur.document, aimanter, empreinte, assetSol, assetMur, selection: sel, assetObjet, calqueObjet: calqueChoisi, rotation });
 
   const commencer = (p: Point, maj: boolean): Interaction | null => {
     const d = moteur.document;
@@ -195,7 +224,14 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
       i.deplaceElements = !lecture && surSelection(ctx, p);
       return i;
     }
-    const type = outil === 'sol' ? 'sol' : outil === 'gomme' ? null : 'mur';
+    if (outil === 'poser') {
+      const actif = calqueObjet(d, calqueChoisi);
+      if ('message' in actif) {
+        dire(actif.message);
+        return null;
+      }
+    }
+    const type = outil === 'sol' ? 'sol' : outil === 'gomme' || outil === 'poser' ? null : 'mur';
     if (type) {
       const actif = calqueActif(d, type);
       if ('message' in actif) {
@@ -207,7 +243,11 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
   };
 
   const surIssue = (issue: Issue) => {
-    if (issue.k === 'commandes') geste(issue.commandes);
+    if (issue.k === 'commandes') {
+      const ok = geste(issue.commandes);
+      const pose = issue.commandes[0];
+      if (ok && pose?.type === 'poser_element') setSelection([String(pose.id)]);
+    }
     else if (issue.k === 'selection') setSelection(issue.ids);
     else if (issue.k === 'message') dire(issue.texte);
   };
@@ -215,11 +255,16 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
   const choisirOutil = useCallback((o: Outil) => {
     setOutil(o);
     const type = o === 'sol' ? 'sol' : o === 'mur' || o === 'porte' ? 'mur' : null;
-    if (type) {
-      const actif = calqueActif(moteur.document, type);
-      if ('message' in actif) dire(actif.message);
-    }
-  }, [moteur, dire]);
+    const actif = o === 'poser' ? calqueObjet(moteur.document, calqueChoisi) : type ? calqueActif(moteur.document, type) : null;
+    if (actif && 'message' in actif) dire(actif.message);
+  }, [moteur, dire, calqueChoisi]);
+
+  /** An asset dragged from the library and dropped on the map: placed there, whatever the armed tool. */
+  const deposer = (p: Point, ev: React.DragEvent) => {
+    const id = ev.dataTransfer.getData(TYPE_GLISSE);
+    if (!id || !parId.has(id)) return;
+    surIssue(new Interaction('poser', { ...contexte(choix), assetObjet: id }, p, false).terminer());
+  };
 
   const annuler = () => { const r = moteur.annuler(); if (!r.ok) dire('Rien à annuler.'); else enr.noter(); rafraichir(); };
   const refaire = () => { const r = moteur.refaire(); if (!r.ok) dire('Rien à rétablir.'); else enr.noter(); rafraichir(); };
@@ -233,10 +278,23 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
       if (ev.shiftKey) refaire(); else annuler();
       return;
     }
+    if ((ev.ctrlKey || ev.metaKey) && !ev.altKey && !lecture && (k === 'c' || k === 'v' || k === 'd')) {
+      ev.preventDefault();
+      if (k === 'd') dupliquer(choix);
+      else if (k === 'c') { if (choix.length) presse.current = { ids: [...choix], decalage: 0 }; }
+      else if (presse.current) {
+        presse.current.decalage += 1;
+        dupliquer(presse.current.ids, presse.current.decalage);
+      }
+      return;
+    }
     if (ev.ctrlKey || ev.metaKey || ev.altKey || lecture) return;
     if (k === '?') return void setRaccourcis((v) => !v);
     if (Object.hasOwn(TOUCHES, k)) return choisirOutil(TOUCHES[k]!);
-    if (choix.length === 0) return;
+    if (choix.length === 0) {
+      if (k === 'r' && outil === 'poser') { setRotation((r) => (r + 90) % 360); ev.preventDefault(); }
+      return;
+    }
     const els = moteur.document.elements.filter((e) => choix.includes(e.id));
     if (k === 'r') geste(els.map((e) => ({ type: 'pivoter_element', id: e.id, rotation: ((e.rotation ?? 0) + 90) % 360 })));
     else if (k === 'm') geste(els.map((e) => ({ type: 'retourner_element', id: e.id })));
@@ -294,6 +352,8 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
   const vide = doc.sols.length + doc.murs.length + doc.elements.length === 0;
   const etat = enr.etat;
   const panneauVisible = !etroit || panneau;
+  const choixCalque = calqueObjet(doc, calqueChoisi);
+  const actifObjet = 'calque' in choixCalque ? choixCalque.calque.id : calqueChoisi;
 
   return (
     <div className="editeur-carte">
@@ -408,18 +468,47 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
           vide={vide && !lecture}
           enChargement={images}
           surTouche={surTouche}
+          surDepot={lecture ? undefined : deposer}
         />
         {!lecture && (
           <aside className="editeur-panneau" hidden={!panneauVisible} aria-label="Panneau latéral">
-            <Bibliotheque
-              universId={universId}
-              assets={assets}
-              arme={[assetSol, assetMur]}
-              onChoisir={(a) => {
-                if (a.categorie === 'sol') { setAssetSol(String(a.id)); choisirOutil('sol'); }
-                else if (a.categorie === 'mur') { setAssetMur(String(a.id)); choisirOutil('mur'); }
-              }}
-            />
+            <Onglets legende="Panneau de la carte" onglets={ONGLETS} actif={onglet} onChange={setOnglet} />
+            {onglet === 'bibliotheque' && (
+              <Bibliotheque
+                universId={universId}
+                assets={assets}
+                arme={[assetSol, assetMur, assetObjet]}
+                onChoisir={(a) => {
+                  if (a.categorie === 'sol') { setAssetSol(String(a.id)); choisirOutil('sol'); }
+                  else if (a.categorie === 'mur') { setAssetMur(String(a.id)); choisirOutil('mur'); }
+                  else { setAssetObjet(String(a.id)); choisirOutil('poser'); }
+                }}
+              />
+            )}
+            {onglet === 'calques' && (
+              <PanneauCalques
+                doc={doc}
+                calquesMax={bornes?.calquesMax ?? doc.calques.length + 1}
+                actifObjet={actifObjet}
+                onActif={(id) => { setCalqueChoisi(id); const c = doc.calques.find((x) => x.id === id); if (c && (c.verrouille || !c.visible)) dire(c.verrouille ? 'Ce calque est verrouillé.' : 'Ce calque est masqué.'); }}
+                geste={geste}
+                dire={dire}
+              />
+            )}
+            {onglet === 'proprietes' && (
+              <PanneauProprietes
+                universId={universId}
+                doc={doc}
+                titre={meta.titre}
+                tailleCase={meta.tailleCase}
+                visible={meta.visible}
+                selection={choix}
+                assets={parId}
+                bornes={bornes}
+                geste={geste}
+                dupliquer={dupliquer}
+              />
+            )}
           </aside>
         )}
       </div>

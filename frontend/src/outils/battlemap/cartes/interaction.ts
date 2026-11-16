@@ -2,11 +2,11 @@
 // ONE batch (a drag is one gesture, never one command per move). It decides nothing about validity: the core refuses.
 import {
   type Boite, type Empreintes, type Point, boite, calqueActif, cellule, contour, elementsDans, elementsSous, ligneCellules,
-  rectangle, segmentProche, segmentsDroits, sommet,
+  rectangle, segmentProche, segmentsDroits, sommet, calqueObjet, centreAimante,
 } from './geometrie';
 import type { Calque, Cellule, Commande, Document, Segment } from './types';
 
-export type Outil = 'selection' | 'sol' | 'mur' | 'porte' | 'gomme';
+export type Outil = 'selection' | 'sol' | 'mur' | 'porte' | 'gomme' | 'poser';
 
 export interface Contexte {
   doc: Document;
@@ -15,6 +15,11 @@ export interface Contexte {
   assetSol: string | null;
   assetMur: string | null;
   selection: readonly string[];
+  /** « Poser »: the asset armed, the layer chosen in the panel, the quarter-turn rotation, and an id for the new element. */
+  assetObjet?: string | null;
+  calqueObjet?: string | null;
+  rotation?: number;
+  nouvelId?: () => string;
 }
 
 /** What the canvas draws over the map while the gesture lasts. */
@@ -33,6 +38,7 @@ export type Issue =
 
 const MESSAGE_ASSET_SOL = 'Choisissez un sol dans la bibliothèque.';
 const MESSAGE_ASSET_MUR = 'Choisissez un mur dans la bibliothèque.';
+const MESSAGE_ASSET_OBJET = 'Choisissez un objet dans la bibliothèque.';
 const MESSAGE_PORTE = 'Cliquez sur un mur pour poser ou ôter une porte.';
 
 const idsDe = (doc: Document, type: Calque['type']) => new Set(doc.calques.filter((c) => c.type === type && c.visible && !c.verrouille).map((c) => c.id));
@@ -87,6 +93,7 @@ export class Interaction {
         return { cellules: this.cellules() };
       case 'mur':
         return { segments: this.murs() };
+      case 'poser': return this.ctx.assetObjet ? { cadre: this.empreinteSous() } : {};
       case 'selection': {
         if (this.deplaceElements) return { decalage: this.pas() };
         return this.suivi.length > 1 ? { cadre: boite(this.depart, this.suivi[this.suivi.length - 1]!) } : {};
@@ -106,8 +113,35 @@ export class Interaction {
       case 'mur': return this.mur();
       case 'porte': return this.porte(fin);
       case 'gomme': return this.gomme();
+      case 'poser': return this.poser(fin);
       case 'selection': return this.selectionner(fin);
     }
+  }
+
+  /** The element's centre for a press at `p`: the footprint sits on the grid when snapping is on. */
+  private centre(p: Point): Point {
+    const { largeur, hauteur } = this.ctx.empreinte(this.ctx.assetObjet ?? '');
+    const quart = ((this.ctx.rotation ?? 0) % 180) !== 0;
+    const [w, h] = quart ? [hauteur, largeur] : [largeur, hauteur];
+    return this.ctx.aimanter ? centreAimante(p, w, h) : p;
+  }
+
+  private empreinteSous(): Boite {
+    const p = this.suivi[this.suivi.length - 1]!;
+    const c = this.centre(p);
+    const { largeur, hauteur } = this.ctx.empreinte(this.ctx.assetObjet ?? '');
+    const quart = ((this.ctx.rotation ?? 0) % 180) !== 0;
+    const [w, h] = quart ? [hauteur, largeur] : [largeur, hauteur];
+    return { x0: c.x - w / 2, y0: c.y - h / 2, x1: c.x + w / 2, y1: c.y + h / 2 };
+  }
+
+  private poser(p: Point): Issue {
+    const actif = calqueObjet(this.ctx.doc, this.ctx.calqueObjet);
+    if ('message' in actif) return { k: 'message', texte: actif.message };
+    if (!this.ctx.assetObjet) return { k: 'message', texte: MESSAGE_ASSET_OBJET };
+    const c = this.centre(p);
+    const id = this.ctx.nouvelId?.() ?? crypto.randomUUID();
+    return { k: 'commandes', commandes: [{ type: 'poser_element', id, calque: actif.calque.id, asset_id: this.ctx.assetObjet, x: c.x, y: c.y, rotation: this.ctx.rotation ?? 0 }] };
   }
 
   private sol(): Issue {

@@ -27,3 +27,12 @@ export function chargerCoeur(): Promise<Coeur> {
   charge.catch(() => { charge = undefined; });
   return charge;
 }
+
+export interface Bornes { calquesMax: number; echelleMin: number; echelleMax: number }
+
+/** The limits the panels state (layers, scale), as the core gives them — never copied in the screen. */
+export async function chargerBornes(): Promise<Bornes> {
+  const m = await chargerModule('battlemap_core');
+  const l = JSON.parse(m.limites()) as { calques_max: number; echelle_min: number; echelle_max: number };
+  return { calquesMax: l.calques_max, echelleMin: l.echelle_min, echelleMax: l.echelle_max };
+}

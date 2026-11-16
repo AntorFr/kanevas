@@ -1,5 +1,5 @@
-// The library panel of E-28 (grid of E-25): valid assets only, a floor arms Sol, a wall arms Mur, an object waits for the
-// tool that places assets (next task) and says so. The list is read once by the editor; this panel only filters it.
+// The library panel of E-28 (grid of E-25): valid assets only, a floor arms Sol, a wall arms Mur, any other asset arms Poser
+// (a click arms it, a drag drops it on the canvas). The list is read once by the editor; this panel only filters it.
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -15,7 +15,8 @@ const FILTRES: readonly { valeur: FiltreCategorie; libelle: string }[] = [
   { valeur: 'decor', libelle: 'Décors' },
   { valeur: 'vaisseau', libelle: 'Vaisseaux' },
 ];
-export const INFOBULLE_OBJET = 'Disponible avec la pose d’assets.';
+/** The drag payload an asset card carries to the canvas. */
+export const TYPE_GLISSE = 'application/x-kanevas-asset';
 
 export const urlImage = (universId: number, a: Pick<AssetCarte, 'fichierId' | 'jeton'>) =>
   `/api/univers/${universId}/fichiers/${a.fichierId}?v=${encodeURIComponent(a.jeton)}`;
@@ -50,14 +51,14 @@ export function Bibliotheque({
         <p className="editeur-note" role="status">Chargement de la bibliothèque…</p>
       ) : aucun ? (
         <p className="editeur-note">
-          Aucun asset. <Link to={`/univers/${universId}/outils/battlemap/assets`}>Ouvrez la bibliothèque</Link> pour en ajouter.
+          La bibliothèque est vide. <Link to={`/univers/${universId}/outils/battlemap/assets`}>Ouvrez la bibliothèque</Link> pour y ajouter des assets.
         </p>
       ) : liste.length === 0 ? (
         <p className="editeur-note">Aucun asset ne correspond.</p>
       ) : (
         <div className="editeur-grille">
           {liste.map((a) => {
-            const utilisable = a.categorie === 'sol' || a.categorie === 'mur';
+            const objet = a.categorie !== 'sol' && a.categorie !== 'mur';
             const carte = (
               <CarteAsset
                 key={a.id}
@@ -70,12 +71,18 @@ export function Bibliotheque({
                 selectionnable={false}
                 selectionnee={false}
                 ouverte={arme.includes(String(a.id))}
-                onOuvrir={utilisable ? () => onChoisir(a) : undefined}
+                onOuvrir={() => onChoisir(a)}
               />
             );
-            return utilisable ? carte : (
-              <div key={a.id} className="editeur-carte-inactive" title={INFOBULLE_OBJET} aria-disabled="true">{carte}</div>
-            );
+            return objet ? (
+              <div
+                key={a.id}
+                draggable
+                onDragStart={(ev) => { ev.dataTransfer.setData(TYPE_GLISSE, String(a.id)); ev.dataTransfer.effectAllowed = 'copy'; }}
+              >
+                {carte}
+              </div>
+            ) : carte;
           })}
         </div>
       )}

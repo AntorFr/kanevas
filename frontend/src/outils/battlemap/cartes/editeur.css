@@ -35,3 +35,30 @@ main.principal:has(> .editeur-carte), body.asst-present main.principal:has(> .ed
 }
 .editeur-visibilite { width: 220px; flex: none; }
 .editeur-titre { flex: 1 1 160px; }
+
+/* Calques, Propriétés, pose d'assets (E-28, tâche objets). */
+.editeur-panneau > .onglets { flex: none; }
+.editeur-calques, .editeur-proprietes { display: flex; flex-direction: column; gap: var(--e-3); }
+.editeur-calques-tete { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
+.editeur-calques-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-1); }
+.editeur-calque { display: flex; align-items: center; gap: var(--e-1); padding: var(--e-1) var(--e-2); border: 1px solid var(--bord); border-radius: var(--rayon-item); background: var(--surface); }
+.editeur-calque.actif { border-color: var(--accent); background: var(--accent-fond); }
+.editeur-calque.masque .editeur-calque-nom { color: var(--texte-3); }
+.editeur-calque-type { color: var(--texte-3); flex: none; }
+.editeur-calque-nom { flex: 1; min-width: 0; text-align: left; background: transparent; border: 0; color: var(--texte); font: inherit; font-size: var(--t-13); padding: var(--e-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.editeur-calque-champ { flex: 1; min-width: 0; width: auto; }
+.editeur-champs { display: grid; grid-template-columns: auto 1fr; gap: var(--e-1) var(--e-3); margin: 0; font-size: var(--t-13); }
+.editeur-champs dt { color: var(--texte-3); }
+.editeur-champs dd { margin: 0; color: var(--texte); overflow-wrap: anywhere; }
+.editeur-champs dd.asset-retire { color: var(--texte-3); font-style: italic; }
+.editeur-groupe { display: flex; flex-direction: column; gap: var(--e-3); }
+.editeur-deux { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-2); }
+.editeur-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.editeur-fiche { display: flex; flex-direction: column; gap: var(--e-2); padding-top: var(--e-2); border-top: 1px solid var(--bord); }
+.editeur-fiche-titre { margin: 0; font-weight: 600; font-size: var(--t-14); }
+.editeur-erreur { margin: var(--e-1) 0 0; color: var(--danger); font-size: var(--t-12); }
+.editeur-choix-fiche { display: flex; flex-direction: column; gap: var(--e-3); min-width: min(420px, 80vw); }
+.editeur-choix-liste { list-style: none; margin: 0; padding: 0; max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: var(--e-1); }
+.editeur-choix-fiche-ligne { width: 100%; text-align: left; padding: var(--e-2) var(--e-3); background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-item); color: var(--texte); font: inherit; cursor: pointer; }
+.editeur-choix-fiche-ligne:hover { background: var(--surface-2); }
+.editeur-choix-fiche-ligne small { color: var(--texte-3); }
