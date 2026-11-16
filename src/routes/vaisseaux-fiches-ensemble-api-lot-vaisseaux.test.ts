@@ -23,10 +23,11 @@
 //                 exclusions : a catalogue stating none prints the tables as before ; E-9's text gains no row
 // B-82 E-9        nominal : « Caractéristiques » of a saved design reads Vitesse, Armure, Équipage after Portée de saut
 // Ancien          : the seed designs and the seven example ships give the figures they gave before
+// Moved from `src/e2e/vaisseaux-fiches-ensemble-api.test.ts` by the lot « vaisseaux »: no browser was ever involved, the app now listens in this process.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, describe, it } from 'node:test';
-import { startServer, type Any, type Server } from './harnais.test.ts';
+import { startServer, type Any, type Server } from './serveur-lot-vaisseaux.ts';
 
 const servers: Server[] = [];
 after(() => servers.forEach((s) => s.stop()));

@@ -18,9 +18,10 @@
 //   B-62 retrait  : withdrawing the hull « Éclaireur » of the universe: blocking « Élément retiré de cet univers », save refused,
 //                   section text unchanged, changing the hull lets the save through
 //   B-62 masque   : masking « Lance d'essai »: still on « Vent d'Orak », re-saved without alert, absent from Léa's choices
+// Moved from `src/e2e/vaisseaux-ensemble-api.test.ts` by the lot « vaisseaux »: no browser was ever involved, the app now listens in this process.
 import assert from 'node:assert/strict';
 import { after, describe, it } from 'node:test';
-import { startServer, type Any, type Server } from './harnais.test.ts';
+import { startServer, type Any, type Server } from './serveur-lot-vaisseaux.ts';
 
 const servers: Server[] = [];
 after(() => servers.forEach((s) => s.stop()));

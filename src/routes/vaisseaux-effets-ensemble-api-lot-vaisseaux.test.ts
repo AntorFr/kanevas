@@ -26,10 +26,11 @@
 //                 limite, parameter that does not belong, formula field ; exclusions : the seed files state none of the new fields
 // B-83 fiches de règles / E-9 : columns only when a row states the value ; « Soutes » row and aimed names in the saved text
 // Ancien          : a catalogue that states none gives the same result as before (Vent d'Orak 685 000 cr)
+// Moved from `src/e2e/vaisseaux-effets-ensemble-api.test.ts` by the lot « vaisseaux »: no browser was ever involved, the app now listens in this process.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, describe, it } from 'node:test';
-import { startServer, type Any, type Server } from './harnais.test.ts';
+import { startServer, type Any, type Server } from './serveur-lot-vaisseaux.ts';
 
 const servers: Server[] = [];
 after(() => servers.forEach((s) => s.stop()));

@@ -15,10 +15,11 @@
 // B-86 import   : champs créés, relus, inchangés au rejeu ; effet inconnu refusé avec champ effet et le reste passe ; paramètre sur un autre effet / manquant refusés
 // B-86 fiches de règles et texte : colonnes Pourcentage, Arrondi de l'échange, Base de la réduction ; rien si le catalogue n'en dit rien ; texte « → Soute Z »
 // Ancien : un catalogue qui n'en dit rien rend les mêmes valeurs qu'avant (Vent d'Orak 685 000 cr), le semis ne dit rien de B-86
+// Moved from `src/e2e/vaisseaux-suite-ensemble-api.test.ts` by the lot « vaisseaux »: no browser was ever involved, the app now listens in this process.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, describe, it } from 'node:test';
-import { startServer, type Any, type Server } from './harnais.test.ts';
+import { startServer, type Any, type Server } from './serveur-lot-vaisseaux.ts';
 
 const servers: Server[] = [];
 after(() => servers.forEach((s) => s.stop()));

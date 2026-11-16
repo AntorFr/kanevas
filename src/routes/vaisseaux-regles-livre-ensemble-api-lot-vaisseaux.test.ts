@@ -15,10 +15,11 @@
 //                             échec   : cible invalide → cible_invalide ; import : limite 2 et 3 acceptées, 0 et 1,5 refusées
 // Import : codes, paramètres et limites refusés avec leur champ, le reste passe ; champs créés, relus, inchangés au rejeu ; quatre anciens codes = effet inconnu ;
 //          exclusion : une joueuse n'importe pas ; fiches de règles et texte enregistré ; catalogue antérieur : même résultat (Vent d'Orak 685 000 cr)
+// Moved from `src/e2e/vaisseaux-regles-livre-ensemble-api.test.ts` by the lot « vaisseaux »: no browser was ever involved, the app now listens in this process.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, describe, it } from 'node:test';
-import { startServer, type Any, type Server } from './harnais.test.ts';
+import { startServer, type Any, type Server } from './serveur-lot-vaisseaux.ts';
 
 const servers: Server[] = [];
 after(() => servers.forEach((s) => s.stop()));

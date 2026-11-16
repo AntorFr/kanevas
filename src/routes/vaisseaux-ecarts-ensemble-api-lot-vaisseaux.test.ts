@@ -22,10 +22,11 @@
 //                  the seed files state none of the new fields
 // B-85 fiches de règles / texte : « Réparation min. », « Soute par classe » (10 / 20 / 40 / 80), « Réduction du coût » (10 %), « −2 » ; none when no row states them
 // Ancien : a catalogue that states none gives the same result as before (Vent d'Orak 685 000 cr)
+// Moved from `src/e2e/vaisseaux-ecarts-ensemble-api.test.ts` by the lot « vaisseaux »: no browser was ever involved, the app now listens in this process.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, describe, it } from 'node:test';
-import { startServer, type Any, type Server } from './harnais.test.ts';
+import { startServer, type Any, type Server } from './serveur-lot-vaisseaux.ts';
 
 const servers: Server[] = [];
 after(() => servers.forEach((s) => s.stop()));

@@ -9,6 +9,7 @@
 //   bords     : a design that is over budget is still *calculated* (blocking alert), a design by its title gives its stored figures
 //   échec     : a design the account does not read → { ok:false, erreur:'Introuvable.' } and no event; an account without role has no catalogue
 //   exclusion : the tool is absent when the designer is disabled for the universe
+// Moved from `src/e2e/vaisseaux-ensemble-assistant.test.ts` by the lot « vaisseaux »: no browser was ever involved.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
