@@ -51,7 +51,7 @@ export async function registerOutilsRoutes(app: FastifyInstance) {
   const erreurCatalogue = (erreur: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
     if (erreur instanceof ErreurService) {
       if (erreur.code === 'introuvable') return reply.callNotFound();
-      const statut = { refuse: 403, invalide: 400, conflit: 409 }[erreur.code];
+      const statut = { refuse: 403, invalide: 400, conflit: 409, indisponible: 503 }[erreur.code];
       return reply.code(statut).send({
         message: erreur.message, code: erreur.detail ?? erreur.code,
         ...(erreur.champ ? { champ: erreur.champ } : {}),
