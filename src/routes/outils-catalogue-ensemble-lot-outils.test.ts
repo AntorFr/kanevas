@@ -5,7 +5,23 @@
 import assert from 'node:assert/strict';
 import { request } from 'node:http';
 import { after, describe, it } from 'node:test';
-import { startServer, type Any, type Server } from './harnais.test.ts';
+// Moved from `src/e2e/outils-catalogue-ensemble-verif.test.ts` by the lot « outils »: no browser was ever involved, the app now listens
+// in this process instead of a child process (same HTTP, same seeded world).
+process.env.NODE_ENV = 'test';
+process.env.KANEVAS_STUB = '1';
+delete process.env.DB_PATH;
+const { buildApp } = await import('../app.js');
+const { semerBouchon } = await import('../bouchon/depart.js');
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Any = any;
+type Server = { base: string; stop: () => void };
+async function startServer(_env?: Record<string, string>): Promise<Server> {
+  const app = await buildApp();
+  semerBouchon(app.db);
+  await app.listen({ port: 0, host: '127.0.0.1' });
+  const port = (app.server.address() as { port: number }).port;
+  return { base: `http://127.0.0.1:${port}`, stop: () => void app.close() };
+}
 
 const servers: Server[] = [];
 after(() => servers.forEach((s) => s.stop()));

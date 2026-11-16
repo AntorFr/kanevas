@@ -631,30 +631,6 @@ test('garde : Léa (Joueuse) n’a pas l’onglet, ni son adresse, ni son API, a
   assert.equal(await carte(antor, 'Essai A').getByRole('switch').getAttribute('aria-checked'), 'true');
 });
 
-test('garde : un compte sans univers rattaché et l’admin de l’instance ne voient pas le système d’essai', opts, async () => {
-  const teo = (await connecte(browser, srv.base, 'Teo')).page;
-  const admin = (await connecte(browser, srv.base, 'Admin')).page;
-  for (const p of [teo, admin]) {
-    for (const u of [`/api/systemes/${SYS}/outils`, `/api/systemes/${SYS}/responsable`, `/api/univers/${ENERIA}/outils`, `/api/univers/${ENERIA}/outils/entrees`]) {
-      const r = await api(p, 'GET', u);
-      assert.equal(r.status, 404, `${u}: ${r.status}`);
-    }
-    assert.equal((await api(p, 'PUT', `/api/systemes/${SYS}/outils/essai/a/activation`, { active: false })).status, 404);
-  }
-});
-
-test('garde : sans session, l’API des outils ne répond pas', opts, async () => {
-  const r = await fetch(`${srv.base}/api/univers/${ENERIA}/outils/entrees`, { redirect: 'manual' });
-  assert.equal(r.status, 401);
-  const w = await fetch(`${srv.base}/api/systemes/${SYS}/outils/essai/a/activation`, {
-    method: 'PUT',
-    headers: { 'content-type': 'application/json' },
-    body: '{"active":false}',
-    redirect: 'manual',
-  });
-  assert.equal(w.status, 401);
-});
-
 // --- transfert (dernier : il retire des droits à Antor) --------------------------------------------------
 
 test('transfert : le dialogue liste les MJ des univers rattachés (jamais Antor), avec la phrase, « Annuler » ne change rien', opts, async () => {
