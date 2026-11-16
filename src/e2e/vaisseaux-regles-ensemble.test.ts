@@ -249,7 +249,7 @@ describe('B-77 : le MJ génère les fiches de règles', { skip: skipBrowser, tim
     assert.equal(await page.getByRole('button', { name: /Générer les fiches de règles/ }).count(), 0);
   });
 
-  it('retirer le Laser de l’univers : la boîte du MJ montre deux « Mise à jour proposée » et cinq « À jour »', async () => {
+  it('retirer le Laser de l’univers : le texte de Léa ne change qu’à l’accord d’Antor ; ensuite ni le Laser ni les exemples qui l’emploient', async () => {
     const m = await monde();
     await m.generer();
     assert.equal((await m.api('antor', 'PUT', `${m.B}/catalogue/armes/laser/retrait`, { retire: true })).status, 200);
@@ -264,7 +264,7 @@ describe('B-77 : le MJ génère les fiches de règles', { skip: skipBrowser, tim
     await page.screenshot({ path: `${SHOTS}-propositions.png`, fullPage: true });
   });
 
-  it('catalogue de l’univers réimporté avec une arme modifiée : la boîte du MJ propose une mise à jour', async () => {
+  it('catalogue de l’univers réimporté avec une arme modifiée : les fiches proposent, le texte ne bouge qu’à l’accord (Lance d’essai 31 000 cr)', async () => {
     const m = await monde();
     await m.generer();
     await m.reimporterCatalogue(31000);
