@@ -168,7 +168,7 @@
 .cs-ciel {
   position: relative; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
   width: 100%; height: clamp(320px, 62vw, 560px); border: 1px solid var(--bord); border-radius: var(--rayon-panneau);
-  background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--ciel), var(--accent) 12%), var(--ciel) 70%);
+  background: radial-gradient(circle at 50% 50%, var(--ciel-lueur), var(--ciel) 70%);
   color: var(--texte); font-size: var(--t-12); cursor: grab;
 }
 .cs-ciel:active { cursor: grabbing; }

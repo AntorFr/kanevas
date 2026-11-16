@@ -40,10 +40,11 @@ interface Props {
   onSelection: (cle: string | null) => void;
 }
 
+/** The sky's colours for the canvas, read from the tokens (a canvas cannot take a CSS variable). */
 const lireTokens = (el: Element) => {
   const s = getComputedStyle(el);
-  const v = (n: string, d: string) => s.getPropertyValue(n).trim() || d;
-  return { accent: v('--accent', '#8b9bf0'), trait: v('--ciel-trait', 'rgba(160,170,255,.3)'), texte3: v('--texte-3', '#8b8c97'), halo: v('--ciel-halo', 'rgba(0,0,0,.8)') };
+  return { accent: s.getPropertyValue('--accent').trim(), trait: s.getPropertyValue('--ciel-trait').trim() };
+};
 };
 
 /** E-23, the canvas (AD-carte-3): the interior as `lireInterieur` answered it, drawn by the core; nothing is filtered here. */
@@ -186,10 +187,12 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
             const [wx, wy] = p(rayonOrbite(o), h);
             const [x, y] = ecran(wx, wy);
             const r = Math.max(8, tn * U * echelle);
-            const d = g.createRadialGradient(x, y, 0, x, y, r);
-            d.addColorStop(0, jeton.trait); d.addColorStop(1, 'rgba(0,0,0,0)');
-            g.globalAlpha = 0.55; g.fillStyle = d;
-            g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+            // A soft area: concentric discs, the widest the faintest (no colour outside the tokens).
+            g.fillStyle = jeton.trait;
+            for (let k = 0; k < 7; k++) {
+              g.globalAlpha = 0.09;
+              g.beginPath(); g.arc(x, y, r * (1 - k / 7), 0, 7); g.fill();
+            }
             g.globalAlpha = 1;
           }
         }

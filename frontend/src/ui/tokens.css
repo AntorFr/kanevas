@@ -37,6 +37,7 @@
   --squelette: rgba(255,255,255,.06);
   /* The sky of a system map stays dark in both themes (a space stays dark): the same three values below. */
   --ciel: #0b0b10;
+  --ciel-lueur: #17182a;
   --ciel-trait: rgba(160,170,255,.34);
   --ciel-halo: rgba(0,0,0,.9);
 
@@ -86,6 +87,7 @@
   --ombre-flottant: 0 0 0 1px rgba(22,26,44,.08), 0 12px 32px -8px rgba(22,26,44,.22), 0 2px 6px rgba(22,26,44,.08);
   --squelette: rgba(22,26,44,.07);
   --ciel: #0b0b10;
+  --ciel-lueur: #17182a;
   --ciel-trait: rgba(160,170,255,.34);
   --ciel-halo: rgba(0,0,0,.9);
 }
