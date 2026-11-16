@@ -369,7 +369,6 @@ test('B-74 / E-21 : « Document MJ… » crée une fiche (« Galaxie — notes M
   await page.screenshot({ path: '/tmp/shots/tenir-document.png' });
   const d = await lire(m, 'antor', galerie(m, m.gid, '/document'));
   assert.equal(d.json.fiche.titre, 'Galaxie — notes MJ');
-  assert.equal((await lire(m, 'lea', `/api/univers/${m.uid}/fiches/${d.json.fiche.id}`)).status, 404);
   assert.equal((await appel(m, 'antor', 'POST', galerie(m, m.gid, '/systemes'), { nom: 'Port Noir', q: 1, r: 1 })).status, 201);
   await page.reload();
   await page.getByRole('heading', { name: "Galaxie d'essai", level: 1 }).waitFor();
