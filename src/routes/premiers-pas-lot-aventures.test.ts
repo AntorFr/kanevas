@@ -51,6 +51,10 @@ describe('No role, closed content', () => {
     const membres = await w.appel(w.mira, 'GET', `${w.base}/membres`);
     assert.equal(membres.statusCode, (await w.appel(w.mira, 'GET', '/api/univers/999999/membres')).statusCode);
     assert.ok(!membres.body.includes('Lame'));
+    const f1 = await w.appel(w.mira, 'GET', `${w.base}/fiches/1`);
+    const f2 = await w.appel(w.mira, 'GET', '/api/univers/987654/fiches/1');
+    assert.equal(f1.statusCode, f2.statusCode);
+    assert.equal(f1.body, f2.body);
   });
 
   test('the instance admin with no role reads no sheet of the universe', async () => {
