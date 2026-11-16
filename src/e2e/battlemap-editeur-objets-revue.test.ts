@@ -66,12 +66,11 @@ describe('E-28 objets, calques, propriétés', { skip: skipBrowser }, () => {
     const b = await antor.getByLabel('Carte', { exact: true }).boundingBox();
     await antor.mouse.click(b.x + x, b.y + y);
   };
+  /** Waits for the screen's own « Enregistré » indicator, then checks what the server holds (no fixed sleep). */
   const enregistre = async (cid: number, ok: (doc: Any) => boolean) => {
-    for (let i = 0; i < 60; i++) {
-      if (ok((await lire(cid)).document)) return;
-      await new Promise((r) => setTimeout(r, 250));
-    }
-    assert.fail('la carte du serveur n’a pas atteint l’état attendu');
+    await antor.getByText('Enregistré', { exact: true }).waitFor({ state: 'hidden', timeout: 3000 }).catch(() => undefined);
+    await antor.getByText('Enregistré', { exact: true }).waitFor();
+    assert.ok(ok((await lire(cid)).document), 'la carte du serveur n’a pas l’état attendu');
   };
   const toutSelectionner = async () => {
     await antor.getByRole('radio', { name: 'Sélection', exact: true }).click();
