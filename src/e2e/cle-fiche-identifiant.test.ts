@@ -104,7 +104,7 @@ describe('kanevas-synchro-cles-champs, clé de fiche et identifiant', { skip: sk
     const l = await ouvrir(lea);
     await l.p.goto(`/univers/${U}/fiche/${id}`);
     await l.p.getByRole('heading', { level: 1, name: 'Port-Sel', exact: true }).waitFor();
-    await l.p.waitForTimeout(500);
+    await l.p.getByRole('region', { name: 'Description' }).waitFor();
     assert.equal(await l.p.locator('.cle-fiche').count(), 0);
     assert.equal(await l.p.getByRole('button', { name: 'Modifier la clé…' }).count(), 0);
     await l.ctx.close();
