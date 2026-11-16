@@ -839,6 +839,8 @@ test('E-14 : l’enregistrement réussi est un toast « Enregistré. », pas un 
   const { ctx, page } = await session('antor');
   await page.goto('/univers/1/parametres');
   await attendre(page);
+  // E-14: « Enregistrer » is inactive while Nom, Identifiant and Description are unchanged
+  await page.getByLabel('Description').fill('Une description changée.');
   await page.getByRole('button', { name: /^Enregistrer/ }).first().click();
   await page.getByRole('status').filter({ hasText: 'Enregistré.' }).waitFor();
   await capture(page, 'e14-toast');

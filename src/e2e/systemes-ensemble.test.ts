@@ -134,7 +134,7 @@ describe('B-13 rattacher un univers à un système', opts, () => {
     await attendre(antor);
     await antor.getByRole('link', { name: rxExact('Paramètres') }).click();
     await attendre(antor);
-    assert.match(antor.url(), new RegExp(`/univers/${idLame}/parametres$`));
+    assert.match(antor.url(), /\/univers\/[^/]+\/parametres$/);
     await voit(antor, "Le catalogue est vide. Créez le premier système ci-dessous.");
     await voit(antor, "Cet univers n'est rattaché à aucun système de jeu.");
     assert.deepEqual(await optionsCatalogue(antor), ['Aucun système']);

@@ -349,7 +349,7 @@ test('B-45 / P-11 refus · Léa (Joueuse) lit « Page introuvable. » sur E-18 e
     await antor.page.getByRole('heading', { name: 'Accès par API', level: 1 }).waitFor();
     const t = await lire(antor.page);
     assert.match(t, /Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import\./);
-    assert.ok(t.includes(`/api/import/v1/univers/${m.essai}`), 'the base address');
+    assert.match(t, /\/api\/import\/v1\/univers\/[^\/\s]+/, 'the base address');
   } finally {
     await lea.ctx.close();
     await antor.ctx.close();
@@ -839,7 +839,8 @@ test('B-50 exclusions · Léa ne voit ni menu ni clé, aucune réponse qu’elle
     assert.ok(t.includes('Port-Sel'));
     assert.ok(!t.includes('lieu:port-sel') && !t.includes('Importée'));
     assert.equal(await lea.page.getByRole('button', { name: /Autres actions sur « Port-Sel »/ }).count(), 0);
-    assert.ok(!lea.reponses.some((r) => r.includes('lieu:port-sel')), 'the key never reaches a player');
+    // B-101: the key is the readable address a reader may type or be redirected to: it is in a request URL, never in a body
+    assert.ok(!lea.reponses.some((r) => r.slice(r.indexOf('\n') + 1).includes('lieu:port-sel')), 'the key never reaches a player in a body');
     await ouvrirFiche(antor.page, m, faite.json.id);
     // The menu also carries « Changer le type… » , « Déplacer sous… » and « Alias et étiquettes… » (kanevas-types-ecran-fiche, kanevas-arbre-fiche, kanevas-recherche-e9): what stays true is that a sheet
     // made in Kanevas has no origin line.

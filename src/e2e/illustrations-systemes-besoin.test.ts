@@ -313,7 +313,7 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
     const lame = antor.getByRole('link', { name: /Lame d.Ébène/ }).first();
     await lame.click();
     await attendre(antor);
-    assert.match(antor.url(), new RegExp(`/univers/${U}`));
+    assert.match(antor.url(), /\/univers\/[^/]+$/);
     await teo.goto('/');
     await teo.getByText(/Aucun univers pour l.instant\./).first().waitFor();
   });

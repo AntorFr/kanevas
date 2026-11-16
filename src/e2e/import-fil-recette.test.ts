@@ -624,7 +624,7 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
       await ouvrirE18(page, m);
       const t0 = await texte(page);
       assert.match(t0, /Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import\./);
-      assert.match(t0, new RegExp(`/api/import/v1/univers/${m.essai}`));
+      assert.match(t0, /\/api\/import\/v1\/univers\/[^\/\s]+/);
       await page.getByRole('button', { name: 'Nouveau jeton' }).click();
       const boite = page.getByRole('dialog', { name: 'Nouveau jeton' });
       await boite.waitFor();

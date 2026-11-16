@@ -164,8 +164,11 @@ async function ouvrirDialogue(page: Any, nomCarte: string): Promise<void> {
   await carte(page, nomCarte).getByRole('button', { name: bouton }).click();
   await dialogue(page).waitFor();
 }
-const reponseEcriture = (page: Any, chemin: string) =>
-  page.waitForResponse((r: Any) => ['PUT', 'POST', 'PATCH'].includes(r.request().method()) && r.url().includes(chemin));
+// B-101: the screen calls its universe by the reference of its address (the key), whatever id the test knows
+const reponseEcriture = (page: Any, chemin: string) => {
+  const motif = new RegExp(chemin.replace(/\/api\/univers\/\d+\//, '/api/univers/[^/]+/'));
+  return page.waitForResponse((r: Any) => ['PUT', 'POST', 'PATCH'].includes(r.request().method()) && motif.test(r.url()));
+};
 
 after(async () => {
   for (const b of browsers) await b.close().catch(() => {});

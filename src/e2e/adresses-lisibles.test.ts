@@ -107,6 +107,23 @@ describe('kanevas-synchro-cles-adresses, adresses lisibles', { skip: skipBrowser
     await ctx.close();
   });
 
+  test('sur une adresse lisible de fiche, la barre latérale marque le type de la fiche comme item courant (et lui seul)', async () => {
+    const f = (await api(antor, `/api/univers/${U}/fiches/${fiches['Port-Sel'].id}`)).corps;
+    const [a, b] = f.cle.split(':');
+    assert.equal(a, 'lieu', 'Port-Sel est un lieu : son item de barre est « Lieux » (pluriel du type, pas le mot de l’adresse)');
+    for (const [compte, adresse] of [[antor, `/univers/${uCle}/${a}/${b}`], [antor, `/univers/${uCle}/fiche/${f.cle}`]] as const) {
+      const ctx = await contexte(compte);
+      const page = await ctx.newPage();
+      await page.goto(adresse);
+      await page.getByRole('heading', { level: 1, name: 'Port-Sel', exact: true }).waitFor();
+      const barre = page.getByRole('complementary', { name: 'Barre latérale' });
+      await barre.locator('[aria-current="page"]').first().waitFor();
+      assert.equal(await barre.locator('[aria-current="page"]').count(), 1, `${adresse} : un seul item courant`);
+      assert.equal((await barre.locator('[aria-current="page"]').innerText()).trim(), 'Lieux', `${adresse} : l’item courant est le type de la fiche`);
+      await ctx.close();
+    }
+  });
+
   test('clé inconnue : « Page introuvable. », adresse inchangée', async () => {
     const ctx = await contexte(antor);
     const page = await ctx.newPage();

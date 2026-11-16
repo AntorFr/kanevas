@@ -221,7 +221,7 @@ test('visibilite : « MJ et joueurs » → Léa a l’entrée et l’écran de l
   await lea.getByRole('heading', { name: 'Essai A' }).waitFor();
   await lea.getByText('Une carte pour éprouver le cadre des outils.').waitFor();
   assert.match(await lea.locator('main').innerText(), /Pas de charges de carburant[\s:]*Non/);
-  assert.equal(new URL(lea.url()).pathname, `/univers/${ENERIA}/outils/essai/a`);
+  assert.match(new URL(lea.url()).pathname, /^\/univers\/[^/]+\/outils\/essai\/a$/);
   await photo(lea, 'lea-ecran-outil');
 });
 

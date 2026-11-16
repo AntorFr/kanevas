@@ -204,9 +204,9 @@ describe('sections gérées par un outil — le besoin, de bout en bout', { skip
     assert.ok(!rech.includes('Plan secret'), JSON.stringify(rech));
     const avecMJ = ((await (await antor.page.request.get(api('/fiches?q=marge'))).json()) as Any).fiches.map((x: Any) => x.titre);
     assert.ok(avecMJ.includes('Plan secret'), 'le MJ la trouve');
-    const lue = lea.page.waitForResponse((x: Any) => x.url().endsWith(`/fiches/${secret}`));
-    await lea.page.goto(`/univers/${U}/fiche/${secret}`);
-    await lue;
+    // B-101: the numeric address of a sheet Léa cannot read answers like an unknown one, at the server, before any screen
+    const rep = await lea.page.goto(`/univers/${U}/fiche/${secret}`);
+    assert.equal(rep.status(), 404);
     await lea.page.getByRole('main').waitFor();
     assert.equal(await lea.page.getByText(rx('Générée par')).count(), 0, 'aucun bandeau pour Léa');
     assert.equal(await lea.page.getByText(rx('Notes — marge')).count(), 0);

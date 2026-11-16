@@ -86,8 +86,10 @@ before(async () => {
   await regler(antor, 'Notes de la table', 'L’auteur la lit', true);
   await regler(antor, 'Notes de la table', 'L’auteur l’écrit', true);
   urlFiche = new URL(antor.url()).pathname;
-  const id = urlFiche.match(/univers\/(\d+)\/fiche\/(\d+)/) ?? urlFiche.match(/(\d+)\D+(\d+)$/);
-  apiFiche = `/api/univers/${id![1]}/fiches/${id![2]}`;
+  // B-101: `/univers/<key>/<type>/<name>` (sheet key `<type>:<name>`) or `/univers/<ref>/fiche/<ref>`: both are API references
+  const id = urlFiche.match(/univers\/([^/]+)\/(?:fiche\/([^/]+)|([^/]+)\/([^/]+))$/);
+  const refFiche = id![2] ?? `${id![3]}:${id![4]}`;
+  apiFiche = `/api/univers/${id![1]}/fiches/${encodeURIComponent(refFiche)}`;
   apiUnivers = `/api/univers/${id![1]}`;
 }, { timeout: 180000 });
 
