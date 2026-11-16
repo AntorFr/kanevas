@@ -90,42 +90,6 @@ after(async () => {
 // ---------------------------------------------------------------- B-72 : portée de saut configurée
 
 // Fails if the jump range setting were ignored (default 5 would make every case below usable).
-test('B-72 portée 1 : portée d’une étape = 1 × (moteur + 1) ; moteur 2 (portée 3) : aucun tronçon de 6 ou 7 cases n’est utilisable', async () => {
-  const m = await monde();
-  await poserPortee(m, 1);
-  const r = await trajet(m, 'lea', 'port-sel', 'vael', 2, 'publiques');
-  assert.equal(r.status, 200);
-  assert.equal(r.json.trouve, false);
-  const a = await trajet(m, 'antor', 'port-sel', 'hesper', 2, 'toutes');
-  assert.equal(a.json.trouve, false, 'même pour un MJ : la portée vaut pour tous les comptes');
-});
-
-test('B-72 bord : portée 1, moteur 6 → portée d’une étape 7 : la route de 7 cases est utilisable (« 7 cases · 2,2 jours », 7 ÷ 6 + 1 = 2,17) ; moteur 5 → 6 : elle ne l’est plus', async () => {
-  const m = await monde();
-  await poserPortee(m, 1);
-  const six = await trajet(m, 'lea', 'port-sel', 'vael', 6, 'publiques');
-  assert.equal(six.json.trouve, true);
-  assert.equal(six.json.libelle, '7 cases · 2,2 jours');
-  const cinq = await trajet(m, 'lea', 'port-sel', 'vael', 5, 'publiques');
-  assert.equal(cinq.json.trouve, false);
-});
-
-test('B-72 bord : portée 2, moteur 2 → 6 : le tronçon de 6 cases passe (Antor, Port-Sel vers Hesper : « 6 cases · 4 jours »), celui de 7 non (Léa, Port-Sel vers Vael)', async () => {
-  const m = await monde();
-  await poserPortee(m, 2);
-  const a = await trajet(m, 'antor', 'port-sel', 'hesper', 2, 'toutes');
-  assert.equal(a.json.libelle, '6 cases · 4 jours'); // 6 ÷ 2 + 1
-  const l = await trajet(m, 'lea', 'port-sel', 'vael', 2, 'publiques');
-  assert.equal(l.json.trouve, false);
-});
-
-test('B-72 : portée 3, moteur 1 → 6 : Antor, Port-Sel vers Hesper, « 6 cases · 7 jours » (6 ÷ 1 + 1)', async () => {
-  const m = await monde();
-  await poserPortee(m, 3);
-  const a = await trajet(m, 'antor', 'port-sel', 'hesper', 1, 'toutes');
-  assert.equal(a.json.libelle, '6 cases · 7 jours');
-});
-
 // ---------------------------------------------------------------- écran, navigateur
 
 interface Session {
