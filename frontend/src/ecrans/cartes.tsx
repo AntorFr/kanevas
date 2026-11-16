@@ -198,12 +198,21 @@ function Cartes() {
       )}
       {mj && !ouvert && (
         <div className="carte-creations">
-          <Bouton variante="principal" icone={Plus} ecrit onClick={() => setOuvert(true)}>
-            Nouvelle carte
-          </Bouton>
-          {formeComposee && (
-            <Bouton icone={Plus} ecrit onClick={() => setComposee(true)}>
-              Carte composée
+          {formeComposee ? (
+            // One entry « Nouvelle carte ▸ … » (E-10): the composed map opens its window, the others the inline form.
+            <Menu
+              etiquette="Nouvelle carte"
+              declencheur={<><Plus size={16} aria-hidden="true" /> Nouvelle carte <ChevronDown size={16} aria-hidden="true" /></>}
+              aligne="debut"
+              desactive={perdue}
+              entrees={[
+                { libelle: 'Carte composée', onChoisir: () => setComposee(true) },
+                { libelle: 'Carte illustrée, graphe…', onChoisir: () => setOuvert(true) },
+              ]}
+            />
+          ) : (
+            <Bouton variante="principal" icone={Plus} ecrit onClick={() => setOuvert(true)}>
+              Nouvelle carte
             </Bouton>
           )}
         </div>

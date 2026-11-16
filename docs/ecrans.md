@@ -1819,7 +1819,7 @@ title, form (« Carte illustrée » or « Graphe »), and for the GM the « Visi
 takes effect on click. Clicking the title opens the map (E-11). Order: alphabetical title, then creation;
 one hundred maps per page and « Charger la suite ».
 
-*Create (GM).* At the top, « Nouvelle carte » opens an inline form: **« Titre »** (1 to 80
+*Create (GM).* At the top, « Nouvelle carte » is the single entry. While the `battlemap/cartes` tool is on it opens a menu: « Carte composée » opens the window described under E-28 (name, size), « Carte illustrée, graphe… » opens the inline form; with the tool off it opens the inline form directly. The inline form: **« Titre »** (1 to 80
 characters), **« Forme »** (« Carte illustrée » by default, or « Graphe »; cannot be changed
 later), and for an illustrated map **« Image de fond »** (« Choisir une image », optional: choosing
 sends nothing, the image is sent with « Créer »). « Créer » leads to the map (E-11), **not visible**; a
