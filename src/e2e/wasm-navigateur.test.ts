@@ -77,3 +77,36 @@ test('the coeur module in Chromium finds the fixtures\' stars and the exact JSON
     await page.close();
   }
 });
+
+test('the coeur module in Chromium draws the fixtures\' systems and the exact JSON bytes of generation-sortie-systemes.json', { skip: skipBrowser }, async () => {
+  const systemes = fixtures('generation-systemes.json');
+  const sortie = fixtures('generation-sortie-systemes.json');
+  const egal = (a: Any, b: Any, ctx: string): void => {
+    if (typeof a === 'number' && typeof b === 'number') return assert.ok(Math.abs(a - b) <= 1e-9, `${ctx}: ${a} != ${b}`);
+    if (Array.isArray(a) && Array.isArray(b)) {
+      assert.equal(a.length, b.length, `${ctx}: length`);
+      return a.forEach((v, i) => egal(v, b[i], `${ctx}[${i}]`));
+    }
+    if (a && b && typeof a === 'object' && typeof b === 'object') {
+      assert.deepEqual(Object.keys(a).sort(), Object.keys(b).sort(), `${ctx}: keys`);
+      return Object.keys(a).forEach((k) => egal(a[k], b[k], `${ctx}.${k}`));
+    }
+    assert.deepEqual(a, b, ctx);
+  };
+  const page = await browser.newPage();
+  try {
+    await page.goto(`${base}/index.html`);
+    await page.waitForFunction(() => document.getElementById('coeur-systeme-appels')?.textContent, undefined, { timeout: 30_000 });
+    assert.equal(await page.isHidden('#erreur'), true);
+    const tires: string[] = JSON.parse(await page.evaluate(() => document.getElementById('coeur-systemes')!.textContent!));
+    assert.equal(tires.length, systemes.systemes.length);
+    systemes.systemes.forEach((s: Any, i: number) => egal(JSON.parse(tires[i]!), s.sortie, `${s.entree.q},${s.entree.r}`));
+    const octets: string[] = JSON.parse(await page.evaluate(() => document.getElementById('coeur-sortie-systemes')!.textContent!));
+    assert.deepEqual(octets, sortie.systemes.map((s: Any) => s.json));
+    const a = JSON.parse((await page.textContent('#coeur-systeme-appels'))!);
+    assert.ok(Math.abs(a.transition - systemes.systemes[0].sortie.transition) <= 1e-9);
+    assert.ok(Math.abs(a.x - 2) < 1e-9 && Math.abs(a.y) < 1e-9 && Math.abs(a.orbite - 2) < 1e-9 && Math.abs(a.heure - 3) < 1e-9);
+  } finally {
+    await page.close();
+  }
+});
