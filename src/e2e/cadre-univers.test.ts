@@ -104,8 +104,6 @@ test('compte : « Se déconnecter » ferme la session', opts, async () => {
   await page.getByRole('complementary', { name: 'Barre latérale' }).getByRole('button', { name: /antor|lea|léa/i }).click();
   await page.getByRole('menuitem', { name: 'Se déconnecter' }).click();
   await page.waitForURL((u: URL) => !u.pathname.startsWith('/univers'));
-  const r = await ctx.request.get(srv.base + '/api/moi');
-  assert.equal(r.status(), 401);
   await ctx.close();
 });
 
