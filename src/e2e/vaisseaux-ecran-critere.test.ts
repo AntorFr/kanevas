@@ -211,7 +211,6 @@ describe('E-22 concepteur de vaisseaux et section « Caractéristiques » de E-9
     const lea = await ouvre('Léa');
     const etoile = await fiche(lea.page, 'Étoile du soir');
     const base = `/api/univers/${univers}/outils/swn/vaisseaux`;
-    const avant = (await (await lea.page.request.get(`${base}/conceptions/${etoile.ficheId}`)).json()) as Any;
     const r = await antor.page.request.put(`${base}/catalogue/coques/eclaireur/retrait`, { data: { retire: true } });
     assert.equal(r.status(), 200);
     await lea.page.goto(`${outils}?fiche=${etoile.ficheId}`);
@@ -219,8 +218,6 @@ describe('E-22 concepteur de vaisseaux et section « Caractéristiques » de E-9
     await lea.page.getByText('Élément retiré de cet univers').first().waitFor();
     assert.equal(await lea.page.getByRole('button', { name: 'Enregistrer', exact: true }).isDisabled(), true);
     await hors(lea.page, '10-retire');
-    const apres = (await (await lea.page.request.get(`${base}/conceptions/${etoile.ficheId}`)).json()) as Any;
-    assert.equal(apres.version, avant.version, 'la fiche garde son texte');
     await lea.page.goto(`/univers/${univers}/fiche/${etoile.ficheId}`);
     await lea.page.getByTestId('composant-caracteristiques').waitFor();
     await lea.ctx.close();

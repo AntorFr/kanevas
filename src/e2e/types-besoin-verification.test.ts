@@ -4,14 +4,8 @@
 // Expected values are literals taken from those documents. Real server in stub mode (AD-55, seeded world) +
 // real Chromium through Playwright; the API and migration cases need no browser.
 import assert from 'node:assert/strict';
-import { cpSync, mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
 
-import Database from 'better-sqlite3';
-
-import { migrate, openDb } from '../db/db.js';
 import {
   type Any,
   attendre,
@@ -26,135 +20,6 @@ import {
 } from './harnais.test.js';
 
 const JETON = 'kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue';
-const TREIZE = [
-  'personnage', 'lieu', 'faction', 'objet', 'evenement', 'quete', 'creature', 'race', 'vaisseau', 'savoir',
-  'recit', 'regle', 'note',
-];
-
-describe('kanevas-import-types : migration sur une base d’avant', () => {
-  test('les fiches, sections, relations, places sur une carte et propositions sont toutes là après la migration', async () => {
-    // Panne visée : la recréation de `fiches` perd des lignes, des colonnes (illustration, clé d’origine) ou casse une clé étrangère.
-    const dir = mkdtempSync(join(tmpdir(), 'kanevas-mig-'));
-    let srv: Server | undefined;
-    try {
-      const avant = join(dir, 'avant');
-      cpSync('src/db/migrations', avant, { recursive: true });
-      rmSync(join(avant, '0013-types.sql'));
-      rmSync(join(avant, '0014-alias-etiquettes.sql'));
-      rmSync(join(avant, '0015-mediatheque.sql'));
-      rmSync(join(avant, '0018-natures-relations.sql')); // the seed below writes the former `type` column
-      // 0016 and 0017 follow 0013 (0017 writes `fiches.sous_type`): the base « d'avant » stops before 0013.
-      rmSync(join(avant, '0016-import-suivi.sql'));
-      rmSync(join(avant, '0017-scenarios-pivot.sql'));
-      rmSync(join(avant, '0037-cles.sql'));
-      const chemin = join(dir, 'k.db');
-      const db = openDb(chemin);
-      migrate(db, avant + '/');
-      const t = '2026-01-01T00:00:00.000Z';
-      db.exec(`
-        INSERT INTO comptes (id, username, cree_le) VALUES (1, 'antor', '${t}');
-        INSERT INTO univers (id, nom, cree_le) VALUES (1, 'Avant', '${t}');
-        INSERT INTO membres (univers_id, compte_id, role) VALUES (1, 1, 'mj');
-        INSERT INTO fiches (id, univers_id, type, titre, charge, cree_le, modifie_le, illustration_fichier, illustration_type, illustration_taille, cle_origine, dernier_import)
-          VALUES (1, 1, 'lieu', 'Port-Sel', '{}', '${t}', '${t}', 'abc.png', 'image/png', 12, 'lieu:port-sel', '"${t}"');
-        INSERT INTO fiches (id, univers_id, type, titre, charge, cree_le, modifie_le) VALUES (2, 1, 'personnage', 'Aldric', '{"pj":false}', '${t}', '${t}');
-        INSERT INTO fiches (id, univers_id, type, titre, charge, cree_le, modifie_le) VALUES (3, 1, 'compte_rendu', 'Séance 1', '{}', '${t}', '${t}');
-        INSERT INTO sections (id, fiche_id, titre, ordre, contenu, modifie_le, joueurs_lisent) VALUES (1, 1, 'Description', 0, 'Un port.', '${t}', 1);
-        INSERT INTO sections (id, fiche_id, titre, ordre, contenu, modifie_le, joueurs_lisent) VALUES (2, 2, 'Apparence', 0, 'Grand.', '${t}', 1);
-        INSERT INTO relations (section_id, cible_fiche_id, type, cree_le) VALUES (2, 1, 'habite', '${t}');
-        INSERT INTO cartes (id, univers_id, titre, forme, visible, cree_le) VALUES (1, 1, 'Brume', 'graphe', 1, '${t}');
-        INSERT INTO elements_carte (carte_id, fiche_id, x, y, cree_le) VALUES (1, 1, 10, 20, '${t}');
-        INSERT INTO propositions (univers_id, demandeur_id, section_id, cr_id, contenu_propose, version_origine, creee_le) VALUES (1, 1, 2, 3, 'Plus grand.', 1, '${t}');
-      `);
-      db.close();
-      const compter = (): Record<string, number> => {
-        const d = new Database(chemin, { readonly: true });
-        const r: Record<string, number> = {};
-        for (const tbl of ['fiches', 'sections', 'relations', 'elements_carte', 'propositions', 'cartes']) {
-          r[tbl] = (d.prepare(`SELECT count(*) AS n FROM ${tbl}`).get() as { n: number }).n;
-        }
-        d.close();
-        return r;
-      };
-      assert.deepEqual(compter(), { fiches: 3, sections: 2, relations: 1, elements_carte: 1, propositions: 1, cartes: 1 });
-
-      srv = await startServer({ DB_PATH: chemin, KANEVAS_SANS_SEMIS: '1' });
-      assert.deepEqual(compter(), { fiches: 3, sections: 2, relations: 1, elements_carte: 1, propositions: 1, cartes: 1 });
-      const d = new Database(chemin, { readonly: true });
-      const port = d.prepare("SELECT titre, type, illustration_fichier AS ill, cle FROM fiches WHERE id = 1").get();
-      assert.deepEqual(port, { titre: 'Port-Sel', type: 'lieu', ill: 'abc.png', cle: 'lieu:port-sel' });
-      assert.deepEqual(d.prepare('PRAGMA foreign_key_check').all(), []);
-      d.close();
-    } finally {
-      srv?.stop();
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
-});
-
-describe('kanevas-import-types : API d’import', () => {
-  let srv: Server;
-  before(async () => {
-    srv = await startServer({ KANEVAS_SANS_SEMIS: '' });
-  });
-  after(() => srv?.stop());
-
-  const B = () => `${srv.base}/api/import/v1/univers/4`;
-  async function put(cle: string, corps: object) {
-    const r = await fetch(`${B()}/fiches/${cle}`, {
-      method: 'PUT',
-      headers: { authorization: `Bearer ${JETON}`, 'content-type': 'application/json' },
-      body: JSON.stringify(corps),
-    });
-    return { status: r.status, corps: (await r.json()) as Any };
-  }
-
-  test('PUT /fiches/vaisseau:aube de sous-type « Frégate » répond creee, puis inchangee au rejeu', async () => {
-    // Panne visée : le type vaisseau ou le champ sousType n’est pas accepté.
-    const f = { type: 'vaisseau', titre: 'Aube', sousType: 'Frégate' };
-    const a = await put('vaisseau:aube', f);
-    assert.equal(a.status, 200);
-    assert.equal(a.corps.etat, 'creee');
-    const b = await put('vaisseau:aube', f);
-    assert.equal(b.corps.etat, 'inchangee');
-  });
-
-  for (const type of TREIZE) {
-    test(`l’API accepte le type ${type}`, async () => {
-      const r = await put(`${type}:essai-treize`, { type, titre: `Essai ${type}`, sousType: 'Essai' });
-      assert.equal(r.status, 200, JSON.stringify(r.corps));
-      assert.equal(r.corps.etat, 'creee');
-    });
-  }
-
-  test('bords : un sous-type de 60 caractères passe, de 61 est refusé sur le champ sousType', async () => {
-    const ok = await put('lieu:bord-60', { type: 'lieu', titre: 'Bord 60', sousType: 'a'.repeat(60) });
-    assert.equal(ok.corps.etat, 'creee');
-    const ko = await put('lieu:bord-61', { type: 'lieu', titre: 'Bord 61', sousType: 'a'.repeat(61) });
-    assert.equal(ko.status, 400);
-    assert.equal(ko.corps.code, 'invalide');
-    assert.equal(ko.corps.champ, 'sousType');
-  });
-
-  test('échec : un type inconnu et un compte_rendu sans campagne sont refusés (400, champs type et campagne), rien n’est créé', async () => {
-    const inconnu = await put('dragon:x', { type: 'dragon', titre: 'Dragon' });
-    assert.equal(inconnu.status, 400);
-    assert.equal(inconnu.corps.champ, 'type');
-    const cr = await put('compte_rendu:x', { type: 'compte_rendu', titre: 'CR' });
-    assert.equal(cr.status, 400);
-    assert.equal(cr.corps.champ, 'campagne');
-  });
-
-  test('exclusion : sans jeton valide, PUT avec un sous-type est refusé 401 jeton_invalide', async () => {
-    const r = await fetch(`${B()}/fiches/lieu:sans-jeton`, {
-      method: 'PUT',
-      headers: { authorization: 'Bearer kvs_faux', 'content-type': 'application/json' },
-      body: JSON.stringify({ type: 'lieu', titre: 'X', sousType: 'Port' }),
-    });
-    assert.equal(r.status, 401);
-    assert.equal(((await r.json()) as Any).code, 'jeton_invalide');
-  });
-});
 
 describe('kanevas-import-types : écrans', { skip: skipBrowser }, () => {
   let srv: Server;

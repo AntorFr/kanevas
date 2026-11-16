@@ -13,6 +13,7 @@
   `src/e2e/`, no `build`, no Playwright; about 4 min) and `rejouer:` `npm ci && node scripts/rejouer-tests.mjs {tests}` (only the named
   tests, `describe > test` as in `resultats.tap`; non-zero for a name no file declares as a literal test title). A screen test declares its screens on its first line (`// ecrans: a, b`);
   read a choice without playing it: `node scripts/niveaux-tests.mjs --liste ecrans|fiche <base>`; durations measured in the README. The `tests-complets` status says its level (description starting with « niveau »), the tag build refuses one that does not. Test choice logic: `scripts/niveaux-tests.mjs`.
+- Before writing a screen test (`src/e2e/`): prove an effect (a row, a right, a status code, a count) through its door (`inject` in `src/routes/` or a service test), keep on screen only what the user sees; rule and inventory in `docs/tests-ecran/README.md`, and every new screen test needs a line in a `docs/tests-ecran/lot-*.md` or `src/scripts-tests/inventaire-ecrans.test.ts` fails.
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.

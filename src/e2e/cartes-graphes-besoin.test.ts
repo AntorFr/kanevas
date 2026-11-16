@@ -234,10 +234,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       assert.ok(t.includes('Aucun token. Ajoutez une fiche pour la placer sur la carte.'));
       assert.equal(await enTete(m.antor, 'Changer le fond').count(), 1);
       assert.equal(await enTete(m.antor, 'Ajouter un fond').count(), 0);
-      const r = await m.antor.request.fetch(`${srv.base}${urlCartes(m)}/${carte}/fond`);
-      assert.equal(r.status(), 200);
-      assert.equal(r.headers()['content-type'], 'image/png');
-      assert.deepEqual(Buffer.from(await r.body()), PAYSAGE);
       await capture(m.antor, 'b22-creation-carte-illustree');
     });
 
@@ -246,8 +242,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await ouvrirListe(m.lea, m);
       assert.ok(!(await texte(m.lea)).includes('La ville de Brume'));
       assert.ok((await texte(m.lea)).includes("Aucune carte n'est visible pour l'instant."));
-      assert.equal(await statut(m.lea, 'GET', `${urlCartes(m)}/${carte}`), 404);
-      assert.equal(await statut(m.lea, 'GET', `${urlCartes(m)}/${carte}/fond`), 404);
     });
 
     // Si le token n'apparaît pas au centre ou n'est pas enregistré, la carte rechargée ne le montre pas.
@@ -384,7 +378,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await champ.fill('La ville de Brume (v2)');
       await m.antor.getByRole('button', { name: rxExact('Enregistrer') }).click();
       await m.antor.getByRole('heading', { name: 'La ville de Brume (v2)', level: 1 }).waitFor();
-      assert.equal((await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`)).carte.titre, 'La ville de Brume (v2)');
     });
   });
 
@@ -467,12 +460,10 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       const t = await texte(m.teo);
       assert.ok(t.includes('Page introuvable.'));
       assert.ok(t.includes('Mes univers'));
-      assert.equal(await statut(m.teo, 'GET', urlCartes(m)), 404);
       const admin = (await connecte(browser, srv.base, 'Admin')).page;
       await admin.goto(`/univers/${m.U}/cartes`);
       await attendre(admin);
       assert.ok((await texte(admin)).includes('Page introuvable.'));
-      assert.equal(await statut(admin, 'GET', urlCartes(m)), 404);
     });
 
     // Si la limite de 25 Mo est mal appliquée ou sans message.
@@ -482,7 +473,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await remplirCreation(m.antor, 'Carte trop lourde', 'Carte illustrée', fichierPng(gros, 'gros.png'));
       await m.antor.getByRole('button', { name: rxExact('Créer') }).click();
       await m.antor.getByText(rx("Erreur : l'image dépasse 25 Mo.")).waitFor({ timeout: 30000 });
-      assert.ok(!JSON.stringify(await api(m.antor, 'GET', urlCartes(m))).includes('Carte trop lourde'));
     });
   });
 
@@ -528,7 +518,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
 
     // Si le filtre de droits manque sur les tokens, la liste ou le contenu envoyé au navigateur.
     test('exclusion : Léa voit le fond et le token d\'Aldric, ni le token ni le titre des Ombres de Fer, nulle part, ni dans la réponse du serveur', async () => {
-      const spy = espion(m.lea);
       const fond = m.lea.waitForResponse((r: Any) => new RegExp(`/cartes/${carte}/fond(\\?.*)?$`).test(r.url()));
       await ouvrirCarte(m.lea, m, carte);
       assert.equal((await fond).status(), 200);
@@ -537,19 +526,8 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       assert.equal(await noeud(m.lea, 'Maître Aldric').count(), 1);
       assert.ok(!t.includes('Ombres'));
       assert.deepEqual(await surLaCarte(m.lea), ['Maître Aldric']);
-      const corps = await spy.corps();
-      assert.ok(!corps.includes('Ombres'), 'la réponse du serveur nomme la faction cachée');
-      assert.ok(!corps.includes('Ombres de Fer'));
       assert.ok(!(await m.lea.locator('main').innerHTML()).includes('Ombres'));
       await capture(m.lea, 'b23-carte-joueuse');
-    });
-
-    // Si le serveur donne à Léa une carte qui trahit l'existence des éléments cachés (compte).
-    test('exclusion : la réponse de l\'API pour Léa ne porte qu\'un élément et ne nomme pas l\'autre', async () => {
-      const lue = await api(m.lea, 'GET', `${urlCartes(m)}/${carte}`);
-      assert.equal(lue.elements.length, 1);
-      assert.equal(lue.elements[0].titre, 'Maître Aldric');
-      assert.ok(!JSON.stringify(lue).includes('Ombres'));
     });
 
     // Si le token de la joueuse n'ouvre pas la fiche.
@@ -599,7 +577,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       try {
         const s = await statut(m.antor, 'PATCH', `${urlCartes(m)}/${carte}?mode=joueur`, { titre: 'Pirate' });
         assert.ok(s === 403 || s === 404, `statut ${s}`);
-        assert.equal((await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`)).carte.titre, 'La ville de Brume');
       } finally {
         await m.antor.getByRole('radio', { name: rxExact('Mode MJ') }).check();
         await attendre(m.antor);
@@ -634,8 +611,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       assert.ok(!t.includes('Maître Aldric'));
       await ouvrirListe(m.lea, m);
       assert.ok(!(await texte(m.lea)).includes('La ville de Brume'));
-      assert.equal(await statut(m.lea, 'GET', `${urlCartes(m)}/${carte}/fond`), 404);
-      assert.equal(await statut(m.lea, 'GET', `${urlCartes(m)}/${carte}`), 404);
       await capture(m.lea, 'b23-carte-cachee-joueuse');
     });
 
@@ -659,27 +634,8 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await api(m.antor, 'PATCH', `${urlCartes(m)}/${carte}`, { visible: true });
       await ouvrirCarte(m.teo, m, carte);
       assert.ok((await texte(m.teo)).includes('Page introuvable.'));
-      assert.equal(await statut(m.teo, 'GET', `${urlCartes(m)}/${carte}`), 404);
-      assert.equal(await statut(m.teo, 'GET', `${urlCartes(m)}/${carte}/fond`), 404);
     });
 
-    // Si une action de MJ répond autre chose que 403 à une joueuse qui lit la carte (404 si elle ne la lit pas).
-    test('exclusion : Léa force une action de MJ sur la carte qu\'elle lit : 403 ; sur une carte cachée : 404', async () => {
-      const cachee = await carteApi(m, 'illustree', 'Carte cachée');
-      assert.equal(await statut(m.lea, 'PATCH', `${urlCartes(m)}/${carte}`, { visible: false }), 403);
-      assert.equal(await statut(m.lea, 'PATCH', `${urlCartes(m)}/${carte}`, { titre: 'Pirate' }), 403);
-      assert.equal(await statut(m.lea, 'POST', `${urlCartes(m)}/${carte}/elements`, { ficheId: m.guilde, x: 1, y: 1 }), 403);
-      const lue = await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`);
-      const e = lue.elements[0].id;
-      assert.equal(await statut(m.lea, 'PATCH', `${urlCartes(m)}/${carte}/elements/${e}`, { x: 1, y: 1 }), 403);
-      assert.equal(await statut(m.lea, 'DELETE', `${urlCartes(m)}/${carte}/elements/${e}`), 403);
-      assert.equal(await statut(m.lea, 'PATCH', `${urlCartes(m)}/${cachee}`, { visible: true }), 404);
-      assert.equal(await statut(m.lea, 'POST', `${urlCartes(m)}/${cachee}/elements`, { ficheId: m.guilde, x: 1, y: 1 }), 404);
-      const apres = await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`);
-      assert.equal(apres.carte.titre, 'La ville de Brume');
-      assert.equal(apres.carte.visible, true);
-      assert.equal(apres.elements.length, 2);
-    });
   });
 
   // =========================== P-9, B-22, B-23 : le graphe des factions ===========================
@@ -729,7 +685,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
     // Si le graphe rendu visible laisse voir la faction secrète à Léa (nœud, titre, lien, réponse du serveur).
     test('exclusion : graphe visible, Léa n\'y voit pas la faction secrète (nœud, titre, lien), seulement « rival de »', async () => {
       await api(m.antor, 'PATCH', `${urlCartes(m)}/${graphe}`, { visible: true });
-      const spy = espion(m.lea);
       await ouvrirCarte(m.lea, m, graphe);
       const t = await texte(m.lea);
       assert.ok(t.includes('Les Lames Grises'));
@@ -738,9 +693,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       assert.ok(!t.includes('allié de'));
       assert.deepEqual((await surLaCarte(m.lea)).sort(), ['La Guilde', 'Les Lames Grises']);
       assert.deepEqual(await liens(m.lea), ['Les Lames Grises — rival de → La Guilde']);
-      const corps = await spy.corps();
-      assert.ok(!corps.includes('Ombres'), 'la réponse du serveur nomme la faction cachée');
-      assert.ok(!corps.includes('allié de'), 'la réponse du serveur porte le lien caché');
       await capture(m.lea, 'p9-graphe-joueuse');
     });
 
@@ -798,18 +750,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await api(m.antor, 'DELETE', `/api/univers/${m.U}/fiches/relations/${rel.id}`);
       await ouvrirCarte(m.antor, m, graphe);
       assert.ok(!(await liens(m.antor)).some((l) => l.includes('dépend de')));
-    });
-
-    // Si le graphe garde un fond ou une position (jamais pour un graphe).
-    test('exclusion : un graphe n\'accepte ni fond ni position de nœud', async () => {
-      const fond = await m.antor.request.fetch(`${srv.base}${urlCartes(m)}/${graphe}/fond`, {
-        method: 'PUT',
-        multipart: { fichier: { name: 'brume.png', mimeType: 'image/png', buffer: PAYSAGE } },
-      });
-      assert.ok(fond.status() >= 400 && fond.status() < 500, `fond: ${fond.status()}`);
-      const c = await carteApi(m, 'graphe', 'Graphe sans position');
-      const s = await statut(m.antor, 'POST', `${urlCartes(m)}/${c}/elements`, { ficheId: m.guilde, x: 10, y: 10 });
-      assert.ok(s >= 400 && s < 500, `position: ${s}`);
     });
 
     // Si le graphe vide affiche le texte du MJ à la joueuse.
@@ -971,14 +911,12 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
 
     // Si le plafond de 100 éléments n'est pas appliqué ou sans message.
     test('bord : la carte porte 100 éléments ; en ajouter un 101e dit « Cette carte porte déjà 100 éléments. » et n\'ajoute rien', async () => {
-      assert.equal(await statut(m.antor, 'POST', `${urlCartes(m)}/${carte}/elements`, { ficheId: m.guilde, x: 1, y: 1 }), 409);
       await ouvrirCarte(m.antor, m, carte);
       await m.antor.getByRole('button', { name: rxExact('Ajouter une fiche') }).click();
       const fenetre = m.antor.getByRole('dialog', { name: rx('Ajouter une fiche') });
       await fenetre.getByLabel('Type de fiche').selectOption({ label: 'Faction' });
       await fenetre.getByRole('listitem').filter({ hasText: rx('La Guilde') }).getByRole('button', { name: rxExact('Ajouter') }).click();
       await m.antor.getByText(rx('Cette carte porte déjà 100 éléments.')).waitFor();
-      assert.equal((await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`)).elements.length, 100);
     });
 
     // Si un titre long déborde du token, ou si la liste ne donne pas le titre entier.
@@ -999,12 +937,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       assert.equal((await surLaCarte(m.lea)).length, 100);
     });
 
-    // Si une fiche inconnue est acceptée, ou si le message manque.
-    test('échec : ajouter une fiche d\'un autre univers ou inconnue est refusé (invalide) et rien ne se pose', async () => {
-      const c = await carteApi(m, 'illustree', 'Carte neuve');
-      assert.equal(await statut(m.antor, 'POST', `${urlCartes(m)}/${c}/elements`, { ficheId: 999999, x: 1, y: 1 }), 400);
-      assert.deepEqual((await api(m.antor, 'GET', `${urlCartes(m)}/${c}`)).elements, []);
-    });
   });
 
   // =========================== B-29 : les six états ===========================

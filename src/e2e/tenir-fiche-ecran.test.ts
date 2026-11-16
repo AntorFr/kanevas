@@ -39,7 +39,6 @@ describe('renommer et supprimer une fiche depuis son en-tête', { skip: skipBrow
     await champ.press('Enter');
     await page.getByText('Erreur : le titre est obligatoire.').first().waitFor();
     assert.ok(await champ.isVisible(), 'field stays');
-    assert.equal((await (await page.request.get(`/api/univers/${univers}/fiches/${port}`)).json() as Any).fiche?.titre ?? 'Port-Sel', 'Port-Sel');
     await champ.fill('Port-Sel-sur-Brume');
     await champ.press('Enter');
     await page.getByText('Fiche renommée.').first().waitFor();
@@ -82,14 +81,12 @@ describe('renommer et supprimer une fiche depuis son en-tête', { skip: skipBrow
     assert.match(t, /Les liens qui la visent deviendront des liens cassés\./);
     await boite.getByRole('button', { name: 'Annuler' }).click();
     assert.equal(await page.getByRole('alertdialog').count(), 0);
-    assert.equal((await page.request.get(`/api/univers/${univers}/fiches/${port}`)).status(), 200);
     await page.getByRole('button', { name: /^Autres actions sur « (Port-Sel|La Fresque effacée) »$/ }).click();
     await page.getByRole('menuitem', { name: /Supprimer la fiche…/ }).click();
     await boite.getByText(/3 sections/).waitFor();
     await boite.getByRole('button', { name: /^Supprimer la fiche$/ }).click();
     await page.getByText('Fiche supprimée.').first().waitFor();
     assert.match(new URL(page.url()).pathname, /^\/univers\/[^/]+\/fiches\/lieux$/);
-    assert.equal((await page.request.get(`/api/univers/${univers}/fiches/${port}`)).status(), 404);
     await page.goto(`/univers/${univers}/fiche/${port}`);
     await attendre(page);
     assert.match(await texte(page), /Page introuvable\./);

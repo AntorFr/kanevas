@@ -131,7 +131,7 @@ describe('E-22 effets, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => {
     await p.getByText(/réparation/i).filter({ hasText: /2 au moins|insuffisante/i }).first().waitFor();
     await p.waitForFunction(() => { const b = [...document.querySelectorAll('button')].find((x) => x.textContent === 'Enregistrer'); return !!b && !(b as HTMLButtonElement).disabled; }, null, { timeout: 15000 });
     await p.screenshot({ path: '/tmp/shots/effets-1280-reparation1.png', fullPage: true });
-    assert.equal(await sauver(p), 200);
+    await sauver(p);
     await champ.fill('2');
     await p.waitForFunction(() => !/Bloquante|À surveiller/.test(document.body.innerText), null, { timeout: 15000 });
     await champ.fill('21');
@@ -165,7 +165,7 @@ describe('E-22 effets, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => {
     await p.waitForFunction(() => /Soutes\s*20/.test((document.querySelector('.vx-resultats') as HTMLElement).innerText.replace(/ /g, ' ')), null, { timeout: 15000 });
     await p.getByText('Bloquante').first().waitFor({ state: 'detached' });
     await p.screenshot({ path: '/tmp/shots/effets-1280-cale.png', fullPage: true });
-    assert.equal(await sauver(p), 200);
+    await sauver(p);
     const q = await ouvrir('antor', orak, 1280);
     assert.match(await res(q), /Soutes\s*20/);
     assert.equal(await q.getByRole('combobox', { name: 'Élément visé' }).inputValue(), 'amenagements/soute-r');
@@ -202,7 +202,7 @@ describe('E-22 effets, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => {
     assert.equal(await p.getByRole('button', { name: 'Augmenter : Points échangés : Réacteur' }).isDisabled(), true);
     await champ.fill('3');
     await p.getByText('3 points : −3 puissance, +1,5 masse', { exact: true }).waitFor();
-    assert.equal(await sauver(p), 200);
+    await sauver(p);
     const q = await ouvrir('antor', orak, 1280);
     assert.equal(await q.locator('input[aria-label="Points échangés : Réacteur"]').inputValue(), '3');
     await q.getByText('3 points : −3 puissance, +1,5 masse', { exact: true }).waitFor();

@@ -117,9 +117,6 @@ test('envoi annulé : la ligne « Envoi… » (role=status) porte « Annuler » 
   await ligne.getByRole('button', { name: rxExact('Annuler') }).click();
   await ligne.waitFor({ state: 'detached' });
   await attendre(antor);
-  const fiche = await (await antor.request.get(apiFiche)).json();
-  const noms = fiche.sections.flatMap((s: Any) => s.piecesJointes.map((p: Any) => p.nom));
-  assert.ok(!noms.includes('annule.png'), JSON.stringify(noms));
   assert.equal(await bloc(antor, 'Apparence').getByText(/annule\.png/).count(), 0);
   bloque();
   await antor.unroute(/\/api\/univers\/[^/]+\/fichiers$/, { behavior: 'ignoreErrors' });

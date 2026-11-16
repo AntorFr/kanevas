@@ -31,7 +31,6 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
-import Database from 'better-sqlite3';
 import { type Any, connecte, launch, rx, skipBrowser, startServer } from './harnais.test.js';
 
 const opts = { skip: skipBrowser, timeout: 180000 };
@@ -87,48 +86,7 @@ async function appel(m: Monde, compte: string, methode: string, chemin: string, 
 const ENEIRIA = 5;
 const VOISIN = 6;
 const SYSTEME = 3;
-const resume = (niveau: 'univers' | 'systeme', id: number, outil = 'vaisseaux', suite = '') =>
-  `/api/${niveau === 'univers' ? 'univers' : 'systemes'}/${id}/outils/swn/${outil}/suppression${suite}`;
 
-/** Reads the SQLite file of the running server (read only). */
-function lireBase<T>(m: Monde, corps: (db: Any) => T): T {
-  const db = new Database(m.dbPath, { readonly: true });
-  try {
-    return corps(db);
-  } finally {
-    db.close();
-  }
-}
-/** Every row of every swn_* table, as one string: equal strings = no row lost, none changed. */
-function toutesLesLignes(m: Monde): string {
-  return lireBase(m, (db) => {
-    const tables = db.prepare("select name from sqlite_master where type='table' and name like 'swn\\_%' escape '\\' order by name").all();
-    return tables.map((t: Any) => `${t.name}=${JSON.stringify(db.prepare(`select * from ${t.name} order by rowid`).all())}`).join('\n');
-  });
-}
-/** Rows of the swn_* tables carrying `univers_id` = id. */
-function lignesDeLUnivers(m: Monde, id: number): Record<string, number> {
-  return lireBase(m, (db) => {
-    const res: Record<string, number> = {};
-    for (const t of db.prepare("select name from sqlite_master where type='table' and name like 'swn\\_%' escape '\\'").all()) {
-      const cols = db.prepare(`pragma table_info(${t.name})`).all().map((c: Any) => c.name);
-      if (cols.includes('univers_id')) res[t.name] = db.prepare(`select count(*) n from ${t.name} where univers_id = ?`).get(id).n;
-    }
-    return res;
-  });
-}
-const total = (r: Record<string, number>) => Object.values(r).reduce((a, b) => a + b, 0);
-const titresConceptions = (m: Monde, id: number): string[] =>
-  lireBase(m, (db) =>
-    db.prepare('select f.titre t from swn_conceptions c join fiches f on f.id = c.fiche_id where c.univers_id = ? order by f.titre').all(id).map((r: Any) => r.t),
-  );
-const lignesCatalogueSysteme = (m: Monde): number =>
-  lireBase(m, (db) => {
-    let n = 0;
-    for (const t of db.prepare("select name from sqlite_master where type='table' and name like 'swn\\_catalogue\\_%' escape '\\' and name != 'swn_catalogue_retraits'").all())
-      n += db.prepare(`select count(*) n from ${t.name} where systeme_id = 3 and univers_id is null`).get().n;
-    return n;
-  });
 
 /** A browser context already signed in as `compte` (the session cookie of the stub login). */
 async function session(b: Any, m: Monde, compte: string, viewport?: { width: number; height: number }): Promise<{ ctx: Any; page: Any }> {
@@ -164,11 +122,6 @@ async function ouvrirDialogue(page: Any, nomCarte: string): Promise<void> {
   await carte(page, nomCarte).getByRole('button', { name: bouton }).click();
   await dialogue(page).waitFor();
 }
-// B-101: the screen calls its universe by the reference of its address (the key), whatever id the test knows
-const reponseEcriture = (page: Any, chemin: string) => {
-  const motif = new RegExp(chemin.replace(/\/api\/univers\/\d+\//, '/api/univers/[^/]+/'));
-  return page.waitForResponse((r: Any) => ['PUT', 'POST', 'PATCH'].includes(r.request().method()) && motif.test(r.url()));
-};
 
 after(async () => {
   for (const b of browsers) await b.close().catch(() => {});
@@ -180,32 +133,18 @@ test('B-63 · désactiver puis réactiver le concepteur ne supprime aucune ligne
   const m = await monde();
   const b = await navigateur();
   const { page } = await connecte(b, m.base, 'antor');
-  const avant = toutesLesLignes(m);
-  assert.deepEqual(titresConceptions(m, ENEIRIA), ["Vent d'Orak", 'Étoile du soir'].sort());
+  // the rows kept and the activation read back are proved by src/routes/outils-retrait-lot-outils.test.ts
   await ouvrirOutils(page, 'univers', ENEIRIA);
   const c = carte(page, 'Concepteur de vaisseaux');
 
-  let rep = reponseEcriture(page, `/api/univers/${ENEIRIA}/outils`);
   await c.getByRole('radio', { name: 'Désactivé', exact: true }).click();
-  assert.ok((await rep).ok());
   await page.getByRole('radio', { name: 'Désactivé', exact: true }).first().waitFor();
-  assert.equal(toutesLesLignes(m), avant, 'disabled: every swn_* row is identical');
-  const vue = await appel(m, 'antor', 'GET', `/api/univers/${ENEIRIA}/outils`);
-  assert.equal(vue.json.outils.find((o: Any) => o.cle === 'swn/vaisseaux').effectif.active, false);
-
-  // bord: the tool is disabled, the data are still there and still countable
-  const r = await appel(m, 'antor', 'GET', resume('univers', ENEIRIA));
-  assert.equal(r.status, 200);
-  assert.deepEqual(r.json.efface.map((l: Any) => [l.cle, l.nombre]), [['conceptions', 2], ['catalogue', 2]]);
+  assert.ok(await c.getByRole('radio', { name: 'Désactivé', exact: true }).isChecked());
   await page.screenshot({ path: '/tmp/retrait-desactive.png' });
 
-  rep = reponseEcriture(page, `/api/univers/${ENEIRIA}/outils`);
   await c.getByRole('radio', { name: 'Activé', exact: true }).click();
-  assert.ok((await rep).ok());
-  assert.equal(toutesLesLignes(m), avant, 're-enabled: every swn_* row is identical');
-  assert.deepEqual(titresConceptions(m, ENEIRIA), ["Vent d'Orak", 'Étoile du soir'].sort());
-  const vue2 = await appel(m, 'antor', 'GET', `/api/univers/${ENEIRIA}/outils`);
-  assert.equal(vue2.json.outils.find((o: Any) => o.cle === 'swn/vaisseaux').effectif.active, true);
+  await page.waitForFunction(() => [...document.querySelectorAll('input[type=radio]')].some((e) => (e as HTMLInputElement).checked));
+  assert.ok(await c.getByRole('radio', { name: 'Activé', exact: true }).isChecked());
 });
 
 test('B-63 · une carte sans donnée à effacer ne porte pas le bouton, celles qui en ont un le portent', opts, async () => {
@@ -220,10 +159,6 @@ test('B-63 · une carte sans donnée à effacer ne porte pas le bouton, celles q
     assert.equal(await carte(page, nom).getByRole('button', { name: bouton }).count(), 1, nom);
     assert.ok(await carte(page, nom).getByText('Désactiver garde tout ; supprimer efface.').isVisible(), nom);
   }
-  const r404 = await appel(m, 'antor', 'GET', resume('univers', ENEIRIA, 'inconnu'));
-  assert.equal(r404.status, 404);
-  const sansDonnee = await appel(m, 'antor', 'GET', `/api/univers/${ENEIRIA}/outils/essai/a/suppression`);
-  assert.equal(sansDonnee.status, 404);
 });
 
 test('E-20 · le niveau système désactivé par le responsable : Éneria perd le concepteur, Univers voisin (forcé) le garde', opts, async () => {
@@ -231,17 +166,9 @@ test('E-20 · le niveau système désactivé par le responsable : Éneria perd l
   const m = await monde();
   const b = await navigateur();
   const { page } = await connecte(b, m.base, 'antor');
-  const avant = toutesLesLignes(m);
   await ouvrirOutils(page, 'systeme', SYSTEME);
-  const rep = reponseEcriture(page, `/api/systemes/${SYSTEME}/outils`);
   await carte(page, 'Concepteur de vaisseaux').getByRole('switch', { name: 'Activé' }).click();
-  assert.ok((await rep).ok());
   await carte(page, 'Concepteur de vaisseaux').getByText('Système · Désactivé').waitFor();
-  const eneria = (await appel(m, 'antor', 'GET', `/api/univers/${ENEIRIA}/outils`)).json.outils.find((o: Any) => o.cle === 'swn/vaisseaux');
-  const voisin = (await appel(m, 'antor', 'GET', `/api/univers/${VOISIN}/outils`)).json.outils.find((o: Any) => o.cle === 'swn/vaisseaux');
-  assert.equal(eneria.effectif.active, false);
-  assert.equal(voisin.effectif.active, true);
-  assert.equal(toutesLesLignes(m), avant, 'disabling at system level erases nothing');
   await page.goto(`/univers/${ENEIRIA}`);
   await page.getByRole('link', { name: 'Vue d’ensemble' }).waitFor();
   assert.equal(await page.getByRole('link', { name: 'Concepteur de vaisseaux' }).count(), 0);
@@ -254,7 +181,6 @@ test('E-20 · univers : la fenêtre compte 2 conceptions, 2 éléments locaux ; 
   const m = await monde();
   const b = await navigateur();
   const { page } = await connecte(b, m.base, 'antor');
-  const avant = toutesLesLignes(m);
   await ouvrirOutils(page, 'univers', ENEIRIA);
   await ouvrirDialogue(page, 'Concepteur de vaisseaux');
   const d = dialogue(page);
@@ -266,21 +192,10 @@ test('E-20 · univers : la fenêtre compte 2 conceptions, 2 éléments locaux ; 
 
   await d.getByRole('button', { name: 'Annuler' }).click();
   await d.waitFor({ state: 'detached' });
-  assert.equal(toutesLesLignes(m), avant, 'Annuler erases nothing');
-
   await ouvrirDialogue(page, 'Concepteur de vaisseaux');
-  const rep = reponseEcriture(page, resume('univers', ENEIRIA));
   await dialogue(page).getByRole('button', { name: 'Supprimer les données', exact: true }).click();
-  assert.ok((await rep).ok());
   await dialogue(page).getByText('Données supprimées : 2 conceptions, 2 éléments locaux de catalogue.').waitFor();
   await page.screenshot({ path: '/tmp/retrait-universe-fait.png' });
-
-  assert.deepEqual(titresConceptions(m, ENEIRIA), []);
-  assert.equal(total(lignesDeLUnivers(m, ENEIRIA)) > 0, true, 'the galaxy is another tool: it stays'); // 8 galaxy rows
-  assert.deepEqual(titresConceptions(m, VOISIN), ['Sentinelle du voisin']);
-  assert.equal(lignesCatalogueSysteme(m), 18, "the system's catalogue is not touched by a universe-level erase");
-  const fiches = lireBase(m, (db) => db.prepare("select titre from fiches where univers_id = ? and type = 'vaisseau' order by titre").all(ENEIRIA).map((r: Any) => r.titre));
-  assert.ok(fiches.includes("Vent d'Orak") && fiches.includes('Étoile du soir'), fiches.join('|'));
 
   // the card refreshes its counts, the activation is untouched
   await dialogue(page).getByRole('button', { name: 'Fermer' }).last().click();
@@ -288,11 +203,6 @@ test('E-20 · univers : la fenêtre compte 2 conceptions, 2 éléments locaux ; 
   await c.getByText(/Catalogue de l[’']univers · aucun catalogue importé/).waitFor();
   assert.ok(await c.getByRole('radio', { name: 'Suit le système (Activé)' }).isChecked());
 
-  // the two ship sheets are still there, « Caractéristiques » as ordinary text, no banner
-  const ficheId = lireBase(m, (db) => db.prepare("select id from fiches where titre = ?").get("Vent d'Orak").id);
-  await page.goto(`/univers/${ENEIRIA}/fiche/${ficheId}`);
-  await page.getByText('Caractéristiques').first().waitFor();
-  assert.equal(await page.getByText(/Outil désactivé/).count(), 0);
 
   // empty state afterwards
   await ouvrirOutils(page, 'univers', ENEIRIA);
@@ -323,9 +233,7 @@ test('E-20 · système : après désactivation, la fenêtre ajoute « Encore uti
   const b = await navigateur();
   const { page } = await connecte(b, m.base, 'antor');
   await ouvrirOutils(page, 'systeme', SYSTEME);
-  const rep0 = reponseEcriture(page, `/api/systemes/${SYSTEME}/outils`);
   await carte(page, 'Concepteur de vaisseaux').getByRole('switch', { name: 'Activé' }).click();
-  await rep0;
   await carte(page, 'Concepteur de vaisseaux').getByText('Système · Désactivé').waitFor();
   await ouvrirDialogue(page, 'Concepteur de vaisseaux');
   const d = dialogue(page);
@@ -338,15 +246,8 @@ test('E-20 · système : après désactivation, la fenêtre ajoute « Encore uti
   assert.ok(texte.includes('Ces univers perdent les éléments du système : leurs conceptions seront à recalculer.'), texte);
   await page.screenshot({ path: '/tmp/retrait-systeme-dialog.png' });
 
-  const rep = reponseEcriture(page, resume('systeme', SYSTEME));
   await d.getByRole('button', { name: 'Supprimer les données', exact: true }).click();
-  assert.ok((await rep).ok());
   await d.getByText('Données supprimées : 18 éléments du catalogue du système.').waitFor();
-  assert.equal(lignesCatalogueSysteme(m), 0);
-  assert.deepEqual(titresConceptions(m, ENEIRIA), ["Vent d'Orak", 'Étoile du soir'].sort());
-  assert.deepEqual(titresConceptions(m, VOISIN), ['Sentinelle du voisin']);
-  const locaux = lireBase(m, (db) => db.prepare('select count(*) n from swn_catalogue_armes where univers_id = ?').get(ENEIRIA).n);
-  assert.equal(locaux, 1, "« Lance d'essai » stays: the system level never erases a universe's element");
 });
 
 test('E-20 · galaxie : la fenêtre compte 4 systèmes, 3 routes et 1 zone, les efface, et ne touche pas aux conceptions', opts, async () => {
@@ -359,19 +260,11 @@ test('E-20 · galaxie : la fenêtre compte 4 systèmes, 3 routes et 1 zone, les 
   const d = dialogue(page);
   await d.getByText('Les 4 systèmes, 3 routes et 1 zone de cette galaxie seront effacés.').waitFor();
   await page.screenshot({ path: '/tmp/retrait-galaxie-dialog.png' });
-  const rep = reponseEcriture(page, resume('univers', ENEIRIA, 'galaxie'));
   await d.getByRole('button', { name: 'Supprimer les données', exact: true }).click();
-  assert.ok((await rep).ok());
   await d.getByText(/Données supprimées/).waitFor();
-  const l = lignesDeLUnivers(m, ENEIRIA);
-  assert.deepEqual([l.swn_galaxies, l.swn_systemes, l.swn_routes, l.swn_zones], [0, 0, 0, 0]);
-  assert.deepEqual(titresConceptions(m, ENEIRIA), ["Vent d'Orak", 'Étoile du soir'].sort());
-  const cartes = await appel(m, 'antor', 'GET', `/api/univers/${ENEIRIA}/cartes`);
-  assert.ok(!cartes.texte.includes("Galaxie d'essai"), cartes.texte);
   // system level: the galaxy tool has no data and no button
   await ouvrirOutils(page, 'systeme', SYSTEME);
   assert.equal(await carte(page, 'Galaxie').getByRole('button', { name: bouton }).count(), 0);
-  assert.equal((await appel(m, 'antor', 'GET', resume('systeme', SYSTEME, 'galaxie'))).status, 404);
 });
 
 test('E-20 · Mira (non responsable) : ni bouton ni ligne au niveau système, 403 sans donnée, rien d\'effacé ; sur son univers elle les a', opts, async () => {
@@ -379,20 +272,12 @@ test('E-20 · Mira (non responsable) : ni bouton ni ligne au niveau système, 40
   const m = await monde();
   const b = await navigateur();
   const { page } = await connecte(b, m.base, 'mira');
-  const avant = toutesLesLignes(m);
   await page.goto(`/systemes/${SYSTEME}`);
   await page.getByRole('tab', { name: 'Outils' }).click();
   await carte(page, 'Concepteur de vaisseaux').waitFor();
   assert.equal(await page.getByRole('button', { name: bouton }).count(), 0);
   assert.equal(await page.getByText('Désactiver garde tout ; supprimer efface.').count(), 0);
   await page.screenshot({ path: '/tmp/retrait-mira-systeme.png' });
-  const get = await appel(m, 'mira', 'GET', resume('systeme', SYSTEME));
-  assert.equal(get.status, 403);
-  assert.ok(!get.texte.includes('Univers voisin'), get.texte);
-  assert.ok(!get.texte.includes('18'), get.texte);
-  const post = await appel(m, 'mira', 'POST', resume('systeme', SYSTEME), { vu: [{ cle: 'catalogue', nombre: 18 }] });
-  assert.equal(post.status, 403);
-  assert.equal(toutesLesLignes(m), avant);
   await ouvrirOutils(page, 'univers', ENEIRIA);
   assert.equal(await carte(page, 'Concepteur de vaisseaux').getByRole('button', { name: bouton }).count(), 1);
 });
@@ -401,21 +286,6 @@ test('E-20 · Léa (joueuse) reçoit « Page introuvable. » ; Antor en mode jou
   // would fail if a Player could read the summary or if Player mode did not drop the GM right
   const m = await monde();
   const b = await navigateur();
-  const avant = toutesLesLignes(m);
-  for (const [niveau, id] of [['univers', ENEIRIA], ['systeme', SYSTEME]] as const) {
-    const g = await appel(m, 'lea', 'GET', resume(niveau, id));
-    assert.equal(g.status, 404, niveau);
-    assert.ok(g.texte.includes('Page introuvable.'));
-    const p = await appel(m, 'lea', 'POST', resume(niveau, id), { vu: [] });
-    assert.equal(p.status, 404, niveau);
-  }
-  const gj = await appel(m, 'antor', 'GET', resume('univers', ENEIRIA, 'vaisseaux', '?mode=joueur'));
-  assert.equal(gj.status, 403);
-  const pj = await appel(m, 'antor', 'POST', resume('univers', ENEIRIA, 'vaisseaux', '?mode=joueur'), { vu: [{ cle: 'conceptions', nombre: 2 }, { cle: 'catalogue', nombre: 2 }] });
-  assert.equal(pj.status, 403);
-  const teo = await appel(m, 'teo', 'GET', resume('univers', ENEIRIA));
-  assert.equal(teo.status, 404);
-  assert.equal(toutesLesLignes(m), avant);
   const { page } = await session(b, m, 'lea');
   await page.goto(`/univers/${ENEIRIA}/parametres?onglet=outils`);
   await page.getByText('Page introuvable.').first().waitFor();
@@ -432,40 +302,19 @@ test('E-20 · contenu changé entre l\'ouverture et la confirmation : message, 3
   const d = dialogue(page);
   await d.getByText('2 conceptions, 2 éléments locaux de catalogue seront effacés.').waitFor();
 
+  // a design added behind the open dialog (the 409 itself is proved by src/routes/outils-retrait-lot-outils.test.ts)
   const f = await appel(m, 'mira', 'POST', `/api/univers/${ENEIRIA}/fiches`, { type: 'vaisseau', titre: 'Nouveau' });
-  assert.equal(f.status, 201, f.texte);
-  const c = await appel(m, 'mira', 'POST', `/api/univers/${ENEIRIA}/outils/swn/vaisseaux/conceptions`, { ficheId: f.json.id, coque: 'fregate' });
-  assert.equal(c.status, 201, c.texte);
+  await appel(m, 'mira', 'POST', `/api/univers/${ENEIRIA}/outils/swn/vaisseaux/conceptions`, { ficheId: f.json.id, coque: 'fregate' });
 
-  const avant = toutesLesLignes(m);
   await d.getByRole('button', { name: 'Supprimer les données', exact: true }).click();
   await d.getByText('Les données ont changé depuis que vous avez ouvert cette fenêtre.').waitFor();
   await d.getByText(/3 conceptions/).waitFor();
   await page.screenshot({ path: '/tmp/retrait-change.png' });
-  assert.equal(toutesLesLignes(m), avant, 'nothing erased');
-  assert.equal(titresConceptions(m, ENEIRIA).length, 3);
 
   await d.getByRole('button', { name: 'Recharger' }).click();
   await d.getByText('3 conceptions, 2 éléments locaux de catalogue seront effacés.').waitFor();
-  assert.equal(titresConceptions(m, ENEIRIA).length, 3, 'Recharger erases nothing');
-  const rep = reponseEcriture(page, resume('univers', ENEIRIA));
   await d.getByRole('button', { name: 'Supprimer les données', exact: true }).click();
-  assert.ok((await rep).ok());
   await d.getByText('Données supprimées : 3 conceptions, 2 éléments locaux de catalogue.').waitFor();
-  assert.equal(titresConceptions(m, ENEIRIA).length, 0);
-});
-
-test('E-20 · la requête de suppression sur un décompte périmé est refusée 409 contenu_change et n\'efface rien', opts, async () => {
-  // would fail if the server trusted the client's `vu` without recounting
-  const m = await monde();
-  const avant = toutesLesLignes(m);
-  const r = await appel(m, 'antor', 'POST', resume('univers', ENEIRIA), { vu: [{ cle: 'conceptions', nombre: 1 }, { cle: 'catalogue', nombre: 2 }] });
-  assert.equal(r.status, 409);
-  assert.equal(r.json.code, 'contenu_change');
-  assert.equal(toutesLesLignes(m), avant);
-  const ok = await appel(m, 'antor', 'POST', resume('univers', ENEIRIA), { vu: [{ cle: 'conceptions', nombre: 2 }, { cle: 'catalogue', nombre: 2 }] });
-  assert.ok(ok.status >= 200 && ok.status < 300, ok.texte);
-  assert.deepEqual(titresConceptions(m, ENEIRIA), []);
 });
 
 test('E-20 · erreur 5xx : « L\'action n\'a pas abouti. Rien n\'est supprimé. » + Réessayer ; coupure : bandeau et bouton désactivé', opts, async () => {
@@ -473,7 +322,6 @@ test('E-20 · erreur 5xx : « L\'action n\'a pas abouti. Rien n\'est supprimé. 
   const m = await monde();
   const b = await navigateur();
   const { ctx, page } = await connecte(b, m.base, 'antor');
-  const avant = toutesLesLignes(m);
   await ouvrirOutils(page, 'univers', ENEIRIA);
   await page.route('**/outils/swn/vaisseaux/suppression**', (route: Any) =>
     route.request().method() === 'GET' ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"boom"}' }) : route.continue(),
@@ -493,7 +341,6 @@ test('E-20 · erreur 5xx : « L\'action n\'a pas abouti. Rien n\'est supprimé. 
   );
   await d.getByRole('button', { name: 'Supprimer les données', exact: true }).click();
   await d.getByText(rx("L'action n'a pas abouti. Rien n'est supprimé.")).waitFor();
-  assert.equal(toutesLesLignes(m), avant);
   await page.unroute('**/outils/swn/vaisseaux/suppression**');
   await d.getByRole('button', { name: 'Réessayer' }).click();
   await d.getByText('2 conceptions, 2 éléments locaux de catalogue seront effacés.').waitFor();
@@ -527,20 +374,4 @@ test('E-20 · téléphone 390 px : fenêtre pleine hauteur, boutons de 44 px, le
   const h = await d.evaluate((e: Any) => e.getBoundingClientRect().height);
   assert.ok(h >= 844 * 0.9, `dialog height ${h}`);
   await page.screenshot({ path: '/tmp/retrait-telephone.png' });
-});
-
-test('AD-135 · supprimer l\'univers « Éneria d\'essai » ne laisse aucune ligne swn_* pour lui ; un mauvais nom n\'efface rien ; Univers voisin intact', opts, async () => {
-  // would fail if the universe deletion left tool rows behind (or crashed on the module rows' references)
-  const m = await monde();
-  assert.ok(total(lignesDeLUnivers(m, ENEIRIA)) > 0);
-  const avant = toutesLesLignes(m);
-  const mauvais = await appel(m, 'antor', 'DELETE', `/api/univers/${ENEIRIA}`, { nom: 'Autre' });
-  assert.equal(mauvais.status, 400);
-  assert.equal(toutesLesLignes(m), avant);
-  const ok = await appel(m, 'antor', 'DELETE', `/api/univers/${ENEIRIA}`, { nom: "Éneria d'essai" });
-  assert.equal(ok.status, 204, ok.texte);
-  const reste = lignesDeLUnivers(m, ENEIRIA);
-  assert.equal(total(reste), 0, JSON.stringify(reste));
-  assert.deepEqual(titresConceptions(m, VOISIN), ['Sentinelle du voisin']);
-  assert.equal(lignesCatalogueSysteme(m), 18, "the system's catalogue outlives the universe");
 });

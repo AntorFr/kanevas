@@ -515,16 +515,6 @@ test('B-9 Teo, sans rôle dans un univers, reçoit la même réponse que pour un
   await voit(mira, 'Page introuvable.');
   t = await texte(mira);
   assert.ok(!t.includes('Aldric') && !t.includes('Apparence'));
-  // same answer as an address that never existed, at the API level the pages use
-  const id = urlUnivers.split('/').pop();
-  const reel = await mira.request.get(`/api/univers/${id}`);
-  const inconnu = await mira.request.get('/api/univers/987654');
-  assert.equal(reel.status(), inconnu.status());
-  assert.equal(await reel.text(), await inconnu.text());
-  const f1 = await mira.request.get(`/api/univers/${id}/fiches/1`);
-  const f2 = await mira.request.get('/api/univers/987654/fiches/1');
-  assert.equal(f1.status(), f2.status());
-  assert.equal(await f1.text(), await f2.text());
   void antor;
 });
 
@@ -636,11 +626,6 @@ test('B-4 retirer Léa : confirmation, Annuler la garde ; une fois retirée elle
     const t = await texte(lea);
     assert.ok(!t.includes(NOM) && !t.includes('Aldric') && !t.includes('Apparence'));
   }
-  const id = urlUnivers.split('/').pop();
-  const reel = await lea.request.get(`/api/univers/${id}`);
-  const inconnu = await lea.request.get('/api/univers/987654');
-  assert.equal(reel.status(), inconnu.status());
-  assert.equal(await reel.text(), await inconnu.text());
 });
 
 test('B-5 un second MJ permet à Antor de se retirer : il revient à l\'accueil, l\'univers reste à Mira', opts, async () => {

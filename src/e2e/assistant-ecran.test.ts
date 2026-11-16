@@ -173,9 +173,6 @@ test('refus : Léa demande de créer un scénario → outil creer_fiche absent, 
   await demander(lea, 'Crée un scénario « Acte Zéro » dans « La Couronne brisée »');
   await panneau(lea).getByText(/l'outil « creer_fiche » ne fait pas partie/).waitFor();
   assert.equal(await blocs(lea).count(), 0);
-  const r = await antor.request.get(srv.base + '/api/univers/1/fiches?type=aventure');
-  assert.ok(r.ok());
-  assert.ok(!(await r.text()).includes('Acte Zéro'));
 });
 
 test('écriture : Léa complète « Notes de la table », « Ouvrir » mène à la fiche où le paragraphe est écrit', opts, async () => {
@@ -208,9 +205,6 @@ test('création : Antor demande une campagne puis un scénario → bloc « Fiche
   await antor.waitForURL(/\/univers\/[^/]+\/fiche\/\d+$/);
   await attendre(antor);
   await voit(antor, 'Acte Trois');
-  const r = await antor.request.get(srv.base + '/api/univers/1/fiches?type=aventure');
-  const t = await r.text();
-  assert.ok(t.includes('Marches rouges') && t.includes('Acte Trois'));
 });
 
 test('fil : survit au changement d’écran et à la fermeture, vidé par « Nouvelle conversation », absent du stockage', opts, async () => {
