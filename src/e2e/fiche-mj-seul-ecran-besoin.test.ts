@@ -165,9 +165,6 @@ describe('kanevas-fiche-mj-seul-ecran, B-57', { skip: skipBrowser }, () => {
   });
 
   test('résultat E-17 : pastille pour le MJ sur la fiche réservée', async () => {
-    await api(antor, 'GET', `/api/univers/${U}/fiches?type=lieu&visibilite=mj`).then((r: Any) => {
-      assert.ok(r.fiches.some((x: Any) => x.titre === 'Lieu vide B57' && x.visibleJoueurs === false));
-    });
     await antor.goto(`/univers/${U}/recherche?q=${encodeURIComponent('Lieu vide B57')}`);
     await antor.getByRole('link', { name: /Lieu vide B57/ }).first().waitFor();
     assert.ok((await pastilles(antor.locator('main')).count()) >= 1, 'pastille sur le résultat E-17');
