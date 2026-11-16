@@ -153,7 +153,7 @@ export class Interaction {
         const s = segmentProche(p, murs);
         if (s && !segments.some((x) => memeSegment(x, s))) segments.push(s);
       }
-      if (segments.length) commandes.push({ type: 'gommer', calque: mur.calque.id, segments });
+      if (segments.length) commandes.push({ type: 'gommer', calque: mur.calque.id, segments: segments.map(({ x, y, cote }) => ({ x, y, cote })) });
     }
     const objets = idsDe(doc, 'objet');
     const vus = new Set<string>();
