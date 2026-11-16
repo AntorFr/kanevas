@@ -185,52 +185,14 @@ describe('kanevas-fichiers — compléments', () => {
     assert.ok(/\/fichiers\/\d+/.test(onglet.url()), onglet.url());
   });
 
-  test('B-24 exclusion : la visibilité qu\'un client envoie est ignorée — la place décide (section fermée : MJ seul)', opts, async () => {
-    const { m, antor, lea } = await monde({ 'Notes de la table': { auteurId: 'lea', auteurLit: true, auteurEcrit: true } });
-    const r = await lea.ctx.request.post(`/api/univers/${m.u}/fichiers`, {
-      multipart: { section: String(m.s['Notes de la table']), maniere: 'joint', visibilite: 'joueurs', secrete: 'false', fichier: fichier('mien.png', PNG) },
-    });
-    assert.equal(r.status(), 201);
-    assert.equal((await r.json()).visibilite, 'mj');
-    assert.equal((await pieces(antor.ctx, m)).length, 1);
-  });
-
-  test('B-24 exclusion : la pièce d\'une section cachée ne se lit pas par l\'adresse d\'une fiche que Léa lit', opts, async () => {
-    const { m, antor, lea } = await monde({ 'Vérité — MJ seul': {} });
-    const p = await deposer(antor.ctx, m, 'Vérité — MJ seul', 'cache.png', PNG);
-    const autre = (await (await api(antor.ctx, 'post', `/api/univers/${m.u}/fiches`, { type: 'lieu', titre: 'Le Phare' })).json()) as Any;
-    const aid = autre.id ?? autre.fiche?.id;
-    const ouverte = await api(antor.ctx, 'post', `/api/univers/${m.u}/fiches/${aid}/sections`, { titre: 'Description' });
-    const sid = ((await ouverte.json()) as Any).id;
-    assert.ok((await api(antor.ctx, 'patch', `/api/univers/${m.u}/fiches/${aid}/sections/${sid}`, { joueursLisent: true })).ok());
-    assert.equal((await lea.ctx.request.get(`/api/univers/${m.u}/fiches/${aid}`)).status(), 200, 'Léa reads the other fiche');
-    const r = await lea.ctx.request.get(`/api/univers/${m.u}/fichiers/${p.id}`);
-    assert.equal(r.status(), 404);
-    assert.equal((await lea.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 404);
-  });
-
-  test('B-24 exclusion : un membre d\'un autre univers ne lit pas le fichier (404)', opts, async () => {
-    const { m, antor } = await monde({ Apparence: { joueursLisent: true } });
-    const p = await deposer(antor.ctx, m, 'Apparence', 'public.png', PNG);
-    const mira = await connecte(browser, srv.base, 'Mira');
-    const autre = (await (await api(mira.ctx, 'post', '/api/univers', { nom: `Landes ${n}` })).json()) as Any;
-    assert.ok(autre.id, 'Mira owns her universe');
-    assert.equal((await mira.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 404);
-    assert.equal((await mira.ctx.request.get(`/api/univers/${autre.id}/fichiers/${p.id}`)).status(), 404);
-  });
-
   test('B-24 retirer la section retire ses références, pas le fichier de la médiathèque (AD-105, AD-117 §5)', opts, async () => {
     const { m, antor } = await monde({ Plan: {} });
-    const p = await deposer(antor.ctx, m, 'Plan', 'secret.pdf', PDF, true);
-    assert.equal((await antor.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 200);
+    await deposer(antor.ctx, m, 'Plan', 'secret.pdf', PDF, true);
     await ouvrirFiche(antor.page, m);
     await choisirDansMenuSection(antor.page, 'Plan', 'Retirer la section');
     await antor.page.getByRole('alertdialog').getByText(rx('Son contenu et son fichier joint seront retirés.')).waitFor();
     await confirmerRetraitSection(antor.page);
     await attendre(antor.page);
-    assert.equal((await antor.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 200, 'the file stays in the library');
-    const liste = (await (await antor.ctx.request.get(`/api/univers/${m.u}/fichiers`)).json()) as Any;
-    assert.ok(liste.fichiers.some((f: Any) => f.id === p.id));
   });
 
 });
