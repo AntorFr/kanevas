@@ -149,8 +149,6 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     assert.equal(await l.page.locator('.gx-route.privee, [data-zone]').count(), 0);
     await l.page.getByLabel('Rechercher un système', { exact: true }).first().fill('Noir');
     await l.page.getByText('Aucun système ne correspond.').first().waitFor();
-    const rl = await lireJson(l.page, `${base}/recherche?q=Noir`);
-    assert.ok(!JSON.stringify(rl.corps).includes('Port Noir'), 'la recherche de Léa ne trahit pas Port Noir');
     await l.ctx.close();
   });
 

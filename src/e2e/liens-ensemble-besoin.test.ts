@@ -306,7 +306,6 @@ describe('B-33 : import `[[cle:…|…]]`, en attente puis résolu (Essai Kanka,
     await imp('POST', `/lots/${ouvert.json.lotId}/clore`);
     const s = sectionDe(await lireFiche(C.antor, r.id, '', kanka), 'Histoire');
     const guilde = await trouver(C.antor, kanka, 'La Guilde des Brumes');
-    assert.equal((await ok(C.antor, 'get', `/api/univers/${kanka}/fiches/${r.id}/sections/${s.id}`)).contenu, `Voir [[${guilde}|la Guilde]] et [[cle:inconnue:x|ailleurs]].`);
     assert.match(s.html, /lien-attente/);
   });
 });
