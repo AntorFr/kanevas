@@ -112,3 +112,21 @@ test('B-24: removing a section that carries a portrait removes its reference, ne
   assert.equal((await w.get(w.antor, `/fichiers/${f.id}`)).statusCode, 200);
   assert.ok((await w.noms(w.antor)).includes('portrait.png'));
 });
+
+test('P-7: the piece Léa adds in a section closed to the players enters reserved and stays so when the section opens; Teo reads it only once the GM makes it visible', async () => {
+  const w = await monde();
+  const s = w.section('Léa Brisefer', 'Notes de la table');
+  const r = await w.envoyer(w.lea, { section: String(s.id), maniere: 'joint' }, 'portrait-lea.png', 'image/png', PNG);
+  assert.equal(r.statusCode, 201);
+  const id = r.json().id as number;
+  const univers = (w.app.db.prepare("SELECT id FROM univers WHERE nom = 'Lame d''Ébène'").get() as Any).id;
+  w.app.db.prepare("INSERT INTO membres (univers_id, compte_id, role) SELECT ?, id, 'joueur' FROM comptes WHERE username = 'teo'").run(univers);
+  assert.equal((await w.fichier(w.antor, 'portrait-lea.png')).visibilite, 'mj');
+  assert.equal((await w.get(w.teo, `/fichiers/${id}`)).statusCode, 404, 'closed section, reserved piece');
+  assert.equal((await w.patch(w.antor, `/fiches/${s.fiche}/sections/${s.id}`, { joueursLisent: true })).statusCode, 200);
+  assert.equal((await w.fichier(w.antor, 'portrait-lea.png')).visibilite, 'mj', 'opening the section does not open the piece');
+  assert.equal((await w.get(w.teo, `/fichiers/${id}`)).statusCode, 404);
+  assert.equal((await w.patch(w.antor, `/fichiers/${id}`, { visibilite: 'joueurs' })).statusCode, 200);
+  assert.equal((await w.get(w.teo, `/fichiers/${id}`)).statusCode, 200);
+  assert.equal((await w.suppr(w.teo, w.jointure(s, id))).statusCode, 403, 'a player without write cannot unjoin');
+});
