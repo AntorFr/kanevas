@@ -128,6 +128,20 @@ describe('B-80 import du catalogue : une masse multiple de 0,5', () => {
     assert.ok(!(await m.api('antor', 'GET', `${m.V}/catalogue`)).json.elements.some((e: Any) => e.cle === 'coque-fausse'));
   });
 
+  it('session : l’aperçu d’un fichier à masse 0,5 et masse 0,3 écrit rien et refuse 0,3 avec son champ ; l’application ne crée que 0,5', async () => {
+    const m = await monde();
+    const contenu = fichier({ amenagements: [element(CLE, 0.5), element('mauvais', 0.3)] });
+    const ap = await m.api('antor', 'POST', `${m.V}/catalogue/apercu`, contenu);
+    assert.equal(ap.status, 200, ap.texte);
+    assert.deepEqual(ap.json.refus.map((x: Any) => [x.nature, x.cle, x.champ]), [['amenagements', 'mauvais', 'masse']]);
+    assert.ok(!(await m.api('antor', 'GET', `${m.V}/catalogue`)).json.elements.some((e: Any) => e.cle === CLE), 'the preview writes nothing');
+    const ok = await m.api('antor', 'POST', `${m.V}/catalogue/application`, contenu);
+    assert.equal(ok.status, 200, ok.texte);
+    const cles = (await m.api('antor', 'GET', `${m.V}/catalogue`)).json.elements.map((e: Any) => e.cle);
+    assert.ok(cles.includes(CLE));
+    assert.ok(!cles.includes('mauvais'));
+  });
+
   it('exclusion : une masse entière du catalogue se lit sans virgule dans son résumé (« masse 2 », jamais « 2,0 »)', async () => {
     const m = await monde();
     const cabines = (await m.api('antor', 'GET', `${m.V}/catalogue`)).json.elements.find((e: Any) => e.cle === 'cabines');
