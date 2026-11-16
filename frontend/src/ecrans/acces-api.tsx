@@ -1,11 +1,11 @@
-import { Ban, Check, ChevronRight, Copy, CircleX, KeyRound, Loader, TriangleAlert } from 'lucide-react';
+import { Ban, Check, ChevronRight, CircleX, KeyRound, Loader, TriangleAlert } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 
 import { useCharge, useVue } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { Bouton, ChargementListe, ErreurChargement, PageIntrouvable, Pastille, useToasts } from '../ui';
+import { Bouton, ChargementListe, ErreurChargement, PageIntrouvable, Pastille, ValeurCopiable } from '../ui';
 import {
   ETAT_LOT,
   dateHeure,
@@ -25,16 +25,6 @@ function useGarde<T>(charge: ReturnType<typeof useCharge<T>>[0]) {
   return charge.etat === 'chargement' && dernier.current !== undefined
     ? ({ etat: 'ok', valeur: dernier.current } as const)
     : charge;
-}
-
-/** Copies a text; returns whether the clipboard accepted it. */
-async function copier(texte: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(texte);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 const ICONE_LOT = { en_cours: Loader, clos: Check, abandonne: Ban } as const;
@@ -132,7 +122,6 @@ function AccesApi() {
   const { id } = useParams();
   const [query] = useSearchParams();
   const { mode } = useVue();
-  const { toast } = useToasts();
   const base = `/api/univers/${id}`;
   const [univers] = useCharge<UniversListe>(base);
   const [lotsBrut, rechargerLots] = useCharge<LotVue[]>(`${base}/lots`);
@@ -170,17 +159,8 @@ function AccesApi() {
         <Link to="/compte/jetons">Mes jetons d’API</Link>.
       </p>
       <div className="adresse">
-        <span className="lib" id="lib-adresse">
-          Adresse de base
-        </span>
-        <div className="copie">
-          <code className="valeur chasse" aria-labelledby="lib-adresse">
-            {adresse}
-          </code>
-          <Bouton icone={Copy} aria-label="Copier l’adresse de base" onClick={() => void copier(adresse).then((ok) => ok && toast('Adresse copiée.'))}>
-            Copier
-          </Bouton>
-        </div>
+        <span className="lib">Adresse de base</span>
+        <ValeurCopiable etiquette="Adresse de base" valeur={adresse} messageCopie="Adresse copiée." />
       </div>
 
       <section className="bloc-api" aria-labelledby="h-lots">
