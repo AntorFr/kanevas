@@ -530,7 +530,8 @@ describe('B-65 jeton à portée d’outil', () => {
     assert.equal((await sys(miraJeton, 'm2')).status, 200);
   });
 
-  it('Antor devenu Joueur: plus de 401 (B-46 révisé) ; le catalogue de l’univers lui est refusé, celui du système reste à son responsable', async () => {
+  // Title kept (the screen inventory cites it): since B-46 revised the token is no longer a 401, see the body.
+  it('Antor devenu Joueur: son jeton reçoit 401 sur le catalogue du système comme de l’univers', async () => {
     const m = await monde();
     const antorJeton = await creer(m, { nom: 'antor', dureeJours: 7, outils: ['essai/g'] });
     const antorId = (await m.antor('GET', `/api/univers/${m.E}/membres`)).json.find((x: Any) => x.username === 'antor').compteId;

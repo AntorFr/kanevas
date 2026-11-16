@@ -155,7 +155,7 @@ test('lot clos : 409 lot_clos ; sans lot : aucun lot créé, rapport dans la ré
   assert.equal(s.json().natures.systemes.creees, 4);
 });
 
-test('portées : contenu, autre outil, révoqué, expiré → 401 sans lot ; compte devenu joueur → refusé sans lot, plus 401 ; autre univers → 404', async () => {
+test('portées : contenu, autre outil, révoqué, expiré, plus MJ → 401 sans lot ; autre univers → 404', async () => {
   const w = await monde();
   const lots0 = w.nb('lots_import');
   const non = async (valeur: string) => {

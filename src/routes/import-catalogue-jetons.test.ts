@@ -99,7 +99,7 @@ test('portée : le jeton de contenu est refusé sur les routes d\'outil et ouvre
   assert.equal((await w.req(t, 'POST', '/lots')).statusCode, 201);
 });
 
-test('niveau système : responsable écrit, MJ non responsable 403 refuse, responsable devenu Joueur : refusé par le service, plus 401', async () => {
+test('niveau système : responsable écrit, MJ non responsable 403 refuse, responsable devenu Joueur 401', async () => {
   const w = await monde();
   const lignes = () => w.nb('essai_catalogue_elements');
   const ta = w.tok('antor', [G]);

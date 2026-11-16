@@ -215,7 +215,8 @@ test('B-46 refusals > an absent, unknown or malformed token always gets the same
   assert.ok(!(await m.rest(m.antor, 'GET', `/api/univers/${m.essai}/fiches?type=lieu`)).body.includes('Port-Sel'));
 });
 
-test('B-46 demoted GM > Mira’s token works while she is GM, falls to a player’s rights (no 401, no batch, no write) once a player, and is listed inactive; Antor’s token still works', async () => {
+// Title kept (the screen inventory cites it): since B-46 revised the player's token is no longer a 401, see the body.
+test('B-46 demoted GM > Mira’s token works while she is GM, receives 401 once a player, and is listed inactive; Antor’s token still works', async () => {
   const m = await monde();
   const jetonAntor = await m.jeton();
   const ajout = await m.rest(m.antor, 'POST', `/api/univers/${m.essai}/membres`, { username: 'mira', role: 'mj' });
