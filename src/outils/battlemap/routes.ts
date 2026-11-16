@@ -171,21 +171,21 @@ export function routesBattlemap(app: FastifyInstance, garde: (cle: string) => pr
     return reply.code(201).send(creerCarte(app.db, acteur(request), univers(request), { titre: b.titre, largeur: b.largeur, hauteur: b.hauteur }));
   });
 
-  app.get(`${RACINE}/cartes/:cid`, cartes, (request) => lireCarte(app.db, acteur(request), univers(request), carte(request)));
+  app.get(`${RACINE}/cartes/:cid(^[0-9]+$)`, cartes, (request) => lireCarte(app.db, acteur(request), univers(request), carte(request)));
 
-  app.post(`${RACINE}/cartes/:cid/commandes`, cartes, (request) => {
+  app.post(`${RACINE}/cartes/:cid(^[0-9]+$)/commandes`, cartes, (request) => {
     const b = corps(request);
     return appliquerCommandes(app.db, acteur(request), univers(request), carte(request), b.version, b.commandes);
   });
 
-  app.patch(`${RACINE}/cartes/:cid`, cartes, (request) => {
+  app.patch(`${RACINE}/cartes/:cid(^[0-9]+$)`, cartes, (request) => {
     const { version, ...reglages } = corps(request);
     return reglerCarte(app.db, acteur(request), univers(request), carte(request), version, {
       titre: reglages.titre, visible: reglages.visible, tailleCase: reglages.tailleCase, largeur: reglages.largeur, hauteur: reglages.hauteur,
     });
   });
 
-  app.delete(`${RACINE}/cartes/:cid`, cartes, (request, reply) => {
+  app.delete(`${RACINE}/cartes/:cid(^[0-9]+$)`, cartes, (request, reply) => {
     supprimerCarte(app.db, acteur(request), univers(request), carte(request));
     return reply.code(204).send();
   });

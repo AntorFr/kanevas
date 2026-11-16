@@ -1,5 +1,5 @@
 /* Components of the map editor (charte, « Components of kanevas-battlemap-editeur »): tokens only. */
-.colonne-outils { width: 56px; flex: none; display: flex; flex-direction: column; align-items: center; gap: var(--e-2); padding: var(--e-2);
+.colonne-outils { width: 64px; flex: none; display: flex; flex-direction: column; align-items: center; gap: var(--e-2); padding: var(--e-2);
   background: var(--surface); border-right: 1px solid var(--bord); }
 .outil-cellule { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid transparent; border-radius: var(--rayon-item);
   background: transparent; color: var(--texte-3); cursor: pointer; }
@@ -21,3 +21,9 @@
 @media (pointer: coarse) { .canevas-zoom-bouton { width: 44px; height: 44px; } }
 .sr-carte { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .canevas-carte { scroll-behavior: auto; } }
+
+.canevas-message { position: absolute; left: 50%; top: var(--e-3); transform: translateX(-50%); max-width: 90%; padding: var(--e-2) var(--e-3);
+  background: var(--surface); border: 1px solid var(--bord-fort); border-radius: var(--rayon-champ); box-shadow: var(--ombre-flottant); font-size: var(--t-13); color: var(--texte); pointer-events: none; }
+.colonne-outils-pied { width: 100%; }
+.colonne-outils-pied .interrupteur { flex-direction: column; justify-content: center; gap: var(--e-1); min-height: 64px; padding: var(--e-1); font-size: 11px; line-height: 1.2; text-align: center; }
+.colonne-outils-pied .interrupteur-libelle { white-space: normal; }

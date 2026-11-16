@@ -28,7 +28,7 @@ function jeton(el: Element, nom: string): string {
  * The tools' gestures are `Interaction`s made by `commencer`; this component only turns the pointer into cell units.
  */
 export function CanevasCarte({
-  doc, tailleCase, empreinte, image, selection, commencer, surIssue, lecture, annonce, vide, enChargement, surTouche,
+  doc, tailleCase, empreinte, image, selection, commencer, surIssue, lecture, annonce, message, vide, enChargement, surTouche,
 }: {
   doc: Document;
   /** Pixels of a cell at 100 %. */
@@ -43,6 +43,8 @@ export function CanevasCarte({
   lecture: boolean;
   /** Polite summary for the live region. */
   annonce: string;
+  /** A short notice at the pointer's side of the canvas (« Ce calque est verrouillé. »): visible and announced. */
+  message: string;
   vide: boolean;
   /** Bumped by the parent when an image arrives: redraw. */
   enChargement: number;
@@ -334,6 +336,7 @@ export function CanevasCarte({
         onKeyDown={surTouche}
       />
       <div className="sr-carte" role="status" aria-live="polite">{annonce}</div>
+      {message !== '' && <div className="canevas-message" role="status">{message}</div>}
       {vide && <p className="canevas-conseil">Choisissez un outil à gauche, puis cliquez sur la grille.</p>}
       <div className="canevas-zoom" role="group" aria-label="Zoom">
         <button type="button" className="canevas-zoom-bouton" aria-label="Zoom arrière" title="Zoom arrière" onClick={() => zoomerSur(1 / 1.25, taille.w / 2, taille.h / 2)}>
