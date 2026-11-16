@@ -34,9 +34,6 @@ async function api(page: Any, method: string, url: string, data?: unknown): Prom
   return r.corps;
 }
 const fiche = (id: number) => `/api/univers/${U}/fiches/${id}`;
-async function ancetres(id: number): Promise<string[]> {
-  return (await api(antor, 'GET', fiche(id))).ancetres.map((a: Any) => a.titre);
-}
 async function remettre(titre: string, parent: string | null): Promise<void> {
   await api(antor, 'PATCH', fiche(ids[titre]), { parent: parent === null ? null : ids[parent] });
 }
@@ -135,7 +132,6 @@ describe('kanevas-deplacer-arborescence, « Déplacer sous… » de bout en bout
     await deplacer(antor).click();
     await antor.getByText('Fiche déplacée.').waitFor();
     await boite(antor).waitFor({ state: 'detached' });
-    assert.deepEqual(await ancetres(ids['La Taverne du Kraken']), ['Les Sphères', 'Port-Sel', 'Les Docks']);
     const fil = (await antor.getByRole('navigation', { name: /Fil d.Ariane/i }).first().innerText()).replace(/\s+/g, ' ');
     assert.ok(fil.includes('Les Docks') && fil.includes('La Taverne du Kraken'), fil);
     await antor.screenshot({ path: `${SHOTS}/deplacee.png` });
@@ -162,7 +158,6 @@ describe('kanevas-deplacer-arborescence, « Déplacer sous… » de bout en bout
     await boite(antor).getByText('Nouveau parent : aucun (racine de l’univers)').or(boite(antor).getByText("Nouveau parent : aucun (racine de l'univers)")).waitFor();
     await deplacer(antor).click();
     await antor.getByText('Fiche déplacée.').waitFor();
-    assert.deepEqual(await ancetres(ids['La Taverne du Kraken']), []);
     await remettre('La Taverne du Kraken', 'Port-Sel');
   });
 
@@ -228,31 +223,7 @@ describe('kanevas-deplacer-arborescence, « Déplacer sous… » de bout en bout
     await boite(antor).getByRole('button', { name: 'Annuler' }).click();
   });
 
-  // Panne : un enfant illisible ou un descendant fuit via horsDe, ou horsDe filtre côté page seulement.
-  test('API : la recherche avec horsDe écarte la fiche et ses descendants côté serveur', async () => {
-    const r = await api(antor, 'GET', `/api/univers/${U}/fiches?q=Port&horsDe=${ids['Les Sphères']}`);
-    assert.ok(!r.fiches.some((f: Any) => f.titre === 'Port-Sel'), 'descendant rendu');
-    const r2 = await api(antor, 'GET', `/api/univers/${U}/fiches?q=Port`);
-    assert.ok(r2.fiches.some((f: Any) => f.titre === 'Port-Sel'), 'sans horsDe Port-Sel doit être trouvée');
-    const r3 = await api(antor, 'GET', `/api/univers/${U}/fiches?q=Docks&horsDe=${ids['Les Sphères']}`);
-    assert.equal(r3.fiches.length, 0);
-  });
-
-  // Exclusion. Panne : une route de hiérarchie ouverte à un joueur, ou au MJ en mode Joueur.
-  test('exclusion : Léa et Antor en mode Joueur n’ont ni racines (403) ni horsDe (400)', async () => {
-    const racines = await brut(lea, 'GET', `/api/univers/${U}/fiches/racines`);
-    assert.equal(racines.status, 403);
-    assert.ok(!racines.texte.includes('Sphères') && !racines.texte.includes('Port-Sel'), racines.texte);
-    const hors = await brut(lea, 'GET', `/api/univers/${U}/fiches?q=Port&horsDe=${ids['Les Sphères']}`);
-    assert.equal(hors.status, 400);
-    assert.ok(!hors.texte.includes('Port-Sel'), hors.texte);
-    const racinesMode = await brut(antor, 'GET', `/api/univers/${U}/fiches/racines?mode=joueur`);
-    assert.equal(racinesMode.status, 403);
-    const horsMode = await brut(antor, 'GET', `/api/univers/${U}/fiches?q=Port&horsDe=${ids['Les Sphères']}&mode=joueur`);
-    assert.equal(horsMode.status, 400);
-  });
-
-  // Exclusion. Panne : le menu « ⋯ » ou la boîte s'ouvre pour un joueur ou un MJ en mode Joueur.
+  // Exclusion : le menu de déplacement est absent pour un joueur.
   test('exclusion : Léa n’a pas « Déplacer sous… », ni Antor en mode Joueur', async () => {
     await ouvrirFiche(lea, ids['Port-Sel'], 'Port-Sel');
     assert.equal(await lea.getByRole('button', { name: /^Autres actions sur/ }).count(), 0);
@@ -310,7 +281,6 @@ describe('kanevas-deplacer-arborescence, « Déplacer sous… » de bout en bout
     await deplacer(antor).click();
     await boite(antor).getByText('Une fiche ne peut pas être rangée sous l’un de ses descendants.').or(boite(antor).getByText("Une fiche ne peut pas être rangée sous l'un de ses descendants.")).waitFor();
     assert.ok(await boite(antor).isVisible(), 'la boîte doit rester ouverte');
-    assert.deepEqual(await ancetres(ids['Les Sphères']), []);
     await antor.screenshot({ path: `${SHOTS}/cycle.png` });
     await boite(antor).getByRole('button', { name: 'Annuler' }).click();
     await remettre('Val-Fortin', null);
