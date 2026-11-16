@@ -43,18 +43,34 @@ export interface InterieurVue {
 interface LigneAstre extends Omit<AstreVue, 'aspect'> { aspect: string }
 interface LigneFormation extends Omit<FormationVue, 'parametres'> { parametres: string }
 
-const RANG_GENRE: Record<AstreVue['genre'], number> = { etoile: 0, planete: 1, lune: 1, comete: 2 };
+const num = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
 
-/** By star rank; in a rank the star, then the planets by orbit with their moons right after, then the comets. Stable. */
+/**
+ * The order of « Corps » (E-23, AD-systeme-3): the star, its companions (by rank), then each planet by increasing orbit
+ * with its moons right after, then the comets and the anomalies (even one of genre `planete`) by increasing orbit.
+ * Stable: equal orbits keep the order the rows come in.
+ */
 function ordonner(astres: AstreVue[]): AstreVue[] {
   const lunes = new Map<string, AstreVue[]>();
   for (const a of astres) if (a.genre === 'lune' && a.parent_cle !== null) {
     lunes.set(a.parent_cle, [...(lunes.get(a.parent_cle) ?? []), a]);
   }
   const tetes = astres.filter((a) => a.genre !== 'lune');
-  tetes.sort((x, y) => x.etoile_rang - y.etoile_rang || RANG_GENRE[x.genre] - RANG_GENRE[y.genre]
-    || (x.genre === 'planete' && y.genre === 'planete' ? (x.orbite ?? 0) - (y.orbite ?? 0) : 0));
+  const groupe = (a: AstreVue): number => (a.genre === 'etoile' ? 0 : a.genre === 'planete' && a.type !== 'anomalie' ? 1 : 2);
+  tetes.sort((x, y) => groupe(x) - groupe(y)
+    || (groupe(x) === 0 ? x.etoile_rang - y.etoile_rang : num(x.orbite) - num(y.orbite)));
   return tetes.flatMap((a) => [a, ...(lunes.get(a.cle) ?? [])]);
+}
+
+/** The orbit of a zone: where a ring starts, the centre of a cloud. */
+function orbiteFormation(f: FormationVue): number {
+  return num(f.forme === 'anneau' ? f.parametres.de : f.parametres.orbite);
+}
+
+/** Zones by increasing orbit; on the same orbit a cloud comes after the rings. Stable. */
+function ordonnerFormations(formations: FormationVue[]): FormationVue[] {
+  return [...formations].sort((x, y) => orbiteFormation(x) - orbiteFormation(y)
+    || (x.forme === y.forme ? 0 : x.forme === 'anneau' ? -1 : 1));
 }
 
 function composer(
@@ -62,7 +78,7 @@ function composer(
   astres: AstreVue[], formations: FormationVue[],
 ): InterieurVue {
   const triees = ordonner(astres);
-  const fs = [...formations].sort((x, y) => x.etoile_rang - y.etoile_rang);
+  const fs = ordonnerFormations(formations);
   return {
     q, r, nom, etat,
     transition: transition ?? leCoeur().transition_defaut(JSON.stringify(triees), JSON.stringify(fs)),
