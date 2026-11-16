@@ -68,9 +68,16 @@ export function entreesBloc(
   return { densites, exclus, empreinteExclusions: proches.join(';') };
 }
 
+/** The star of a block as the core serialises it, or none (the interior's draw needs its size and letter). */
+export interface EtoileTiree { q: number; r: number; taille: number; lettre: string }
+
+export function tirerEtoileComplete(graine: string, bx: number, by: number, entrees: EntreesBloc): EtoileTiree | null {
+  const json = leCoeur().tirer_bloc(graine, bx, by, Float64Array.from(entrees.densites), Uint8Array.from(entrees.exclus));
+  return JSON.parse(json) as EtoileTiree | null;
+}
+
 /** The star drawn in a block, or none: `[q, r]` positions (zero or one). */
 export function tirerEtoiles(graine: string, bx: number, by: number, entrees: EntreesBloc): [number, number][] {
-  const json = leCoeur().tirer_bloc(graine, bx, by, Float64Array.from(entrees.densites), Uint8Array.from(entrees.exclus));
-  const etoile = JSON.parse(json) as { q: number; r: number } | null;
+  const etoile = tirerEtoileComplete(graine, bx, by, entrees);
   return etoile ? [[etoile.q, etoile.r]] : [];
 }

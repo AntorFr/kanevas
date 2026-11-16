@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { densiteDefaut, hexVersPlan, planVersHex, tirerBloc } from './coeur.js';
+import { densiteDefaut, hexVersPlan, orbiteHeureVersPlan, planVersHex, planVersOrbiteHeure, tirerBloc, tirerSysteme, transitionDefaut } from './coeur.js';
 
 const lire = (f: string) => JSON.parse(readFileSync(fileURLToPath(new URL(`../../rust/modules/coeur/tests/fixtures/${f}`, import.meta.url)), 'utf8'));
 const galaxie = lire('generation-galaxie.json');
@@ -78,6 +78,51 @@ test('an excluded candidate never carries a star, densities at 1 give the candid
   assert.equal(JSON.parse(await tirerBloc('kanevas-neutre-1', 2, 3, aucun, aucun)), null);
   assert.notEqual(JSON.parse(await tirerBloc('kanevas-neutre-1', 2, 3, un, aucun)), null);
   assert.equal(JSON.parse(await tirerBloc('kanevas-neutre-1', 2, 3, un, un)), null);
+});
+
+const systemes = lire('generation-systemes.json');
+const sortieSystemes = lire('generation-sortie-systemes.json');
+
+// Deep equality: strings, nulls and structure exact, reals within 1e-9 (same tolerances as the module task).
+function egal(a: any, b: any, ctx: string) {
+  if (typeof a === 'number' && typeof b === 'number') return assert.ok(Math.abs(a - b) <= 1e-9, `${ctx}: ${a} != ${b}`);
+  if (Array.isArray(a) && Array.isArray(b)) {
+    assert.equal(a.length, b.length, `${ctx}: length`);
+    return a.forEach((v, i) => egal(v, b[i], `${ctx}[${i}]`));
+  }
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    assert.deepEqual(Object.keys(a).sort(), Object.keys(b).sort(), `${ctx}: keys`);
+    return Object.keys(a).forEach((k) => egal(a[k], b[k], `${ctx}.${k}`));
+  }
+  assert.deepEqual(a, b, ctx);
+}
+
+test('every system of generation-systemes.json gives the fixture structure through chargerModule("coeur")', async () => {
+  assert.equal(systemes.systemes.length, 20);
+  for (const s of systemes.systemes) {
+    const e = s.entree;
+    const obtenu = JSON.parse(await tirerSysteme(e.q, e.r, e.taille, e.lettre, 1));
+    egal(obtenu, s.sortie, `${e.q},${e.r}`);
+    const d = await transitionDefaut(JSON.stringify(obtenu.astres), JSON.stringify(obtenu.formations));
+    assert.ok(Math.abs(d - s.sortie.transition) <= 1e-9);
+  }
+});
+
+test('the systems of generation-sortie-systemes.json give the very same JSON string, byte for byte', async () => {
+  assert.ok(sortieSystemes.systemes.length >= 5);
+  for (const s of sortieSystemes.systemes) {
+    const e = s.entree;
+    assert.equal(await tirerSysteme(e.q, e.r, e.taille, e.lettre, sortieSystemes.version), s.json, `${e.q},${e.r}`);
+  }
+});
+
+test('a refused generator version throws, orbit/hour and plane round trip', async () => {
+  await assert.rejects(tirerSysteme(0, 0, 0.8, 'K', 0));
+  await assert.rejects(tirerSysteme(0, 0, 0.8, 'K', 2));
+  const [x, y] = await orbiteHeureVersPlan(2, 3);
+  assert.ok(Math.abs(x - 2) < 1e-9 && Math.abs(y) < 1e-9);
+  const [o, h] = await planVersOrbiteHeure(x, y);
+  assert.ok(Math.abs(o - 2) < 1e-9 && Math.abs(h - 3) < 1e-9);
 });
 
 const dossiers: string[] = [];

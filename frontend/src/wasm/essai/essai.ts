@@ -1,8 +1,19 @@
 // Proof page of the Wasm path (AD-rust-7): not a product screen, served only by the test's Vite server.
 import galaxie from '../../../../rust/modules/coeur/tests/fixtures/generation-galaxie.json';
 import sortieCoeur from '../../../../rust/modules/coeur/tests/fixtures/generation-sortie-coeur.json';
+import systemes from '../../../../rust/modules/coeur/tests/fixtures/generation-systemes.json';
+import sortieSystemes from '../../../../rust/modules/coeur/tests/fixtures/generation-sortie-systemes.json';
 import { chargerModule } from '../charger';
-import { densiteDefaut, hexVersPlan, planVersHex, tirerBloc } from '../coeur';
+import {
+  densiteDefaut,
+  hexVersPlan,
+  orbiteHeureVersPlan,
+  planVersHex,
+  planVersOrbiteHeure,
+  tirerBloc,
+  tirerSysteme,
+  transitionDefaut,
+} from '../coeur';
 
 const sortie = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
 
@@ -47,6 +58,24 @@ async function afficherCoeur(): Promise<void> {
   const [x, y] = await hexVersPlan(7, -3);
   const [q, r] = await planVersHex(x, y);
   sortie('coeur-hex').textContent = JSON.stringify({ x, y, q, r });
+  await afficherSystemes();
+}
+
+// Interiors of systems (AD-systeme-2): the JSON string per fixture system, the exact-bytes ones, and the other calls.
+async function afficherSystemes(): Promise<void> {
+  const tires: string[] = [];
+  for (const s of systemes.systemes) tires.push(await tirerSysteme(s.entree.q, s.entree.r, s.entree.taille, s.entree.lettre, 1));
+  sortie('coeur-systemes').textContent = JSON.stringify(tires);
+  const octets: string[] = [];
+  for (const s of sortieSystemes.systemes) {
+    octets.push(await tirerSysteme(s.entree.q, s.entree.r, s.entree.taille, s.entree.lettre, sortieSystemes.version));
+  }
+  sortie('coeur-sortie-systemes').textContent = JSON.stringify(octets);
+  const premier = systemes.systemes[0]!.sortie;
+  const transition = await transitionDefaut(JSON.stringify(premier.astres), JSON.stringify(premier.formations));
+  const [x, y] = await orbiteHeureVersPlan(2, 3);
+  const [orbite, heure] = await planVersOrbiteHeure(x, y);
+  sortie('coeur-systeme-appels').textContent = JSON.stringify({ transition, x, y, orbite, heure });
 }
 
 async function afficher(): Promise<void> {

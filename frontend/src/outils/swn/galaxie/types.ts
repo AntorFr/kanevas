@@ -44,3 +44,13 @@ export type Geste =
 export type Touche =
   | { k: 'hex'; q: number; r: number; genere: boolean }
   | { k: 'systeme'; systeme: SystemeCarte };
+
+/** What `GET …/galaxies/:gid/interieur/:q/:r` returns (E-23); no key of a hidden thing is ever in it. */
+export interface AstreSysteme {
+  cle: string; genre: 'etoile' | 'planete' | 'lune' | 'comete'; parent_cle: string | null; etoile_rang: number; type: string;
+  nom: string | null; orbite: number | null; heure: number; taille: number;
+}
+export interface FormationSysteme { cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number }
+export interface InterieurSysteme {
+  q: number; r: number; nom: string | null; etat: 'tire' | 'defini'; astres: AstreSysteme[]; formations: FormationSysteme[];
+}

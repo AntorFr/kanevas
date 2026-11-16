@@ -9,6 +9,7 @@ import {
 import {
   changerGraine, contenuGalaxie, creerGalaxie, exigerEcritureGalaxie, lireGalaxie, lireGraine, renommerGalaxie, rendreVisibleGalaxie, supprimerGalaxie,
 } from '../../services/swn/galaxies.js';
+import { lireInterieur } from '../../services/swn/interieur.js';
 import { lireBlocs, lireRoute, lireSysteme, lireZone, rechercherSystemes } from '../../services/swn/lecture-carte.js';
 import { calculerTrajet } from '../../services/swn/trajet.js';
 
@@ -63,6 +64,14 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
   app.get(`${BASE}/systemes/:cle`, opts, lire((request, a) => {
     const i = ids(request);
     return lireSysteme(app.db, a, i.univers, i.galaxie, i.cle!);
+  }));
+
+  // The interior of a system, addressed by its hexagon; a non-integer coordinate is `introuvable`, never a 400.
+  app.get(`${BASE}/interieur/:q/:r`, opts, lire((request, a) => {
+    const i = ids(request);
+    const p = request.params as { q: string; r: string };
+    const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
+    return lireInterieur(app.db, a, i.univers, i.galaxie, ent(p.q), ent(p.r));
   }));
 
   app.get(`${BASE}/recherche`, opts, lire((request, a) => {
