@@ -1,3 +1,4 @@
+// ecrans: fiche, parametres, systeme, vue-ensemble
 // Black-box tests of the feature kanevas-outils-retrait, written from its sheet (« Livre », exit criterion),
 // docs/parcours.md (B-63, P-21) and docs/ecrans.md (E-20 « Supprimer les données de l'outil… », its criteria and
 // states) — not from the code. Real server in stub mode WITH its starting world (AD-55), real Chromium for the

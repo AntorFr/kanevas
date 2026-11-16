@@ -1,3 +1,4 @@
+// ecrans: outil
 // Revue de kanevas-outils-format-vaisseaux-effets-atelier (E-22, X-7, B-83): navigateur piloté, catalogue d'essai inventé écrit par le test (X-8).
 // Sélecteurs : rôles et textes visibles ; chaque geste attend ce que l'utilisateur voit.
 //

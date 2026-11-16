@@ -1,3 +1,4 @@
+// ecrans: carte
 // Black-box tests of kanevas-cg-ecran-carte-illustree, written from its exit criterion and
 // docs/ecrans.md « E-11 Carte ». Real server in stub mode + real Chromium; expected texts are literals.
 import assert from 'node:assert/strict';

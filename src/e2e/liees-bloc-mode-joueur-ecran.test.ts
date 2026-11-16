@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Whole-feature complement of kanevas-fiches-liees-bloc (B-64, P-6 step 6): what a PLAYER reads in the
 // block « Fiches liées » on screen — Léa, and the GM switched to player mode ("he reads like Léa", docs/ecrans.md E-9).
 // Written from docs/ecrans.md (E-9 « Fiches liées », criteria "Léa, Joueuse" and "the GM in player mode on Port-Sel")

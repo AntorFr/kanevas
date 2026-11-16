@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Browser test of kanevas-outils-sections-gerees-ecran, written from the exit criterion and
 // docs/ecrans.md « Screen details for kanevas-outils-sections-gerees » — not from the code.
 // Stub world with the seed (« Éneria d'essai »: Antor GM, Léa player). Screenshots: /tmp/cap-gere.

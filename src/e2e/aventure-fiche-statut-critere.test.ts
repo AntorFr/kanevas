@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches, vue-ensemble
 // Black-box tests of kanevas-scenarios-type-fiche (E-9 « Statut » line, « Contient », « Déplacer sous… » for an
 // adventure, B-59), written from the task's exit criterion. Real server in stub mode + real Chromium.
 import { mkdirSync } from 'node:fs';

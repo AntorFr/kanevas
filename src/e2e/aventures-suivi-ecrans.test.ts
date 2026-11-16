@@ -1,3 +1,4 @@
+// ecrans: comptes-rendus, fiche, fiches, vue-ensemble
 // Black-box tests of the E-3 blocks and E-13 on adventure sheets (kanevas-scenarios-suivi-pivot, AD-127), from
 // docs/ecrans.md « E-13 Comptes-rendus », « Blocs de E-3 » and the « kanevas-scenarios » amendments.
 // Real server in stub mode + real Chromium. Expected texts are literals from the doc.
