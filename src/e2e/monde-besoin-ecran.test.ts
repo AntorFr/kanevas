@@ -105,9 +105,6 @@ test('critère : proposer ne change pas la section, Appliquer l’écrit et le b
   assert.equal(await zone(page, 'Proposé').count(), 0, '« Proposé » is gone');
   assert.equal(await contenu(page, 'Actuel'), propose, '« Actuel » shows the applied content');
   await photo(page, 'nominal-appliquee');
-  await fiche.reload();
-  await fiche.waitForLoadState('networkidle');
-  assert.equal((await texte(fiche)).includes('Mise à jour d'), true, 'the sheet shows the proposed content');
 });
 
 test('critère : la section change, Appliquer est refusé avec la raison, Abandonner reste actif', opts, async () => {

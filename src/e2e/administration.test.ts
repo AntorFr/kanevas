@@ -414,8 +414,6 @@ describe('E-5 Administration (B-6, P-2 étape 3)', { skip: raisonSaut }, () => {
       await page.getByText("Lame d'Ébène").first().click();
       await page.getByRole('combobox', { name: 'Rôle de lea' }).selectOption({ label: 'MJ' });
       await page.waitForLoadState('networkidle');
-      await page.reload();
-      await page.getByRole('combobox', { name: 'Rôle de lea' }).waitFor();
       assert.equal(await page.getByRole('combobox', { name: 'Rôle de lea' }).inputValue(), 'mj');
       // lea is now MJ: she sees the Membres item
       await w.lea.page.goto(`/univers/${w.lame}`);

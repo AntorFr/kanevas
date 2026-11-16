@@ -110,3 +110,13 @@ test('admin_ne_retire_pas_le_seul_mj : 409 ou refus, le membre reste', async () 
   assert.ok(r.status >= 400 && r.status < 500, `last MJ guard, got ${r.status}`);
   assert.equal(((await w.dire(w.admin, 'GET', url)).corps as Any[]).length, 1);
 });
+
+test('admin_change_un_role : le rôle posé par l’administration se relit, lea devient MJ de l’univers', async () => {
+  const w = await monde();
+  const url = `/api/instance/univers/${w.lame}/membres`;
+  const lea = ((await w.dire(w.admin, 'GET', url)).corps as Any[]).find((x) => x.username === 'lea');
+  const r = await w.dire(w.admin, 'PATCH', `${url}/${lea.compteId ?? lea.id}`, { role: 'mj' });
+  assert.ok(r.status < 300, String(r.status));
+  assert.equal(((await w.dire(w.admin, 'GET', url)).corps as Any[]).find((x) => x.username === 'lea').role, 'mj');
+  assert.equal((await w.dire(w.lea, 'GET', `/api/univers/${w.lame}/membres`)).status, 200, 'lea is a GM now: she reads the members');
+});
