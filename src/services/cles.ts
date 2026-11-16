@@ -6,8 +6,10 @@ import { estTypeFiche } from './types-fiche.js';
 import type { Acteur } from './types.js';
 
 /**
- * Keys of universes, sheets and sections (AD-146, B-99, B-100, B-104). The only reader and writer of
- * `univers.cle`, `fiches.cle`, `sections.cle` and of `cles_anciennes` / `univers_cles_anciennes` (AD-2).
+ * Keys of universes, sheets and sections (AD-146, B-99, B-100, B-104). The only place that draws, changes and
+ * resolves keys, and the only reader and writer of `cles_anciennes` / `univers_cles_anciennes` (AD-2). The creation
+ * of a universe, sheet or section stores the key drawn here, and the import stores the key it carries; no other
+ * code draws or changes one.
  * A key is drawn at creation, a GM may change it, the former one keeps resolving; a numeric-only
  * reference is an id (no key is, a key has a letter).
  */
