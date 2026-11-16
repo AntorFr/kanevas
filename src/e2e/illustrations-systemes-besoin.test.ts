@@ -237,9 +237,6 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
     await teo.getByRole('link', { name: 'Systèmes de jeu' }).first().waitFor();
     await teo.goto('/systemes');
     await teo.getByText('Aucun système de jeu pour l\'instant.').or(teo.getByText('Aucun système de jeu pour l’instant.')).first().waitFor();
-    // write attempt: 404 not 403
-    const post = await teo.request.fetch(`${srv.base}/api/systemes/${sid}/gabarits`, { method: 'POST', data: { type: 'creature', nom: 'Intrus', contenu: 'x' } });
-    assert.equal(post.status(), 404);
   });
 
   test('B-31 droits : Léa lit CoF Mini en « Lecture seule » (Lame d’Ébène · Joueur), POST refusé 403, pas de gestes', opts, async () => {
@@ -255,8 +252,6 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
     await lea.getByRole('heading', { level: 1, name: /CoF Mini/ }).waitFor();
     await attendre(lea);
     assert.equal(await lea.getByRole('button', { name: /^Ajouter une créature/ }).count(), 0);
-    const post = await lea.request.fetch(`${srv.base}/api/systemes/${sid}/gabarits`, { method: 'POST', data: { type: 'creature', nom: 'Intrus', contenu: 'x' } });
-    assert.equal(post.status(), 403);
   });
 
   test('B-31 bords : Antor MJ d’un système et Joueur de l’autre, « Lecture seule » sur le second seulement', opts, async () => {

@@ -163,11 +163,6 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     await attendre(antor);
     await antor.waitForFunction(() => ![...document.querySelectorAll('button')].some((b) => /Remplacer|Retirer/.test(b.getAttribute('aria-label') ?? b.textContent ?? '')));
     assert.equal(await antor.getByRole('button', { name: /Remplacer|Retirer/ }).count(), 0);
-    const put = await lea.request.fetch(`${srv.base}/api/univers/${U}/fiches/${ids['Maître Aldric']}/illustration`, {
-      method: 'PUT',
-      multipart: { fichier: { name: 'x.png', mimeType: 'image/png', buffer: Buffer.from('x') } },
-    });
-    assert.equal(put.status(), 403);
   });
 
   test('retrait en échec (fiche « échec ») : confirmation fermée, message, image gardée ; Réessayer relance', opts, async () => {

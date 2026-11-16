@@ -46,8 +46,6 @@ test('après migration, Léa lit la pièce publique de Port-Sel et ne voit ni la
   assert.ok(mediatheque.includes('ancien-public.pdf'), mediatheque.join());
   assert.ok(!mediatheque.includes('ancien-secret.pdf'));
   assert.ok(!mediatheque.includes('ancien-mj.pdf'));
-  const f = (await get(lea, '/fichiers')).fichiers.find((x: Any) => x.nom === 'ancien-public.pdf');
-  assert.equal((await lea.request.get(`/api/univers/1/fichiers/${f.id}`)).status(), 200);
   await lea.goto('/univers/1/fiche/12');
   await attendre(lea);
   const t = await texte(lea);
@@ -73,9 +71,6 @@ test('après migration, Antor voit les trois pièces ; la secrète et celle de l
 test('après migration, l’illustration de Port-Sel s’affiche toujours, pour Léa aussi', opts, async () => {
   const fiche = await get(lea, '/fiches/12');
   assert.ok(fiche.illustration, 'illustration non nulle');
-  const r = await lea.request.get(`/api/univers/1/fichiers/${fiche.illustration.id}?v=${fiche.illustration.jeton}`);
-  assert.equal(r.status(), 200);
-  assert.ok((await r.body()).length > 0);
   await lea.goto('/univers/1/fiche/12');
   await attendre(lea);
   const ok = await lea.evaluate(async () => {

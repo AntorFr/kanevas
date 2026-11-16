@@ -200,3 +200,12 @@ test('E-19 · un fichier utilisé dans 40 fiches : le détail en nomme 10 et en 
   assert.equal(detail.usages.length, 10);
   assert.equal(detail.restantes, 30);
 });
+
+test('B-31 · un gabarit ne s’écrit pas sans être MJ : Teo (aucun univers rattaché) reçoit 404 comme pour un inconnu, Léa (Joueur) 403', async () => {
+  const m = await monter();
+  const sid = (await m.app.inject({ method: 'GET', url: '/api/systemes', headers: m.lea })).json().find((s: Any) => s.nom === 'CoF Mini').id;
+  const ecrire = (h: Any, id: number) =>
+    m.app.inject({ method: 'POST', url: `/api/systemes/${id}/gabarits`, headers: h, payload: { type: 'creature', nom: 'Intrus', contenu: 'x' } });
+  assert.equal((await ecrire(m.teo, sid)).statusCode, 404);
+  assert.equal((await ecrire(m.lea, sid)).statusCode, 403);
+});
