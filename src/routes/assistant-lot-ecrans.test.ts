@@ -81,3 +81,29 @@ test('« Se déconnecter » ferme la session : /api/moi répond 401 ensuite', as
   assert.ok(efface && (efface.value === '' || (efface.expires && efface.expires.getTime() <= Date.now()) || efface.maxAge === 0), 'the session cookie is cleared');
   assert.equal((await m.dire(undefined, 'GET', '/api/moi')).status, 401);
 });
+
+// --- assistant-image-ecran: the portrait attached to a section (E-12, AD-88), on the starting world (stub image engine) ---
+test('image : un portrait demandé par le MJ ajoute une pièce, « échec » et la joueuse n’en ajoutent aucune', async () => {
+  const m = await monter({ semis: true });
+  const us = (await m.dire(m.antor, 'GET', '/api/univers')).corps as Any[];
+  const U = us.find((u) => u.nom === "Lame d'Ébène").id as number;
+  const f = 1; // « Maître Aldric » of the starting world, as in the screen file
+  const DEMANDE = 'Fais un portrait pour « Apparence » d’« Maître Aldric »';
+  const pieces = async () => {
+    const r = (await m.dire(m.antor, 'GET', `/api/univers/${U}/fiches/${f}`)).corps;
+    return (r.sections as Any[]).flatMap((s) => s.piecesJointes ?? []);
+  };
+  const dit = (h: typeof m.antor, message: string) => m.dire(h, 'POST', `/api/univers/${U}/assistant/messages`, { message, historique: [] });
+  const avant = (await pieces()).length;
+  const echec = await dit(m.antor, DEMANDE + ' échec');
+  assert.deepEqual(echec.corps.evenements, []);
+  assert.match(echec.corps.reponse, /Je n['’]ai pas pu générer l['’]image\./);
+  assert.equal((await pieces()).length, avant);
+  const lea = await dit(m.lea, DEMANDE);
+  assert.deepEqual(lea.corps.evenements, []);
+  assert.equal((await pieces()).length, avant);
+  const ok = await dit(m.antor, DEMANDE);
+  assert.equal(ok.status, 200, JSON.stringify(ok.corps));
+  assert.equal(ok.corps.evenements.length, 1);
+  assert.equal((await pieces()).length, avant + 1);
+});
