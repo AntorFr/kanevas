@@ -79,7 +79,8 @@ describe('E-28 Éditeur de carte : ce que voit Antor', { skip: skipBrowser }, ()
     await antor.goto(`/univers/${uid}/cartes`);
     await antor.getByRole('heading', { name: 'Cartes', level: 1 }).waitFor();
     await attendre(antor);
-    await antor.getByRole('button', { name: rxExact('Carte composée') }).click();
+    await antor.getByRole('button', { name: rxExact('Nouvelle carte') }).click();
+    await antor.getByRole('menuitem', { name: rxExact('Carte composée') }).click();
     const d = antor.getByRole('dialog');
     await d.getByLabel(/Nom/).fill('Station Orak');
     assert.equal(await d.getByLabel(/Largeur/).inputValue(), '30');

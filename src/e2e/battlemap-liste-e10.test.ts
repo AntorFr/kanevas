@@ -53,7 +53,8 @@ describe('E-10 Liste des cartes : carte composée', { skip: skipBrowser }, () =>
   it('largeur 201 et nom vide refusés sous le champ, rien n’est créé', async () => {
     await ouvrir(antor);
     const avant = JSON.stringify(await cartes(antor));
-    await antor.getByRole('button', { name: rxExact('Carte composée') }).click();
+    await antor.getByRole('button', { name: rxExact('Nouvelle carte') }).click();
+    await antor.getByRole('menuitem', { name: rxExact('Carte composée') }).click();
     const d = antor.getByRole('dialog');
     await d.getByRole('button', { name: rxExact('Créer') }).click();
     await d.getByText('le nom est obligatoire.').waitFor();
@@ -73,7 +74,8 @@ describe('E-10 Liste des cartes : carte composée', { skip: skipBrowser }, () =>
     const r = await antor.request.put(regl, { data: { version: lu?.version ?? 0, valeurs: { tailleCase: 100 } } });
     assert.ok(r.status() < 300, `reglage ${r.status()}`);
     await ouvrir(antor);
-    await antor.getByRole('button', { name: rxExact('Carte composée') }).click();
+    await antor.getByRole('button', { name: rxExact('Nouvelle carte') }).click();
+    await antor.getByRole('menuitem', { name: rxExact('Carte composée') }).click();
     const d = antor.getByRole('dialog');
     assert.equal(await d.getByLabel(/Largeur/).inputValue(), '30');
     assert.equal(await d.getByLabel(/Hauteur/).inputValue(), '20');
@@ -96,7 +98,7 @@ describe('E-10 Liste des cartes : carte composée', { skip: skipBrowser }, () =>
     await l.getByText('30 × 20 cases').waitFor();
     assert.equal(await l.getByRole('link').count(), 0);
     assert.equal(await l.getByRole('button').count(), 0);
-    assert.equal(await lea.getByRole('button', { name: rxExact('Carte composée') }).count(), 0);
+    assert.equal(await lea.getByRole('button', { name: /Nouvelle carte/ }).count(), 0);
   });
 
   it('suppression : confirmation par le nom, puis la ligne disparaît', async () => {
