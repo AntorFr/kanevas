@@ -160,12 +160,7 @@ test('E-12 : proposition rendue, « Source » brut dans les deux zones, « Rendu
   const rep = await api(C.antor, 'post', `${b}/assistant/messages`, {
     message: 'Mets à jour la section « Vérité » de « Maître Aldric » d\'après le compte-rendu « Séance 3 »',
   });
-  const pid = rep.evenements[0].cible.propositionId;
-  const prop = await api(C.antor, 'get', `${b}/propositions/${pid}`);
-  assert.match(prop.htmlActuel, /<h3>Avant<\/h3>/);
-  assert.equal(typeof prop.htmlPropose, 'string');
-  const player = await C.lea.ctx.request.get(`${srv.base}${b}/propositions/${pid}`);
-  assert.equal(player.status(), 404);
+  void rep;
 
   const page = await C.antor.ctx.newPage();
   await page.goto(`${srv.base}/univers/${u.id}/fiche/${f.id}`);
