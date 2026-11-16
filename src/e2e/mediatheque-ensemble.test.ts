@@ -432,20 +432,40 @@ test('Documents ne montre que des documents ; Images aucun ; le nom vide et de 2
   assert.match(await tuilesNoms(antor), /Plan du port/);
 });
 
+// Relevé stable de la liste : attend que le compteur « N fichiers » soit affiché, puis que les noms des tuiles ne bougent plus
+// (deux relevés identiques à la suite) ; le texte entier de `main` n'est jamais comparé.
+const releveListe = async (p: Any): Promise<string> => {
+  await p.getByText(/\d[\d\s  ]* fichiers?/).first().waitFor({ timeout: 15_000 });
+  const lire = async () => JSON.stringify([await nbFichiers(p), await p.locator('main button').allInnerTexts()]);
+  let precedent = await lire();
+  for (let i = 0; i < 40; i++) {
+    await p.waitForTimeout(250);
+    const courant = await lire();
+    if (courant === precedent) return courant;
+    precedent = courant;
+  }
+  throw new Error('la liste de la médiathèque ne se stabilise pas');
+};
+
 test('échecs : un fichier vide n’est pas ajouté ; une illustration qui n’est pas une image est refusée', opts, async () => {
-  const avant = await tuilesNoms((await mediatheque(antor), antor));
+  await mediatheque(antor);
+  const avant = await releveListe(antor);
+  assert.doesNotMatch(avant, /notes\.txt|regles\.pdf/);
   await fiche(antor, 'Port-Sel');
   await region(antor, 'Description').locator('input[type=file]').first().setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.alloc(0) });
   await antor.getByText('« notes.txt » est vide.').first().waitFor();
   await mediatheque(antor);
-  assert.doesNotMatch(await tuilesNoms(antor), /notes\.txt/);
-  assert.equal(await tuilesNoms(antor), avant);
+  const apresVide = await releveListe(antor);
+  assert.doesNotMatch(apresVide, /notes\.txt/);
+  assert.equal(apresVide, avant);
 
   await fiche(antor, 'Port-Sel');
   const r = await antor.request.put(`/api/univers/${uid}/fiches/${ids['Port-Sel']}/illustration`, { multipart: { fichier: pdf('regles.pdf') } });
   assert.equal(r.status(), 400);
   await mediatheque(antor);
-  assert.doesNotMatch(await tuilesNoms(antor), /regles\.pdf/);
+  const apresPdf = await releveListe(antor);
+  assert.doesNotMatch(apresPdf, /regles\.pdf/);
+  assert.equal(apresPdf, avant);
 });
 
 test('illustration : un PDF choisi par l’en-tête dit « « regles.pdf » n’est pas une image. » et rien ne change', opts, async () => {
