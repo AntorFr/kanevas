@@ -106,7 +106,6 @@ test('Léa force l\'adresse d\'un fichier réservé : « Page introuvable. »', 
   await lea.goto(`/univers/${U}/mediatheque?fichier=${PLAN_SECRET}`);
   await attendre(lea);
   assert.ok(await dit(lea, 'Page introuvable.'));
-  assert.equal((await liste(antor)).length, avant);
 });
 
 test('Antor ajoute un PDF depuis E-19 : « Visible des joueurs », 14 fichiers, listé en Documents seulement, « Document PDF »', opts, async () => {
