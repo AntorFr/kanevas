@@ -1,3 +1,4 @@
+// ecrans: comptes-rendus, fiche, fiches, parametres, vue-ensemble
 // Browser proof of kanevas-scenarios-suivi-bilan, written from its exit criterion: the whole journey of the slice in
 // Antor's hands on adventures seeded through the routes (stub server, real Chromium). Order matters: one story.
 //

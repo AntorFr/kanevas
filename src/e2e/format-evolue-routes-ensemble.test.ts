@@ -1,3 +1,4 @@
+// ecrans: outil-cible
 // Feature-level black-box tests of kanevas-outils-format-evolue, routes side (B-81): written from the feature sheet
 // (« Livre », exit criterion), docs/parcours.md (P-18) and docs/ecrans.md (E-21), then from the T-4 / T-7 / T-8 / T-9
 // contracts of ARCHITECTURE.md for what is delivered without a screen (session API, import, GM document). Real server in

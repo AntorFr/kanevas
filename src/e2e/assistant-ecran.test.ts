@@ -1,3 +1,4 @@
+// ecrans: accueil, fiche, vue-ensemble
 // Black-box tests of kanevas-am-ecran: E-12 Assistant (docs/ecrans.md § `kanevas-assistant-membre`),
 // driven in a real Chromium against the real server in stub mode (AD-55, AD-78).
 //

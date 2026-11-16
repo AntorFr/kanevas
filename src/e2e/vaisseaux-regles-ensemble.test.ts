@@ -1,3 +1,4 @@
+// ecrans: fiche, outil
 // Feature-level tests of kanevas-outils-vaisseaux-regles (real server in stub mode with the stub seed, real Chromium through Playwright).
 // Written from the feature sheet (« Livre », exit criterion), docs/parcours.md (B-67, B-77, P-19 steps 4 and 5), docs/ecrans.md
 // (E-22 and « What kanevas-outils-vaisseaux-regles builds ») and the mockup e22-concepteur-vaisseaux.html. Selectors are roles and

@@ -1,3 +1,4 @@
+// ecrans: fiche, outil
 // Re-verification tests of kanevas-outils-vaisseaux, from docs/ecrans.md (E-22 « List », E-9 « Entry ») and docs/parcours.md (P-19, B-75, B-76).
 // TEST PLAN
 //   B-75/E-22 liste · nominal : Antor withdraws the hull « Éclaireur » of « Étoile du soir » → Léa's list row shows « 1 bloquante »

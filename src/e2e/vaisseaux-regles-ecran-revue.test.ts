@@ -1,3 +1,4 @@
+// ecrans: fiche, outil, parametres
 // Revue de kanevas-outils-vaisseaux-regles-ecran : navigateur piloté (serveur bouchon + semis, Chromium), écrit depuis le
 // critère de sortie de la fiche et docs/ecrans.md (E-22, « What kanevas-outils-vaisseaux-regles builds »). Sélecteurs : rôles et
 // textes visibles ; chaque geste attend ce que l'utilisateur voit, jamais networkidle ni délai fixe.

@@ -1,3 +1,4 @@
+// ecrans: accueil, systemes
 // Black-box tests of `kanevas-icones`, written from the need (the "Livre" and "Précision" messages of the
 // feature, docs/charte.md « The brand », docs/ecrans.md E-1 and sidebar). Expected values are literals.
 // Real server in stub mode + real Chromium (harnais.test.ts); the dev server is vite itself.

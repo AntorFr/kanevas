@@ -1,3 +1,4 @@
+// ecrans: acces-api
 // Independent acceptance tests of the E-18 tokens screen, written from the need only (docs/parcours.md
 // B-45, B-46, P-11; docs/ecrans.md E-18): whatever day the suite is played, a token created for 30 days
 // is shown « jamais » + « expire le <creation + 30 days> », a revoked one « Révoqué », a lapsed GM's one

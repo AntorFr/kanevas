@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Revérification of kanevas-outils-sections-gerees, written from docs/charte.md (Icons: « an icon beside each
 // navigation item and each action »; error = --danger-fond / --danger with an icon) and docs/ecrans.md E-9
 // (error and conflict texts) — not from the code. Screenshots: /tmp/cap-gere-icones (outside the tracked tree).

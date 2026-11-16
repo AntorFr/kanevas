@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Feature-level check of kanevas-import-mediatheque, written from the sheet of the feature and from
 // docs/parcours.md P-16 « Échec » (an interrupted upload: « L'envoi n'a pas abouti. », nothing added,
 // nothing joined), not from the code. Real server in stub mode on the seed, real Chromium.

@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Independent acceptance tests of the whole feature kanevas-import-liens, written from the need only:
 // docs/parcours.md (B-33, B-36, P-12 steps 2, 3 and 5, P-14 steps 1 and 4, P-10 step 4), docs/ecrans.md (E-9 links,
 // E-7 links, « Mentionnée dans », « Données de départ du bouchon »), the exit criterion of the feature sheet.

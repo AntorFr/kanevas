@@ -83,7 +83,8 @@ test('l’image ne se construit que sur un tag v*, après un job qui lit l’att
 
 test('l’attestation vérifiée est un succès, pas un statut quelconque', () => {
   const yaml = sansCommentaires(lire('.github/workflows/docker-publish.yml'));
-  assert.match(yaml, /=\s*success/);
+  // AD-niveau-7 : seul « success niveau … » passe, le statut doit dire son niveau.
+  assert.match(yaml, /"success niveau "\*\)/);
   assert.match(yaml, /exit 1/);
 });
 

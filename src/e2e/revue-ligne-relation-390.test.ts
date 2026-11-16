@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Review test: at 390 px the natured relation row of Aldric keeps its type badge and its remove cross
 // beside the text (never a lone « Faction » line), the cross aligned on the first text line, no horizontal scroll.
 import assert from 'node:assert/strict';

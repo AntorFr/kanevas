@@ -1,3 +1,4 @@
+// ecrans: comptes-rendus, vue-ensemble
 // Browser proof of kanevas-scenarios-suivi-pivot (AD-127, AD-124 (4)): « Campagnes » left the sidebar, the old
 // addresses answer « Page introuvable. », E-13 names an adventure only to who reads it, « Aventure supprimée »
 // to the GM only. Adventures are made through the routes of the sheets. Real server in stub mode + Chromium.
