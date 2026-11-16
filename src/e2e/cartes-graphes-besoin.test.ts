@@ -221,7 +221,7 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       assert.ok((await texte(m.antor)).includes("Aucune carte pour l'instant. Créez-en une pour commencer."));
       await remplirCreation(m.antor, 'La ville de Brume', 'Carte illustrée', fichierPng());
       await m.antor.getByRole('button', { name: rxExact('Créer') }).click();
-      await m.antor.waitForURL(new RegExp(`/univers/${m.U}/cartes/\\d+$`));
+      await m.antor.waitForURL(new RegExp(`/univers/[^/]+/cartes/\\d+$`));
       await m.antor.getByRole('heading', { name: 'La ville de Brume', level: 1 }).waitFor();
       await attendre(m.antor);
       // The empty-map sentence is drawn once the background image has loaded: wait for it, not for a quiet network.
@@ -333,7 +333,7 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       assert.ok((await texte(m.antor)).includes('Maître Aldric · Personnage'));
       assert.equal(await m.antor.getByRole('button', { name: rxExact('Retirer de la carte') }).count() >= 1, true);
       await m.antor.getByRole('link', { name: rxExact('Ouvrir la fiche') }).click();
-      await m.antor.waitForURL(new RegExp(`/univers/${m.U}/fiche/${m.aldric}$`));
+      await m.antor.waitForURL(new RegExp(`/univers/[^/]+/(fiche/[^/]+|(?!fiches/|cartes/|outils/)[^/]+/[^/]+)$`));
     });
 
     // Si le retrait ne demande pas de confirmation, un clic de trop retire le token.
@@ -404,7 +404,7 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await m.antor.getByText(rx('Erreur : 80 caractères au plus.')).waitFor();
       await m.antor.getByLabel('Titre', { exact: true }).fill('y'.repeat(80));
       await m.antor.getByRole('button', { name: rxExact('Créer') }).click();
-      await m.antor.waitForURL(new RegExp(`/univers/${m.U}/cartes/\\d+$`));
+      await m.antor.waitForURL(new RegExp(`/univers/[^/]+/cartes/\\d+$`));
       await m.antor.getByRole('heading', { level: 1 }).waitFor();
       await m.antor.getByText('y'.repeat(80)).first().waitFor();
       assert.ok((await texte(m.antor)).includes('y'.repeat(80)));
@@ -486,7 +486,7 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await ouvrirListe(m.antor, m);
       await remplirCreation(m.antor, 'La ville de Brume', 'Carte illustrée', fichierPng());
       await m.antor.getByRole('button', { name: rxExact('Créer') }).click();
-      await m.antor.waitForURL(new RegExp(`/univers/${m.U}/cartes/\\d+$`));
+      await m.antor.waitForURL(new RegExp(`/univers/[^/]+/cartes/\\d+$`));
       await m.antor.getByRole('heading', { name: 'La ville de Brume', level: 1 }).waitFor();
       await attendre(m.antor);
       // The empty-map sentence is drawn once the background image has loaded: wait for it, not for a quiet network.
@@ -534,7 +534,7 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
     test('nominal : Léa touche le token d\'Aldric et arrive sur sa fiche', async () => {
       await ouvrirCarte(m.lea, m, carte);
       await noeud(m.lea, 'Maître Aldric').click();
-      await m.lea.waitForURL(new RegExp(`/univers/${m.U}/fiche/${m.aldric}$`));
+      await m.lea.waitForURL(new RegExp(`/univers/[^/]+/(fiche/[^/]+|(?!fiches/|cartes/|outils/)[^/]+/[^/]+)$`));
       await m.lea.getByRole('heading', { name: 'Maître Aldric', level: 1 }).waitFor();
     });
 
@@ -651,7 +651,7 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await ouvrirListe(m.antor, m);
       await remplirCreation(m.antor, 'Les factions', 'Graphe');
       await m.antor.getByRole('button', { name: rxExact('Créer') }).click();
-      await m.antor.waitForURL(new RegExp(`/univers/${m.U}/cartes/\\d+$`));
+      await m.antor.waitForURL(new RegExp(`/univers/[^/]+/cartes/\\d+$`));
       await m.antor.getByRole('heading', { name: 'Les factions', level: 1 }).waitFor();
       await attendre(m.antor);
       graphe = Number(m.antor.url().split('/').pop());
@@ -715,7 +715,7 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
     test('nominal : Léa touche le nœud « La Guilde » et arrive sur sa fiche', async () => {
       await ouvrirCarte(m.lea, m, graphe);
       await noeud(m.lea, 'La Guilde').click();
-      await m.lea.waitForURL(new RegExp(`/univers/${m.U}/fiche/${m.guilde}$`));
+      await m.lea.waitForURL(new RegExp(`/univers/[^/]+/(fiche/[^/]+|(?!fiches/|cartes/|outils/)[^/]+/[^/]+)$`));
     });
 
     // La relation « allié de » est portée par « Alliances » (fermée) : même cible lisible, le lien reste caché.
@@ -810,11 +810,11 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
     test('nominal : le titre mène à la carte (E-11), « Toutes » à la liste (E-10)', async () => {
       await ouvrirVue(m.lea);
       await m.lea.getByRole('link', { name: rx('La ville de Brume') }).click();
-      await m.lea.waitForURL(new RegExp(`/univers/${m.U}/cartes/\\d+$`));
+      await m.lea.waitForURL(new RegExp(`/univers/[^/]+/cartes/\\d+$`));
       await m.lea.getByRole('heading', { name: 'La ville de Brume', level: 1 }).waitFor();
       await ouvrirVue(m.antor);
       await m.antor.getByRole('link', { name: rxExact('Toutes') }).click();
-      await m.antor.waitForURL(new RegExp(`/univers/${m.U}/cartes$`));
+      await m.antor.waitForURL(new RegExp(`/univers/[^/]+/cartes$`));
     });
 
     // Si le bloc n'est pas borné à cinq, ou pas dans l'ordre alphabétique.
@@ -957,7 +957,7 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
     // Si l'écran n'annonce pas son chargement.
     test('chargement : la carte dit « Chargement… » tant que la réponse n\'est pas là', async () => {
       const page = (await connecte(browser, srv.base, 'Antor')).page;
-      await page.route(`**${urlCartes(m)}/${carte}`, async (r: Any) => {
+      await page.route(`**/api/univers/*/cartes/${carte}`, async (r: Any) => {
         await new Promise((ok) => setTimeout(ok, 1500));
         await r.continue();
       });
@@ -970,19 +970,19 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
     // Si une panne de chargement laisse un écran blanc, ou si « Réessayer » ne relance pas.
     test('erreur : la carte qui ne charge pas dit « Impossible de charger cette page. » ; « Réessayer » la charge une fois la panne finie', async () => {
       const page = (await connecte(browser, srv.base, 'Antor')).page;
-      await page.route(`**${urlCartes(m)}/${carte}`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
+      await page.route(`**/api/univers/*/cartes/${carte}`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
       await page.goto(`/univers/${m.U}/cartes/${carte}`);
       await page.getByText(rx('Impossible de charger cette page.')).waitFor();
       await capture(page, 'e11-erreur');
-      await page.unroute(`**${urlCartes(m)}/${carte}`);
+      await page.unroute(`**/api/univers/*/cartes/${carte}`);
       await page.getByRole('button', { name: rxExact('Réessayer') }).click();
       await page.getByRole('heading', { name: 'Carte des états', level: 1 }).waitFor();
     });
 
     test('erreur : la liste qui ne charge pas dit « Impossible de charger cette page. » avec « Réessayer »', async () => {
       const page = (await connecte(browser, srv.base, 'Antor')).page;
-      await page.route(`**${urlCartes(m)}?*`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
-      await page.route(`**${urlCartes(m)}`, (r: Any) => (r.request().method() === 'GET' ? r.fulfill({ status: 500, body: '{}' }) : r.continue()));
+      await page.route(`**/api/univers/*/cartes?*`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
+      await page.route(`**/api/univers/*/cartes`, (r: Any) => (r.request().method() === 'GET' ? r.fulfill({ status: 500, body: '{}' }) : r.continue()));
       await page.goto(`/univers/${m.U}/cartes`);
       await page.getByText(rx('Impossible de charger cette page.')).waitFor();
       assert.equal(await page.getByRole('button', { name: rxExact('Réessayer') }).count(), 1);
@@ -1022,12 +1022,12 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
     // Si un geste raté laisse l'écran dans un état qui ne dit pas la vérité.
     test('échec d\'écriture : une visibilité qui échoue dit « L\'action n\'a pas abouti. Réessayez. » et l\'état d\'avant reste', async () => {
       await ouvrirCarte(m.antor, m, carte);
-      await m.antor.route(`**${urlCartes(m)}/${carte}`, (r: Any) => (r.request().method() === 'PATCH' ? r.fulfill({ status: 500, body: '{}' }) : r.continue()));
+      await m.antor.route(`**/api/univers/*/cartes/${carte}`, (r: Any) => (r.request().method() === 'PATCH' ? r.fulfill({ status: 500, body: '{}' }) : r.continue()));
       await enTete(m.antor, 'Cacher aux joueurs').click();
       await m.antor.getByText(rx(PAS_ABOUTI)).first().waitFor();
       assert.equal(await enTete(m.antor, 'Cacher aux joueurs').count(), 1);
       assert.ok((await texte(m.antor)).includes('Visible des joueurs'));
-      await m.antor.unroute(`**${urlCartes(m)}/${carte}`);
+      await m.antor.unroute(`**/api/univers/*/cartes/${carte}`);
       assert.equal((await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`)).carte.visible, true);
       await capture(m.antor, 'e11-echec-ecriture');
     });
@@ -1036,13 +1036,13 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await ouvrirCarte(m.antor, m, carte);
       const place = () => noeud(m.antor, 'Maître Aldric').evaluate((e: HTMLElement) => [e.offsetLeft, e.offsetTop]);
       const avant = await place();
-      await m.antor.route(`**${urlCartes(m)}/${carte}/elements/*`, (r: Any) => (r.request().method() === 'PATCH' ? r.fulfill({ status: 500, body: '{}' }) : r.continue()));
+      await m.antor.route(`**/api/univers/*/cartes/${carte}/elements/*`, (r: Any) => (r.request().method() === 'PATCH' ? r.fulfill({ status: 500, body: '{}' }) : r.continue()));
       await noeud(m.antor, 'Maître Aldric').click();
       for (let i = 0; i < 5; i++) await m.antor.keyboard.press('ArrowRight');
       await m.antor.getByText(rx(PAS_ABOUTI)).first().waitFor();
       await attendre(m.antor);
       assert.deepEqual(await place(), avant);
-      await m.antor.unroute(`**${urlCartes(m)}/${carte}/elements/*`);
+      await m.antor.unroute(`**/api/univers/*/cartes/${carte}/elements/*`);
       const e = (await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`)).elements[0];
       assert.equal(e.x, 30);
       assert.equal(e.y, 40);
@@ -1051,14 +1051,14 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
     // Si le fond manquant casse la carte ou pose des tokens sans repère.
     test('erreur de fond : « Le fond de la carte n\'a pas pu être chargé. » avec « Réessayer », sans token posé, la liste reste', async () => {
       const page = (await connecte(browser, srv.base, 'Antor')).page;
-      await page.route(`**${urlCartes(m)}/${carte}/fond*`, (r: Any) => r.abort());
+      await page.route(`**/api/univers/*/cartes/${carte}/fond*`, (r: Any) => r.abort());
       await page.goto(`/univers/${m.U}/cartes/${carte}`);
       await page.getByText(rx("Le fond de la carte n'a pas pu être chargé.")).waitFor();
       assert.equal(await page.getByRole('button', { name: rxExact('Réessayer') }).count(), 1);
       assert.equal(await noeud(page, 'Maître Aldric').count(), 0);
       assert.deepEqual(await surLaCarte(page), ['Maître Aldric']);
       await capture(page, 'e11-fond-indisponible');
-      await page.unroute(`**${urlCartes(m)}/${carte}/fond*`);
+      await page.unroute(`**/api/univers/*/cartes/${carte}/fond*`);
       await page.getByRole('button', { name: rxExact('Réessayer') }).click();
       await noeud(page, 'Maître Aldric').waitFor();
     });
@@ -1085,8 +1085,8 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
     // Si le bloc de la vue d'ensemble casse la page entière quand les cartes ne chargent pas.
     test('bloc E-3 en erreur : « Impossible de charger les cartes. » avec « Réessayer », le reste de la page tient', async () => {
       const page = (await connecte(browser, srv.base, 'Léa')).page;
-      await page.route(`**${urlCartes(m)}?*`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
-      await page.route(`**${urlCartes(m)}`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
+      await page.route(`**/api/univers/*/cartes?*`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
+      await page.route(`**/api/univers/*/cartes`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
       await page.goto(`/univers/${m.U}`);
       await page.getByText(rx('Impossible de charger les cartes.')).waitFor();
       assert.ok((await texte(page)).includes('Lame d\'Ébène états'));
@@ -1123,7 +1123,7 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       assert.ok((await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)), 'la page déborde en largeur');
       await capture(page, 'p6-carte-telephone');
       await jeton.tap();
-      await page.waitForURL(new RegExp(`/univers/${m.U}/fiche/${m.aldric}$`));
+      await page.waitForURL(new RegExp(`/univers/[^/]+/(fiche/[^/]+|(?!fiches/|cartes/|outils/)[^/]+/[^/]+)$`));
       await ctx.close();
     });
   });

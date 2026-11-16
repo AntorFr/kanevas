@@ -142,8 +142,12 @@ test('montée : un élément de masse 8 (semis) reste lisible et inchangé, comp
     for (const [t, cols] of Object.entries(AJOUTS)) for (const c of cols) db.exec(`ALTER TABLE swn_catalogue_${t} ${verbe} ${c}${verbe === 'ADD COLUMN' ? ' INTEGER' : ''}`);
   };
   stub('ADD COLUMN');
+  // The seed draws keys (0037): stand-in columns and tables for the seed only, dropped before the climb.
+  db.exec('ALTER TABLE univers ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN creee_via TEXT; ALTER TABLE sections ADD COLUMN cle TEXT');
+  db.exec('CREATE TABLE cles_anciennes (univers_id, cle, fiche_id); CREATE TABLE univers_cles_anciennes (cle, univers_id)');
   db.exec('ALTER TABLE swn_conceptions ADD COLUMN equipage INTEGER'); // 0030, written by the seed
   semerBouchon(db);
+  db.exec('DROP TABLE cles_anciennes; DROP TABLE univers_cles_anciennes; ALTER TABLE univers DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN creee_via; ALTER TABLE sections DROP COLUMN cle');
   db.exec('ALTER TABLE swn_conceptions DROP COLUMN equipage');
   stub('DROP COLUMN');
   // 0028 adds `classe_min` to the weapons: the rows are compared without it, which is checked apart below.

@@ -196,7 +196,7 @@ test('import_delete_par_cle_cree_supprime_recree_et_cle_inconnue_204_sans_ecritu
   assert.equal((await put(l1)).etat, 'creee');
   const d = await w.imp('DELETE', `fiches/lieu:havre-gris?lot=${l1}`);
   assert.equal(d.statusCode, 204);
-  assert.equal((w.app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE cle_origine = 'lieu:havre-gris'").get() as Any).n, 0);
+  assert.equal((w.app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE cle = 'lieu:havre-gris'").get() as Any).n, 0);
   assert.equal((await put(l1)).etat, 'creee');
   await w.imp('POST', `lots/${l1}/clore`);
   const rap1 = (await w.imp('GET', `lots/${l1}`)).json() as Any;

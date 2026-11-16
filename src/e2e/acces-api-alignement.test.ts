@@ -99,7 +99,7 @@ cas('E-9 : la ligne « Importée » du menu ⋯ tient sur une ligne', opts, asyn
   await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();
   const ligne = antor.locator('.info-fiche span').first();
   await ligne.waitFor();
-  assert.match(await ligne.innerText(), /^Importée · clé\s+lieu:port-sel\s+· créée le/);
+  assert.match(await ligne.innerText(), /^Importée · créée le/);
   const { h, lh } = await ligne.evaluate((e: Element) => ({ h: e.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(e).lineHeight) }));
   assert.ok(h <= lh * 1.2, `ligne sur plusieurs lignes: ${h} > ${lh}`);
 });

@@ -1,4 +1,7 @@
+import { randomUUID } from 'node:crypto';
+
 import type { Db } from '../db/db.js';
+import { tirerCleUnivers } from './cles.js';
 import { effacerDonneesUniversComplet } from './outils-donnees.js';
 import { exigerMJ, exigerRole } from './droits.js';
 import { ErreurService, invalide, refuse } from './erreurs.js';
@@ -7,6 +10,7 @@ import type { Acteur, Role, Univers } from './types.js';
 
 interface UniversRow {
   id: number;
+  cle: string;
   nom: string;
   description: string;
   cree_le: string;
@@ -14,6 +18,7 @@ interface UniversRow {
 
 const versUnivers = (r: UniversRow): Univers => ({
   id: r.id,
+  cle: r.cle,
   nom: r.nom,
   description: r.description,
   creeLe: r.cree_le,
@@ -29,10 +34,12 @@ export function creerUnivers(
   if (nom.length < 1 || nom.length > 80) throw invalide('Le nom doit faire de 1 à 80 caractères.');
   if ((entree.description ?? '').length > 500) throw invalide('La description doit faire 500 caractères au plus.');
   return db.transaction(() => {
+    // The key falls back on the row's id (`univers-<id>`): the row is written with a provisional one, then drawn.
     const info = db
-      .prepare('INSERT INTO univers (nom, description, cree_le) VALUES (?, ?, ?)')
-      .run(nom, entree.description ?? '', new Date().toISOString());
+      .prepare('INSERT INTO univers (nom, description, cree_le, cle) VALUES (?, ?, ?, ?)')
+      .run(nom, entree.description ?? '', new Date().toISOString(), `provisoire-${randomUUID().slice(0, 8)}`);
     const id = Number(info.lastInsertRowid);
+    db.prepare('UPDATE univers SET cle = ? WHERE id = ?').run(tirerCleUnivers(db, nom, id), id);
     db.prepare("INSERT INTO membres (univers_id, compte_id, role) VALUES (?, ?, 'mj')").run(
       id,
       compteId,

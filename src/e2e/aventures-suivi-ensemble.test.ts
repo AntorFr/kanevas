@@ -345,7 +345,7 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     const prep = p.getByRole('region', { name: 'Préparation' });
     await prep.getByText("Rien à préparer pour l'instant.").waitFor();
     await prep.getByRole('textbox', { name: 'Nouvelle tâche' }).fill('Caler le combat');
-    await p.route(/\/api\/univers\/1\/fiches\/\d+\/taches$/, (route) =>
+    await p.route(/\/api\/univers\/[^/]+\/fiches\/[^/]+\/taches$/, (route) =>
       route.request().method() === 'POST' ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"boum"}' }) : route.continue(),
     );
     await prep.getByRole('button', { name: 'Ajouter' }).click();
@@ -353,7 +353,7 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     assert.equal(await prep.getByRole('textbox', { name: 'Nouvelle tâche' }).inputValue(), 'Caler le combat');
     assert.equal(await prep.getByRole('checkbox', { name: 'Caler le combat' }).count(), 0);
     await capture(p, 'preparation-echec-ajout');
-    await p.unroute(/\/api\/univers\/1\/fiches\/\d+\/taches$/);
+    await p.unroute(/\/api\/univers\/[^/]+\/fiches\/[^/]+\/taches$/);
     await prep.getByRole('button', { name: 'Ajouter' }).click();
     await prep.getByRole('checkbox', { name: 'Caler le combat' }).waitFor();
     await p.close();
@@ -381,7 +381,7 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     await capture(p, 'cr-seance-12-lea');
     // The line leads back to the campaign.
     await p.getByRole('link', { name: 'La Couronne brisée' }).last().click();
-    await p.waitForURL(new RegExp(`/fiche/${ids['La Couronne brisée']}$`));
+    await p.waitForURL(new RegExp(`/(fiche/[^/]+|(?!fiches/|cartes/|outils/)[^/]+/[^/]+)$`));
     const bloc2 = p.getByRole('region', { name: 'Comptes-rendus' });
     await bloc2.getByRole('link', { name: 'Séance 12' }).waitFor();
     const liens = await bloc2.getByRole('link').allInnerTexts();
@@ -412,7 +412,7 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     const dlg = p.getByRole('dialog', { name: 'Nouveau compte-rendu' });
     await dlg.getByRole('textbox', { name: 'Titre' }).fill('Jamais écrit');
     await dlg.getByRole('textbox', { name: /^Texte/ }).fill('Perdu ?');
-    await p.route(/\/api\/univers\/1\/comptes-rendus$/, (route) =>
+    await p.route(/\/api\/univers\/[^/]+\/comptes-rendus$/, (route) =>
       route.request().method() === 'POST' ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"boum"}' }) : route.continue(),
     );
     await dlg.getByRole('button', { name: 'Créer' }).click();
@@ -435,7 +435,9 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     await p.waitForURL(/\/fiche\/\d+$/);
     await p.getByText(/Campagne\s*:\s*Acte II/).waitFor();
     await capture(p, 'cr-acte-ii-antor');
-    const crId = Number(new URL(p.url()).pathname.split('/').pop());
+    // B-101: the address is no longer the id: read the report's id by the API
+    const crId = ((await (await antor.request.get(`${srv.base}/api/univers/1/fiches?q=${encodeURIComponent('Répétition générale')}`)).json()) as { fiches: { titre: string; id: number }[] }).fiches.find((f) => f.titre === 'Répétition générale')?.id;
+    assert.ok(crId, 'compte-rendu créé');
     await p.close();
 
     const l = await ouvrir(lea, `/univers/1/fiche/${crId}`);
@@ -533,7 +535,7 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     await p.getByText(/Aventure : désactivé dans Lame d.Ébène\./).waitFor();
     await capture(p, 'type-desactive-parametres');
 
-    const types = p.waitForResponse((r) => r.url().includes('/api/univers/1/types') && r.request().method() === 'GET');
+    const types = p.waitForResponse((r) => /\/api\/univers\/[^/]+\/types$/.test(new URL(r.url()).pathname) && r.request().method() === 'GET');
     await p.goto(`/univers/1/fiche/${ids['La Couronne brisée']}`);
     await types;
     await declencheur(p, 'La Couronne brisée', 'En cours').waitFor();
@@ -566,7 +568,7 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     const g2 = p.getByRole('radiogroup', { name: 'Aventure' });
     await g2.getByRole('radio', { name: 'Activé', exact: true }).click();
     await p.getByText(/Aventure : activé dans Lame d.Ébène\./).waitFor();
-    const types2 = p.waitForResponse((r) => r.url().includes('/api/univers/1/types') && r.request().method() === 'GET');
+    const types2 = p.waitForResponse((r) => /\/api\/univers\/[^/]+\/types$/.test(new URL(r.url()).pathname) && r.request().method() === 'GET');
     await p.goto('/univers/1');
     await types2;
     await p.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link', { name: 'Aventures', exact: true }).waitFor();

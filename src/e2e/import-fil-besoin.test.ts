@@ -21,7 +21,7 @@
 //                               and named in the batch; the rest is written
 //   B-49 lots       nominal   : two batches on E-18, counters per nature, refusals unfolded with key and reason
 //                               bords     : empty states, « En cours », « Abandonné »
-//   B-50 clé        nominal   : « ⋯ » menu of E-9 « Importée · clé lieu:port-sel · créée le 3 mars 2021 »
+//   B-50 clé        nominal   : « ⋯ » menu of E-9 « Importée · créée le 3 mars 2021 »
 //                               exclusion : Léa never receives the key; a sheet made in Kanevas has no such line
 //   P-10 / critère  : the whole sequence of the critère de sortie, Léa reads « Description » and nothing of « Vérité »
 import assert from 'node:assert/strict';
@@ -304,7 +304,7 @@ test('B-45 / P-11 refus · Léa (Joueuse) lit « Page introuvable. » sur E-18 e
     await antor.page.getByRole('heading', { name: 'Accès par API', level: 1 }).waitFor();
     const t = await lire(antor.page);
     assert.match(t, /Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import\./);
-    assert.ok(t.includes(`/api/import/v1/univers/${m.essai}`), 'the base address');
+    assert.match(t, /\/api\/import\/v1\/univers\/[^\/\s]+/, 'the base address');
   } finally {
     await lea.ctx.close();
     await antor.ctx.close();
@@ -542,7 +542,7 @@ test('B-49 · E-18 d’un univers sans jeton ni lot : les deux textes vides', op
 
 // ---------------------------------------------------------------- B-50
 
-test('B-50 · le menu « ⋯ » de la fiche dit « Importée · clé lieu:port-sel · créée le 3 mars 2021 » au MJ', opts, async () => {
+test('B-50 · le menu « ⋯ » de la fiche dit « Importée · créée le 3 mars 2021 » au MJ', opts, async () => {
   const m = await monde();
   const jeton = await jetonPar(m, 'antor');
   const { reps } = await lotComplet(m, jeton, [['lieu:port-sel', PORT_SEL]]);
@@ -550,7 +550,7 @@ test('B-50 · le menu « ⋯ » de la fiche dit « Importée · clé lieu:port-s
   try {
     await ouvrirFiche(page, m, reps[0]!.json.id);
     await page.getByRole('button', { name: /Autres actions sur « Port-Sel »/ }).click();
-    await page.getByText(rx('Importée · clé lieu:port-sel · créée le 3 mars 2021')).first().waitFor();
+    await page.getByText(rx('Importée · créée le 3 mars 2021')).first().waitFor();
     await capture(page, 'b50-menu');
   } finally {
     await ctx.close();

@@ -268,7 +268,7 @@ async function importer() {
   const put = (cle: string, payload: unknown, lot?: number) =>
     m.app.inject({ method: 'PUT', url: `/api/import/v1/univers/${e.id}/fiches/${encodeURIComponent(cle)}${lot ? `?lot=${lot}` : ''}`, headers: auth, payload: payload as object });
   const ch = (cle: string) => {
-    const row = m.app.db.prepare('SELECT id, charge FROM fiches WHERE univers_id = ? AND cle_origine = ?').get(e.id, cle) as { id: number; charge: string };
+    const row = m.app.db.prepare('SELECT id, charge FROM fiches WHERE univers_id = ? AND cle = ?').get(e.id, cle) as { id: number; charge: string };
     return { id: row.id, charge: JSON.parse(row.charge) as Record<string, unknown> };
   };
   const mj = (fid: number, payload: object, mode = '') =>
@@ -294,7 +294,7 @@ test('import : disparu sur une quête → champ_inconnu, rien créé ; disparu n
   const r = await m.put('q:1', { type: 'quete', titre: 'Q', disparu: true, sections: [] });
   assert.equal(r.statusCode, 400, r.body);
   assert.match(JSON.stringify(r.json()), /champ_inconnu/);
-  assert.equal(m.app.db.prepare('SELECT COUNT(*) n FROM fiches WHERE cle_origine = ?').get('q:1')!.n ?? 0, 0);
+  assert.equal(m.app.db.prepare('SELECT COUNT(*) n FROM fiches WHERE cle = ?').get('q:1')!.n ?? 0, 0);
   const r2 = await m.put('q:2', { type: 'quete', titre: 'Q', disparu: false, sections: [] });
   assert.equal(r2.statusCode, 400, 'même false est un champ inconnu');
   const r3 = await m.put('p:2', { type: 'personnage', titre: 'P', disparu: 'oui', sections: [] });

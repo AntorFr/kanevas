@@ -16,6 +16,7 @@ import { MESSAGE_RESERVE, useAjoutFichier } from './fichiers';
 import { MESSAGES_PIECES } from './pieces';
 import { libelleDuType, iconeDeNom, marqueDe, typeParType, useTypes } from '../../types-contexte';
 import { TitreFiche } from './titre';
+import { CleFiche } from './cle-fiche';
 import { SupprimerFiche } from './supprimer';
 import { lignesDuType } from './lignes/registre';
 
@@ -299,7 +300,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                             <div className="info-fiche">
                               <Info size={14} strokeWidth={1.75} aria-hidden="true" />
                               <span>
-                                Importée · clé <code>{fiche.cleOrigine}</code> · créée le {dateLongue(fiche.creeLe)}
+                                Importée · créée le {dateLongue(fiche.creeLe)}
                               </span>
                             </div>
                           ),
@@ -315,6 +316,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
           {gestion && mjSeul.aide}
           <TitreFiche universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir}
             onDroitPerdu={droitFichePerdu} onIntrouvable={onIntrouvable} />
+          <CleFiche universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir} onDroitPerdu={droitFichePerdu} />
           {lignesDuType(fiche.type).map((l, i) => (
             <l.composant key={i} universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir} />
           ))}

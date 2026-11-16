@@ -21,7 +21,7 @@
 //                 not overwritten, batch warns; the rest of the payload is written.
 //  B-49           E-18 batches: « Fiches : 1 créée », « Fiches : 1 inchangée », refusals and warnings unfold with key and reason;
 //                 empty states; a refused PUT without batch leaves no trace.
-//  B-50           creeLe kept; E-9 menu « ⋯ » « Importée · clé lieu:port-sel · créée le 3 mars 2021 » for the MJ only;
+//  B-50           creeLe kept; E-9 menu « ⋯ » « Importée · créée le 3 mars 2021 » for the MJ only;
 //                 no menu for a fiche without key; the key is not in Léa's read.
 //  P-10 / critère Léa reads « Description » and nothing of « Vérité » (page, API, search).
 import assert from 'node:assert/strict';
@@ -210,7 +210,7 @@ describe('B-50 clé et date d’origine', () => {
       await menu.waitFor();
       const t = ((await menu.innerText()) as string).replace(/\s+/g, ' ').trim();
       // kanevas-types-ecran-fiche adds « Changer le type… », kanevas-recherche-e9 « Alias et étiquettes… »; the origin line stays.
-      assert.equal(t, 'Changer le type… Marquer détruit Déplacer sous… Alias et étiquettes… Importée · clé lieu:port-sel · créée le 3 mars 2021 Supprimer la fiche…');
+      assert.equal(t, 'Changer le type… Marquer détruit Déplacer sous… Alias et étiquettes… Importée · créée le 3 mars 2021 Supprimer la fiche…');
       await page.screenshot({ path: join(SHOTS, 'antor-menu-importee.png') });
       // a fiche without origin key: no « ⋯ » menu at all (this slice)
       await ctx.close();
@@ -299,7 +299,7 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
       await ouvrirE18(page, m);
       const t0 = await texte(page);
       assert.match(t0, /Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import\./);
-      assert.match(t0, new RegExp(`/api/import/v1/univers/${m.essai}`));
+      assert.match(t0, /\/api\/import\/v1\/univers\/[^\/\s]+/);
       await page.getByRole('button', { name: 'Nouveau jeton' }).click();
       const boite = page.getByRole('dialog', { name: 'Nouveau jeton' });
       await boite.waitFor();

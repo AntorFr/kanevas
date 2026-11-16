@@ -538,8 +538,8 @@ for (const [nom, adresse, message] of ECRANS_ETATS) {
 }
 
 for (const [nom, adresse, message, point] of [
-  ['E-4', '/univers/1/membres', /Impossible de charger les membres\./, '/api/univers/1/membres'],
-  ['E-9', '/univers/1/fiche/1', /Impossible de charger cette fiche\./, '/api/univers/1/fiches/1'],
+  ['E-4', '/univers/1/membres', /Impossible de charger les membres\./, '/api/univers/*/membres'],
+  ['E-9', '/univers/1/fiche/1', /Impossible de charger cette fiche\./, '/api/univers/*/fiches/*'],
 ] as Array<[string, string, RegExp, string]>) {
   test(`B-29 ${nom} · erreur de l’écran seul : le message, puis « Réessayer » rend le contenu`, opts, async () => {
     // Fails if the screen's own load error has no retry that recovers.
@@ -839,6 +839,8 @@ test('E-14 : l’enregistrement réussi est un toast « Enregistré. », pas un 
   const { ctx, page } = await session('antor');
   await page.goto('/univers/1/parametres');
   await attendre(page);
+  // E-14: « Enregistrer » is inactive while Nom, Identifiant and Description are unchanged
+  await page.getByLabel('Description').fill('Une description changée.');
   await page.getByRole('button', { name: /^Enregistrer/ }).first().click();
   await page.getByRole('status').filter({ hasText: 'Enregistré.' }).waitFor();
   await capture(page, 'e14-toast');

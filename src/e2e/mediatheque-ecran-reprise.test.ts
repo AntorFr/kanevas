@@ -75,7 +75,7 @@ test('une réponse 200 déjà en vol après « offline » ne lève pas le bandea
   await page.waitForLoadState('networkidle');
   let liberer: () => void = () => {};
   const porte = new Promise<void>((r) => (liberer = r));
-  await page.route(/\/api\/univers\/\d+\/fichiers/, async (route: Any) => {
+  await page.route(/\/api\/univers\/[^/]+\/fichiers/, async (route: Any) => {
     await porte;
     await route.fallback();
   });

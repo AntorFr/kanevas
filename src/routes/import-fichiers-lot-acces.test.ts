@@ -413,7 +413,7 @@ test('AD-111 limit > 100 joined files per section are accepted, 101 refused (400
   assert.equal(rap.compteurs.fiches.refusees, 1);
   assert.ok(rap.rapport.some((r: Any) => r.cle === 'lieu:trop' && r.gravite === 'refus'));
   assert.equal((await m.fiche(m.antor, cent.json().id)).json().sections[0].piecesJointes.length, 100);
-  assert.equal(m.nb("SELECT count(*) n FROM fiches WHERE cle_origine = 'lieu:trop'"), 0, 'the refused sheet was not written');
+  assert.equal(m.nb("SELECT count(*) n FROM fiches WHERE cle = 'lieu:trop'"), 0, 'the refused sheet was not written');
   assert.equal((await m.imp('GET', '')).json().limites.fichiersJointsParSection, 100);
 });
 

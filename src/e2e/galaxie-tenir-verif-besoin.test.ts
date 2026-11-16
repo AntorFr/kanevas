@@ -211,7 +211,7 @@ describe('E-21 en écriture : états, confirmations et conflits (vérification)'
     await hors(page, 'suppression-decompte-perime');
     assert.equal((await page.request.get(base(gid))).status(), 200, 'rien n’est effacé sur un décompte périmé');
     await dlg.getByRole('button', { name: 'Effacer la galaxie' }).click();
-    await page.waitForURL(new RegExp(`/univers/${univers}/cartes$`));
+    await page.waitForURL(new RegExp(`/univers/[^/]+/cartes$`));
     assert.equal((await page.request.get(base(gid))).status(), 404);
     await ctx.close();
   });

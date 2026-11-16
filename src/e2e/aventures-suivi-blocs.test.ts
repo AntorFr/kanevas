@@ -137,7 +137,7 @@ test('un CR de « Acte II » montre « Campagne : Acte II » à Antor et jamais 
 
 test('bloc en erreur : « Impossible de charger ce bloc. », fiche lisible, « Réessayer » ; « Ajouter » en échec garde la saisie', opts, async () => {
   const p = antor.page;
-  const route = `**/api/univers/${uid}/fiches/${couronne}/taches`;
+  const route = `**/api/univers/*/fiches/${couronne}/taches`;
   await p.route(route, (r: Any) => r.fulfill(KO));
   await p.goto(`/univers/${uid}/fiche/${couronne}`);
   await prep(p).getByText('Impossible de charger ce bloc.').waitFor();
@@ -164,7 +164,7 @@ test('bloc en erreur : « Impossible de charger ce bloc. », fiche lisible, « R
 
 test('bloc Comptes-rendus en erreur : isolé, et « Nouveau compte-rendu » en échec garde titre et texte', opts, async () => {
   const p = antor.page;
-  const route = `**/api/univers/${uid}/comptes-rendus*`;
+  const route = `**/api/univers/*/comptes-rendus*`;
   await p.route(route, (r: Any) => r.fulfill(KO));
   await p.goto(`/univers/${uid}/fiche/${couronne}`);
   await crs(p).getByText('Impossible de charger ce bloc.').waitFor();
@@ -173,7 +173,7 @@ test('bloc Comptes-rendus en erreur : isolé, et « Nouveau compte-rendu » en �
   await crs(p).getByRole('button', { name: 'Réessayer', exact: true }).click();
   await crs(p).getByRole('link', { name: /Séance 12/ }).waitFor();
 
-  await p.route(`**/api/univers/${uid}/comptes-rendus`, (r: Any) => (r.request().method() === 'POST' ? r.fulfill(KO) : r.continue()));
+  await p.route(`**/api/univers/*/comptes-rendus`, (r: Any) => (r.request().method() === 'POST' ? r.fulfill(KO) : r.continue()));
   await crs(p).getByRole('button', { name: 'Nouveau compte-rendu', exact: true }).click();
   const d = p.getByRole('dialog');
   await d.getByLabel('Titre', { exact: true }).fill('Brouillon conservé');
@@ -182,7 +182,7 @@ test('bloc Comptes-rendus en erreur : isolé, et « Nouveau compte-rendu » en �
   await d.getByRole('alert').waitFor();
   assert.equal(await d.getByLabel('Titre', { exact: true }).inputValue(), 'Brouillon conservé');
   assert.equal(await d.getByLabel('Texte').inputValue(), 'Ne pas perdre ce texte.');
-  await p.unroute(`**/api/univers/${uid}/comptes-rendus`);
+  await p.unroute(`**/api/univers/*/comptes-rendus`);
   await d.getByRole('button', { name: 'Annuler', exact: true }).click();
 });
 

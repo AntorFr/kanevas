@@ -18,6 +18,7 @@ import { illustrationEnAttente, lireLignes, lisiblePar, type FichierRow } from '
 import { supprimerFichier } from './stockage.js';
 import { IMAGE_RESERVEE } from './markdown.js';
 import { CHARGES, TYPES, STATUT_AVENTURE, estTypeFiche, porteMarqueDisparu, typeActif } from './types-fiche.js';
+import { tirerCleFiche } from './cles.js';
 import { ajouterSection, changerAudience } from './sections.js';
 import {
   TYPES_FICHE,
@@ -49,7 +50,8 @@ interface FicheRow {
   illustration_disque: string | null;
   illustration_visibilite: 'joueurs' | 'mj' | null;
   illustration_ajoute_par: number | null;
-  cle_origine: string | null;
+  cle: string;
+  creee_via: string;
   sous_type: string | null;
   parent_id: number | null;
   /** Read projection of the linked-list condition, never a stored column. */
@@ -70,8 +72,14 @@ export const visibiliteVue = (r: FicheRow): { visibleJoueurs?: boolean } =>
  * The sheet as a reader sees it. Without `lecteur` (the GM's own writes) the illustration is the file; with
  * one, a closed illustration is the « illustration fermée » state (AD-117, E-8, E-9), never its address.
  */
-export const versFiche = (r: FicheRow, lecteur?: (f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>) => boolean): Fiche => ({
+export const versFiche = (
+  r: FicheRow,
+  lecteur?: (f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>) => boolean,
+  /** The key goes to the GM outside player mode only; the GM's own writes (no `lecteur`) carry it. */
+  avecCle: boolean = lecteur === undefined,
+): Fiche => ({
   id: r.id,
+  ...(avecCle ? { cle: r.cle } : {}),
   universId: r.univers_id,
   type: r.type,
   titre: r.titre,
@@ -123,6 +131,11 @@ export function chargerFiche(db: Db, universId: number, ficheId: number, avecVis
   return row;
 }
 
+/** The sheet as the GM's own write returns it (AD-146: with its key), read after the write. */
+export function ficheEcrite(db: Db, universId: number, ficheId: number): Fiche {
+  return versFiche(chargerFiche(db, universId, ficheId));
+}
+
 function sectionsDe(db: Db, ficheId: number): SectionRow[] {
   return db
     .prepare('SELECT * FROM sections WHERE fiche_id = ? ORDER BY ordre')
@@ -147,6 +160,8 @@ export function creerFiche(
     sections?: { titre: string; joueursLisent?: boolean }[];
     /** Import only (B-50, AD-107): the origin key and dates of the sheet, and what the import wrote. */
     origine?: { cle: string; creeLe?: string; modifieLe?: string; dernierImport: unknown };
+    /** Where the sheet is created from (`creee_via`); the import is `import`, else `ecran` by default. */
+    via?: 'ecran' | 'assistant' | 'mcp';
   },
 ): Fiche {
   exigerMJ(db, universId, compteId);
@@ -180,8 +195,8 @@ export function creerFiche(
     const cree = o?.creeLe ?? now;
     const info = db
       .prepare(
-        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, dernier_import)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle, creee_via, dernier_import)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         universId,
@@ -190,7 +205,8 @@ export function creerFiche(
         JSON.stringify(charge.data),
         cree,
         o?.modifieLe ?? (cree > now ? cree : now),
-        o?.cle ?? null,
+        o?.cle ?? tirerCleFiche(db, universId, type, titre),
+        o ? 'import' : (entree.via ?? 'ecran'),
         o ? JSON.stringify(o.dernierImport) : null,
       );
     const id = Number(info.lastInsertRowid);
@@ -679,7 +695,7 @@ export function lireFiche(
   const lisibles = sectionsDe(db, ficheId).filter((s) => peutLireSection(role, s, acteur));
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
   const mentions = mentionsDe(db, role, acteur, universId, ficheId);
-  const vueFiche = versFiche(fiche, (f) => lisiblePar(role, acteur, f));
+  const vueFiche = versFiche(fiche, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur));
   // An illustration the import has not delivered yet: a tile for the GM outside player mode, nothing for anyone else.
   const attendue = vueFiche.illustration === null && vueMJ(role, acteur) ? illustrationEnAttente(db, ficheId) : null;
   // A report names its adventure only to a reader who reads it (AD-124 (4)): the id leaves `charge` for
@@ -699,7 +715,7 @@ export function lireFiche(
     mentionsRestantes: mentions.restantes,
     ...etiquetageDe(db, ficheId),
     // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
-    ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
+    ...(vueMJ(role, acteur) && fiche.creee_via === 'import' ? { cleOrigine: fiche.cle } : {}),
     sections: lisibles.map((s) => ({
       ...vueSection(db, universId, role, s, acteur, formeLiens),
       piecesJointes: lireLignes(db, acteur, universId, role, s.id),
@@ -974,7 +990,7 @@ export function listerFiches(
   const mots = options.recherche === undefined ? null : motsDe(options.recherche);
   const enrichie = (r: FicheRow): Fiche => {
     const e = etiquetageDe(db, r.id);
-    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f)), ...visibiliteVue(r), alias: e.alias, etiquettes: e.etiquettes };
+    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur)), ...visibiliteVue(r), alias: e.alias, etiquettes: e.etiquettes };
     if (r.lien_via) {
       const via = JSON.parse(r.lien_via) as { id: number; titre: string };
       if (via.id !== options.lie) f.via = via;

@@ -161,7 +161,9 @@ describe('E-12 assistant : droits d’écriture (B-26)', { skip: skipBrowser }, 
     assert.match(t, /Section « Notes de la table » complétée/);
     await m.antor.getByRole('link', { name: /^Ouvrir/ }).first().click();
     await attendre(m.antor);
-    assert.match(m.antor.url(), new RegExp(`/univers/${m.U}/fiche/${m.aldric}`));
+    // B-101: the address is the readable one once the sheet is loaded
+    await m.antor.getByRole('heading', { name: 'Maître Aldric', level: 1 }).waitFor();
+    assert.match(m.antor.url(), /\/univers\/[^/]+\/(fiche\/[^/]+|personnage\/[^/]+)$/);
   });
 });
 

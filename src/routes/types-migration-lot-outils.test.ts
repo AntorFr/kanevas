@@ -56,7 +56,7 @@ test('the sheets, sections, relations, map places and proposals are all there af
     assert.deepEqual(compter(), attendu);
     const app = await buildApp(); // the migrations run at startup
     assert.deepEqual(compter(), attendu);
-    const port = app.db.prepare('SELECT titre, type, illustration_fichier AS ill, cle_origine AS cle FROM fiches WHERE id = 1').get();
+    const port = app.db.prepare('SELECT titre, type, illustration_fichier AS ill, cle FROM fiches WHERE id = 1').get();
     assert.deepEqual(port, { titre: 'Port-Sel', type: 'lieu', ill: 'abc.png', cle: 'lieu:port-sel' });
     assert.deepEqual(app.db.prepare('PRAGMA foreign_key_check').all(), []);
   } finally {

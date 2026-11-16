@@ -187,7 +187,7 @@ export function catalogueDe(
         ({ type, titre, sousType, parentId }) => db.transaction(() => {
           // Match the sheet form's default for a character: an NPC (no generic payload parameter).
           const fiche = creerFiche(db, compteId, universId, {
-            type, titre, sousType, charge: type === 'personnage' ? { pj: false } : undefined,
+            type, titre, sousType, charge: type === 'personnage' ? { pj: false } : undefined, via: 'assistant',
           });
           if (parentId !== undefined) deplacerFiche(db, acteur, universId, fiche.id, parentId);
           return {

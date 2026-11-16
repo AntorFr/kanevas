@@ -126,7 +126,7 @@ test('B-62 critère : Antor crée une campagne puis un scénario dans E-12, « O
   await demander(antor, 'Crée une campagne « Les Cendres »');
   await panneau(antor).getByText('Fiche « Les Cendres » créée').waitFor();
   await panneau(antor).getByRole('link', { name: /^Ouvrir/ }).first().click();
-  await antor.waitForURL(/\/univers\/\d+\/fiche\/\d+$/);
+  await antor.waitForURL(/\/univers\/[^/]+\/fiche\/\d+$/);
   await antor.getByRole('heading', { name: 'Les Cendres' }).first().waitFor();
   await antor.getByText('En préparation').first().waitFor();
   await antor.screenshot({ path: '/tmp/captures-import-assistant-campagne.png' });
@@ -135,7 +135,7 @@ test('B-62 critère : Antor crée une campagne puis un scénario dans E-12, « O
   await demander(antor, 'Crée un scénario « Le Creuset » dans « Les Cendres »');
   await panneau(antor).getByText('Fiche « Le Creuset » créée').waitFor();
   await panneau(antor).getByRole('link', { name: /^Ouvrir/ }).last().click();
-  await antor.waitForURL(/\/univers\/\d+\/fiche\/\d+$/);
+  await antor.waitForURL(/\/univers\/[^/]+\/fiche\/\d+$/);
   await antor.getByRole('heading', { name: 'Le Creuset' }).first().waitFor();
   await antor.screenshot({ path: '/tmp/captures-import-assistant-scenario.png' });
 });

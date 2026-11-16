@@ -520,3 +520,15 @@ The doors written by this lot are in `src/routes/*-lot-ecrans.test.ts` (the shar
 | `src/e2e/theme-nulle-part-ailleurs.test.ts` | `le thème n’est réglable que depuis le menu de l’avatar, sur tous les écrans du MJ (${nom}) *(parameterised)*` | affichage | — | gardé |
 | `src/e2e/theme-nulle-part-ailleurs.test.ts` | `un Joueur règle le thème au même endroit et nulle part ailleurs` | affichage | — | gardé |
 | `src/e2e/theme-nulle-part-ailleurs.test.ts` | `choisir Sombre depuis le menu de l’avatar d’un écran s’applique à un autre écran` | affichage | — | gardé |
+| `src/e2e/adresses-lisibles.test.ts` | `kanevas-synchro-cles-adresses, adresses lisibles > un id numérique ouvre la fiche et l’adresse devient /univers/<u>/<type>/<nom> sans entrée d’historique` | affichage | — | gardé |
+| `src/e2e/adresses-lisibles.test.ts` | `kanevas-synchro-cles-adresses, adresses lisibles > l’adresse lisible s’ouvre telle quelle, et la forme /fiche/<clé> d’une clé de type est corrigée` | affichage | — | gardé |
+| `src/e2e/adresses-lisibles.test.ts` | `kanevas-synchro-cles-adresses, adresses lisibles > une clé hors des types s’ouvre et reste à /fiche/<clé> ; une clé sans « : » aussi` | affichage | — | gardé |
+| `src/e2e/adresses-lisibles.test.ts` | `kanevas-synchro-cles-adresses, adresses lisibles > une ancienne clé (PATCH {cle}) ouvre la fiche et l’adresse se corrige` | affichage | — | gardé |
+| `src/e2e/adresses-lisibles.test.ts` | `kanevas-synchro-cles-adresses, adresses lisibles > sur une adresse lisible de fiche, la barre latérale marque le type de la fiche comme item courant (et lui seul)` | affichage | — | gardé |
+| `src/e2e/adresses-lisibles.test.ts` | `kanevas-synchro-cles-adresses, adresses lisibles > clé inconnue : « Page introuvable. », adresse inchangée` | affichage | — | gardé |
+| `src/e2e/adresses-lisibles.test.ts` | `kanevas-synchro-cles-adresses, adresses lisibles > un joueur ouvert en navigation interne garde l’adresse numérique (son corps n’a pas de clé)` | affichage | — | gardé |
+| `src/e2e/adresses-lisibles.test.ts` | `kanevas-synchro-cles-adresses, adresses lisibles > les liens de la barre latérale portent la clé de l’univers (clair 1280, sombre 390)` | affichage | — | gardé |
+| `src/e2e/cle-fiche-identifiant.test.ts` | `kanevas-synchro-cles-champs, clé de fiche et identifiant > le MJ change la clé : adresse remplacée, « Enregistré. », ancienne clé ouvre encore ; inchangé = Enregistrer inactif` | affichage | — | gardé |
+| `src/e2e/cle-fiche-identifiant.test.ts` | `kanevas-synchro-cles-champs, clé de fiche et identifiant > clé prise et clé sans lettre : message sous le champ, saisie et focus gardés, rien d’écrit` | affichage | — | gardé |
+| `src/e2e/cle-fiche-identifiant.test.ts` | `kanevas-synchro-cles-champs, clé de fiche et identifiant > une joueuse ne voit pas le bloc ; le MJ en mode Joueur non plus` | affichage | — | gardé |
+| `src/e2e/cle-fiche-identifiant.test.ts` | `kanevas-synchro-cles-champs, clé de fiche et identifiant > E-14 : identifiant prérempli, refus (forme, pris) sans rien enregistrer, puis changement : adresse remplacée, ancien mène encore` | affichage | — | gardé |

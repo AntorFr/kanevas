@@ -74,7 +74,7 @@ describe('kanevas-cartes-graphes, critère de sortie au navigateur', { skip: ski
     await form.getByLabel('Titre', { exact: true }).fill('La ville de Brume');
     await form.locator('input[type=file]').setInputFiles({ name: 'brume.png', mimeType: 'image/png', buffer: PAYSAGE });
     await antor.getByRole('button', { name: rxExact('Créer') }).click();
-    await antor.waitForURL(new RegExp(`/univers/${U}/cartes/\\d+$`));
+    await antor.waitForURL(new RegExp(`/univers/[^/]+/cartes/\\d+$`));
     await antor.getByRole('heading', { name: 'La ville de Brume', level: 1 }).waitFor();
     await attendre(antor);
     carte = Number(antor.url().split('/').pop());
@@ -186,7 +186,7 @@ describe('kanevas-cartes-graphes, critère de sortie au navigateur', { skip: ski
     await form.getByLabel('Titre', { exact: true }).fill('Les factions');
     await form.getByRole('combobox', { name: rx('Forme') }).selectOption({ label: 'Graphe' });
     await antor.getByRole('button', { name: rxExact('Créer') }).click();
-    await antor.waitForURL(new RegExp(`/univers/${U}/cartes/\\d+$`));
+    await antor.waitForURL(new RegExp(`/univers/[^/]+/cartes/\\d+$`));
     graphe = Number(antor.url().split('/').pop());
     await attendre(antor);
     for (const titre of ['Les Corbeaux', 'La Guilde', 'Les Ombres de Fer']) {

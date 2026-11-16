@@ -160,7 +160,7 @@ function compterParentsEnAttente(db: Db, universId: number): number {
         WHERE f.univers_id = ? AND json_extract(f.dernier_import, '$.parent.demande') IS NOT NULL
           AND f.parent_id IS json_extract(f.dernier_import, '$.parent.ecrit')
           AND NOT EXISTS (SELECT 1 FROM fiches p WHERE p.id = f.parent_id
-                            AND p.cle_origine = json_extract(f.dernier_import, '$.parent.demande'))`,
+                            AND p.cle = json_extract(f.dernier_import, '$.parent.demande'))`,
     )
     .get(universId) as { n: number };
   return n;
