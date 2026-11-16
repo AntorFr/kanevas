@@ -230,7 +230,9 @@ test('exclusion : le build de production n\'embarque ni page d\'essai ni .wasm d
       .filter((e) => e.isFile())
       .map((e) => join(e.parentPath, e.name));
   const publics = tous(join(RACINE, 'dist/public'));
-  assert.deepEqual(publics.filter((f) => f.endsWith('.wasm')), []);
+  // Le navigateur charge le cœur de la battle map (AD-rust-2, AD-battlemap-editeur-1) : Vite émet le .wasm des modules de la table de
+  // `frontend/src/wasm/charger.ts` (le cœur, et l'exemple qui y est listé). Aucun autre .wasm ne part dans dist/public.
+  assert.deepEqual(publics.filter((f) => f.endsWith('.wasm') && !/[/\\](battlemap_core|exemple)_bg-[^/\\]+\.wasm$/.test(f)), []);
   assert.deepEqual(publics.filter((f) => /essai/i.test(f)), []);
   assert.deepEqual(tous(join(RACINE, 'dist')).filter((f) => /\.rs$|Cargo\.(toml|lock)$/.test(f)), []);
 });
