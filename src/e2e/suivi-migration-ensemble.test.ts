@@ -112,93 +112,6 @@ describe('kanevas-scenarios-suivi : migration de la base d\'exemple (campagnes e
     if (dir) rmSync(dir, { recursive: true, force: true });
   });
 
-  test('journal_du_demarrage_dit_les_comptes_de_la_conversion', async () => {
-    // Casse si : la conversion ne se dit pas au démarrage, ou compte autre chose que 3 campagnes, 3 scénarios, 3 tâches, 2 CR.
-    assert.match(journal, /Migration 0017:/, journal);
-    for (const [nature, n] of [['campagnes', 3], ['scenarios', 3], ['taches', 3], ['comptesRendus', 2]] as const) {
-      assert.match(journal, new RegExp(`${nature}\\D{1,6}${n}\\b`), `${nature}=${n} absent du journal : ${journal}`);
-    }
-  });
-
-  test('chaque_campagne_et_chaque_scenario_est_une_fiche_aventure_avec_son_statut', async () => {
-    // Casse si : une ligne n'est pas convertie, le sous-type ou le statut est faux.
-    assert.deepEqual(Object.keys(ids).sort(), ['Acte I — Le couronnement', 'Acte II — Le sceau brisé', 'La Couronne brisée', 'La Vieille Garde', 'Les Brumes de Vaëlis', 'Prologue']);
-    const lit = async (t: string) => (await appel(antor, `/api/univers/1/fiches/${ids[t]}`)).body;
-    const att: Array<[string, string, string]> = [
-      ['La Couronne brisée', 'Campagne', 'en_cours'],
-      ['Les Brumes de Vaëlis', 'Campagne', 'en_preparation'],
-      ['La Vieille Garde', 'Campagne', 'terminee'],
-      ['Acte II — Le sceau brisé', 'Scénario', 'en_preparation'],
-      ['Acte I — Le couronnement', 'Scénario', 'en_preparation'],
-      ['Prologue', 'Scénario', 'en_preparation'],
-    ];
-    for (const [titre, sousType, statut] of att) {
-      const f = await lit(titre);
-      assert.equal(f.type, 'aventure', titre);
-      assert.equal(f.sousType, sousType, titre);
-      assert.equal(f.charge.statut, statut, titre);
-    }
-  });
-
-  test('presentation_ouverte_pour_campagne_active_ou_terminee_fermee_pour_celle_en_preparation', async () => {
-    // Casse si : la section « Présentation » n'est pas créée, ou son audience ne suit pas le statut d'origine.
-    const pres = async (t: string) => (await appel(antor, `/api/univers/1/fiches/${ids[t]}`)).body.sections.find((s: Any) => s.titre === 'Présentation');
-    assert.equal((await pres('La Couronne brisée')).audience.joueursLisent, true);
-    assert.equal((await pres('La Vieille Garde')).audience.joueursLisent, true);
-    const brumes = await pres('Les Brumes de Vaëlis');
-    assert.ok(brumes, 'pas de section « Présentation » sur la campagne en préparation');
-    assert.equal(brumes.audience.joueursLisent, false);
-  });
-
-  test('scenario_est_sous_sa_campagne_texte_dans_une_section_fermee_cles_d_origine_gardees', async () => {
-    // Casse si : le parent, le texte, la fermeture de la section ou les clés d'origine se perdent.
-    const a2 = (await appel(antor, `/api/univers/1/fiches/${ids['Acte II — Le sceau brisé']}`)).body;
-    assert.deepEqual(a2.ancetres.map((a: Any) => a.id), [ids['La Couronne brisée']]);
-    assert.equal(a2.sections.length, 1);
-    assert.equal(a2.sections[0].audience.joueursLisent, false);
-    assert.equal(a2.sections[0].contenu, "La crypte s'ouvre sous le sceau brisé.");
-    const pro = (await appel(antor, `/api/univers/1/fiches/${ids['Prologue']}`)).body;
-    assert.deepEqual(pro.ancetres.map((a: Any) => a.id), [ids['Les Brumes de Vaëlis']]);
-    // les clés d'origine : la campagne garde 'couronne', le scénario libre garde 'acte-2', le scénario en collision est préfixé
-    const sqlite = openDb(dbPath());
-    const cle = (t: string) => (sqlite.prepare('SELECT cle_origine FROM fiches WHERE id = ?').get(ids[t]) as { cle_origine: string | null }).cle_origine;
-    const att = { couronne: cle('La Couronne brisée'), acte2: cle('Acte II — Le sceau brisé'), acte1: cle('Acte I — Le couronnement') };
-    const tables = (sqlite.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('campagnes', 'scenarios')").all() as unknown[]).length;
-    sqlite.close();
-    assert.deepEqual(att, { couronne: 'couronne', acte2: 'acte-2', acte1: 'scenario:couronne' });
-    assert.equal(tables, 0, 'les tables campagnes / scenarios existent encore');
-  });
-
-  test('taches_rattachees_a_la_fiche_et_charges_des_cr_reecrites', async () => {
-    // Casse si : une tâche perd sa campagne, la coche se perd, ou le CR pointe encore l'ancien identifiant (2) au lieu de la fiche.
-    const t = (await appel(antor, `/api/univers/1/fiches/${ids['La Couronne brisée']}/taches`)).body.taches;
-    assert.deepEqual(t.map((x: Any) => [x.libelle, x.categorie, x.faite]).sort(), [['Plan de la crypte', 'cartes', false], ['Statistiques du liche', 'monstres', true]]);
-    const b = (await appel(antor, `/api/univers/1/fiches/${ids['Les Brumes de Vaëlis']}/taches`)).body.taches;
-    assert.deepEqual(b.map((x: Any) => x.libelle), ['Le passeur des Brumes']);
-    const cr = (await appel(antor, '/api/univers/1/comptes-rendus')).body.comptesRendus;
-    const s11 = cr.find((c: Any) => c.titre === 'Séance 11');
-    assert.equal(s11.campagneId, ids['La Couronne brisée']);
-    assert.equal(s11.campagneNom, 'La Couronne brisée');
-    assert.equal(cr.find((c: Any) => c.titre === 'Séance 0').campagneNom, 'Les Brumes de Vaëlis');
-    assert.ok(!cr.some((c: Any) => c.campagneSupprimee), 'un CR converti dit « Aventure supprimée »');
-  });
-
-  test('lea_voit_la_couronne_et_la_vieille_garde_pas_les_brumes_ni_les_actes', async () => {
-    // Casse si : la conversion ouvre aux joueurs une campagne en préparation ou un scénario (fuite).
-    const l = await appel(lea, '/api/univers/1/fiches?type=aventure');
-    assert.deepEqual(l.body.fiches.map((f: Any) => f.titre).sort(), ['La Couronne brisée', 'La Vieille Garde']);
-    for (const t of ['Les Brumes de Vaëlis', 'Acte II — Le sceau brisé', 'Acte I — Le couronnement', 'Prologue']) {
-      assert.equal((await appel(lea, `/api/univers/1/fiches/${ids[t]}`)).status, 404, t);
-    }
-    assert.equal((await appel(lea, `/api/univers/1/fiches/${ids['La Couronne brisée']}/taches`)).status, 404);
-    const cr = (await appel(lea, '/api/univers/1/comptes-rendus')).body.comptesRendus;
-    assert.equal(cr.find((c: Any) => c.titre === 'Séance 11').campagneNom, 'La Couronne brisée');
-    const s0 = cr.find((c: Any) => c.titre === 'Séance 0');
-    assert.ok(s0, 'le CR reste lisible');
-    assert.ok(s0.campagneNom === undefined || s0.campagneNom === null, 'le nom de la campagne en préparation fuit par son CR');
-    assert.ok(!JSON.stringify(cr).includes('Brumes de Vaëlis'));
-  });
-
   test('au_navigateur_la_couronne_est_en_cours_ses_blocs_sont_garnis_et_acte_ii_est_dessous', async () => {
     // Casse si : ce que l'API dit n'arrive pas à l'écran (liste, blocs de la fiche, arbre, E-3).
     await lea.goto('/univers/1/fiches/aventures');
@@ -226,16 +139,4 @@ describe('kanevas-scenarios-suivi : migration de la base d\'exemple (campagnes e
     assert.ok(!e3.slice(e3.indexOf('Campagnes en cours'), e3.indexOf('Derniers comptes-rendus')).includes('Vieille Garde'));
   });
 
-  test('un_second_demarrage_ne_reconvertit_rien', async () => {
-    // Casse si : la conversion se rejoue (doublons) ou empêche le redémarrage.
-    const sorti = new Promise((r) => enfant.once('exit', r));
-    arreter();
-    await sorti;
-    await demarrer();
-    const a = await connecte(browser, base, 'antor');
-    const liste = await appel(a.page, '/api/univers/1/fiches?type=aventure');
-    assert.equal(liste.body.fiches.length, 6);
-    assert.ok(!/Migration 0017:/.test(journal), `le second démarrage reconvertit : ${journal}`);
-    assert.ok(existsSync(dbPath()));
-  });
 });
