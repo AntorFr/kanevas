@@ -1,10 +1,12 @@
+// Door of lot « acces » for `src/e2e/connexion-cause-besoin.test.ts` (moved as it was: it never drove a browser).
 // Black-box tests of `kanevas-tests-attestes-pod`, Claude connection: whatever the program behind « Connecter » does
 // wrong, the route answers the same 502 `connexion_impossible` as before, nothing of the program's output reaches the
 // client, and the service keeps the cause of its last failure. The app is the real one (stub login, real routes).
 import assert from 'node:assert/strict';
 import { after, describe, it } from 'node:test';
 
-import { type Any } from './harnais.test.ts';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Any = any;
 
 process.env.NODE_ENV = 'test';
 process.env.KANEVAS_STUB = '1';
