@@ -25,8 +25,9 @@ async function connecter(app: App, compte: string): Promise<Hote> {
   return { cookie: `kanevas_session=${c.value}` };
 }
 
-export async function monter() {
+export async function monter(opts: { semis?: boolean } = {}) {
   const app = await buildApp();
+  if (opts.semis) assert.ok((await import('../bouchon/depart.js')).semerBouchon(app.db), 'the starting world is seeded');
   const antor = await connecter(app, 'antor');
   const lea = await connecter(app, 'lea');
   const teo = await connecter(app, 'teo');
