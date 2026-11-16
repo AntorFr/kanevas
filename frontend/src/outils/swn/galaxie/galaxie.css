@@ -162,29 +162,29 @@
 }
 
 /* E-23, the canvas (AD-carte-3). The sky is dark in both themes; everything on it reads `--ciel*`. */
-.gx-carte { display: flex; flex-direction: column; gap: var(--e-2); }
-.gx-carte-controles { display: flex; align-items: center; gap: var(--e-4); flex-wrap: wrap; }
-.gx-carte-boutons { margin-left: auto; display: inline-flex; gap: var(--e-1); }
-.gx-ciel {
+.cs-carte { display: flex; flex-direction: column; gap: var(--e-2); }
+.cs-controles { display: flex; align-items: center; gap: var(--e-4); flex-wrap: wrap; }
+.cs-boutons { margin-left: auto; display: inline-flex; gap: var(--e-1); }
+.cs-ciel {
   position: relative; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
   width: 100%; height: clamp(320px, 62vw, 560px); border: 1px solid var(--bord); border-radius: var(--rayon-panneau);
   background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--ciel), var(--accent) 12%), var(--ciel) 70%);
   color: var(--texte); font-size: var(--t-12); cursor: grab;
 }
-.gx-ciel:active { cursor: grabbing; }
-.gx-ciel-etat { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--texte-2); }
-.gx-ciel-traits, .gx-ciel-toile { position: absolute; left: 0; top: 0; pointer-events: none; }
-.gx-orbite { fill: none; stroke: var(--ciel-trait); stroke-width: 1; }
-.gx-heure line { stroke: var(--ciel-trait); stroke-width: 1; opacity: .35; }
-.gx-heure text { fill: var(--texte-3); font-size: var(--t-12); }
-.gx-transition { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 6; stroke-linecap: round; }
-.gx-corps { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; border: 0; padding: 0; background: transparent; cursor: pointer; }
-.gx-corps:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.gx-sortie { position: absolute; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 50%; padding: 0; cursor: pointer;
+.cs-ciel:active { cursor: grabbing; }
+.cs-etat { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--texte-2); }
+.cs-traits, .cs-toile { position: absolute; left: 0; top: 0; pointer-events: none; }
+.cs-orbite { fill: none; stroke: var(--ciel-trait); stroke-width: 1; }
+.cs-heure line { stroke: var(--ciel-trait); stroke-width: 1; opacity: .35; }
+.cs-heure text { fill: var(--texte-3); font-size: var(--t-12); }
+.cs-transition { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 6; stroke-linecap: round; }
+.cs-corps { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; border: 0; padding: 0; background: transparent; cursor: pointer; }
+.cs-corps:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.cs-sortie { position: absolute; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 50%; padding: 0; cursor: pointer;
   border: 2px solid var(--accent); background: var(--ciel); }
-.gx-sortie::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--accent); }
-.gx-sortie:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.gx-etiquette { position: absolute; white-space: nowrap; pointer-events: none; line-height: 15px; color: var(--texte);
+.cs-sortie::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--accent); }
+.cs-sortie:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.cs-etiquette { position: absolute; white-space: nowrap; pointer-events: none; line-height: 15px; color: var(--texte);
   text-shadow: 0 0 4px var(--ciel-halo), 0 0 8px var(--ciel-halo); }
-.gx-etiquette.zone { color: var(--texte-2); font-style: italic; }
-.gx-etiquette.sortie { color: var(--accent); }
+.cs-etiquette.zone { color: var(--texte-2); font-style: italic; }
+.cs-etiquette.sortie { color: var(--accent); }

@@ -202,7 +202,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
         if (x + cote < 0 || y + cote < 0 || x - cote > taille.w || y - cote > taille.h) continue;
         for (const { image: im, alpha } of sprites.current?.couches(c.cle, coteDemande(cote, dpr), maintenant) ?? []) {
           g.globalAlpha = alpha;
-          g.drawImage(im, x - cote / 2, y - cote / 2, cote, cote);
+          g.drawImage(im, x - cote / 2 + c.decalage[0] * cote, y - cote / 2 + c.decalage[1] * cote, cote, cote);
         }
         g.globalAlpha = 1;
         if (c.cle === selection) {
@@ -301,11 +301,11 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   const [ccx, ccy] = ecran(0, 0);
 
   return (
-    <div className="gx-carte">
-      <div className="gx-carte-controles">
+    <div className="cs-carte">
+      <div className="cs-controles">
         <Case etiquette="orbites" checked={orbites} onChange={(e) => setOrbites(e.target.checked)} />
         <Case etiquette="heures" checked={heures} onChange={(e) => setHeures(e.target.checked)} />
-        <span className="gx-carte-boutons">
+        <span className="cs-boutons">
           <BoutonIcone etiquette="Zoom avant (+)" infobulle="+" icone={Plus} onClick={() => zoomer(PAS)} />
           <BoutonIcone etiquette="Zoom arrière (−)" infobulle="−" icone={Minus} onClick={() => zoomer(1 / PAS)} />
           <BoutonIcone etiquette="Recentrer" icone={ScanSearch} onClick={recentrer} />
@@ -313,7 +313,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
       </div>
       <div
         ref={racine}
-        className="gx-ciel"
+        className="cs-ciel"
         role="application"
         aria-label="Carte du système"
         aria-describedby="gx-liste-corps"
@@ -324,41 +324,41 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
         onPointerUp={leve}
         onPointerCancel={leve}
       >
-        {etat === 'chargement' && <p className="gx-ciel-etat" role="status">Chargement du système…</p>}
+        {etat === 'chargement' && <p className="cs-etat" role="status">Chargement du système…</p>}
         {dispo && taille.w > 0 && (
           <>
-            <svg className="gx-ciel-traits" width={taille.w} height={taille.h} aria-hidden="true">
+            <svg className="cs-traits" width={taille.w} height={taille.h} aria-hidden="true">
               {orbites && orbitesTracees.map((o) => (
-                <circle key={o} className="gx-orbite" cx={ccx} cy={ccy} r={rayonOrbite(o) * echelle} />
+                <circle key={o} className="cs-orbite" cx={ccx} cy={ccy} r={rayonOrbite(o) * echelle} />
               ))}
               {heures && Array.from({ length: 12 }, (_, h) => {
                 const [x1, y1] = pointHeure(h, 0);
                 const [x2, y2] = pointHeure(h, rayonHeures);
                 const [tx, ty] = pointHeure(h, rayonHeures + 14 / Math.max(echelle, 0.01));
                 return (
-                  <g key={h} className="gx-heure" data-heure={h}>
+                  <g key={h} className="cs-heure" data-heure={h}>
                     <line x1={x1} y1={y1} x2={x2} y2={y2} />
                     {h % 3 === 0 && <text x={tx} y={ty} textAnchor="middle" dominantBaseline="middle">{h === 0 ? 12 : h} h</text>}
                   </g>
                 );
               })}
-              {dispo.transition > 0 && <circle className="gx-transition" cx={ccx} cy={ccy} r={dispo.transition * echelle} />}
+              {dispo.transition > 0 && <circle className="cs-transition" cx={ccx} cy={ccy} r={dispo.transition * echelle} />}
             </svg>
-            <canvas ref={toile} className="gx-ciel-toile" aria-hidden="true"
+            <canvas ref={toile} className="cs-toile" aria-hidden="true"
               width={Math.round(taille.w * dpr)} height={Math.round(taille.h * dpr)} style={{ width: taille.w, height: taille.h }} />
             {dispo.corps.map((c) => <BoutonCorps key={c.cle} c={c} ecran={ecran} echelle={echelle} choisi={c.cle === selection} onChoisir={() => onSelection(c.cle)} />)}
             {cibles.sorties.map((s) => (
               <button
                 key={`${s.q},${s.r}`}
                 type="button"
-                className="gx-sortie"
+                className="cs-sortie"
                 style={{ left: s.x, top: s.y }}
                 aria-label={`Aller au système ${s.nom}`}
                 onClick={() => navigate(`${adresseVoisin}${s.q}/${s.r}${suffixe}`)}
               />
             ))}
             {etiquettes.filter((e) => e.visible).map((e) => (
-              <span key={e.cle} className={`gx-etiquette${e.cle.startsWith('zone:') ? ' zone' : e.cle.startsWith('sortie:') ? ' sortie' : ''}`}
+              <span key={e.cle} className={`cs-etiquette${e.cle.startsWith('zone:') ? ' zone' : e.cle.startsWith('sortie:') ? ' sortie' : ''}`}
                 data-cle={e.cle} style={{ left: e.x, top: e.y }}>{e.texte}</span>
             ))}
           </>
@@ -376,7 +376,7 @@ function BoutonCorps({ c, ecran, echelle, choisi, onChoisir }: {
   return (
     <button
       type="button"
-      className="gx-corps"
+      className="cs-corps"
       data-cle={c.cle}
       aria-pressed={choisi}
       aria-label={`${nomAstre(c.astre)}, ${typeAstre(c.astre)}, ${placeAstre(c.astre)}`}

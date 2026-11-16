@@ -91,4 +91,4 @@
 }
 @media (prefers-reduced-motion: reduce) { :root { --duree: 0ms; } }
 /* Whatever sits on the sky reads the dark theme's text and accent, in either theme (the sky is dark in both). */
-.gx-ciel { --texte: #ebecf0; --texte-2: #a6a7b0; --texte-3: #8b8c97; --accent: #8b9bf0; --focus: #9aa6f5; }
+.cs-ciel { --texte: #ebecf0; --texte-2: #a6a7b0; --texte-3: #8b8c97; --accent: #8b9bf0; --focus: #9aa6f5; }

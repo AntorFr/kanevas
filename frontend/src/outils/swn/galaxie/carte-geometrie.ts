@@ -20,9 +20,16 @@ export const rayonCorps = (a: Pick<AstreSysteme, 'taille' | 'genre'>): number =>
 /** Part of the half-side of a sprite that the disc of its family takes (see the renderer): the rest is atmosphere or corona. */
 function fraction(a: AstreSysteme): number {
   if (a.genre === 'etoile') return 0.4;
-  if (a.genre === 'comete') return 0.3;
+  if (a.genre === 'comete') return 0.35;
   if (a.type === 'anomalie' || a.type === 'nebuleuse' || a.type === 'ceinture' || a.type === 'asteroides') return 0.8;
   return 0.78;
+}
+
+/** The head of a comet sits at (±0.3, −0.22) of its picture (the renderer): the sprite is shifted so the head is on the body. */
+function decalageDe(a: AstreSysteme): [number, number] {
+  if (a.genre !== 'comete') return [0, 0];
+  const sens = typeof a.aspect?.sens === 'number' && a.aspect.sens < 0 ? -1 : 1;
+  return [-sens * 0.3, 0.22];
 }
 
 /** A body placed in the world. `cote` is the side of its sprite in world pixels. */
@@ -30,6 +37,8 @@ export interface CorpsPlace {
   cle: string; genre: GenreCorps; nom: string | null; astre: AstreSysteme; x: number; y: number; rayon: number; cote: number;
   /** The aspect JSON `dessiner` takes (the same object the illustration route draws, AD-carte-2). */
   aspect: string;
+  /** Shift of the sprite from the body's centre, as a fraction of its side (a comet's head is not at the middle of its picture). */
+  decalage: [number, number];
 }
 
 export interface ZonePlacee {
@@ -54,7 +63,7 @@ export function disposer(s: InterieurSysteme, plan: Plan): Disposition {
   const parCle = new Map<string, CorpsPlace>();
   const place = (a: AstreSysteme, x: number, y: number) => {
     const rayon = rayonCorps(a);
-    const c: CorpsPlace = { cle: a.cle, genre: genreDe(a), nom: a.nom, astre: a, x, y, rayon, cote: (rayon * 2) / fraction(a), aspect: aspectDe(a) };
+    const c: CorpsPlace = { cle: a.cle, genre: genreDe(a), nom: a.nom, astre: a, x, y, rayon, cote: (rayon * 2) / fraction(a), aspect: aspectDe(a), decalage: decalageDe(a) };
     corps.push(c);
     parCle.set(a.cle, c);
   };
