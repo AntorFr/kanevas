@@ -1,9 +1,25 @@
 // Pure logic shared by `tests-attestes.mjs` (levels of the suite) and `rejouer-tests.mjs`
 // (replay of named tests). Plain .mjs: `node scripts/rejouer-tests.mjs` runs without tsx.
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
-import ts from 'typescript';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
+
+// Found by walking up from this file, then required by absolute path: a bare `require('typescript')` reads the
+// nearest package.json, and one under edit (even broken) must not stop the choice.
+function chargerTypeScript() {
+  const require = createRequire(import.meta.url);
+  let dir = dirname(fileURLToPath(import.meta.url));
+  for (;;) {
+    const candidat = join(dir, 'node_modules', 'typescript', 'lib', 'typescript.js');
+    if (existsSync(candidat)) return createRequire(candidat)(candidat); // parent = typescript itself, not this repository
+    const haut = dirname(dir);
+    if (haut === dir) return require('typescript');
+    dir = haut;
+  }
+}
+const ts = chargerTypeScript();
 
 const SEP = ' > ';
 
