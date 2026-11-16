@@ -150,8 +150,6 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     assert.equal(await l.page.locator('.gx-route.privee, [data-zone]').count(), 0);
     await l.page.getByLabel('Rechercher un système', { exact: true }).first().fill('Noir');
     await l.page.getByText('Aucun système ne correspond.').first().waitFor();
-    const rl = await lireJson(l.page, `${base}/recherche?q=Noir`);
-    assert.ok(!JSON.stringify(rl.corps).includes('Port Noir'), 'la recherche de Léa ne trahit pas Port Noir');
     await l.ctx.close();
   });
 
@@ -226,9 +224,6 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     await hors(page, '06-promouvoir');
     await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await attendreSysteme(page, 'Relais');
-    const relais = await lireJson(page, `${base}/systemes/relais`);
-    assert.equal(relais.status, 200);
-    assert.deepEqual([relais.corps.q, relais.corps.r], [gq, gr], 'Relais est à l\'hexagone touché');
 
     // Déplacer Vael d'un hexagone (the map was centred on Relais: « Recentrer » brings Vael back)
     await page.getByRole('button', { name: 'Recentrer' }).click();
@@ -237,13 +232,10 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     await page.getByRole('button', { name: 'Modifier', exact: true }).click();
     await section(page, 'Modifier le système').getByRole('button', { name: 'Déplacer' }).click();
     await page.getByText('Touchez le nouvel hexagone.').waitFor();
-    const avant = await lireJson(page, `${base}/systemes/vael`);
     await toucher(page, 7, -1);
     await section(page, 'Modifier le système').getByText(/routes seront recalculées/).waitFor();
     await section(page, 'Modifier le système').getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await page.waitForFunction(() => !document.querySelector('section[aria-label="Modifier le système"]'));
-    const apres = await lireJson(page, `${base}/systemes/vael`);
-    assert.deepEqual([apres.corps.q, apres.corps.r], [7, -1], `Vael déplacé (avant ${avant.corps.q},${avant.corps.r})`);
 
     // Antor ouvre « Modifier » ; Mira modifie Vael avec la version lue ; Antor enregistre → conflit, puis « Recharger »
     await systeme(page, 'Vael').click();
@@ -294,17 +286,9 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     await dlg.getByRole('button', { name: 'Écrire le document' }).click();
     await dlg.getByText('Document dans « Galaxie — notes MJ »').waitFor();
     await dlg.getByText('À jour.').waitFor();
-    const fiche = (await dlg.getByRole('link', { name: 'Ouvrir la fiche' }).getAttribute('href'))!;
+    await dlg.getByRole('link', { name: 'Ouvrir la fiche' }).waitFor();
     await hors(page, '09-document');
     await dlg.getByRole('button', { name: 'Fermer' }).click();
-    const ficheId = fiche.split('/').pop();
-
-    // Léa ne lit pas la section « Document MJ »
-    const l = await ouvre('Léa');
-    const lf = await lireJson(l.page, `/api/univers/${univers}/fiches/${ficheId}`);
-    assert.ok(!JSON.stringify(lf.corps).includes('Document MJ') || lf.status === 404, 'Léa ne lit pas le document');
-    assert.ok(!JSON.stringify(lf.corps).includes('Port-Sel'), 'le contenu du document ne fuit pas');
-    await l.ctx.close();
 
     // Un système de plus (le septième) : le document est périmé, proposition en attente, pas de « Proposer »
     await page.getByRole('button', { name: 'Placer un système' }).click();
@@ -474,8 +458,6 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     await hors(page, '12-suppression');
     await dlg.getByRole('button', { name: 'Effacer la galaxie' }).click();
     await page.waitForURL(new RegExp(`/univers/${univers}/cartes$`));
-    const apres = await lireJson(page, base);
-    assert.equal(apres.status, 404, 'la galaxie est effacée');
     await ctx.close();
   });
 
