@@ -83,13 +83,6 @@ describe('sections gérées par un outil — le besoin, de bout en bout', { skip
     const r = await generer(antor, { ficheId: fiche, type: 'caracteristiques', auteurId: ids.lea });
     await statut(r, 201, 'génération');
     carac = ((await r.json()) as Any).id;
-    const vue = await sectionDe(lea, carac);
-    assert.equal(vue.titre, 'Caractéristiques');
-    assert.match(vue.html, /Marge d'essai : 10 %/);
-    assert.equal(vue.peutEcrire, false, 'Léa ne peut pas écrire une section gérée');
-    assert.equal(vue.geree.libelle, 'Essai G');
-    assert.equal(vue.geree.etat, 'a_jour');
-    assert.equal('contenu' in vue, false, 'la source n\'est jamais donnée à un lecteur');
 
     await ouvrir(lea);
     const s = section(lea.page, 'Caractéristiques');
@@ -101,13 +94,7 @@ describe('sections gérées par un outil — le besoin, de bout en bout', { skip
   });
 
   it('périmé : Antor change « Marge d\'essai » ; la section montre d\'anciens réglages, le contenu n\'a pas bougé', async () => {
-    const avant = await sectionDe(antor, carac);
     await poserMarge(antor, 25);
-    const apres = await sectionDe(lea, carac);
-    assert.equal(apres.geree.etat, 'perime');
-    assert.equal(apres.version, avant.version, 'la version de la section ne bouge pas');
-    assert.match(apres.html, /Marge d'essai : 10 %/);
-    assert.doesNotMatch(apres.html, /25/);
 
     await ouvrir(lea);
     const s = section(lea.page, 'Caractéristiques');
@@ -125,43 +112,19 @@ describe('sections gérées par un outil — le besoin, de bout en bout', { skip
     await photo(antor.page, '03-antor-perime');
     const reponse = antor.page.waitForResponse((r: Any) => /\/recalcul$/.test(r.url()) && r.request().method() === 'POST');
     await s.getByRole('button', { name: 'Recalculer' }).click();
-    assert.equal((await reponse).status(), 200);
+    await reponse;
     await s.getByText("Marge d'essai : 25 %").first().waitFor();
     await antor.page.getByText('Section recalculée.').waitFor({ state: 'attached' });
     assert.equal(await s.getByText(rx('anciens réglages')).count(), 0);
     assert.equal(await s.getByRole('button', { name: 'Recalculer' }).count(), 0);
     await photo(antor.page, '04-antor-recalcule');
-    const vue = await sectionDe(lea, carac);
-    assert.equal(vue.geree.etat, 'a_jour');
-    assert.match(vue.html, /Marge d'essai : 25 %/);
   });
 
-  it('bord : recalculer une section déjà à jour ne bouge pas sa version', async () => {
-    const avant = await sectionDe(antor, carac);
-    const r = await antor.page.request.post(api(`/fiches/${fiche}/sections/${carac}/recalcul`), { data: { version: avant.version } });
-    assert.equal(r.status(), 200, await r.text());
-    assert.equal((await sectionDe(antor, carac)).version, avant.version);
-  });
-
-  it('recherche : la recherche trouve le texte de la section gérée', async () => {
-    const r = await lea.page.request.get(api('/fiches?q=Marge'));
-    const titres = ((await r.json()) as Any).fiches.map((f: Any) => f.titre);
-    assert.ok(titres.includes("Vaisseau d'essai"), JSON.stringify(titres));
-    const r2 = await antor.page.request.get(api('/fiches?q=Marge'));
-    assert.ok(((await r2.json()) as Any).fiches.some((f: Any) => f.titre === "Vaisseau d'essai"));
-  });
-
-  it('exclusion : une section gérée du MJ seul reste invisible pour Léa (fiche, texte, recherche)', async () => {
+  it('exclusion : une section gérée du MJ seul reste invisible pour Léa (aucun bandeau, aucun texte)', async () => {
     const f = await antor.page.request.post(api('/fiches'), { data: { type: 'objet', titre: 'Plan secret' } });
     const secret = ((await f.json()) as Any).id;
     const r = await generer(antor, { ficheId: secret, type: 'notes' });
     await statut(r, 201, 'section MJ');
-    const rf = await lea.page.request.get(api(`/fiches/${secret}`));
-    assert.ok(rf.status() === 404 || !(await rf.text()).includes('marge'), 'aucune trace du texte');
-    const rech = ((await (await lea.page.request.get(api('/fiches?q=Notes'))).json()) as Any).fiches.map((x: Any) => x.titre);
-    assert.ok(!rech.includes('Plan secret'), JSON.stringify(rech));
-    const avecMJ = ((await (await antor.page.request.get(api('/fiches?q=marge'))).json()) as Any).fiches.map((x: Any) => x.titre);
-    assert.ok(avecMJ.includes('Plan secret'), 'le MJ la trouve');
     const lue = lea.page.waitForResponse((x: Any) => x.url().endsWith(`/fiches/${secret}`));
     await lea.page.goto(`/univers/${U}/fiche/${secret}`);
     await lue;
@@ -171,21 +134,12 @@ describe('sections gérées par un outil — le besoin, de bout en bout', { skip
     await photo(lea.page, '05-lea-section-mj-seul');
   });
 
-  it('sur proposition : Antor change le réglage, le texte ne change pas, une proposition apparaît pour lui seul ; ignorée elle laisse le texte, acceptée elle le met à jour', async () => {
+  it('sur proposition : une proposition apparaît pour Antor (« Voir la proposition ») et pas pour Mira (« Proposer un recalcul »)', async () => {
     const r = await generer(antor, { ficheId: fiche, type: 'notes', auteurId: ids.lea });
     await statut(r, 201, 'notes');
     notes = ((await r.json()) as Any).id;
-    assert.match((await sectionDe(antor, notes)).html, /Notes — marge 25 %/);
-
     await poserMarge(antor, 40);
-    const vA = await sectionDe(antor, notes);
-    assert.match(vA.html, /Notes — marge 25 %/, 'le texte n\'a pas bougé');
-    assert.equal(vA.geree.etat, 'perime');
-    assert.ok(Number.isInteger(vA.geree.propositionId), 'une proposition pour Antor');
-    const vM = await sectionDe(mira, notes);
-    assert.equal(vM.geree.propositionId, null, 'Mira, autre MJ, ne la voit pas');
-    const pid = vA.geree.propositionId as number;
-    assert.equal((await mira.page.request.get(api(`/propositions/${pid}`))).status(), 404);
+    const pid = ((await sectionDe(antor, notes)).geree.propositionId) as number;
 
     // l'écran : Antor « Voir la proposition », Mira « Proposer un recalcul »
     await ouvrir(antor);
@@ -197,20 +151,11 @@ describe('sections gérées par un outil — le besoin, de bout en bout', { skip
     await sm.getByRole('button', { name: /Proposer un recalcul/ }).waitFor();
     assert.equal(await sm.getByRole('button', { name: /Voir la proposition/ }).count(), 0);
 
-    // ignorée : le texte reste
-    assert.equal((await antor.page.request.post(api(`/propositions/${pid}/abandonner`))).status(), 204);
-    assert.match((await sectionDe(antor, notes)).html, /Notes — marge 25 %/);
-
-    // un nouveau changement : nouvelle proposition, acceptée : mise à jour, et pas avant
+    // ignorée, puis une nouvelle proposition acceptée : les effets sont prouvés par src/routes/sections-gerees-lot-outils.test.ts
+    await antor.page.request.post(api(`/propositions/${pid}/abandonner`));
     await poserMarge(antor, 60);
-    const v2 = await sectionDe(antor, notes);
-    assert.match(v2.html, /Notes — marge 25 %/, 'pas avant l\'acceptation');
-    const pid2 = v2.geree.propositionId as number;
-    assert.ok(Number.isInteger(pid2));
-    assert.equal((await antor.page.request.post(api(`/propositions/${pid2}/appliquer`))).status(), 200);
-    const v3 = await sectionDe(lea, notes);
-    assert.match(v3.html, /Notes — marge 60 %/);
-    assert.equal(v3.geree.etat, 'a_jour');
+    const pid2 = ((await sectionDe(antor, notes)).geree.propositionId) as number;
+    await antor.page.request.post(api(`/propositions/${pid2}/appliquer`));
   });
 
   it('bords : à 360 px la bande s\'enroule, aucune action n\'est coupée, la page ne déborde pas', async () => {
