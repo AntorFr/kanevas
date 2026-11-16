@@ -497,6 +497,24 @@ export function listerJetons(
   return [...vivants, ...autres];
 }
 
+/** A universe an account may put in a token (E-23): the ones it belongs to, with its role there. */
+export interface UniversChoisissable {
+  id: number;
+  cle: string;
+  nom: string;
+  role: Role;
+}
+
+/** The universes an account belongs to, by name: what its tokens can reach (B-94). */
+export function universChoisissables(db: Db, compteId: number): UniversChoisissable[] {
+  return db
+    .prepare(
+      `SELECT u.id, u.cle, u.nom, m.role FROM membres m JOIN univers u ON u.id = m.univers_id
+        WHERE m.compte_id = ? ORDER BY u.nom COLLATE NOCASE, u.id`,
+    )
+    .all(compteId) as UniversChoisissable[];
+}
+
 // ---------------------------------------------------------------------------------------------------
 // Use
 
