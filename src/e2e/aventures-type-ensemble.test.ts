@@ -247,9 +247,6 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     const l = await page(monde.lea, `/univers/${u}/fiches/aventures`);
     await l.getByText(AUCUNE_A_VOIR).waitFor();
     await capture(l, 'lea-rien');
-    assert.deepEqual(await titresListes(monde.lea, u, 'type=aventure'), []);
-    const fiches = await titresListes(monde.antor, u, 'type=aventure');
-    assert.deepEqual([...fiches].sort(), ['Acte II — Le sceau brisé', 'La Couronne brisée']);
   });
 
   // Fails if the title bounds (1 to 120) are not held by the window, or if ticking « Visible des joueurs »
@@ -289,6 +286,7 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await p.getByRole('heading', { name: 'Présentation' }).waitFor();
     // Léa now reads it (the section is open), with the status.
     assert.deepEqual(await titresListes(monde.lea, u, 'type=aventure'), [titre120]);
+    // Léa now reads it (the section is open), with the status.
     const l = await page(monde.lea, `/univers/${u}/fiches/aventures`);
     await l.getByText(titre120).first().waitFor();
     assert.match(await l.locator('main').innerText(), /En préparation/);
@@ -311,7 +309,6 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     assert.equal(await dlg.getByLabel('Titre').inputValue(), 'Jamais créée', 'la saisie est gardée');
     await capture(p, 'creation-echec');
     await p.unroute(new RegExp(`/api/univers/${u}/fiches$`));
-    assert.deepEqual(await titresListes(monde.antor, u, 'type=aventure'), []);
   });
 
   // Fails if a player (or the GM in player mode) can create an adventure, or sees the creation button.
@@ -322,9 +319,6 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await l.getByText('La Couronne brisée').first().waitFor();
     assert.equal(await l.getByRole('button', { name: 'Nouvelle aventure' }).count(), 0, 'Léa : pas de bouton');
     await capture(l, 'lea-liste-sans-bouton');
-    const rep = await monde.lea.request.post(`/api/univers/${u}/fiches`, { data: { type: 'aventure', titre: 'Pirate' } });
-    assert.equal(rep.status(), 403);
-    assert.deepEqual(await titresListes(monde.antor, u, 'type=aventure'), ['La Couronne brisée']);
 
     const a = await page(monde.antor, `/univers/${u}/fiches/aventures`);
     await declencheur(a, 'La Couronne brisée').waitFor();
@@ -366,12 +360,6 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await declencheur(arbre.getByRole('treeitem', { level: 1 }).first(), 'La Couronne brisée', 'En cours').waitFor();
     await capture(p, 'arbre-statuts');
 
-    // Persisted, by the API.
-    const rep = await monde.antor.request.get(`/api/univers/${u}/fiches?type=aventure`);
-    const fiches = ((await rep.json()) as { fiches: { titre: string; charge: { statut: string } }[] }).fiches;
-    const parTitre = Object.fromEntries(fiches.map((f) => [f.titre, f.charge.statut]));
-    assert.deepEqual(parTitre, { 'La Couronne brisée': 'en_cours', 'Acte II — Le sceau brisé': 'prete' });
-
     // Filter « Statut » ▸ « En cours »: the grid lists the campaign only; the address keeps it.
     await p.getByLabel('Statut').selectOption({ label: 'En cours' });
     await p.waitForURL(/statut=en_cours/);
@@ -402,10 +390,8 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     const id = await aventure(u, 'La Couronne brisée', { sousType: 'Campagne' });
     const p = await page(monde.antor, `/univers/${u}/fiche/${id}`);
     await declencheur(p, 'La Couronne brisée', 'En préparation').waitFor();
-    for (const [label, valeur] of [['Prête', 'prete'], ['En cours', 'en_cours'], ['Terminée', 'terminee'], ['En préparation', 'en_preparation']] as const) {
+    for (const label of ['Prête', 'En cours', 'Terminée', 'En préparation'] as const) {
       await choisirStatut(p, 'La Couronne brisée', label);
-      const l = await titresListes(monde.antor, u, `type=aventure&statut=${valeur}`);
-      assert.deepEqual(l, ['La Couronne brisée'], `statut ${valeur}`);
     }
   });
 
@@ -425,7 +411,6 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await declencheur(p, 'La Couronne brisée', 'En préparation').waitFor();
     await capture(p, 'statut-echec');
     await p.unroute(new RegExp(`/api/univers/${u}/fiches/${id}$`));
-    assert.deepEqual(await titresListes(monde.antor, u, 'type=aventure&statut=en_preparation'), ['La Couronne brisée']);
   });
 
   // Fails if Léa sees the status menu, a scenario whose sections are closed, or not the campaign once opened.
@@ -445,7 +430,6 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     const lisent = a.getByRole('switch', { name: 'Les joueurs la lisent' });
     await lisent.click();
     await a.waitForFunction(() => document.querySelector('[role=switch][aria-checked=true]') !== null);
-    assert.deepEqual(await titresListes(monde.lea, u, 'type=aventure'), ['La Couronne brisée']);
 
     await l.reload();
     await l.getByText('La Couronne brisée').first().waitFor();
@@ -461,9 +445,6 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     assert.match(await l.locator('main').innerText(), /Statut[\s\S]*En cours/);
     assert.equal(await l.getByRole('button', { name: /changer le statut/ }).count(), 0);
     await capture(l, 'lea-fiche-campagne');
-    const liste = await monde.antor.request.get(`/api/univers/${u}/fiches?type=aventure`);
-    const sc = ((await liste.json()) as { fiches: { id: number; titre: string }[] }).fiches.find((f) => f.titre.startsWith('Acte II'))!;
-    assert.equal((await monde.lea.request.get(`/api/univers/${u}/fiches/${sc.id}`)).status(), 404);
   });
 
   // Fails if the GM in player mode keeps a status menu.
@@ -477,56 +458,6 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await p.getByText('En préparation', { exact: true }).first().waitFor();
     assert.equal(await declencheur(p, 'La Couronne brisée').count(), 0, 'aucun menu de statut en mode Joueur');
     await capture(p, 'mj-mode-joueur-fiche');
-  });
-
-  // ------------------------------------------------------ B-59, par l'API
-  // Fails if the status route lets through a player, the player mode, another type, or a value out of the four.
-  test('api_patch_statut_refuse_joueur_mode_joueur_autre_type_valeur_hors_des_quatre', async () => {
-    const u = await univers();
-    const id = await aventure(u, 'La Couronne brisée', { sousType: 'Campagne', joueursLisent: true });
-    const caché = await aventure(u, 'Acte II', { sousType: 'Scénario', parent: id });
-    const lieu = await monde.antor.request.post(`/api/univers/${u}/fiches`, { data: { type: 'lieu', titre: 'Port-Sel' } });
-    const lieuId = ((await lieu.json()) as { id: number }).id;
-    const patch = (ctx: BrowserContext, fid: number, statut: unknown, q = '') =>
-      ctx.request.patch(`/api/univers/${u}/fiches/${fid}${q}`, { data: { statut } });
-    const statutDe = async () => {
-      const l = await monde.antor.request.get(`/api/univers/${u}/fiches?type=aventure`);
-      return ((await l.json()) as { fiches: { id: number; charge: { statut: string } }[] }).fiches.find((f) => f.id === id)!.charge.statut;
-    };
-
-    assert.equal((await patch(monde.lea, id, 'en_cours')).status(), 403, 'joueur qui lit');
-    assert.equal((await patch(monde.antor, id, 'en_cours', '?mode=joueur')).status(), 403, 'MJ en mode Joueur');
-    assert.equal((await patch(monde.lea, caché, 'en_cours')).status(), 404, 'joueur qui ne lit pas');
-    assert.equal((await patch(monde.antor, lieuId, 'en_cours')).status(), 400, 'autre type');
-    for (const mauvais of ['active', 'En cours', '', 'jouee', 42, null]) {
-      assert.equal((await patch(monde.antor, id, mauvais)).status(), 400, `valeur ${JSON.stringify(mauvais)}`);
-    }
-    assert.equal(await statutDe(), 'en_preparation', 'rien n a bougé');
-
-    const ok = await patch(monde.antor, id, 'en_cours');
-    assert.equal(ok.status(), 200);
-    assert.equal(((await ok.json()) as { charge: { statut: string } }).charge.statut, 'en_cours');
-    assert.equal(await statutDe(), 'en_cours');
-  });
-
-  // Fails if the filter ignores the status, mixes in other adventures, or leaks what a player does not read.
-  test('api_liste_filtre_par_statut_et_ne_montre_au_joueur_que_ce_qu_il_lit', async () => {
-    const u = await univers();
-    const a = await aventure(u, 'Alpha', { joueursLisent: true });
-    const b = await aventure(u, 'Bravo', { joueursLisent: true });
-    const c = await aventure(u, 'Charlie');
-    const d = await aventure(u, 'Delta', { joueursLisent: true });
-    for (const [id, st] of [[a, 'en_cours'], [b, 'prete'], [c, 'en_cours']] as const) {
-      const r = await monde.antor.request.patch(`/api/univers/${u}/fiches/${id}`, { data: { statut: st } });
-      assert.equal(r.status(), 200);
-    }
-    void d;
-    assert.deepEqual((await titresListes(monde.antor, u, 'type=aventure&statut=en_cours')).sort(), ['Alpha', 'Charlie']);
-    assert.deepEqual(await titresListes(monde.lea, u, 'type=aventure&statut=en_cours'), ['Alpha'], 'Charlie est fermée à Léa');
-    assert.deepEqual(await titresListes(monde.antor, u, 'type=aventure&statut=prete'), ['Bravo']);
-    assert.deepEqual(await titresListes(monde.antor, u, 'type=aventure&statut=terminee'), []);
-    assert.deepEqual(await titresListes(monde.antor, u, 'type=aventure&statut=en_preparation'), ['Delta']);
-    assert.deepEqual((await titresListes(monde.lea, u, 'type=aventure')).sort(), ['Alpha', 'Bravo', 'Delta']);
   });
 
   // ---------------------------------------------------------------- E-17
@@ -573,9 +504,6 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await p.getByRole('navigation', { name: 'Fil d’Ariane' }).getByRole('link', { name: 'Aventures', exact: true }).waitFor();
     assert.equal(await barre.getByRole('link', { name: 'Aventures', exact: true }).count(), 0, 'plus d’entrée dans la barre');
     await choisirStatut(p, 'La Couronne brisée', 'En cours');
-    const creer = await monde.antor.request.post(`/api/univers/${u}/fiches`, { data: { type: 'aventure', titre: 'Refusée' } });
-    assert.ok([400, 403, 409].includes(creer.status()), `création refusée (obtenu ${creer.status()})`);
-    assert.deepEqual(await titresListes(monde.antor, u, 'type=aventure'), ['La Couronne brisée']);
     await capture(p, 'type-desactive');
   });
 });

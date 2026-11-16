@@ -73,6 +73,23 @@ describe('Adventure status and tree', () => {
     assert.equal((await w.appel(w.lea, 'GET', `${w.base}/fiches/${r.json().id}`)).statusCode, 404);
   });
 
+  test('a player cannot create an adventure (403) and nothing is written; the four statuses each list the one adventure alone', async () => {
+    const w = await monter();
+    await w.campagneOuverte('Couronne');
+    const avant = w.n('fiches');
+    assert.equal((await w.appel(w.lea, 'POST', `${w.base}/fiches`, { type: 'aventure', titre: 'Pirate' })).statusCode, 403);
+    assert.equal(w.n('fiches'), avant);
+    const id = (await w.creer(w.antor, { type: 'aventure', titre: 'Quatre' })).id;
+    const statuts = ['prete', 'en_cours', 'terminee', 'en_preparation'];
+    const titres = async (statut: string) =>
+      ((await w.appel(w.antor, 'GET', `${w.base}/fiches?type=aventure&statut=${statut}`)).json().fiches as { titre: string }[]).map((f) => f.titre);
+    for (const valeur of statuts) {
+      assert.equal((await w.appel(w.antor, 'PATCH', `${w.base}/fiches/${id}`, { statut: valeur })).statusCode, 200);
+      assert.ok((await titres(valeur)).includes('Quatre'), valeur);
+      for (const autre of statuts.filter((x) => x !== valeur)) assert.ok(!(await titres(autre)).includes('Quatre'), `${valeur} / ${autre}`);
+    }
+  });
+
   test('a deactivated type keeps writing the status of its existing adventure', async () => {
     const w = await monter();
     const camp = await w.campagneOuverte('Couronne');
