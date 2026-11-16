@@ -1,0 +1,23 @@
+/* Components of the map editor (charte, « Components of kanevas-battlemap-editeur »): tokens only. */
+.colonne-outils { width: 56px; flex: none; display: flex; flex-direction: column; align-items: center; gap: var(--e-2); padding: var(--e-2);
+  background: var(--surface); border-right: 1px solid var(--bord); }
+.outil-cellule { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid transparent; border-radius: var(--rayon-item);
+  background: transparent; color: var(--texte-3); cursor: pointer; }
+.outil-cellule:hover { background: var(--surface-2); }
+.outil-cellule.actif { background: var(--accent-fond); border-color: var(--accent); color: var(--accent-texte); }
+.outil-cellule[aria-disabled='true'] { opacity: .45; }
+.colonne-outils-pied { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: var(--e-1); font-size: var(--t-12); color: var(--texte-3); text-align: center; }
+@media (pointer: coarse) { .outil-cellule { width: 44px; height: 44px; } .colonne-outils { width: 60px; } }
+
+.canevas-zone { position: relative; flex: 1; min-width: 0; min-height: 0; overflow: hidden; background: var(--surface-2); }
+.canevas-carte { display: block; touch-action: none; cursor: crosshair; }
+.canevas-carte:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.canevas-conseil { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); margin: 0; color: var(--texte-3); text-align: center; pointer-events: none; }
+.canevas-zoom { position: absolute; right: var(--e-3); bottom: var(--e-3); display: flex; align-items: center; gap: var(--e-1); padding: var(--e-1);
+  background: var(--surface); border: 1px solid var(--bord-fort); border-radius: var(--rayon-champ); box-shadow: var(--ombre-flottant); }
+.canevas-zoom-bouton { width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: var(--rayon-item); background: transparent; color: var(--texte-2); cursor: pointer; }
+.canevas-zoom-bouton:hover { background: var(--surface-2); }
+.canevas-zoom-valeur { min-width: 44px; text-align: center; font-size: var(--t-12); color: var(--texte-2); }
+@media (pointer: coarse) { .canevas-zoom-bouton { width: 44px; height: 44px; } }
+.sr-carte { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .canevas-carte { scroll-behavior: auto; } }

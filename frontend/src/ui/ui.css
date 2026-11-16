@@ -141,6 +141,7 @@ a { color: var(--accent-texte); }
 .bandeau.bouchon { background-image: linear-gradient(var(--mj-fond), var(--mj-fond)); color: var(--mj); }
 .bandeau.perdue { background-image: linear-gradient(var(--danger-fond), var(--danger-fond)); color: var(--danger); }
 .bandeau.joueur { background-image: linear-gradient(var(--table-fond), var(--table-fond)); color: var(--table); }
+.bandeau.lecture { background-image: linear-gradient(var(--accent-fond), var(--accent-fond)); color: var(--accent-texte); }
 
 .bascule { display: inline-flex; border: 1px solid var(--bord-champ); border-radius: var(--rayon-pastille); overflow: hidden; }
 .bascule label { padding: var(--e-1) var(--e-3); cursor: pointer; color: var(--texte-2); }
