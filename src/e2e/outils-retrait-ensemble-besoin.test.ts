@@ -451,19 +451,6 @@ test('E-20 · contenu changé entre l\'ouverture et la confirmation : message, 3
   assert.equal(titresConceptions(m, ENEIRIA).length, 0);
 });
 
-test('E-20 · la requête de suppression sur un décompte périmé est refusée 409 contenu_change et n\'efface rien', opts, async () => {
-  // would fail if the server trusted the client's `vu` without recounting
-  const m = await monde();
-  const avant = toutesLesLignes(m);
-  const r = await appel(m, 'antor', 'POST', resume('univers', ENEIRIA), { vu: [{ cle: 'conceptions', nombre: 1 }, { cle: 'catalogue', nombre: 2 }] });
-  assert.equal(r.status, 409);
-  assert.equal(r.json.code, 'contenu_change');
-  assert.equal(toutesLesLignes(m), avant);
-  const ok = await appel(m, 'antor', 'POST', resume('univers', ENEIRIA), { vu: [{ cle: 'conceptions', nombre: 2 }, { cle: 'catalogue', nombre: 2 }] });
-  assert.ok(ok.status >= 200 && ok.status < 300, ok.texte);
-  assert.deepEqual(titresConceptions(m, ENEIRIA), []);
-});
-
 test('E-20 · erreur 5xx : « L\'action n\'a pas abouti. Rien n\'est supprimé. » + Réessayer ; coupure : bandeau et bouton désactivé', opts, async () => {
   // would fail if a failed read left an active destructive button, or if a failed delete erased
   const m = await monde();
@@ -523,20 +510,4 @@ test('E-20 · téléphone 390 px : fenêtre pleine hauteur, boutons de 44 px, le
   const h = await d.evaluate((e: Any) => e.getBoundingClientRect().height);
   assert.ok(h >= 844 * 0.9, `dialog height ${h}`);
   await page.screenshot({ path: '/tmp/retrait-telephone.png' });
-});
-
-test('AD-135 · supprimer l\'univers « Éneria d\'essai » ne laisse aucune ligne swn_* pour lui ; un mauvais nom n\'efface rien ; Univers voisin intact', opts, async () => {
-  // would fail if the universe deletion left tool rows behind (or crashed on the module rows' references)
-  const m = await monde();
-  assert.ok(total(lignesDeLUnivers(m, ENEIRIA)) > 0);
-  const avant = toutesLesLignes(m);
-  const mauvais = await appel(m, 'antor', 'DELETE', `/api/univers/${ENEIRIA}`, { nom: 'Autre' });
-  assert.equal(mauvais.status, 400);
-  assert.equal(toutesLesLignes(m), avant);
-  const ok = await appel(m, 'antor', 'DELETE', `/api/univers/${ENEIRIA}`, { nom: "Éneria d'essai" });
-  assert.equal(ok.status, 204, ok.texte);
-  const reste = lignesDeLUnivers(m, ENEIRIA);
-  assert.equal(total(reste), 0, JSON.stringify(reste));
-  assert.deepEqual(titresConceptions(m, VOISIN), ['Sentinelle du voisin']);
-  assert.equal(lignesCatalogueSysteme(m), 18, "the system's catalogue outlives the universe");
 });

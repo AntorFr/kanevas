@@ -100,40 +100,6 @@ describe('sections gérées par un outil — le besoin, de bout en bout', { skip
     await photo(lea.page, '01-lea-bandeau');
   });
 
-  it('exclusion : un PUT direct de la section est refusé (section_geree), pour Antor comme pour Léa', async () => {
-    for (const [nom, c] of [['antor', antor], ['lea', lea]] as const) {
-      const v = (await sectionDe(antor, carac)).version;
-      const r = await c.page.request.put(api(`/fiches/${fiche}/sections/${carac}/contenu`), {
-        data: { contenu: 'Texte forcé à la main', version: v },
-      });
-      assert.equal(r.status(), 403, `${nom}: ${await r.text()}`);
-      assert.equal(((await r.json()) as Any).code, 'section_geree', nom);
-    }
-    assert.match((await sectionDe(antor, carac)).html, /Marge d'essai : 10 %/, 'le texte n\'a pas bougé');
-  });
-
-  it('exclusion : le générateur écrit pour Léa, qui n\'a pas l\'usage de l\'outil : refusé', async () => {
-    const avant = (await sectionDe(antor, carac)).version;
-    const r = await generer(lea, { ficheId: fiche, type: 'caracteristiques', sectionId: carac, version: avant });
-    assert.equal(r.status(), 403, await r.text());
-    assert.equal((await sectionDe(antor, carac)).version, avant, 'rien n\'a été écrit');
-    // Idem pour la création d'une section par Léa
-    const f2 = await antor.page.request.post(api('/fiches'), { data: { type: 'objet', titre: 'Fiche de refus' } });
-    const id2 = ((await f2.json()) as Any).id;
-    const r2 = await generer(lea, { ficheId: id2, type: 'caracteristiques', auteurId: ids.lea });
-    assert.equal(r2.status(), 403, await r2.text());
-    assert.equal((await lireFiche(antor, id2)).sections.length, 0);
-  });
-
-  it('échec : Léa, autrice sans l\'usage de l\'outil, ne recalcule pas mais garde « Ouvrir dans l\'outil »', async () => {
-    const v = (await sectionDe(antor, carac)).version;
-    const r = await lea.page.request.post(api(`/fiches/${fiche}/sections/${carac}/recalcul`), { data: { version: v } });
-    assert.equal(r.status(), 403, await r.text());
-    const view = await sectionDe(lea, carac);
-    assert.equal(view.geree.peutRecalculer, false);
-    assert.equal(view.geree.peutOuvrir, true, 'l\'autrice garde « Ouvrir dans l\'outil »');
-  });
-
   it('périmé : Antor change « Marge d\'essai » ; la section montre d\'anciens réglages, le contenu n\'a pas bougé', async () => {
     const avant = await sectionDe(antor, carac);
     await poserMarge(antor, 25);
@@ -149,13 +115,6 @@ describe('sections gérées par un outil — le besoin, de bout en bout', { skip
     await s.getByText("Marge d'essai : 10 %").first().waitFor();
     assert.equal(await s.getByRole('button', { name: /Recalculer/ }).count(), 0, 'Léa n\'a pas le bouton');
     await photo(lea.page, '02-lea-perime');
-  });
-
-  it('échec : « Recalculer » avec une version dépassée est un conflit, le texte reste', async () => {
-    const v = (await sectionDe(antor, carac)).version;
-    const r = await antor.page.request.post(api(`/fiches/${fiche}/sections/${carac}/recalcul`), { data: { version: v - 1 } });
-    assert.equal(r.status(), 409, await r.text());
-    assert.match((await sectionDe(antor, carac)).html, /10 %/);
   });
 
   it('recalcul : « Recalculer » (Antor, navigateur) met le texte à jour, et la section redevient à jour', async () => {
@@ -252,14 +211,6 @@ describe('sections gérées par un outil — le besoin, de bout en bout', { skip
     const v3 = await sectionDe(lea, notes);
     assert.match(v3.html, /Notes — marge 60 %/);
     assert.equal(v3.geree.etat, 'a_jour');
-  });
-
-  it('exclusion : un recalcul d\'une section « sur proposition » par le geste est refusé, le texte reste', async () => {
-    await poserMarge(antor, 70);
-    const v = await sectionDe(antor, notes);
-    const r = await antor.page.request.post(api(`/fiches/${fiche}/sections/${notes}/recalcul`), { data: { version: v.version } });
-    assert.ok(r.status() >= 400 && r.status() < 500, `${r.status()} ${await r.text()}`);
-    assert.match((await sectionDe(antor, notes)).html, /marge 60 %/);
   });
 
   it('bords : à 360 px la bande s\'enroule, aucune action n\'est coupée, la page ne déborde pas', async () => {

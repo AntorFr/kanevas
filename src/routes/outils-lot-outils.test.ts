@@ -33,3 +33,26 @@ test('the universe forces « Désactivé » over a system that activates: the en
   assert.equal((await m.dire(m.antor, 'PUT', `/api/univers/${E}/outils/essai/a/activation`, { active: null })).status, 204);
   assert.ok((await cles(E)).includes('essai/a'));
 });
+
+test('AD-135: deleting the universe « Éneria d’essai » leaves no swn_* row for it, a wrong name erases nothing, « Univers voisin » and the system catalogue stay', async () => {
+  const m = await monter({ semis: true });
+  const db = m.app.db;
+  const id = (nom: string) => (db.prepare('SELECT id FROM univers WHERE nom = ?').get(nom) as { id: number }).id;
+  const [E, V] = [id("Éneria d'essai"), id('Univers voisin')];
+  const tables = (motif: string) => (db.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name LIKE ? ESCAPE '\\' ORDER BY name`).all(motif) as { name: string }[]).map((t) => t.name);
+  const toutes = () => tables('swn\\_%').map((t) => `${t}=${JSON.stringify(db.prepare(`SELECT * FROM ${t} ORDER BY rowid`).all())}`).join('\n');
+  const delUnivers = (u: number) =>
+    tables('swn\\_%').filter((t) => (db.prepare(`PRAGMA table_info(${t})`).all() as { name: string }[]).some((c) => c.name === 'univers_id'))
+      .reduce((n, t) => n + (db.prepare(`SELECT COUNT(*) n FROM ${t} WHERE univers_id = ?`).get(u) as { n: number }).n, 0);
+  assert.ok(delUnivers(E) > 0);
+  const avant = toutes();
+  assert.equal((await m.dire(m.antor, 'DELETE', `/api/univers/${E}`, { nom: 'Autre' })).status, 400);
+  assert.equal(toutes(), avant);
+  assert.equal((await m.dire(m.antor, 'DELETE', `/api/univers/${E}`, { nom: "Éneria d'essai" })).status, 204);
+  assert.equal(delUnivers(E), 0);
+  const titres = db.prepare('SELECT f.titre t FROM swn_conceptions c JOIN fiches f ON f.id = c.fiche_id WHERE c.univers_id = ? ORDER BY f.titre').all(V) as { t: string }[];
+  assert.deepEqual(titres.map((r) => r.t), ['Sentinelle du voisin']);
+  let n = 0;
+  for (const t of tables('swn\\_catalogue\\_%').filter((x) => x !== 'swn_catalogue_retraits')) n += (db.prepare(`SELECT COUNT(*) n FROM ${t} WHERE systeme_id = 3 AND univers_id IS NULL`).get() as { n: number }).n;
+  assert.equal(n, 18, "the system's catalogue outlives the universe");
+});
