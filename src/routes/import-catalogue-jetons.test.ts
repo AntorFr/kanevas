@@ -99,7 +99,7 @@ test('portée : le jeton de contenu est refusé sur les routes d\'outil et ouvre
   assert.equal((await w.req(t, 'POST', '/lots')).statusCode, 201);
 });
 
-test('niveau système : responsable écrit, MJ non responsable 403 refuse, responsable devenu Joueur 401', async () => {
+test('niveau système : responsable écrit, MJ non responsable 403 refuse, responsable devenu Joueur : refusé par le service, plus 401', async () => {
   const w = await monde();
   const lignes = () => w.nb('essai_catalogue_elements');
   const ta = w.tok('antor', [G]);
@@ -112,9 +112,18 @@ test('niveau système : responsable écrit, MJ non responsable 403 refuse, respo
   assert.equal(lignes(), 11);
   const mp = await w.req(tm, 'POST', `${CAT}/apercu?niveau=systeme`, EXEMPLE);
   assert.equal(mp.statusCode, 403);
+  // B-46 revised: a lost role no longer refuses the token, it lowers it to what the account may. Antor is a Player
+  // here but still GM of « Univers voisin », attached to the same system: he stays its responsible, the service allows it.
   changerRoleNoyau(w.app.db, w.E, w.id('antor'), 'joueur');
-  const j = await w.req(ta, 'PUT', `${CAT}?niveau=systeme`, fautif());
-  assert.equal(j.statusCode, 401);
+  const j = await w.req(ta, 'PUT', `${CAT}?niveau=systeme`, { ...fautif(), version: 'apres-retrogradation' });
+  assert.equal(j.statusCode, 200, j.body);
+  // Once a Player of every universe attached to the system, he is no one for it: the service refuses, never a 401.
+  const voisin = w.un('SELECT id FROM univers WHERE nom = ?', 'Univers voisin').id as number;
+  w.app.db.prepare("UPDATE membres SET role = 'joueur' WHERE univers_id = ? AND compte_id = ?").run(voisin, w.id('antor'));
+  const k = await w.req(ta, 'PUT', `${CAT}?niveau=systeme`, { ...fautif(), version: 'tout-joueur' });
+  assert.ok([403, 404].includes(k.statusCode), String(k.statusCode));
+  assert.notEqual(k.json().code, 'jeton_invalide');
+  assert.equal(lignes(), 11, 'nothing written');
 });
 
 test('niveau invalide : 400 ; système sans système : introuvable', async () => {

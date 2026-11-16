@@ -10,6 +10,7 @@ import { ErreurService } from '../services/erreurs.js';
 import { creerFiche, listerFiches } from '../services/fiches.js';
 import { creerUnivers } from '../services/univers.js';
 import { migrate, openDb, type Db } from './db.js';
+import { apresSemis, avantSemis } from './jetons-pour-semis.js';
 
 const SRC = new URL('./migrations/', import.meta.url).pathname;
 const NUMEROS = readdirSync(SRC).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))).sort((a, b) => a - b);
@@ -57,7 +58,9 @@ function avant10(): Db {
   db.exec("ALTER TABLE relations ADD COLUMN nature TEXT NOT NULL DEFAULT ''");
   // Same for the owner of a system (0017), which the current services write.
   db.exec('ALTER TABLE systemes_jeu ADD COLUMN responsable_id INTEGER');
+  avantSemis(db);
   semerBouchon(db);
+  apresSemis(db);
   db.exec('DROP TABLE cles_anciennes; DROP TABLE univers_cles_anciennes; ALTER TABLE univers DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN creee_via; ALTER TABLE sections DROP COLUMN cle');
   db.exec('ALTER TABLE relations DROP COLUMN nature');
   db.exec('ALTER TABLE relations RENAME COLUMN qualificatif TO type');
