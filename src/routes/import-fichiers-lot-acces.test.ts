@@ -560,3 +560,55 @@ test('B-49 counters > a batch counts « 2 created, 1 refused » files and 3 wait
   assert.equal(l.rapport.compteurs.fichiers.refusees, 1);
   assert.equal(l.rapport.enAttente, 3);
 });
+
+// ------------------------------------------------------------------ waiting references (import-fichiers-attente-mediatheque)
+const FICHE_QUAIS = {
+  type: 'lieu',
+  titre: 'Les Quais',
+  sections: [section('desc', 'Description', 'Le port.\n\n![](fichier:cle:img:quais)', { fichiers: ['doc:tarifs'] })],
+};
+
+test('E-9 library > a waiting file is in no list of the library; it enters when the PUT arrives', async () => {
+  const m = await monde();
+  const lot = await m.ouvrirLot();
+  const f = await m.putFiche('lieu:quais', FICHE_QUAIS, lot);
+  assert.equal(f.json().etat, 'creee', f.body);
+  for (const h of [m.antor, m.lea]) {
+    const liste = await m.biblio(h);
+    assert.equal(liste.statusCode, 200);
+    assert.ok(!liste.body.includes('img:quais') && !liste.body.includes('doc:tarifs'), 'key in the library list');
+    assert.ok(!liste.body.includes('quais.png') && !liste.body.includes('tarifs.pdf'), 'waiting file listed');
+  }
+  assert.equal((await m.putFichier('img:quais', { nom: 'quais.png', octets: ROUGE, lot })).json().etat, 'creee');
+  assert.equal((await m.putFichier('doc:tarifs', { nom: 'tarifs.pdf', octets: pdf('t'), lot })).json().etat, 'creee');
+  await m.clore(lot);
+  for (const h of [m.antor, m.lea]) {
+    const liste = await m.biblio(h);
+    assert.ok(liste.body.includes('quais.png'), 'image listed after arrival');
+    assert.ok(liste.body.includes('tarifs.pdf'), 'document listed after arrival');
+  }
+});
+
+test('E-18 warnings > an inserted image whose file is missing warns « fichier « img:quais » inconnu : référence en attente »; nothing more after the files arrive', async () => {
+  const m = await monde();
+  const l1 = await m.ouvrirLot();
+  const f = await m.putFiche('lieu:quais', FICHE_QUAIS, l1);
+  const textes: string[] = f.json().avertissements.map((a: Any) => (typeof a === 'string' ? a : JSON.stringify(a)));
+  assert.equal(textes.length, 2, f.body);
+  assert.ok(textes.some((t) => t.includes('fichier « img:quais » inconnu : référence en attente')), f.body);
+  await m.putFichier('img:quais', { nom: 'quais.png', octets: ROUGE, lot: l1 });
+  await m.putFichier('doc:tarifs', { nom: 'tarifs.pdf', octets: pdf('t'), lot: l1 });
+  await m.clore(l1);
+  const l2 = await m.ouvrirLot();
+  const r = await m.putFiche('lieu:quais', FICHE_QUAIS, l2);
+  assert.equal(r.json().etat, 'inchangee', r.body);
+  assert.deepEqual(r.json().avertissements, []);
+  assert.equal((await m.clore(l2)).avertissements, 0);
+});
+
+test('E-18 warnings > a joined file whose file is missing warns « fichier « doc:tarifs » inconnu : référence en attente » too', async () => {
+  const m = await monde();
+  const lot = await m.ouvrirLot();
+  const f = await m.putFiche('lieu:quais', FICHE_QUAIS, lot);
+  assert.ok(JSON.stringify(f.json().avertissements).includes('fichier « doc:tarifs » inconnu : référence en attente'), f.body);
+});
