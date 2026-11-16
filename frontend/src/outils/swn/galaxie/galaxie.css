@@ -134,3 +134,20 @@
 
 .gx-menu .menu-declencheur { border: 1px solid var(--bord-champ); background: var(--surface-2); padding: 0 var(--e-3); }
 .gx-menu .menu-declencheur:hover { background: var(--surface); border-color: var(--bord-fort); }
+
+/* E-23, text version (docs/maquettes/e23-liste-corps.html). */
+.gx-systeme-page { display: flex; flex-direction: column; gap: var(--e-3); }
+.gx-systeme-page section h2 { margin: 0 0 var(--e-2); font-size: var(--t-16); }
+.gx-retour { margin-left: auto; color: var(--accent-texte); font-size: var(--t-13); }
+.gx-lignes { list-style: none; margin: 0; padding: 0; border: 1px solid var(--bord); border-radius: var(--rayon-panneau); background: var(--surface); }
+.gx-lignes li { padding: var(--e-2) var(--e-3); border-top: 1px solid var(--bord); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--e-3); }
+.gx-lignes li:first-child { border-top: 0; }
+.gx-lignes li.lune { padding-left: var(--e-6); }
+.gx-lignes .nom { grid-area: 1 / 1; font-weight: 600; overflow-wrap: anywhere; }
+.gx-lignes .nom.vide { font-weight: 400; color: var(--texte-2); font-style: italic; }
+.gx-lignes .meta { grid-area: 2 / 1; color: var(--texte-2); font-size: var(--t-13); overflow-wrap: anywhere; }
+.gx-lignes .place { grid-area: 1 / 2; color: var(--texte-2); font-size: var(--t-13); text-align: right; white-space: nowrap; }
+@media (max-width: 560px) {
+  .gx-lignes li { grid-template-columns: minmax(0, 1fr); }
+  .gx-lignes .nom, .gx-lignes .meta, .gx-lignes .place { grid-area: auto; text-align: left; white-space: normal; }
+}

@@ -1,5 +1,5 @@
 import { type ComponentType, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 
 import { ErreurApi, lire } from '../api';
 import { useBasculeMode, useCharge, useTitreAriane, useVue } from '../cadre-contexte';
@@ -22,6 +22,8 @@ type Etat =
  */
 export function OutilEcran() {
   const { id, module, outil, cible } = useParams();
+  // The address itself restarts the read: a system's inside shares `cible` with its galaxy (E-23).
+  const { pathname } = useLocation();
   const cle = `${module}/${outil}`;
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const mj = univers.etat === 'ok' && univers.valeur.role === 'mj';
@@ -53,7 +55,7 @@ export function OutilEcran() {
     return () => {
       actif = false;
     };
-  }, [id, cle, cible, suffixe, essai, univers.etat]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, cle, cible, pathname, suffixe, essai, univers.etat]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useTitreAriane(etat.k === 'ok' ? etat.description.libelle : undefined, 'Outils');
 
