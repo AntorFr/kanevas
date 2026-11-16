@@ -31,7 +31,13 @@ export const battlemapAssets: DeclarationAide = {
 export const battlemapCartes: DeclarationCarte = {
   cle: 'battlemap/cartes', libelle: 'Cartes', description: 'Les cartes composées de la battle map : sols, murs, assets, calques.',
   type: 'carte', portee: 'tous', dependances: [],
-  visibiliteParDefaut: { mj: true, joueur: true }, usages: [], reglages: {},
+  visibiliteParDefaut: { mj: true, joueur: true }, usages: [],
+  reglages: {
+    tailleCase: {
+      libelle: 'Taille de case par défaut', aide: 'En pixels, de 20 à 300 ; appliquée aux cartes créées ensuite.',
+      niveau: 'systeme+univers', forme: { type: 'nombre', min: 20, max: 300, entier: true }, defaut: 70,
+    },
+  },
   ecran: { libelle: 'Cartes', icone: 'Map' },
   cartes: (db, acteur, universId) => cartesComposees(db, acteur, universId),
   creation: {

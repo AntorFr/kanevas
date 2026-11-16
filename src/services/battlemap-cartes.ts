@@ -152,6 +152,17 @@ function tailleValide(v: unknown, defaut: number): number {
   return v as number;
 }
 
+/** The registry setting « taille de case par défaut », read at creation only (a map keeps the size it was given). */
+function tailleCaseDuReglage(db: Db, universId: number): number {
+  try {
+    const v = resoudreOutil(db, universId, OUTIL_CARTES).reglages.tailleCase?.valeur;
+    return Number.isInteger(v) && (v as number) >= TAILLE_CASE_MIN && (v as number) <= TAILLE_CASE_MAX ? v as number : TAILLE_CASE_DEFAUT;
+  } catch (e) {
+    if (e instanceof ErreurService) return TAILLE_CASE_DEFAUT;
+    throw e;
+  }
+}
+
 /** Creates a map: its document is the core's empty one (`carte_vide`), the size defaults to 30 × 20. GM outside Player mode. */
 export function creerCarte(db: Db, acteur: Acteur, universId: number,
   saisie: { titre: unknown; largeur?: unknown; hauteur?: unknown; tailleCase?: unknown }): { id: number } {
@@ -161,7 +172,7 @@ export function creerCarte(db: Db, acteur: Acteur, universId: number,
     const titre = titreValide(saisie.titre);
     const largeur = tailleValide(saisie.largeur, LARGEUR_DEFAUT);
     const hauteur = tailleValide(saisie.hauteur, HAUTEUR_DEFAUT);
-    const tailleCase = saisie.tailleCase === undefined ? TAILLE_CASE_DEFAUT : tailleCaseValide(saisie.tailleCase);
+    const tailleCase = saisie.tailleCase === undefined ? tailleCaseDuReglage(db, universId) : tailleCaseValide(saisie.tailleCase);
     let document: string;
     try {
       document = coeur.carteVide(largeur, hauteur);
