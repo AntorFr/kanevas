@@ -21,6 +21,7 @@ scripts/controle-langue.mjs        `npm run controle-langue`: French words left 
 scripts/tests-attestes.mjs           `npm run tests:attestes`: plays the whole suite on the committed tree and writes the per-test TAP report `resultats.tap` (ignored by git); it is the suite declared in `.sdlc.yaml`, `attester` plays it and posts the status
 scripts/niveaux-tests.mjs            Pure logic of the test levels (file choice for `--local`, name lookup for the replay), imported by the two scripts; tested in `src/scripts-tests/`
 scripts/rejouer-tests.mjs            `node scripts/rejouer-tests.mjs "<describe > test>"`: replays only the named tests (the `rejouer:` of `.sdlc.yaml`)
+scripts/duree-tests-ecran.mjs, inventaire-ecrans.mjs   `node scripts/duree-tests-ecran.mjs resultats.tap`: duration per `src/e2e/` file and total; `inventaire-ecrans.mjs`: reads the `docs/tests-ecran/lot-*.md` inventories (used by the guard `src/scripts-tests/inventaire-ecrans.test.ts`)
 src/
   server.ts, app.ts               Startup; assembly of plugins and routes
   config/env.ts                   Environment variables (zod)
@@ -36,7 +37,7 @@ src/
   services/images/                The assistant's image engine: GenerateurImage port, adapters stub, codex, none (AD-88, AD-90)
   services/llm/                   LLM transports taken from Antre-du-maitre, wired nowhere
 assets/brand/kanevas-marge/         The « Marge » icon pack (source of the identity; `frontend/public/` holds byte copies, AD-135)
-docs/                             Retained design, as built: journeys, screens, data, charter; maquettes/ = HTML pages to open in a browser (e09-fiche.html is the charter's reference)
+docs/                             Retained design, as built (and `docs/tests-ecran/`: the rule « the effect through its door, the display on screen », the inventory of every screen test, the before/after durations — read it before writing a screen test, and add a line to a `lot-*.md` for each new one): journeys, screens, data, charter; maquettes/ = HTML pages to open in a browser (e09-fiche.html is the charter's reference)
 frontend/                         React + Vite: charter (ui/), screens (src/ecrans/, including E-5 administration.tsx), sidebar
 .github/workflows/docker-publish.yml   CI: GHCR image on an attested tag (no test played; no workflow plays the suite)
 ```
@@ -109,11 +110,11 @@ suffices for the same commands (`npm ci && npm run build:wasm && npm run typeche
 | `local:` | `npm run tests:local` | `build:wasm`, `typecheck`, `scripts/copier-wasm.mjs` (copies `rust/pkg` to `dist/wasm`, no `build`), then every test file except `src/e2e/` (no server, no browser, no Playwright install); same `resultats.tap` (overwritten: after a local run it no longer holds a whole-suite report), same test names | 250 s (192 files, 1 568 top-level TAP lines); the font check of the built app is skipped when there is no dist/ |
 | `commande:` | `npm run tests:attestes` | everything, `src/e2e/` included, after `build` | 2 240 s (about 37 min; 467 files, 2 842 top-level TAP lines). See « End-to-end tests » |
 
-Each figure is one pass of the declared command on a scratch clone of the feature tip (`feature/kanevas-niveau-fiche`, commit `88904f3a`), 2026-11-16, two files at a time, `npm ci` included; « TAP lines » counts the `ok` / `not ok` lines at the left margin of `resultats.tap` (a suite counts one). The `ecrans:` pass and the `commande:` pass had red tests of their own, not the level's (`src/e2e/preuve-tests-declaree.test.ts`, corrected since; the unstable ones are in `.agent/status.md`): the duration is the one of the run, red included.
+Each figure is one pass of the declared command on a scratch clone of the feature tip (`feature/kanevas-niveau-fiche`, commit `88904f3a`), 2026-11-16, **before `kanevas-tests-hors-ecran` removed 19 screen files (275 → 256 files in `src/e2e/`, 515 test files today instead of the 467 counted here; the counts and durations below are dated, `--liste` gives the current ones)**, two files at a time, `npm ci` included; « TAP lines » counts the `ok` / `not ok` lines at the left margin of `resultats.tap` (a suite counts one). The `ecrans:` pass and the `commande:` pass had red tests of their own, not the level's (`src/e2e/preuve-tests-declaree.test.ts`, corrected since; the unstable ones are in `.agent/status.md`): the duration is the one of the run, red included.
 
 ### Screens touched
 
-A screen is a file of `frontend/src/ecrans/` registered in `registre.ts`; a screen test declares its screens on its first line, `// ecrans: administration` (several names separated by commas; an unknown name is an error, `src/scripts-tests/` checks it; `scripts/proposer-ecrans.mjs` proposes the lines from the addresses a test opens). 214 of the 275 `src/e2e/` files declare; the 61 others play for any touched screen. Read a choice without playing it:
+A screen is a file of `frontend/src/ecrans/` registered in `registre.ts`; a screen test declares its screens on its first line, `// ecrans: administration` (several names separated by commas; an unknown name is an error, `src/scripts-tests/` checks it; `scripts/proposer-ecrans.mjs` proposes the lines from the addresses a test opens). 214 of the 256 `src/e2e/` files declare; the 42 others play for any touched screen. Read a choice without playing it:
 
 ```
 node scripts/niveaux-tests.mjs --liste ecrans <base>   # the screen tests `ecrans:` plays
