@@ -275,6 +275,8 @@ test('E-19 contenu long · 102 fichiers : 100 puis « Charger la suite », le de
   assert.equal(await tuiles(), 100);
   await a2.getByRole('button', { name: 'Charger la suite' }).click();
   await attendreAbsent(a2.getByRole('button', { name: 'Charger la suite' }));
+  // The count is read once the next page is drawn, not at the instant the button goes (rouge sous charge, vert seul).
+  for (let i = 0; i < 100 && (await tuiles()) !== 102; i++) await a2.waitForTimeout(100);
   assert.equal(await tuiles(), 102);
   assert.equal(await a2.getByRole('button', { name: 'Charger la suite' }).count(), 0);
   await a2.screenshot({ path: '/tmp/scr/ver-102.png' });
