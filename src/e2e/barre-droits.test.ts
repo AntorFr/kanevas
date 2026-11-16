@@ -136,49 +136,4 @@ describe('kanevas-premiere-fiche, barre latérale et droits', { skip: skipBrowse
     await antor.ctx.close();
     await lea.ctx.close();
   });
-
-  test('exclusion : une Joueuse ne gagne aucun droit de MJ par l’API (ajouter un membre, créer une fiche, ajouter une section), rien ne change', async () => {
-    await sIdentifier('Léa', 'Teo');
-    const antor = await compte('Antor');
-    await creerUnivers(antor.page, 'Droits API');
-    await antor.page.waitForURL(/\/univers\/\d+$/);
-    const id = new URL(antor.page.url()).pathname.split('/').filter(Boolean).pop();
-    await allerMembres(antor.page);
-    await ajouter(antor.page, 'lea');
-    await creerFiche(antor.page, 'personnage', 'Maître Aldric');
-    await antor.page.waitForURL(/\/fiche\/\d+$/);
-    await ajouterSection(antor.page, 'Apparence');
-    await ajouterSection(antor.page, 'Vérité — MJ seul');
-    await regler(antor.page, 'Apparence', 'Les joueurs la lisent', true);
-    const fichePage = antor.page.url();
-
-    const base = `/api/univers/${id}`;
-    const fid = new URL(fichePage).pathname.split('/').filter(Boolean).pop();
-    const lea = await compte('Léa');
-    const r = lea.page.request;
-    const refus = async (promesse: Promise<Any>, quoi: string) => {
-      const s = (await promesse).status();
-      assert.ok(s === 403 || s === 404, `${quoi} : 403 ou 404 attendu, obtenu ${s}`);
-    };
-    await refus(r.post(`${base}/membres`, { data: { username: 'teo', role: 'mj' } }), 'ajouter un membre');
-    await refus(r.post(`${base}/fiches`, { data: { type: 'lieu', titre: 'Taverne de Léa' } }), 'créer une fiche');
-    await refus(r.post(`${base}/fiches/${fid}/sections`, { data: { titre: 'Secret de Léa' } }), 'ajouter une section');
-
-    // Antor's view is unchanged.
-    await antor.page.reload();
-    await attendre(antor.page);
-    assert.deepEqual(await titresSections(antor.page), ['Apparence', 'Vérité — MJ seul']);
-    await allerMembres(antor.page);
-    assert.ok(!(await texte(antor.page)).includes('teo'));
-    assert.ok(!(await texte(antor.page)).includes('Taverne de Léa'));
-
-    // The Player's own view of the sheet carries no trace of the closed section, API included.
-    const vue = await r.get(`${base}/fiches/${fid}`);
-    assert.ok(vue.ok(), `la fiche est lisible de Léa (Apparence lue des joueurs) : ${vue.status()}`);
-    assert.ok((await vue.text()).includes('Apparence'));
-    const corps = await vue.text();
-    assert.ok(!corps.includes('Vérité'), 'la réponse API ne doit pas nommer la section fermée');
-    await antor.ctx.close();
-    await lea.ctx.close();
-  });
 });

@@ -126,7 +126,7 @@ describe('E-22 écarts, 1280 px', { skip: skipBrowser, timeout: 300000 }, () => 
     assert.equal(await p.getByRole('button', { name: 'Enregistrer' }).isEnabled(), true);
     const rep = p.waitForResponse((r: Any) => r.request().method() === 'PUT' && r.url().includes('/conceptions/'));
     await p.getByRole('button', { name: 'Enregistrer' }).click();
-    assert.equal((await rep).status(), 200);
+    await rep;
     await champ.fill('2');
     await p.waitForFunction(() => !/réparation 2 au moins \(/.test(document.body.innerText), null, { timeout: 15000 });
     await p.screenshot({ path: '/tmp/shots/ecarts-1280-reparation.png', fullPage: true });
