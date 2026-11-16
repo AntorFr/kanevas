@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useCharge, useTitreAriane } from '../../../cadre-contexte';
 import type { UniversListe } from '../../../types';
 import { EtatVide, Pastille } from '../../../ui';
 import type { PropsOutil } from '../../types';
+import CarteSysteme from './CarteSysteme';
 import { nomAstre, nomFormation, placeAstre, placeFormation, typeAstre, typeFormation } from './systeme-libelles';
 import type { InterieurSysteme } from './types';
 import './galaxie.css';
@@ -21,6 +23,10 @@ export default function Systeme({ universId, cible, prealable, suffixeMode }: Pr
   const titre = s.nom !== null && s.nom !== '' ? s.nom : `Système sans nom (${s.q}, ${s.r})`;
   useTitreAriane(titre, 'Cartes');
   const vide = s.astres.length === 0 && s.formations.length === 0;
+  // The selected body (a key of the answer): set by the canvas, a list row or the keyboard; the panel (next task) reads it.
+  const [selection, setSelection] = useState<string | null>(null);
+  const base = `/api/univers/${universId}/outils/swn/galaxie/galaxies/${cible ?? ''}`;
+  const adresseVoisin = `/univers/${universId}/outils/swn/galaxie/${cible ?? ''}/interieur/`;
 
   return (
     <div className="gx-systeme-page">
@@ -34,15 +40,25 @@ export default function Systeme({ universId, cible, prealable, suffixeMode }: Pr
         <EtatVide titre={mj ? 'Ce système est vide.' : 'Rien à voir dans ce système pour l’instant.'} />
       ) : (
         <>
+          <CarteSysteme
+            interieur={s}
+            base={base}
+            adresseVoisin={adresseVoisin}
+            suffixe={suffixeMode ?? ''}
+            selection={selection}
+            onSelection={setSelection}
+          />
           {s.astres.length > 0 && (
             <section>
               <h2>Corps ({s.astres.length})</h2>
-              <ul className="gx-lignes" aria-label="Corps du système">
+              <ul className="gx-lignes" id="gx-liste-corps" aria-label="Corps du système">
                 {s.astres.map((a) => (
-                  <li key={a.cle} className={a.genre === 'lune' ? 'lune' : undefined}>
-                    <span className={a.nom ? 'nom' : 'nom vide'}>{nomAstre(a)}</span>
-                    <span className="place">{placeAstre(a)}</span>
-                    <span className="meta">{typeAstre(a)}</span>
+                  <li key={a.cle} title={nomAstre(a)} className={`cliquable${a.genre === 'lune' ? ' lune' : ''}${selection === a.cle ? ' choisi' : ''}`}>
+                    <button type="button" className="ligne-corps" aria-pressed={selection === a.cle} onClick={() => setSelection(a.cle)}>
+                      <span className={a.nom ? 'nom' : 'nom vide'}>{nomAstre(a)}</span>
+                      <span className="place">{placeAstre(a)}</span>
+                      <span className="meta">{typeAstre(a)}</span>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -53,7 +69,7 @@ export default function Systeme({ universId, cible, prealable, suffixeMode }: Pr
               <h2>Zones ({s.formations.length})</h2>
               <ul className="gx-lignes" aria-label="Zones du système">
                 {s.formations.map((f) => (
-                  <li key={f.cle}>
+                  <li key={f.cle} title={nomFormation(f)}>
                     <span className={f.nom ? 'nom' : 'nom vide'}>{nomFormation(f)}</span>
                     <span className="place">{placeFormation(f)}</span>
                     <span className="meta">{typeFormation(f)}</span>

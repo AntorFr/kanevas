@@ -35,6 +35,10 @@
   --voile: rgba(5,6,9,.62);
   --ombre-flottant: 0 0 0 1px rgba(255,255,255,.06), 0 12px 32px -6px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.35);
   --squelette: rgba(255,255,255,.06);
+  /* The sky of a system map stays dark in both themes (a space stays dark): the same three values below. */
+  --ciel: #0b0b10;
+  --ciel-trait: rgba(160,170,255,.34);
+  --ciel-halo: rgba(0,0,0,.9);
 
   --police-titre: "Fraunces Variable", "Fraunces", "Iowan Old Style", Georgia, serif;
   --police-lecture: "Newsreader Variable", "Newsreader", "Iowan Old Style", Georgia, serif;
@@ -81,5 +85,10 @@
   --voile: rgba(20,22,34,.38);
   --ombre-flottant: 0 0 0 1px rgba(22,26,44,.08), 0 12px 32px -8px rgba(22,26,44,.22), 0 2px 6px rgba(22,26,44,.08);
   --squelette: rgba(22,26,44,.07);
+  --ciel: #0b0b10;
+  --ciel-trait: rgba(160,170,255,.34);
+  --ciel-halo: rgba(0,0,0,.9);
 }
 @media (prefers-reduced-motion: reduce) { :root { --duree: 0ms; } }
+/* Whatever sits on the sky reads the dark theme's text and accent, in either theme (the sky is dark in both). */
+.gx-ciel { --texte: #ebecf0; --texte-2: #a6a7b0; --texte-3: #8b8c97; --accent: #8b9bf0; --focus: #9aa6f5; }
