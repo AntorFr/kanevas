@@ -437,4 +437,20 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/etoiles-ensemble-besoin.test.ts` | `B-86 joueur : Léa voit le même tirage que le MJ, même autour d’un système non promu secret (le tirage ne trahit pas sa présence)` | effet | — | gardé — no door: epic test not yet carried to a door (src/routes), kept on screen until then |
 | `src/e2e/etoiles-ensemble-besoin.test.ts` | `B-87 : le même cœur chargé par Chromium rend, pour les 400 blocs des fixtures, les mêmes étoiles qu’en Node (à 1e-9), octet pour octet` | affichage | — | gardé |
 | `src/e2e/etoiles-ensemble-besoin.test.ts` | `E-21 : l’écran de la galaxie montre les étoiles des fixtures à leur place et plus celle que le système non promu voisin exclut` | affichage | — | gardé |
+| `src/e2e/wasm-navigateur.test.ts` | `the coeur module in Chromium draws the fixtures' systems and the exact JSON bytes of generation-sortie-systemes.json` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-besoin.test.ts` | `joueuse et MJ lisent les mêmes lignes d’un système tiré, marqué « Tiré » ; le MJ en mode joueur aussi` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-besoin.test.ts` | `types, lieux et nombres français de chaque corps et zone d’un système défini (comptes, virgule, pas de zéro final), même lecture pour MJ, joueuse et MJ en mode joueur` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-besoin.test.ts` | `ordre de « Corps » : l’étoile, ses compagnes, puis chaque planète suivie de ses lunes` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-besoin.test.ts` | `ordre de « Corps » : les comètes et anomalies viennent après toutes les planètes et leurs lunes, par orbite croissante` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-besoin.test.ts` | `système défini sans corps : « Ce système est vide. » pour le MJ, « Rien à voir dans ce système pour l’instant. » pour la joueuse` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-besoin.test.ts` | `douze planètes à quatre lunes et cinq compagnes : toutes les lignes, dans l’ordre, sans coupure ni défilement horizontal` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-besoin.test.ts` | `serveur muet à l’ouverture : « Impossible de charger l’outil. » et « Réessayer » ramène la liste` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-besoin.test.ts` | `réseau perdu après la lecture : la liste reste sous « Connexion perdue. », qui s’en va au retour du réseau` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-besoin.test.ts` | `sans session, l’adresse du système passe par la connexion et ne montre aucun corps` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-besoin.test.ts` | `depuis le panneau d’un système de la galaxie, « Ouvrir le système » mène à son intérieur, pour la joueuse comme pour le MJ` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-ecran.test.ts` | `un hexagone tiré : le MJ voit « Tiré » et la liste, recharge et retrouve les mêmes lignes` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-ecran.test.ts` | `une joueuse lit un système défini : l’anomalie et l’astre nommé, l’astre sans nom lu « Astre sans nom »` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-ecran.test.ts` | `hexagone sans étoile ; système secret pour la joueuse et pour le MJ en mode joueur : « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-ecran.test.ts` | `état vide : cadre en pointillés, remplissage de 18 px, texte propre à chaque rôle` | affichage | — | gardé |
+| `src/e2e/systeme-liste-corps-ecran.test.ts` | `connexion perdue après la lecture : « Connexion perdue. » une seule fois` | affichage | — | gardé |
 | `src/e2e/wasm-navigateur.test.ts` | `the coeur module in Chromium finds the fixtures' stars and the exact JSON bytes of generation-sortie-coeur.json` | affichage | — | gardé |
