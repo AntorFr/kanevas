@@ -646,7 +646,7 @@ test('B-46 open batch > a token revoked while its batch is open gets 401 on the 
   const r = await m.pousser(jeton, 'lieu:revoque-2', AVEC_NOTES(true), lot);
   assert.equal(r.statusCode, 401);
   assert.deepEqual(r.json(), UNIQUE);
-  assert.equal((m.app.db.prepare("SELECT count(*) AS n FROM fiches WHERE cle_origine = 'lieu:revoque-2'").get() as { n: number }).n, 0);
+  assert.equal((m.app.db.prepare("SELECT count(*) AS n FROM fiches WHERE cle = 'lieu:revoque-2'").get() as { n: number }).n, 0);
   const lu = ((await lots(m)) as Array<Record<string, any>>).find((l) => l.id === lot || l.lotId === lot);
   assert.ok(lu, 'the open batch is still listed');
   assert.equal(lu.compteurs.fiches!.creees, 1, 'only the first write is counted');
