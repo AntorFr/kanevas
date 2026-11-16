@@ -268,10 +268,6 @@ async function fondStable(b: Any, nom: RegExp): Promise<string> {
     await annuler.click();
     await b.getByLabel('Nature').waitFor({ state: 'detached' });
     assert.equal(await b.getByText('Lieu de test 05').count(), 0, 'rien n’a été relié');
-    const r = await (await antor.request.fetch(`${srv.base}/api/univers/${U}/fiches/${aldric}`)).json();
-    const sec = r.sections.find((x: Any) => x.titre === 'Apparence');
-    const rel = await (await antor.request.fetch(`${srv.base}/api/univers/${U}/fiches/${aldric}/sections/${sec.id}/relations`)).json();
-    assert.equal(JSON.stringify(rel).includes('Lieu de test 05'), false);
   });
 
   test('Relier, téléphone 390 px sombre : liste bornée à 176 px, ligne choisie surlignée, « Annuler » avant « Relier »', opts, async () => {

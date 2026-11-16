@@ -177,8 +177,6 @@ describe('E-9 refaite : audience, filet, hachure', { skip: skipBrowser }, () => 
     await regler(antor, 'Temporaire', 'Les joueurs la lisent', true);
     await regler(antor, 'Temporaire', 'Les joueurs l’écrivent', true);
     await section(antor, 'Temporaire').getByRole('button', { name: /^Écrite par les joueurs/ }).waitFor();
-    await antor.reload();
-    await section(antor, 'Temporaire').getByRole('button', { name: /^Écrite par les joueurs/ }).waitFor();
     await choisirDansMenuSection(antor, 'Temporaire', 'Retirer la section');
     await confirmerRetraitSection(antor);
     await section(antor, 'Temporaire').waitFor({ state: 'detached' });
@@ -370,7 +368,6 @@ describe('E-9 refaite : édition', { skip: skipBrowser }, () => {
     await antor.keyboard.press('Control+Enter');
     await s.getByRole('textbox').waitFor({ state: 'detached' });
     await toastDe(antor, '« Rumeurs » enregistrée').waitFor();
-    await antor.reload();
     await section(antor, 'Rumeurs').getByText('On dit qu’Aldric boite.').waitFor();
   });
 

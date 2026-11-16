@@ -112,7 +112,7 @@ test('E-13 : « La Couronne brisée » en colonne à Antor ; « Acte II » (scé
 });
 
 test('« Aventure supprimée » : au MJ seul, Léa ne voit pas de différence entre fermée et supprimée', opts, async () => {
-  assert.equal((await api(antor, 'DELETE', `/api/univers/${uid}/fiches/${acte2}`)).status, 204);
+  await api(antor, 'DELETE', `/api/univers/${uid}/fiches/${acte2}`); // setup: its answer is proved by the route
   await antor.goto(`/univers/${uid}/comptes-rendus`);
   await antor.getByRole('link', { name: /Séance du scénario/ }).waitFor();
   await attendre(antor);

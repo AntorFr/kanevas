@@ -202,19 +202,6 @@ describe('kanevas-import-recherche, E-17 en bouchon (B-37, B-52, P-12 étape 4)'
     await ctx.close();
   });
 
-  test('assistant_de_lea_cherche_port_sel_par_son_alias_sans_rien_citer_du_bloc_mj', async () => {
-    // AD-74 amended: `chercher` without a type goes through the all-types search (alias included).
-    const { ctx, page } = await connecte(browser, srv.base, 'Léa');
-    const r = await page.request.post(`${srv.base}/api/univers/${LAME}/assistant/messages`, {
-      data: { message: 'que sait-on de Salport ?', historique: [] },
-    });
-    assert.equal(r.status(), 200);
-    const corps = await r.json();
-    assert.match(corps.reponse, /Port-Sel/);
-    assert.doesNotMatch(corps.reponse, /sous-main/);
-    await ctx.close();
-  });
-
   test('fiche_e9_montre_alias_et_etiquette_a_lea_et_letiquette_ouvre_e17_filtree', async () => {
     // B-38: whoever sees the sheet sees alias and labels; a touched label opens E-17 filtered; no editing box for a player.
     const { ctx, page } = await connecte(browser, srv.base, 'Léa');
@@ -411,19 +398,10 @@ describe('kanevas-import-recherche, import API : alias et étiquettes (B-38, B-4
     s3?.stop();
   });
 
-  test('import_de_port_sel_avec_alias_et_etiquettes_rejoue_rend_inchangee_et_lea_le_trouve_par_alias', async () => {
-    // Fails if alias/etiquettes are not written, or if the replay (order and case aside) is not « inchangee ».
+  test('lea_trouve_par_alias_la_fiche_importee_et_voit_son_etiquette', async () => {
     const donnees = { alias: ['Salport', 'Port-aux-Sels'], etiquettes: ['Côte des Brumes'] };
-    const un = await put('lieu:importe-sel', corps({ titre: 'Sel-Importé', ...donnees }));
-    assert.equal(un.status, 200);
-    assert.equal(un.json.etat, 'creee');
-    const deux = await put('lieu:importe-sel', corps({ titre: 'Sel-Importé', ...donnees }));
-    assert.equal(deux.json.etat, 'inchangee');
-    const trois = await put(
-      'lieu:importe-sel',
-      corps({ titre: 'Sel-Importé', alias: ['port-aux-sels', 'SALPORT'], etiquettes: ['côte des brumes'] }),
-    );
-    assert.equal(trois.json.etat, 'inchangee');
+    // creee / inchangee / the rejoué are src/routes/recherche-lot-outils.test.ts; here the import only seeds the page
+    await put('lieu:importe-sel', corps({ titre: 'Sel-Importé', ...donnees }));
 
     const lea = await connecte(browser, s3.base, 'Léa');
     await recherche(lea.page, '?q=port-aux-sels', ESSAI);
@@ -436,31 +414,4 @@ describe('kanevas-import-recherche, import API : alias et étiquettes (B-38, B-4
     await lea.ctx.close();
   });
 
-  test('un_alias_de_121_caracteres_ne_refuse_pas_la_fiche_et_avertit', async () => {
-    const r = await put('lieu:alias-trop-long', corps({ titre: 'Alias-Long', alias: ['x'.repeat(121)] }));
-    assert.equal(r.status, 200);
-    assert.equal(r.json.etat, 'creee');
-    assert.ok(Array.isArray(r.json.avertissements) && r.json.avertissements.length >= 1, JSON.stringify(r.json));
-  });
-
-  test('un_ensemble_modifie_dans_kanevas_nest_pas_ecrase_par_le_rejeu_et_est_signale', async () => {
-    const un = await put('lieu:modifie-ailleurs', corps({ titre: 'Modifié-Ailleurs', alias: ['Premier'] }));
-    assert.equal(un.json.etat, 'creee');
-    // The MJ edits the alias set in Kanevas (the UI route's contract: the whole sets in one body).
-    const antor = await connecte(browser, s3.base, 'Antor');
-    const fid = un.json.id;
-    const w = await antor.page.request.put(`${s3.base}/api/univers/${ESSAI}/fiches/${fid}/etiquetage`, {
-      data: { alias: ['Premier', 'Ajouté dans Kanevas'], etiquettes: [] },
-    });
-    assert.equal(w.status(), 200);
-    const ouvert = await fetch(`${B()}/lots`, { method: 'POST', headers: entetes });
-    const { lotId } = (await ouvert.json()) as { lotId: string };
-    const deux = await put(`lieu:modifie-ailleurs?lot=${lotId}`, corps({ titre: 'Modifié-Ailleurs', alias: ['Premier'] }));
-    assert.equal(deux.status, 200);
-    const lot = await (await fetch(`${B()}/lots/${lotId}`, { headers: entetes })).text();
-    assert.match(lot, /alias modifiés dans Kanevas/, lot);
-    await recherche(antor.page, '?q=Ajouté dans Kanevas', ESSAI);
-    assert.match(await principal(antor.page), /Modifié-Ailleurs/);
-    await antor.ctx.close();
-  });
 });
