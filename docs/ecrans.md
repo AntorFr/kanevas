@@ -4472,8 +4472,8 @@ d'agir avec vos droits, par l'API ou par le serveur MCP, dans les univers que vo
   90 days, 1 an), then « Univers atteints »: a segmented choice **« Tous mes univers » / « Une liste d'univers »**
   (the note « Tous mes univers » covers the ones joined later).
   *« Tous mes univers »*: a « Niveau » choice (Lecture / **Lecture + écriture**), then « Exceptions »: one line per
-  universe of the account (name, role pill MJ or Joueur) with a choice **Comme le reste / — / Lecture /
-  Lecture + écriture** — only a line moved off « Comme le reste » is an exception, so a universe joined later
+  universe of the account (name, role pill MJ or Joueur) with a choice **« Comme le reste » / « — » / « Lecture » /
+  « Lecture + écriture »** — only a line moved off « Comme le reste » is an exception, so a universe joined later
   follows the level. *« Une liste »*: the same lines without « Comme le reste », **— by default**; at least one
   universe at a level other than « — » (« Choisissez au moins un univers. » otherwise, the button stays active and
   the message is shown under the list). The note « Un jeton n'a jamais plus de droits que votre compte : là où vous
