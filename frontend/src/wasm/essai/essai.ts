@@ -5,6 +5,7 @@ import systemes from '../../../../rust/modules/coeur/tests/fixtures/generation-s
 import sortieSystemes from '../../../../rust/modules/coeur/tests/fixtures/generation-sortie-systemes.json';
 import { chargerModule } from '../charger';
 import {
+  dessiner,
   densiteDefaut,
   hexVersPlan,
   orbiteHeureVersPlan,
@@ -78,12 +79,31 @@ async function afficherSystemes(): Promise<void> {
   sortie('coeur-systeme-appels').textContent = JSON.stringify({ transition, x, y, orbite, heure });
 }
 
+// Bodies drawn from their aspect (AD-carte-1): the bytes as hexadecimal per aspect, and what the refusals throw.
+const ASPECTS_RENDU = ['{"type":"tellurique"}', '{"type":"jaune"}', '{"type":"gazeuse","aspect":{"palette":["#102030","#a0b0c0"]}}'];
+async function afficherRendu(): Promise<void> {
+  const images: string[] = [];
+  for (const a of ASPECTS_RENDU) images.push(Array.from(await dessiner(a, 32, 1), (o) => o.toString(16).padStart(2, '0')).join(''));
+  sortie('coeur-rendu').textContent = JSON.stringify(images);
+  const refus: boolean[] = [];
+  for (const [a, c] of [['{"type":"licorne"}', 32], ['{"type":"tellurique"}', 8]] as const) {
+    try {
+      await dessiner(a, c, 1);
+      refus.push(false);
+    } catch {
+      refus.push(true);
+    }
+  }
+  sortie('coeur-rendu-refus').textContent = JSON.stringify(refus);
+}
+
 async function afficher(): Promise<void> {
   try {
     const exemple = await chargerModule('exemple');
     sortie('fnv1a').textContent = String(exemple.fnv1a('kanevas'));
     sortie('version').textContent = exemple.version();
     await afficherCoeur();
+    await afficherRendu();
   } catch {
     const erreur = sortie('erreur');
     erreur.hidden = false;
