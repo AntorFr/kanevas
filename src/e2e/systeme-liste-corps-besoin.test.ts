@@ -228,11 +228,11 @@ describe('E-23 liste des corps : parcours P-22 en version texte', { skip: skipBr
     await page.goto(adr(44, 45));
     await page.getByRole('heading', { name: 'Corps (9)' }).waitFor();
     await ctx.setOffline(true);
-    await page.getByText('Connexion perdue.', { exact: true }).waitFor();
+    await page.getByText(/^Connexion perdue\./).waitFor();
     assert.equal((await lignesDe(page, /^Corps/)).length, 9);
     await hors(page, 'hors-ligne');
     await ctx.setOffline(false);
-    await page.getByText('Connexion perdue.', { exact: true }).waitFor({ state: 'hidden' });
+    await page.getByText(/^Connexion perdue\./).waitFor({ state: 'hidden' });
     assert.equal((await lignesDe(page, /^Corps/)).length, 9);
     await ctx.close();
   });
