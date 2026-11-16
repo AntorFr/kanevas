@@ -92,6 +92,10 @@ describe('kanevas-relation-badge-pj, badge PJ/PNJ du bloc Relations (E-9)', { sk
     await mk('lieu', 'Anse-aux-Sels');
     await mk('faction', 'Lames Grises');
     await mk('personnage', 'Le Prieur masqué', { v: 1, pj: false }, false); // aucune section lue des joueurs
+    // Port-Sel est déjà relié (cas de la production) : semis seul, la route porte l'effet (relations-badge-pj)
+    for (const [cible, type] of [['Léa Brisefer', 'compagnon de'], ['Maître Aldric', 'tenu par'], ['Anse-aux-Sels', 'voisin de'], ['Lames Grises', 'tenu par']]) {
+      await ok(antor, 'POST', relUrl(F['Port-Sel'], secPortSel), { cibleFicheId: F[cible], type });
+    }
   });
   after(async () => {
     await browser?.close();
