@@ -36,7 +36,7 @@ describe('E-28 objets, calques, propriétés', { skip: skipBrowser }, () => {
       }
     }
     api = `/api/univers/${uid}/outils/battlemap`;
-    for (const nom of ['coffre', 'tonneau', 'piege', 'lampe']) {
+    for (const nom of ['coffre', 'tonneau', 'piege', 'lampe', 'torche']) {
       const r = await antor.request.post(`${api}/assets`, { multipart: { categorie: 'objet', fichier: png(`${nom}.png`) } });
       assert.equal(r.status(), 201, `${nom}: ${await r.text()}`);
     }
@@ -199,5 +199,58 @@ describe('E-28 objets, calques, propriétés', { skip: skipBrowser }, () => {
     await antor.getByRole('menuitem', { name: 'Calque d’objets' }).click();
     await antor.getByText('20 calques au plus.').first().waitFor();
     assert.equal((await lire(cid)).document.calques.length, 20);
+  });
+  it('reprise du verify : champs de la carte actifs sans sélection, calque MJ seul hachuré, libellé « Asset retiré » sur le canevas', async () => {
+    const cid = await nouvelle('Reprise');
+    await ouvrir(cid);
+    // properties without selection: each field writes at once
+    await onglet('Propriétés');
+    const nom = antor.getByLabel('Nom', { exact: true });
+    await nom.fill('Salle des gardes');
+    await nom.press('Enter');
+    await antor.getByText('Enregistré', { exact: true }).waitFor();
+    assert.equal((await lire(cid)).titre, 'Salle des gardes');
+    const larg = antor.getByLabel(/Largeur/);
+    await larg.fill('32');
+    await larg.press('Enter');
+    await antor.getByLabel(/Largeur/).and(antor.locator('input[value="32"]')).waitFor();
+    assert.equal((await lire(cid)).document.largeur, 32);
+    await larg.fill('abc');
+    await larg.press('Enter');
+    await antor.getByText('Entrez un nombre entier de cases.').waitFor();
+    assert.equal((await lire(cid)).document.largeur, 32, 'valeur refusée : rien n’est écrit');
+    await nom.fill('');
+    await nom.press('Enter');
+    await antor.getByText('Le nom fait de 1 à 80 caractères.').waitFor();
+    assert.equal((await lire(cid)).titre, 'Salle des gardes');
+
+    // MJ-only layer row is marked
+    await onglet('Calques');
+    await antor.getByRole('button', { name: 'Nouveau calque' }).click();
+    await antor.getByRole('menuitem', { name: 'Calque d’objets' }).click();
+    await antor.locator('[data-calque="Objets 2"]').waitFor();
+    assert.equal(await antor.locator('[data-calque="Objets 2"]').evaluate((el: Element) => el.classList.contains('mj')), false);
+    await antor.getByRole('button', { name: 'Menu du calque Objets 2' }).click();
+    await antor.getByRole('menuitem', { name: 'MJ seul : activer' }).click();
+    await antor.locator('[data-calque="Objets 2"].mj').waitFor();
+    await enregistre(cid, (d) => d.calques.some((c: Any) => c.nom === 'Objets 2' && c.mj_seul === true));
+    const fond = await antor.locator('[data-calque="Objets 2"]').evaluate((el: Element) => getComputedStyle(el).backgroundImage);
+    assert.match(fond, /repeating-linear-gradient/);
+    assert.equal(await antor.locator('[data-calque="Objets"]').evaluate((el: Element) => getComputedStyle(el).backgroundImage), 'none');
+
+    // « Asset retiré » is real text on the canvas, for an element of a visible layer only
+    const doc = (await lire(cid)).document;
+    const obj = doc.calques.find((c: Any) => c.nom === 'Objets');
+    const r = await antor.request.post(`${api}/cartes/${cid}/commandes`, {
+      data: { version: (await lire(cid)).version, commandes: [{ type: 'poser_element', id: 'fantome', calque: obj.id, asset_id: String(idsAssets.torche), x: 5.5, y: 5.5 }] },
+    });
+    assert.ok(r.ok(), await r.text());
+    assert.ok((await antor.request.delete(`${api}/assets`, { data: { ids: [idsAssets.torche] } })).ok());
+    await ouvrir(cid);
+    await antor.locator('.canevas-retire', { hasText: 'Asset retiré' }).waitFor();
+    assert.equal(await antor.locator('.canevas-retire').count(), 1);
+    await onglet('Calques');
+    await antor.getByRole('button', { name: 'Masquer Objets', exact: true }).click();
+    await antor.locator('.canevas-retire').waitFor({ state: 'detached' });
   });
 });
