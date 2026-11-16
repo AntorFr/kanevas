@@ -22,6 +22,7 @@ interface Coeur {
   transition_defaut(astres: string, formations: string): number;
   orbite_heure_vers_plan(orbite: number, heure: number): Float64Array;
   plan_vers_orbite_heure(x: number, y: number): Float64Array;
+  heure_vers_voisin(q1: number, r1: number, q2: number, r2: number): number;
   dessiner_astre(aspect: string, cote: number, versionRendu: number): Uint8Array;
   version_rendu(): number;
   catalogue_aspects(): string;
@@ -87,4 +88,9 @@ export async function versionRendu(): Promise<number> {
 /** The default catalogue of aspects of the core, as JSON. */
 export async function catalogueAspects(): Promise<string> {
   return (await coeur()).catalogue_aspects();
+}
+
+/** Direction, as an hour in [0, 12), of the system at (q2, r2) seen from (q1, r1) (AD-143). */
+export async function heureVersVoisin(q1: number, r1: number, q2: number, r2: number): Promise<number> {
+  return (await coeur()).heure_vers_voisin(q1, r1, q2, r2);
 }

@@ -10,6 +10,7 @@ import {
   changerGraine, contenuGalaxie, creerGalaxie, exigerEcritureGalaxie, lireGalaxie, lireGraine, renommerGalaxie, rendreVisibleGalaxie, supprimerGalaxie,
 } from '../../services/swn/galaxies.js';
 import { lireInterieur } from '../../services/swn/interieur.js';
+import { lireSorties } from '../../services/swn/sorties.js';
 import { lireBlocs, lireRoute, lireSysteme, lireZone, rechercherSystemes } from '../../services/swn/lecture-carte.js';
 import { calculerTrajet } from '../../services/swn/trajet.js';
 
@@ -72,6 +73,14 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
     const p = request.params as { q: string; r: string };
     const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
     return lireInterieur(app.db, a, i.univers, i.galaxie, ent(p.q), ent(p.r));
+  }));
+
+  // The exits of a system: same guards as the interior, composed from the readable routes (AD-carte-3).
+  app.get(`${BASE}/interieur/:q/:r/sorties`, opts, lire((request, a) => {
+    const i = ids(request);
+    const p = request.params as { q: string; r: string };
+    const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
+    return lireSorties(app.db, a, i.univers, i.galaxie, ent(p.q), ent(p.r));
   }));
 
   app.get(`${BASE}/recherche`, opts, lire((request, a) => {

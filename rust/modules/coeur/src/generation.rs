@@ -565,6 +565,20 @@ pub fn plan_vers_orbite_heure(x: f64, y: f64) -> (f64, f64) {
     (x.hypot(y), heure)
 }
 
+/// Direction, as an hour in `[0, 12)`, of the system at `(q2, r2)` seen from the one at `(q1, r1)` (AD-143, AD-carte-3):
+/// the plane vector between the two hexagons read as an hour, 12 (0) at the top, 3 at the right, rounded to 2 decimals.
+/// Two identical hexagons have no direction: 0.
+pub fn heure_vers_voisin(q1: i32, r1: i32, q2: i32, r2_: i32) -> f64 {
+    let (x1, y1) = hex_vers_plan(q1, r1);
+    let (x2, y2) = hex_vers_plan(q2, r2_);
+    if q1 == q2 && r1 == r2_ {
+        return 0.0;
+    }
+    let (_, h) = plan_vers_orbite_heure(x2 - x1, y2 - y1);
+    let h = r2(h);
+    if h >= 12.0 { 0.0 } else { h }
+}
+
 /// Four centres drawn around the given point: an irregular, stable cloud (`nuageParDefaut`).
 fn nuage_par_defaut(cle: &str, orbite: f64, heure: f64, taille: f64) -> Vec<[f64; 3]> {
     let mut r = Rng::new(hash32(cle));
@@ -982,4 +996,10 @@ pub fn orbite_heure_vers_plan_wasm(orbite: f64, heure: f64) -> Vec<f64> {
 pub fn plan_vers_orbite_heure_wasm(x: f64, y: f64) -> Vec<f64> {
     let (o, h) = plan_vers_orbite_heure(x, y);
     vec![o, h]
+}
+
+/// Hour of the neighbouring system at `(q2, r2)` seen from `(q1, r1)`.
+#[wasm_bindgen(js_name = heure_vers_voisin)]
+pub fn heure_vers_voisin_wasm(q1: i32, r1: i32, q2: i32, r2: i32) -> f64 {
+    heure_vers_voisin(q1, r1, q2, r2)
 }
