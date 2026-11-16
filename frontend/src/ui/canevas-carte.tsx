@@ -214,7 +214,7 @@ export function CanevasCarte({
     if (!c) return;
     const t = {
       sol: jeton(el, '--surface-2'), carte: jeton(el, '--surface'), grille: jeton(el, '--bord'), accent: jeton(el, '--accent'),
-      mj: jeton(el, '--mj-bord'), trame: jeton(el, '--mj-trame'), texte: jeton(el, '--texte-3'), neutre: jeton(el, '--surface-3'),
+      mj: jeton(el, '--mj-bord'), trame: jeton(el, '--mj-trame'), texte: jeton(el, '--texte-3'), neutre: jeton(el, '--surface-3'), libelle: jeton(el, '--texte'),
     };
     c.fillStyle = t.sol;
     c.fillRect(0, 0, el.width, el.height);
@@ -288,6 +288,16 @@ export function CanevasCarte({
           c.strokeStyle = t.texte;
           c.lineWidth = px;
           c.strokeRect(-w / 2, -h / 2, w, h);
+          // The label stays upright and readable whatever the rotation, mirror or scale of the element.
+          c.restore();
+          c.save();
+          c.translate(e.x, e.y);
+          const taillePx = Math.min(12 * px, h * 0.45, w / 5);
+          c.font = `${taillePx}px sans-serif`;
+          c.textAlign = 'center';
+          c.textBaseline = 'middle';
+          c.fillStyle = t.libelle;
+          c.fillText('Asset retiré', 0, 0, w * 0.95);
         }
         c.restore();
         if (calque.mj_seul) {

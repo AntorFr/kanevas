@@ -7,7 +7,8 @@ import { Link } from 'react-router-dom';
 
 import { ErreurApi, lire } from '../../../api';
 import { Bouton, Champ, Fenetre, Interrupteur } from '../../../ui';
-import type { Bornes } from './coeur';
+import type { Bornes, Coeur } from './coeur';
+import { erreurTaille } from './taille';
 import type { AssetCarte, Commande, Document, Element } from './types';
 
 interface Fiche { id: number; titre: string; type?: string }
@@ -15,7 +16,7 @@ interface Fiche { id: number; titre: string; type?: string }
 export const ASSET_RETIRE = 'Asset retiré';
 
 export function PanneauProprietes({
-  universId, doc, titre, tailleCase, visible, selection, assets, bornes, geste, dupliquer,
+  universId, doc, titre, tailleCase, visible, selection, assets, bornes, geste, dupliquer, coeur, renommer, appliquerTaille,
 }: {
   universId: number;
   doc: Document;
@@ -27,19 +28,17 @@ export function PanneauProprietes({
   bornes: Bornes | null;
   geste: (commandes: Commande[], refus?: string) => boolean;
   dupliquer: (ids: readonly string[]) => void;
+  coeur: Coeur;
+  renommer: (titre: string) => void;
+  /** Resolves to the sentence to show under the field, or `null` when the server took the change. */
+  appliquerTaille: (largeur: number, hauteur: number, tailleCase: number) => Promise<string | null>;
 }) {
   const els = doc.elements.filter((e) => selection.includes(e.id));
   return (
     <section className="editeur-proprietes" aria-label="Propriétés">
       <h2 className="editeur-panneau-titre">Propriétés</h2>
       {els.length === 0 && (
-        <dl className="editeur-champs">
-          <dt>Nom</dt><dd>{titre}</dd>
-          <dt>Taille</dt><dd>{doc.largeur} × {doc.hauteur} cases</dd>
-          <dt>Taille de case</dt><dd>{tailleCase} px</dd>
-          <dt>Visible des joueurs</dt><dd>{visible ? 'Oui' : 'Non'}</dd>
-          <dt>Calques</dt><dd>{doc.calques.length}</dd>
-        </dl>
+        <ChampsCarte doc={doc} titre={titre} tailleCase={tailleCase} visible={visible} coeur={coeur} renommer={renommer} appliquerTaille={appliquerTaille} />
       )}
       {els.length === 0 && <p className="editeur-note">Sélectionnez un élément pour modifier ses propriétés.</p>}
       {els.length === 1 && <Element1 universId={universId} doc={doc} e={els[0]!} assets={assets} bornes={bornes} geste={geste} dupliquer={dupliquer} />}
@@ -57,6 +56,71 @@ export function PanneauProprietes({
         </div>
       )}
     </section>
+  );
+}
+
+/** The map's own fields, each one applied at once (one write each): name, size, cell size. */
+function ChampsCarte({
+  doc, titre, tailleCase, visible, coeur, renommer, appliquerTaille,
+}: {
+  doc: Document; titre: string; tailleCase: number; visible: boolean; coeur: Coeur;
+  renommer: (t: string) => void;
+  appliquerTaille: (l: number, h: number, c: number) => Promise<string | null>;
+}) {
+  const [nom, setNom] = useState(titre);
+  useEffect(() => setNom(titre), [titre]);
+  const [erreur, setErreur] = useState<{ nom?: string; l?: string; h?: string; c?: string }>({});
+  const max = coeur.tailleMax();
+  const finNom = () => {
+    const n = nom.trim();
+    if (n === '' || n.length > 80) { setErreur((x) => ({ ...x, nom: 'Le nom fait de 1 à 80 caractères.' })); return; }
+    setErreur((x) => ({ ...x, nom: undefined }));
+    if (n !== titre) renommer(n);
+  };
+  const taille = async (cle: 'l' | 'h' | 'c', texte: string) => {
+    const lim = cle === 'l' ? max.largeur : cle === 'h' ? max.hauteur : Number.MAX_SAFE_INTEGER;
+    const e = erreurTaille(texte, lim);
+    if (e) { setErreur((x) => ({ ...x, [cle]: e })); return; }
+    const v = Number(texte);
+    const refus = await appliquerTaille(cle === 'l' ? v : doc.largeur, cle === 'h' ? v : doc.hauteur, cle === 'c' ? v : tailleCase);
+    setErreur((x) => ({ ...x, [cle]: refus ?? undefined }));
+  };
+  return (
+    <div className="editeur-groupe editeur-ecriture">
+      <Champ
+        etiquette="Nom"
+        value={nom}
+        maxLength={80}
+        erreur={erreur.nom}
+        onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setNom(ev.target.value)}
+        onBlur={finNom}
+        onKeyDown={(ev: React.KeyboardEvent) => { if (ev.key === 'Enter') finNom(); }}
+      />
+      <div className="editeur-deux">
+        <NombreEntier etiquette="Largeur (cases)" valeur={doc.largeur} erreur={erreur.l} onValider={(t) => void taille('l', t)} />
+        <NombreEntier etiquette="Hauteur (cases)" valeur={doc.hauteur} erreur={erreur.h} onValider={(t) => void taille('h', t)} />
+      </div>
+      <NombreEntier etiquette="Taille de case (px)" valeur={tailleCase} erreur={erreur.c} onValider={(t) => void taille('c', t)} />
+      <p className="editeur-note">Visible des joueurs : {visible ? 'oui' : 'non'} · {doc.calques.length} calques</p>
+    </div>
+  );
+}
+
+/** An integer field applied on Enter or blur when it changed; the sentence under it is the caller's. */
+function NombreEntier({ etiquette, valeur, erreur, onValider }: { etiquette: string; valeur: number; erreur?: string; onValider: (t: string) => void }) {
+  const [t, setT] = useState(String(valeur));
+  useEffect(() => setT(String(valeur)), [valeur]);
+  const fin = () => { if (t.trim() !== String(valeur)) onValider(t); };
+  return (
+    <Champ
+      etiquette={etiquette}
+      inputMode="numeric"
+      value={t}
+      erreur={erreur}
+      onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setT(ev.target.value)}
+      onBlur={fin}
+      onKeyDown={(ev: React.KeyboardEvent) => { if (ev.key === 'Enter') fin(); }}
+    />
   );
 }
 

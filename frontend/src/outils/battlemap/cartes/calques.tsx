@@ -73,7 +73,7 @@ export function PanneauCalques({
           const Icone = ICONES[c.type];
           const actif = c.type === 'objet' && c.id === actifObjet;
           return (
-            <li key={c.id} className={`editeur-calque${actif ? ' actif' : ''}${c.visible ? '' : ' masque'}`} data-calque={c.nom}>
+            <li key={c.id} className={`editeur-calque${actif ? ' actif' : ''}${c.visible ? '' : ' masque'}${c.mj_seul ? ' mj' : ''}`} data-calque={c.nom}>
               <Icone size={16} strokeWidth={1.75} aria-hidden="true" className="editeur-calque-type" />
               {renomme === c.id ? (
                 <input

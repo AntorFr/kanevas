@@ -43,6 +43,8 @@ main.principal:has(> .editeur-carte), body.asst-present main.principal:has(> .ed
 .editeur-calques-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-1); }
 .editeur-calque { display: flex; align-items: center; gap: var(--e-1); padding: var(--e-1) var(--e-2); border: 1px solid var(--bord); border-radius: var(--rayon-item); background: var(--surface); }
 .editeur-calque.actif { border-color: var(--accent); background: var(--accent-fond); }
+.editeur-calque.mj { border-left: 2px solid var(--mj); background: repeating-linear-gradient(135deg, var(--mj-trame) 0 6px, transparent 6px 12px), var(--surface); }
+.editeur-calque.mj.actif { background: repeating-linear-gradient(135deg, var(--mj-trame) 0 6px, transparent 6px 12px), var(--accent-fond); }
 .editeur-calque.masque .editeur-calque-nom { color: var(--texte-3); }
 .editeur-calque-type { color: var(--texte-3); flex: none; }
 .editeur-calque-nom { flex: 1; min-width: 0; text-align: left; background: transparent; border: 0; color: var(--texte); font: inherit; font-size: var(--t-13); padding: var(--e-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }

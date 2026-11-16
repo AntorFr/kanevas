@@ -343,6 +343,33 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
     }
   }
 
+  async function appliquerTaille(largeur: number, hauteur: number, tailleCase: number): Promise<string | null> {
+    const corps: Record<string, unknown> = {};
+    if (largeur !== doc.largeur) corps.largeur = largeur;
+    if (hauteur !== doc.hauteur) corps.hauteur = hauteur;
+    if (tailleCase !== meta.tailleCase) corps.tailleCase = tailleCase;
+    if (Object.keys(corps).length === 0) return null;
+    try {
+      await enr.reglage(corps);
+      const c = await lire<CarteLue>(base);
+      moteur.remplacer(c.document, c.version);
+      setMeta((m) => ({ ...m, tailleCase: c.tailleCase }));
+      setSelection([]);
+      rafraichir();
+      return null;
+    } catch (e) {
+      const x = e as { statut?: number; code?: string; message?: string };
+      return messageRefusTaille({ statut: x.statut ?? 0, code: x.code, message: x.message ?? 'Enregistrement impossible.' }, coeur.tailleMax().largeur, largeur, hauteur);
+    }
+  }
+
+  async function renommerCarte(t: string) {
+    if (t === meta.titre) return;
+    const ancien = meta.titre;
+    setMeta((m) => ({ ...m, titre: t }));
+    if (!(await enregistrerReglage({ titre: t }))) setMeta((m) => ({ ...m, titre: ancien }));
+  }
+
   const annonce = choix.length === 1
     ? (() => {
       const e = doc.elements.find((x) => x.id === choix[0]);
@@ -372,25 +399,7 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
             tailleCase={meta.tailleCase}
             ouvert={taille}
             onOuvrir={setTaille}
-            appliquer={async (largeur, hauteur, tailleCase) => {
-              const corps: Record<string, unknown> = {};
-              if (largeur !== doc.largeur) corps.largeur = largeur;
-              if (hauteur !== doc.hauteur) corps.hauteur = hauteur;
-              if (tailleCase !== meta.tailleCase) corps.tailleCase = tailleCase;
-              if (Object.keys(corps).length === 0) return null;
-              try {
-                await enr.reglage(corps);
-                const c = await lire<CarteLue>(base);
-                moteur.remplacer(c.document, c.version);
-                setMeta((m) => ({ ...m, tailleCase: c.tailleCase }));
-                setSelection([]);
-                rafraichir();
-                return null;
-              } catch (e) {
-                const x = e as { statut?: number; code?: string; message?: string };
-                return messageRefusTaille({ statut: x.statut ?? 0, code: x.code, message: x.message ?? 'Enregistrement impossible.' }, coeur.tailleMax().largeur, largeur, hauteur);
-              }
-            }}
+            appliquer={appliquerTaille}
           />
         )}
         {lecture && <span className="editeur-etat">{doc.largeur} × {doc.hauteur}</span>}
@@ -507,6 +516,9 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
                 bornes={bornes}
                 geste={geste}
                 dupliquer={dupliquer}
+                coeur={coeur}
+                renommer={renommerCarte}
+                appliquerTaille={appliquerTaille}
               />
             )}
           </aside>
