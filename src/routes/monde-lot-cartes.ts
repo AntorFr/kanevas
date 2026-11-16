@@ -42,7 +42,7 @@ export async function monde(): Promise<Monde> {
   const app = await buildApp();
   assert.ok(semerBouchon(app.db), 'the starting world is seeded');
   const m: Monde = { app, uid: 0, gid: 0, sid: 0, cookies: {} };
-  for (const c of ['antor', 'lea', 'teo', 'mira', 'roxane']) m.cookies[c] = await connexion(app, c);
+  for (const c of ['antor', 'lea', 'teo', 'mira', 'roxane', 'admin']) m.cookies[c] = await connexion(app, c);
   const univers = (await lire(m, 'antor', '/api/univers')).json as Any[];
   const eneria = univers.find((u) => u.nom === "Éneria d'essai");
   m.uid = eneria.id;

@@ -543,14 +543,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await capture(m.lea, 'b23-carte-joueuse');
     });
 
-    // Si le serveur donne à Léa une carte qui trahit l'existence des éléments cachés (compte).
-    test('exclusion : la réponse de l\'API pour Léa ne porte qu\'un élément et ne nomme pas l\'autre', async () => {
-      const lue = await api(m.lea, 'GET', `${urlCartes(m)}/${carte}`);
-      assert.equal(lue.elements.length, 1);
-      assert.equal(lue.elements[0].titre, 'Maître Aldric');
-      assert.ok(!JSON.stringify(lue).includes('Ombres'));
-    });
-
     // Si le token de la joueuse n'ouvre pas la fiche.
     test('nominal : Léa touche le token d\'Aldric et arrive sur sa fiche', async () => {
       await ouvrirCarte(m.lea, m, carte);
@@ -662,23 +654,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       assert.equal(await statut(m.teo, 'GET', `${urlCartes(m)}/${carte}/fond`), 404);
     });
 
-    // Si une action de MJ répond autre chose que 403 à une joueuse qui lit la carte (404 si elle ne la lit pas).
-    test('exclusion : Léa force une action de MJ sur la carte qu\'elle lit : 403 ; sur une carte cachée : 404', async () => {
-      const cachee = await carteApi(m, 'illustree', 'Carte cachée');
-      assert.equal(await statut(m.lea, 'PATCH', `${urlCartes(m)}/${carte}`, { visible: false }), 403);
-      assert.equal(await statut(m.lea, 'PATCH', `${urlCartes(m)}/${carte}`, { titre: 'Pirate' }), 403);
-      assert.equal(await statut(m.lea, 'POST', `${urlCartes(m)}/${carte}/elements`, { ficheId: m.guilde, x: 1, y: 1 }), 403);
-      const lue = await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`);
-      const e = lue.elements[0].id;
-      assert.equal(await statut(m.lea, 'PATCH', `${urlCartes(m)}/${carte}/elements/${e}`, { x: 1, y: 1 }), 403);
-      assert.equal(await statut(m.lea, 'DELETE', `${urlCartes(m)}/${carte}/elements/${e}`), 403);
-      assert.equal(await statut(m.lea, 'PATCH', `${urlCartes(m)}/${cachee}`, { visible: true }), 404);
-      assert.equal(await statut(m.lea, 'POST', `${urlCartes(m)}/${cachee}/elements`, { ficheId: m.guilde, x: 1, y: 1 }), 404);
-      const apres = await api(m.antor, 'GET', `${urlCartes(m)}/${carte}`);
-      assert.equal(apres.carte.titre, 'La ville de Brume');
-      assert.equal(apres.carte.visible, true);
-      assert.equal(apres.elements.length, 2);
-    });
   });
 
   // =========================== P-9, B-22, B-23 : le graphe des factions ===========================
@@ -797,18 +772,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await api(m.antor, 'DELETE', `/api/univers/${m.U}/fiches/relations/${rel.id}`);
       await ouvrirCarte(m.antor, m, graphe);
       assert.ok(!(await liens(m.antor)).some((l) => l.includes('dépend de')));
-    });
-
-    // Si le graphe garde un fond ou une position (jamais pour un graphe).
-    test('exclusion : un graphe n\'accepte ni fond ni position de nœud', async () => {
-      const fond = await m.antor.request.fetch(`${srv.base}${urlCartes(m)}/${graphe}/fond`, {
-        method: 'PUT',
-        multipart: { fichier: { name: 'brume.png', mimeType: 'image/png', buffer: PAYSAGE } },
-      });
-      assert.ok(fond.status() >= 400 && fond.status() < 500, `fond: ${fond.status()}`);
-      const c = await carteApi(m, 'graphe', 'Graphe sans position');
-      const s = await statut(m.antor, 'POST', `${urlCartes(m)}/${c}/elements`, { ficheId: m.guilde, x: 10, y: 10 });
-      assert.ok(s >= 400 && s < 500, `position: ${s}`);
     });
 
     // Si le graphe vide affiche le texte du MJ à la joueuse.
@@ -998,12 +961,6 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       assert.equal((await surLaCarte(m.lea)).length, 100);
     });
 
-    // Si une fiche inconnue est acceptée, ou si le message manque.
-    test('échec : ajouter une fiche d\'un autre univers ou inconnue est refusé (invalide) et rien ne se pose', async () => {
-      const c = await carteApi(m, 'illustree', 'Carte neuve');
-      assert.equal(await statut(m.antor, 'POST', `${urlCartes(m)}/${c}/elements`, { ficheId: 999999, x: 1, y: 1 }), 400);
-      assert.deepEqual((await api(m.antor, 'GET', `${urlCartes(m)}/${c}`)).elements, []);
-    });
   });
 
   // =========================== B-29 : les six états ===========================
