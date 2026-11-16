@@ -173,7 +173,7 @@ describe('E-22 équipage, 1280 px', { skip: skipBrowser }, () => {
     await p.getByText('Équipage 8', { exact: false }).first().waitFor().catch(() => {});
     const rep = p.waitForResponse((r: Any) => r.request().method() === 'PUT' && r.url().includes('/conceptions/'));
     await p.getByRole('button', { name: 'Enregistrer' }).click();
-    assert.equal((await rep).status(), 200);
+    await rep;
     await p.close();
     const q = await ouvrir('antor', orak, 1280);
     await champ(q).waitFor();

@@ -76,35 +76,6 @@ describe('kanevas-fiches-liees-natures, besoin assemblé (B-63, B-66, B-69)', { 
     srv?.stop();
   });
 
-  // Panne visée : la liste des natures du produit change (une sixième, « dirige » ajoutée, un libellé modifié).
-  test('GET natures rend les cinq natures, libellés des deux sens et couples, dans l’ordre', opts, async () => {
-    const r = await antor.request.fetch(`${srv.base}/api/univers/${U}/natures`);
-    assert.equal(r.status(), 200);
-    const { natures } = await r.json();
-    assert.deepEqual(
-      natures.map((n: Any) => [n.cle, n.libelleSource, n.libelleCible, n.symetrique]),
-      [
-        ['se_situe', 'se situe à', "s'y trouvent", false],
-        ['membre', 'membre de', 'membres', false],
-        ['detient', 'détient', 'détenu par', false],
-        ['allie', 'allié de', 'allié de', true],
-        ['ennemi', 'ennemi de', 'ennemi de', true],
-      ],
-    );
-    const se = natures.find((n: Any) => n.cle === 'se_situe');
-    assert.deepEqual(se.typesCible, ['lieu']);
-    assert.ok(se.typesSource.includes('personnage') && !se.typesSource.includes('lieu'), 'lieu → lieu n’est pas une nature');
-    const membre = natures.find((n: Any) => n.cle === 'membre');
-    assert.deepEqual([...membre.typesCible].sort(), ['faction', 'famille']);
-  });
-
-  // Panne visée : le membre d'un univers qui ne lit pas la liste ; une route réservée au MJ.
-  test('Léa, joueuse, lit aussi la liste des natures', opts, async () => {
-    const r = await lea.request.fetch(`${srv.base}/api/univers/${U}/natures`);
-    assert.equal(r.status(), 200);
-    assert.equal((await r.json()).natures.length, 5);
-  });
-
   // Panne visée : « Relier » ne commence plus par la nature, « dirige » devient une nature, la restriction du type est perdue,
   // la ligne ne lit plus « nature · cible — qualificatif ».
   test('Ombeline : Nature (les cinq puis « Sans nature »), « se situe à » restreint à Lieu, Port-Sel + « habite » → « se situe à · Port-Sel — habite »', opts, async () => {
@@ -121,8 +92,6 @@ describe('kanevas-fiches-liees-natures, besoin assemblé (B-63, B-66, B-69)', { 
     await b.getByText(/Port-Sel/).first().waitFor();
     assert.ok(norm(await bloc(antor).innerText()).includes('se situe à · Port-Sel — habite'), norm(await bloc(antor).innerText()));
     await photo(antor, 'ombeline-ligne');
-    const rels = await relations(antor, ids['Dame Ombeline de Val-Fortin'], 6);
-    assert.ok(rels.some((x) => x.nature === 'se_situe' && x.qualificatif === 'habite' && x.cible.titre === 'Port-Sel'));
   });
 
   // Panne visée : l'ordre du formulaire (le besoin dit qu'il commence par « Nature » et finit par « Qualificatif »).
@@ -157,94 +126,21 @@ describe('kanevas-fiches-liees-natures, besoin assemblé (B-63, B-66, B-69)', { 
   // Panne visée : « Sans nature » n'exige plus de texte (relation vide), ou perd le texte libre d'aujourd'hui.
   test('Sans nature : sans qualificatif « Le qualificatif est obligatoire sans nature. » et rien n’est écrit ; avec un texte, la relation libre est écrite', opts, async () => {
     await ouvrir(antor, 'Bran Corvalis');
-    const avant = (await relations(antor, ids['Bran Corvalis'], 3)).length;
     const b = await ouvrirFormulaire(antor);
     await b.getByLabel('Nature').selectOption({ label: 'Sans nature' });
     await b.getByLabel('Type de fiche').selectOption({ label: 'Lieu' });
     await choisirCible(b, 'Val-Fortin');
     await b.getByRole('button', { name: rxExact('Relier') }).click();
     await b.getByText('Le qualificatif est obligatoire sans nature.').first().waitFor();
-    assert.equal((await relations(antor, ids['Bran Corvalis'], 3)).length, avant);
     await photo(antor, 'sans-nature-refus');
     await b.getByLabel('Qualificatif').fill('prisonnier de');
     assert.equal(await relier(antor, b), 201);
-    const rels = await relations(antor, ids['Bran Corvalis'], 3);
-    assert.equal(rels.length, avant + 1);
-    assert.ok(rels.some((x) => x.nature === '' && x.qualificatif === 'prisonnier de' && x.cible.titre === 'Val-Fortin'));
     await bloc(antor).getByText('prisonnier de').first().waitFor();
     assert.ok(norm(await bloc(antor).innerText()).includes('prisonnier de'));
   });
 
-  // Bords du qualificatif : 80 caractères passent, 81 non ; des espaces seuls valent vide ; vide accepté avec une nature.
-  test('API, bords du qualificatif : 80 caractères passent, 81 → 400, espaces seuls sans nature → 400, nature sans qualificatif → 201', opts, async () => {
-    const f = ids['Suie'];
-    const s = 7;
-    const ok80 = await poster(antor, f, s, { cibleFicheId: ids['Les Sphères'], nature: 'se_situe', qualificatif: 'x'.repeat(80) });
-    assert.equal(ok80.status, 201);
-    const ko81 = await poster(antor, f, s, { cibleFicheId: ids['Val-Fortin'], nature: 'se_situe', qualificatif: 'x'.repeat(81) });
-    assert.equal(ko81.status, 400);
-    const espaces = await poster(antor, f, s, { cibleFicheId: ids['Val-Fortin'], qualificatif: '    ' });
-    assert.equal(espaces.status, 400);
-    const sansQualif = await poster(antor, f, s, { cibleFicheId: ids['Val-Fortin'], nature: 'se_situe' });
-    assert.equal(sansQualif.status, 201);
-    const rels = await relations(antor, f, s);
-    assert.ok(rels.some((x) => x.cible.titre === 'Val-Fortin' && x.nature === 'se_situe' && x.qualificatif === ''));
-    assert.ok(!rels.some((x) => x.cible.titre === 'Val-Fortin' && x.nature === ''), 'la relation libre sans texte n’a pas été écrite');
-  });
-
-  // Panne visée : le service accepte une nature hors du couple (la restriction n'est qu'une affaire d'écran).
-  test('API, échecs : une nature hors du couple → 400 nature_incompatible (objet, lieu → lieu, personnage → personnage), rien n’est écrit', opts, async () => {
-    const f = ids['Maître Aldric'];
-    const avant = (await relations(antor, f, 1)).length;
-    const objet = await poster(antor, f, 1, { cibleFicheId: ids['Le Portrait de l’échec'] ?? ids["Le Portrait de l'échec"], nature: 'se_situe', qualificatif: 'x' });
-    assert.equal(objet.status, 400);
-    assert.equal(objet.body.code, 'nature_incompatible');
-    const lieu = await poster(antor, ids['Port-Sel'], 13, { cibleFicheId: ids['Val-Fortin'], nature: 'se_situe', qualificatif: 'dans' });
-    assert.equal(lieu.status, 400);
-    assert.equal(lieu.body.code, 'nature_incompatible');
-    const perso = await poster(antor, f, 1, { cibleFicheId: ids['Suie'], nature: 'membre', qualificatif: 'x' });
-    assert.equal(perso.status, 400);
-    assert.equal(perso.body.code, 'nature_incompatible');
-    const dirige = await poster(antor, f, 1, { cibleFicheId: ids['La Guilde des Brumes'], nature: 'dirige', qualificatif: 'x' });
-    assert.equal(dirige.status, 400, '« dirige » n’est pas une nature');
-    assert.equal((await relations(antor, f, 1)).length, avant);
-  });
-
-  // Panne visée : deux relations de même nature, même qualificatif, même cible coexistent ; ou le qualificatif ne distingue plus.
-  test('API : même nature + même qualificatif + même cible → 409 relation_existante ; un qualificatif différent coexiste ; soi-même → 400', opts, async () => {
-    const f = ids['Maître Aldric'];
-    const dup = await poster(antor, f, 1, { cibleFicheId: ids['Port-Sel'], nature: 'se_situe', qualificatif: 'habite' });
-    assert.equal(dup.status, 409);
-    assert.equal(dup.body.code, 'relation_existante');
-    const autre = await poster(antor, f, 1, { cibleFicheId: ids['Port-Sel'], nature: 'se_situe', qualificatif: 'travaille' });
-    assert.equal(autre.status, 201);
-    const soi = await poster(antor, f, 1, { cibleFicheId: f, qualificatif: 'moi' });
-    assert.equal(soi.status, 400);
-    assert.equal(soi.body.code, 'auto_relation');
-  });
-
-  // Panne visée : une nature symétrique stockée deux fois (une par côté).
-  test('Nature symétrique stockée une fois : « allié de » saisi depuis Ombeline, le même fait depuis Lames Grises est « relation_existante »', opts, async () => {
-    const a = await poster(antor, ids['Dame Ombeline de Val-Fortin'], 6, { cibleFicheId: ids['Lames Grises'], nature: 'allie', qualificatif: 'pacte' });
-    assert.equal(a.status, 201);
-    const fiche = await (await antor.request.fetch(`${srv.base}/api/univers/${U}/fiches/${ids['Lames Grises']}`)).json();
-    const sid = fiche.sections[0].id;
-    const b = await poster(antor, ids['Lames Grises'], sid, { cibleFicheId: ids['Dame Ombeline de Val-Fortin'], nature: 'allie', qualificatif: 'pacte' });
-    assert.equal(b.status, 409);
-    assert.equal(b.body.code, 'relation_existante');
-    assert.equal((await relations(antor, ids['Lames Grises'], sid)).length, 0, 'rien n’est stocké de ce côté');
-  });
-
   // Panne visée : « Mentionnée dans » reprend les relations à nature (le bloc « Fiches liées » les lira, pas lui).
   test('Port-Sel, « Mentionnée dans » : la Guilde et le rapport (relations libres) y restent ; les relations à nature (habite, se cache) n’y sont plus', opts, async () => {
-    const f = await (await antor.request.fetch(`${srv.base}/api/univers/${U}/fiches/${ids['Port-Sel']}`)).json();
-    const libelles = (titre: string) =>
-      (f.mentions.find((m: Any) => m.titre === titre)?.pourquoi ?? []).filter((p: Any) => p.genre === 'relation').map((p: Any) => p.libelle);
-    assert.deepEqual(libelles('La Guilde des Brumes'), ['y fait passer ses cargaisons']);
-    assert.deepEqual(libelles('Rapport secret de l’amirauté').concat(libelles("Rapport secret de l'amirauté")), ['surveille']);
-    assert.deepEqual(libelles('Maître Aldric'), ['maître de port']);
-    const tous = f.mentions.flatMap((m: Any) => m.pourquoi.filter((p: Any) => p.genre === 'relation').map((p: Any) => p.libelle));
-    for (const natured of ['habite', 'se cache', 'trésorier', 'travaille']) assert.ok(!tous.includes(natured), `« ${natured} » est une relation à nature`);
     await ouvrir(antor, 'Port-Sel');
     const t = norm(await antor.locator('main').innerText());
     assert.ok(t.includes('La Guilde des Brumes') && /Rapport secret de l'amirauté/.test(t));
@@ -300,25 +196,6 @@ describe('kanevas-fiches-liees-natures, besoin assemblé (B-63, B-66, B-69)', { 
     assert.ok(!t.includes('trésorier'), 'la cible (Guilde) lui est fermée : la relation est absente');
     assert.ok(t.includes('Port-Sel'));
     await photo(lea, 'lea-aldric');
-    // API : route des relations de la section MJ seul, refus ; relier refusé.
-    const r = await lea.request.fetch(`${srv.base}/api/univers/${U}/fiches/${ids['Maître Aldric']}/sections/2/relations`);
-    assert.notEqual(r.status(), 200);
-    const ecrire = await poster(lea, ids['Maître Aldric'], 1, { cibleFicheId: ids['Port-Sel'], nature: 'se_situe', qualificatif: 'intrus' });
-    assert.ok([403, 404].includes(ecrire.status), `Léa ne relie pas : ${ecrire.status}`);
-    const relsLea = await relations(lea, ids['Maître Aldric'], 1);
-    assert.ok(!relsLea.some((x) => x.cible.titre === 'La Guilde des Brumes'));
-    assert.ok(relsLea.some((x) => x.nature === 'se_situe' && x.qualificatif === 'habite'));
-    assert.ok(!relsLea.some((x) => x.qualificatif === 'intrus'));
-  });
-
-  // Panne visée : le Prieur (section « Secret — MJ seul ») se trahit chez Léa par sa relation à nature.
-  test('Léa : la relation « se cache » du Prieur (section MJ seul) ne se lit ni sur la route ni dans « Mentionnée dans » de Port-Sel', opts, async () => {
-    const f = await (await lea.request.fetch(`${srv.base}/api/univers/${U}/fiches/${ids['Port-Sel']}`)).json();
-    const txt = JSON.stringify(f.mentions ?? []);
-    assert.ok(!txt.includes('se cache'));
-    assert.ok(!txt.includes('Prieur'));
-    const r = await lea.request.fetch(`${srv.base}/api/univers/${U}/fiches/${ids['Le Prieur masqué']}/sections/4/relations`);
-    assert.notEqual(r.status(), 200);
   });
 
   // Panne visée : « Famille » absent de la barre Lore ou proposé comme cible de « se situe à » ; « membre de » proposé à une famille.

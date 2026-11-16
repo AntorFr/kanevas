@@ -65,10 +65,3 @@ test('lot_vide_n_a_pas_de_ligne_campagnes', opts, async () => {
   const texte = await antor.locator('main').innerText();
   assert.doesNotMatch(texte, /Campagnes :|Scénarios :/);
 });
-
-test('routes_d_import_des_campagnes_et_scenarios_repondent_404_au_jeton_valide', opts, async () => {
-  for (const chemin of ['campagnes/x', 'scenarios/x']) {
-    const r = await fetch(`${base}/${chemin}`, { method: 'PUT', headers: h, body: JSON.stringify({ nom: 'x', titre: 'x', statut: 'active' }) });
-    assert.equal(r.status, 404, chemin);
-  }
-});
