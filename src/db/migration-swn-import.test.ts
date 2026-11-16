@@ -39,8 +39,11 @@ test('0023 : montée depuis 0022 peuplée, rien de perdu, version_importee nulle
     const { type_lien, ...sansType } = sans;
     assert.equal(type_lien === null || type_lien === undefined, true);
     // 0029 (B-84) adds the nullable `plages` to the zones: null for a polygon zone written before.
-    const { plages, ...reste } = sansType;
+    const { plages, ...sansPlages } = sansType;
     assert.equal(plages === null || plages === undefined, true);
+    // 0038 adds the nullable `transition` to the systems (AD-systeme-4): null for a row written before.
+    const { transition, ...reste } = sansPlages;
+    assert.equal(transition === null || transition === undefined, true);
     assert.deepEqual(reste, (avant[i + 1] as any[])[j]);
   }));
   // 0037 (AD-etoiles-7) moves a galaxy left at the former default 0.2 to the core's 0.68; nothing else of the row moves.

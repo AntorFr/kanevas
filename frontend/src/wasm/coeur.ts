@@ -37,3 +37,23 @@ export async function planVersHex(x: number, y: number): Promise<[number, number
 export async function densiteDefaut(): Promise<number> {
   return (await chargerModule('coeur')).densite_defaut();
 }
+
+/** The exact JSON the core returns for the interior of a system (AD-systeme-2); `version` is the generator version. Throws if the core refuses. */
+export async function tirerSysteme(q: number, r: number, taille: number, lettre: string, version: number): Promise<string> {
+  return (await chargerModule('coeur')).tirer_systeme(q, r, taille, lettre, version);
+}
+
+/** The default `transition` of stored rows, from the JSON arrays of `astres` and `formations`. */
+export async function transitionDefaut(astres: string, formations: string): Promise<number> {
+  return (await chargerModule('coeur')).transition_defaut(astres, formations);
+}
+
+export async function orbiteHeureVersPlan(orbite: number, heure: number): Promise<[number, number]> {
+  const p = (await chargerModule('coeur')).orbite_heure_vers_plan(orbite, heure);
+  return [p[0]!, p[1]!];
+}
+
+export async function planVersOrbiteHeure(x: number, y: number): Promise<[number, number]> {
+  const o = (await chargerModule('coeur')).plan_vers_orbite_heure(x, y);
+  return [o[0]!, o[1]!];
+}
