@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Harness shared by the black-box tests of kanevas-premiere-fiche (no test of its own).
 // It starts the real server in stub mode (AD-55) on a throw-away SQLite file and drives it
 // with a real Chromium through Playwright. Playwright is not a dependency of the repo: it is

@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Independent verification of kanevas-import-mediatheque, written from the sheet of the feature
 // (« Livre », exit criterion), docs/parcours.md (B-24, B-44, B-53, B-54, B-55, P-16) and
 // docs/ecrans.md (E-19, E-9 « Fichiers »), NOT from the code and NOT from the other tests of the

@@ -1,3 +1,4 @@
+// ecrans: outil-cible
 // Complements to the black-box tests of kanevas-outils-galaxie-lire, written from its sheet (« Livre », exit
 // criterion), docs/parcours.md (B-70 to B-72, P-18) and docs/ecrans.md (E-21) — not from the code. Same world as
 // galaxie-lire-ensemble-besoin.test.ts: real server in stub mode WITH its starting world, real Chromium. It covers

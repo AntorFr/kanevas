@@ -1,3 +1,4 @@
+// ecrans: accueil, fiche, fiches, systeme, systeme-ancien, systemes, vue-ensemble
 // Feature-level tests of kanevas-illustrations, written from the need (docs/parcours.md B-30, B-31, B-29,
 // docs/ecrans.md « Détail des écrans de `kanevas-illustrations` »), not from the code. Real server in stub
 // mode WITH its starting world, real Chromium. Expected values are literals taken from the doc.

@@ -1,3 +1,4 @@
+// ecrans: parametres, systeme
 // Black-box tests of the E-20 deletion window (kanevas-outils-retrait-fenetre), written from the exit criterion and
 // docs/ecrans.md, never from the code. The stub server runs WITH its starting data: « Éneria d'essai » #5 (Antor and
 // Mira GM, Léa player; 2 designs, 2 local catalogue elements, the galaxy: 4 systems, 3 routes, 1 zone), « Univers

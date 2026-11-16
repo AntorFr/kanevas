@@ -1,3 +1,4 @@
+// ecrans: outil
 // Revue de kanevas-outils-format-vaisseaux-regles-livre-atelier (E-22, B-87, W-4, W-6): navigateur piloté, catalogue d'essai W-4 écrit par le test, attendus calculés à la main.
 import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';

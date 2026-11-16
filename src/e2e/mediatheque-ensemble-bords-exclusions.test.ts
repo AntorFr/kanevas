@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Feature-level check of kanevas-import-mediatheque, second pass: the bords, échecs and exclusions of the needs
 // (docs/parcours.md B-24, B-44, B-53, B-54, B-55, P-16; docs/ecrans.md E-19, E-9 « Fichiers »), written from the needs only.
 // Real server in stub mode on the seed (« Lame d'Ébène », 13 files, 3 reserved to the GM), real Chromium for what is seen.

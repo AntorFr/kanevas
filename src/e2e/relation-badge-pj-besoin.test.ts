@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-relation-badge-pj, from the triage "Livre" / "Critère de sortie" and
 // docs/ecrans.md E-9 (Relations block: badge PJ or PNJ for a personnage target, type label otherwise).
 // Real server in stub mode + real Chromium. Expected values are literal.

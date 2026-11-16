@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque, vue-ensemble
 // Review of the reopening of kanevas-mediatheque-ecran (Escape in the audience panel while saving;
 // offline banner not cleared by an in-flight answer). Black-box, stub server, seeded « Lame d'Ébène ».
 //

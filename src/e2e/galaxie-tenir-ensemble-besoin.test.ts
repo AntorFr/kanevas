@@ -1,3 +1,4 @@
+// ecrans: cartes, outil-cible, systeme, systemes
 // Black-box tests of the feature kanevas-outils-galaxie-tenir (the galaxy map, write side), written from its
 // sheet (« Livre », exit criterion), docs/parcours.md (B-64, B-71, B-73, B-74, P-18 steps 4 and 5 and failure)
 // and docs/ecrans.md (E-21 in writing, E-10 « Carte de la galaxie ») — not from the code. Real server in stub

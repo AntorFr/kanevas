@@ -4,9 +4,11 @@
 //
 //   node scripts/rejouer-tests.mjs "<name>" ["<name>" ...]    # or names separated by | or line ends
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync } from 'node:fs';
+import { mkdtempSync, readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { assurerPlaywright } from './playwright.mjs';
 import { cheminDeclare, choisirFichiers, motif, resoudre } from './niveaux-tests.mjs';
 
 const demandes = process.argv.slice(2);
@@ -36,24 +38,28 @@ if (introuvables.length > 0) {
 
 const fichiers = [...parFichier.keys()].sort();
 const noms = [...new Set([...parFichier.values()].flatMap((s) => [...s]))];
-// Screen/e2e files read the built application: build only when one is replayed and dist/ is missing.
-if (fichiers.some((f) => f.startsWith('src/e2e/')) && !existsSync('dist')) {
-  for (const script of ['build:wasm', 'build']) {
-    const r = spawnSync('npm', ['run', script], { stdio: 'inherit' });
-    if (r.status !== 0) process.exit(r.status ?? 1);
-  }
-}
-if (fichiers.some((f) => f.startsWith('src/wasm/')) && !existsSync('dist/wasm')) {
-  for (const cmd of [['run', 'build:wasm'], ['scripts/copier-wasm.mjs']]) {
-    const r = cmd[0] === 'run' ? spawnSync('npm', cmd, { stdio: 'inherit' }) : spawnSync(process.execPath, cmd, { stdio: 'inherit' });
-    if (r.status !== 0) process.exit(r.status ?? 1);
-  }
+// Nothing is decided from the existence of a git-ignored artefact (`dist/`, `dist/wasm`): a leftover
+// is a stale build (AD-niveau-6). What the replayed files read is built, every time.
+const ecran = fichiers.some((f) => f.startsWith('src/e2e/'));
+const wasm = fichiers.some((f) => f.startsWith('src/wasm/'));
+const etapes = [];
+if (ecran || wasm) etapes.push(['npm', ['run', 'build:wasm']]);
+if (ecran) etapes.push(['npm', ['run', 'build']]);
+else if (wasm) etapes.push([process.execPath, ['scripts/copier-wasm.mjs']]);
+if (ecran) assurerPlaywright();
+for (const [cmd, args] of etapes) {
+  const r = spawnSync(cmd, args, { stdio: 'inherit' });
+  if (r.status !== 0) process.exit(r.status ?? 1);
 }
 
 console.log(`Replaying ${noms.length} test name(s) in ${fichiers.length} file(s).`);
 const r = spawnSync(
   process.execPath,
   ['--import', 'tsx', '--test', '--test-concurrency=1', ...noms.map((n) => `--test-name-pattern=${motif(n)}`), ...fichiers],
-  { stdio: 'inherit' },
+  {
+    stdio: 'inherit',
+    // A fresh startup lock: an interrupted run cannot block this one.
+    env: { ...process.env, KANEVAS_E2E_STARTUP_LOCK: join(mkdtempSync(join(tmpdir(), 'rejouer-tests-')), 'startup.lock') },
+  },
 );
 process.exit(r.status ?? 1);

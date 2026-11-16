@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Reopening of kanevas-mediatheque-fiche: a joined file closed to the reader stays a line of the
 // « Pièces jointes » block, a neutral frame (lock, --texte-3) with the sentence alone (docs/ecrans.md, Fichiers).
 //

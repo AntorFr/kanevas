@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-mo-ecran: the « Mise à jour proposée » block of E-12
 // (docs/ecrans.md § `kanevas-monde`, docs/charte.md « Proposition de mise à jour »), real server in
 // stub mode (AD-55, script AD-78) + real Chromium. Expected texts are literals from the docs.
