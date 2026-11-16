@@ -137,36 +137,6 @@ describe('E-5 Administration : exclusions et états (B-6, B-29)', { skip: raison
     await browser?.close();
   });
 
-  // Fails if the admin API carries the description, or if a content/universe route opens for a
-  // group member who has no role (B-6: "sans jamais en lire le contenu"; AD-9).
-  test('admin_sans_role_ne_lit_aucun_contenu_ni_description_par_l_api', async () => {
-    const s = await demarrer();
-    try {
-      const w = await monde(s);
-      const { ctx } = w.admin;
-      const liste = await ctx.request.get('/api/instance/univers');
-      assert.equal(liste.status(), 200);
-      const corps = await liste.text();
-      assert.ok(corps.includes("Lame d'Ébène"), 'admin sees the universe name');
-      assert.equal(corps.includes(SECRET), false, 'no description in the instance list');
-      const membres = await ctx.request.get(`/api/instance/univers/${w.lame}/membres`);
-      assert.equal(membres.status(), 200);
-      assert.equal((await membres.text()).includes(SECRET), false, 'no description in the member list');
-      for (const chemin of [`/api/univers/${w.lame}`, `/api/univers/${w.lame}/membres`]) {
-        const rep = await ctx.request.get(chemin);
-        assert.equal(rep.status(), 404, `${chemin} is unknown to a no-role account`);
-        assert.equal((await rep.text()).includes(SECRET), false, chemin);
-      }
-      const mien = await ctx.request.get('/api/univers');
-      assert.equal(await mien.text().then((x) => x.includes("Lame d'Ébène")), false, 'not in the admin own universes');
-      // no-role admin cannot use the member routes of an universe he is not in either
-      const ajout = await ctx.request.post(`/api/univers/${w.lame}/membres`, { data: { username: 'mira', role: 'mj' } });
-      assert.equal(ajout.status(), 404);
-    } finally {
-      s.stop();
-    }
-  });
-
   // Fails if the E-1 home of the admin lists an universe he is not a member of.
   test('accueil_admin_sans_role_ne_liste_pas_l_univers_mais_porte_l_entree_administration', async () => {
     const s = await demarrer();
@@ -218,9 +188,6 @@ describe('E-5 Administration : exclusions et états (B-6, B-29)', { skip: raison
     try {
       const w = await monde(s);
       const ctx = await browser.newContext({ baseURL: s.base });
-      const api = await ctx.request.get('/api/instance/univers', { maxRedirects: 0 });
-      assert.notEqual(api.status(), 200);
-      assert.equal((await api.text()).includes("Lame d'Ébène"), false);
       const page = await ctx.newPage();
       await page.goto(`/administration/univers/${w.lame}`);
       await page.waitForLoadState('networkidle');

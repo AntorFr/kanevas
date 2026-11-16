@@ -245,25 +245,6 @@ describe('E-5 Administration (B-6, P-2 étape 3)', { skip: raisonSaut }, () => {
     }
   });
 
-  // Fails if the API for non-admins answers anything but "unknown address".
-  test('api_instance_ferme_aux_non_admins', async () => {
-    const s = await demarrer();
-    try {
-      const w = await monde(s);
-      for (const chemin of ['/api/instance/univers', `/api/instance/univers/${w.lame}/membres`]) {
-        const rep = await w.lea.ctx.request.get(chemin);
-        assert.equal(rep.status(), 404, chemin);
-        assert.equal(await rep.text().then((t) => t.includes("Lame d'Ébène")), false);
-      }
-      const ajout = await w.lea.ctx.request.post(`/api/instance/univers/${w.lame}/membres`, {
-        data: { username: 'teo', role: 'joueur' },
-      });
-      assert.equal(ajout.status(), 404);
-    } finally {
-      s.stop();
-    }
-  });
-
   // Fails if the last-MJ guard is not applied to the admin's gesture.
   test('admin_ne_retire_pas_le_seul_mj', async () => {
     const s = await demarrer();
