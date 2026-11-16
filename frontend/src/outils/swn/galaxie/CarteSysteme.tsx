@@ -45,7 +45,6 @@ const lireTokens = (el: Element) => {
   const s = getComputedStyle(el);
   return { accent: s.getPropertyValue('--accent').trim(), trait: s.getPropertyValue('--ciel-trait').trim() };
 };
-};
 
 /** E-23, the canvas (AD-carte-3): the interior as `lireInterieur` answered it, drawn by the core; nothing is filtered here. */
 export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, selection, onSelection }: Props) {
