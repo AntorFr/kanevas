@@ -3,7 +3,7 @@ import { exigerMJ } from './droits.js';
 import { introuvable } from './erreurs.js';
 import { compterFichiersEnAttente } from './fichiers.js';
 import { compterEnAttente } from './liens.js';
-import type { Jeton } from './jetons.js';
+import type { JetonRequete as Jeton } from './jetons.js';
 import { declarationOutil } from './outils.js';
 
 /** Entries kept in a batch report (AD-104); further ones are counted but not listed. */

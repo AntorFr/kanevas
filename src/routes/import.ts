@@ -6,7 +6,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { LONGUEUR_ALIAS, LONGUEUR_ETIQUETTE, MAX_ALIAS, MAX_ETIQUETTES } from '../services/etiquettes.js';
 import { MAX_CONTENU_SECTION } from '../services/sections.js';
 import { ErreurService, introuvable } from '../services/erreurs.js';
-import { verifierJeton, type Jeton } from '../services/jetons.js';
+import { accesDe, verifierJeton, type Jeton, type JetonRequete } from '../services/jetons.js';
 import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import {
   appliquerCatalogueParJeton, apercuCatalogueParJeton, niveauDeRequete,
@@ -30,7 +30,7 @@ declare module 'fastify' {
   }
   interface FastifyRequest {
     /** The verified API token of the import scope; never set elsewhere. */
-    jeton: Jeton | null;
+    jeton: JetonRequete | null;
   }
 }
 
@@ -109,10 +109,12 @@ export async function registerImportRoutes(app: FastifyInstance) {
       if (!request.is404 && !porteeOuverte(request.routeOptions.config?.portee, jeton, request)) {
         return reply.code(401).send(JETON_INVALIDE);
       }
-      request.jeton = jeton;
-      // Another universe than the token's: unknown, like any resource out of reach.
+      // The universe of the address: a token carries it for the request (transitional guard, until the guard task);
+      // one the token does not reach is unknown, like any resource out of reach.
       const { id } = request.params as { id?: string };
-      if (id !== undefined && String(jeton.universId) !== id) throw introuvable();
+      const universId = id !== undefined && /^\d+$/.test(id) ? Number(id) : -1;
+      request.jeton = { ...jeton, universId };
+      if (id !== undefined && (universId < 0 || accesDe(app.db, jeton.id, universId) === 'aucun')) throw introuvable();
     });
 
     const jetonDe = (request: FastifyRequest) => request.jeton!;

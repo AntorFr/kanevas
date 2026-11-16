@@ -22,7 +22,7 @@ import {
   supprimerFiche,
   validerSousType,
 } from './fiches.js';
-import type { Jeton } from './jetons.js';
+import type { JetonRequete as Jeton } from './jetons.js';
 import {
   choisirIllustration,
   fichierDeCle,
