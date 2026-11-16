@@ -467,3 +467,96 @@ test('E-9 waiting > four waiting references are warned; nothing of them leaves t
   await m.lotComplet((lot) => m.putFichier(longue, { nom: 'Longue', octets: VERT, lot }));
   assert.ok((await m.fiche(m.antor, f2)).json().sections[0].html.includes(`/fichiers/${m.idFichier(longue)}`), 'the arrival resolves the reference');
 });
+
+// ------------------------------------------------------------------ verification (import-fichiers-verification)
+test('B-56 bounds > one byte is accepted, 0 byte and an empty name are refused, no token is 401; the batch counts 1 created and 2 refused with the key and the reason, nothing is stored', async () => {
+  const m = await monde();
+  const lot = await m.ouvrirLot();
+  const vide = await m.putFichier('doc:vide', { nom: 'vide.pdf', octets: Buffer.alloc(0), lot });
+  assert.equal(vide.statusCode, 400);
+  assert.equal(vide.json().code, 'invalide');
+  assert.equal(vide.json().champ, 'fichier');
+  const un = await m.putFichier('doc:un', { nom: 'un.txt', octets: Buffer.from('a'), lot });
+  assert.equal(un.statusCode, 200, un.body);
+  assert.equal(un.json().etat, 'creee');
+  assert.equal((await m.putFichier('doc:sansnom', { nom: '', octets: Buffer.from('a'), lot })).statusCode, 400);
+  const sansJeton = await m.putFichier('doc:x', { nom: 'x.txt', octets: Buffer.from('a'), headers: {} });
+  assert.equal(sansJeton.statusCode, 401);
+  assert.equal(sansJeton.json().message, 'Jeton invalide.');
+  const clos = await m.clore(lot);
+  assert.equal(clos.compteurs.fichiers.creees, 1);
+  assert.equal(clos.compteurs.fichiers.refusees, 2);
+  const rapport = JSON.stringify((await m.rest(m.antor, 'GET', `/api/univers/${m.essai}/lots`)).json());
+  assert.ok(rapport.includes('doc:vide'), 'refused key in the report');
+  assert.ok(rapport.includes('fichier vide : 0 octet, refusé'), rapport);
+  assert.equal(m.nb("SELECT COUNT(*) AS n FROM fichiers WHERE cle_origine IN ('doc:vide','doc:sansnom','doc:x')"), 0);
+});
+
+test('B-56 limit > 100 joined keys (still waiting) are accepted, 101 are refused with champ fichiers and nothing written; a document as illustration is pas_une_image', async () => {
+  const m = await monde();
+  const cles = (n: number) => Array.from({ length: n }, (_, i) => `doc:j${i}`);
+  const sec = (n: number) => [section('s', 'Pièces', 'x', { fichiers: cles(n) })];
+  const ok = await m.putFiche('lieu:cent', { type: 'lieu', titre: 'Cent', sections: sec(100) });
+  assert.equal(ok.statusCode, 200, ok.body.slice(0, 300));
+  const trop = await m.putFiche('lieu:cent-un', { type: 'lieu', titre: 'Cent un', sections: sec(101) });
+  assert.equal(trop.statusCode, 400);
+  assert.equal(trop.json().code, 'invalide');
+  assert.equal(trop.json().champ, 'fichiers');
+  assert.equal(m.nb("SELECT COUNT(*) AS n FROM fiches WHERE titre = 'Cent un'"), 0);
+  await m.putFichier('doc:pas-image', { nom: 'a.pdf', octets: pdf('a') });
+  const doc = await m.putFiche('lieu:ill', { type: 'lieu', titre: 'Ill', illustration: 'doc:pas-image', sections: [] });
+  assert.equal(doc.statusCode, 400);
+  assert.equal(doc.json().code, 'pas_une_image');
+});
+
+test('B-56 GM-only file > a file sent mj is neither listed nor served to Léa (404) and the default visibility is players; the GM reads both', async () => {
+  const m = await monde();
+  const mj = await m.putFichier('img:secret', { nom: 'secret.png', octets: ROUGE, visibilite: 'mj' });
+  const ouvert = await m.putFichier('img:public', { nom: 'public.png', octets: ROUGE });
+  assert.equal(mj.json().etat, 'creee');
+  const idMj = mj.json().id as number;
+  const idOuvert = ouvert.json().id as number;
+  const noms = (await m.biblio(m.lea)).body;
+  assert.ok(noms.includes('public.png'), 'default visibility is joueurs');
+  assert.ok(!noms.includes('secret.png'), 'mj file listed to Léa');
+  assert.equal((await m.rest(m.lea, 'GET', `/api/univers/${m.essai}/fichiers/${idMj}`)).statusCode, 404);
+  assert.equal((await m.rest(m.lea, 'GET', `/api/univers/${m.essai}/fichiers/${idOuvert}`)).statusCode, 200);
+  assert.equal((await m.rest(m.antor, 'GET', `/api/univers/${m.essai}/fichiers/${idMj}`)).statusCode, 200);
+  assert.ok((await m.biblio(m.antor)).body.includes('secret.png'));
+});
+
+test('B-48 files > visibility made players in Kanevas is not restored by the replay, the report names the key; the same for the name', async () => {
+  const m = await monde();
+  const c = await m.lotComplet((lot) => m.putFichier('img:plan', { nom: 'plan.png', octets: ROUGE, visibilite: 'mj', lot }));
+  const id = c.res.json().id as number;
+  const lea = () => m.rest(m.lea, 'GET', `/api/univers/${m.essai}/fichiers/${id}`);
+  assert.equal((await lea()).statusCode, 404);
+  assert.equal((await m.rest(m.antor, 'PATCH', `/api/univers/${m.essai}/fichiers/${id}`, { visibilite: 'joueurs' })).statusCode, 200);
+  assert.equal((await lea()).statusCode, 200);
+  const l2 = await m.lotComplet((lot) => m.putFichier('img:plan', { nom: 'plan.png', octets: ROUGE, visibilite: 'mj', lot }));
+  assert.equal(l2.res.statusCode, 200);
+  assert.equal((await lea()).statusCode, 200, 'visibility restored to mj by the replay');
+  assert.ok(l2.res.body.includes('visibilité modifiée dans Kanevas : non écrasée'), l2.res.body);
+  const rapport = JSON.stringify((await m.rest(m.antor, 'GET', `/api/univers/${m.essai}/lots`)).json());
+  assert.ok(rapport.includes('img:plan'), 'the report names the origin key');
+  assert.ok(rapport.includes('visibilité modifiée dans Kanevas : non écrasée'));
+  assert.equal((await m.rest(m.antor, 'PATCH', `/api/univers/${m.essai}/fichiers/${id}`, { nom: 'plan-du-port.png' })).statusCode, 200);
+  const l3 = await m.lotComplet((lot) => m.putFichier('img:plan', { nom: 'plan.png', octets: ROUGE, visibilite: 'mj', lot }));
+  assert.ok(l3.res.body.includes('nom modifié dans Kanevas : non écrasé'), l3.res.body);
+  const liste = (await m.biblio(m.antor)).body;
+  assert.ok(liste.includes('plan-du-port.png') && !liste.includes('"plan.png"'), 'name restored by the replay');
+});
+
+test('B-49 counters > a batch counts « 2 created, 1 refused » files and 3 waiting links and references (2 of the sheet + 1 of the stub seed)', async () => {
+  const m = await monde();
+  const l = await m.lotComplet(async (lot) => {
+    await m.putFiche('lieu:quais', { type: 'lieu', titre: 'Les Quais', sections: [section('desc', 'Description', 'Le port.\n\n![](fichier:cle:img:quais)', { fichiers: ['doc:tarifs'] })] }, lot);
+    await m.putFichier('doc:vide', { nom: 'vide.pdf', octets: Buffer.alloc(0), lot });
+    await m.putFichier('doc:autre', { nom: 'autre.pdf', octets: pdf('a'), lot });
+    await m.putFichier('doc:autre2', { nom: 'autre2.pdf', octets: pdf('b'), lot });
+    return null;
+  });
+  assert.equal(l.rapport.compteurs.fichiers.creees, 2);
+  assert.equal(l.rapport.compteurs.fichiers.refusees, 1);
+  assert.equal(l.rapport.enAttente, 3);
+});
