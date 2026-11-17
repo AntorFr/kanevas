@@ -120,7 +120,8 @@ const HARNAIS = /^src\/e2e\/(harnais[^/]*\.ts|fixtures\/.*)$/;
 
 /**
  * AD-niveau-3: paths no page reaches that touch no screen. Matched by path, after the import graph
- * (a server module a page imports is reached, hence not here). `rust/` is deliberately absent.
+ * (a server module a page imports is reached, hence not here). `rust/` is here for what no `wasm:*` node links
+ * (AD-touches-5): a module no page loads, the Cargo files when no page loads any; the graph decides first.
  */
 export const HORS_ECRAN = [
   (f) => f.startsWith('docs/'),
@@ -128,6 +129,8 @@ export const HORS_ECRAN = [
   (f) => f.startsWith('.agent/'),
   (f) => f.startsWith('.github/'),
   (f) => f.startsWith('scripts/'),
+  (f) => f.startsWith('rust/'),
+  (f) => f.startsWith('frontend/src/wasm/essai/'), // the proof page of the Wasm path (AD-rust-7), served by its test only
   (f) => f.endsWith('.test.ts'), // a screen test is handled before this list
   (f) => f.startsWith('src/') && !f.startsWith('src/e2e/'),
 ];
@@ -161,12 +164,13 @@ function nomsLies(nom, sortie) {
  *   default, namespace, `import()`, `import x = require()`); type-only imports are not edges (AD-touches-3).
  * - `reexports`: `{ spec, type, star }`, `{ spec, type, paires: [[original, exported]] }` or `{ spec, type, ns }`.
  * - `exportes`: names this file declares; `doute`: a form the parser cannot enumerate (`export =`).
+ * - `modules`: literal names of `chargerModule('<m>')` calls; `modulesTous`: a call whose name is not literal (AD-touches-5).
  * - `globs`: `import.meta.glob` calls, `{ motifs }` (strings) or `{ motifs: null }` when not literal (AD-touches-4).
  */
 export function analyser(source, fichier = 'x.ts') {
   const genre = /\.tsx$/.test(fichier) ? ts.ScriptKind.TSX : SOURCE_JS.test(fichier) ? ts.ScriptKind.JS : ts.ScriptKind.TS;
   const sf = ts.createSourceFile(fichier, source, ts.ScriptTarget.Latest, false, genre);
-  const out = { imports: [], reexports: [], exportes: new Set(), doute: false, globs: [], types: [] };
+  const out = { imports: [], reexports: [], exportes: new Set(), doute: false, globs: [], types: [], modules: [], modulesTous: false };
   const K = ts.SyntaxKind;
   const exporte = (n) => (ts.canHaveModifiers(n) ? ts.getModifiers(n) ?? [] : []).some((m) => m.kind === K.ExportKeyword);
   const defaut = (n) => (ts.canHaveModifiers(n) ? ts.getModifiers(n) ?? [] : []).some((m) => m.kind === K.DefaultKeyword);
@@ -215,6 +219,9 @@ export function analyser(source, fichier = 'x.ts') {
       if (e.kind === K.ImportKeyword) {
         const a = n.arguments[0];
         if (a && ts.isStringLiteralLike(a)) out.imports.push({ spec: a.text, noms: true });
+      } else if (e.kind === K.Identifier && e.text === 'chargerModule') {
+        const a = n.arguments[0];
+        if (a && ts.isStringLiteralLike(a)) out.modules.push(a.text); else out.modulesTous = true;
       } else if (ts.isPropertyAccessExpression(e) && e.name.text === 'glob' && ts.isMetaProperty(e.expression)
         && e.expression.keywordToken === K.ImportKeyword) {
         const a = n.arguments[0];
@@ -292,7 +299,26 @@ export function fichiersDuGlob(motifs, depuis, fichiers) {
   return fichiers.filter((f) => garder.some((re) => re.test(f)) && !retirer.some((re) => re.test(f)));
 }
 
-/** AD-niveau-2 and AD-touches-1 to 4: screen name → set of files its page reaches (itself included), read from the sources. */
+const CHARGEUR = 'frontend/src/wasm/charger.ts';
+const MODULE_RUST = /^rust\/modules\/([^/]+)\//;
+const GLUE_RUST = /^rust\/pkg\/([^/]+)\//;
+const CARGO = ['rust/Cargo.toml', 'rust/Cargo.lock', 'rust/rust-toolchain.toml'];
+
+/** AD-touches-5: the `wasm:<m>` nodes a file is linked to (its literal `chargerModule` calls, its imports of the glue); the loader names every module in one table and links to none. */
+function noeudsWasm(f, a, modulesConnus) {
+  if (f === CHARGEUR) return [];
+  const noms = new Set(a.modules);
+  if (a.modulesTous) modulesConnus.forEach((m) => noms.add(m));
+  const dossier = f.split('/').slice(0, -1).join('/');
+  for (const spec of [...a.imports.map((i) => i.spec), ...a.reexports.filter((r) => !r.type).map((r) => r.spec)]) {
+    if (!spec.startsWith('.')) continue;
+    const m = GLUE_RUST.exec(normaliser(dossier + '/' + spec) ?? '');
+    if (m) noms.add(m[1]);
+  }
+  return [...noms].map((m) => `wasm:${m}`);
+}
+
+/** AD-niveau-2 and AD-touches-1 to 5: screen name → set of files its page reaches (itself included), read from the sources. */
 export function grapheDesPages(fichiers, lire = (f) => readFileSync(f, 'utf8')) {
   return lireGraphe(fichiers, lire).graphe;
 }
@@ -329,6 +355,7 @@ export function lireGraphe(fichiers, lire) {
     }
     return res;
   };
+  const modulesConnus = new Set(fichiers.map((f) => MODULE_RUST.exec(f)?.[1]).filter(Boolean));
   const graphe = new Map();
   for (const [nom, page] of ecransDe(fichiers)) {
     const demande = new Map(); // file → Set of names demanded, or true (all)
@@ -344,6 +371,7 @@ export function lireGraphe(fichiers, lire) {
       if (!cur) {
         for (const i of a.imports) { const t = cible(i.spec, f); if (t) demander(t, i.noms); }
         for (const g of a.globs) for (const t of fichiersDuGlob(g.motifs, f, fichiers)) demander(t, true);
+        for (const w of noeudsWasm(f, a, modulesConnus)) demander(w, true);
       }
       const tous = delta === true;
       const dispo = tous ? null : exportsDe(f);
@@ -411,7 +439,9 @@ export function ecransTouches(touches, fichiers, lire) {
   for (const f of touches) {
     if (HARNAIS.test(f)) { touchesTous.forEach((n) => atteints.add(n)); continue; }
     if (TEST_ECRAN.test(f)) continue; // selected itself, touches no screen
-    const lies = [...graphe].filter(([, vus]) => vus.has(f)).map(([n]) => n);
+    const noeud = MODULE_RUST.exec(f);
+    const atteint = (vus) => (noeud ? vus.has(`wasm:${noeud[1]}`) : CARGO.includes(f) ? [...vus].some((v) => v.startsWith('wasm:')) : vus.has(f));
+    const lies = [...graphe].filter(([, vus]) => atteint(vus)).map(([n]) => n);
     if (lies.length) { lies.forEach((n) => atteints.add(n)); continue; }
     const m = PAGE.exec(f);
     if (m) { atteints.add(m[1]); continue; } // a deleted page
