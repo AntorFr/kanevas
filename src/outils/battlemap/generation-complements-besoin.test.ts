@@ -105,19 +105,23 @@ describe('Génération de lots (B-99) : compléments d’ensemble', () => {
 
   it('données de l’outil : 1 lot et 3 lignes comptés, effacés ; l’asset accepté reste ; Léa refusée', async () => {
     // Panne : compter oublie les lignes, effacer laisse un lot (l'univers resterait bloqué), ou un joueur efface.
+    const U = `/api/univers/${E}/outils/battlemap/generation/suppression`;
+    // batches closed by the previous tests are rows too: the count is read before and after
+    const nombre = async (cle: string) => ((await q('GET', 'antor', U)).json().efface as Any[]).find((x) => x.cle === cle)?.nombre ?? 0;
+    const lots0 = await nombre('lots'); const lignes0 = await nombre('lignes');
     await lancerEtAttendre([ligne('lampe'), ligne('banc'), ligne('mât')]);
     const l = await lot();
     assert.equal((await q('POST', 'antor', `${R}/lignes/${l.lignes[0].id}/accepter`)).statusCode, 200);
-    const U = `/api/univers/${E}/outils/battlemap/generation/suppression`;
     const resume = await q('GET', 'antor', U);
     assert.equal(resume.statusCode, 200, resume.body);
     const lignes = resume.json().efface as Any[];
-    assert.deepEqual(lignes.map((x) => x.nombre).sort(), [1, 3]);
+    assert.equal(await nombre('lots') - lots0, 1);
+    assert.equal(await nombre('lignes') - lignes0, 3);
     assert.ok((await q('POST', 'lea', U, { vu: lignes })).statusCode >= 400);
     assert.equal((await lot()).lignes.length, 3);
     const efface = await q('POST', 'antor', U, { vu: lignes });
     assert.equal(efface.statusCode, 200, efface.body);
-    assert.equal(efface.json().total, 4);
+    assert.equal(efface.json().total, lots0 + lignes0 + 4);
     assert.equal((await q('GET', 'antor', R)).json().lot, null);
     assert.deepEqual((await q('GET', 'antor', U)).json().efface, []); // no line at 0 (E-20 dialog)
     assert.equal((await assets('lea')).filter((a) => a.nom === 'lampe').length, 1);
