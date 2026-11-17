@@ -1,7 +1,7 @@
 // Geometry of the system map (AD-carte-3): pure, no DOM. World units are pixels at the fitted view (zoom 1); the plan
 // position of an orbit and an hour is the core's (`orbite_heure_vers_plan`, AD-143), injected as `plan`.
 import type { AstreSysteme, FormationSysteme, InterieurSysteme } from './types';
-import type { GenreCorps } from './etiquettes';
+import type { GenreCorps, Obstacle } from './etiquettes';
 
 /** `plan(rayon, heure)` → `[x, y]` (12 at the top, 3 at the right): the core's function. */
 export type Plan = (rayon: number, heure: number) => [number, number];
@@ -153,4 +153,33 @@ export function grainsAnneau(f: FormationSysteme, plan: Plan): Grain[] {
     out.push({ x, y, r: 0.5 + g() * 1.4, l: 0.45 + g() * 0.55 });
   }
   return out;
+}
+
+/** Part of a star sprite's half-side its glow reaches (the renderer's corona fades out between 0.85 and 1): labels stay outside it. */
+export const PORTEE_COURONNE = 0.9;
+
+/** What a comet's two tails cover on screen, as `queue` obstacles (the renderer's geometry: the head on the body, tails fading out
+ *  by ~3/4 of their length). `cote` is the sprite side in screen pixels. */
+export function queuesComete(x: number, y: number, cote: number, aspect: Record<string, unknown> | undefined): Extract<Obstacle, { type: 'queue' }>[] {
+  const num = (k: string, d: number, lo: number, hi: number) => {
+    const v = aspect?.[k];
+    return Math.min(hi, Math.max(lo, typeof v === 'number' && Number.isFinite(v) ? v : d));
+  };
+  const sens = typeof aspect?.sens === 'number' && aspect.sens < 0 ? -1 : 1;
+  const longueur = num('longueur', 0.55, 0.1, 1);
+  const ouv = num('ouverture', 0.25, 0.02, 0.8);
+  const tete = num('tete', 1.2, 0.3, 3);
+  const courb = num('courbure', 0.45, 0, 1);
+  const long = (0.3 + longueur) * cote * 0.95;
+  const rn = Math.max(1.2, cote * 0.022 * tete);
+  const angleGaz = Math.atan2(0.6, -sens * 0.8);
+  const queue = (angle: number, longK: number, large: number, courbe: number) => {
+    const l = longK * 0.75;
+    return { type: 'queue' as const, x, y, dx: Math.cos(angle), dy: Math.sin(angle), longueur: l,
+      r0: 1.2 * rn * 1.1, r1: 1.2 * (rn * 1.1 + large * l) + 0.25 * courbe * l * l / longK };
+  };
+  return [
+    queue(angleGaz, long * 1.05, ouv * 0.38, 0),
+    queue(angleGaz - sens * courb * 0.3, long * 0.85, ouv * 1.1, courb * 0.9),
+  ];
 }

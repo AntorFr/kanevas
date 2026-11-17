@@ -12,7 +12,9 @@ export interface CorpsEtiquette { cle: string; genre: GenreCorps; nom: string; x
 export type Obstacle =
   | { type: 'rect'; x: number; y: number; largeur: number; hauteur: number }
   | { type: 'disque'; x: number; y: number; rayon: number }
-  | { type: 'anneau'; x: number; y: number; rayon: number };
+  | { type: 'anneau'; x: number; y: number; rayon: number }
+  /** A comet's tail: from (x, y) along the unit vector (dx, dy) over `longueur`, its half-width going from `r0` to `r1`. */
+  | { type: 'queue'; x: number; y: number; dx: number; dy: number; longueur: number; r0: number; r1: number };
 
 /** The view: its size in px and its zoom (1 = the fitted view); moons and zones collapse first when zooming out. */
 export interface VueEtiquettes { largeur: number; hauteur: number; zoom?: number }
@@ -53,6 +55,15 @@ const coupeLeDisque = (r: Rect, c: CorpsEtiquette) => {
 
 const toucheObstacle = (r: Rect, o: Obstacle) => {
   if (o.type === 'rect') return sechevauchent(r, o);
+  if (o.type === 'queue') {
+    // A tail is a run of discs: sampled every few pixels, never wider apart than the narrowest of them.
+    const n = Math.max(2, Math.ceil(o.longueur / Math.max(2, Math.min(o.r0, o.r1, 6))));
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      if (distanceMin(r, o.x + o.dx * o.longueur * t, o.y + o.dy * o.longueur * t) < o.r0 + (o.r1 - o.r0) * t + MARGE) return true;
+    }
+    return false;
+  }
   const dmin = distanceMin(r, o.x, o.y);
   if (o.type === 'disque') return dmin < o.rayon + MARGE;
   const dmax = Math.max(...[r.x, r.x + r.largeur].flatMap((px) => [r.y, r.y + r.hauteur].map((py) => Math.hypot(px - o.x, py - o.y))));

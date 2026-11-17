@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { lire } from '../../../api';
 import { chargerModule } from '../../../wasm/charger';
 import { Alerte, BoutonIcone, Case } from '../../../ui';
-import { centresNuage, coteDemande, disposer, grainsAnneau, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
+import { centresNuage, coteDemande, disposer, grainsAnneau, PORTEE_COURONNE, queuesComete, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
 import { Sprites, dessineurDuCoeur } from './carte-sprites';
 import { placerEtiquettes, type CorpsEtiquette, type EtiquettePlacee, type Obstacle } from './etiquettes';
 import { nomAstre, nomFormation, placeAstre, typeAstre } from './systeme-libelles';
@@ -139,8 +139,8 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     const liste: CorpsEtiquette[] = dispo.corps.map((c) => {
       const [x, y] = ecran(c.x, c.y);
       const rayon = Math.max(4, c.rayon * echelle);
-      // A star's corona is drawn out to ~0.7 of its sprite's half-side: a label does not sit on it.
-      const halo = c.astre.genre === 'etoile' ? Math.max(rayon, (c.cote * echelle) / 2 * 0.7) : undefined;
+      // A star's glow is drawn out to ~0.9 of its sprite's half-side: a label does not sit on it.
+      const halo = c.astre.genre === 'etoile' ? Math.max(rayon, (c.cote * echelle) / 2 * PORTEE_COURONNE) : undefined;
       return { cle: c.cle, genre: c.genre, nom: nomAstre(c.astre), x, y, rayon, ...(halo ? { halo } : {}) };
     });
     for (const z of dispo.zones) {
@@ -165,6 +165,11 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     if (!dispo || !p) return liste;
     const [cx, cy] = ecran(0, 0);
     if (dispo.transition > 0) liste.push({ type: 'anneau', x: cx, y: cy, rayon: dispo.transition * echelle });
+    for (const c of dispo.corps) {
+      if (c.genre !== 'comete') continue;
+      const [x, y] = ecran(c.x, c.y);
+      liste.push(...queuesComete(x, y, c.cote * echelle, c.astre.aspect));
+    }
     if (heures) {
       const rh = Math.max(dispo.transition, 3 * U);
       for (let h = 0; h < 12; h += 3) {
