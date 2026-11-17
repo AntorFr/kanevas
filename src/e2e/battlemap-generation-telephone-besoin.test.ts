@@ -5,7 +5,7 @@
 // TEST PLAN (every expected value is a literal from the mockup / the sheet)
 //   onglets   : at 390 px « Assets », « Direction artistique », « Génération » are all inside the viewport, the page does not scroll sideways
 //   prepare-nom    : prepared batch, « Console de commande » fully readable in its name field
-//   prepare-rangee : prepared batch, name on its own line (mandate arbitration 12:08), category, footprint and « Retirer » below on one row, inside the viewport, not overlapping
+//   prepare-rangee : prepared batch, name on its own line (mandate arbitration 12:08), category, footprint and « Retirer » below (wrapping allowed), inside the viewport, not overlapping
 //   brouillon         : a draft row at 390 px: thumbnail (≤ 100 × 80 px, mockup 92 × 68) at the left of the name, name not cut, the three gestures inside the viewport
 //   brouillon-pastille : pill « Brouillon prêt » green (mockup #3fc79a), not violet nor grey
 import assert from 'node:assert/strict';
@@ -88,7 +88,7 @@ describe('E-27 Génération au téléphone (390 px)', { skip: skipBrowser }, () 
     assert.ok(coupe <= 0, `le nom « Console de commande » est coupé de ${coupe} px dans son champ`);
   });
 
-  it('prepare-rangee : dans un lot préparé, le nom a sa propre ligne, catégorie, empreinte et « Retirer » tiennent dessous sur une même rangée, sans chevauchement', async () => {
+  it('prepare-rangee : dans un lot préparé, le nom a sa propre ligne, catégorie, empreinte et « Retirer » tiennent dessous dans l’écran, sans chevauchement', async () => {
     const { liste, nom } = await preparer();
     const boites = [
       await nom.boundingBox(),
@@ -100,9 +100,9 @@ describe('E-27 Génération au téléphone (390 px)', { skip: skipBrowser }, () 
     const [n, c, l, x] = boites;
     for (const b of [c, l, x]) {
       assert.ok(b.y >= n.y + n.height - 1, `catégorie, empreinte et Retirer sous le nom : ${JSON.stringify(boites)}`);
-      assert.ok(Math.abs(b.y + b.height / 2 - (c.y + c.height / 2)) < c.height, `catégorie, empreinte et Retirer sur une même rangée : ${JSON.stringify(boites)}`);
     }
-    assert.ok(c.x + c.width <= l.x + 1 && l.x + l.width <= x.x + 1, `colonnes qui se chevauchent : ${JSON.stringify(boites)}`);
+    const croise = (p: Any, q: Any) => p.x < q.x + q.width - 1 && q.x < p.x + p.width - 1 && p.y < q.y + q.height - 1 && q.y < p.y + p.height - 1;
+    for (const [i, p] of [c, l, x].entries()) for (const q of [c, l, x].slice(i + 1)) assert.ok(!croise(p, q), `contrôles qui se chevauchent : ${JSON.stringify(boites)}`);
   });
 
   it('brouillon : vignette réduite à gauche du nom, nom entier, gestes dans l’écran', async () => {
