@@ -1,6 +1,6 @@
-import { ArrowRightLeft, Ellipsis, FolderInput, Info, ImageOff, ImagePlus, ImageUp, Lock, Tags, Trash2, TriangleAlert, type LucideIcon } from 'lucide-react';
+import { ArrowRightLeft, Ellipsis, FolderInput, History, Info, ImageOff, ImagePlus, ImageUp, Lock, Tags, Trash2, TriangleAlert, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { ErreurApi, appeler, envoyerFichier, lire } from '../../api';
 import { Alerte, Bouton, BoutonIcone, Menu, useToasts } from '../../ui';
@@ -55,6 +55,7 @@ interface Props {
 /** E-9 header: type badge and title, with the illustration at the left when there is one (AD-93). */
 export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icone, message, setMessage, rafraichir, onDroitPerdu, onIntrouvable }: Props) {
   const { toast } = useToasts();
+  const naviguer = useNavigate();
   const [confirmer, setConfirmer] = useState(false);
   const [retraitEnCours, setRetraitEnCours] = useState(false);
   const [ko, setKo] = useState<string>();
@@ -292,6 +293,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                     : []),
                   { libelle: 'Déplacer sous…', icone: FolderInput, onChoisir: () => setDeplacement(true) },
                   { libelle: 'Alias et étiquettes…', icone: Tags, onChoisir: () => setEtiquetage(true) },
+                  { libelle: 'Historique', icone: History, onChoisir: () => naviguer(`/univers/${universId}/historique?fiche=${fiche.id}`) },
                   ...(fiche.cleOrigine ? [{ separateur: true as const }] : []),
                   ...(fiche.cleOrigine
                     ? [

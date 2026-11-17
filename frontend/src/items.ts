@@ -1,4 +1,5 @@
 import {
+  History,
   Images,
   KeyRound,
   LayoutGrid,
@@ -47,6 +48,7 @@ export const ITEMS_UNIVERS: Item[] = [
   { libelle: 'Membres', icone: ContactRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/membres` },
   { libelle: 'Paramètres', icone: Settings2, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/parametres` },
   { libelle: 'Accès par API', icone: KeyRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/acces-api` },
+  { libelle: 'Historique', icone: History, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/historique` },
   // « Administration » (E-5): instance admins only, wherever the bar is.
   { libelle: 'Administration', icone: ShieldCheck, section: 'Instance', groupe: GROUPE_ADMIN, horsUnivers: true, chemin: () => '/administration' },
 ];
