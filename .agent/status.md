@@ -41,6 +41,9 @@
 
 > MàJ : 2026-11-16 (assemblage de `kanevas-tests-hors-ecran`, PR vers `main` : tests seuls, produit inchangé)
 > MàJ : 2026-11-17 (assemblage de `kanevas-ecrans-liste`, PR vers `main` : outillage de test seul, produit inchangé)
+> MàJ : 2026-11-17 (assemblage de `kanevas-build-limite`, PR vers `main` : CI seule, produit inchangé)
+
+**`feature/kanevas-build-limite` (PR vers `main`, non fusionnée) :** chaque job de `.github/workflows/docker-publish.yml` (`attestation`, `build`) déclare `timeout-minutes: 120` : un build figé est coupé et se rejoue au lieu de tenir la livraison 6 h (défaut de la plateforme) ; le README dit à côté la durée habituelle d'un build stable (40 à 55 min, amd64 + arm64). **Piège :** tout job ajouté au workflow doit porter la même clé. **Reste :** accélérer le build (hors tranche) ; 120 min suffisent-elles à un build stable : prouvé seulement par un tag de préversion à la livraison (amd64 seul, il prouve que le YAML reste valide).
 
 **`feature/kanevas-ecrans-liste` (PR vers `main`, non fusionnée) :** `.sdlc.yaml` déclare `tests.ecrans_liste: node scripts/niveaux-tests.mjs --liste ecrans {base}` (AD-ecrans-liste-1 et 2 dans `ARCHITECTURE.md`) : elle nomme, un fichier par ligne sur stdout, les tests d'écran que `ecrans:` jouerait, sans les jouer ni `npm ci` ; vide quand aucun écran n'est touché (commit de doc seul), erreur sur stderr avec code non nul (base absente : code 2, jamais de liste partielle). `tests-attestes.mjs` tire sa sélection de ce même `--liste`. Garde : `src/scripts-tests/ecrans-liste-declaration.test.ts` (déclarée, sans paquet importé, vide pour `docs/`, même sélection que `tests-attestes`). **Piège :** le script doit rester en `.mjs` sur `node:` et `git` seulement, sinon la liste ne tourne plus sans `node_modules`. **Reste :** la précision de la sélection (`kanevas-ecrans-touches-precis`).
 
