@@ -1,3 +1,4 @@
+// ecrans: fiche, recherche
 // Review test of kanevas-fiches-liees-bloc-ecran: the thumbnail of a related-sheet row keeps its image inside its
 // 36 px frame (E-9) / 40 px frame (E-17), whatever the illustration's shape, and two rows never touch.
 import assert from 'node:assert/strict';

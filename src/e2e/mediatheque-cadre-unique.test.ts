@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Review of the single tile-frame rule (E-19 + « Choisir un fichier ») and of the « Supprimer le fichier » alignment.
 //
 // TEST PLAN

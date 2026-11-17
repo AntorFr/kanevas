@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Review tests of kanevas-arbre-fiche, fourth pass (mock-up e09): the foot of « Déplacer sous… » (right-aligned, side by side
 // across the width on a phone, Annuler then Déplacer), the cycle refusal as an .alerte banner, and the trail at 390 px
 // with the MJ / Player switch visible (current title whole, no crumb over a chevron).

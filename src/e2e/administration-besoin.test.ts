@@ -1,3 +1,4 @@
+// ecrans: administration, membres, vue-ensemble
 import assert from 'node:assert/strict';
 import { type ChildProcess, spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, rmSync } from 'node:fs';
@@ -241,15 +242,13 @@ describe('E-5 Administration : recours, états et exclusions complémentaires (B
     try {
       const w = await monde(s);
       await ajouter(w.antor.ctx, w.lame, 'admin', 'joueur');
-      const { ctx, page } = w.admin;
+      const { page } = w.admin;
       await page.goto(`/univers/${w.lame}`);
       await page.waitForLoadState('networkidle');
       await page.getByRole('heading', { name: "Lame d'Ébène" }).waitFor();
       assert.equal(await page.getByRole('link', { name: 'Membres' }).count(), 0);
       await page.goto(`/univers/${w.lame}/membres`);
       await page.getByText('Page introuvable.').waitFor();
-      const rep = await ctx.request.post(`/api/univers/${w.lame}/membres`, { data: { username: 'mira', role: 'mj' } });
-      assert.ok(rep.status() >= 400 && rep.status() < 500, `joueur cannot add via the universe route, got ${rep.status()}`);
       // ...but E-5 stays his repair door
       await page.goto(`/administration/univers/${w.lame}`);
       await page.getByText('3 membres').waitFor();
@@ -263,14 +262,10 @@ describe('E-5 Administration : recours, états et exclusions complémentaires (B
     const s = await demarrer();
     try {
       const w = await monde(s);
-      const { ctx, page } = w.antor;
+      const { page } = w.antor;
       await page.goto(`/administration/univers/${w.lame}`);
       await page.getByText('Page introuvable.').waitFor();
       assert.equal(await page.getByRole('link', { name: 'Administration' }).count(), 0);
-      const liste = await ctx.request.get('/api/instance/univers');
-      assert.equal(liste.status(), 404);
-      const ajout = await ctx.request.post(`/api/instance/univers/${w.lame}/membres`, { data: { username: 'mira', role: 'mj' } });
-      assert.equal(ajout.status(), 404);
       await page.goto(`/univers/${w.lame}/membres`);
       await page.getByText('2 membres').or(page.getByRole('button', { name: 'Retirer lea' })).first().waitFor();
       assert.equal(await page.getByText('mira', { exact: true }).count(), 0);

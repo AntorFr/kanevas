@@ -1,3 +1,4 @@
+// ecrans: acces-api
 // Browser check of E-18 on a phone (390 px): a token with an expiry date shows its three mentions
 // (créé par / dernier usage ou jamais utilisé / expire le) stacked in a column, none ending with a dangling « · »
 // (mock-up docs/maquettes/e18-acces-api.html:527-528).
