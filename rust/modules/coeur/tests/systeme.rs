@@ -142,3 +142,13 @@ fn wasm_plat_rend_la_meme_chaine() {
     assert!(a.is_ok());
     assert_eq!(a.ok().unwrap(), serde_json::to_string(&tire(s)).unwrap());
 }
+
+#[test]
+fn heure_vers_voisin_aux_six_directions() {
+    // 12 en haut (0), 3 à droite ; les six voisins d'un hexagone pointe en haut.
+    let cas = [((1, 0), 3.0), ((0, 1), 5.0), ((-1, 1), 7.0), ((-1, 0), 9.0), ((0, -1), 11.0), ((1, -1), 1.0)];
+    for ((dq, dr), h) in cas {
+        assert_eq!(heure_vers_voisin(4, -2, 4 + dq, -2 + dr), h, "voisin ({dq}, {dr})");
+    }
+    assert_eq!(heure_vers_voisin(0, 0, 0, 0), 0.0);
+}

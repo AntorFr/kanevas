@@ -454,3 +454,28 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/systeme-liste-corps-ecran.test.ts` | `état vide : cadre en pointillés, remplissage de 18 px, texte propre à chaque rôle` | affichage | — | gardé |
 | `src/e2e/systeme-liste-corps-ecran.test.ts` | `connexion perdue après la lecture : « Connexion perdue. » une seule fois` | affichage | — | gardé |
 | `src/e2e/wasm-navigateur.test.ts` | `the coeur module in Chromium finds the fixtures' stars and the exact JSON bytes of generation-sortie-coeur.json` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `${largeur} px : 12 corps dessinés, aucune étiquette ne chevauche une autre ni un corps (crochet de test)` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `un glisser déplace la vue ; Recentrer la ramène` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `un glisser n’est pas un toucher : il ne désélectionne pas` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `la molette et « + » « − » zooment entre 0,5× et 4× et pas au-delà` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `un pincement (deux doigts simulés) zoome la vue, borné à [0,5×, 4×]` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `les cases « orbites » et « heures » sont cochées et masquent puis montrent leurs traits` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `un toucher sur le ciel vide désélectionne ; un toucher sur un corps le sélectionne` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `au toucher (écran tactile), un tap sur le ciel vide désélectionne` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `une entrée au clavier sur un corps le sélectionne, la barre d’espace aussi` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `une ligne de liste porte le nom entier en title ; la carte le raccourcit par « … » à 390 px ; cliquer la ligne sélectionne le corps` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `une joueuse ne voit que la sortie vers le voisin lisible par une route publique ; le MJ voit aussi la privée et le caché ; le MJ en mode joueur comme la joueuse` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `une sortie ouvre le système voisin` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `le cœur indisponible : « La carte ne peut pas s’afficher ici. » et les listes restent` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `hors ligne : « Connexion perdue. » une seule fois, la carte reste` | affichage | — | gardé |
+| `src/e2e/carte-systeme-canvas-ecran.test.ts` | `les deux thèmes : captures du ciel (1280 et 390 px), le ciel reste sombre` | affichage | — | gardé |
+| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `${l} px : un corps sélectionné ouvre son panneau (nom, type, lieu, hexagone) ; le ciel vide le ferme` | affichage | — | gardé |
+| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `un astre sans nom lit « Astre sans nom »` | affichage | — | gardé |
+| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `le MJ et la joueuse lisent le même panneau, sans action de plus` | affichage | — | gardé |
+| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `cœur indisponible : une ligne de liste ouvre le panneau` | affichage | — | gardé |
+| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `route d’illustration en erreur : « Illustration indisponible. » et « Réessayer » relance la requête` | affichage | — | gardé |
+| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `« Voir l’illustration » : fenêtre sur le flou, « Chargement de l’illustration… », puis l’image nette ; Esc ferme et rend le focus` | affichage | — | gardé |
+| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `fenêtre : route en erreur → « Illustration indisponible. », « Réessayer », « Fermer »` | affichage | — | gardé |
+| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `fenêtre : une route qui répond introuvable → « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `captures de recette : chaque famille de corps, chaque thème, 1280 et 390 px` | affichage | — | gardé |
+| `src/e2e/wasm-navigateur.test.ts` | `the coeur module in Chromium draws the same bytes as the Node binding (AD-carte-1) and refuses an unknown type and a side of 8` | affichage | — | gardé |

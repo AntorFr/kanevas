@@ -57,3 +57,16 @@ export async function planVersOrbiteHeure(x: number, y: number): Promise<[number
   const o = (await chargerModule('coeur')).plan_vers_orbite_heure(x, y);
   return [o[0]!, o[1]!];
 }
+
+/** RGBA bytes (`cote * cote * 4`) of a body drawn from its aspect JSON (AD-carte-1). Throws if the core refuses. */
+export async function dessiner(aspect: string, cote: number, versionRendu: number): Promise<Uint8Array> {
+  return (await chargerModule('coeur')).dessiner_astre(aspect, cote, versionRendu);
+}
+
+export async function versionRendu(): Promise<number> {
+  return (await chargerModule('coeur')).version_rendu();
+}
+
+export async function catalogueAspects(): Promise<string> {
+  return (await chargerModule('coeur')).catalogue_aspects();
+}

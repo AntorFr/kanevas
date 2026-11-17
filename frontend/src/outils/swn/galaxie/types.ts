@@ -48,9 +48,13 @@ export type Touche =
 /** What `GET …/galaxies/:gid/interieur/:q/:r` returns (E-23); no key of a hidden thing is ever in it. */
 export interface AstreSysteme {
   cle: string; genre: 'etoile' | 'planete' | 'lune' | 'comete'; parent_cle: string | null; etoile_rang: number; type: string;
-  nom: string | null; orbite: number | null; heure: number; taille: number;
+  nom: string | null; orbite: number | null; heure: number; taille: number; aspect?: Record<string, unknown>;
+  /** Plain text, when the answer carries one. */
+  description?: string | null;
 }
 export interface FormationSysteme { cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number }
 export interface InterieurSysteme {
-  q: number; r: number; nom: string | null; etat: 'tire' | 'defini'; astres: AstreSysteme[]; formations: FormationSysteme[];
+  q: number; r: number; nom: string | null; etat: 'tire' | 'defini'; transition?: number; astres: AstreSysteme[]; formations: FormationSysteme[];
 }
+/** An exit towards a neighbouring system (`…/interieur/:q/:r/sorties`); a hidden neighbour or a private route has no entry. */
+export interface SortieSysteme { q: number; r: number; heure: number; nom: string | null }

@@ -110,3 +110,25 @@ test('the coeur module in Chromium draws the fixtures\' systems and the exact JS
     await page.close();
   }
 });
+
+test('the coeur module in Chromium draws the same bytes as the Node binding (AD-carte-1) and refuses an unknown type and a side of 8', { skip: skipBrowser }, async () => {
+  const { dessiner, versionRendu } = await import('../wasm/coeur.js');
+  const v = await versionRendu();
+  const aspects = ['{"type":"tellurique"}', '{"type":"jaune"}', '{"type":"gazeuse","aspect":{"palette":["#102030","#a0b0c0"]}}'];
+  const page = await browser.newPage();
+  try {
+    await page.goto(`${base}/index.html`);
+    await page.waitForFunction(() => document.getElementById('coeur-rendu-refus')?.textContent, undefined, { timeout: 30_000 });
+    assert.equal(await page.isHidden('#erreur'), true);
+    const images: string[] = JSON.parse(await page.evaluate(() => document.getElementById('coeur-rendu')!.textContent!));
+    assert.equal(images.length, aspects.length);
+    for (const [i, a] of aspects.entries()) {
+      assert.equal(images[i]!.length, 32 * 32 * 4 * 2);
+      assert.equal(images[i], Buffer.from(await dessiner(a, 32, v)).toString('hex'), a);
+    }
+    assert.notEqual(images[0], images[1]);
+    assert.deepEqual(JSON.parse((await page.textContent('#coeur-rendu-refus'))!), [true, true]);
+  } finally {
+    await page.close();
+  }
+});
