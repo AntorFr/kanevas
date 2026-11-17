@@ -165,8 +165,10 @@ test('modifie_par_admin_pastille_effacee_et_acces_changes_pendant_la_boite', opt
   await page.getByRole('button', { name: 'J’ai copié le jeton' }).click();
   await page.getByText('Jeton surveillé').first().waitFor();
   const admin = (m.app.db.prepare("SELECT id FROM comptes WHERE username = 'admin'").get() as { id: number }).id;
+  let decalage = 0;
+  // Each mark gets a later date (no real delay needed): the box compares against the last mark it saw.
   const marque = () =>
-    m.app.db.prepare('UPDATE jetons_api SET modifie_par_admin_par = ?, modifie_par_admin_le = ? WHERE nom = ?').run(admin, new Date().toISOString(), 'Jeton surveillé');
+    m.app.db.prepare('UPDATE jetons_api SET modifie_par_admin_par = ?, modifie_par_admin_le = ? WHERE nom = ?').run(admin, new Date(Date.now() + 60_000 * ++decalage).toISOString(), 'Jeton surveillé');
   marque();
   await page.reload();
   await attendre(page);
@@ -174,7 +176,6 @@ test('modifie_par_admin_pastille_effacee_et_acces_changes_pendant_la_boite', opt
   // The admin changes the token again while the box is open: saving reloads, overwrites nothing.
   await page.getByRole('button', { name: 'Modifier les accès de Jeton surveillé' }).click();
   await page.getByRole('radio', { name: 'Une liste d’univers' }).waitFor();
-  await new Promise((r) => setTimeout(r, 1100));
   marque();
   await page.getByRole('button', { name: 'Enregistrer' }).click();
   await page.getByText('Les accès ont changé.').waitFor();
