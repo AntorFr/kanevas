@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { appeler, ErreurApi, lire, useConnexionPerdue } from '../../api';
 import {
-  Alerte, Bouton, BoiteDialogue, Champ, Chargement, ErreurChargement, Fenetre, Pastille,
+  Alerte, Bouton, BoutonIcone, BoiteDialogue, Champ, Chargement, ErreurChargement, Fenetre, Pastille,
 } from '../../ui';
 
 // ---- Types of the API (`services/battlemap-lots.ts`) -----------------------------------------------------------------------
@@ -477,7 +477,7 @@ function LigneListe({ ligne, rang, onChange, onRetirer }: {
           </>
         )}
       </div>
-      <Bouton variante="fantome" petit icone={Trash2} ecrit aria-label={`Retirer la ligne ${ligne.nom.trim() || rang}`} onClick={onRetirer}>Retirer</Bouton>
+      <BoutonIcone icone={Trash2} ecrit infobulle="Retirer" etiquette={`Retirer la ligne ${ligne.nom.trim() || rang}`} onClick={onRetirer} />
       <div className="bm-gen-saisie-indication">
         <Champ etiquette={`Indication de la ligne ${rang}`} facultatif value={ligne.indice} maxLength={MAX_INDICE} placeholder="Indication : une couchette double, draps froissés"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ indice: e.target.value })} />
