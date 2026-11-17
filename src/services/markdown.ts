@@ -464,6 +464,37 @@ export function extraireClesFichier(source: string): string[] {
 }
 
 /**
+ * Rewrites `](fichier:<id>)` into `](fichier:cle:<clé>)` for the ids `cleDe` knows (null: keep): the import
+ * form of a file reference, used by the fingerprints (AD-139). Same guards as `reecrireClesFichier`: only
+ * what the tokens found, never a line of a code block. Pure.
+ */
+export function reecrireReferencesFichierEnCles(source: string, cleDe: (id: number) => string | null): string {
+  const connues = new Map<number, string>();
+  for (const id of new Set(extraireReferencesFichier(source))) {
+    const cle = cleDe(id);
+    if (cle !== null) connues.set(id, cle);
+  }
+  if (connues.size === 0) return source;
+  const codes = new Set<number>();
+  for (const t of mdSection.parse(source, { lectureSeule: true } satisfies EnvRendu)) {
+    if ((t.type === 'fence' || t.type === 'code_block') && t.map) {
+      for (let l = t.map[0]; l < t.map[1]; l++) codes.add(l);
+    }
+  }
+  const morceaux = source.split(/(\r\n|\r|\n)/);
+  for (let i = 0, ligne = 0; i < morceaux.length; i += 2, ligne++) {
+    if (codes.has(ligne)) continue;
+    let texte = morceaux[i]!;
+    for (const [id, cle] of connues) {
+      texte = texte.split(`](fichier:${id})`).join(`](fichier:cle:${cle})`);
+      texte = texte.split(`](fichier:${id} `).join(`](fichier:cle:${cle} `);
+    }
+    morceaux[i] = texte;
+  }
+  return morceaux.join('');
+}
+
+/**
  * Rewrites `](fichier:cle:<clé>)` into `](fichier:<id>)` for the keys `resoudre` knows (null: keep). Only the
  * keys the tokens found are touched, and never a line of a code block. Pure.
  */
