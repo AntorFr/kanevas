@@ -229,3 +229,19 @@ test('jeton_outils_essai_g_ligne_catalogue_ecrit_fiches_401', opts, async () => 
   assert.equal(autre.status, 401, 'un outil non coché reste fermé');
   await ctx.close();
 });
+
+test('liste_acces_nom_univers_long_passe_a_la_ligne_sans_troncature', opts, async () => {
+  const m = await monde();
+  const long = 'Les Cendres de Vaëlis et des royaumes oubliés au-delà des monts de brume';
+  m.app.db.prepare('UPDATE univers SET nom = ? WHERE cle = ?').run(long, m.essai);
+  const { page } = await connecte(browser, m.base, 'Léa');
+  await ouvrir(page);
+  await page.getByRole('button', { name: 'Créer un jeton' }).first().click();
+  const titre = page.locator('.liste-acces-titre').filter({ hasText: long });
+  await titre.waitFor();
+  const mesure = await titre.evaluate((e: HTMLElement) => ({ coupe: e.scrollWidth > e.clientWidth, ellipse: getComputedStyle(e).textOverflow, haut: e.getBoundingClientRect().height, ligne: parseFloat(getComputedStyle(e).lineHeight) }));
+  assert.equal(mesure.coupe, false, 'rien de coupé');
+  assert.notEqual(mesure.ellipse, 'ellipsis');
+  assert.ok(mesure.haut > mesure.ligne * 1.5, `le nom passe sur plusieurs lignes (${mesure.haut} / ${mesure.ligne})`);
+  await page.screenshot({ path: `${CAP}/nom-long.png` });
+});
