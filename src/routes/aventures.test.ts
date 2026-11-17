@@ -133,7 +133,7 @@ test('création entière : tout ou rien (parent inconnu/autre univers, 11 sectio
   assert.equal(w.n('sections'), avantS + 10);
 });
 
-test('PATCH statut : MJ 200 sans toucher modifie_le ; joueur 403 / 404 ; mode Joueur 403 ; autre type 400 ; valeur 400', async () => {
+test('PATCH statut : MJ 200, la fiche est datée (B-40 révisé) ; joueur 403 / 404 ; mode Joueur 403 ; autre type 400 ; valeur 400', async () => {
   const w = await monde();
   const ouverte = (await w.creer(w.antor, { type: 'aventure', titre: 'Lue', sections: [{ titre: 'P', joueursLisent: true }] })).json();
   const fermee = (await w.creer(w.antor, { type: 'aventure', titre: 'Secrète', sections: [{ titre: 'P' }] })).json();
@@ -144,7 +144,7 @@ test('PATCH statut : MJ 200 sans toucher modifie_le ; joueur 403 / 404 ; mode Jo
   const r = await w.req(w.antor, 'PATCH', `${w.base}/fiches/${ouverte.id}`, { statut: 'en_cours' });
   assert.equal(r.statusCode, 200, r.body);
   assert.deepEqual(r.json().charge, { v: 1, statut: 'en_cours' });
-  assert.equal(modif(ouverte.id), avant);
+  assert.notEqual(modif(ouverte.id), avant, 'the status is a payload field: the header trigger dates the sheet');
   assert.equal((await w.req(w.antor, 'PATCH', `${w.base}/fiches/${ouverte.id}?mode=joueur`, { statut: 'prete' })).statusCode, 403);
   assert.equal((await w.req(w.lea, 'PATCH', `${w.base}/fiches/${ouverte.id}`, { statut: 'prete' })).statusCode, 403);
   assert.equal((await w.req(w.lea, 'PATCH', `${w.base}/fiches/${fermee.id}`, { statut: 'prete' })).statusCode, 404);
