@@ -38,7 +38,7 @@ export function assurerRelations(
     .get(universId, cle) as { id: number } | undefined;
   if (!source) throw introuvable();
 
-  return corps.map((brut: unknown) => avecContexte(db, { compteId: null, jetonId: null, origine: 'import', lotId }, (): ResultatRelationImport => {
+  return corps.map((brut: unknown) => avecContexte(db, { compteId: jeton.compteId, jetonId: jeton.id, origine: 'import', lotId }, (): ResultatRelationImport => {
     const b = typeof brut === 'object' && brut !== null && !Array.isArray(brut)
       ? brut as Record<string, unknown> : {};
     const entree = {

@@ -138,8 +138,7 @@ export async function assurerFichier(
     temporaire = ecrit.temporaire;
     if (ecrit.taille === 0) invalider('fichier', 'fichier vide : 0 octet, refusé');
     const type = typeParSignature(ecrit.debut);
-    // `jetonId` and `compteId` stay null until the token routes pose them (`api`).
-    const resultat = avecContexte(db, { compteId: null, jetonId: null, origine: 'import', lotId }, (): ResultatFichierImport => {
+    const resultat = avecContexte(db, { compteId: jeton.compteId, jetonId: jeton.id, origine: 'import', lotId }, (): ResultatFichierImport => {
       // Uploading yields to other requests: check the role and the batch again before writing.
       autoriserImport();
       const courant = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND cle_origine = ?')

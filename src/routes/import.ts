@@ -17,6 +17,7 @@ import { listerGalaxiesImport } from '../services/swn/import-galaxie.js';
 import { OUTIL_GALAXIE } from '../services/swn/galaxies.js';
 import { lireContexteImport } from '../services/import.js';
 import { assurerFiche, lotDeRequete, supprimerFicheImport } from '../services/import-fiches.js';
+import { listerHistorique } from '../services/historique.js';
 import { assurerFichier, MAX_FICHIERS_JOINTS } from '../services/fichiers.js';
 import { STATUT_AVENTURE, TYPES_FICHE, typeActif } from '../services/types-fiche.js';
 import { registerErreurs } from './erreurs.js';
@@ -156,6 +157,20 @@ export async function registerImportRoutes(app: FastifyInstance) {
             fichiersJointsParSection: MAX_FICHIERS_JOINTS,
           },
         };
+      });
+
+      // The history of the universe (B-96, B-102, AD-149): the screen's service, for a token of a GM.
+      scope.get(`${base}/historique`, { config: { portee: 'contenu' } }, async (request) => {
+        const q = request.query as Record<string, unknown>;
+        const f: Record<string, string> = {};
+        for (const nom of ['fiche', 'compte', 'jeton', 'action', 'depuis', 'apres']) {
+          const v = q[nom];
+          if (v === undefined) continue;
+          if (typeof v !== 'string' || v === '') throw new ErreurService('invalide', 'Requête invalide.');
+          f[nom] = v;
+        }
+        const j = jetonDe(request);
+        return listerHistorique(app.db, { compteId: j.compteId }, j.universId, f, app.horloge());
       });
 
       scope.post(`${base}/lots`, { config: { portee: 'ouverture' } }, async (request, reply) => {

@@ -389,8 +389,7 @@ export function assurerFiche(
   }
 
   try {
-    // `jetonId` and `compteId` stay null until the token routes pose them (`api`).
-    return avecContexte(db, { compteId: null, jetonId: null, origine: 'import', lotId }, (): ResultatFiche => {
+    return avecContexte(db, { compteId: jeton.compteId, jetonId: jeton.id, origine: 'import', lotId }, (): ResultatFiche => {
       const avert: EntreeRapport[] = [];
       const prevenir = (objet: string, raison: string) =>
         avert.push({ cle, objet, raison, gravite: 'avertissement' });
@@ -928,7 +927,7 @@ export function supprimerFicheImport(
     if (lot.closLe !== null) throw new ErreurService('conflit', 'Le lot est clos.', 'lot_clos');
   }
   if (!cleValide(cle)) return;
-  avecContexte(db, { compteId: null, jetonId: null, origine: 'import', lotId }, () => {
+  avecContexte(db, { compteId: jeton.compteId, jetonId: jeton.id, origine: 'import', lotId }, () => {
     const f = db
       .prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle = ?')
       .get(jeton.universId, cle) as { id: number } | undefined;
