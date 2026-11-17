@@ -6,6 +6,7 @@ import type { UniversListe } from '../../../types';
 import { EtatVide, Pastille } from '../../../ui';
 import type { PropsOutil } from '../../types';
 import CarteSysteme from './CarteSysteme';
+import PanneauCorps from './PanneauCorps';
 import { nomAstre, nomFormation, placeAstre, placeFormation, typeAstre, typeFormation } from './systeme-libelles';
 import type { InterieurSysteme } from './types';
 import './galaxie.css';
@@ -25,6 +26,7 @@ export default function Systeme({ universId, cible, prealable, suffixeMode }: Pr
   const vide = s.astres.length === 0 && s.formations.length === 0;
   // The selected body (a key of the answer): set by the canvas, a list row or the keyboard; the panel (next task) reads it.
   const [selection, setSelection] = useState<string | null>(null);
+  const choisi = selection === null ? null : s.astres.find((a) => a.cle === selection) ?? null;
   const base = `/api/univers/${universId}/outils/swn/galaxie/galaxies/${cible ?? ''}`;
   const adresseVoisin = `/univers/${universId}/outils/swn/galaxie/${cible ?? ''}/interieur/`;
 
@@ -40,14 +42,17 @@ export default function Systeme({ universId, cible, prealable, suffixeMode }: Pr
         <EtatVide titre={mj ? 'Ce système est vide.' : 'Rien à voir dans ce système pour l’instant.'} />
       ) : (
         <>
-          <CarteSysteme
-            interieur={s}
-            base={base}
-            adresseVoisin={adresseVoisin}
-            suffixe={suffixeMode ?? ''}
-            selection={selection}
-            onSelection={setSelection}
-          />
+          <div className={`cs-zone${choisi ? ' avec-panneau' : ''}`}>
+            <CarteSysteme
+              interieur={s}
+              base={base}
+              adresseVoisin={adresseVoisin}
+              suffixe={suffixeMode ?? ''}
+              selection={selection}
+              onSelection={setSelection}
+            />
+            {choisi && <PanneauCorps key={choisi.cle} astre={choisi} q={s.q} r={s.r} base={base} suffixe={suffixeMode ?? ''} />}
+          </div>
           {s.astres.length > 0 && (
             <section>
               <h2>Corps ({s.astres.length})</h2>

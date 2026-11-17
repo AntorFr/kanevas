@@ -49,6 +49,8 @@ export type Touche =
 export interface AstreSysteme {
   cle: string; genre: 'etoile' | 'planete' | 'lune' | 'comete'; parent_cle: string | null; etoile_rang: number; type: string;
   nom: string | null; orbite: number | null; heure: number; taille: number; aspect?: Record<string, unknown>;
+  /** Plain text, when the answer carries one. */
+  description?: string | null;
 }
 export interface FormationSysteme { cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number }
 export interface InterieurSysteme {

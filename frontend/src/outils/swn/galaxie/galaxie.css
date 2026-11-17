@@ -188,3 +188,16 @@
   text-shadow: 0 0 4px var(--ciel-halo), 0 0 8px var(--ciel-halo); }
 .cs-etiquette.zone { color: var(--texte-2); font-style: italic; }
 .cs-etiquette.sortie { color: var(--accent); }
+
+/* E-23, the panel of a body and its picture (no new panel class: `gx-bloc gx-panneau`). The panel sits right of the sky, below it on a phone. */
+.cs-zone { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e-3); align-items: start; }
+@media (min-width: 900px) { .cs-zone.avec-panneau { grid-template-columns: minmax(0, 1fr) 320px; } }
+.cs-zone .gx-panneau { max-height: none; }
+.cs-illustration, .cs-grande { position: relative; aspect-ratio: 4 / 3; border: 1px solid var(--bord); border-radius: var(--rayon-champ);
+  background: radial-gradient(circle at 50% 50%, var(--ciel-lueur), var(--ciel) 70%); overflow: hidden; margin-bottom: var(--e-2); }
+.cs-illustration img, .cs-grande img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.cs-net { opacity: 0; transition: opacity var(--duree) linear; }
+.cs-net.pret { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .cs-net { transition: none; } }
+.cs-grande { aspect-ratio: auto; height: min(70vh, 80vw); overflow: auto; }
+.cs-grande img { transform-origin: center; }

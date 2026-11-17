@@ -152,6 +152,7 @@ a { color: var(--accent-texte); }
 .voile { position: fixed; inset: 0; background: var(--voile); display: flex; align-items: center; justify-content: center; z-index: 50; }
 .fenetre { background: var(--surface); color: var(--texte); border-radius: var(--rayon-panneau); padding: var(--e-5);
   width: min(32rem, 92vw); box-shadow: var(--ombre-flottant); }
+.fenetre.image-large { width: min(94vw, 90rem); max-height: 94vh; overflow: auto; }
 .fenetre .ic-fenetre { width: 36px; height: 36px; margin-bottom: var(--e-3); border-radius: 10px; display: grid; place-items: center;
   background: var(--surface-2); color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord); }
 .boite { display: flex; gap: var(--e-3); background: var(--surface); color: var(--texte); border-radius: var(--rayon-panneau); padding: var(--e-5);
