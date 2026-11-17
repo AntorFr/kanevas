@@ -22,6 +22,7 @@
 .liste-acces > li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-3); padding: var(--e-2) var(--e-3); }
 .liste-acces > li + li { border-top: 1px solid var(--bord); }
 .liste-acces-nom { flex: 1 1 8rem; display: flex; align-items: center; gap: var(--e-2); min-width: 0; font-size: var(--t-14); color: var(--texte); }
+.liste-acces-titre { min-width: 0; overflow-wrap: anywhere; }
 .liste-acces-nom small { color: var(--texte-3); font-size: var(--t-12); white-space: nowrap; }
 .liste-acces-erreur { margin: var(--e-2) 0 0; color: var(--danger); font-size: var(--t-13); }
 @media (max-width: 760px) {

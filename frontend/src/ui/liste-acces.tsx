@@ -47,9 +47,7 @@ export function ListeAcces({
         {lignes.map((l) => (
           <li key={l.id}>
             <span className="liste-acces-nom">
-              <span className="tronque" title={l.nom}>
-                {l.nom}
-              </span>
+              <span className="liste-acces-titre">{l.nom}</span>
               {l.role ? <PastilleRole role={l.role} /> : <small>(plus membre)</small>}
             </span>
             <ChoixSegmente petit etiquette={l.nom} options={options} valeur={l.valeur} onChange={(v) => onChange(l.id, v)} />
