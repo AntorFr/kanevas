@@ -74,14 +74,10 @@ describe('E-27 Génération au navigateur', { skip: skipBrowser }, () => {
     }
   };
   const lignesApi = async () => ((await lot()).lot?.lignes ?? []) as Any[];
-  const attendreEtats = async (attendus: string[]) => {
-    for (let i = 0; i < 100; i++) {
-      const e = (await lignesApi()).map((l) => l.etat);
-      if (JSON.stringify(e) === JSON.stringify(attendus)) return;
-      await new Promise((r) => setTimeout(r, 100));
-    }
-    assert.fail(`états attendus ${attendus}, obtenus ${(await lignesApi()).map((l) => l.etat)}`);
-  };
+  const attendreEtats = (attendus: string[]) => antor.waitForFunction(async ([url, voulus]: [string, string[]]) => {
+    const d = await (await fetch(url)).json();
+    return JSON.stringify((d.lot?.lignes ?? []).map((l: Any) => l.etat)) === JSON.stringify(voulus);
+  }, [api, attendus]);
   const ecrire = async (page: Any, i: number, nom: string) => page.getByRole('textbox', { name: `Nom de la ligne ${i}` }).fill(nom);
 
   it('absent : sans la route des lots, pas d’onglet Génération, E-25 s’ouvre avec ses dépôts', async () => {
@@ -257,16 +253,21 @@ describe('E-27 Génération au navigateur', { skip: skipBrowser }, () => {
     await antor.screenshot({ path: join(dossier, 'coller-20-1280.png') });
   });
 
-  it('autosave : une ligne sans nom n’est pas envoyée', async () => {
+  it('autosave : une ligne sans nom n’est pas envoyée, la liste part d’un coup quand tout est lisible', async () => {
     await vider();
     await ouvrir();
-    let puts = 0;
-    antor.on('request', (r: Any) => { if (r.method() === 'PUT' && r.url().endsWith('/lots')) puts++; });
+    const envois: Any[] = [];
+    antor.on('request', (r: Any) => { if (r.method() === 'PUT' && r.url().endsWith('/lots')) envois.push(r.postDataJSON()); });
     await antor.getByRole('button', { name: 'Ajouter une ligne' }).click();
-    await antor.waitForTimeout(1500);
-    assert.equal(puts, 0);
-    assert.equal(await antor.getByRole('button', { name: /^Lancer le lot/ }).isDisabled(), true);
+    await antor.getByRole('button', { name: 'Ajouter une ligne' }).click();
+    await ecrire(antor, 2, 'Seconde');
+    assert.equal(await antor.getByRole('button', { name: /^Lancer le lot/ }).isDisabled(), true, 'la ligne 1 est sans nom');
+    const rep = antor.waitForResponse((r: Any) => r.url().endsWith('/lots') && r.request().method() === 'PUT');
+    await ecrire(antor, 1, 'Première');
+    assert.ok((await rep).ok());
     antor.removeAllListeners('request');
+    assert.equal(envois.length, 1, 'aucun envoi tant qu’une ligne était sans nom');
+    assert.deepEqual(envois[0].lignes.map((l: Any) => l.nom), ['Première', 'Seconde']);
   });
 
   it('direction : le bandeau dit la direction artistique de l’univers', async () => {
@@ -293,14 +294,13 @@ describe('E-27 Génération au navigateur', { skip: skipBrowser }, () => {
   it('échec : le motif s’affiche, « Réessayer » relance la ligne', async () => {
     const p = await antor.context().newPage();
     await simule(p, { lot: { id: 9, etat: 'en_cours', interrompu: false, lignes: [L(1, 'Brasero', 'echec', { motEchec: 'Le moteur n’a pas répondu.' })] }, moteurOccupe: false, directionArtistique: null });
-    let reessai: string | null = null;
-    await p.route('**/lignes/1/reessayer', (r: Any) => { reessai = r.request().url(); void r.fulfill({ status: 200, contentType: 'application/json', body: '{"lot":null}' }); });
+    const demande = p.waitForRequest((r: Any) => /\/lignes\/1\/reessayer$/.test(r.url()) && r.method() === 'POST');
+    await p.route('**/lignes/1/reessayer', (r: Any) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"lot":null}' }));
     await ouvrir(p);
     await p.getByText('Échec', { exact: true }).waitFor();
     await p.getByText('Le moteur n’a pas répondu.').waitFor();
     await p.getByRole('button', { name: 'Réessayer' }).click();
-    await p.waitForTimeout(300);
-    assert.match(reessai ?? '', /\/lignes\/1\/reessayer$/);
+    await demande;
     await p.screenshot({ path: join(dossier, 'echec-1280.png') });
     await p.close();
   });
@@ -384,11 +384,11 @@ describe('E-27 Génération au navigateur', { skip: skipBrowser }, () => {
       const R = `/api/univers/${u.id}/outils/battlemap/lots`;
       await page.request.put(R, { data: { lignes: [ligne('A'), ligne('B')] } });
       await page.request.post(`${R}/lancer`, { data: {} });
-      for (let i = 0; i < 100; i++) {
-        const d = (await (await page.request.get(R)).json()) as Any;
-        if (d.lot.lignes.every((l: Any) => l.etat === 'brouillon')) break;
-        await new Promise((r) => setTimeout(r, 100));
-      }
+      await page.goto('/');
+      await page.waitForFunction(async (url: string) => {
+        const d = await (await fetch(url)).json();
+        return d.lot.lignes.every((l: Any) => l.etat === 'brouillon');
+      }, R);
       await page.close();
       s2.stop();
       s2 = null;
