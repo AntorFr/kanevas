@@ -251,6 +251,82 @@ test('chargement : le squelette est un role=status qui dit « Chargement de la f
   assert.ok(await page.getByText('Chargement de la fiche…').first().isVisible());
 });
 
+test('écriture du MJ : Bouton mj et Segments mj sont ambre (couleur du token --mj), le segment coché aussi', opts, async () => {
+  const amb = await page.evaluate(() => {
+    const sonde = document.createElement('span');
+    sonde.style.color = 'var(--mj)';
+    document.body.appendChild(sonde);
+    const mj = getComputedStyle(sonde).color;
+    sonde.remove();
+    return mj;
+  });
+  const bouton = page.getByRole('button', { name: 'Système', exact: true });
+  assert.equal(await bouton.evaluate((e: Element) => getComputedStyle(e).color), amb);
+  assert.ok(await bouton.evaluate((e: Element) => e.classList.contains('mj')));
+  const coche = page.getByRole('radiogroup', { name: 'Unité' }).locator('[aria-checked="true"]');
+  assert.equal(await coche.evaluate((e: Element) => getComputedStyle(e).color), amb);
+  const fond = await coche.evaluate((e: Element) => getComputedStyle(e).backgroundColor);
+  assert.notEqual(fond, 'rgba(0, 0, 0, 0)');
+  // keyboard moves the amber check too
+  await coche.focus();
+  await page.keyboard.press('ArrowRight');
+  const apres = page.getByRole('radiogroup', { name: 'Unité' }).locator('[aria-checked="true"]');
+  assert.equal(await apres.textContent(), 'Heure');
+  assert.equal(await apres.evaluate((e: Element) => getComputedStyle(e).color), amb);
+});
+
+test('écriture du MJ : la ligne de conversion est une région polie reliée au champ par aria-describedby', opts, async () => {
+  const ligne = page.locator('#demo-conv');
+  assert.equal(await ligne.getAttribute('aria-live'), 'polite');
+  assert.equal(await ligne.textContent(), '= Orbite 4 · 7 h');
+  assert.equal(await page.getByRole('textbox', { name: 'Orbite' }).getAttribute('aria-describedby'), 'demo-conv');
+});
+
+test('boîte neutre : un formulaire est un role=dialog, focus sur le champ, badge, action ambre, Échap rend le focus', opts, async () => {
+  const decl = page.getByRole('button', { name: 'Ouvrir le formulaire' });
+  await decl.click();
+  const d = page.getByRole('dialog', { name: 'Ancrer le système' });
+  await d.waitFor();
+  assert.equal(await page.getByRole('alertdialog').count(), 0);
+  assert.equal(await d.getAttribute('aria-modal'), 'true');
+  assert.equal(await focusLabel(page), '');
+  assert.equal(await page.evaluate(() => document.activeElement?.tagName), 'INPUT');
+  assert.ok(await d.locator('.boite-icone.neutre').count() === 1);
+  assert.ok(await d.getByRole('button', { name: 'Ancrer' }).evaluate((e: Element) => e.classList.contains('mj')));
+  assert.ok((await d.evaluate((e: Element) => e.getBoundingClientRect().width)) <= 440);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.getByRole('dialog').count(), 0);
+  assert.equal(await focusLabel(page), 'Ouvrir le formulaire');
+});
+
+test('boîte neutre : une confirmation pure est un role=alertdialog, focus sur Annuler', opts, async () => {
+  const decl = page.getByRole('button', { name: 'Ouvrir la confirmation' });
+  await decl.click();
+  const d = page.getByRole('alertdialog', { name: 'Ancrer ici ?' });
+  await d.waitFor();
+  assert.equal(await focusLabel(page), 'Annuler');
+  assert.equal(await page.getByRole('dialog').count(), 0);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.getByRole('alertdialog').count(), 0);
+});
+
+test('boîte neutre : sous 760 px le corps défile et la boîte reste dans l’écran', opts, async () => {
+  const ctx = await browser.newContext({ baseURL: srv.base, viewport: { width: 390, height: 300 } });
+  const p = await ctx.newPage();
+  await p.goto('/connexion-bouchon');
+  await p.getByRole('button', { name: /^Se connecter en tant que antor$/i }).click();
+  await p.goto('/demo-composants');
+  await p.getByRole('heading', { name: 'Composants partagés', level: 1 }).waitFor();
+  await p.getByRole('button', { name: 'Ouvrir le formulaire' }).click();
+  const d = p.getByRole('dialog', { name: 'Ancrer le système' });
+  await d.waitFor();
+  const r = await d.evaluate((e: Element) => { const b = e.getBoundingClientRect(); return { h: b.height, bas: b.bottom, haut: b.top }; });
+  assert.ok(r.h <= 300 - 48 + 1, `hauteur ${r.h}`);
+  assert.ok(r.haut >= 0 && r.bas <= 300);
+  assert.equal(await d.evaluate((e: Element) => getComputedStyle(e.querySelector('.boite-corps')!).overflowY), 'auto');
+  await ctx.close();
+});
+
 test('captures : bureau et téléphone, clair et sombre, sans débordement horizontal', opts, async () => {
   for (const [vp, w, h] of [['bureau', 1280, 900], ['telephone', 390, 844]] as const) {
     for (const theme of ['sombre', 'clair'] as const) {
