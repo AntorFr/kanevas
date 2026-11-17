@@ -26,10 +26,11 @@ const NIVEAUX = [
   { valeur: 'lecture', libelle: 'Lecture' },
   { valeur: 'ecriture', libelle: 'Lecture + écriture' },
 ] as const;
-const MODES = [
-  { valeur: 'tous', libelle: 'Tous mes univers' },
-  { valeur: 'liste', libelle: 'Une liste d’univers' },
-] as const;
+const modes = (admin: boolean) =>
+  [
+    { valeur: 'tous', libelle: admin ? 'Tous les univers du compte' : 'Tous mes univers' },
+    { valeur: 'liste', libelle: 'Une liste d’univers' },
+  ] as const;
 
 /**
  * The box of E-23 (and of E-5 for the admin): « Créer un jeton » then the value shown once, or « Modifier les accès ».
@@ -41,6 +42,7 @@ export function FormulaireJeton({
   univers,
   url,
   titreModifier = 'Modifier les accès',
+  admin = false,
   lireJeton,
   onFermer,
   onChange,
@@ -50,6 +52,8 @@ export function FormulaireJeton({
   univers: UniversChoix[];
   url: string;
   titreModifier?: string;
+  /** E-5: the admin edits the accesses of someone else's token (wording in the third person). */
+  admin?: boolean;
   /** The current state of the token, read again on saving to notice a change made meanwhile. */
   lireJeton?: () => Promise<JetonVue | undefined>;
   onFermer: () => void;
@@ -158,7 +162,7 @@ export function FormulaireJeton({
           )}
           <ChoixSegmente
             legende="Univers atteints"
-            options={MODES}
+            options={modes(admin)}
             valeur={forme.tous ? 'tous' : 'liste'}
             onChange={(v) => {
               setSansListe(false);
@@ -167,7 +171,9 @@ export function FormulaireJeton({
           />
           {forme.tous ? (
             <>
-              <p className="note-jeton">Tous mes univers couvre aussi ceux que vous rejoindrez plus tard.</p>
+              <p className="note-jeton">
+                {admin ? 'Tous les univers du compte couvre aussi ceux qu’il rejoindra plus tard.' : 'Tous mes univers couvre aussi ceux que vous rejoindrez plus tard.'}
+              </p>
               <ChoixSegmente legende="Niveau" options={NIVEAUX} valeur={forme.niveauTous} onChange={(v) => setForme((f) => ({ ...f, niveauTous: v }))} />
               <span className="titre-liste-acces">Exceptions</span>
             </>
@@ -175,7 +181,7 @@ export function FormulaireJeton({
             <span className="titre-liste-acces">Univers</span>
           )}
           {lignes.length === 0 ? (
-            <p className="note-jeton">Vous n’appartenez à aucun univers.</p>
+            <p className="note-jeton">{admin ? 'Ce compte n’appartient à aucun univers.' : 'Vous n’appartenez à aucun univers.'}</p>
           ) : (
             <ListeAcces
               etiquette={forme.tous ? 'Exceptions par univers' : 'Accès par univers'}
@@ -185,7 +191,11 @@ export function FormulaireJeton({
               erreur={sansListe ? 'Choisissez au moins un univers.' : undefined}
             />
           )}
-          <p className="note-jeton">Un jeton n’a jamais plus de droits que votre compte : là où vous êtes joueur, il agit en joueur.</p>
+          <p className="note-jeton">
+            {admin
+              ? 'Un jeton n’a jamais plus de droits que son compte : là où il est joueur, le jeton agit en joueur.'
+              : 'Un jeton n’a jamais plus de droits que votre compte : là où vous êtes joueur, il agit en joueur.'}
+          </p>
           {changes && <Alerte>Les accès ont changé.</Alerte>}
           {echec && <Alerte>{echec}</Alerte>}
           <div className="fenetre-actions">
