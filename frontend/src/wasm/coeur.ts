@@ -70,3 +70,24 @@ export async function versionRendu(): Promise<number> {
 export async function catalogueAspects(): Promise<string> {
   return (await chargerModule('coeur')).catalogue_aspects();
 }
+
+/** Types of the aspects catalogue a body of `genre` (`etoile`, `planete`, `lune`, `comete`) may take. Throws for another genre. */
+export async function typesAstre(genre: string): Promise<string[]> {
+  return JSON.parse((await chargerModule('coeur')).types_astre(genre)) as string[];
+}
+
+/** `[orbite, heure]` of a galactic offset `(dq, dr)` (hexagons, real), the adjacent hexagons falling on the circle of radius `rayon` (AD-edition-4). */
+export async function galactiqueVersOrbiteHeure(dq: number, dr: number, rayon: number): Promise<[number, number]> {
+  const p = (await chargerModule('coeur')).galactique_vers_orbite_heure(dq, dr, rayon);
+  return [p[0]!, p[1]!];
+}
+
+/** The aspect JSON re-serialised if it is valid for the type (<= 4 KiB, known keys, bounds). Throws with the core's message otherwise. */
+export async function validerAspect(type: string, json: string): Promise<string> {
+  return (await chargerModule('coeur')).valider_aspect(type, json);
+}
+
+/** The parameters JSON re-serialised if they are valid for the shape (`anneau` or `nuage`, <= 8 KiB). Throws with the core's message otherwise. */
+export async function validerFormation(forme: string, json: string): Promise<string> {
+  return (await chargerModule('coeur')).valider_formation(forme, json);
+}
