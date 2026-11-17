@@ -105,24 +105,25 @@ test('assistant : la même écriture porte assistant, avec le compte de l’acte
   propres(apres(() => (ajout.executer({ ficheId: aldric, sectionId: sec, texte: 'plus', version: 3 }) as any)), antor, 'assistant');
 });
 
-test('import : assurerFiche et supprimerFicheImport portent import, le lot, sans compte ni jeton', () => {
+test('import : assurerFiche et supprimerFicheImport portent import, le lot, le compte et le jeton', () => {
   const { db, antor, u, apres } = monde();
   const { jeton } = creerJeton(db, antor, u, { nom: 't', dureeJours: 7 });
   const { lot } = ouvrirLot(db, jeton);
   const corps = (t: string) => ({ type: 'personnage', titre: 'Zed', sections: [{ cle: 's:h', titre: 'Histoire', contenu: t }] });
   const cree = apres(() => assurerFiche(db, jeton, lot.lotId, 'f:zed', corps('v1')));
-  propres(cree, null, 'import', lot.lotId);
+  propres(cree, antor, 'import', lot.lotId);
+  assert.ok(cree.every((x) => x.jeton_id === jeton.id));
   assert.ok(cree.some((x) => x.objet === 'fiche' && x.action === 'creee'));
   assert.ok(cree.some((x) => x.objet === 'section'));
   const rejoue = apres(() => assurerFiche(db, jeton, lot.lotId, 'f:zed', corps('v2')));
-  propres(rejoue, null, 'import', lot.lotId);
+  propres(rejoue, antor, 'import', lot.lotId);
   assert.ok(rejoue.some((x) => x.objet === 'section' && x.action === 'modifiee'));
   // Sans lot : lot_id nul.
-  propres(apres(() => assurerFiche(db, jeton, null, 'f:zed', corps('v3'))), null, 'import', null);
+  propres(apres(() => assurerFiche(db, jeton, null, 'f:zed', corps('v3'))), antor, 'import', null);
   const fid = (db.prepare("SELECT id FROM fiches WHERE cle = 'zed' OR titre = 'Zed'").get() as { id: number }).id;
   assert.ok(fid > 0);
   const sup = apres(() => (supprimerFicheImport as any)(db, jeton, lot.lotId, 'f:zed'));
-  propres(sup, null, 'import', lot.lotId);
+  propres(sup, antor, 'import', lot.lotId);
   assert.ok(sup.some((x) => x.objet === 'fiche' && x.action === 'supprimee'));
 });
 
