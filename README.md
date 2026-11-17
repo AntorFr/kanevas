@@ -377,6 +377,8 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.1.0"
 
 An image is built only on a `v*` tag whose commit carries the « tests-complets » attestation: `attester --publier` (workstation, chain pod) sets it after a complete suite; `docker-publish.yml` runs no test, it checks this proof (without it, the tag produces no image; no build on `main` or PRs).
 
+Each job of the workflow is bounded to 120 minutes (`timeout-minutes: 120`), so a stuck build is cut and can be re-run instead of holding the delivery for the platform's 6-hour default. A stable build (amd64 + arm64) usually takes 40 to 55 minutes; a pre-release tag (with a `-`) builds amd64 only, so it proves the workflow stays valid, not that 120 minutes suffice. A cut build is replayed from the Actions tab (« Run workflow », choosing the tag as ref, `workflow_dispatch`). A job added to the workflow must carry the same `timeout-minutes: 120`.
+
 On a tag, CI derives that same build-arg from the pushed semver tag (`docker/metadata-action`):
 pushing `v0.1.0` publishes `ghcr.io/antorfr/kanevas:0.1.0` with `APP_VERSION`
 embedded as `0.1.0` — a single source of truth for the displayed version and the
