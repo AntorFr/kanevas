@@ -8,7 +8,7 @@
   is just the suite (typecheck, build, every test, two files at a time by default, `--concurrence N` to change it) and writes
   the per-test TAP report `resultats.tap` (git-ignored); it writes no report and posts no status. The image build (tag `v*`
   only) and the `main` rule require the status; no workflow plays a test or runs on a branch push or a pull request.
-  Five levels in `.sdlc.yaml` (and `ecrans_liste:` `node scripts/niveaux-tests.mjs --liste ecrans {base}`, not a level: it names the screen tests `ecrans:` would play, without `npm ci`): `commande:` (the whole suite, above, about 37 min), `fiche:` `npm ci && npm run tests:fiche -- {base}` (the suite minus the screen
+  Five levels in `.sdlc.yaml` (and `ecrans_liste:` `npm ci --ignore-scripts && node scripts/niveaux-tests.mjs --liste ecrans {base}`, not a level: it names the screen tests `ecrans:` would play, with no build, no Playwright and no test): `commande:` (the whole suite, above, about 37 min), `fiche:` `npm ci && npm run tests:fiche -- {base}` (the suite minus the screen
   tests the change does not touch), `ecrans:` `npm ci && npm run tests:ecrans -- {base}` (only the chosen screen tests), `local:` `npm ci && npm run tests:local` (every file but
   `src/e2e/`, no `build`, no Playwright; about 4 min) and `rejouer:` `npm ci && node scripts/rejouer-tests.mjs {tests}` (only the named
   tests, `describe > test` as in `resultats.tap`; non-zero for a name no file declares as a literal test title). A screen test declares its screens on its first line (`// ecrans: a, b`);
