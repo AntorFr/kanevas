@@ -1,6 +1,6 @@
-import { Check, ChevronDown, ChevronsUpDown, Dices, Library, LogOut, Monitor, Moon, Sun } from 'lucide-react';
+import { Check, ChevronDown, ChevronsUpDown, Dices, KeyRound, Library, LogOut, Monitor, Moon, Sun } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link, matchPath, useLocation } from 'react-router-dom';
+import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 import { appeler } from './api';
 import { useMoi, useUnivers, useVue } from './cadre-contexte';
@@ -137,6 +137,7 @@ const THEMES: { choix: ChoixTheme; libelle: string; icone: typeof Sun }[] = [
 function Compte() {
   const moi = useMoi();
   const [theme, setTheme] = useTheme();
+  const navigate = useNavigate();
   const nom = moi.etat === 'ok' ? moi.valeur.username : undefined;
   const entrees: EntreeMenu[] = [
     ...(nom
@@ -162,6 +163,7 @@ function Compte() {
       options: THEMES.map((t) => ({ libelle: t.libelle, icone: t.icone, actif: theme === t.choix, onChoisir: () => setTheme(t.choix) })),
     },
     { separateur: true },
+    { libelle: 'Mes jetons d’API', icone: KeyRound, onChoisir: () => navigate('/compte/jetons') },
     {
       libelle: 'Se déconnecter',
       icone: LogOut,

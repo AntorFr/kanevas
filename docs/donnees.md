@@ -457,7 +457,7 @@ as is; `recherche_fiches` triggers are recreated.
 | `liens` | `id`, `section_id`, `cible_fiche_id` (null if pending or broken), `cible_cle` (null unless pending), `texte`, `dans_bloc_mj` (boolean) | → `sections` ON DELETE CASCADE; `cible_fiche_id` → `fiches` **ON DELETE SET NULL** (the deleted sheet leaves a broken link, 10); `CHECK (cible_fiche_id IS NULL OR cible_cle IS NULL)` (4); indexes `liens (cible_fiche_id)` and `liens (cible_cle)` |
 | `types_systeme` | `systeme_id`, `type`, `active` (boolean) | primary key `(systeme_id, type)` (5); → `systemes_jeu`; no row: the product default (enabled) |
 | `types_univers` | `univers_id`, `type`, `active` (boolean) | primary key `(univers_id, type)` (5); → `univers`; no row: the universe inherits from its system |
-| `jetons_api` | `id`, `univers_id`, `compte_id`, `nom`, `empreinte`, `cree_le`, `expire_le`, `revoque_le` (null: active), `dernier_usage_le` (null: never) | → `univers`, → `comptes`; unique `empreinte` (7); `nom` 1 to 80; `CHECK (expire_le > cree_le)`; at most one year: service |
+| `jetons_api` | *(since migration 0038 there is no `univers_id`: the universes a token reaches are in `jetons_univers`, see the amendment below)* `id`, `compte_id`, `nom`, `empreinte`, `cree_le`, `expire_le`, `revoque_le` (null: active), `dernier_usage_le` (null: never) | → `comptes`; unique `empreinte` (7); `nom` 1 to 80; `CHECK (expire_le > cree_le)`; at most one year: service |
 | `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (null: in progress), `dernier_ecrit_le`, `compteurs` (JSON: per nature — `fiches`, `fichiers`, `relations` (`campagnes` and `scenarios` no longer exist since `kanevas-scenarios-suivi`: adventures are sheets, counted in `fiches`) — `{creees, mises_a_jour, inchangees, refusees}`, integers ≥ 0; nature `fiches` adds `supprimees`, written by `DELETE /fiches/:cle`, `kanevas-import-tenir`), `avertissements`, `en_attente` (integers ≥ 0; pending links and references at closure), `rapport` (JSON: at most 1,000 entries, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api`; « abandonné » (abandoned) is not stored: open with `dernier_ecrit_le` older than 24 h |
 
 **Added columns** (`ALTER TABLE … ADD COLUMN`, as in 0002 and 0006):
@@ -700,7 +700,7 @@ Invariants, in sentences:
 | `outils_univers` | `univers_id`, `outil`, `active` (null: inherits), `visibilite_mj`, `visibilite_joueur` (null: inherit), `reglages` (JSON of overridden values only), `version_reglages`, `version_catalogue` (as above, for the universe's catalogue) | primary key `(univers_id, outil)`; → `univers`; null = inherits (3) |
 | `systemes_jeu` | added column `responsable_id` | → `comptes` ON DELETE SET NULL; null: no maintainer (1); set at system creation (its creator); GM of an attached universe: service (1) |
 | `sections` | added columns `gere_par` (`module/outil/type`, null: free), `source_version` (text) | (6) the service function refuses a write from another caller; `contenu` is always the text version |
-| `jetons_api` | child table `jetons_outils` `(jeton_id, outil)` | → `jetons_api` ON DELETE CASCADE; (10); a token belongs to a universe: it writes the **system's** catalogue only if its account is its maintainer (or, without a maintainer, a GM of an attached universe) **at each use**, like an import token's GM role |
+| `jetons_api` | child table `jetons_outils` `(jeton_id, outil)` | → `jetons_api` ON DELETE CASCADE; (10); a token belongs to an account and reaches the universes of `jetons_univers`: it writes the **system's** catalogue only if its account is its maintainer (or, without a maintainer, a GM of an attached universe) **at each use**, like an import token's GM role |
 | `lots_import` | added column `outil` (null: sheet batch) | a tool import has its own batch, counters per module element nature |
 
 **SWN module (module tables, `swn_*`)**, organized into typed tables because computation reads specific fields (AD-123):
@@ -780,6 +780,24 @@ the attached sheet is named only to a reader who may read it (AD-38). The settin
 only, read by the upload checks. The import token reads what its GM reads (AD-103): the whole
 universe, GM blocks included. *(Extension: a token is its account's — a player's token reads as the
 player; see below.)*
+
+**Tokens, in detail** (`kanevas-synchro-jetons`). `jetons_api` is rebuilt (table copy, ids kept so `lots_import.jeton_id`
+and `jetons_outils.jeton_id` still point at the same rows — the migration starts with
+`-- migrate: sans-cles-etrangeres`, then `foreign_key_check`): `id`, `compte_id` → `comptes` (the owner), `nom` 1 to 80,
+`empreinte` unique, `cree_le`, `expire_le` (> `cree_le`), `revoque_le` (null: active), `revoque_par` → `comptes` (null
+until revoked; the owner or an admin), `dernier_usage_le`, `tous` (0 or 1), `niveau_tous` (`lecture` | `ecriture`; **not null
+exactly when `tous` = 1**, a `CHECK`), `modifie_par_admin_par` → `comptes` and `modifie_par_admin_le` (both null or both set; set when an admin
+changes the accesses, cleared when the owner saves them). The column `univers_id` and the index `jetons_api_par_univers` are gone; an index
+`jetons_api_par_compte (compte_id, cree_le)`. `jetons_univers (jeton_id → jetons_api ON DELETE CASCADE, univers_id →
+univers, niveau)`, primary key `(jeton_id, univers_id)`, `niveau` in `lecture` | `ecriture` | `aucun` (`aucun` only
+with `tous` = 1: the exception that leaves a universe out; a list token never stores `aucun` — a universe left at « — » has no row). Rules held by the
+service: a list token has at least one row; an exception row never repeats the level of `tous` (a line put back on « Comme le reste » deletes its row);
+only universes the owner belongs to are accepted (`invalide`, `champ: acces`); the accesses of a revoked or expired token cannot be changed (409
+`jeton_revoque`). Existing tokens: `compte_id` = the creator, `tous` = 0, one `jetons_univers` row at `ecriture` for the former universe,
+`revoque_par` = `compte_id` when `revoque_le` is set (a revocation made by another GM was
+not recorded: the owner is the nearest honest answer, so « Révoqué » rather than « par l'admin »), the other columns unchanged. Deleting a
+universe deletes its `jetons_univers` rows (tokens stay). Reading the effective right at a request is `niveau d'accès ∧ rôle courant`
+(AD-144, AD-jetons-1); nothing is stored.
 
 **Physical and migration.** The migration is cut by slice, each numbered at merge (AD-51) in the slice that needs it (`ecriture`: the column removal; `cartes`: the map model and settings): on `cartes`, five columns (`cle_origine`, `fiche_id`, `texte`, `texte_public`, `version`) and a partial
 unique index `(univers_id, cle_origine) WHERE cle_origine IS NOT NULL` on `cartes`, a foreign key

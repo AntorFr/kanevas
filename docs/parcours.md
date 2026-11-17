@@ -294,8 +294,8 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   (`kanevas-outils`, B-65) keeps that restriction, set on E-23: it writes those tools' data and no
   content, whatever its level. *(P-25)*
 - **B-95** — The **instance admin** sees every token of the instance on E-5 (name, owner, accesses,
-  last use), **revokes** any of them and **changes its accesses**; the owner sees on E-23 « modifié par
-  l'admin » or « révoqué par l'admin ». « Tous mes univers » takes **exceptions** — a universe at another
+  last use), **revokes** any of them and **changes its accesses**; the owner sees on E-23 « Modifié par
+  l'admin » or « Révoqué par l'admin ». « Tous mes univers » takes **exceptions** — a universe at another
   level, or at « — » —, so the admin cuts one universe without cutting the others nor the ones to come;
   the owner may change the accesses again, and an admin who wants a token gone revokes it. A GM has no gesture on the tokens that reach his universe: a token is its owner's (decision
   of Monsieur, 2026-11-01). *(P-25)*
@@ -1178,10 +1178,17 @@ search, nor in the count.
 
 ### P-25 — Manage one's tokens (Léa, player; Antor, GM)
 1. Léa opens « Mes jetons d'API » (**E-23**), creates « Agent de Léa », « tous mes univers », in
-   « lecture » (B-94); she copies the value shown once.
-2. A token of Léa's misbehaves in Éneria: Antor asks the admin, who on **E-5** adds to « tous mes
-   univers » the exception « Éneria : — » (B-95); Léa's page shows « modifié par l'admin », her other
+   « lecture » (B-94); she copies the value shown once — the strong moment: it is never shown again. A save that fails says
+   « Impossible d'enregistrer. » and keeps her entries; a change on a token revoked meanwhile says « Ce jeton est révoqué. ».
+2. A token of Léa's misbehaves in Éneria: Antor asks the admin, who on **E-5** adds to the token's « tous mes
+   univers » (« Tous les univers du compte » on E-5) the exception « Éneria : — » (B-95); Léa's page shows « Modifié par l'admin », her other
    universes unchanged, and so will every universe she joins later.
+3. Léa changes the accesses of her token (« Modifier les accès », E-23): the pill goes, the value is
+   unchanged. If she loses the value before copying it, there is no way to read it again: she revokes the
+   token (« Révoquer », confirmation) and creates another.
+4. Another token, forgotten by its owner, still works: the admin revokes it on **E-5** (confirmation naming
+   the token and its owner); its owner then reads « Révoqué par l'admin » on E-23, and the script gets 401
+   `jeton_invalide`. Antor, a GM, sees none of these tokens and has no gesture on them.
 
 ### P-26 — See who changed what, and undo a mistake (Antor, GM, the day after)
 1. On « Historique » of Éneria (**E-24**), Antor filters on the token « Agent Éneria » (B-102): twelve

@@ -10,6 +10,7 @@ process.env.KANEVAS_STUB = '1';
 
 const { migrate, openDb } = await import('../../db/db.js');
 const { semerBouchon } = await import('../../bouchon/depart.js');
+const { avantSemis, apresSemis } = await import('../../db/jetons-pour-semis.js');
 const calc = await import('./calcul-vaisseau.js');
 const c = await import('../catalogues.js');
 const { texteMasse } = await import('../../outils/swn/regles/masse.js');
@@ -146,7 +147,9 @@ test('montée : un élément de masse 8 (semis) reste lisible et inchangé, comp
   db.exec('ALTER TABLE univers ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN creee_via TEXT; ALTER TABLE sections ADD COLUMN cle TEXT');
   db.exec('CREATE TABLE cles_anciennes (univers_id, cle, fiche_id); CREATE TABLE univers_cles_anciennes (cle, univers_id)');
   db.exec('ALTER TABLE swn_conceptions ADD COLUMN equipage INTEGER'); // 0030, written by the seed
+  avantSemis(db);
   semerBouchon(db);
+  apresSemis(db);
   db.exec('DROP TABLE cles_anciennes; DROP TABLE univers_cles_anciennes; ALTER TABLE univers DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN creee_via; ALTER TABLE sections DROP COLUMN cle');
   db.exec('ALTER TABLE swn_conceptions DROP COLUMN equipage');
   stub('DROP COLUMN');

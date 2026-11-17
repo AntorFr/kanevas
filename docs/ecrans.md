@@ -59,7 +59,7 @@ have it (sheet, map and, since `kanevas-import`, search E-17).
 | **E-2 Create a universe** | E-1 | name, description; the creator becomes GM | P-1 |
 | **E-3 Universe overview** | E-1; universe selector; E-5 (admin who has become a member) | active campaigns (*`kanevas-scenarios`*: « Campagnes en cours », the adventures), latest reports, preparation (GM), visible maps | P-2, P-3, P-4, P-6 |
 | **E-4 Members** | « Univers » navigation (GM) | list, add by username, change role, remove | P-2 |
-| **E-5 Administration** | navigation (instance admin) | list the instance's universes, manage their members — never their content; set the assistant token (B-51) | P-2, P-15 |
+| **E-5 Administration** | navigation (instance admin) | list the instance's universes, manage their members — never their content; set the assistant token (B-51) *(`kanevas-synchro`: see all API tokens, change their accesses, revoke them, B-95)* | P-2, P-15, P-25 |
 | **E-6 Campagne**, **E-7 Scénario** | *retired (`kanevas-scenarios-suivi`)* — an adventure is a sheet: its list is E-8 of the « Aventure » type, its page E-9, with the blocks « Préparation » and « Comptes-rendus » | — | — |
 | **E-8 Sheet list** | « Lore » navigation | sheets of one type that the account can read, in a grid of illustrated cards; search within that type; create (GM); *(kanevas-scenarios)* « Aventure » type: status badge and filter, status menu (GM), « Nouvelle aventure » with sub-type | P-3, P-6 |
 | **E-9 Sheet** | E-8; a token; a link; E-13 | read and write permitted sections; add, reorder, remove a section, set its audience, relate (GM); attach a file (both addition paths, AD-111), restrict a file to the GM (GM), remove a reference; set the subtype (GM); set, replace, remove the illustration (GM); Player mode toggle (GM). A session report opens here. ; *(kanevas-scenarios)* on an adventure: the status line and its menu (GM) | P-3 to P-7 |
@@ -72,7 +72,8 @@ have it (sheet, map and, since `kanevas-import`, search E-17).
 | **E-16 Game systems** | reduced sidebar; universe selector menu | systems attached to the account's universes, each with those of its universes using it | P-8 |
 | **E-17 Search** *(kanevas-import)* | « Rechercher » in the sidebar; `/`; a label tapped on E-9 ; *(kanevas-fiches-liees)* « Chercher parmi » of a « Fiches liées » block | search all types, titles, aliases and readable sections; filter by type; *(kanevas-fiches-liees)* advanced search: linked to a sheet, by nature, sub-places included, alive / dead and by label; *(kanevas-scenarios)* the status badge of an adventure result | P-12, P-10, P-17 |
 | **E-19 Media library** *(kanevas-import)* | « Médiathèque » navigation; « Choisir dans la médiathèque » in the editor and illustration (E-9) | see files (images, documents) accessible to the account and where they are used; GM: add, rename, set visibility, delete | P-16, P-10 |
-| **E-18 API access** *(kanevas-import)* | « Univers » ▸ « Accès par API » navigation (GM) | create, list, revoke the universe's API tokens; see import batches and their refusals *(`kanevas-synchro`: batches only; tokens move to E-23 and E-5)* | P-10, P-11 |
+| **E-18 API access** *(kanevas-import)* | « Univers » ▸ « Accès par API » navigation (GM) | create, list, revoke the universe's API tokens; see import batches and their refusals *(`kanevas-synchro`: batches only; tokens move to E-23 and E-5)* | P-10 *(P-11 replaced by P-25)* |
+| **E-23 My API tokens** *(kanevas-synchro)* | account menu (every account) | create, change the accesses of, revoke one's API tokens; the value shown once (B-94) | P-25 |
 | **E-20 Tools** *(kanevas-outils)* | « Outils » tab of E-15 (system) and E-14 (universe) | enable a tool, set its visibility per role and its settings (system value, universe value), import a catalogue (preview then confirmation), see dependencies, disable, delete data; the system's responsible | P-17, P-21 |
 | **E-21 Galaxy map** *(kanevas-outils)* | E-10 (a tool map); E-3; a shareable link | explore the grid, measure, calculate a route; GM: place, promote, plot, draw, Player mode, GM document | P-18, P-20 |
 | **E-22 Ship designer** *(kanevas-outils)* | « Outils » sidebar; a ship sheet's managed section (E-9); a shareable link | readable designs list and a design's workshop: choices, budgets, warnings, save, recalculate | P-19 |
@@ -4451,30 +4452,98 @@ refusals with its key and « modifiée depuis la lecture ». The warnings « mod
 - Each role: GM (E-11, E-9, E-18), player (E-9, E-11 reading), admin (E-5).
 
 ### E-23 Mes jetons d'API (every account) — `kanevas-synchro`
-Reached from the account menu, outside any universe; address `/compte/jetons`.
-- The list: each token with its name, expiry, last use and accesses (« Tous mes univers — lecture +
-  écriture », or « Éneria : lecture + écriture · Essai : lecture »); a token the admin changed or revoked
-  says so (« modifié par l'admin », « révoqué par l'admin »).
-- « Créer un jeton »: name (1–80), lifetime (7, 30 default, 90, 365 days), then the accesses: « Tous mes
-  univers » with a level and, under it, optional exceptions (a universe at another level or at « — »),
-  or the list of the account's universes, each « — / Lecture / Lecture + écriture ». An exception the
-  admin set is shown like the owner's and can be changed by him. The value is shown once with « Copier » and the note « Il ne sera plus affiché. ».
-- On a token: « Modifier les accès » (the same form), « Révoquer » (confirmation naming the token).
-- « Outils » (`kanevas-outils`, B-65, which this epic follows): an optional list of tools, for the
-  token as a whole; a token with tools writes only those tools' data and no content, and its line says
-  « outils : galaxie » after its accesses.
-- The note under the form: « Un jeton n'a jamais plus de droits que votre compte : là où vous êtes
-  joueur, il agit en joueur. »
-- States: none yet → « Aucun jeton. » with « Créer un jeton »; save failed → « Impossible
-  d'enregistrer. » with « Réessayer ».
+*Finished mockup*: `docs/maquettes/e23-jetons.html` (states `#etat-creer`, `#etat-liste`, `#etat-jeton-montre`,
+`#etat-modifier`, `#etat-revoquer`, `#etat-erreur`, `#etat-vide`, `#etat-perdue`). The entry
+« Mes jetons d'API » (`key-round`) is in the account menu, above « Se déconnecter » (`e01-accueil.html` draws it;
+the other mockups share the frame); the screen is outside any universe, with the bar of the home
+(« Mes univers »), address `/compte/jetons`. One line of introduction: « Un jeton permet à un script ou à un agent
+d'agir avec vos droits, par l'API ou par le serveur MCP, dans les univers que vous choisissez. » Then the panel
+« Jetons » and « Créer un jeton » (`plus`).
+- **A line** (the owner's tokens, active ones first — all of them — then revoked and expired ones up to 20 in
+  all, newest first): the name (80 characters, cut with a tooltip), under it the accesses (« **Tous mes univers** —
+  lecture + écriture · Les Cendres de Vaëlis : lecture » — the exceptions after the level —, or
+  « Lame d'Ébène : lecture · Les Cendres de Vaëlis : — » for a list; a universe the account no longer belongs to
+  keeps its entry, followed by « (plus membre) »), then « créé le … », « dernier usage il y a 3 min » or
+  « jamais utilisé », « expire le … ». A token the admin changed carries the pill « Modifié par l'admin »
+  (accent, until the owner saves the accesses again); one he revoked, the pill « Révoqué par l'admin »; a token
+  the owner revoked, « Révoqué »; an expired one, « Expiré ». « Modifier les accès » (`sliders-horizontal`) and
+  « Révoquer » (`ban`) appear on hover and focus (always visible by touch) on an active token only.
+- **« Créer un jeton »**: a box with « Nom » (1–80; « Erreur : le nom est obligatoire. »), « Durée » (7, **30**,
+  90 days, 1 an), then « Univers atteints »: a segmented choice **« Tous mes univers » / « Une liste d'univers »**
+  (the note « Tous mes univers » covers the ones joined later).
+  *« Tous mes univers »*: a « Niveau » choice (Lecture / **Lecture + écriture**), then « Exceptions »: one line per
+  universe of the account (name, role pill MJ or Joueur) with a choice **« Comme le reste » / « — » / « Lecture » /
+  « Lecture + écriture »** — only a line moved off « Comme le reste » is an exception, so a universe joined later
+  follows the level. *« Une liste »*: the same lines without « Comme le reste », **— by default**; at least one
+  universe at a level other than « — » (« Choisissez au moins un univers. » otherwise, the button stays active and
+  the message is shown under the list). The note « Un jeton n'a jamais plus de droits que votre compte : là où vous
+  êtes joueur, il agit en joueur. » Footer « Annuler » / « Créer le jeton » (« Création… », disabled, while it runs).
+  Then the same box shows the token name as a label and the value alone, monospace, with « Il ne sera plus affiché. »,
+  « Copier » (toast « Jeton copié. ») and « J'ai copié le jeton »: while the value is shown only that button closes
+  the box (neither Esc nor the veil); the line then arrives first in the list.
+- **« Modifier les accès »**: the same box titled « Modifier les accès » without name and lifetime, filled with
+  the current accesses (the admin's exceptions shown like the owner's), « Enregistrer » (toast « Accès enregistrés. »);
+  saving clears « Modifié par l'admin ». Changing the accesses does not change the value, the name or the expiry.
+- **« Révoquer »**: confirmation « Révoquer « <nom> » ? Le script ou l'agent qui l'utilise ne pourra plus rien lire ni
+  écrire. », « Révoquer le jeton » (`--danger`) / « Annuler »; toast « Jeton révoqué. ».
+- « Outils » (`kanevas-outils`, B-65, which this epic follows): an optional list of tools, for the token as a
+  whole; a token with tools writes only those tools' data and no content, and its line says « outils : galaxie »
+  after its accesses. Built here on the existing `jetons_outils` table (no new table): `POST /api/compte/jetons`
+  accepts `outils` and the list of offerable tools comes with `GET /api/compte/jetons`; the mockup does not draw it.
+  A tool token is refused 401 `jeton_invalide` on `/api/v1` (content routes).
+- The level shown on a line is the one **chosen**, not the effective one: where the account is a player, a
+  « lecture + écriture » entry still acts as reading (the note of the form says it; the 403 `lecture_seule` answers a write).
+- The mockup `e23-jetons.html` does not draw the pills « Révoqué » and « (plus membre) », the 409, « Les accès ont changé. » and the load
+  error: the text prevails.
+- Roles: every account sees and manages **its own** tokens, a player as a GM; no account's list shows another's
+  (the admin does on E-5).  A GM has no gesture on a token that reaches his universe (B-95).
+
+| State | What is seen | What can be done |
+|---|---|---|
+| empty | « Aucun jeton. » (no token at all; with only revoked or expired ones the list shows them, without this text) | « Créer un jeton » |
+| loading | skeleton of the panel | — |
+| load error | « Impossible de charger vos jetons. » | « Réessayer » |
+| save error | creation, change or revocation that fails: « Impossible d'enregistrer. » in the box, the entries kept, nothing created or changed | « Réessayer », « Annuler » |
+| changed meanwhile | the admin changed the accesses while the box « Modifier les accès » is open: « Les accès ont changé. » on saving, the box reloads with the new accesses, nothing is overwritten | « Enregistrer » again, « Annuler » |
+| connection lost | the banner; « Créer un jeton », « Modifier les accès », « Révoquer » disabled; a shown value stays until « J'ai copié le jeton » | copy |
+| permission refused | **without object**: the screen is open to any account with a session; an expired session leads to the sign-in, as every screen | — |
+| long content | a 80-character name cut with a tooltip; many exceptions: the box scrolls inside itself; more than 20 inactive tokens: the 20 latest | — |
+| revoked meanwhile | « Modifier les accès » or « Révoquer » on a token the admin revoked in the meantime: « Ce jeton est révoqué. » (409), the list reloads | « Fermer » |
+
+*Components (guardian's verdict, `docs/charte.md` « components added »)*: the list line is the new **Ligne de jeton**; the choices of the form are the new
+**Choix segmenté** and **Liste d'accès**; the value shown and the base address of E-18 are the new **Valeur copiable**; the pills are `Pastille` (new *sens* `accent`);
+the boxes are `Fenêtre` (new *large* and *locked* properties) and `BoiteDialogue`; everything else is existing (`Bouton`, `Champ`, `Menu`, `Toast`, `Bandeau`, `Panneau`, états d'écran).
 
 ### E-18 Accès par API — batches only (`kanevas-synchro`)
-The token list and its creation leave E-18 (to E-23); E-18 keeps the batches of the universe, unchanged.
+The token list and its creation leave E-18 (to E-23); E-18 keeps the batches of the universe, unchanged. The
+introduction becomes « Un script écrit dans cet univers avec vos droits, par l'API d'import. Ses jetons se
+gèrent dans « Mes jetons d'API ». » (the last words a link to E-23), the base address to copy becomes
+`https://kanevas.berard.me/api/v1/univers/<clé de l'univers>` (the former `/api/import/v1/univers/<id>` still
+answers, AD-149), and the panel « Jetons » with its boxes is removed. A lot line keeps the **name** of the token that opened it (a label of the lot, whoever owns the token and
+whether or not it is still active; nothing else of a token is shown to a GM, B-95).
+*State table of E-18 above*: every row about a token — « Aucun jeton… », « Nouveau jeton », the creation and revocation errors, the disabled « Nouveau jeton » and « Révoquer », the role message — is void; the rows kept are the batches (empty, loading, load error, long content), the banner, and « Page introuvable. » for anyone who is not a GM of the universe.
+Empty batches: « Aucun lot d'import pour l'instant. » The mockup `e18-acces-api.html` still draws the removed panel: the text prevails.
 
 ### E-5 Administration — the panel « Jetons d'API » (`kanevas-synchro`)
-Every token of the instance: name, owner, accesses, expiry, last use; filter by owner; on each
-« Modifier les accès » (the E-23 form, exceptions included) and « Révoquer » (confirmation). The owner's E-23 marks the
-token « modifié par l'admin » or « révoqué par l'admin ».
+*Mockup*: `docs/maquettes/e05-administration.html` (panels « Jetons d'API », « révoquer », « vide », « erreur »); it does not draw « Expiré », « Révoqué par l'admin », « Aucun jeton pour ce compte. » nor the 409: the text prevails.
+Full width, under « Jeton de l'assistant », visible to the instance admin only (« Page introuvable. » for anyone
+else, as the screen). A table of every token of the instance: name, owner (account), accesses (as on E-23, universe
+names written in full, « Tous les univers du compte » in place of E-23's « Tous mes univers »), expiry, last use; a filter « Propriétaire » (all, or one account); active tokens all listed, then the 20 latest revoked or expired, each with its pill « Révoqué » (the owner's), « Révoqué par l'admin » or « Expiré », and no action. On an
+active token: « Modifier les accès » (the E-23 box, exceptions included; the choices are the **owner's**
+universes) and « Révoquer » (confirmation naming the token and its owner; « Léa verra « Révoqué par l'admin » »). The value of a
+token is never shown. The owner's E-23 marks the token « Modifié par l'admin » or « Révoqué par l'admin ».
+Under 760 px each token becomes a block (name and owner, accesses, expiry and last use, then the two actions at full width) in place of the table row. States: none → « Aucun jeton sur cette instance. »; load error → « Impossible de charger les jetons. » with
+« Réessayer »; save error as E-23.
+
+| State (E-5, jetons) | What is seen | What can be done |
+|---|---|---|
+| loading | skeleton of the table | — |
+| filter without result | the chosen owner has no token: « Aucun jeton pour ce compte. » (distinct from the empty state), the filter stays | change the filter |
+| connection lost | the banner; « Modifier les accès » and « Révoquer » disabled | — |
+| long content | a 80-character name or a long list of accesses cut with a tooltip; more than 20 inactive tokens: the 20 latest | — |
+| changed meanwhile | the owner changed the accesses before the admin saved: « Les accès ont changé. » in the box, the box reloads with the new accesses, nothing of the admin's entry is applied | « Enregistrer » again, « Annuler » |
+| revoked meanwhile | the owner (or another admin) revoked it before the admin acted — on « Modifier les accès » as on « Révoquer »: « Ce jeton est révoqué. » (409) in the box, the list reloads with the pill « Révoqué » | « Fermer » |
+| permission refused | not the instance admin: « Page introuvable. » (the panel is absent) | — |
 
 ### E-24 Historique de l'univers (GM) — `kanevas-synchro`
 Address `/univers/eneria/historique`. Lines from the newest: date, contributor (account, and « via

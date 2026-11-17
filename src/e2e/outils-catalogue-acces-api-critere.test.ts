@@ -27,37 +27,11 @@ describe('E-18 : portée du jeton et lots d’outil', { skip: skipBrowser, timeo
         const us = (await (await page.request.get('/api/univers')).json()) as Any;
         const id = (n: string) => (us.univers ?? us).find((u: Any) => u.nom === n).id as number;
         const E = id("Éneria d'essai");
-        const K = id('Essai Kanka');
-        const nouveau = async (p: Any) => { await p.getByRole('button', { name: /Nouveau jeton/ }).first().click(); return p.getByRole('dialog'); };
-
-        // Outils : « Créer le jeton » désactivé tant que rien n'est coché
+        // The token with its tool is made by the service: E-18 creates no token any more (E-23 does, tools later).
+        const valeur = await srv.jetonOutils('antor', E, 'Jeton G', ['essai/g']);
         await page.goto(`/univers/${E}/acces-api`);
-        let dlg = await nouveau(page);
-        await dlg.getByLabel('Nom').fill('Jeton G');
-        await dlg.getByLabel('Outils').check();
-        await dlg.getByText('Cochez au moins un outil.').waitFor();
-        assert.equal(await dlg.getByRole('button', { name: 'Créer le jeton' }).isDisabled(), true);
-        await photo(page, 'validation');
-        await dlg.getByLabel("Essai G · Générateur · Module d'essai", { exact: true }).waitFor();
-        await dlg.getByLabel(/Essai G/).check();
-        assert.equal(await dlg.getByText('Cochez au moins un outil.').count(), 0);
-        assert.equal(await dlg.getByRole('button', { name: 'Créer le jeton' }).isDisabled(), false);
-        // décocher revient à l'état invalide
-        await dlg.getByLabel(/Essai G/).uncheck();
-        assert.equal(await dlg.getByRole('button', { name: 'Créer le jeton' }).isDisabled(), true);
-        await dlg.getByLabel(/Essai G/).check();
-        await dlg.getByRole('button', { name: 'Créer le jeton' }).click();
-        const valeur = (await dlg.getByLabel('Jeton', { exact: true }).textContent())!.trim();
-        assert.match(valeur, /^kvs_/);
-        await dlg.getByRole('button', { name: 'J’ai copié le jeton' }).click();
-
-        // jeton de contenu
-        dlg = await nouveau(page);
-        await dlg.getByLabel('Nom').fill('Jeton contenu');
-        await dlg.getByRole('button', { name: 'Créer le jeton' }).click();
-        await dlg.getByRole('button', { name: 'J’ai copié le jeton' }).click();
-        await page.locator('[data-jeton="Jeton G"]').getByText('Portée : Essai G').waitFor();
-        await page.locator('[data-jeton="Jeton contenu"]').getByText('Portée : contenu').waitFor();
+        await page.getByRole('heading', { name: 'Accès par API' }).waitFor();
+        assert.equal(await page.getByRole('button', { name: /Nouveau jeton/ }).count(), 0, 'no « Jetons » panel on E-18');
 
         // import du fichier fautif avec le jeton d'outil
         const h = { authorization: `Bearer ${valeur}` };
@@ -74,13 +48,6 @@ describe('E-18 : portée du jeton et lots d’outil', { skip: skipBrowser, timeo
         await ligne.getByText(/masse/).first().waitFor();
         await photo(page, 'lot-outil');
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true, 'débordement horizontal');
-
-        // univers sans système : Outils désactivé et expliqué
-        await page.goto(`/univers/${K}/acces-api`);
-        dlg = await nouveau(page);
-        await dlg.getByText('Aucun outil de ce système ne reçoit de catalogue par l’API.').waitFor();
-        assert.equal(await dlg.getByLabel('Outils').isDisabled(), true);
-        await photo(page, 'sans-outil');
 
         // Léa
         const lea = await ouvre('Léa'.toLowerCase());

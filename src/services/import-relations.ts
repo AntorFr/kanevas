@@ -2,7 +2,7 @@ import type { Db } from '../db/db.js';
 import { exigerMJ } from './droits.js';
 import { ErreurService, introuvable } from './erreurs.js';
 import { cleValide } from './import.js';
-import type { Jeton } from './jetons.js';
+import type { JetonRequete as Jeton } from './jetons.js';
 import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
 import { relierSection } from './relations.js';
 

@@ -599,7 +599,8 @@ describe('kanevas-import-tenir · B-41, supprimer un univers d’essai (E-14) et
     assert.equal((await brut(srv, lea, 'GET', `/api/univers/${E}`)).status, 404);
     assert.equal((await brut(srv, antor, 'GET', `/api/univers/${E}/fiches`)).status, 404);
     const j = await imp('GET', '');
-    assert.equal(j.status, 401, 'le jeton du bouchon est parti avec l’univers');
+    // The token belongs to an account (AD-144) and stays; its line for the deleted universe left with it: the address is unknown.
+    assert.equal(j.status, 404, 'le jeton n’atteint plus l’univers supprimé');
   });
 
   test('B-41 exclusion : « Lame d’Ébène » (autre univers) est intacte, avec ses fiches', async () => {

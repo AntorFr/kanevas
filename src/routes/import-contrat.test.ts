@@ -131,16 +131,41 @@ test('un cookie de session valide ne rouvre pas la garde quand le jeton est faux
   await refusee(app, { ...antor, authorization: 'Bearer kvs_faux' }, `/api/import/v1/univers/${u.id}`);
 });
 
-test('le MJ du jeton rétrogradé Joueur ou retiré → 401 ; rétabli MJ → 200', async () => {
+test('le MJ du jeton rétrogradé Joueur n’est plus refusé en 401 : le jeton tombe aux droits du compte (B-46 révisé) ; rétabli MJ, il écrit de nouveau', async () => {
   const { app, u, id, bearer, jeton } = await monter();
   const url = `/api/import/v1/univers/${u.id}`;
   const { valeur } = jeton('teo');
+  const ecrire = (cle: string) =>
+    app.inject({ method: 'PUT', url: `${url}/fiches/${cle}`, headers: bearer(valeur), payload: { titre: 'Une fiche', type: 'personnage' } });
+  const fiches = () => (app.db.prepare('SELECT count(*) AS n FROM fiches WHERE univers_id = ?').get(u.id) as { n: number }).n;
   assert.equal((await app.inject({ method: 'GET', url, headers: bearer(valeur) })).statusCode, 200);
+  assert.equal((await ecrire('avant')).statusCode, 200);
+  assert.equal(fiches(), 1);
   changerRoleNoyau(app.db, u.id, id('teo'), 'joueur');
-  await refusee(app, bearer(valeur), url);
-  await refusee(app, bearer(valeur), `${url}/lots`, 'POST');
+  assert.equal((await app.inject({ method: 'GET', url, headers: bearer(valeur) })).statusCode, 200, 'not a 401 any more');
+  const refus = await ecrire('apres');
+  assert.equal(refus.statusCode, 403, 'the service refuses what a player may not write');
+  assert.notEqual(refus.json().code, 'jeton_invalide');
+  assert.equal(fiches(), 1, 'nothing written as a player');
+  changerRoleNoyau(app.db, u.id, id('teo'), 'mj');
+  assert.equal((await ecrire('apres')).statusCode, 200);
+  assert.equal(fiches(), 2);
+});
+
+test('le jeton d’un compte retiré de l’univers n’écrit rien (le service ne lui connaît aucun rôle)', async () => {
+  const { app, u, id, bearer, jeton } = await monter();
+  const { valeur } = jeton('teo');
+  app.db.prepare('DELETE FROM membres WHERE univers_id = ? AND compte_id = ?').run(u.id, id('teo'));
+  const r = await app.inject({
+    method: 'PUT', url: `/api/import/v1/univers/${u.id}/fiches/x`, headers: bearer(valeur), payload: { titre: 'T', type: 'personnage' },
+  });
+  assert.equal(r.statusCode, 404);
+  const ctx = await app.inject({ method: 'GET', url: `/api/import/v1/univers/${u.id}`, headers: bearer(valeur) });
+  assert.equal(ctx.statusCode, 404, 'the universe context is not readable either');
+  const lot = await app.inject({ method: 'POST', url: `/api/import/v1/univers/${u.id}/lots`, headers: bearer(valeur) });
+  assert.equal(lot.statusCode, 404);
+  assert.equal((app.db.prepare('SELECT count(*) AS n FROM fiches WHERE univers_id = ?').get(u.id) as { n: number }).n, 0);
   assert.equal((app.db.prepare('SELECT count(*) AS n FROM lots_import').get() as { n: number }).n, 0);
-  assert.equal(listerJetons(app.db, id('antor'), u.id)[0]!.actif, false);
 });
 
 test('un autre univers que celui du jeton → 404, sur toutes les routes, existant ou non', async () => {

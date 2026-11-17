@@ -112,9 +112,9 @@ async function monter(): Promise<Monde> {
   return { app, base, essai, cookie, api, session, idCompte, stop: () => app.close() };
 }
 
-/** Creates a token through the session route (as the screen does) and returns its value. */
+/** Creates a token through the session route of the account (E-23's door, B-94), on this universe only, and returns its value. */
 async function jetonDe(m: Monde, compte: string, nom = 'Script Kanka — Mac', dureeJours = 30, univers = m.essai): Promise<string> {
-  const r = await m.session(compte, 'POST', `/api/univers/${univers}/jetons`, { nom, dureeJours });
+  const r = await m.session(compte, 'POST', '/api/compte/jetons', { nom, dureeJours, acces: { tous: false, univers: [{ universId: univers, niveau: 'ecriture' }] } });
   assert.equal(r.status, 201, JSON.stringify(r.json));
   return r.json.valeur as string;
 }
@@ -290,44 +290,23 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
     m.app.horloge = () => new Date();
   });
 
+  // Title kept (the screen inventory cites it): since E-18 lost its « Jetons » panel the test reads the introduction, the base address and the lots.
   test('P-11 / critère : Antor crée « Script Kanka — Mac », le jeton ne s’affiche qu’une fois, la ligne dit « jamais » et l’expiration', async () => {
-    // The server's clock is the real one, taken once: the creation date and the browser's day coincide, whatever the day the test runs.
     const debut = new Date();
     m.app.horloge = () => debut;
     try {
+      const valeur = await jetonDe(m, 'antor');
       const { ctx, page } = await ouvrirSession(browser, m, 'antor');
       await ouvrirE18(page, m);
       const t0 = await texte(page);
-      assert.match(t0, /Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import\./);
-      assert.match(t0, /\/api\/import\/v1\/univers\/[^\/\s]+/);
-      await page.getByRole('button', { name: 'Nouveau jeton' }).click();
-      const boite = page.getByRole('dialog', { name: 'Nouveau jeton' });
-      await boite.waitFor();
-      await boite.getByLabel('Nom', { exact: true }).fill('Script Kanka — Mac');
-      await boite.getByRole('button', { name: 'Créer le jeton' }).click();
-      await boite.getByText('Il ne sera plus jamais affiché.').waitFor();
-      const dedans = ((await boite.innerText()) as string) + ' ' + (await boite.locator('input, textarea').evaluateAll((els: Any[]) => els.map((e) => e.value).join(' ')));
-      const valeur = /kvs_[A-Za-z0-9_-]+/.exec(dedans)?.[0];
-      assert.ok(valeur, 'the token must be shown in the box');
-      assert.ok(valeur.length >= 40, `token too short: ${valeur.length}`);
-      await page.screenshot({ path: join(SHOTS, 'e18-jeton-montre.png') });
-      // while the token is shown, Escape does not close the box
-      await page.keyboard.press('Escape');
-      assert.equal(await boite.isVisible(), true, 'Escape closed the box that shows the token');
-      await boite.getByRole('button', { name: rx("J'ai copié le jeton") }).click();
-      await boite.waitFor({ state: 'detached' });
-      await attendre(page);
-      const l = ligne(page, 'Script Kanka — Mac');
-      await l.first().waitFor();
-      const txt = ((await l.first().innerText()) as string).replace(/\s+/g, ' ');
-      assert.match(txt, new RegExp(`créé par antor le ${jour(debut)}`));
-      assert.match(txt, /jamais/);
-      assert.match(txt, new RegExp(`expire le ${jour(new Date(debut.getTime() + 30 * 86400_000))}`));
-      assert.ok(!(await texte(page)).includes(valeur), 'token still on screen after closing');
-      await page.reload();
-      await attendre(page);
-      assert.ok(!(await texte(page)).includes(valeur), 'token on screen after reload');
-      await page.screenshot({ path: join(SHOTS, 'e18-liste-jetons.png') });
+      assert.match(t0, /Un script écrit dans cet univers avec vos droits, par l'API d'import\. Ses jetons se gèrent dans Mes jetons d'API\./);
+      assert.equal(await page.getByRole('link', { name: 'Mes jetons d’API' }).getAttribute('href'), '/compte/jetons');
+      assert.match(t0, /\/api\/v1\/univers\/[^\/\s]+/);
+      assert.doesNotMatch(t0, /\/api\/import\/v1/);
+      for (const absent of ['Nouveau jeton', 'Aucun jeton', 'Script Kanka — Mac']) assert.doesNotMatch(t0, new RegExp(absent), absent);
+      assert.equal(await page.getByRole('heading', { name: 'Jetons', exact: true }).count(), 0);
+      assert.equal(await page.getByRole('button', { name: /Nouveau jeton|Révoquer/ }).count(), 0);
+      await page.screenshot({ path: join(SHOTS, 'e18-intro.png') });
 
       // The token works, once, with the script's call (the effect is proved by the route test): Port-Sel pushed, replayed; E-18 shows two batches.
       await m.api('GET', `${m.essai}`, valeur);
@@ -341,9 +320,7 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
       assert.match(t1, /Fiches : 1 inchangée/);
       assert.ok(!/Fiches : 0 créée/.test(t1), 'a null count must be omitted');
       assert.match(t1, /Clos/);
-      // « dernier usage » is no longer « jamais » once the token worked (the clock is fixed, so « il y a 0 min » or similar).
-      const apres = ((await ligne(page, 'Script Kanka — Mac').first().innerText()) as string).replace(/\s+/g, ' ');
-      assert.doesNotMatch(apres, /dernier usage jamais/);
+      assert.ok(!t1.includes(valeur), 'the value is nowhere on the screen');
       await page.screenshot({ path: join(SHOTS, 'e18-lots.png'), fullPage: true });
       await ctx.close();
     } finally {
@@ -399,68 +376,6 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
     await ctx.close();
   });
 
-  test('B-45 bord : nom vide -> « Erreur : le nom est obligatoire. », aucun jeton créé', async () => {
-    const { ctx, page } = await ouvrirSession(browser, m, 'antor');
-    await ouvrirE18(page, m);
-    await page.getByRole('button', { name: 'Nouveau jeton' }).click();
-    const boite = page.getByRole('dialog', { name: 'Nouveau jeton' });
-    await boite.getByRole('button', { name: 'Créer le jeton' }).click();
-    await boite.getByText('Erreur : le nom est obligatoire.').waitFor();
-    await page.screenshot({ path: join(SHOTS, 'e18-nom-vide.png') });
-    await boite.getByRole('button', { name: 'Annuler' }).click();
-    await ctx.close();
-  });
-
-  test('B-45 bord : durées proposées 7 jours, 30 jours (par défaut), 90 jours, 1 an', async () => {
-    const { ctx, page } = await ouvrirSession(browser, m, 'antor');
-    await ouvrirE18(page, m);
-    await page.getByRole('button', { name: 'Nouveau jeton' }).click();
-    const boite = page.getByRole('dialog', { name: 'Nouveau jeton' });
-    for (const d of ['7 jours', '30 jours', '90 jours', '1 an']) {
-      await boite.getByText(d, { exact: true }).waitFor();
-    }
-    const defaut = await boite.getByRole('radio', { name: '30 jours' }).isChecked().catch(() => null);
-    if (defaut !== null) assert.equal(defaut, true);
-    await ctx.close();
-  });
-
-  test('B-46 : « Révoquer » demande confirmation, Annuler ne révoque pas, la ligne passe en « Révoqué »', async () => {
-    const valeur = await jetonDe(m, 'antor', 'À couper');
-    const { ctx, page } = await ouvrirSession(browser, m, 'antor');
-    await ouvrirE18(page, m);
-    const l = ligne(page, 'À couper').first();
-    await l.hover();
-    await l.getByRole('button', { name: /Révoquer/ }).click();
-    const boite = page.getByRole('alertdialog').or(page.getByRole('dialog')).first();
-    await boite.waitFor();
-    assert.match(((await boite.innerText()) as string).replace(/\s+/g, ' ').replace(/’/g, "'"), /Révoquer « À couper » \? Le script qui l'utilise ne pourra plus rien écrire\./);
-    await boite.getByRole('button', { name: 'Annuler' }).click();
-    assert.equal((await m.api('GET', `${m.essai}`, valeur)).status, 200, 'cancel must not revoke');
-    await l.hover();
-    await l.getByRole('button', { name: /Révoquer/ }).click();
-    await boite.waitFor();
-    await boite.getByRole('button', { name: 'Révoquer le jeton' }).click();
-    await page.getByText('Jeton révoqué.').first().waitFor();
-    await ligne(page, 'À couper').first().filter({ hasText: /Révoqué/ }).waitFor();
-    assert.match(((await ligne(page, 'À couper').first().innerText()) as string), /Révoqué/);
-    await page.screenshot({ path: join(SHOTS, 'e18-revoque.png') });
-    await ctx.close();
-  });
-
-  test('B-46 : le jeton de Mira passée Joueuse reste listé avec la pastille « Inactif »', async () => {
-    await m.session('antor', 'POST', `/api/univers/${m.essai}/membres`, { username: 'mira', role: 'mj' });
-    await jetonDe(m, 'mira', 'Jeton de Mira');
-    await m.session('antor', 'PATCH', `/api/univers/${m.essai}/membres/${m.idCompte('mira')}`, { role: 'joueur' });
-    const { ctx, page } = await ouvrirSession(browser, m, 'antor');
-    await ouvrirE18(page, m);
-    const l = ligne(page, 'Jeton de Mira').first();
-    await l.waitFor();
-    assert.match((await l.innerText()) as string, /Inactif/);
-    assert.doesNotMatch((await l.innerText()) as string, /Révoqué|Expiré/);
-    await page.screenshot({ path: join(SHOTS, 'e18-inactif.png') });
-    await ctx.close();
-  });
-
   test('exclusion : Léa, Joueuse, lit « Page introuvable. » à l’adresse de E-18 et l’item n’est pas dans sa barre', async () => {
     const { ctx, page } = await ouvrirSession(browser, m, 'lea');
     await page.goto(`/univers/${m.essai}/acces-api`);
@@ -472,13 +387,14 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
     await ctx.close();
   });
 
+  // Title kept (the screen inventory cites it): the « Aucun jeton » line left with the panel.
   test('états vides : un univers sans jeton ni lot dit « Aucun jeton… » et « Aucun lot d’import pour l’instant. »', async () => {
     const cree = await m.session('antor', 'POST', '/api/univers', { nom: 'Univers vierge' });
     assert.equal(cree.status, 201, JSON.stringify(cree.json));
     const { ctx, page } = await ouvrirSession(browser, m, 'antor');
     await ouvrirE18(page, m, cree.json.id);
     const t = await texte(page);
-    assert.match(t, /Aucun jeton\. Créez-en un pour qu'un script écrive dans cet univers\./);
+    assert.doesNotMatch(t, /Aucun jeton/);
     assert.match(t, /Aucun lot d'import pour l'instant\./);
     await page.screenshot({ path: join(SHOTS, 'e18-vide.png') });
     await ctx.close();

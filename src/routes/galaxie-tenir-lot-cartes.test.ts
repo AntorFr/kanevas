@@ -5,6 +5,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { type Any, appel, lire, type Monde, monde, type Rep } from './monde-lot-cartes.js';
+import { trouverCompte } from '../services/comptes.js';
+import { creerJeton } from '../services/jetons.js';
 
 const galerie = (m: Monde, gid = m.gid, suite = '') => `/api/univers/${m.uid}/outils/swn/galaxie/galaxies/${gid}${suite}`;
 const blocs = (m: Monde, compte: string, mode = '') => lire(m, compte, galerie(m, m.gid, `/blocs?de=-2,-2&a=2,2${mode}`));
@@ -25,7 +27,11 @@ async function listeCartes(m: Monde, compte: string): Promise<string[]> {
   return r.json.cartes.map((c: Any) => c.titre);
 }
 async function jeton(m: Monde, outils: string[] | undefined): Promise<string> {
-  const r = await appel(m, 'antor', 'POST', `/api/univers/${m.uid}/jetons`, { nom: 'Script galaxie', dureeJours: 30, ...(outils ? { outils } : {}) });
+  // A tool token has no session door any more (E-23 will offer the tools): the service, as the account.
+  if (outils) return creerJeton(m.app.db, trouverCompte(m.app.db, 'antor')!.id, m.uid, { nom: 'Script galaxie', dureeJours: 30, outils }).valeur;
+  const r = await appel(m, 'antor', 'POST', '/api/compte/jetons', {
+    nom: 'Script galaxie', dureeJours: 30, acces: { tous: false, univers: [{ universId: m.uid, niveau: 'ecriture' }] },
+  });
   assert.equal(r.status, 201, r.texte);
   return r.json.valeur;
 }
@@ -434,10 +440,10 @@ test('B-65 exclusions : un jeton d’une autre portée, révoqué ou sans porté
   assert.equal(faux.json.code, 'jeton_invalide');
   const session = await m.app.inject({ method: 'GET', url: galerie(m, bord, '/contenu'), headers: { authorization: `Bearer ${t}` } });
   assert.notEqual(session.statusCode, 200);
-  const jetons = (await lire(m, 'antor', `/api/univers/${m.uid}/jetons`)).json;
-  const jid = (Array.isArray(jetons) ? jetons : jetons.jetons).find((j: Any) => j.nom === 'Script galaxie' && j.outils?.some((o: Any) => o.cle === 'swn/galaxie'))?.id;
+  const jetons = (await lire(m, 'antor', '/api/compte/jetons')).json.jetons as Any[];
+  const jid = jetons.find((j) => j.nom === 'Script galaxie' && j.outils.includes('swn/galaxie'))?.id;
   assert.ok(jid);
-  await appel(m, 'antor', 'POST', `/api/univers/${m.uid}/jetons/${jid}/revoquer`, {});
+  assert.equal((await appel(m, 'antor', 'DELETE', `/api/compte/jetons/${jid}`)).status, 200);
   assert.equal((await imp(m, t, 'PUT', `/outils/swn/galaxie/galaxies/${bord}`, FICHIER)).status, 401);
   const c = await lire(m, 'antor', galerie(m, bord, '/contenu'));
   assert.deepEqual([c.json.systemes, c.json.routes, c.json.zones], [0, 0, 0], 'rien n’a été écrit');
