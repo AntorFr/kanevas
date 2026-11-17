@@ -11,8 +11,8 @@ function useInactif(disabled?: boolean, enCours?: boolean, ecrit?: boolean): boo
 }
 
 type PropsBouton = ButtonHTMLAttributes<HTMLButtonElement> & {
-  /** Visual role: neutral by default; `fantome` has no background. */
-  variante?: 'neutre' | 'principal' | 'danger' | 'fantome';
+  /** Visual role: neutral by default; `fantome` has no background; `mj` is the GM's amber (a writing gesture of the GM). */
+  variante?: 'neutre' | 'principal' | 'danger' | 'fantome' | 'mj';
   petit?: boolean;
   /** Request in flight: label becomes « … », a second trigger is ignored. */
   enCours?: boolean;
@@ -443,5 +443,17 @@ export function Case({
       <input type="checkbox" {...reste} />
       {etiquette}
     </label>
+  );
+}
+
+/**
+ * Conversion line of the GM's movement form (charte, « Conversion line »): « = Orbite 4 · 7 h » in a polite live region.
+ * The field it explains points to it by `aria-describedby={id}`.
+ */
+export function LigneConversion({ id, texte }: { id: string; texte: string }) {
+  return (
+    <p id={id} className="ligne-conversion" aria-live="polite">
+      {texte}
+    </p>
   );
 }
