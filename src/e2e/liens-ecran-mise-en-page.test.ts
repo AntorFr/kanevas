@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Layout tests of kanevas-liens-ecran after the visual fixes (verify): « Mentionnée dans » is a row like Relations with
 // a single rule, and the floating assistant button never covers « Enregistrer » nor a row of the open « [[ » list.
 //
