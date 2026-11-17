@@ -55,7 +55,7 @@ const MESSAGE_ACTION = 'L’action n’a pas abouti.';
 const ETATS: Record<EtatLigne, { mot: string; sens: 'mj' | 'table' | 'neutre' | 'secrete' | 'danger' }> = {
   attente: { mot: 'En attente', sens: 'neutre' },
   en_cours: { mot: 'En cours', sens: 'table' },
-  brouillon: { mot: 'Brouillon prêt', sens: 'mj' },
+  brouillon: { mot: 'Brouillon prêt', sens: 'table' },
   echec: { mot: 'Échec', sens: 'danger' },
   interrompu: { mot: 'Interrompu', sens: 'secrete' },
   accepte: { mot: 'Accepté', sens: 'table' },
@@ -460,15 +460,13 @@ function LigneListe({ ligne, rang, onChange, onRetirer }: {
   const vide = ligne.nom.trim() === '';
   return (
     <li className="bm-gen-saisie">
-      <div className="bm-gen-rang1">
-        <Champ etiquette={`Nom de la ligne ${rang}`} value={ligne.nom} maxLength={MAX_NOM} erreur={vide ? 'obligatoire' : undefined}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ nom: e.target.value })} />
-        <Champ etiquette={`Catégorie de la ligne ${rang}`} liste value={ligne.categorie}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange({ categorie: e.target.value as Categorie })}>
-          {CATEGORIES.map((c) => <option key={c.valeur} value={c.valeur}>{c.libelle}</option>)}
-        </Champ>
-      </div>
-      <div className="bm-gen-rang2">
+      <Champ etiquette={`Nom de la ligne ${rang}`} value={ligne.nom} maxLength={MAX_NOM} placeholder="Nom" erreur={vide ? 'obligatoire' : undefined}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ nom: e.target.value })} />
+      <Champ etiquette={`Catégorie de la ligne ${rang}`} liste value={ligne.categorie}
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange({ categorie: e.target.value as Categorie })}>
+        {CATEGORIES.map((c) => <option key={c.valeur} value={c.valeur}>{c.libelle}</option>)}
+      </Champ>
+      <div className="bm-gen-empreinte">
         {!sans && (
           <>
             <Champ etiquette={`Largeur de la ligne ${rang}`} type="number" min={1} max={MAX_EMPREINTE} value={ligne.largeur}
@@ -477,10 +475,12 @@ function LigneListe({ ligne, rang, onChange, onRetirer }: {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ hauteur: e.target.value })} />
           </>
         )}
-        <Champ etiquette={`Indication de la ligne ${rang}`} facultatif value={ligne.indice} maxLength={MAX_INDICE} placeholder="une couchette double, draps froissés"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ indice: e.target.value })} />
       </div>
       <Bouton variante="fantome" petit icone={Trash2} ecrit aria-label={`Retirer la ligne ${ligne.nom.trim() || rang}`} onClick={onRetirer}>Retirer</Bouton>
+      <div className="bm-gen-saisie-indication">
+        <Champ etiquette={`Indication de la ligne ${rang}`} facultatif value={ligne.indice} maxLength={MAX_INDICE} placeholder="Indication : une couchette double, draps froissés"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ indice: e.target.value })} />
+      </div>
     </li>
   );
 }
@@ -496,6 +496,13 @@ function LigneDuLot({ id, ligne: l, occupee, inactif, moteurOccupe, remarque, on
   const chemin = (a: string) => `/lignes/${l.id}/${a}`;
   return (
     <li className={`bm-gen-ligne etat-${l.etat}`}>
+      {l.etat === 'brouillon' && (
+        <div className="carte-asset-vignette bm-gen-image">
+          {cassee ? <span className="bm-gen-image-cassee">Impossible de charger l’image.</span>
+            : <img src={srcFichier(id, l)} alt={`Brouillon de ${l.nom}`} loading="lazy" onError={() => setCassee(true)} />}
+        </div>
+      )}
+      <div className="bm-gen-corps">
       <div className="bm-gen-ligne-tete">
         <span className="bm-gen-nom" title={l.nom}>{l.nom}</span>
         <span className="bm-gen-meta">{LIBELLE_CATEGORIE[l.categorie]}{l.largeur !== null ? ` · ${l.largeur}×${l.hauteur}` : ''}</span>
@@ -520,10 +527,6 @@ function LigneDuLot({ id, ligne: l, occupee, inactif, moteurOccupe, remarque, on
       )}
       {l.etat === 'brouillon' && (
         <>
-          <div className="carte-asset-vignette bm-gen-image">
-            {cassee ? <span className="bm-gen-image-cassee">Impossible de charger l’image.</span>
-              : <img src={srcFichier(id, l)} alt={`Brouillon de ${l.nom}`} loading="lazy" onError={() => setCassee(true)} />}
-          </div>
           {remarque === null ? (
             <div className="bm-gen-actions">
               <Bouton petit variante="principal" ecrit enCours={occupee === cle('accepter')} disabled={inactif || cassee} onClick={() => void onAgir(cle('accepter'), chemin('accepter'))}>Accepter</Bouton>
@@ -545,6 +548,7 @@ function LigneDuLot({ id, ligne: l, occupee, inactif, moteurOccupe, remarque, on
       {l.etat === 'accepte' && l.assetId !== null && (
         <Link className="bm-gen-lien" to={`/univers/${id}/outils/battlemap/assets`}>Voir dans la bibliothèque</Link>
       )}
+      </div>
     </li>
   );
 }
