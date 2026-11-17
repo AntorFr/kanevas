@@ -302,3 +302,45 @@ export function listerFichiersDisponibles(db: Db, acteur: Acteur, universId: num
   ).all(universId) as { id: number; nom: string; type: string; taille: number; visibilite: string; disque: string }[];
   return rows.map((r) => ({ id: r.id, nom: r.nom, type: r.type, taille: r.taille, visible: r.visibilite === 'joueurs', jeton: r.disque }));
 }
+
+export interface SaisieBrouillon { nom: string; categorie: Categorie; largeur: number | null; hauteur: number | null }
+
+/**
+ * A draft of the generation (AD-battlemap-generation-3): the asset row of a file the batch just added (GM-only). The caller
+ * (`battlemap-lots.ts`) has checked the rights; the library's ceiling counts drafts too (`bibliotheque_pleine`).
+ */
+export function insererBrouillon(db: Db, universId: number, fichierId: number, b: SaisieBrouillon): number {
+  exigerPlace(db, universId);
+  const sans = b.categorie === 'sol' || b.categorie === 'mur';
+  const info = db.prepare(
+    `INSERT INTO bm_assets (univers_id, fichier_id, nom, categorie, largeur, hauteur, vue_dessus, tags, etat, cree_le)
+     VALUES (?, ?, ?, ?, ?, ?, ?, '[]', 'brouillon', ?)`,
+  ).run(universId, fichierId, b.nom, b.categorie, sans ? null : b.largeur, sans ? null : b.hauteur, sans ? 0 : 1, new Date().toISOString());
+  return Number(info.lastInsertRowid);
+}
+
+/** Draft → valid asset (« Accepter »): refused `bibliotheque_pleine` when the universe holds 5 000 valid assets. */
+export function validerBrouillon(db: Db, universId: number, assetId: number): void {
+  const { n } = db.prepare("SELECT COUNT(*) AS n FROM bm_assets WHERE univers_id = ? AND etat = 'valide'").get(universId) as { n: number };
+  if (n >= MAX_ASSETS) throw erreur('conflit', 'Bibliothèque pleine (5 000 assets).', 'bibliotheque_pleine');
+  db.prepare("UPDATE bm_assets SET etat = 'valide' WHERE id = ? AND univers_id = ? AND etat = 'brouillon'").run(assetId, universId);
+}
+
+/** Removes the row of a draft and says which file backed it; the caller deletes the file after its commit. */
+export function retirerLigneBrouillon(db: Db, universId: number, assetId: number): number | null {
+  const l = db.prepare("SELECT fichier_id FROM bm_assets WHERE id = ? AND univers_id = ? AND etat = 'brouillon'").get(assetId, universId) as
+    { fichier_id: number } | undefined;
+  if (!l) return null;
+  db.prepare('DELETE FROM bm_assets WHERE id = ?').run(assetId);
+  return l.fichier_id;
+}
+
+export function fichierDeAsset(db: Db, universId: number, assetId: number): { fichierId: number; jeton: string } | null {
+  const l = db.prepare('SELECT a.fichier_id, f.disque FROM bm_assets a JOIN fichiers f ON f.id = a.fichier_id WHERE a.id = ? AND a.univers_id = ?')
+    .get(assetId, universId) as { fichier_id: number; disque: string } | undefined;
+  return l ? { fichierId: l.fichier_id, jeton: l.disque } : null;
+}
+
+export function assetsEnBibliotheque(db: Db, universId: number): number {
+  return (db.prepare('SELECT COUNT(*) AS n FROM bm_assets WHERE univers_id = ?').get(universId) as { n: number }).n;
+}

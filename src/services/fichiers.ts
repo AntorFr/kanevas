@@ -87,7 +87,8 @@ export type CibleFichier =
   | { ou: 'section'; sectionId: number; maniere: 'joint' | 'texte'; dansBlocMj?: boolean }
   | { ou: 'illustration'; ficheId: number }
   | { ou: 'bibliotheque' }
-  | { ou: 'direction' };
+  | { ou: 'direction' }
+  | { ou: 'brouillon' };
 
 export type FluxEntrant = Readable | AsyncIterable<Buffer | Uint8Array>;
 
@@ -363,10 +364,11 @@ function autoriser(db: Db, acteur: Acteur, universId: number, cible: CibleFichie
       return { visibilite: 'joueurs' };
     case 'bibliotheque':
     case 'direction':
+    case 'brouillon':
       // The write surface of the battle map's library does not exist for a player (AD-battlemap-assets-5).
       if (role !== 'mj') throw introuvable();
       if (acteur.modeJoueur) throw refuse();
-      return { visibilite: cible.ou === 'bibliotheque' ? 'joueurs' : 'mj' };
+      return { visibilite: cible.ou === 'bibliotheque' ? 'joueurs' : 'mj' }; // a draft is GM-only (AD-battlemap-generation-3)
     case 'illustration': {
       exigerMJDeFiche(db, universId, acteur, cible.ficheId);
       // Visible of the players when at least one section of the sheet is read by them (AD-111).
@@ -432,7 +434,7 @@ export async function ajouterFichier(
       throw new ErreurService('invalide', 'Le fichier est vide.', 'fichier_vide');
     }
     const type = typeParSignature(ecrit.debut);
-    if ((cible.ou === 'illustration' || cible.ou === 'bibliotheque' || cible.ou === 'direction') && !estImage(type)) {
+    if ((cible.ou === 'illustration' || cible.ou === 'bibliotheque' || cible.ou === 'direction' || cible.ou === 'brouillon') && !estImage(type)) {
       throw new ErreurService(
         'invalide',
         'Ce fichier n’est pas une image (PNG, JPEG, GIF ou WebP).',
