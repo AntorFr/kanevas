@@ -4,7 +4,15 @@
 export type GenreCorps = 'etoile' | 'planete' | 'comete' | 'anomalie' | 'compagne' | 'lune' | 'zone';
 
 /** A body of the map in screen pixels: `x`, `y` its centre, `rayon` its disc (0 for a zone, which only anchors its label). */
-export interface CorpsEtiquette { cle: string; genre: GenreCorps; nom: string; x: number; y: number; rayon: number }
+export interface CorpsEtiquette { cle: string; genre: GenreCorps; nom: string; x: number; y: number; rayon: number;
+  /** Disc a label must also clear (a star's corona, wider than its body); the label sits beside it. Defaults to `rayon`. */
+  halo?: number }
+
+/** What is drawn on the map and a label must not touch either: an hour mark (rect), a corona (disc), the transition circle (ring: crossing it is meeting it). */
+export type Obstacle =
+  | { type: 'rect'; x: number; y: number; largeur: number; hauteur: number }
+  | { type: 'disque'; x: number; y: number; rayon: number }
+  | { type: 'anneau'; x: number; y: number; rayon: number };
 
 /** The view: its size in px and its zoom (1 = the fitted view); moons and zones collapse first when zooming out. */
 export interface VueEtiquettes { largeur: number; hauteur: number; zoom?: number }
@@ -19,7 +27,7 @@ export const LONGUEUR_MAX = 80;
 /** Zoom under which the labels of moons, then of zones, collapse. */
 export const ZOOM_LUNES = 1;
 export const ZOOM_ZONES = 0.75;
-const DISTANCES = [4, 14];
+const DISTANCES = [4, 14, 28];
 const MARGE = 1;
 
 const PRIORITE: Record<GenreCorps, number> = { etoile: 0, planete: 1, comete: 1, anomalie: 1, compagne: 2, lune: 3, zone: 4 };
@@ -34,19 +42,30 @@ const coupe = (nom: string) => {
 /** The text cut to `n` characters, with « … » (n counts the ellipsis). */
 const raccourci = (texte: string, n: number) => `${[...texte].slice(0, n - 1).join('').trimEnd()}…`;
 
+const distanceMin = (r: Rect, x: number, y: number) =>
+  Math.hypot(Math.max(r.x, Math.min(x, r.x + r.largeur)) - x, Math.max(r.y, Math.min(y, r.y + r.hauteur)) - y);
+
 const coupeLeDisque = (r: Rect, c: CorpsEtiquette) => {
-  const px = Math.max(r.x, Math.min(c.x, r.x + r.largeur));
-  const py = Math.max(r.y, Math.min(c.y, r.y + r.hauteur));
-  const d = Math.hypot(px - c.x, py - c.y);
-  return c.rayon > 0 ? d < c.rayon + MARGE : d === 0;
+  const d = distanceMin(r, c.x, c.y);
+  const rayon = Math.max(c.rayon, c.halo ?? 0);
+  return rayon > 0 ? d < rayon + MARGE : d === 0;
+};
+
+const toucheObstacle = (r: Rect, o: Obstacle) => {
+  if (o.type === 'rect') return sechevauchent(r, o);
+  const dmin = distanceMin(r, o.x, o.y);
+  if (o.type === 'disque') return dmin < o.rayon + MARGE;
+  const dmax = Math.max(...[r.x, r.x + r.largeur].flatMap((px) => [r.y, r.y + r.hauteur].map((py) => Math.hypot(px - o.x, py - o.y))));
+  return dmin < o.rayon + MARGE && dmax > o.rayon - MARGE;
 };
 
 const sechevauchent = (a: Rect, b: Rect) =>
   a.x < b.x + b.largeur + MARGE && b.x < a.x + a.largeur + MARGE && a.y < b.y + b.hauteur + MARGE && b.y < a.y + a.hauteur + MARGE;
 
 /** Rectangles of the four sides of a body, at one distance: below, above, right, left. */
-const candidats = (c: CorpsEtiquette, m: Mesure, d: number): Rect[] => {
+const candidats = (corps: CorpsEtiquette, m: Mesure, d: number): Rect[] => {
   const { largeur: l, hauteur: h } = m;
+  const c = { ...corps, rayon: Math.max(corps.rayon, corps.halo ?? 0) };
   return [
     { x: c.x - l / 2, y: c.y + c.rayon + d, largeur: l, hauteur: h },
     { x: c.x - l / 2, y: c.y - c.rayon - d - h, largeur: l, hauteur: h },
@@ -56,7 +75,7 @@ const candidats = (c: CorpsEtiquette, m: Mesure, d: number): Rect[] => {
 };
 
 /** The label of every body, placed by priority; same arguments, same result. Input order is the final tie-break. */
-export function placerEtiquettes(corps: CorpsEtiquette[], vue: VueEtiquettes, mesurer: Mesureur): EtiquettePlacee[] {
+export function placerEtiquettes(corps: CorpsEtiquette[], vue: VueEtiquettes, mesurer: Mesureur, obstacles: Obstacle[] = []): EtiquettePlacee[] {
   const zoom = vue.zoom ?? 1;
   const ordre = corps.map((c, i) => ({ c, i })).sort((a, b) => PRIORITE[a.c.genre] - PRIORITE[b.c.genre] || a.i - b.i);
   const placees: Rect[] = [];
@@ -64,7 +83,7 @@ export function placerEtiquettes(corps: CorpsEtiquette[], vue: VueEtiquettes, me
 
   const libre = (r: Rect) =>
     r.x >= 0 && r.y >= 0 && r.x + r.largeur <= vue.largeur && r.y + r.hauteur <= vue.hauteur &&
-    !corps.some((c) => coupeLeDisque(r, c)) && !placees.some((p) => sechevauchent(r, p));
+    !corps.some((c) => coupeLeDisque(r, c)) && !obstacles.some((o) => toucheObstacle(r, o)) && !placees.some((p) => sechevauchent(r, p));
 
   for (const { c } of ordre) {
     const replie = (c.genre === 'lune' && zoom < ZOOM_LUNES) || (c.genre === 'zone' && zoom < ZOOM_ZONES);

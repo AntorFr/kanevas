@@ -7,7 +7,7 @@ import { chargerModule } from '../../../wasm/charger';
 import { Alerte, BoutonIcone, Case } from '../../../ui';
 import { centresNuage, coteDemande, disposer, grainsAnneau, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
 import { Sprites, dessineurDuCoeur } from './carte-sprites';
-import { placerEtiquettes, type CorpsEtiquette, type EtiquettePlacee } from './etiquettes';
+import { placerEtiquettes, type CorpsEtiquette, type EtiquettePlacee, type Obstacle } from './etiquettes';
 import { nomAstre, nomFormation, placeAstre, typeAstre } from './systeme-libelles';
 import type { InterieurSysteme, SortieSysteme } from './types';
 
@@ -138,7 +138,10 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     if (!dispo) return { liste: [] as CorpsEtiquette[], sorties: [] as { q: number; r: number; x: number; y: number; nom: string }[] };
     const liste: CorpsEtiquette[] = dispo.corps.map((c) => {
       const [x, y] = ecran(c.x, c.y);
-      return { cle: c.cle, genre: c.genre, nom: nomAstre(c.astre), x, y, rayon: Math.max(4, c.rayon * echelle) };
+      const rayon = Math.max(4, c.rayon * echelle);
+      // A star's corona is drawn out to ~0.7 of its sprite's half-side: a label does not sit on it.
+      const halo = c.astre.genre === 'etoile' ? Math.max(rayon, (c.cote * echelle) / 2 * 0.7) : undefined;
+      return { cle: c.cle, genre: c.genre, nom: nomAstre(c.astre), x, y, rayon, ...(halo ? { halo } : {}) };
     });
     for (const z of dispo.zones) {
       const [x, y] = ecran(z.ancre[0], z.ancre[1]);
@@ -155,9 +158,27 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     return { liste, sorties: ex };
   }, [dispo, ecran, echelle, sorties]);
 
+  // What a label must clear besides the bodies: the hour marks (when drawn) and the transition circle.
+  const obstacles = useMemo(() => {
+    const liste: Obstacle[] = [];
+    const p = planRef.current;
+    if (!dispo || !p) return liste;
+    const [cx, cy] = ecran(0, 0);
+    if (dispo.transition > 0) liste.push({ type: 'anneau', x: cx, y: cy, rayon: dispo.transition * echelle });
+    if (heures) {
+      const rh = Math.max(dispo.transition, 3 * U);
+      for (let h = 0; h < 12; h += 3) {
+        const [tx, ty] = ecran(...p(rh + 14 / Math.max(echelle, 0.01), h));
+        const m = mesureur(`${h === 0 ? 12 : h} h`);
+        liste.push({ type: 'rect', x: tx - m.largeur / 2, y: ty - m.hauteur / 2, largeur: m.largeur, hauteur: m.hauteur });
+      }
+    }
+    return liste;
+  }, [dispo, ecran, echelle, heures, mesureur, plan]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const etiquettes = useMemo(
-    () => (taille.w > 0 ? placerEtiquettes(cibles.liste, { largeur: taille.w, hauteur: taille.h, zoom: vue.zoom }, mesureur) : []),
-    [cibles, taille, vue.zoom, mesureur],
+    () => (taille.w > 0 ? placerEtiquettes(cibles.liste, { largeur: taille.w, hauteur: taille.h, zoom: vue.zoom }, mesureur, obstacles) : []),
+    [cibles, taille, vue.zoom, mesureur, obstacles],
   );
 
   // The canvas: zones, then sprites, then the selection ring.
