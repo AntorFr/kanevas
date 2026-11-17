@@ -1,5 +1,5 @@
 import type { Db } from '../db/db.js';
-import { exigerMJ } from './droits.js';
+import { exigerMJ, roleDe } from './droits.js';
 import { introuvable } from './erreurs.js';
 import { compterFichiersEnAttente } from './fichiers.js';
 import { compterEnAttente } from './liens.js';
@@ -144,10 +144,12 @@ export function ouvrirLot(
   })();
 }
 
-/** A batch of the token's universe; any other id is unknown. */
+/** A batch of the token's universe, read by its own token or by a GM of it; any other id is unknown. */
 export function lireLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date = new Date()): Lot {
   const row = ligne(db, lotId);
   if (!row || row.univers_id !== jeton.universId) throw introuvable();
+  // A player's token reads no one else's batch (its report names sheets): the same silence as an unknown id.
+  if (row.jeton_id !== jeton.id && roleDe(db, jeton.universId, jeton.compteId) !== 'mj') throw introuvable();
   return versLot(row, maintenant);
 }
 

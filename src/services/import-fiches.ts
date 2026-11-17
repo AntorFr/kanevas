@@ -1,5 +1,6 @@
 import { creerCompteRendu, TITRE_SECTION_COMPTE_RENDU } from './comptes_rendus.js';
 import type { Db } from '../db/db.js';
+import { exigerMJ } from './droits.js';
 import { cleValide } from './import.js';
 import { ErreurService } from './erreurs.js';
 import {
@@ -321,6 +322,8 @@ export function assurerFiche(
   corps: unknown,
   maintenant: Date = new Date(),
 ): ResultatFiche {
+  // The import writes as a GM only (B-46): a player's token never reaches a section, a file join included.
+  exigerMJ(db, jeton.universId, jeton.compteId);
   if (lotId !== null) {
     const lot = lireLot(db, jeton, lotId, maintenant);
     if (lot.closLe !== null) throw new ErreurService('conflit', 'Le lot est clos.', 'lot_clos');
