@@ -375,7 +375,7 @@ export function Generation({ id, lots }: { id: string; lots: EtatLots }) {
             {demarre && <span className="bm-gen-compte">{traitees} sur {lignes.length}</span>}
           </header>
           {fin && lot === null && <p className="bm-gen-fin" role="status">{fin === 'arrete' ? 'Lot arrêté.' : 'Le dernier lot est terminé.'}</p>}
-          {lot === null && <p className="bm-gen-vide">Aucun lot. Écrivez la liste puis lancez.</p>}
+          {lot === null && !fin && <p className="bm-gen-vide">Aucun lot. Écrivez la liste puis lancez.</p>}
           {lot?.etat === 'prepare' && <p className="bm-gen-vide">Ce lot est préparé, il n’est pas lancé. Relisez la liste puis lancez.</p>}
           {demarre && lot.interrompu && (
             <Alerte sens="avertissement">Le serveur a redémarré pendant le lot. Reprenez-le quand vous voulez.</Alerte>
@@ -460,22 +460,26 @@ function LigneListe({ ligne, rang, onChange, onRetirer }: {
   const vide = ligne.nom.trim() === '';
   return (
     <li className="bm-gen-saisie">
-      <Champ etiquette={`Nom de la ligne ${rang}`} value={ligne.nom} maxLength={MAX_NOM} erreur={vide ? 'obligatoire' : undefined}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ nom: e.target.value })} />
-      <Champ etiquette={`Catégorie de la ligne ${rang}`} liste value={ligne.categorie}
-        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange({ categorie: e.target.value as Categorie })}>
-        {CATEGORIES.map((c) => <option key={c.valeur} value={c.valeur}>{c.libelle}</option>)}
-      </Champ>
-      {!sans && (
-        <div className="bm-gen-empreinte">
-          <Champ etiquette={`Largeur de la ligne ${rang}`} type="number" min={1} max={MAX_EMPREINTE} value={ligne.largeur}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ largeur: e.target.value })} />
-          <Champ etiquette={`Hauteur de la ligne ${rang}`} type="number" min={1} max={MAX_EMPREINTE} value={ligne.hauteur}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ hauteur: e.target.value })} />
-        </div>
-      )}
-      <Champ etiquette={`Indication de la ligne ${rang}`} facultatif value={ligne.indice} maxLength={MAX_INDICE} placeholder="une couchette double, draps froissés"
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ indice: e.target.value })} />
+      <div className="bm-gen-rang1">
+        <Champ etiquette={`Nom de la ligne ${rang}`} value={ligne.nom} maxLength={MAX_NOM} erreur={vide ? 'obligatoire' : undefined}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ nom: e.target.value })} />
+        <Champ etiquette={`Catégorie de la ligne ${rang}`} liste value={ligne.categorie}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange({ categorie: e.target.value as Categorie })}>
+          {CATEGORIES.map((c) => <option key={c.valeur} value={c.valeur}>{c.libelle}</option>)}
+        </Champ>
+      </div>
+      <div className="bm-gen-rang2">
+        {!sans && (
+          <>
+            <Champ etiquette={`Largeur de la ligne ${rang}`} type="number" min={1} max={MAX_EMPREINTE} value={ligne.largeur}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ largeur: e.target.value })} />
+            <Champ etiquette={`Hauteur de la ligne ${rang}`} type="number" min={1} max={MAX_EMPREINTE} value={ligne.hauteur}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ hauteur: e.target.value })} />
+          </>
+        )}
+        <Champ etiquette={`Indication de la ligne ${rang}`} facultatif value={ligne.indice} maxLength={MAX_INDICE} placeholder="une couchette double, draps froissés"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ indice: e.target.value })} />
+      </div>
       <Bouton variante="fantome" petit icone={Trash2} ecrit aria-label={`Retirer la ligne ${ligne.nom.trim() || rang}`} onClick={onRetirer}>Retirer</Bouton>
     </li>
   );

@@ -57,9 +57,12 @@ body:has(.bm-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .bm-gen-compte { margin-left: auto; font-size: var(--t-13); color: var(--texte-2); }
 .bm-gen-vide, .bm-gen-fin, .bm-gen-note { margin: 0; color: var(--texte-2); font-size: var(--t-13); }
 .bm-gen-saisies, .bm-gen-lignes, .bm-gen-lecture { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-3); }
-.bm-gen-saisie { display: grid; grid-template-columns: 1fr 120px; gap: var(--e-2) var(--e-3); padding: var(--e-3); border: 1px solid var(--bordure); border-radius: var(--rayon-item); align-items: end; }
-.bm-gen-saisie > :nth-child(3), .bm-gen-saisie > :nth-child(4) { grid-column: 1 / -1; }
-.bm-gen-empreinte { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
+/* A line of the list: the label of each field is read by the screen reader and the placeholder tells the sighted. */
+.bm-gen-saisie { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e-2); padding: var(--e-3); border: 1px solid var(--bordure); border-radius: var(--rayon-item); }
+.bm-gen-rang1, .bm-gen-rang2 { display: flex; gap: var(--e-3); width: 100%; align-items: flex-end; }
+.bm-gen-rang1 > :first-child, .bm-gen-rang2 > :last-child { flex: 1; min-width: 160px; }
+.bm-gen-rang2 input[type=number] { width: 72px; }
+.bm-gen .champ { margin: 0; }
 .bm-gen-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); }
 .bm-gen-refus { display: block; }
 .bm-gen-lecture li { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: baseline; overflow-wrap: anywhere; }
@@ -80,4 +83,5 @@ body:has(.bm-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .bm-gen-remarque { display: flex; flex-direction: column; gap: var(--e-2); }
 .bm-brouillon-actions { display: flex; gap: var(--e-2); margin-top: var(--e-2); }
 @media (max-width: 1024px) { .bm-gen-colonnes { grid-template-columns: minmax(0, 1fr); } .bm-gen-lot { max-height: none; } }
-@media (max-width: 760px) { .bm-gen .bouton, .bm-brouillon-actions .bouton { min-height: 44px; } .bm-gen-saisie { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .bm-gen .bouton, .bm-brouillon-actions .bouton { min-height: 44px; } .bm-gen-rang1, .bm-gen-rang2 { flex-wrap: wrap; } }
+.bm-gen-rang1, .bm-gen-rang2 { flex-wrap: wrap; }
