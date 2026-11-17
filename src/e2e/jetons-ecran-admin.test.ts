@@ -199,3 +199,31 @@ test('largeur_360_blocs_sans_debordement', opts, async () => {
   await admin.page.screenshot({ path: `${CAP}/360-sombre.png`, fullPage: true });
   await admin.ctx.close();
 });
+
+test('nom_long_non_tronque_a_cote_de_la_pastille_revoque', opts, async () => {
+  const m = await monde();
+  const nom = 'Synchronisation nocturne du grimoire des campagnes pour la table du vendredi';
+  await jetonDeLea(m.base, nom);
+  const admin = await connecte(browser, m.base, 'Admin');
+  await ouvrirAdmin(admin.page);
+  await ligne(admin.page, nom).getByRole('button', { name: /Révoquer/ }).click();
+  await admin.page.getByRole('alertdialog').getByRole('button', { name: 'Révoquer le jeton' }).click();
+  await admin.page.getByText('Révoqué par l’admin').first().waitFor();
+  for (const largeur of [1280, 360]) {
+    await admin.page.setViewportSize({ width: largeur, height: 800 });
+    await attendre(admin.page);
+    const mesure = await admin.page.evaluate((n: string) => {
+      const b = [...document.querySelectorAll('.ligne-table-jeton .cel-nom b')].find((e) => e.textContent === n) as HTMLElement;
+      const pastille = b.parentElement!.lastElementChild as HTMLElement;
+      const cs = getComputedStyle(b);
+      const p = pastille.getBoundingClientRect();
+      return { coupe: b.scrollWidth > b.clientWidth, ellipse: cs.textOverflow === 'ellipsis', pastilleLarge: pastille.scrollWidth > pastille.clientWidth, droite: p.right, texte: pastille.textContent };
+    }, nom);
+    assert.equal(mesure.coupe, false, `${largeur}: nom entier`);
+    assert.equal(mesure.ellipse, false, `${largeur}: pas de points de suspension`);
+    assert.equal(mesure.pastilleLarge, false, `${largeur}: pastille entière`);
+    assert.ok(mesure.droite <= largeur, `${largeur}: pastille dans la fenêtre`);
+    assert.match(String(mesure.texte), /Révoqué par l’admin/);
+  }
+  await admin.ctx.close();
+});
