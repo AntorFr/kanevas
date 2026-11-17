@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { retirerHistoriqueUnivers } from './historique.js';
 import type { Db } from '../db/db.js';
 import { tirerCleUnivers } from './cles.js';
 import { effacerDonneesUniversComplet } from './outils-donnees.js';
@@ -154,6 +155,7 @@ export function supprimerUnivers(db: Db, acteur: Acteur, universId: number, nom:
     run('DELETE FROM types_univers WHERE univers_id = ?');
     run('DELETE FROM fichiers WHERE univers_id = ?');
     run('DELETE FROM membres WHERE univers_id = ?');
+    retirerHistoriqueUnivers(db, universId); // after the deletes above, which leave their lines
     run('DELETE FROM univers WHERE id = ?');
     return aEffacer;
   })();

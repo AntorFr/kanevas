@@ -448,8 +448,11 @@ export function supprimerFiche(db: Db, acteur: Acteur, universId: number, ficheI
     db.prepare('DELETE FROM relations WHERE cible_fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM elements_carte WHERE fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM taches_preparation WHERE fiche_id = ?').run(f.id);
-    db.prepare('DELETE FROM sections WHERE fiche_id = ?').run(f.id);
+    // The sheet goes first so that its history line keeps its sections (AD-147, trigger BEFORE DELETE);
+    // the sections then go without a line of their own, their sheet being gone. The check waits for the commit.
+    db.pragma('defer_foreign_keys = ON');
     db.prepare('DELETE FROM fiches WHERE id = ?').run(f.id);
+    db.prepare('DELETE FROM sections WHERE fiche_id = ?').run(f.id);
     return bilan;
   })();
   for (const d of disques) supprimerFichier(d);
