@@ -24,7 +24,6 @@ const ARBRE: Record<string, string> = {
   'src/e2e/fiche-a.test.ts': "// ecrans: fiche\ntest('a', () => {})",
   'src/e2e/arbre-a.test.ts': "// ecrans: arbre\ntest('b', () => {})",
   'src/e2e/deux.test.ts': "// ecrans: fiche, carte\ntest('c', () => {})",
-  'src/e2e/libre.test.ts': "test('d', () => {})",
   'package.json': '{}',
   'README.md': 'x',
 };
@@ -54,24 +53,24 @@ describe('niveaux ecrans et fiche : le choix', () => {
   });
   after(() => rmSync(depot, { recursive: true, force: true }));
 
-  test('un fichier propre à une page : ses tests et ceux sans déclaration, pas ceux d’un autre écran', () => {
+  test('un fichier propre à une page : ses tests, pas ceux d’un autre écran', () => {
     assert.deepEqual(liste('ecrans', { 'frontend/src/ecrans/arbre/lourd.tsx': 'export const l = 2;' }),
-      ['src/e2e/arbre-a.test.ts', 'src/e2e/libre.test.ts']);
+      ['src/e2e/arbre-a.test.ts']);
   });
 
   test('un fichier de ui/ importé par deux pages : les tests des deux écrans', () => {
     assert.deepEqual(liste('ecrans', { 'frontend/src/ui/titre.tsx': 'export const Titre = 2;' }),
-      ['src/e2e/arbre-a.test.ts', 'src/e2e/deux.test.ts', 'src/e2e/fiche-a.test.ts', 'src/e2e/libre.test.ts']);
+      ['src/e2e/arbre-a.test.ts', 'src/e2e/deux.test.ts', 'src/e2e/fiche-a.test.ts']);
   });
 
   test('css, import ./x.js résolu en .ts et module serveur importé par une page entrent dans le graphe', () => {
-    assert.deepEqual(liste('ecrans', { 'frontend/src/ecrans/fiche.css': 'a{}' }), ['src/e2e/deux.test.ts', 'src/e2e/fiche-a.test.ts', 'src/e2e/libre.test.ts']);
-    assert.deepEqual(liste('ecrans', { 'frontend/src/ui/propre.ts': 'export const p = 2;' }), ['src/e2e/deux.test.ts', 'src/e2e/libre.test.ts']);
-    assert.deepEqual(liste('ecrans', { 'src/services/pur.ts': 'export const pur = 2;' }), ['src/e2e/deux.test.ts', 'src/e2e/fiche-a.test.ts', 'src/e2e/libre.test.ts']);
+    assert.deepEqual(liste('ecrans', { 'frontend/src/ecrans/fiche.css': 'a{}' }), ['src/e2e/deux.test.ts', 'src/e2e/fiche-a.test.ts']);
+    assert.deepEqual(liste('ecrans', { 'frontend/src/ui/propre.ts': 'export const p = 2;' }), ['src/e2e/deux.test.ts']);
+    assert.deepEqual(liste('ecrans', { 'src/services/pur.ts': 'export const pur = 2;' }), ['src/e2e/deux.test.ts', 'src/e2e/fiche-a.test.ts']);
   });
 
   test('un fichier que nulle page n’importe et qu’aucune règle ne déclare touche tous les écrans', () => {
-    const tous = ['src/e2e/arbre-a.test.ts', 'src/e2e/deux.test.ts', 'src/e2e/fiche-a.test.ts', 'src/e2e/libre.test.ts'];
+    const tous = ['src/e2e/arbre-a.test.ts', 'src/e2e/deux.test.ts', 'src/e2e/fiche-a.test.ts'];
     assert.deepEqual(liste('ecrans', { 'frontend/src/Cadre.tsx': 'export const C = 2;' }), tous);
     assert.deepEqual(liste('ecrans', { 'package.json': '{"a":1}' }), tous);
     assert.deepEqual(liste('ecrans', { 'frontend/src/registre.ts': '// x' }), tous);
@@ -89,8 +88,28 @@ describe('niveaux ecrans et fiche : le choix', () => {
 
   test('fiche : la suite entière moins les tests d’écran non choisis', () => {
     assert.deepEqual(liste('fiche', { 'frontend/src/ecrans/arbre/lourd.tsx': 'export const l = 3;' }),
-      ['src/e2e/arbre-a.test.ts', 'src/e2e/libre.test.ts', 'src/services/serveur.test.ts']);
+      ['src/e2e/arbre-a.test.ts', 'src/services/serveur.test.ts']);
     assert.deepEqual(liste('fiche', { 'src/services/serveur.ts': 'export const s = 3;' }), ['src/services/serveur.test.ts']);
+  });
+
+  test('un test d’écran sans en-tête est une erreur nommant le fichier et le proposeur, choisi ou non, aux deux niveaux', () => {
+    const base = git('rev-parse', 'HEAD').trim();
+    ecrire('src/e2e/sans-entete.test.ts', "test('s', () => {})");
+    git('add', '-A');
+    git('commit', '-qm', 'sans en-tête');
+    try {
+      // a change that selects no screen at all must refuse too (the file is not chosen, not changed first)
+      for (const niveau of ['ecrans', 'fiche']) {
+        for (const base_ of [base, git('rev-parse', 'HEAD').trim()]) {
+          const r = spawnSync(process.execPath, [SCRIPT, '--liste', niveau, base_], { cwd: depot, encoding: 'utf8' });
+          assert.notEqual(r.status, 0, `${niveau} ${base_}`);
+          assert.match(r.stderr, /src\/e2e\/sans-entete\.test\.ts/);
+          assert.match(r.stderr, /scripts\/proposer-ecrans\.mjs/);
+        }
+      }
+    } finally {
+      git('reset', '-q', '--hard', base);
+    }
   });
 
   test('un nom d’écran inconnu dans // ecrans: est une erreur', () => {
