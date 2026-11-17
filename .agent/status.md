@@ -1,5 +1,6 @@
 # Status — kanevas
 
+> MàJ : 2026-11-17 (assemblage de `rouge-kanevas-battlemap-6` : le test e2e « E-19 contenu long · 102 fichiers » de `src/e2e/mediatheque-besoin-verification.test.ts` attend la 100e puis la 102e tuile au lieu de les compter d'un coup ; instable sous charge, test seul, produit inchangé)
 > MàJ : 2026-11-15 (assemblage de `rouge-kanevas-battlemap-5` : le test e2e de l'envoi long de la médiathèque retient la requête par une promesse que le test libère ; test seul, produit inchangé)
 > MàJ : 2026-11-13 (assemblage de `kanevas-battlemap-assets`, PR vers `epic/kanevas-battlemap`)
 > MàJ : 2026-11-15 (assemblage de `rouge-kanevas-battlemap-3` : les tests E-19 du second serveur se préparent eux-mêmes, rejouables seuls ; test seul, produit inchangé)
