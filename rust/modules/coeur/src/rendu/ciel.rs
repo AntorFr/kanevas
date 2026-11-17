@@ -76,8 +76,13 @@ pub fn comete(c: &Ctx) -> Vec<Px> {
                 let lum = 0.9 + 0.5 * (1.0 - d / rn);
                 px = dessus([col_t[0] * lum * noy, col_t[1] * lum * noy, col_t[2] * lum * noy, noy], px);
             }
-            let m = cadre(dx, dy, c.demi);
-            sortie[y * n + x] = [px[0] * m, px[1] * m, px[2] * m, px[3] * m];
+            // The faint haze of the tails must die out inside the square, never end on its straight edges:
+            // a round fade (not the square one) and a knee that cuts the barely visible alpha.
+            let rond = 1.0 - lisse(0.6, 0.98, (dx * dx + dy * dy).sqrt() / c.demi);
+            let m = cadre(dx, dy, c.demi) * rond;
+            let a = px[3] * m;
+            let k = if px[3] > 0.0 { (((a - 0.04) / 0.96).max(0.0) / px[3]).min(1.0) } else { 0.0 };
+            sortie[y * n + x] = [px[0] * k, px[1] * k, px[2] * k, px[3] * k];
         }
     }
     sortie
