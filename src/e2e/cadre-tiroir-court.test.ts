@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box re-check of kanevas-rv-cadre, finding « E-9 MJ, 390×526, clair et sombre : le tiroir s'arrête à
 // « Membres », « Paramètres » est sous le pied » (docs/ecrans.md § Barre latérale: the MJ's bar ends with
 // « Paramètres »; on a phone the bar is a drawer under « Menu »).

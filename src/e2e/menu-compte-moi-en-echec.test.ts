@@ -1,3 +1,4 @@
+// ecrans: vue-ensemble
 // Black-box test of kanevas-refonte-visuelle, from docs/ecrans.md « États des composants du cadre »:
 //   menu du compte / `/api/moi` en échec -> « l'identifiant manque ; le thème et « Se déconnecter » restent ».
 // Named failure: the menu depends on /api/moi to open, or hides the theme / sign-out when it fails.

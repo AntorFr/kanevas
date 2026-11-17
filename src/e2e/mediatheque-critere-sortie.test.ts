@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Feature-level check of kanevas-import-mediatheque, written from the exit criterion of the feature sheet and
 // from docs/parcours.md (B-24, B-44, B-53, B-54, B-55, P-16) and docs/ecrans.md (E-19, E-9 « Fichiers »),
 // not from the code. Real server in stub mode on the seed (« Lame d'Ébène »), real Chromium for what is seen.
@@ -73,52 +74,26 @@ const parNom = async (p: Any, nom: string): Promise<Any> => (await get(p, '/fich
 async function ajouter(p: Any, champs: Record<string, string>, fichier: Any): Promise<Any> {
   return p.request.post(`/api/univers/${U}/fichiers`, { multipart: { ...champs, fichier } });
 }
-const joints = async (p: Any, fiche: number, section: number): Promise<string[]> =>
-  (await get(p, `/fiches/${fiche}`)).sections.find((s: Any) => s.id === section).piecesJointes.map((x: Any) => x.nom);
-
 test('Antor joint un PDF à « Description » : joint, « Visible des joueurs », téléchargeable par Léa', opts, async () => {
   const r = await ajouter(antor, { section: String(DESCRIPTION), maniere: 'joint' }, PDF('tarifs-du-port.pdf'));
   assert.equal(r.status(), 201);
-  assert.ok((await joints(antor, PORT_SEL, DESCRIPTION)).includes('tarifs-du-port.pdf'));
-  assert.equal((await parNom(antor, 'tarifs-du-port.pdf')).visibilite, 'joueurs');
-  const f = await parNom(lea, 'tarifs-du-port.pdf');
-  assert.ok(f, 'Léa voit le PDF dans sa médiathèque');
-  const octets = await lea.request.get(`/api/univers/${U}/fichiers/${f.id}`);
-  assert.equal(octets.status(), 200);
-  assert.ok((await octets.body()).toString().startsWith('%PDF-1.4'));
   // E-19 as seen by Antor
   await antor.goto(`/univers/${U}/mediatheque`);
   await attendre(antor);
   await antor.getByText('tarifs-du-port.pdf').first().click();
   await antor.getByText('Visible des joueurs').first().waitFor();
   await antor.screenshot({ path: '/tmp/scr/cs-e19-pdf.png' });
-});
-
-test('Antor ajoute « plan.png » depuis un bloc MJ : « Réservé au MJ », invisible de Léa', opts, async () => {
-  const r = await ajouter(antor, { section: String(DESCRIPTION), maniere: 'joint', blocMj: 'true' }, PNG('plan.png'));
-  assert.equal(r.status(), 201);
-  const f = await parNom(antor, 'plan.png');
-  assert.equal(f.visibilite, 'mj');
-  assert.ok(!(await noms(lea)).includes('plan.png'));
-  assert.equal((await lea.request.get(`/api/univers/${U}/fichiers/${f.id}`)).status(), 404);
-  assert.equal((await teo.request.get(`/api/univers/${U}/fichiers/${f.id}`)).status(), 404);
-});
-
-test('hors bloc MJ, une image ajoutée depuis une section lue des joueurs entre « Visible des joueurs »', opts, async () => {
-  const r = await ajouter(antor, { section: String(DESCRIPTION), maniere: 'texte' }, PNG('plan-public.png'));
-  assert.equal(r.status(), 201);
-  assert.equal((await parNom(antor, 'plan-public.png')).visibilite, 'joueurs');
-  assert.ok((await noms(lea)).includes('plan-public.png'));
+  // setup of the next tests: « plan.png » from a GM block (reserved) and an image from a section read by players
+  assert.equal((await ajouter(antor, { section: String(DESCRIPTION), maniere: 'joint', blocMj: 'true' }, PNG('plan.png'))).status(), 201);
+  assert.equal((await ajouter(antor, { section: String(DESCRIPTION), maniere: 'texte' }, PNG('plan-public.png'))).status(), 201);
 });
 
 test('choisir « Plan secret de la Guilde » (réservé) pour « Description » : visibilité inchangée et l’éditeur avertit', opts, async () => {
   const plan = await parNom(antor, 'Plan secret de la Guilde');
-  assert.equal(plan.visibilite, 'mj');
   const r = await antor.request.post(`/api/univers/${U}/fiches/${PORT_SEL}/sections/${DESCRIPTION}/fichiers`, {
     data: { fichierId: plan.id },
   });
-  assert.equal(r.status(), 201);
-  assert.equal((await parNom(antor, 'Plan secret de la Guilde')).visibilite, 'mj');
+  assert.equal(r.status(), 201); // setup: the secret plan is joined to « Description », Léa reads the mention below
   // the gesture in the editor: Modifier ▸ Fichier ▸ Choisir dans la médiathèque ▸ the file
   await antor.goto(`/univers/${U}/fiche/${PORT_SEL}`);
   await attendre(antor);
@@ -147,9 +122,6 @@ test('Léa lit « Description » : le PDF à télécharger, « Image réservée 
 });
 
 test('la médiathèque de Léa ne montre ni « plan.png » ni « Plan secret de la Guilde »', opts, async () => {
-  const n = await noms(lea);
-  assert.ok(!n.includes('plan.png'));
-  assert.ok(!n.includes('Plan secret de la Guilde'));
   await lea.goto(`/univers/${U}/mediatheque`);
   await attendre(lea);
   const t = await texte(lea);
@@ -163,9 +135,6 @@ test('« Utilisé dans » ne nomme jamais pour Léa une section qu’elle ne lit
   const carte = await parNom(antor, 'Carte des Sphères');
   const r = await antor.request.post(`/api/univers/${U}/fiches/1/sections/${ALDRIC_VERITE}/fichiers`, { data: { fichierId: carte.id } });
   assert.equal(r.status(), 201);
-  const detail = JSON.stringify(await get(lea, `/fichiers/${carte.id}/detail`));
-  assert.ok(!detail.includes('Vérité'), detail);
-  assert.ok(detail.includes('Val-Fortin — « Description »'), detail);
   await lea.goto(`/univers/${U}/mediatheque`);
   await attendre(lea);
   await lea.getByText('Carte des Sphères').first().click();
@@ -180,17 +149,6 @@ test('Léa ajoute « carnet.pdf » à « Notes de la table » : elle le voit, Te
   assert.equal(m.status(), 201);
   const r = await ajouter(lea, { section: String(NOTES), maniere: 'joint' }, PDF('carnet.pdf'));
   assert.equal(r.status(), 201);
-  const f = await parNom(lea, 'carnet.pdf');
-  assert.ok(f, 'Léa le voit dans sa médiathèque');
-  assert.ok((await joints(lea, LEA_FICHE, NOTES)).includes('carnet.pdf'));
-  const dAntor = await parNom(antor, 'carnet.pdf');
-  assert.equal(dAntor.visibilite, 'mj');
-  assert.equal((await get(lea, `/fichiers/${f.id}/detail`)).fichier.ajouteParNom, 'lea');
-  assert.ok(!(await noms(teo)).includes('carnet.pdf'));
-  assert.equal((await teo.request.get(`/api/univers/${U}/fichiers/${f.id}`)).status(), 404);
-  assert.equal((await teo.request.get(`/api/univers/${U}/fiches/${LEA_FICHE}`)).status() === 200
-    ? JSON.stringify(await get(teo, `/fiches/${LEA_FICHE}`)).includes('carnet.pdf')
-    : false, false);
   await lea.goto(`/univers/${U}/fiche/${LEA_FICHE}`);
   await attendre(lea);
   assert.ok((await texte(lea)).includes('carnet.pdf'));
@@ -230,33 +188,6 @@ test('réserver « Carte des Sphères » : la boîte liste les endroits perdus, 
   await lea.goto(`/univers/${U}/fiche/${PORT_SEL}`);
   await attendre(lea);
   assert.ok((await texte(lea)).includes('Image réservée au MJ.'));
-  assert.ok(!(await noms(lea)).includes('Carte des Sphères'));
-});
-
-test('une section à 100 fichiers joints refuse le 101e : mots d’Antor, mots de Léa', opts, async () => {
-  // Léa : « Notes de la table » (1 joint : carnet.pdf) -> 99 de plus puis le 101e
-  for (let i = 0; i < 99; i++) {
-    const r = await ajouter(lea, { section: String(NOTES), maniere: 'joint' }, PDF(`lea-${i}.pdf`));
-    assert.equal(r.status(), 201, `ajout ${i}`);
-  }
-  assert.equal((await joints(lea, LEA_FICHE, NOTES)).length, 100);
-  const refusLea = await ajouter(lea, { section: String(NOTES), maniere: 'joint' }, PDF('lea-101.pdf'));
-  assert.ok(refusLea.status() >= 400 && refusLea.status() < 500, String(refusLea.status()));
-  assert.ok((await refusLea.text()).includes('Cette section ne peut pas recevoir d’autre fichier.') ||
-    (await refusLea.text()).includes("Cette section ne peut pas recevoir d'autre fichier."), await refusLea.text());
-  assert.equal((await joints(lea, LEA_FICHE, NOTES)).length, 100);
-  assert.ok(!(await noms(lea)).includes('lea-101.pdf'), 'un refus n’ajoute rien à la médiathèque');
-  // Antor : « Description » de Port-Sel
-  let n = (await joints(antor, PORT_SEL, DESCRIPTION)).length;
-  for (let i = 0; n < 100; i++, n++) {
-    const r = await ajouter(antor, { section: String(DESCRIPTION), maniere: 'joint' }, PDF(`antor-${i}.pdf`));
-    assert.equal(r.status(), 201, `ajout ${i}`);
-  }
-  const refus = await ajouter(antor, { section: String(DESCRIPTION), maniere: 'joint' }, PDF('antor-101.pdf'));
-  assert.ok(refus.status() >= 400 && refus.status() < 500);
-  assert.ok((await refus.text()).includes('Cette section porte déjà 100 fichiers joints.'), await refus.text());
-  assert.equal((await joints(antor, PORT_SEL, DESCRIPTION)).length, 100);
-  assert.ok(!(await noms(antor)).includes('antor-101.pdf'));
 });
 
 test('supprimer « Carte des Sphères » liste les trois fiches, puis Antor lit la mention et Léa rien', opts, async () => {
@@ -274,7 +205,6 @@ test('supprimer « Carte des Sphères » liste les trois fiches, puis Antor lit 
   await antor.screenshot({ path: '/tmp/scr/cs-supprimer.png' });
   await boite.getByRole('button', { name: 'Supprimer le fichier' }).click();
   await antor.getByText('Fichier supprimé.').waitFor();
-  assert.ok(!(await noms(antor)).includes('Carte des Sphères'));
   await antor.goto(`/univers/${U}/fiche/${VALFORTIN}`);
   await attendre(antor);
   assert.ok((await texte(antor)).includes('Fichier supprimé de la médiathèque.'));

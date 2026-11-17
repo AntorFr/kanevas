@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Review tests of kanevas-fiches-liees-bloc-ecran, written from the exit criterion (B-64, E-9 « Fiches liées »,
 // P-6 step 6). Real server in stub mode (with the seed) + real Chromium. Waits are on what the screen shows.
 import assert from 'node:assert/strict';

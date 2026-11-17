@@ -1,3 +1,4 @@
+// ecrans: vue-ensemble
 // Black-box tests of kanevas-arbre-liste (E-8 tree view), written from the task's exit criterion and
 // docs/ecrans.md. World: the stub seed ("Lame d'Ébène"). Real server in stub mode + real Chromium;
 // expected values are literals from the criterion.

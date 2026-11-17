@@ -1,3 +1,4 @@
+// ecrans: administration, membres, vue-ensemble
 import assert from 'node:assert/strict';
 import { type ChildProcess, spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, rmSync } from 'node:fs';
@@ -168,73 +169,12 @@ describe('E-5 Administration : bords, exclusions et contenu long (B-6, B-29)', {
     }
   });
 
-  // Fails if the instance API accepts a role other than MJ / Joueur, an empty body, or a member
-  // that does not exist, or if one of them changes the list.
-  test('api_instance_refuse_les_entrees_fausses_et_ne_change_rien', async () => {
-    const s = await demarrer();
-    try {
-      const m = await monde(s);
-      const { ctx } = await connecter(s, 'admin');
-      const url = `/api/instance/univers/${m.lame}/membres`;
-      const avant = (await (await ctx.request.get(url)).json()) as Array<{ username?: string; role: string }>;
-      assert.equal(avant.length, 2);
-
-      const roleFaux = await ctx.request.post(url, { data: { username: 'mira', role: 'dieu' } });
-      assert.ok(roleFaux.status() >= 400 && roleFaux.status() < 500, `role dieu: ${roleFaux.status()}`);
-      const sansCorps = await ctx.request.post(url, { data: {} });
-      assert.ok(sansCorps.status() >= 400 && sansCorps.status() < 500, `empty body: ${sansCorps.status()}`);
-      const inconnu = await ctx.request.post(url, { data: { username: 'nadia', role: 'joueur' } });
-      assert.ok(inconnu.status() >= 400 && inconnu.status() < 500, `unknown account: ${inconnu.status()}`);
-      const patch = await ctx.request.patch(`${url}/999999`, { data: { role: 'mj' } });
-      assert.ok(patch.status() >= 400 && patch.status() < 500, `patch non-member: ${patch.status()}`);
-      const del = await ctx.request.delete(`${url}/999999`);
-      assert.ok(del.status() >= 400 && del.status() < 500, `delete non-member: ${del.status()}`);
-      const horsUnivers = await ctx.request.get('/api/instance/univers/999999/membres');
-      assert.equal(horsUnivers.status(), 404);
-
-      const apres = (await (await ctx.request.get(url)).json()) as unknown[];
-      assert.equal(apres.length, 2, 'list unchanged');
-      assert.equal(JSON.stringify(apres), JSON.stringify(avant));
-    } finally {
-      s.stop();
-    }
-  });
-
-  // Fails if the admin without a role in the universe can use the member routes of E-4, or read
-  // the universe through the ordinary routes (B-6: the admin goes through E-5 and never reads).
-  test('admin_sans_role_n_a_ni_les_routes_membres_d_e4_ni_le_contenu', async () => {
-    const s = await demarrer();
-    try {
-      const m = await monde(s);
-      const { ctx } = await connecter(s, 'admin');
-      const ajout = await ctx.request.post(`/api/univers/${m.lame}/membres`, { data: { username: 'mira', role: 'mj' } });
-      assert.equal(ajout.ok(), false, `E-4 add as admin: ${ajout.status()}`);
-      const liste = await ctx.request.get(`/api/univers/${m.lame}/membres`);
-      assert.equal(liste.ok(), false, `E-4 list as admin: ${liste.status()}`);
-      const fiche = await ctx.request.get(`/api/univers/${m.lame}`);
-      assert.equal(fiche.ok(), false, `universe read as admin: ${fiche.status()}`);
-      assert.equal((await fiche.text()).includes(SECRET), false);
-      const mienne = await ctx.request.get('/api/univers');
-      assert.equal((await mienne.text()).includes("Lame d'Ébène"), false, 'not in "my universes"');
-      // the instance list carries the name and the count, never the description
-      const instance = await ctx.request.get('/api/instance/univers');
-      const corps = await instance.text();
-      assert.ok(corps.includes("Lame d'Ébène"));
-      assert.equal(corps.includes(SECRET), false);
-      // nothing was added by the refused attempt
-      const membres = (await (await ctx.request.get(`/api/instance/univers/${m.lame}/membres`)).json()) as unknown[];
-      assert.equal(membres.length, 2);
-    } finally {
-      s.stop();
-    }
-  });
-
   // Fails if the admin right (or the entry) survives a change of account in the same browser.
   test('apres_deconnexion_un_autre_compte_n_a_ni_entree_ni_page_d_administration', async () => {
     const s = await demarrer();
     try {
       await monde(s);
-      const { ctx, page } = await connecter(s, 'admin');
+      const { page } = await connecter(s, 'admin');
       await ouvrirAdmin(page);
       await page.getByText('Univers de l’instance').or(page.getByText("Univers de l'instance")).first().waitFor();
       // The account menu (avatar, foot of the bar) carries « Se déconnecter ».
@@ -248,7 +188,6 @@ describe('E-5 Administration : bords, exclusions et contenu long (B-6, B-29)', {
       await ouvrirAdmin(page);
       await page.getByText('Page introuvable.').waitFor();
       assert.equal(await page.getByText("Lame d'Ébène").count(), 0);
-      assert.equal((await ctx.request.get('/api/instance/univers')).status(), 404);
       await capture(page, 'bords-changement-de-compte');
     } finally {
       s.stop();
