@@ -8,7 +8,7 @@ import type { Point } from '../../outils/swn/regles/hex.js';
 import { chargerModule } from '../../wasm/charger.js';
 import { introuvable } from '../erreurs.js';
 import type { Acteur } from '../types.js';
-import { galaxieLisible, zonesLisibles } from './galaxies.js';
+import { galaxieLisible, zonesLisibles, type LigneGalaxie, type NiveauLecture } from './galaxies.js';
 import { entreesBloc, systemesExclusants, tirerEtoileComplete, VERSION_GENERATEUR } from './tirage-etoiles.js';
 
 interface Coeur {
@@ -31,17 +31,27 @@ function leCoeur(): Coeur {
 export interface AstreVue {
   cle: string; genre: 'etoile' | 'planete' | 'lune' | 'comete'; parent_cle: string | null; etoile_rang: number; type: string;
   nom: string | null; orbite: number | null; heure: number; taille: number; aspect: Record<string, unknown>;
+  /** Token of the write (AD-edition-2): a GM outside Player mode only; a drawn body reads 1. */
+  version?: number;
 }
 export interface FormationVue {
   cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number;
+  version?: number;
 }
 export interface InterieurVue {
   q: number; r: number; nom: string | null; etat: 'tire' | 'defini'; transition: number;
   astres: AstreVue[]; formations: FormationVue[]; version_generateur: number;
+  /** GM outside Player mode only (AD-edition-2): the writes are open, and the token of the system (defined: its row's
+   * `version`; drawn: the galaxy's `version`, which a seed or settings change moves). */
+  peutEcrire?: true; versionSysteme?: number;
 }
 
 interface LigneAstre extends Omit<AstreVue, 'aspect'> { aspect: string }
 interface LigneFormation extends Omit<FormationVue, 'parametres'> { parametres: string }
+export interface Tire {
+  etoile: { q: number; r: number; taille: number; lettre: string };
+  astres: AstreVue[]; formations: FormationVue[]; transition: number;
+}
 
 const num = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
 
@@ -101,23 +111,48 @@ export function lireInterieur(
   if (ligne) {
     if (ligne.secret === 1 && niveau !== 'mj') throw introuvable();
     const astres = (db.prepare(`SELECT a.cle, a.genre, p.cle AS parent_cle, a.etoile_rang, a.type, a.nom, a.orbite, a.heure,
-        a.taille, a.aspect FROM swn_astres a LEFT JOIN swn_astres p ON p.id = a.parent_id
+        a.taille, a.aspect, a.version FROM swn_astres a LEFT JOIN swn_astres p ON p.id = a.parent_id
         WHERE a.systeme_id = ? ORDER BY a.id`).all(ligne.id) as LigneAstre[])
       .map((a) => ({ ...a, aspect: JSON.parse(a.aspect) as Record<string, unknown> }));
-    const formations = (db.prepare(`SELECT cle, forme, nom, parametres, etoile_rang FROM swn_formations
+    const formations = (db.prepare(`SELECT cle, forme, nom, parametres, etoile_rang, version FROM swn_formations
         WHERE systeme_id = ? ORDER BY id`).all(ligne.id) as LigneFormation[])
       .map((f) => ({ ...f, parametres: JSON.parse(f.parametres) as Record<string, unknown> }));
-    return composer(q, r, ligne.nom, 'defini', ligne.transition, astres, formations);
+    const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, astres, formations);
+    return niveau === 'mj' ? ouvrirEcriture(vue, ligneVersion(db, ligne.id)) : sansJetons(vue);
   }
   // No row: the star must be the one the block's draw holds at (q, r), with the exclusions of every reader.
+  const tire = lireTire(db, galaxie, niveau, q, r);
+  if (!tire) throw introuvable();
+  const vue = composer(q, r, null, 'tire', tire.transition, tire.astres, tire.formations);
+  return niveau === 'mj' ? ouvrirEcriture(vue, galaxie.version) : sansJetons(vue);
+}
+
+const ligneVersion = (db: Db, systemeId: number): number =>
+  (db.prepare('SELECT version FROM swn_systemes WHERE id = ?').get(systemeId) as { version: number }).version;
+
+/** What only the writing GM holds: the tokens of AD-edition-2 (a drawn body is version 1, what anchoring writes). */
+function ouvrirEcriture(vue: InterieurVue, versionSysteme: number): InterieurVue {
+  for (const x of [...vue.astres, ...vue.formations]) x.version ??= 1;
+  return { ...vue, peutEcrire: true, versionSysteme };
+}
+function sansJetons(vue: InterieurVue): InterieurVue {
+  for (const x of [...vue.astres, ...vue.formations]) delete x.version;
+  return vue;
+}
+
+/**
+ * The system the draw holds at `(q, r)` for this level, with its star, or null: the one place a drawn interior is
+ * computed, which the anchoring of `ecriture-systeme.ts` reuses so that what it freezes is what was read.
+ */
+export function lireTire(db: Db, galaxie: LigneGalaxie, niveau: NiveauLecture, q: number, r: number): Tire | null {
   const bx = Math.floor(q / TAILLE_BLOC), by = Math.floor(r / TAILLE_BLOC);
   const zones = zonesLisibles(db, galaxie.id, niveau).map((z) => ({
     contour: JSON.parse(z.contour) as Point[], plages: z.plages === null ? null : lirePlages(z.plages), densite: z.densite,
   }));
   const entrees = entreesBloc(bx, by, zones, galaxie.densite_defaut, systemesExclusants(db, galaxie.id, { bx, by }, { bx, by }));
   const etoile = tirerEtoileComplete(galaxie.graine, bx, by, entrees);
-  if (!etoile || etoile.q !== q || etoile.r !== r) throw introuvable();
+  if (!etoile || etoile.q !== q || etoile.r !== r) return null;
   const tire = JSON.parse(leCoeur().tirer_systeme(q, r, etoile.taille, etoile.lettre, VERSION_GENERATEUR)) as
     { astres: AstreVue[]; formations: FormationVue[]; transition: number };
-  return composer(q, r, null, 'tire', tire.transition, tire.astres, tire.formations);
+  return { etoile, ...tire };
 }
