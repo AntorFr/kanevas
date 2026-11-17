@@ -37,8 +37,6 @@ export async function semerBattlemap(db: Db, racine: string = attachmentsDir): P
   if (!u || u.systeme_id === null) return;
   const antor = { compteId: assurerCompte(db, 'antor').id };
   poserActivation(db, antor.compteId, { niveau: 'systeme', id: u.systeme_id }, 'battlemap/assets', true);
-  // The generation tool too (AD-battlemap-generation-9): it stays absent without an image engine, which the stub always has.
-  poserActivation(db, antor.compteId, { niveau: 'systeme', id: u.systeme_id }, 'battlemap/generation', true);
   const flux = (c: Rvb) => Readable.from([pngPlat(c)]);
   const ids = new Map<string, string>();
   for (const a of ASSETS) {
