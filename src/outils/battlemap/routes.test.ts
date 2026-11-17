@@ -53,10 +53,10 @@ async function monde(activer = true) {
 }
 const png = (n: number) => pngPlat([n, 10, 10], 8);
 
-test('le semis : 9 assets dont 1 MJ seul, une direction, une référence dans « Éneria d’essai »', async () => {
+test('le semis : 10 assets dont 1 MJ seul, une direction, une référence dans « Éneria d’essai »', async () => {
   const w = await monde();
   const essai = w.E;
-  assert.equal(one(w.app, 'SELECT COUNT(*) n FROM bm_assets WHERE univers_id = ?', essai).n, 9);
+  assert.equal(one(w.app, 'SELECT COUNT(*) n FROM bm_assets WHERE univers_id = ?', essai).n, 10);
   assert.equal(one(w.app, "SELECT COUNT(*) n FROM bm_assets a JOIN fichiers f ON f.id=a.fichier_id WHERE a.univers_id = ? AND f.visibilite='mj'", essai).n, 1);
   assert.equal(one(w.app, 'SELECT COUNT(*) n FROM bm_direction_images WHERE univers_id = ?', essai).n, 1);
   assert.ok(one(w.app, 'SELECT texte FROM bm_direction WHERE univers_id = ?', essai).texte.length > 0);
@@ -79,9 +79,9 @@ test('joueur : lit seulement les assets visibles, écrit et lit la direction →
   const noms = (j: any) => (j.assets ?? j.elements ?? []).map((a: any) => a.nom);
   assert.ok(noms(toutes).includes('secret'));
   assert.ok(!noms(lea.json()).includes('secret'));
-  // 9 seeded (1 GM-only) + 4 added (1 hidden): 13 for the GM, 11 for the player
-  assert.equal(noms(toutes).length, 13);
-  assert.equal(noms(lea.json()).length, 11);
+  // 10 seeded (1 GM-only) + 4 added (1 hidden): 14 for the GM, 12 for the player
+  assert.equal(noms(toutes).length, 14);
+  assert.equal(noms(lea.json()).length, 12);
   assert.ok(!noms(lea.json()).includes('Coffre piégé'));
   const avant = one(w.app, 'SELECT COUNT(*) n FROM bm_assets').n;
   const ecritures: [M, string, any][] = [

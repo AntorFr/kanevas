@@ -19,3 +19,5 @@ export * from './zone-depot';
 export * from './barre-selection';
 export * from './panneau-lateral';
 export * from './vignette-reference';
+export * from './colonne-outils';
+export * from './canevas-carte';

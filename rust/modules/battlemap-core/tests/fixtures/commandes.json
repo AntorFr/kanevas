@@ -1,0 +1,296 @@
+[
+  {
+    "nom": "peindre_sol sur vide, sur existant, doublons",
+    "lot": [
+      {
+        "type": "peindre_sol",
+        "calque": "sol",
+        "cellules": [
+          {
+            "x": 0,
+            "y": 0
+          },
+          {
+            "x": 5,
+            "y": 5
+          },
+          {
+            "x": 5,
+            "y": 5
+          },
+          {
+            "x": 9,
+            "y": 7
+          }
+        ],
+        "asset_id": "herbe"
+      }
+    ]
+  },
+  {
+    "nom": "tracer_mur neuf et sur existant",
+    "lot": [
+      {
+        "type": "tracer_mur",
+        "calque": "murs",
+        "segments": [
+          {
+            "x": 0,
+            "y": 0,
+            "cote": "h"
+          },
+          {
+            "x": 4,
+            "y": 0,
+            "cote": "v"
+          },
+          {
+            "x": 10,
+            "y": 7,
+            "cote": "v"
+          },
+          {
+            "x": 9,
+            "y": 8,
+            "cote": "h"
+          }
+        ],
+        "asset_id": "mur-bois"
+      }
+    ]
+  },
+  {
+    "nom": "poser_porte puis la retirer",
+    "lot": [
+      {
+        "type": "poser_porte",
+        "calque": "murs",
+        "x": 0,
+        "y": 0,
+        "cote": "h",
+        "porte": true
+      },
+      {
+        "type": "poser_porte",
+        "calque": "murs",
+        "x": 4,
+        "y": 0,
+        "cote": "v",
+        "porte": false
+      }
+    ]
+  },
+  {
+    "nom": "poser_element avec index et sans",
+    "lot": [
+      {
+        "type": "poser_element",
+        "id": "n1",
+        "calque": "objets",
+        "asset_id": "lit",
+        "x": 9.5,
+        "y": 0.5
+      },
+      {
+        "type": "poser_element",
+        "id": "n2",
+        "calque": "objets",
+        "asset_id": "lit",
+        "x": 0,
+        "y": 0,
+        "rotation": 90,
+        "miroir": true,
+        "echelle": 0.25,
+        "fiche_id": "fiche-publique",
+        "index": 1
+      }
+    ]
+  },
+  {
+    "nom": "deplacer, pivoter, retourner, mettre à l’échelle",
+    "lot": [
+      {
+        "type": "deplacer_element",
+        "id": "e1",
+        "x": 9,
+        "y": 7.5
+      },
+      {
+        "type": "pivoter_element",
+        "id": "e1",
+        "rotation": 270
+      },
+      {
+        "type": "retourner_element",
+        "id": "e1"
+      },
+      {
+        "type": "retourner_element",
+        "id": "e2"
+      },
+      {
+        "type": "mettre_a_echelle",
+        "id": "e2",
+        "echelle": 4
+      },
+      {
+        "type": "mettre_a_echelle",
+        "id": "e5",
+        "echelle": 0.25
+      }
+    ]
+  },
+  {
+    "nom": "supprimer_element du milieu",
+    "lot": [
+      {
+        "type": "supprimer_element",
+        "id": "e2"
+      }
+    ]
+  },
+  {
+    "nom": "gommer sols, murs et portes",
+    "lot": [
+      {
+        "type": "gommer",
+        "calque": "sol",
+        "cellules": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ]
+      },
+      {
+        "type": "gommer",
+        "calque": "murs",
+        "segments": [
+          {
+            "x": 4,
+            "y": 0,
+            "cote": "v"
+          },
+          {
+            "x": 0,
+            "y": 0,
+            "cote": "h"
+          },
+          {
+            "x": 7,
+            "y": 7,
+            "cote": "h"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "nom": "lier_fiche, lier_fiche sans fiche délie",
+    "lot": [
+      {
+        "type": "lier_fiche",
+        "id": "e2",
+        "fiche_id": "fiche-publique"
+      },
+      {
+        "type": "lier_fiche",
+        "id": "e1"
+      }
+    ]
+  },
+  {
+    "nom": "creer_calque au milieu",
+    "lot": [
+      {
+        "type": "creer_calque",
+        "id": "salle",
+        "nom": "Salle",
+        "genre": "objet",
+        "mj_seul": true,
+        "index": 1
+      }
+    ]
+  },
+  {
+    "nom": "renommer, regler, ordonner un calque",
+    "lot": [
+      {
+        "type": "renommer_calque",
+        "id": "sol",
+        "nom": "Dallage"
+      },
+      {
+        "type": "regler_calque",
+        "id": "murs",
+        "visible": false,
+        "verrouille": true
+      },
+      {
+        "type": "regler_calque",
+        "id": "objets",
+        "mj_seul": true
+      },
+      {
+        "type": "ordonner_calque",
+        "id": "objets",
+        "index": 0
+      }
+    ]
+  },
+  {
+    "nom": "supprimer_calque de sols restitue son contenu",
+    "lot": [
+      {
+        "type": "supprimer_calque",
+        "id": "sol"
+      }
+    ]
+  },
+  {
+    "nom": "supprimer_calque d’objets restitue éléments et ordre",
+    "lot": [
+      {
+        "type": "supprimer_calque",
+        "id": "objets"
+      },
+      {
+        "type": "supprimer_calque",
+        "id": "murs"
+      }
+    ]
+  },
+  {
+    "nom": "redimensionner agrandit puis rétrécit au plus juste",
+    "lot": [
+      {
+        "type": "redimensionner",
+        "largeur": 40,
+        "hauteur": 30
+      },
+      {
+        "type": "redimensionner",
+        "largeur": 12,
+        "hauteur": 9
+      }
+    ]
+  },
+  {
+    "nom": "dupliquer_elements",
+    "lot": [
+      {
+        "type": "dupliquer_elements",
+        "ids": [
+          "e1",
+          "e4"
+        ],
+        "nouveaux_ids": [
+          "d1",
+          "d2"
+        ],
+        "dx": 1,
+        "dy": -0.5
+      }
+    ]
+  }
+]

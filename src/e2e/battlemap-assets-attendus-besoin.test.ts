@@ -128,14 +128,14 @@ describe('bibliothèque et direction — monde semé', () => {
   });
 
   // ---------------------------------------------------------------- B-96, côté joueuse (état semé)
-  test('B-96 · Léa lit la bibliothèque : neuf assets semés moins le MJ seul, aucun contrôle d’écriture', opts, async () => {
+  test('B-96 · Léa lit la bibliothèque : dix assets semés moins le MJ seul, aucun contrôle d’écriture', opts, async () => {
     await ouvrirBibliotheque(lea, uid);
     await lea.getByRole('heading', { name: 'Bibliothèque', level: 1 }).waitFor();
     await carte(lea, 'Tonneau').waitFor();
-    assert.equal(await grille(lea).getByRole('listitem').count(), 8);
+    assert.equal(await grille(lea).getByRole('listitem').count(), 9);
     assert.equal(await carte(lea, 'Coffre piégé').count(), 0, 'le MJ seul est absent (pas refusé, absent)');
-    await segment(lea, 'Tous', 8).waitFor();
-    assert.equal(await segment(lea, 'Tous', 9).count(), 0, 'le compte ne trahit pas le MJ seul');
+    await segment(lea, 'Tous', 9).waitFor();
+    assert.equal(await segment(lea, 'Tous', 10).count(), 0, 'le compte ne trahit pas le MJ seul');
     await segment(lea, 'Sols', 3).waitFor();
     for (const nom of ['Ajouter des images', 'Choisir dans la médiathèque', 'Retirer…']) {
       assert.equal(await lea.getByRole('button', { name: nom }).count(), 0, `pas de « ${nom} »`);
@@ -170,7 +170,7 @@ describe('bibliothèque et direction — monde semé', () => {
     assert.equal((await lea.request.get(`/api/univers/${uid}/fichiers/${visible.fichierId}`)).status(), 200);
     assert.equal((await lea.request.get(`/api/univers/${uid}/fichiers/${cache.fichierId}`)).status(), 404);
     const laListe = (await api(lea, uid, 'assets')).corps.assets.map((a: Any) => a.nom);
-    assert.equal(laListe.length, 8);
+    assert.equal(laListe.length, 9);
     assert.ok(!laListe.includes('Coffre piégé'));
   });
 
@@ -203,7 +203,7 @@ describe('bibliothèque et direction — monde semé', () => {
     await antor.getByText(rx('3 images ajoutées.')).waitFor();
     for (const nom of ['couchette-a', 'couchette-b', 'console']) await carte(antor, nom).waitFor();
     await segment(antor, 'Objets', 6).waitFor();
-    await segment(antor, 'Tous', 12).waitFor();
+    await segment(antor, 'Tous', 13).waitFor();
     // Nommé depuis le fichier (extension ôtée), catégorie du dépôt, 1×1 par défaut pour un objet.
     const apres = await listeAssets(antor, uid);
     const a = apres.find((x: Any) => x.nom === 'couchette-a');
@@ -236,7 +236,7 @@ describe('bibliothèque et direction — monde semé', () => {
     await carte(antor, 'mur-nord').waitFor();
     const m = (await listeAssets(antor, uid)).find((x: Any) => x.nom === 'mur-nord');
     assert.deepEqual([m.categorie, m.largeur, m.hauteur], ['mur', null, null]);
-    await segment(antor, 'Murs', 1).waitFor();
+    await segment(antor, 'Murs', 2).waitFor();
   });
 
   test('B-97 · un fichier qui n’est pas une image est refusé par son nom sans bloquer les autres', opts, async () => {
@@ -303,7 +303,7 @@ describe('bibliothèque et direction — monde semé', () => {
   test('B-97 · les étiquettes « bois » et « taverne » se combinent en ET : seul « Tonneau » porte les deux', opts, async () => {
     await ouvrirBibliotheque(antor, uid);
     await carte(antor, 'Tonneau').waitFor();
-    await attendreCartes(antor, 14);
+    await attendreCartes(antor, 15);
     await antor.getByRole('button', { name: 'bois', exact: true }).click();
     await antor.getByRole('button', { name: 'taverne', exact: true }).click();
     await attendreCartes(antor, 1);

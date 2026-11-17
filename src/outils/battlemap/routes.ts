@@ -7,6 +7,7 @@ import {
   ajouterAsset, ajouterAssetDepuisFichier, compterUsage, listerAssets, listerFichiersDisponibles, modifierAssets, retirerAssets,
   type SaisieAsset,
 } from '../../services/battlemap-assets.js';
+import { appliquerCommandes, creerCarte, lireCarte, reglerCarte, supprimerCarte } from '../../services/battlemap-cartes.js';
 import {
   ajouterReference, ajouterReferenceDepuisFichier, ecrireDirection, legenderReference, lireDirection, retirerReference,
 } from '../../services/battlemap-direction.js';
@@ -159,4 +160,33 @@ export function routesBattlemap(app: FastifyInstance, garde: (cle: string) => pr
 
   app.patch(`${RACINE}/direction/images/:fid`, opts, proteger((request) =>
     legenderReference(app.db, acteur(request), univers(request), entier((request.params as { fid: string }).fid), corps(request).legende)));
+
+  // ---- Composed maps (AD-battlemap-editeur-2). Same guard as the generic routes of `routes/outils.ts`, which these shadow for this
+  // tool; a service refusal (`introuvable` for a hidden map, `refuse` in Player mode, `conflit`, `invalide`) is worded by the common handler.
+  const cartes = { preHandler: garde('battlemap/cartes') };
+  const carte = (request: Req) => entier((request.params as { cid: string }).cid);
+
+  app.post(`${RACINE}/cartes`, cartes, (request, reply) => {
+    const b = corps(request);
+    return reply.code(201).send(creerCarte(app.db, acteur(request), univers(request), { titre: b.titre, largeur: b.largeur, hauteur: b.hauteur }));
+  });
+
+  app.get(`${RACINE}/cartes/:cid(^[0-9]+$)`, cartes, (request) => lireCarte(app.db, acteur(request), univers(request), carte(request)));
+
+  app.post(`${RACINE}/cartes/:cid(^[0-9]+$)/commandes`, cartes, (request) => {
+    const b = corps(request);
+    return appliquerCommandes(app.db, acteur(request), univers(request), carte(request), b.version, b.commandes);
+  });
+
+  app.patch(`${RACINE}/cartes/:cid(^[0-9]+$)`, cartes, (request) => {
+    const { version, ...reglages } = corps(request);
+    return reglerCarte(app.db, acteur(request), univers(request), carte(request), version, {
+      titre: reglages.titre, visible: reglages.visible, tailleCase: reglages.tailleCase, largeur: reglages.largeur, hauteur: reglages.hauteur,
+    });
+  });
+
+  app.delete(`${RACINE}/cartes/:cid(^[0-9]+$)`, cartes, (request, reply) => {
+    supprimerCarte(app.db, acteur(request), univers(request), carte(request));
+    return reply.code(204).send();
+  });
 }
