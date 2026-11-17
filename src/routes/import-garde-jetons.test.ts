@@ -26,7 +26,7 @@ async function monter() {
   const antor = await connecter(app, 'antor');
   await connecter(app, 'lea');
   const cree = async (nom: string) =>
-    (await app.inject({ method: 'POST', url: '/api/univers', headers: antor, payload: { nom } })).json() as { id: number };
+    (await app.inject({ method: 'POST', url: '/api/univers', headers: antor, payload: { nom } })).json() as { lotId: number };
   const u = await cree('Alpha');
   const v = await cree('Beta');
   const id = (n: string) => trouverCompte(app.db, n)!.id;
@@ -153,4 +153,56 @@ test('jeton d’outils : 401 jeton_invalide sur /api/v1/univers/<clé>/ et sur l
     assert.equal(r.statusCode, 401, r.body);
     assert.deepEqual(r.json(), INVALIDE);
   }
+});
+
+test('lot : un jeton de joueur ne lit ni ne clôt le lot du MJ (404), le MJ et le jeton propriétaire le font', async () => {
+  const { app, u, cle, bearer, jeton } = await monter();
+  const base = `/api/v1/univers/${cle(u)}`;
+  const mj = jeton({ tous: false, univers: [{ universId: u.id, niveau: 'ecriture' }] } as never);
+  const lot = (await app.inject({ method: 'POST', url: `${base}/lots`, headers: bearer(mj.valeur) })).json() as { lotId: number };
+  ajouterMembreNoyau(app.db, u.id, 'lea', 'joueur');
+  const joueur = jeton({ tous: false, univers: [{ universId: u.id, niveau: 'ecriture' }] } as never, 'lea');
+  const lu = await app.inject({ method: 'GET', url: `${base}/lots/${lot.lotId}`, headers: bearer(joueur.valeur) });
+  assert.equal(lu.statusCode, 404, lu.body);
+  const clos = await app.inject({ method: 'POST', url: `${base}/lots/${lot.lotId}/clore`, headers: bearer(joueur.valeur) });
+  assert.equal(clos.statusCode, 404, clos.body);
+  assert.equal((app.db.prepare('SELECT clos_le FROM lots_import WHERE id = ?').get(lot.lotId) as { clos_le: string | null }).clos_le, null);
+  // même silence qu'un lot inconnu
+  const inconnu = await app.inject({ method: 'GET', url: `${base}/lots/999999`, headers: bearer(joueur.valeur) });
+  assert.equal(inconnu.statusCode, 404);
+  assert.equal(inconnu.body, lu.body);
+  // le propriétaire et un autre jeton MJ lisent
+  assert.equal((await app.inject({ method: 'GET', url: `${base}/lots/${lot.lotId}`, headers: bearer(mj.valeur) })).statusCode, 200);
+  const autreMj = jeton({ tous: false, univers: [{ universId: u.id, niveau: 'lecture' }] } as never);
+  assert.equal((await app.inject({ method: 'GET', url: `${base}/lots/${lot.lotId}`, headers: bearer(autreMj.valeur) })).statusCode, 200);
+});
+
+test('lot : un MJ devenu joueur relit le lot que son jeton a ouvert', async () => {
+  const { app, u, id, cle, bearer, jeton } = await monter();
+  const base = `/api/v1/univers/${cle(u)}`;
+  ajouterMembreNoyau(app.db, u.id, 'lea', 'mj');
+  const t = jeton({ tous: false, univers: [{ universId: u.id, niveau: 'ecriture' }] } as never, 'lea');
+  const lot = (await app.inject({ method: 'POST', url: `${base}/lots`, headers: bearer(t.valeur) })).json() as { lotId: number };
+  changerRoleNoyau(app.db, u.id, id('lea'), 'joueur');
+  assert.equal((await app.inject({ method: 'GET', url: `${base}/lots/${lot.lotId}`, headers: bearer(t.valeur) })).statusCode, 200);
+});
+
+test('fiche existante : un jeton de joueur en écriture ne la modifie pas par PUT /fiches/:cle, fichiers joints à une section MJ compris', async () => {
+  const { app, u, cle, bearer, jeton } = await monter();
+  const base = `/api/v1/univers/${cle(u)}`;
+  const mj = jeton({ tous: false, univers: [{ universId: u.id, niveau: 'ecriture' }] } as never);
+  const section = { cle: 'sec', titre: 'Secret', contenu: 'x', joueursLisent: false, joueursEcrivent: false };
+  const p = await app.inject({ method: 'PUT', url: `${base}/fiches/pnj`, headers: bearer(mj.valeur), payload: { titre: 'Original', type: 'personnage', sections: [section] } });
+  assert.ok(p.statusCode < 300, p.body);
+  ajouterMembreNoyau(app.db, u.id, 'lea', 'joueur');
+  const joueur = jeton({ tous: false, univers: [{ universId: u.id, niveau: 'ecriture' }] } as never, 'lea');
+  for (const payload of [
+    { titre: 'Pris', type: 'personnage' },
+    { titre: 'Original', type: 'personnage', sections: [{ ...section, fichiers: ['portrait'] }] },
+  ]) {
+    const r = await app.inject({ method: 'PUT', url: `${base}/fiches/pnj`, headers: bearer(joueur.valeur), payload });
+    assert.equal(r.statusCode, 403, r.body);
+  }
+  assert.equal((app.db.prepare('SELECT titre FROM fiches WHERE univers_id = ?').get(u.id) as { titre: string }).titre, 'Original');
+  assert.equal((app.db.prepare('SELECT COUNT(*) n FROM fichiers_attente WHERE univers_id = ?').get(u.id) as { n: number }).n, 0);
 });
