@@ -267,3 +267,101 @@ describe('niveaux ecrans : import.meta.glob (AD-touches-4)', () => {
     assert.equal(depot.liste({ 'frontend/src/ecrans/d/fantome.ts': 'export const x = 2;' }).length, 4);
   });
 });
+
+describe('niveaux ecrans : modules Rust (AD-touches-5)', () => {
+  const CHARGEUR = "export function chargerModule(nom: string) { return import('../../../rust/pkg/exemple/exemple.js'); }\nexport const t = import('../../../rust/pkg/m/m.js');";
+  const arbre = {
+    'frontend/src/wasm/charger.ts': CHARGEUR,
+    'frontend/src/ecrans/a.tsx': "import { vue } from './a/vue';\nexport default {};",
+    'frontend/src/ecrans/a/vue.ts': "import { chargerModule } from '../../wasm/charger';\nexport const vue = chargerModule('m');",
+    'frontend/src/ecrans/b.tsx': "import { chargerModule } from '../wasm/charger';\nexport default {};\nexport const x = chargerModule('autre');",
+    'frontend/src/ecrans/c.tsx': "import * as glue from '../../../rust/pkg/direct/direct.js';\nexport default glue;",
+    'frontend/src/ecrans/d.tsx': "import { chargerModule } from '../wasm/charger';\nexport default {};\n// chargerModule('m')\nconst s = \"chargerModule('m')\";",
+    'frontend/src/ecrans/e.tsx': 'export default {};',
+    'frontend/src/wasm/essai/essai.ts': "import { chargerModule } from '../charger';\nchargerModule('z');",
+    'rust/modules/m/src/lib.rs': '// m',
+    'rust/modules/m/Cargo.toml': '[package]',
+    'rust/modules/z/src/lib.rs': '// z',
+    'rust/modules/autre/src/lib.rs': '// autre',
+    'rust/modules/direct/src/lib.rs': '// direct',
+    'rust/Cargo.lock': '# lock',
+    'rust/Cargo.toml': '[workspace]',
+    'rust/rust-toolchain.toml': '[toolchain]',
+    [T('a')]: test_('a'), [T('b')]: test_('b'), [T('c')]: test_('c'), [T('d')]: test_('d'), [T('e')]: test_('e'),
+  };
+  let depot: ReturnType<typeof depotDEssai>;
+  before(() => { depot = depotDEssai(arbre); });
+  after(() => depot.nettoyer());
+
+  test('un module chargé par un appel littéral ne touche que l’écran dont le graphe contient l’appel', () => {
+    assert.deepEqual(depot.liste({ 'rust/modules/m/src/lib.rs': '// m2' }), [T('a')]);
+    assert.deepEqual(depot.liste({ 'rust/modules/m/Cargo.toml': '[package]\n# 2' }), [T('a')]);
+  });
+
+  test('un module chargé par l’import de son glue ne touche que la page qui l’importe', () => {
+    assert.deepEqual(depot.liste({ 'rust/modules/direct/src/lib.rs': '// d2' }), [T('c')]);
+  });
+
+  test('un module que nulle page ne charge (seul le chargeur et la page d’épreuve le nomment) ne touche aucun écran', () => {
+    assert.deepEqual(depot.liste({ 'rust/modules/z/src/lib.rs': '// z2' }), []);
+  });
+
+  test('un appel dans un commentaire ou une chaîne n’est pas un lien', () => {
+    assert.ok(!depot.liste({ 'rust/modules/m/src/lib.rs': '// m3' }).includes(T('d')));
+  });
+
+  test('Cargo.lock, Cargo.toml et rust-toolchain.toml touchent les écrans qui atteignent un module', () => {
+    const attendu = [T('a'), T('b'), T('c')];
+    assert.deepEqual(depot.liste({ 'rust/Cargo.lock': '# lock2' }), attendu);
+    assert.deepEqual(depot.liste({ 'rust/Cargo.toml': '[workspace]\n# 2' }), attendu);
+    assert.deepEqual(depot.liste({ 'rust/rust-toolchain.toml': '[toolchain]\n# 2' }), attendu);
+  });
+
+  test('la page d’épreuve du Wasm ne touche aucun écran', () => {
+    assert.deepEqual(depot.liste({ 'frontend/src/wasm/essai/essai.ts': "import { chargerModule } from '../charger';\nchargerModule('z');\n// 2" }), []);
+  });
+
+  test('le chargeur suit le graphe ordinaire : il touche les pages qui l’importent, et seulement elles', () => {
+    assert.deepEqual(depot.liste({ 'frontend/src/wasm/charger.ts': CHARGEUR + '\n// 2' }), [T('a'), T('b'), T('d')]);
+  });
+});
+
+describe('niveaux ecrans : modules Rust, nom non littéral et Cargo sans module chargé (AD-touches-5)', () => {
+  const arbre = {
+    'frontend/src/wasm/charger.ts': 'export function chargerModule(nom: string) { return nom; }',
+    'frontend/src/ecrans/a.tsx': "import { chargerModule } from '../wasm/charger';\nconst n = 'm';\nexport const v = chargerModule(n);\nexport default {};",
+    'frontend/src/ecrans/b.tsx': 'export default {};',
+    'rust/modules/m/src/lib.rs': '// m',
+    'rust/modules/z/src/lib.rs': '// z',
+    'rust/Cargo.lock': '# lock',
+    [T('a')]: test_('a'), [T('b')]: test_('b'),
+  };
+  let depot: ReturnType<typeof depotDEssai>;
+  before(() => { depot = depotDEssai(arbre); });
+  after(() => depot.nettoyer());
+
+  test('un nom non littéral relie la page à tous les modules', () => {
+    assert.deepEqual(depot.liste({ 'rust/modules/m/src/lib.rs': '// m2' }), [T('a')]);
+    assert.deepEqual(depot.liste({ 'rust/modules/z/src/lib.rs': '// z2' }), [T('a')]);
+    assert.deepEqual(depot.liste({ 'rust/Cargo.lock': '# lock2' }), [T('a')]);
+  });
+});
+
+describe('niveaux ecrans : rust/ sans aucune page qui charge un module (AD-niveau-3)', () => {
+  const arbre = {
+    'frontend/src/ecrans/a.tsx': 'export default {};',
+    'rust/modules/m/src/lib.rs': '// m',
+    'rust/Cargo.lock': '# lock',
+    'rust/Cargo.toml': '[workspace]',
+    [T('a')]: test_('a'),
+  };
+  let depot: ReturnType<typeof depotDEssai>;
+  before(() => { depot = depotDEssai(arbre); });
+  after(() => depot.nettoyer());
+
+  test('rust/ ne touche plus tous les écrans : aucun, ni module ni Cargo', () => {
+    assert.deepEqual(depot.liste({ 'rust/modules/m/src/lib.rs': '// m2' }), []);
+    assert.deepEqual(depot.liste({ 'rust/Cargo.lock': '# lock2' }), []);
+    assert.deepEqual(depot.liste({ 'rust/Cargo.toml': '[workspace]\n# 2' }), []);
+  });
+});
