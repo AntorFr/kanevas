@@ -180,6 +180,56 @@ export function ajouterSection(
   return vueSection(db, universId, 'mj', chargerSection(db, ficheId, id), { compteId });
 }
 
+/**
+ * The GM puts back a section deleted earlier, under its former key, at the end of the sheet (B-103,
+ * AD-147): the text and the audience as they were. A section carrying the key since is `cle_prise`.
+ */
+export function recreerSection(
+  db: Db,
+  compteId: number,
+  universId: number,
+  ficheId: number,
+  avant: {
+    cle: string;
+    titre: string;
+    contenu: string;
+    joueursLisent: number;
+    joueursEcrivent: number;
+    auteurId: number | null;
+    auteurLit: number;
+    auteurEcrit: number;
+  },
+): SectionVue {
+  exigerMJ(db, universId, compteId);
+  chargerFiche(db, universId, ficheId);
+  const id = ecrire(db, compteId, () => {
+    if (db.prepare('SELECT 1 FROM sections WHERE fiche_id = ? AND cle = ?').get(ficheId, avant.cle)) {
+      throw new ErreurService('conflit', 'Une autre section porte déjà cette clé.', 'cle_prise');
+    }
+    validerContenu(avant.contenu);
+    const { n } = db
+      .prepare('SELECT COALESCE(MAX(ordre), 0) AS n FROM sections WHERE fiche_id = ?')
+      .get(ficheId) as { n: number };
+    const now = new Date().toISOString();
+    const sid = insererSection(db, {
+      ficheId,
+      titre: avant.titre,
+      cle: avant.cle,
+      ordre: n + 1,
+      contenu: avant.contenu,
+      modifieLe: now,
+      joueursLisent: avant.joueursLisent,
+      joueursEcrivent: avant.joueursEcrivent,
+      auteurId: avant.auteurId,
+      auteurLit: avant.auteurLit,
+      auteurEcrit: avant.auteurEcrit,
+    });
+    toucherFiche(db, ficheId, now);
+    return sid;
+  });
+  return vueSection(db, universId, 'mj', chargerSection(db, ficheId, id), { compteId });
+}
+
 /** The GM renames a section. */
 export function renommerSection(
   db: Db,
