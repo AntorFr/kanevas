@@ -49,7 +49,7 @@ export function lireEchecEdition(e: unknown): EchecEdition {
 /** The message of a failure inside a dialog, with « Recharger » or « Réessayer » when it has one. */
 export function MessageEchec({ echec, onRecharger, onReessayer }: { echec: EchecEdition; onRecharger: () => void; onReessayer?: () => void }) {
   return (
-    <div className="gx-echec">
+    <div className="ed-echec">
       <p className="echec" role="alert">{echec.message}</p>
       {echec.recharger && <Bouton petit onClick={onRecharger}>Recharger</Bouton>}
       {echec.sorte === 'autre' && onReessayer && <Bouton petit onClick={onReessayer}>Réessayer</Bouton>}

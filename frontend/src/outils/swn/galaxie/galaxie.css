@@ -34,7 +34,7 @@
 .gx-systeme:focus-visible .gx-halo, .gx-systeme:focus-visible .gx-point { stroke: var(--focus); stroke-width: 3; }
 .gx-chargement { position: absolute; left: var(--e-3); top: var(--e-3); margin: 0; padding: var(--e-1) var(--e-3); background: var(--surface-2); border-radius: var(--rayon-item); color: var(--texte-2); }
 .gx-etiquette { position: absolute; transform: translate(-50%, -100%); margin: 0; padding: var(--e-1) var(--e-2); background: var(--surface-3); color: var(--texte); border: 1px solid var(--bord-fort); border-radius: var(--rayon-item); font-size: var(--t-13); white-space: nowrap; pointer-events: none; }
-.gx-echec { position: absolute; left: var(--e-3); right: 64px; bottom: 56px; margin: 0; }
+.cs-echec { position: absolute; left: var(--e-3); right: 64px; bottom: 56px; margin: 0; }
 .gx-zoom { position: absolute; right: var(--e-2); top: var(--e-2); display: flex; flex-direction: column; gap: var(--e-2); }
 .gx-zoom .bouton { min-width: 44px; min-height: 44px; justify-content: center; }
 .gx-legende-zone { position: absolute; left: var(--e-2); bottom: var(--e-2); display: flex; flex-direction: column-reverse; gap: var(--e-2); align-items: flex-start; }
@@ -205,6 +205,6 @@
 
 /* E-23 writes (kanevas-carte-spatiale-edition-ancrage): a long name is cut with « … » (whole in `title`); a failure sits in its dialog. */
 .cs-nom { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.gx-echec { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); margin-top: var(--e-2); }
-.gx-echec .echec { margin: 0; color: var(--danger); }
+.ed-echec { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); margin-top: var(--e-2); }
+.ed-echec .echec { margin: 0; color: var(--danger); }
 .gx-systeme-page .gx-entete .menu-racine { margin-left: var(--e-1); }
