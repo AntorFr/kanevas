@@ -1,3 +1,4 @@
+import { ecrire } from './historique.js';
 import type { Db } from '../db/db.js';
 import { baseCleFiche, baseCleUnivers, cleFicheValide, cleUniversValide, CLE_FICHE_MAX, CLE_UNIVERS_MAX, estId, slug, suffixer } from './cles-forme.js';
 import { exigerRole, peutVoirFiche, roleDe } from './droits.js';
@@ -75,7 +76,7 @@ export function changerCleFiche(
     throw cleInvalide('Clé : minuscules, chiffres, « - » et « _ », au plus un « : », de 2 à 200 caractères, avec au moins une lettre.');
   }
   if (cle === fiche.cle) return { cle, ancienne: null };
-  return db.transaction(() => {
+  return ecrire(db, acteur.compteId, () => {
     const autre = db.prepare('SELECT 1 FROM fiches WHERE univers_id = ? AND cle = ? AND id <> ?').get(universId, cle, ficheId);
     const ancienne = db.prepare('SELECT fiche_id FROM cles_anciennes WHERE univers_id = ? AND cle = ?').get(universId, cle) as
       | { fiche_id: number }
@@ -85,7 +86,7 @@ export function changerCleFiche(
     db.prepare('UPDATE fiches SET cle = ? WHERE id = ?').run(cle, ficheId);
     db.prepare('INSERT OR REPLACE INTO cles_anciennes (univers_id, cle, fiche_id) VALUES (?, ?, ?)').run(universId, fiche.cle, ficheId);
     return { cle, ancienne: fiche.cle };
-  })();
+  });
 }
 
 /** Same for a universe: unique on the instance, its form is narrower (2 to 40, lowercase letters, digits, hyphens). */

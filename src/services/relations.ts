@@ -1,3 +1,4 @@
+import { ecrire } from './historique.js';
 import type { Db } from '../db/db.js';
 import { exigerRole, peutLireSection, peutVoirFiche } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
@@ -72,7 +73,7 @@ export function relierSection(
     throw new ErreurService('invalide', 'Cette nature ne relie pas ces deux types de fiches.', 'nature_incompatible');
   }
   const symetrique = nature !== '' && natureDe(nature)?.symetrique === true;
-  return db.transaction((): Relation => {
+  return ecrire(db, compteId, (): Relation => {
     const doublon = db
       .prepare(
         'SELECT 1 FROM relations WHERE section_id = ? AND cible_fiche_id = ? AND nature = ? AND qualificatif = ?',
@@ -111,7 +112,7 @@ export function relierSection(
       qualificatif,
       cible: { id: cible.id, titre: cible.titre, type: cible.type, ...chargeDeCible(cible.type, cible.charge) },
     };
-  })();
+  });
 }
 
 /** The GM removes a relation (a real deletion) of this universe. */
@@ -122,12 +123,14 @@ export function retirerRelation(
   relationId: number,
 ): void {
   exigerMJCache(db, universId, compteId);
-  const info = db
-    .prepare(
-      `DELETE FROM relations WHERE id = ? AND section_id IN
+  const info = ecrire(db, compteId, () =>
+    db
+      .prepare(
+        `DELETE FROM relations WHERE id = ? AND section_id IN
          (SELECT s.id FROM sections s JOIN fiches f ON f.id = s.fiche_id WHERE f.univers_id = ?)`,
-    )
-    .run(relationId, universId);
+      )
+      .run(relationId, universId),
+  );
   if (info.changes === 0) throw introuvable();
 }
 

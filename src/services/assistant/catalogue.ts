@@ -1,3 +1,4 @@
+import { sousOrigine } from '../historique.js';
 import { Readable } from 'node:stream';
 import { z } from 'zod';
 import type { Db } from '../../db/db.js';
@@ -242,7 +243,15 @@ export function catalogueDe(
     }
   }
 
-  return { role, outils };
+  // Every write a tool makes carries the origin `assistant` (AD-147), the async ones included.
+  return {
+    role,
+    outils: outils.map((o) => ({
+      ...o,
+      executer: (args: unknown, contexte?: ContexteDemande) =>
+        sousOrigine({ origine: 'assistant' }, () => o.executer(args, contexte)),
+    })),
+  };
 }
 
 /** `image-<date>-<time>.png`, in UTC. */

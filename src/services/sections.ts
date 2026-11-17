@@ -9,6 +9,7 @@ import {
   vueSection,
 } from './droits.js';
 import { tirerCleSection } from './cles.js';
+import { ecrire, ecrireSysteme } from './historique.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { chargerFiche, validerTitre } from './fiches.js';
 import { preparerContenu, remplacerLiens, resoudreLiens, sectionsEnAttenteDe } from './liens.js';
@@ -105,6 +106,10 @@ export function poserContenu(db: Db, sectionId: number, contenu: string, now: st
  * Neither `version`, nor `version_importee`, nor `modifie_le` moves: the text is not edited, only resolved.
  */
 export function resoudreClesEnAttente(db: Db, universId: number, cle: string, ficheId: number): void {
+  ecrireSysteme(db, () => resoudreEnAttente(db, universId, cle, ficheId));
+}
+
+function resoudreEnAttente(db: Db, universId: number, cle: string, ficheId: number): void {
   const attendent = sectionsEnAttenteDe(db, universId, cle);
   for (const { id, contenu } of attendent) {
     const neuf = reecrireLiens(contenu, extraireLiens(contenu), (l) =>
@@ -156,7 +161,7 @@ export function ajouterSection(
   const titre = validerTitre(entree.titre, 80, 'Le titre');
   validerContenu(entree.contenu ?? '');
   const now = new Date().toISOString();
-  const id = db.transaction(() => {
+  const id = ecrire(db, compteId, () => {
     const contenu = preparerContenu(db, universId, compteId, entree.contenu ?? '');
     validerContenu(contenu);
     const { n } = db
@@ -171,7 +176,7 @@ export function ajouterSection(
     });
     toucherFiche(db, ficheId, now);
     return sid;
-  })();
+  });
   return vueSection(db, universId, 'mj', chargerSection(db, ficheId, id), { compteId });
 }
 
@@ -188,7 +193,7 @@ export function renommerSection(
   chargerFiche(db, universId, ficheId);
   chargerSection(db, ficheId, sectionId);
   const t = validerTitre(titre, 80, 'Le titre');
-  db.prepare('UPDATE sections SET titre = ? WHERE id = ?').run(t, sectionId);
+  ecrire(db, compteId, () => db.prepare('UPDATE sections SET titre = ? WHERE id = ?').run(t, sectionId));
   return vueSection(db, universId, 'mj', chargerSection(db, ficheId, sectionId), { compteId });
 }
 
@@ -202,7 +207,7 @@ export function reordonnerSections(
 ): void {
   exigerMJ(db, universId, compteId);
   chargerFiche(db, universId, ficheId);
-  db.transaction(() => {
+  ecrire(db, compteId, () => {
     const existants = (
       db.prepare('SELECT id FROM sections WHERE fiche_id = ?').all(ficheId) as { id: number }[]
     ).map((r) => r.id);
@@ -216,7 +221,7 @@ export function reordonnerSections(
     }
     renumeroter(db, ficheId, ids);
     toucherFiche(db, ficheId, new Date().toISOString());
-  })();
+  });
 }
 
 /** The GM removes a section (a sheet itself is never deleted); the others are renumbered 1..n. */
@@ -231,7 +236,7 @@ export function retirerSection(
   chargerFiche(db, universId, ficheId);
   chargerSection(db, ficheId, sectionId);
   // The CASCADE drops the references; the files stay in the media library (AD-105, AD-111).
-  db.transaction(() => {
+  ecrire(db, compteId, () => {
     db.prepare('DELETE FROM sections WHERE id = ?').run(sectionId);
     const restants = (
       db.prepare('SELECT id FROM sections WHERE fiche_id = ? ORDER BY ordre').all(ficheId) as {
@@ -240,7 +245,7 @@ export function retirerSection(
     ).map((r) => r.id);
     renumeroter(db, ficheId, restants);
     toucherFiche(db, ficheId, new Date().toISOString());
-  })();
+  });
 }
 
 export interface ChangementAudience {
@@ -274,16 +279,20 @@ export function changerAudience(
   const bit = (v: boolean | undefined, actuel: number) => (v === undefined ? actuel : v ? 1 : 0);
   // No author, no author rights: they would have no one to apply to.
   const sans = auteurId === null;
-  db.prepare(
-    `UPDATE sections SET joueurs_lisent = ?, joueurs_ecrivent = ?, auteur_id = ?,
+  ecrire(db, compteId, () =>
+    db
+      .prepare(
+        `UPDATE sections SET joueurs_lisent = ?, joueurs_ecrivent = ?, auteur_id = ?,
        auteur_lit = ?, auteur_ecrit = ? WHERE id = ?`,
-  ).run(
-    bit(changement.joueursLisent, s.joueurs_lisent),
-    bit(changement.joueursEcrivent, s.joueurs_ecrivent),
-    auteurId,
-    sans ? 0 : bit(changement.auteurLit, s.auteur_lit),
-    sans ? 0 : bit(changement.auteurEcrit, s.auteur_ecrit),
-    sectionId,
+      )
+      .run(
+        bit(changement.joueursLisent, s.joueurs_lisent),
+        bit(changement.joueursEcrivent, s.joueurs_ecrivent),
+        auteurId,
+        sans ? 0 : bit(changement.auteurLit, s.auteur_lit),
+        sans ? 0 : bit(changement.auteurEcrit, s.auteur_ecrit),
+        sectionId,
+      ),
   );
   return vueSection(db, universId, 'mj', chargerSection(db, ficheId, sectionId), { compteId });
 }
@@ -322,7 +331,7 @@ export function ecrireContenu(
 ): SectionVue {
   const role = exigerRole(db, universId, compteId);
   chargerFiche(db, universId, ficheId);
-  return db.transaction(() => {
+  return ecrire(db, compteId, () => {
     const s = chargerSection(db, ficheId, sectionId);
     if (!peutEcrireSection(role, s, compteId)) {
       if (!peutLireSection(role, s, { compteId })) throw introuvable();
@@ -347,7 +356,7 @@ export function ecrireContenu(
     }
     toucherFiche(db, ficheId, now);
     return vueSection(db, universId, role, chargerSection(db, ficheId, sectionId), { compteId });
-  })();
+  });
 }
 
 brancherRetrait(retirerSection);

@@ -1,3 +1,4 @@
+import { ecrire } from './historique.js';
 import type { Db } from '../db/db.js';
 import { exigerMJ, exigerRole } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
@@ -26,10 +27,14 @@ function nombreMJ(db: Db, universId: number): number {
  * becomes GM, they stop being the author of the sections of this universe.
  */
 function effacerAuteur(db: Db, universId: number, compteId: number): void {
-  db.prepare(
-    `UPDATE sections SET auteur_id = NULL, auteur_lit = 0, auteur_ecrit = 0
+  ecrire(db, null, () =>
+    db
+      .prepare(
+        `UPDATE sections SET auteur_id = NULL, auteur_lit = 0, auteur_ecrit = 0
      WHERE auteur_id = ? AND fiche_id IN (SELECT id FROM fiches WHERE univers_id = ?)`,
-  ).run(compteId, universId);
+      )
+      .run(compteId, universId),
+  );
 }
 
 /**
