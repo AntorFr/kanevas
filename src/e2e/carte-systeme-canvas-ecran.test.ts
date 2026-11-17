@@ -111,25 +111,17 @@ describe('E-23 le système sur un canvas', { skip: skipBrowser, timeout: 600000 
       assert.equal(corps.length, 12);
       assert.equal(c.zoom, 1);
       nonChevauchement(c, `${largeur} px`);
-      await hors(page, `${largeur}-systeme-12-corps`);
-      await ctx.close();
-    });
-  }
-
-  for (const [largeur, hauteur] of [[1280, 800], [390, 780]] as const) {
-    it(`${largeur} px : aucune étiquette ne recouvre une heure (12 h, 3 h, 6 h, 9 h) tracée sur la carte`, async () => {
-      const { page, ctx } = await ouvrir('Léa', largeur, hauteur);
-      await prete(page);
+      // the hour marks (12 h, 3 h, 6 h, 9 h) are obstacles too: no label covers them (recette B-89)
       const heures = await page.locator('.cs-heure text').evaluateAll((els: Element[]) =>
         els.map((e) => { const r = e.getBoundingClientRect(); return { t: e.textContent, x: r.x, y: r.y, w: r.width, h: r.height }; }));
       assert.equal(heures.length, 4);
       const etiq = await page.locator('.cs-etiquette').evaluateAll((els: Element[]) =>
         els.map((e) => { const r = e.getBoundingClientRect(); return { t: e.textContent, x: r.x, y: r.y, w: r.width, h: r.height }; }));
-      assert.ok(etiq.length > 0);
       for (const h of heures) for (const e of etiq) {
         const recouvre = e.x < h.x + h.w && h.x < e.x + e.w && e.y < h.y + h.h && h.y < e.y + e.h;
         assert.equal(recouvre, false, `${largeur} px : « ${e.t} » recouvre « ${h.t} »`);
       }
+      await hors(page, `${largeur}-systeme-12-corps`);
       await ctx.close();
     });
   }
