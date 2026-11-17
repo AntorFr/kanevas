@@ -1804,9 +1804,9 @@ Slice 3 of the epic: E-23 stops being a list and becomes the **canvas** of `docs
 illustration (B-88, B-89). Identifiers: `AD-carte-n` (they detail AD-139, AD-140, AD-142, AD-149, AD-150). The list of `-systeme` stays, under the canvas, as its text alternative and
 as the fallback. No write (`-edition`), no link action (`-liens`), no non-celestial element (`-elements`), no editable catalogue (`-reglages`).
 
-**AD-carte-1 — `rendu` is a module of the one crate; its one entry is `dessiner(aspect, taille, version_rendu)`.** *Binds*: AD-139, AD-140, AD-149. *Prevents*: a second crate, a renderer that
+**AD-carte-1 — `rendu` is a module of the one crate; its one entry is `dessiner_astre(aspect_json, cote, version_rendu)`.** *Binds*: AD-139, AD-140, AD-149. *Prevents*: a second crate, a renderer that
 reads the database or a clock, a thumbnail and a high-definition image that do not show the same body. *Rule*: `rust/modules/coeur` gains the module `rendu` (a module added, never a second crate;
-the Wasm artifact and its loaders are those of the socle and of `-etoiles`). `dessiner(aspect_json, cote, version_rendu) → octets RGBA` (`cote` in pixels, 16 to 2048); the aspect is the object the generator
+the Wasm artifact and its loaders are those of the socle and of `-etoiles`). `dessiner_astre(aspect_json, cote, version_rendu) → octets RGBA` (`cote` in pixels, 16 to 2048); the aspect is the object the generator
 already returns for a body (`type`, `taille`, `aspect`: palette, relief, light and atmosphere parameters) merged over the **default catalogue of aspects** of the core (the types and palettes of `astres.yaml`, held only in the core, AD-147).
 The renderer reads nothing but its arguments and draws its random streams from a hash of `(aspect canonique, cote)` seeded generator of its own: **same aspect, same side, same version → same bytes**; a modified aspect → other bytes.
 The families are those of `astres.py` (star with corona, tellurique, verrouillée, glace, rocheux, lave, gazeuse, ceinture/champ d'astéroïdes, comète, nébuleuse, anomalie); lighting with terminator and rim light, atmosphere glow,
