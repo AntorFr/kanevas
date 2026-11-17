@@ -545,7 +545,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
         )}
       </div>
       {echecGeste && (
-        <div className="ed-echec cs-echec">
+        <div className="ed-echec cs-echec-geste">
           <p className="echec" role="alert">{echecGeste.message}</p>
           {echecGeste.recharger && <Bouton petit onClick={() => { void edition.recharger().then(() => setEchecGeste(undefined), () => undefined); }}>Recharger</Bouton>}
         </div>

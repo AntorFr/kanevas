@@ -225,4 +225,4 @@
 .cs-ciel:active .cs-corps.glissable { cursor: grabbing; }
 .cs-enregistrement { position: absolute; transform: translateX(-50%); white-space: nowrap; pointer-events: none; line-height: 15px; color: var(--texte-2); font-style: italic;
   text-shadow: 0 0 4px var(--ciel-halo), 0 0 8px var(--ciel-halo); }
-.cs-echec { margin-top: 8px; }
+.cs-echec-geste { margin-top: 0; }
