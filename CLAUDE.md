@@ -127,7 +127,7 @@
   `version_origine` in the same transaction as the mark (`section_modifiee`, `proposition_appliquee` as
   `ErreurService.detail`, both `conflit`). Never write a section from here by another path (AD-48).
 - Import API (`kanevas-import-fil`, migration 0010, AD-103/104): `routes/import.ts` is the scope `/api/import/v1`, beside the
-  session guard — only a `Bearer kvs_…` token opens it (`verifierJeton`: fingerprint, not revoked, not expired, the token's account still has a role in the universe), the cookie is ignored there and no other route reads `Authorization`. Refusal is always the same 401 `jeton_invalide`
+  session guard — only a `Bearer kvs_…` token opens it (`verifierJeton`: fingerprint, not revoked, not expired; it reads no role — the guard of `routes/import.ts` then takes the lesser of the token's access and the account's current role, `niveauEffectif`), the cookie is ignored there and no other route reads `Authorization`. Refusal is always the same 401 `jeton_invalide`
   and opens no batch; another universe, or an account with no role in it, is 404. The clock is `app.horloge()` (tests move it). `services/jetons.ts` and
   `services/lots.ts` are the only readers/writers of `jetons_api` / `lots_import`; write services of later slices count
   through `noterDansLot` (counters per nature, report capped at 1 000).

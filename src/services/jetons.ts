@@ -56,7 +56,7 @@ export interface Jeton {
   outils: string[];
 }
 
-/** The token of a request: the guard gives it the universe of the address (transitional, until the guard task). */
+/** The token of a request: the guard gives it the universe of the address. */
 export interface JetonRequete extends Jeton {
   universId: number;
   /** The level of the request: the token's access and its account's current role (never `aucun` past the guard). */
