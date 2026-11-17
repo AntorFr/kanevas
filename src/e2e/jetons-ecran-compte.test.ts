@@ -190,3 +190,42 @@ test('modifie_par_admin_pastille_effacee_et_acces_changes_pendant_la_boite', opt
   assert.equal((await api(m.base, valeur, 'GET', `${m.essai}`)).statut, 200);
   await ctx.close();
 });
+
+test('jeton_outils_essai_g_ligne_catalogue_ecrit_fiches_401', opts, async () => {
+  const { readFileSync } = await import('node:fs');
+  const exemple = JSON.parse(readFileSync(new URL('../outils/essai/exemples/catalogue-essai.json', import.meta.url), 'utf8'));
+  const m = await monde();
+  const eneria = (m.app.db.prepare('SELECT id FROM univers WHERE nom = ?').get("Éneria d'essai") as { id: number }).id;
+  const { ctx, page } = await connecte(browser, m.base, 'Antor');
+  await ouvrir(page);
+  await page.getByRole('button', { name: 'Créer un jeton' }).first().click();
+  await page.getByLabel('Nom').fill('Jeton outil');
+  await page.getByRole('radio', { name: 'Outils', exact: true }).click();
+  // Nothing ticked: refused, nothing created.
+  await page.getByRole('button', { name: 'Créer le jeton' }).click();
+  await page.getByText('Cochez au moins un outil.').waitFor();
+  await page.screenshot({ path: `${CAP}/outils-vide.png` });
+  assert.equal((m.app.db.prepare('SELECT COUNT(*) n FROM jetons_api WHERE nom = ?').get('Jeton outil') as { n: number }).n, 0);
+  await page.getByRole('group', { name: 'Outils' }).getByText(/Essai G/).click();
+  await page.getByRole('button', { name: 'Créer le jeton' }).click();
+  const code = page.locator('code').first();
+  await code.waitFor();
+  const valeur = (await code.textContent()) as string;
+  await page.getByRole('button', { name: 'J’ai copié le jeton' }).click();
+  await page.locator('.ligne-jeton').filter({ hasText: 'Jeton outil' }).waitFor();
+  assert.match((await page.locator('.ligne-jeton').first().textContent()) ?? '', /outils : Essai G/);
+  await page.screenshot({ path: `${CAP}/outils-liste.png` });
+  const appel = (methode: string, url: string, corps?: unknown) =>
+    fetch(`${m.base}/api/import/v1/univers/${eneria}${url}`, {
+      method: methode,
+      headers: { authorization: `Bearer ${valeur}`, ...(corps ? { 'content-type': 'application/json' } : {}) },
+      body: corps ? JSON.stringify(corps) : undefined,
+    });
+  const put = await appel('PUT', '/fiches/x', { titre: 'X', type: 'personnage' });
+  assert.equal(put.status, 401);
+  const cat = await appel('PUT', '/outils/essai/g/catalogue', exemple);
+  assert.equal(cat.status, 200, await cat.text());
+  const autre = await appel('PUT', '/outils/essai/h/catalogue', exemple);
+  assert.equal(autre.status, 401, 'un outil non coché reste fermé');
+  await ctx.close();
+});
