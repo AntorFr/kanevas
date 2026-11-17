@@ -460,8 +460,9 @@ function LigneListe({ ligne, rang, onChange, onRetirer }: {
   const vide = ligne.nom.trim() === '';
   return (
     <li className="bm-gen-saisie">
-      <Champ etiquette={`Nom de la ligne ${rang}`} value={ligne.nom} maxLength={MAX_NOM} placeholder="Nom" erreur={vide ? 'obligatoire' : undefined}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange({ nom: e.target.value })} />
+      <Champ etiquette={`Nom de la ligne ${rang}`} zone rows={1} value={ligne.nom} maxLength={MAX_NOM} placeholder="Nom" erreur={vide ? 'obligatoire' : undefined}
+        onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter') e.preventDefault(); }}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange({ nom: e.target.value.replace(/\s*\n+\s*/g, ' ') })} />
       <Champ etiquette={`Catégorie de la ligne ${rang}`} liste value={ligne.categorie}
         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange({ categorie: e.target.value as Categorie })}>
         {CATEGORIES.map((c) => <option key={c.valeur} value={c.valeur}>{c.libelle}</option>)}
@@ -502,6 +503,7 @@ function LigneDuLot({ id, ligne: l, occupee, inactif, moteurOccupe, remarque, on
             : <img src={srcFichier(id, l)} alt={`Brouillon de ${l.nom}`} loading="lazy" onError={() => setCassee(true)} />}
         </div>
       )}
+      {l.etat === 'echec' && <div className="bm-gen-image bm-gen-image-echec" aria-hidden="true">!</div>}
       <div className="bm-gen-corps">
       <div className="bm-gen-ligne-tete">
         <span className="bm-gen-nom" title={l.nom}>{l.nom}</span>
