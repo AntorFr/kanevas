@@ -301,6 +301,8 @@ export function fichiersDuGlob(motifs, depuis, fichiers) {
 
 const CHARGEUR = 'frontend/src/wasm/charger.ts';
 const MODULE_RUST = /^rust\/modules\/([^/]+)\//;
+/** The directory `rust/modules/battlemap-core` holds the crate `battlemap_core`: the loader and the glue name it with underscores (`chargerModule` only accepts `[a-z0-9_]`). */
+const nomDeModule = (dossier) => dossier.replace(/-/g, '_');
 const GLUE_RUST = /^rust\/pkg\/([^/]+)\//;
 const CARGO = ['rust/Cargo.toml', 'rust/Cargo.lock', 'rust/rust-toolchain.toml'];
 
@@ -355,7 +357,7 @@ export function lireGraphe(fichiers, lire) {
     }
     return res;
   };
-  const modulesConnus = new Set(fichiers.map((f) => MODULE_RUST.exec(f)?.[1]).filter(Boolean));
+  const modulesConnus = new Set(fichiers.map((f) => MODULE_RUST.exec(f)?.[1]).filter(Boolean).map(nomDeModule));
   const graphe = new Map();
   for (const [nom, page] of ecransDe(fichiers)) {
     const demande = new Map(); // file → Set of names demanded, or true (all)
@@ -440,7 +442,7 @@ export function ecransTouches(touches, fichiers, lire) {
     if (HARNAIS.test(f)) { touchesTous.forEach((n) => atteints.add(n)); continue; }
     if (TEST_ECRAN.test(f)) continue; // selected itself, touches no screen
     const noeud = MODULE_RUST.exec(f);
-    const atteint = (vus) => (noeud ? vus.has(`wasm:${noeud[1]}`) : CARGO.includes(f) ? [...vus].some((v) => v.startsWith('wasm:')) : vus.has(f));
+    const atteint = (vus) => (noeud ? vus.has(`wasm:${nomDeModule(noeud[1])}`) : CARGO.includes(f) ? [...vus].some((v) => v.startsWith('wasm:')) : vus.has(f));
     const lies = [...graphe].filter(([, vus]) => atteint(vus)).map(([n]) => n);
     if (lies.length) { lies.forEach((n) => atteints.add(n)); continue; }
     const m = PAGE.exec(f);
