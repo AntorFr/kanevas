@@ -52,3 +52,40 @@ export function erreurNom(nom: string): string | undefined {
 /** The seed of the stub used older colour names; they map onto the six of the server. */
 const ANCIENNES: Record<string, string> = { bleu: 'accent', vert: 'table', rouge: 'danger' };
 export const couleurServeur = (c: string): string => (COULEURS.some((x) => x.nom === c) ? c : ANCIENNES[c] ?? 'accent');
+
+// ---- Writes of the interior of a system (AD-edition-5): each call answers the system as the read gives it.
+import { appeler } from '../../../api';
+import type { InterieurSysteme as Interieur } from './types';
+
+/** The token every write carries: the system's own `versionSysteme`, read with the interior (GM only). */
+export interface JetonSysteme { versionSysteme?: number }
+export type CorpsAstre = JetonSysteme & {
+  genre?: string; nom?: string; description?: string; type?: string; taille?: number; aspect?: unknown; etoile_rang?: number;
+  parent_cle?: string; orbite?: number; heure?: number; plan?: { x: number; y: number }; galactique?: { q: number; r: number };
+  version?: number;
+};
+export type CorpsZone = JetonSysteme & {
+  forme?: 'anneau' | 'nuage'; nom?: string; description?: string; parametres?: unknown; etoile_rang?: number; version?: number;
+};
+
+const chemin = (galaxieId: number, q: number, r: number, universId: number, suite: string) =>
+  `/api/univers/${universId}/outils/swn/galaxie/galaxies/${galaxieId}/interieur/${q}/${r}/${suite}`;
+const requete = (v: { version: number } & JetonSysteme) =>
+  `?version=${v.version}${v.versionSysteme === undefined ? '' : `&versionSysteme=${v.versionSysteme}`}`;
+
+export interface Place { universId: number; galaxieId: number; q: number; r: number }
+const url = (p: Place, suite: string) => chemin(p.galaxieId, p.q, p.r, p.universId, suite);
+
+export const ancrerSysteme = (p: Place, corps: JetonSysteme & { nom?: string } = {}) => appeler<Interieur>('POST', url(p, 'ancrage'), corps);
+export const ajouterAstreSysteme = (p: Place, corps: CorpsAstre) => appeler<Interieur>('POST', url(p, 'astres'), corps);
+export const modifierAstreSysteme = (p: Place, cle: string, corps: CorpsAstre) =>
+  appeler<Interieur>('PATCH', url(p, `astres/${encodeURIComponent(cle)}`), corps);
+export const retirerAstreSysteme = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
+  appeler<Interieur>('DELETE', url(p, `astres/${encodeURIComponent(cle)}${requete(jeton)}`));
+export const ajouterZoneSysteme = (p: Place, corps: CorpsZone) => appeler<Interieur>('POST', url(p, 'zones'), corps);
+export const modifierZoneSysteme = (p: Place, cle: string, corps: CorpsZone) =>
+  appeler<Interieur>('PATCH', url(p, `zones/${encodeURIComponent(cle)}`), corps);
+export const retirerZoneSysteme = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
+  appeler<Interieur>('DELETE', url(p, `zones/${encodeURIComponent(cle)}${requete(jeton)}`));
+export const poserTransitionSysteme = (p: Place, corps: JetonSysteme & { transition: number | null }) =>
+  appeler<Interieur>('PUT', url(p, 'transition'), corps);
