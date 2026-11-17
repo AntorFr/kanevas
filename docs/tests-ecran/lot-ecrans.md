@@ -219,11 +219,6 @@ The doors written by this lot are in `src/routes/*-lot-ecrans.test.ts` (the shar
 | `src/e2e/composants-clavier.test.ts` | `champ : étiquette liée au champ ; l’erreur « Erreur : » est reliée par aria-describedby` | affichage | — | gardé |
 | `src/e2e/composants-clavier.test.ts` | `bandeaux : role=status, sans bouton pour les fermer` | affichage | — | gardé |
 | `src/e2e/composants-clavier.test.ts` | `chargement : le squelette est un role=status qui dit « Chargement de la fiche… »` | affichage | — | gardé |
-| `src/e2e/composants-clavier.test.ts` | `écriture du MJ : Bouton mj et Segments mj sont ambre (couleur du token --mj), le segment coché aussi` | affichage | — | gardé |
-| `src/e2e/composants-clavier.test.ts` | `écriture du MJ : la ligne de conversion est une région polie reliée au champ par aria-describedby` | affichage | — | gardé |
-| `src/e2e/composants-clavier.test.ts` | `boîte neutre : un formulaire est un role=dialog, focus sur le champ, badge, action ambre, Échap rend le focus` | affichage | — | gardé |
-| `src/e2e/composants-clavier.test.ts` | `boîte neutre : une confirmation pure est un role=alertdialog, focus sur Annuler` | affichage | — | gardé |
-| `src/e2e/composants-clavier.test.ts` | `boîte neutre : sous 760 px le corps défile et la boîte reste dans l’écran` | affichage | — | gardé |
 | `src/e2e/composants-clavier.test.ts` | `captures : bureau et téléphone, clair et sombre, sans débordement horizontal` | affichage | — | gardé |
 | `src/e2e/deplacer-arborescence-boite.test.ts` | `kanevas-deplacer-arborescence-boite, E-9 « Déplacer sous… » > s’ouvre sur le niveau de la Taverne : chemin, quatre frères, elle-même non choisissable` | affichage | — | gardé |
 | `src/e2e/deplacer-arborescence-boite.test.ts` | `kanevas-deplacer-arborescence-boite, E-9 « Déplacer sous… » > clic sur « Les Sphères » du chemin : Port-Sel « (parent actuel) » avec chevron ; le choisir laisse Déplacer inactif` | affichage | — | gardé |
