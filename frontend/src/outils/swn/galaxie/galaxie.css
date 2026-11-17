@@ -208,3 +208,14 @@
 .ed-echec { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); margin-top: var(--e-2); }
 .ed-echec .echec { margin: 0; color: var(--danger); }
 .gx-systeme-page .gx-entete .menu-racine { margin-left: var(--e-1); }
+
+/* E-23, the forms of the GM (-formulaires): tokens only. */
+.ed-champs { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--e-1); }
+.ed-ligne { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
+.ed-actions { justify-content: flex-end; position: sticky; bottom: 0; background: var(--surface); padding-top: var(--e-2); }
+.ed-graine { display: flex; align-items: flex-end; gap: var(--e-3); }
+.ed-graine .champ { flex: 1; min-width: 0; }
+.ed-vignette { margin: var(--e-2) 0; }
+.ed-defile { display: flex; flex-direction: column; gap: var(--e-1); max-height: 60vh; overflow-y: auto; padding-right: var(--e-1); }
+.ed-form { max-height: none; }
+@media (max-width: 760px) { .ed-form { max-height: none; } .ed-defile { max-height: none; } }

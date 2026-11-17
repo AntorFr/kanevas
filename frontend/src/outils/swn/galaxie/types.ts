@@ -54,7 +54,9 @@ export interface AstreSysteme {
   /** GM only. */
   version?: number;
 }
-export interface FormationSysteme { cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number; version?: number }
+export interface FormationSysteme { cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number; version?: number;
+  /** Plain text, for the writing GM only. */
+  description?: string }
 export interface InterieurSysteme {
   q: number; r: number; nom: string | null; etat: 'tire' | 'defini'; transition?: number; astres: AstreSysteme[]; formations: FormationSysteme[];
   /** The GM outside Player mode only (AD-edition-2): the write tokens. Absent for everyone else. */

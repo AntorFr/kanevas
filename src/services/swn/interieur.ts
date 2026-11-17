@@ -33,10 +33,14 @@ export interface AstreVue {
   nom: string | null; orbite: number | null; heure: number; taille: number; aspect: Record<string, unknown>;
   /** Token of the write (AD-edition-2): a GM outside Player mode only; a drawn body reads 1. */
   version?: number;
+  /** Plain text of a defined body, for the form « Modifier » of the writing GM only (absent when empty). */
+  description?: string;
 }
 export interface FormationVue {
   cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number;
   version?: number;
+  /** As for a body: the writing GM only. */
+  description?: string;
 }
 export interface InterieurVue {
   q: number; r: number; nom: string | null; etat: 'tire' | 'defini'; transition: number;
@@ -111,12 +115,12 @@ export function lireInterieur(
   if (ligne) {
     if (ligne.secret === 1 && niveau !== 'mj') throw introuvable();
     const astres = (db.prepare(`SELECT a.cle, a.genre, p.cle AS parent_cle, a.etoile_rang, a.type, a.nom, a.orbite, a.heure,
-        a.taille, a.aspect, a.version FROM swn_astres a LEFT JOIN swn_astres p ON p.id = a.parent_id
+        a.taille, a.aspect, a.version, a.description FROM swn_astres a LEFT JOIN swn_astres p ON p.id = a.parent_id
         WHERE a.systeme_id = ? ORDER BY a.id`).all(ligne.id) as LigneAstre[])
-      .map((a) => ({ ...a, aspect: JSON.parse(a.aspect) as Record<string, unknown> }));
-    const formations = (db.prepare(`SELECT cle, forme, nom, parametres, etoile_rang, version FROM swn_formations
+      .map(({ description, ...a }) => ({ ...a, aspect: JSON.parse(a.aspect) as Record<string, unknown>, ...(description ? { description } : {}) }));
+    const formations = (db.prepare(`SELECT cle, forme, nom, parametres, etoile_rang, version, description FROM swn_formations
         WHERE systeme_id = ? ORDER BY id`).all(ligne.id) as LigneFormation[])
-      .map((f) => ({ ...f, parametres: JSON.parse(f.parametres) as Record<string, unknown> }));
+      .map(({ description, ...f }) => ({ ...f, parametres: JSON.parse(f.parametres) as Record<string, unknown>, ...(description ? { description } : {}) }));
     const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, astres, formations);
     return niveau === 'mj' ? ouvrirEcriture(vue, ligneVersion(db, ligne.id)) : sansJetons(vue);
   }
@@ -136,7 +140,7 @@ function ouvrirEcriture(vue: InterieurVue, versionSysteme: number): InterieurVue
   return { ...vue, peutEcrire: true, versionSysteme };
 }
 function sansJetons(vue: InterieurVue): InterieurVue {
-  for (const x of [...vue.astres, ...vue.formations]) delete x.version;
+  for (const x of [...vue.astres, ...vue.formations]) { delete x.version; delete x.description; }
   return vue;
 }
 

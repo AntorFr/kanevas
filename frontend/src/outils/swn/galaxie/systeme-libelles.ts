@@ -25,6 +25,12 @@ export function typeAstre(a: AstreSysteme): string {
   return a.genre === 'lune' ? `Lune · ${t}` : t;
 }
 
+/** A type alone, for a choice: « Rocheux », « Étoile jaune ». */
+export function libelleType(genre: string, type: string): string {
+  if (genre === 'etoile') return `Étoile ${ETOILES[type] ?? type.replace(/_/g, ' ')}`;
+  return CORPS[type] ?? brut(type);
+}
+
 export const nomAstre = (a: AstreSysteme): string => (a.nom !== null && a.nom !== '' ? a.nom : 'Astre sans nom');
 export const nomFormation = (f: FormationSysteme): string => (f.nom !== null && f.nom !== '' ? f.nom : 'Zone sans nom');
 export const typeFormation = (f: FormationSysteme): string => (f.forme === 'anneau' ? 'Anneau' : 'Nuage');

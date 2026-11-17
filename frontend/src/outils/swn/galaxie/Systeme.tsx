@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { useCharge, useTitreAriane } from '../../../cadre-contexte';
 import type { UniversListe } from '../../../types';
+import { Pencil, Move } from 'lucide-react';
 import { Bouton, EtatVide, Pastille } from '../../../ui';
 import type { PropsOutil } from '../../types';
 import CarteSysteme from './CarteSysteme';
@@ -10,6 +11,7 @@ import { FournisseurEdition, useEdition } from './Edition';
 import MenuSysteme from './MenuSysteme';
 import PanneauCorps from './PanneauCorps';
 import PanneauFormation from './PanneauFormation';
+import { DialogueAjouterAstre, DialogueAjouterZone, FormulaireDeplacer, FormulaireModifierAstre, FormulaireModifierZone } from './FormulairesEdition';
 import BoutonRetirer from './Retrait';
 import { nomAstre, nomFormation, placeAstre, placeFormation, typeAstre, typeFormation } from './systeme-libelles';
 import type { InterieurSysteme } from './types';
@@ -40,7 +42,16 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
   const choisi = selection === null ? null : s.astres.find((a) => a.cle === selection) ?? null;
   const [selectionZone, setSelectionZone] = useState<string | null>(null);
   const zoneChoisie = selectionZone === null ? null : s.formations.find((f) => f.cle === selectionZone) ?? null;
-  const choisirCorps = (cle: string | null) => { setSelection(cle); if (cle !== null) setSelectionZone(null); };
+  const choisirCorps = (cle: string | null) => { setSelection(cle); setFormulaire(null); if (cle !== null) setSelectionZone(null); };
+  // The form that replaces the panel (« Déplacer », « Modifier… ») and the dialog of « Ajouter » on show; a change of selection closes the form.
+  const [formulaire, setFormulaire] = useState<'deplacer' | 'modifier' | null>(null);
+  const [ajout, setAjout] = useState<'astre' | 'zone' | null>(null);
+  const fermerFormulaire = () => setFormulaire(null);
+  const apresAjout = (genre: 'astre' | 'zone') => (cle: string | undefined) => {
+    if (cle === undefined) return;
+    if (genre === 'astre') { setSelection(cle); setSelectionZone(null); } else { setSelectionZone(cle); setSelection(null); }
+    setFormulaire(null);
+  };
   const adresseVoisin = `/univers/${universId}/outils/swn/galaxie/${cible ?? ''}/interieur/`;
 
   return (
@@ -49,13 +60,12 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
         <h1>{titre}</h1>
         <Pastille sens="neutre">{s.etat === 'tire' ? 'Tiré' : 'Défini'}</Pastille>
         <Pastille sens="neutre">Hexagone {s.q}, {s.r}</Pastille>
-        <MenuSysteme />
+        <MenuSysteme onAjouterAstre={() => setAjout('astre')} onAjouterZone={() => setAjout('zone')} />
         <Link className="gx-retour" to={`/univers/${universId}/outils/swn/galaxie/${cible ?? ''}`}>← Galaxie</Link>
       </header>
       {vide ? (
         <EtatVide titre={mj ? 'Ce système est vide.' : 'Rien à voir dans ce système pour l’instant.'}>
-          {/* The form of « Ajouter un astre… » is the next slice's: the button stands inert until it is wired. */}
-          {mj && <Bouton variante="mj" ecrit disabled>Ajouter un astre…</Bouton>}
+          {mj && <Bouton variante="mj" ecrit onClick={() => setAjout('astre')}>Ajouter un astre…</Bouton>}
         </EtatVide>
       ) : (
         <>
@@ -68,13 +78,27 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
               selection={selection}
               onSelection={choisirCorps}
             />
-            {choisi && (
+            {choisi && mj && formulaire === 'deplacer' && <FormulaireDeplacer key={`d-${choisi.cle}`} astre={choisi} onFermer={fermerFormulaire} />}
+            {choisi && mj && formulaire === 'modifier' && <FormulaireModifierAstre key={`m-${choisi.cle}`} astre={choisi} onFermer={fermerFormulaire} />}
+            {choisi && !(mj && formulaire) && (
               <PanneauCorps key={choisi.cle} astre={choisi} q={s.q} r={s.r} base={base} suffixe={suffixeMode ?? ''}
-                actions={<BoutonRetirer cible={{ k: 'astre', astre: choisi }} onRetire={() => setSelection(null)} />} />
+                actions={mj && (
+                  <>
+                    <Bouton variante="mj" ecrit icone={Move} data-ouvreur="deplacer" onClick={() => setFormulaire('deplacer')}>Déplacer</Bouton>
+                    <Bouton variante="mj" ecrit icone={Pencil} data-ouvreur="modifier" onClick={() => setFormulaire('modifier')}>Modifier…</Bouton>
+                    <BoutonRetirer cible={{ k: 'astre', astre: choisi }} onRetire={() => setSelection(null)} />
+                  </>
+                )} />
             )}
-            {!choisi && zoneChoisie && (
+            {!choisi && zoneChoisie && mj && formulaire === 'modifier' && <FormulaireModifierZone key={`z-${zoneChoisie.cle}`} zone={zoneChoisie} onFermer={fermerFormulaire} />}
+            {!choisi && zoneChoisie && !(mj && formulaire) && (
               <PanneauFormation key={zoneChoisie.cle} zone={zoneChoisie} q={s.q} r={s.r}
-                actions={<BoutonRetirer cible={{ k: 'zone', zone: zoneChoisie }} onRetire={() => setSelectionZone(null)} />} />
+                actions={mj && (
+                  <>
+                    <Bouton variante="mj" ecrit icone={Pencil} data-ouvreur="modifier" onClick={() => setFormulaire('modifier')}>Modifier…</Bouton>
+                    <BoutonRetirer cible={{ k: 'zone', zone: zoneChoisie }} onRetire={() => setSelectionZone(null)} />
+                  </>
+                )} />
             )}
           </div>
           {s.astres.length > 0 && (
@@ -112,6 +136,8 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
           )}
         </>
       )}
+      {mj && ajout === 'astre' && <DialogueAjouterAstre onFermer={() => setAjout(null)} onAjoute={apresAjout('astre')} />}
+      {mj && ajout === 'zone' && <DialogueAjouterZone onFermer={() => setAjout(null)} onAjoute={apresAjout('zone')} />}
     </div>
   );
 }
