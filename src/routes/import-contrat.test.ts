@@ -131,16 +131,41 @@ test('un cookie de session valide ne rouvre pas la garde quand le jeton est faux
   await refusee(app, { ...antor, authorization: 'Bearer kvs_faux' }, `/api/import/v1/univers/${u.id}`);
 });
 
-test('le MJ du jeton rétrogradé Joueur ou retiré → 401 ; rétabli MJ → 200', async () => {
+test('le MJ du jeton rétrogradé Joueur n’est plus refusé en 401 : le jeton tombe aux droits du compte (B-46 révisé) ; rétabli MJ, il écrit de nouveau', async () => {
   const { app, u, id, bearer, jeton } = await monter();
   const url = `/api/import/v1/univers/${u.id}`;
   const { valeur } = jeton('teo');
+  const ecrire = (cle: string) =>
+    app.inject({ method: 'PUT', url: `${url}/fiches/${cle}`, headers: bearer(valeur), payload: { titre: 'Une fiche', type: 'personnage' } });
+  const fiches = () => (app.db.prepare('SELECT count(*) AS n FROM fiches WHERE univers_id = ?').get(u.id) as { n: number }).n;
   assert.equal((await app.inject({ method: 'GET', url, headers: bearer(valeur) })).statusCode, 200);
+  assert.equal((await ecrire('avant')).statusCode, 200);
+  assert.equal(fiches(), 1);
   changerRoleNoyau(app.db, u.id, id('teo'), 'joueur');
-  await refusee(app, bearer(valeur), url);
-  await refusee(app, bearer(valeur), `${url}/lots`, 'POST');
+  assert.equal((await app.inject({ method: 'GET', url, headers: bearer(valeur) })).statusCode, 200, 'not a 401 any more');
+  const refus = await ecrire('apres');
+  assert.equal(refus.statusCode, 403, 'the service refuses what a player may not write');
+  assert.notEqual(refus.json().code, 'jeton_invalide');
+  assert.equal(fiches(), 1, 'nothing written as a player');
+  changerRoleNoyau(app.db, u.id, id('teo'), 'mj');
+  assert.equal((await ecrire('apres')).statusCode, 200);
+  assert.equal(fiches(), 2);
+});
+
+test('le jeton d’un compte retiré de l’univers n’écrit rien (le service ne lui connaît aucun rôle)', async () => {
+  const { app, u, id, bearer, jeton } = await monter();
+  const { valeur } = jeton('teo');
+  app.db.prepare('DELETE FROM membres WHERE univers_id = ? AND compte_id = ?').run(u.id, id('teo'));
+  const r = await app.inject({
+    method: 'PUT', url: `/api/import/v1/univers/${u.id}/fiches/x`, headers: bearer(valeur), payload: { titre: 'T', type: 'personnage' },
+  });
+  assert.equal(r.statusCode, 404);
+  const ctx = await app.inject({ method: 'GET', url: `/api/import/v1/univers/${u.id}`, headers: bearer(valeur) });
+  assert.equal(ctx.statusCode, 404, 'the universe context is not readable either');
+  const lot = await app.inject({ method: 'POST', url: `/api/import/v1/univers/${u.id}/lots`, headers: bearer(valeur) });
+  assert.equal(lot.statusCode, 404);
+  assert.equal((app.db.prepare('SELECT count(*) AS n FROM fiches WHERE univers_id = ?').get(u.id) as { n: number }).n, 0);
   assert.equal((app.db.prepare('SELECT count(*) AS n FROM lots_import').get() as { n: number }).n, 0);
-  assert.equal(listerJetons(app.db, id('antor'), u.id)[0]!.actif, false);
 });
 
 test('un autre univers que celui du jeton → 404, sur toutes les routes, existant ou non', async () => {
@@ -300,12 +325,12 @@ test('révocation : un autre MJ révoque, un id d’un autre univers est introuv
   assert.ok(!JSON.stringify(l).includes(valeur));
 });
 
-test('migration : clés d’origine uniques par univers (fiches) et par fiche (sections), NULL multiples permis', async () => {
+test('migration : clés uniques par univers (fiches) et par fiche (sections), jamais NULL', async () => {
   const { app, u, autre, antor } = await monter();
   const f = async (univers: number, titre: string) =>
     (await app.inject({ method: 'POST', url: `/api/univers/${univers}/fiches`, headers: antor, payload: { type: 'lieu', titre } })).json().id as number;
   const [a, b, c] = [await f(u.id, 'A'), await f(u.id, 'B'), await f(autre.id, 'C')];
-  const set = app.db.prepare('UPDATE fiches SET cle_origine = ? WHERE id = ?');
+  const set = app.db.prepare('UPDATE fiches SET cle = ? WHERE id = ?');
   set.run('k1', a);
   assert.throws(() => set.run('k1', b));
   set.run('k1', c); // same key, other universe
@@ -315,12 +340,13 @@ test('migration : clés d’origine uniques par univers (fiches) et par fiche (s
   const s = async (fiche: number) =>
     (await app.inject({ method: 'POST', url: `/api/univers/${u.id}/fiches/${fiche}/sections`, headers: antor, payload: { titre: 'S', contenu: '' } })).json().id as number;
   const [s1, s2, s3] = [await s(a), await s(a), await s(b)];
-  const ss = app.db.prepare('UPDATE sections SET cle_origine = ? WHERE id = ?');
+  const ss = app.db.prepare('UPDATE sections SET cle = ? WHERE id = ?');
   ss.run('s', s1);
   assert.throws(() => ss.run('s', s2));
   ss.run('s', s3); // other fiche
   assert.equal(
-    (app.db.prepare('SELECT count(*) AS n FROM sections WHERE cle_origine IS NULL').get() as { n: number }).n >= 0,
-    true,
+    (app.db.prepare('SELECT count(*) AS n FROM sections WHERE cle IS NULL').get() as { n: number }).n,
+    0,
   );
+  assert.throws(() => ss.run(null, s1), 'a section key is never NULL');
 });

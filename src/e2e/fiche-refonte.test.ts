@@ -25,6 +25,7 @@ import {
   choisirDansMenuSection,
   confirmerRetraitSection,
   connecte,
+  attendre,
   creerFiche,
   creerUnivers,
   launch,
@@ -176,8 +177,6 @@ describe('E-9 refaite : audience, filet, hachure', { skip: skipBrowser }, () => 
     await regler(antor, 'Temporaire', 'Les joueurs la lisent', true);
     await regler(antor, 'Temporaire', 'Les joueurs l’écrivent', true);
     await section(antor, 'Temporaire').getByRole('button', { name: /^Écrite par les joueurs/ }).waitFor();
-    await antor.reload();
-    await section(antor, 'Temporaire').getByRole('button', { name: /^Écrite par les joueurs/ }).waitFor();
     await choisirDansMenuSection(antor, 'Temporaire', 'Retirer la section');
     await confirmerRetraitSection(antor);
     await section(antor, 'Temporaire').waitFor({ state: 'detached' });
@@ -289,7 +288,8 @@ describe('E-9 refaite : toasts', { skip: skipBrowser }, () => {
     await ouvrir(antor);
     const s = section(antor, 'Apparence');
     await s.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
-    await s.getByLabel('Type de relation').fill('membre de');
+    await s.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+    await s.getByLabel('Qualificatif').fill('membre de');
     await s.getByLabel('Type de fiche').selectOption({ label: 'Faction' });
     await s.getByRole('button', { name: /^Lames Grises/ }).click();
     await s.getByRole('button', { name: rxExact('Relier') }).click();
@@ -303,7 +303,7 @@ describe('E-9 refaite : toasts', { skip: skipBrowser }, () => {
     const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
     let lacher!: () => void;
     const tenu = new Promise<void>((r) => (lacher = r));
-    await antor.route(/\/api\/univers\/\d+\/fichiers$/, async (route: Any) => {
+    await antor.route(/\/api\/univers\/[^/]+\/fichiers$/, async (route: Any) => {
       if (route.request().method() !== 'POST') return route.continue();
       await tenu;
       await route.abort();
@@ -313,7 +313,7 @@ describe('E-9 refaite : toasts', { skip: skipBrowser }, () => {
     await s.getByRole('status').getByRole('button', { name: rxExact('Annuler') }).click();
     await toastDe(antor, 'Envoi de « lent.png » annulé').waitFor();
     lacher();
-    await antor.unroute(/\/api\/univers\/\d+\/fichiers$/, { behavior: 'ignoreErrors' });
+    await antor.unroute(/\/api\/univers\/[^/]+\/fichiers$/, { behavior: 'ignoreErrors' });
   });
 
   test('un échec n’est jamais un toast : le PATCH d’audience refusé laisse un message en ligne et aucun toast', async () => {
@@ -368,7 +368,6 @@ describe('E-9 refaite : édition', { skip: skipBrowser }, () => {
     await antor.keyboard.press('Control+Enter');
     await s.getByRole('textbox').waitFor({ state: 'detached' });
     await toastDe(antor, '« Rumeurs » enregistrée').waitFor();
-    await antor.reload();
     await section(antor, 'Rumeurs').getByText('On dit qu’Aldric boite.').waitFor();
   });
 
@@ -379,7 +378,7 @@ describe('E-9 refaite : édition', { skip: skipBrowser }, () => {
     antor.on('request', (r: Any) => r.method() === 'PUT' && puts++);
     await s.getByRole('textbox').fill('x'.repeat(100001));
     await antor.keyboard.press('Control+Enter');
-    await antor.waitForTimeout(500);
+    await attendre(antor);
     assert.equal(puts, 0, 'no request left');
     assert.ok(await s.getByText(/100 000 caractères au plus\./).first().isVisible());
     await s.getByRole('textbox').fill('y'.repeat(100000));
@@ -404,7 +403,7 @@ describe('E-9 refaite : édition', { skip: skipBrowser }, () => {
     try {
       await antor.getByText(PERDU).waitFor();
       await antor.keyboard.press('Control+Enter');
-      await antor.waitForTimeout(500);
+      await attendre(antor);
       assert.equal(puts, 0);
       assert.equal(await s.getByRole('textbox').inputValue(), 'Texte en attente');
       assert.equal(await s.getByRole('button', { name: rxExact('Enregistrer') }).isDisabled(), true, 'the button says the same');
@@ -454,15 +453,17 @@ describe('E-9 refaite : « Modifier », menu ⋯, retrait', { skip: skipBrowser 
     const s = section(antor, 'Apparence');
     const modifier = s.getByRole('button', { name: rxExact('Modifier') });
     const opacite = () => modifier.evaluate((e: Element) => getComputedStyle(e.closest('.sec-actions')!).opacity);
+    // the opacity transitions: the result is waited for, not a delay
+    const opaciteVaut = async (v: string) => antor.waitForFunction(({ el, v }: Any) => getComputedStyle(el.closest('.sec-actions')).opacity === v, { el: await modifier.elementHandle(), v });
     assert.equal(await opacite(), '0', 'hidden without hover or focus');
     await s.hover();
-    await antor.waitForTimeout(400);
+    await opaciteVaut('1');
     assert.equal(await opacite(), '1', 'shown on hover');
     await antor.mouse.move(2, 2);
-    await antor.waitForTimeout(400);
+    await opaciteVaut('0');
     assert.equal(await opacite(), '0');
     await modifier.focus();
-    await antor.waitForTimeout(400);
+    await opaciteVaut('1');
     assert.equal(await opacite(), '1', 'shown on focus');
   });
 

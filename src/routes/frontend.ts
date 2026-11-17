@@ -3,6 +3,11 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { env } from '../config/env.js';
+import type { Db } from '../db/db.js';
+import { cleDeFicheLue, resoudreUnivers } from '../services/cles.js';
+import { estId } from '../services/cles-forme.js';
+import { roleDe } from '../services/droits.js';
+import { estTypeFiche } from '../services/types-fiche.js';
 
 /** Placeholder of `frontend/index.html`, replaced at serve time (AD-55 banner flag). */
 const MARQUE_BOUCHON = '<!--KANEVAS_BOUCHON-->';
@@ -33,5 +38,41 @@ export function chargerFrontend(): Frontend | null {
       return { racine, index: brut.replace(MARQUE_BOUCHON, meta) };
     }
   }
+  return null;
+}
+
+/** The readable address of a sheet inside its universe: `/<type>/<name>` for a key `type:name`, else `/fiche/<key>` (B-101). */
+export function adresseDeFiche(cle: string): string {
+  const [a, b, ...reste] = cle.split(':');
+  return b !== undefined && reste.length === 0 && estTypeFiche(a!) ? `/${a}/${b}` : `/fiche/${cle}`;
+}
+
+/**
+ * Where a numeric screen address leads (B-101, AD-146): `/univers/<id>/…` and `/univers/<u>/fiche/<id>` answer 302
+ * to the readable form. `null`: the address is not one of those (the application serves it as it always did);
+ * `'introuvable'`: a numeric sheet address the reader cannot follow — an unknown sheet, one they cannot read, or
+ * a universe they are not in — all the same answer, which never says which. A universe's own numeric address is
+ * followed only for a member.
+ */
+export function adresseLisible(db: Db, compteId: number, chemin: string, requete: string): string | null | 'introuvable' {
+  const m = /^\/univers\/([^/]+)((?:\/.*)?)$/.exec(chemin);
+  if (!m) return null;
+  let ref: string;
+  try {
+    ref = decodeURIComponent(m[1]!);
+  } catch {
+    return null;
+  }
+  const reste = m[2]!;
+  const f = /^\/fiche\/(\d+)\/?$/.exec(reste);
+  const univers = resoudreUnivers(db, ref);
+  const membre = univers !== null && roleDe(db, univers.id, compteId) !== null;
+  if (f) {
+    if (!membre) return 'introuvable';
+    const id = Number(f[1]);
+    const cle = Number.isSafeInteger(id) ? cleDeFicheLue(db, compteId, univers.id, id) : null;
+    return cle === null ? 'introuvable' : `/univers/${univers.cle}${adresseDeFiche(cle)}${requete}`;
+  }
+  if (membre && estId(ref)) return `/univers/${univers.cle}${reste}${requete}`;
   return null;
 }

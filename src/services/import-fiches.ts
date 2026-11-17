@@ -1,5 +1,6 @@
 import { creerCompteRendu, TITRE_SECTION_COMPTE_RENDU } from './comptes_rendus.js';
 import type { Db } from '../db/db.js';
+import { exigerMJ } from './droits.js';
 import { cleValide } from './import.js';
 import { ErreurService } from './erreurs.js';
 import {
@@ -18,10 +19,11 @@ import {
   creerFiche,
   deplacerFiche,
   renommerFiche,
+  marquerDisparu,
   supprimerFiche,
   validerSousType,
 } from './fiches.js';
-import type { Jeton } from './jetons.js';
+import type { JetonRequete as Jeton } from './jetons.js';
 import {
   choisirIllustration,
   fichierDeCle,
@@ -45,7 +47,7 @@ import {
   resoudreClesEnAttente,
 } from './sections.js';
 import type { SectionRow } from './types.js';
-import { CHARGES, STATUT_AVENTURE, TYPES, typeActif } from './types-fiche.js';
+import { CHARGES, STATUT_AVENTURE, TYPES, porteMarqueDisparu, typeActif } from './types-fiche.js';
 
 /** Every product sheet type is accepted by the import. */
 export const TYPES_IMPORT: readonly string[] = TYPES.map((t) => t.type);
@@ -77,6 +79,8 @@ interface FicheEntree {
   /** `undefined`: the request says nothing (left as is); `null`: no sub-type wanted. */
   sousType?: string | null;
   pj: boolean;
+  /** Absent on types without the mark; otherwise defaults to false. */
+  disparu?: boolean;
   campagne?: string;
   campagneId?: number;
   /** `undefined`: the request says nothing (left as is). Cleaned, bounds not yet checked. */
@@ -160,6 +164,11 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
     throw new Refus('modifieLe', 'fiche', 'modifieLe : antérieure à creeLe');
   }
   const pj = booleen(c.pj, 'pj', 'fiche');
+  const marqueDisparu = porteMarqueDisparu(type);
+  if (!marqueDisparu && Object.hasOwn(c, 'disparu')) {
+    throw new Refus('disparu', 'fiche', 'disparu : champ inconnu pour ce type', 'champ_inconnu');
+  }
+  const disparu = marqueDisparu ? booleen(c.disparu, 'disparu', 'fiche') : undefined;
   let sousType: string | null | undefined;
   if (c.sousType !== undefined && c.sousType !== null) {
     try {
@@ -245,7 +254,7 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
     };
   });
   if (type === 'compte_rendu' && sections[0]) sections[0].titre = TITRE_SECTION_COMPTE_RENDU;
-  return { type, titre, statut, sousType, pj, campagne, alias, etiquettes, parent, illustration, creeLe, modifieLe, sections };
+  return { type, titre, statut, sousType, pj, disparu, campagne, alias, etiquettes, parent, illustration, creeLe, modifieLe, sections };
 }
 
 interface FicheLue {
@@ -259,7 +268,6 @@ interface FicheLue {
 }
 
 interface SectionLue extends SectionRow {
-  cle_origine: string | null;
   version_importee: number | null;
   dernier_import: string | null;
 }
@@ -269,6 +277,7 @@ interface MarqueFiche {
   type?: string;
   statut?: string;
   pj?: boolean | null;
+  disparu?: boolean;
   sousType?: string | null;
   alias?: string[];
   etiquettes?: string[];
@@ -313,6 +322,8 @@ export function assurerFiche(
   corps: unknown,
   maintenant: Date = new Date(),
 ): ResultatFiche {
+  // The import writes as a GM only (B-46): a player's token never reaches a section, a file join included.
+  exigerMJ(db, jeton.universId, jeton.compteId);
   if (lotId !== null) {
     const lot = lireLot(db, jeton, lotId, maintenant);
     if (lot.closLe !== null) throw new ErreurService('conflit', 'Le lot est clos.', 'lot_clos');
@@ -334,11 +345,13 @@ export function assurerFiche(
   let entree: FicheEntree;
   try {
     if (!cleValide(cle)) throw new Refus('cle', 'fiche', "clé d'origine invalide");
+    // A key of digits only would read as an id (AD-146): the sheet needs a letter in its key.
+    if (!/\p{L}/u.test(cle)) throw new Refus('cle', 'fiche', "clé d'origine invalide : au moins une lettre");
     entree = lireCorps(corps, maintenant);
     if (entree.campagne !== undefined) {
       // The key of the adventure sheet this report names (AD-125 (2)): a sheet of `aventure` type of the token's universe.
       const campagne = db
-        .prepare("SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ? AND type = 'aventure'")
+        .prepare("SELECT id FROM fiches WHERE univers_id = ? AND cle = ? AND type = 'aventure'")
         .get(jeton.universId, entree.campagne) as { id: number } | undefined;
       if (!campagne) throw new Refus('campagne', 'fiche', `campagne inconnue : ${entree.campagne}`);
       entree.campagneId = campagne.id;
@@ -353,6 +366,23 @@ export function assurerFiche(
     if (f && !f.type.startsWith('image/')) {
       return refuser(
         new Refus('illustration', 'fiche', `illustration : « ${entree.illustration} » n'est pas une image`, 'pas_une_image'),
+      );
+    }
+  }
+
+  // A key that is the key of a managed section of the sheet: refused before the transaction (AD-127).
+  const gerees = db
+    .prepare(
+      `SELECT s.cle FROM sections s JOIN fiches f ON f.id = s.fiche_id
+       WHERE f.univers_id = ? AND f.cle = ? AND s.gere_par IS NOT NULL`,
+    )
+    .all(jeton.universId, cle) as { cle: string }[];
+  if (gerees.length > 0) {
+    const cles = new Set(gerees.map((g) => g.cle));
+    const i = entree.sections.findIndex((s) => cles.has(s.cle));
+    if (i >= 0) {
+      return refuser(
+        new Refus(`sections[${i}]`, 'section', `section « ${entree.sections[i]!.titre} » : gérée par un outil, non modifiable`, 'section_geree'),
       );
     }
   }
@@ -384,7 +414,7 @@ function ecrire(
 ): { id: number; etat: EtatImport } {
   const { universId, compteId } = jeton;
   const existante = db
-    .prepare('SELECT id, type, titre, charge, sous_type, dernier_import, cree_le FROM fiches WHERE univers_id = ? AND cle_origine = ?')
+    .prepare('SELECT id, type, titre, charge, sous_type, dernier_import, cree_le FROM fiches WHERE univers_id = ? AND cle = ?')
     .get(universId, cle) as FicheLue | undefined;
   const charge = e.type === 'aventure'
     ? CHARGES.aventure.parse({ v: 1, statut: e.statut })
@@ -396,6 +426,7 @@ function ecrire(
       type: e.type,
       pj: pjDe(e.type, JSON.stringify(charge)),
       sousType: e.sousType ?? null,
+      ...(e.disparu !== undefined ? { disparu: e.disparu } : {}),
     };
     if (e.type === 'aventure') marque.statut = charge.statut as string;
     if (!typeActif(db, universId, e.type)) prevenir('fiche', desactive(e.type));
@@ -415,6 +446,7 @@ function ecrire(
       charge,
       origine,
     });
+    if (e.disparu !== undefined) marquerDisparu(db, { compteId }, universId, fiche.id, e.disparu);
     if (e.type === 'compte_rendu' && e.sousType) changerSousType(db, compteId, universId, fiche.id, e.sousType);
     // The sheets that waited for this key now point at it, in this transaction (AD-116).
     resoudreClesEnAttente(db, universId, cle, fiche.id);
@@ -480,6 +512,22 @@ function ecrire(
     }
     ecrit = true;
   } else prevenir('fiche', 'type modifié dans Kanevas : non écrasé');
+
+  // The mark is protected independently of type/PJ. Read after a conversion, which may
+  // preserve it or drop it; a human's type change to an unsupported type is left alone.
+  const apresType = db.prepare('SELECT type, charge FROM fiches WHERE id = ?').get(existante.id) as {
+    type: string; charge: string;
+  };
+  if (!porteMarqueDisparu(apresType.type)) delete marque.disparu;
+  else if (e.disparu !== undefined) {
+    const courant = (JSON.parse(apresType.charge) as { disparu?: boolean }).disparu === true;
+    if (courant === e.disparu) marque.disparu = e.disparu;
+    else if (courant === (di?.disparu ?? false)) {
+      marquerDisparu(db, { compteId }, universId, existante.id, e.disparu);
+      marque.disparu = e.disparu;
+      ecrit = true;
+    } else prevenir('fiche', 'disparu modifié dans Kanevas : non écrasé');
+  }
 
   // Read the effective type after replay protection: a refused type change must not write a status.
   if (e.type === 'aventure' && e.statut !== undefined) {
@@ -571,7 +619,7 @@ function ecrire(
   const lignes = db
     .prepare('SELECT * FROM sections WHERE fiche_id = ? ORDER BY ordre')
     .all(existante.id) as SectionLue[];
-  const parCle = new Map(lignes.filter((l) => l.cle_origine !== null).map((l) => [l.cle_origine!, l]));
+  const parCle = new Map(lignes.filter((l) => l.cle !== null).map((l) => [l.cle!, l]));
   const demandes: number[] = [];
   let nouvelle = false;
   for (const s of e.sections) {
@@ -705,7 +753,7 @@ function poserParent(
     voulu === null
       ? null
       : ((
-          db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?').get(universId, voulu) as
+          db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle = ?').get(universId, voulu) as
             | { id: number }
             | undefined
         )?.id ?? undefined);
@@ -783,7 +831,7 @@ function creerSection(
   prevenirTexte(preparerContenu(db, universId, compteId, s.contenu), s.titre, prevenir);
   const joints = poserJoints(db, universId, { id: v.id, titre: s.titre }, s.fichiers, undefined, prevenir);
   if (joints) marque.fichiers = joints.marque;
-  db.prepare('UPDATE sections SET cle_origine = ?, version_importee = ?, dernier_import = ? WHERE id = ?').run(
+  db.prepare('UPDATE sections SET cle = ?, version_importee = ?, dernier_import = ? WHERE id = ?').run(
     s.cle,
     v.version,
     JSON.stringify(marque),
@@ -880,7 +928,7 @@ export function supprimerFicheImport(
   if (!cleValide(cle)) return;
   db.transaction(() => {
     const f = db
-      .prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?')
+      .prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle = ?')
       .get(jeton.universId, cle) as { id: number } | undefined;
     if (!f) return;
     supprimerFiche(db, { compteId: jeton.compteId }, jeton.universId, f.id);

@@ -17,12 +17,12 @@ import { iconeDeNom, type TypeVue } from './types-contexte';
 /**
  * The sidebar's items (docs/ecrans.md, « Barre latérale »). They live here, not in the bar: an item
  * shows only when a registered screen answers its address, so a screen not built yet
- * has no entry in the bar until it is registered. `chemin(id)` is the concrete address.
+ * has no entry in the bar until it is registered. `chemin(ref)` is the concrete address: `ref` is the universe's key, or its id while the key is not known.
  */
 export interface Item {
   libelle: string;
   icone: LucideIcon;
-  chemin: (universId: number) => string;
+  chemin: (universId: number | string) => string;
   /** Section heading in the bar; items with the same one are grouped. */
   section?: string;
   /** Only this role sees it. */
@@ -61,5 +61,5 @@ export const itemsLore = (types: TypeVue[]): Item[] =>
     libelle: t.pluriel,
     icone: iconeDeNom(t.icone),
     section: 'Lore',
-    chemin: (id: number) => `/univers/${id}/fiches/${t.slug}`,
+    chemin: (id: number | string) => `/univers/${id}/fiches/${t.slug}`,
   }));

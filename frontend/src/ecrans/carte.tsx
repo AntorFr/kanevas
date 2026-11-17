@@ -424,7 +424,7 @@ function Corps({
             <ul>
               {lue.liens.map((l, i) => (
                 <li key={i}>
-                  {titreDe(elements, l.de)} — {l.type} → {titreDe(elements, l.vers)}
+                  {titreDe(elements, l.de)} — {l.libelle} → {titreDe(elements, l.vers)}
                 </li>
               ))}
             </ul>

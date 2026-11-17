@@ -1,9 +1,10 @@
 import type { Db } from '../db/db.js';
-import { exigerMJ } from './droits.js';
+import { exigerMJ, roleDe } from './droits.js';
 import { introuvable } from './erreurs.js';
 import { compterFichiersEnAttente } from './fichiers.js';
 import { compterEnAttente } from './liens.js';
-import type { Jeton } from './jetons.js';
+import type { JetonRequete as Jeton } from './jetons.js';
+import { declarationOutil } from './outils.js';
 
 /** Entries kept in a batch report (AD-104); further ones are counted but not listed. */
 export const MAX_RAPPORT = 1000;
@@ -39,6 +40,9 @@ export interface Lot {
   avertissements: number;
   enAttente: number;
   rapport: EntreeRapport[];
+  /** A tool batch only (K-6): the tool and the natures it declares, which key `compteurs`. */
+  outil?: { cle: string; libelle: string };
+  natures?: { nom: string; libelle: string }[];
 }
 
 interface LotRow {
@@ -52,6 +56,20 @@ interface LotRow {
   avertissements: number;
   en_attente: number;
   rapport: string;
+  outil: string | null;
+}
+
+/** What a tool declares for its batches; an unknown tool (module gone) leaves the stored keys alone. */
+function natureDeclaree(cle: string): { outil: { cle: string; libelle: string }; natures: { nom: string; libelle: string }[] } | null {
+  try {
+    const d = declarationOutil(cle);
+    return {
+      outil: { cle, libelle: d.libelle },
+      natures: (d.catalogue?.natures ?? d.importation?.natures ?? []).map(({ nom, libellePluriel }) => ({ nom, libelle: libellePluriel })),
+    };
+  } catch {
+    return null;
+  }
 }
 
 const JOUR_MS = 24 * 3600 * 1000;
@@ -64,9 +82,20 @@ function compteursVides(): Compteurs {
 }
 
 function versLot(r: LotRow, maintenant: Date): Lot {
-  const stockes = JSON.parse(r.compteurs) as Partial<Compteurs>;
-  const compteurs = compteursVides();
-  for (const n of NATURES) Object.assign(compteurs[n], stockes[n] ?? {});
+  const stockes = JSON.parse(r.compteurs) as Record<string, Record<string, number>>;
+  const declare = r.outil === null ? null : natureDeclaree(r.outil);
+  let compteurs: Compteurs;
+  if (r.outil === null) {
+    compteurs = compteursVides();
+    for (const n of NATURES) Object.assign(compteurs[n], stockes[n] ?? {});
+  } else {
+    // A tool batch: one counter set per declared nature (or per stored key if the tool is gone).
+    const noms = declare ? declare.natures.map((n) => n.nom) : Object.keys(stockes);
+    compteurs = {} as Compteurs;
+    for (const n of noms) {
+      (compteurs as Record<string, unknown>)[n] = { creees: 0, mises_a_jour: 0, inchangees: 0, refusees: 0, ...(stockes[n] ?? {}) };
+    }
+  }
   const derniere = Date.parse(r.dernier_ecrit_le ?? r.ouvert_le);
   return {
     lotId: r.id,
@@ -80,6 +109,7 @@ function versLot(r: LotRow, maintenant: Date): Lot {
     avertissements: r.avertissements,
     enAttente: r.en_attente,
     rapport: JSON.parse(r.rapport) as EntreeRapport[],
+    ...(r.outil === null ? {} : { outil: declare?.outil ?? { cle: r.outil, libelle: r.outil }, natures: declare?.natures ?? [] }),
   };
 }
 
@@ -95,23 +125,31 @@ export function ouvrirLot(
   db: Db,
   jeton: Jeton,
   maintenant: Date = new Date(),
+  outil: string | null = null,
 ): { lot: Lot; repris: boolean } {
+  // The scope decides (K-6): a tool token opens a batch of one of its tools, a content token a content batch.
+  if (outil === null ? jeton.outils.length > 0 : !jeton.outils.includes(outil)) throw introuvable();
+  // The role is read now (B-46): a token of an account that is no longer a GM opens no batch.
+  exigerMJ(db, jeton.universId, jeton.compteId);
   return db.transaction(() => {
     const ouvert = db
-      .prepare('SELECT * FROM lots_import WHERE jeton_id = ? AND clos_le IS NULL ORDER BY id DESC LIMIT 1')
-      .get(jeton.id) as LotRow | undefined;
+      .prepare('SELECT * FROM lots_import WHERE jeton_id = ? AND outil IS ? AND clos_le IS NULL ORDER BY id DESC LIMIT 1')
+      .get(jeton.id, outil) as LotRow | undefined;
     if (ouvert) return { lot: versLot(ouvert, maintenant), repris: true };
     const { lastInsertRowid } = db
-      .prepare('INSERT INTO lots_import (univers_id, jeton_id, ouvert_le, compteurs) VALUES (?, ?, ?, ?)')
-      .run(jeton.universId, jeton.id, maintenant.toISOString(), JSON.stringify(compteursVides()));
+      .prepare('INSERT INTO lots_import (univers_id, jeton_id, ouvert_le, compteurs, outil) VALUES (?, ?, ?, ?, ?)')
+      .run(jeton.universId, jeton.id, maintenant.toISOString(),
+        JSON.stringify(outil === null ? compteursVides() : {}), outil);
     return { lot: versLot(ligne(db, Number(lastInsertRowid))!, maintenant), repris: false };
   })();
 }
 
-/** A batch of the token's universe; any other id is unknown. */
+/** A batch of the token's universe, read by its own token or by a GM of it; any other id is unknown. */
 export function lireLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date = new Date()): Lot {
   const row = ligne(db, lotId);
   if (!row || row.univers_id !== jeton.universId) throw introuvable();
+  // A player's token reads no one else's batch (its report names sheets): the same silence as an unknown id.
+  if (row.jeton_id !== jeton.id && roleDe(db, jeton.universId, jeton.compteId) !== 'mj') throw introuvable();
   return versLot(row, maintenant);
 }
 
@@ -126,7 +164,7 @@ function compterParentsEnAttente(db: Db, universId: number): number {
         WHERE f.univers_id = ? AND json_extract(f.dernier_import, '$.parent.demande') IS NOT NULL
           AND f.parent_id IS json_extract(f.dernier_import, '$.parent.ecrit')
           AND NOT EXISTS (SELECT 1 FROM fiches p WHERE p.id = f.parent_id
-                            AND p.cle_origine = json_extract(f.dernier_import, '$.parent.demande'))`,
+                            AND p.cle = json_extract(f.dernier_import, '$.parent.demande'))`,
     )
     .get(universId) as { n: number };
   return n;
@@ -152,16 +190,21 @@ export function cloreLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date =
 export function noterDansLot(
   db: Db,
   lotId: number,
-  nature: Nature,
+  nature: Nature | (string & {}),
   issue: Issue | 'supprimees' | null,
   entrees: EntreeRapport[] = [],
   maintenant: Date = new Date(),
+  nombre = 1,
 ): void {
   const row = ligne(db, lotId);
   if (!row) throw introuvable();
   const lot = versLot(row, maintenant);
+  // A tool batch counts the natures its tool declares and nothing else (K-6).
+  if (issue !== null && row.outil !== null && !Object.hasOwn(lot.compteurs, nature)) {
+    throw new Error(`Nature « ${nature} » non déclarée par ${row.outil}.`);
+  }
   // A skipped entry warns without counting as a created, unchanged or refused object.
-  if (issue !== null) (lot.compteurs[nature] as Record<string, number>)[issue]! += 1;
+  if (issue !== null) (lot.compteurs as unknown as Record<string, Record<string, number>>)[nature]![issue]! += nombre;
   const rapport = [...lot.rapport, ...entrees].slice(0, MAX_RAPPORT);
   const avert = entrees.filter((e) => e.gravite === 'avertissement').length;
   db.prepare(

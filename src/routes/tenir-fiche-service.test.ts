@@ -100,7 +100,7 @@ test('bilan_de_port_sel_pour_antor_404_pour_lea', async () => {
   assert.equal(r.status, 200, JSON.stringify(r.json));
   assert.deepEqual(r.json, {
     sections: 3,
-    relations: 3,
+    relations: 5,
     places: 1,
     fichiers: 2,
     enfants: 5,
@@ -176,7 +176,7 @@ test('transaction_en_echec_laisse_fiche_enfants_et_disque_intacts_puis_succes_ef
   assert.equal(n(`SELECT COUNT(*) n FROM fiches WHERE id = ${port}`), 1);
   assert.equal(n(`SELECT COUNT(*) n FROM fiches WHERE parent_id = ${port}`), 5);
   assert.equal(n(`SELECT COUNT(*) n FROM sections WHERE fiche_id = ${port}`), 3);
-  assert.equal(n(`SELECT COUNT(*) n FROM relations WHERE cible_fiche_id = ${port}`), 3);
+  assert.equal(n(`SELECT COUNT(*) n FROM relations WHERE cible_fiche_id = ${port}`), 5);
   assert.equal(n(`SELECT COUNT(*) n FROM elements_carte WHERE fiche_id = ${port}`), 1);
   assert.equal(n(`SELECT COUNT(*) n FROM pieces_jointes WHERE fichier = '${nom}'`), 1);
   assert.ok(existsSync(join(DISQUE, nom)), 'le disque est intact après un échec');
@@ -196,7 +196,7 @@ test('import_delete_par_cle_cree_supprime_recree_et_cle_inconnue_204_sans_ecritu
   assert.equal((await put(l1)).etat, 'creee');
   const d = await w.imp('DELETE', `fiches/lieu:havre-gris?lot=${l1}`);
   assert.equal(d.statusCode, 204);
-  assert.equal((w.app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE cle_origine = 'lieu:havre-gris'").get() as Any).n, 0);
+  assert.equal((w.app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE cle = 'lieu:havre-gris'").get() as Any).n, 0);
   assert.equal((await put(l1)).etat, 'creee');
   await w.imp('POST', `lots/${l1}/clore`);
   const rap1 = (await w.imp('GET', `lots/${l1}`)).json() as Any;

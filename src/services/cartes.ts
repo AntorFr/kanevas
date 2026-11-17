@@ -6,6 +6,7 @@ import { peutLireSection, peutVoirFiche, roleDe, vueMJ } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { chargerFiche, LIMITE_LISTE, validerTitre } from './fiches.js';
 import { typeParSignature } from './fichiers.js';
+import { libelleRelation } from './natures.js';
 import { lireRelations } from './relations.js';
 import {
   abandonner,
@@ -61,7 +62,11 @@ export interface LienVue {
   /** Sheet the relation comes from, sheet it points to, and the free label. */
   de: number;
   vers: number;
-  type: string;
+  /** Key of the nature, '' for a free relation. */
+  nature: string;
+  qualificatif: string;
+  /** The nature's label with the qualifier after « — », or the qualifier alone when free. */
+  libelle: string;
 }
 
 export interface CarteLue {
@@ -378,10 +383,16 @@ export function lireCarte(db: Db, compteId: number, modeJoueur: boolean, carteId
         if (!peutLireSection(role, s, acteur)) continue;
         for (const rel of lireRelations(db, acteur, c.univers_id, r.fiche_id, s.id)) {
           if (!bouts.has(rel.cible.id)) continue;
-          const cle = `${r.fiche_id}|${rel.cible.id}|${rel.type}`;
+          const cle = `${r.fiche_id}|${rel.cible.id}|${rel.nature}|${rel.qualificatif}`;
           if (vus.has(cle)) continue;
           vus.add(cle);
-          liens.push({ de: r.fiche_id, vers: rel.cible.id, type: rel.type });
+          liens.push({
+            de: r.fiche_id,
+            vers: rel.cible.id,
+            nature: rel.nature,
+            qualificatif: rel.qualificatif,
+            libelle: libelleRelation(rel.nature, rel.qualificatif),
+          });
         }
       }
     }

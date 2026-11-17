@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of B-29: every built screen has its states (empty, loading, error,
 // connection lost, refusal, long content) and the shared write behaviour (« … », double click,
 // failure). Exact texts of docs/ecrans.md « Détail des écrans de kanevas-premiere-fiche ».
@@ -92,10 +93,10 @@ async function casser(page: Any, motif: string | RegExp, methode = 'GET'): Promi
 test('B-29 chargement : « Chargement de vos univers… » (E-1), « Chargement des membres… » (E-4), « Chargement des fiches… » (E-8), « Chargement de la fiche… » (E-9)', opts, async () => {
   const cas: [string, RegExp, string][] = [
     ['/', /\/api\/univers$/, 'Chargement de vos univers…'],
-    [urlUnivers + '/membres', /\/api\/univers\/\d+\/membres$/, 'Chargement des membres…'],
-    [urlUnivers + '/fiches/personnages', /\/api\/univers\/\d+\/fiches\?/, 'Chargement des fiches…'],
-    [urlFiche, /\/api\/univers\/\d+\/fiches\/\d+$/, 'Chargement de la fiche…'],
-    [urlUnivers, /\/api\/univers\/\d+$/, 'Chargement…'],
+    [urlUnivers + '/membres', /\/api\/univers\/[^/]+\/membres$/, 'Chargement des membres…'],
+    [urlUnivers + '/fiches/personnages', /\/api\/univers\/[^/]+\/fiches\?/, 'Chargement des fiches…'],
+    [urlFiche, /\/api\/univers\/[^/]+\/fiches\/[^/]+$/, 'Chargement de la fiche…'],
+    [urlUnivers, /\/api\/univers\/[^/]+$/, 'Chargement…'],
   ];
   for (const [url, motif, message] of cas) {
     const page = await antor.context().newPage();
@@ -112,10 +113,10 @@ test('B-29 chargement : « Chargement de vos univers… » (E-1), « Chargement 
 test('B-29 erreur : chaque écran dit son message avec « Réessayer », qui relance et rend le contenu', opts, async () => {
   const cas: [string, RegExp, string, string][] = [
     ['/', /\/api\/univers$/, 'Impossible de charger vos univers.', 'États'],
-    [urlUnivers, /\/api\/univers\/\d+$/, 'Impossible de charger cette page.', 'États'],
-    [urlUnivers + '/membres', /\/api\/univers\/\d+\/membres$/, 'Impossible de charger les membres.', 'antor'],
-    [urlUnivers + '/fiches/personnages', /\/api\/univers\/\d+\/fiches\?/, 'Impossible de charger les fiches.', 'Fiche des états'],
-    [urlFiche, /\/api\/univers\/\d+\/fiches\/\d+$/, 'Impossible de charger cette fiche.', 'Première'],
+    [urlUnivers, /\/api\/univers\/[^/]+$/, 'Impossible de charger cette page.', 'États'],
+    [urlUnivers + '/membres', /\/api\/univers\/[^/]+\/membres$/, 'Impossible de charger les membres.', 'antor'],
+    [urlUnivers + '/fiches/personnages', /\/api\/univers\/[^/]+\/fiches\?/, 'Impossible de charger les fiches.', 'Fiche des états'],
+    [urlFiche, /\/api\/univers\/[^/]+\/fiches\/[^/]+$/, 'Impossible de charger cette fiche.', 'Première'],
   ];
   for (const [url, motif, message, apres] of cas) {
     const page = await antor.context().newPage();
@@ -158,7 +159,7 @@ test('B-29 connexion perdue : bandeau, contenu déjà chargé lisible, boutons q
   assert.ok((await texte(page)).includes('États'), 'the loaded list stays');
   assert.equal(await page.getByRole('link', { name: rx('Créer un univers') }).or(page.getByRole('button', { name: rxExact('Créer un univers') })).first().isDisabled().catch(() => true), true);
   await page.context().setOffline(false);
-  for (let i = 0; i < 60 && (await page.getByText(rx(BANDEAU_PERDU)).count()) > 0; i++) await page.waitForTimeout(100);
+  await page.getByText(rx(BANDEAU_PERDU)).first().waitFor({ state: 'hidden' });
   assert.equal(await page.getByText(rx(BANDEAU_PERDU)).count(), 0, 'the banner goes away by itself');
   await page.close();
 });
@@ -248,7 +249,7 @@ test('B-29 échec d\'une écriture : « L\'action n\'a pas abouti. Réessayez. �
   assert.equal(await page.getByLabel('Nom', { exact: true }).inputValue(), 'Échec création');
   await page.unroute(/\/api\/univers$/);
   // E-8
-  await echouer(page, /\/api\/univers\/\d+\/fiches$/, 'POST');
+  await echouer(page, /\/api\/univers\/[^/]+\/fiches$/, 'POST');
   await page.goto(urlUnivers);
   await allerListe(page, 'lieu');
   await page.getByRole('button', { name: /^Nouveau lieu$/ }).first().click();
@@ -257,9 +258,9 @@ test('B-29 échec d\'une écriture : « L\'action n\'a pas abouti. Réessayez. �
   await f.getByRole('button', { name: rxExact('Créer la fiche') }).click();
   await voit(page, ECHEC);
   assert.equal(await f.getByLabel('Titre').inputValue(), 'Lieu perdu');
-  await page.unroute(/\/api\/univers\/\d+\/fiches$/);
+  await page.unroute(/\/api\/univers\/[^/]+\/fiches$/);
   // E-4
-  await echouer(page, /\/api\/univers\/\d+\/membres$/, 'POST');
+  await echouer(page, /\/api\/univers\/[^/]+\/membres$/, 'POST');
   await page.goto(urlUnivers + '/membres');
   await page.getByLabel('Rôle de antor').waitFor();
   await page.getByLabel('Identifiant du compte').fill('mira');
@@ -275,7 +276,7 @@ test('B-29 échec d\'écriture sur E-9 : le réglage d\'audience revient à sa v
   page.setDefaultTimeout(8000);
   await page.goto(urlFiche);
   await section(page, 'Première').waitFor();
-  await echouer(page, /\/api\/univers\/\d+\/fiches\/\d+\/sections\/\d+$/, 'PATCH');
+  await echouer(page, /\/api\/univers\/[^/]+\/fiches\/[^/]+\/sections\/\d+$/, 'PATCH');
   const s = section(page, 'Première');
   await s.getByRole('button', { name: /régler l['’]audience de/ }).click();
   const interrupteur = page.getByRole('dialog', { name: /^Qui voit/ }).getByRole('switch', { name: rx('Les joueurs la lisent') });
@@ -284,8 +285,8 @@ test('B-29 échec d\'écriture sur E-9 : le réglage d\'audience revient à sa v
   assert.equal(await interrupteur.getAttribute('aria-checked'), 'false', 'back to the value shown before');
   assert.equal(await page.getByRole('status').getByText(/enregistrée/).count(), 0, 'a failure is never a toast');
   await page.keyboard.press('Escape');
-  await page.unroute(/\/api\/univers\/\d+\/fiches\/\d+\/sections\/\d+$/);
-  await echouer(page, /\/api\/univers\/\d+\/fiches\/\d+\/sections\/\d+\/contenu$/, 'PUT');
+  await page.unroute(/\/api\/univers\/[^/]+\/fiches\/[^/]+\/sections\/\d+$/);
+  await echouer(page, /\/api\/univers\/[^/]+\/fiches\/[^/]+\/sections\/\d+\/contenu$/, 'PUT');
   await s.getByRole('button', { name: rxExact('Modifier') }).click();
   await s.getByRole('textbox').fill('Texte à garder');
   await s.getByRole('button', { name: rxExact('Enregistrer') }).click();
@@ -299,19 +300,15 @@ test('B-29 connexion perdue : quand la requête n\'aboutit pas puis que le serve
   page.setDefaultTimeout(8000);
   await page.goto(urlFiche);
   await section(page, 'Première').waitFor();
-  const motif = /\/api\/univers\/\d+\/fiches\/\d+\/sections\/\d+$/;
+  const motif = /\/api\/univers\/[^/]+\/fiches\/[^/]+\/sections\/\d+$/;
   await casser(page, motif, 'PATCH');
   const s = section(page, 'Première');
   await s.getByRole('button', { name: /régler l['’]audience de/ }).click();
   await page.getByRole('dialog', { name: /^Qui voit/ }).getByRole('switch', { name: rx('Les joueurs la lisent') }).click({ noWaitAfter: true });
   await voit(page, BANDEAU_PERDU);
   await page.unroute(motif); // the server is reachable again
-  let revenu = false;
-  for (let i = 0; i < 300 && !revenu; i++) {
-    revenu = (await page.getByText(rx(BANDEAU_PERDU)).count()) === 0;
-    if (!revenu) await page.waitForTimeout(100);
-  }
-  assert.equal(revenu, true, 'the banner must go away within 30 s of the connection coming back');
+  // the banner must go away within 30 s of the connection coming back
+  await page.getByText(rx(BANDEAU_PERDU)).first().waitFor({ state: 'hidden', timeout: 30000 });
   assert.equal(await page.getByRole('dialog', { name: /^Qui voit/ }).getByRole('switch', { name: rx('Les joueurs la lisent') }).isDisabled(), false);
   await page.close();
 });

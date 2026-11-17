@@ -3,7 +3,7 @@ import type { Readable } from 'node:stream';
 import { attachmentsDir } from '../config/env.js';
 import type { Db } from '../db/db.js';
 import { cleValide } from './import.js';
-import type { Jeton } from './jetons.js';
+import type { JetonRequete as Jeton } from './jetons.js';
 import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
 import {
   exigerRole,
