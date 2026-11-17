@@ -1,4 +1,3 @@
-// ecrans: E-27
 // E-27 « Génération » at 390 px (phone), written from docs/ecrans.md « E-27 — detail » (Phone / tablet, States) and the mockup
 // docs/maquettes/e27-generation.html (phone frame: rows as cards, small thumbnail on the left, green « Brouillon prêt » pill,
 // the three tabs whole, a line name of 19 characters not cut).
