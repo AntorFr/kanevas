@@ -25,7 +25,7 @@ scripts/duree-tests-ecran.mjs, inventaire-ecrans.mjs   `node scripts/duree-tests
 src/
   server.ts, app.ts               Startup; assembly of plugins and routes
   config/env.ts                   Environment variables (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001 to 0037 (a number is taken when its slice merges, AD-51; `rm -rf dist` after a renumbering), runner
+  db/                             SQLite (better-sqlite3), migrations/0001 to 0038 (a number is taken when its slice merges, AD-51; `rm -rf dist` after a renumbering), runner
   services/                       cles (readable keys: the only place that draws, changes and resolves them, sole writer of the former-key tables), comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, natures (the closed list of the five relation natures, `GET /api/univers/:id/natures`), preparation (tasks of an adventure), comptes_rendus, propositions, markdown (single renderer), liens (`liens` table, sole writer), etiquettes (aliases and labels, sole writer), mentions (“Mentioned in”, natured relations excluded), liees (“Fiches liées”, screen: `frontend/src/ecrans/fiche/blocs-fiche/liees.tsx`, line `frontend/src/ui/ligne-fiche-liee.tsx`: read-only, both AD-64 guards, one query to count and list), types, types-fiche (the list of types and their activation),
                                    fichiers (media library, sole writer of `fichiers*`, except that deleting a universe in `univers.ts` erases its rows), fichiers-lecture (read of the files a text or sheet references by key, waiting render), cartes, jetons, lots, import (token context), outils (tools framework), sections-gerees, catalogues (the two catalogue levels: resolution, preview and application, hide and withdraw; the only reader of a module's `StockageCatalogue`), import-catalogue (catalogue import by tool-scoped token), import-fiches (import API), import-relations (relations by origin key),  stockage (bytes on the volume)
                                    the only code that reads or writes the data; session, oidc
@@ -144,7 +144,7 @@ npm run import:echantillon -- http://localhost:3055 4 <token>
 ```
 
 Use the public stub token `kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue` (`JETON_BOUCHON` in `src/bouchon/depart.ts`) or create a token in
-« Accès par API » (E-18). The standalone client sends files, parent-first sheets (15 in the sample: 11 ordinary sheets plus the 2 campaigns and 2 scenarios, which are `aventure` sheets),
+« Mes jetons d'API » (E-23, from the account menu). The standalone client sends files, parent-first sheets (15 in the sample: 11 ordinary sheets plus the 2 campaigns and 2 scenarios, which are `aventure` sheets),
 relations in a batch, closes it, and prints the counters and warning reasons. Note: in the import, the `campagne` field of a report names *any* adventure sheet (campaign or scenario) by its origin key; « Campagne » as a sub-type is only a label.
 Tokens are passed as arguments and never written to disk. The sample comes from Éneria;
 its source mapping and neutral JSON format are documented in `src/bouchon/echantillon/README.md`.
@@ -171,9 +171,9 @@ For the refusal case (one refusal, reason names the missing campaign, exit statu
 npm run import:echantillon -- http://localhost:3055 4 <token> src/bouchon/echantillon/refus.json
 ```
 
-Finally delete « Essai Kanka » in E-14, create a fresh universe and a token in E-18, and run
+Finally delete « Essai Kanka » in E-14, create a fresh universe and a token in E-23 that reaches it, and run
 the original command with their id and token: the first-run counts must match. The stub
-token belongs to the deleted universe and cannot be reused for the new one.
+token's only access was the deleted universe, so it cannot reach the new one.
 
 ### Without Authelia: stub mode
 
@@ -264,10 +264,10 @@ Markdown recipe in stub mode: in « Lame d'Ébène », as `antor`, open the « M
 
 Links recipe in stub mode. In « Lame d'Ébène », as `antor`, sheet « Port-Sel », « Modifier » on « Histoire »: typing `[[` then « ald » opens the list, Enter inserts `[[<id>|Maître Aldric]]`; likewise for « La Guilde des Brumes » (GM-only). As `lea`, the first is a link opening « Maître Aldric », the second unmarked text; on « Maître Aldric », « Mentionnée dans » names « Port-Sel » (a link in a GM block of « Rapport secret de l'amirauté » appears there only as `antor`). In « Essai Kanka », « Anse-aux-Sels » shows an « en attente » link and a broken link as `antor`, plain text as `lea`. With the stub token, a `PUT` of `lieu:port-sel` with « `[[cle:faction:guilde|la Guilde]]` » in a section gives a waiting link; the `PUT` of `faction:guilde` resolves it without changing Port-Sel's version; replayed, both return « inchangee ». In a scenario, `[[` opens the same list; in a system entry, `[[…]]` stays plain text.
 
-API access recipe in stub mode (« Essai Kanka » is seeded: Antor GM, Léa player, and a « Jeton du bouchon » with fixed value `JETON_BOUCHON`, `src/bouchon/depart.ts`). As `antor`, « Essai Kanka » ▸ « Accès par API » (E-18): create a token, displayed only once. With it (or the stub token), the import API (AD-103, AD-104), on a fresh database (« Essai Kanka » is the 4th seeded universe, id 4; with `KANEVAS_SANS_SEMIS=1` neither it nor the stub token exists: create a universe and a token, the id is in the base address copyable on E-18):
+API access recipe in stub mode (« Essai Kanka » is seeded: Antor GM, Léa player, and a « Jeton du bouchon » with fixed value `JETON_BOUCHON`, `src/bouchon/depart.ts`). As `antor`, account menu ▸ « Mes jetons d'API » (E-23): create a token (one account-wide token, « all universes » or a list with read / read + write per universe), displayed only once; a read-only token gets 403 `lecture_seule` on any write; the instance admin lists and revokes tokens in E-5 « Jetons d'API ». E-18 (« Essai Kanka » ▸ « Accès par API ») keeps the batches and the base address. With it (or the stub token), the import API (AD-103, AD-104), on a fresh database (« Essai Kanka » is the 4th seeded universe, id 4; with `KANEVAS_SANS_SEMIS=1` neither it nor the stub token exists: create a universe and a token, the key is in the base address copyable on E-18):
 ```bash
 JETON=kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue   # the stub token, or the one created on E-18
-B=http://localhost:3055/api/import/v1/univers/4          # no trailing slash; port 3055 as in the stub command above (3001 for `npm start` without PORT)
+B=http://localhost:3055/api/v1/univers/4          # (key or id; the old prefix /api/import/v1/univers/4 is an alias of the same routes) no trailing slash; port 3055 as in the stub command above (3001 for `npm start` without PORT)
 curl -H "Authorization: Bearer $JETON" $B                        # the contract: types, limits
 curl -X POST -H "Authorization: Bearer $JETON" $B/lots            # opens (or resumes) a batch; copy the `lotId` field of the JSON response
 curl -X PUT -H "Authorization: Bearer $JETON" -H 'content-type: application/json' "$B/fiches/lieu:port-sel?lot=<lotId>" \
