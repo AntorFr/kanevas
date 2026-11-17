@@ -4488,9 +4488,8 @@ d'agir avec vos droits, par l'API ou par le serveur MCP, dans les univers que vo
   écrire. », « Révoquer le jeton » (`--danger`) / « Annuler »; toast « Jeton révoqué. ».
 - « Outils » (`kanevas-outils`, B-65, which this epic follows): an optional list of tools, for the token as a
   whole; a token with tools writes only those tools' data and no content, and its line says « outils : galaxie »
-  after its accesses. Built: `POST /api/compte/jetons` takes `outils` (keys `module/outil`, at least one, each offered in a
-  universe the token reaches where the account is a GM); `GET /api/compte/jetons` and `GET /api/instance/jetons` return
-  `outilsOffrables` (the offerable tools with the ids of their universes) and each token's `outils`.
+  after its accesses. **Not drawn nor built by `kanevas-synchro-jetons`**: the choice joins the form when
+  `jetons_outils` is in the tree (see the plan of the slice); until then the form creates content tokens only.
 - The level shown on a line is the one **chosen**, not the effective one: where the account is a player, a
   « lecture + écriture » entry still acts as reading (the note of the form says it; the 403 `lecture_seule` answers a write).
 - The mockup `e23-jetons.html` does not draw the pills « Révoqué » and « (plus membre) », the 409, « Les accès ont changé. » and the load
