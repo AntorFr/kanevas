@@ -23,8 +23,25 @@ export interface JetonVue {
   niveauTous: 'lecture' | 'ecriture' | null;
   univers: AccesVue[];
   modifieParAdmin: { par: number; le: string } | null;
+  /** Keys `module/outil` of a tool token, empty for a content token. */
+  outils?: string[];
   etat: 'actif' | 'revoque' | 'expire';
   proprietaire: string;
+}
+
+/** A tool the owner may offer to a token (`outilsOffrables` of the service). */
+export interface OutilOffrable {
+  cle: string;
+  libelle: string;
+  module: string;
+  libelleModule: string;
+  univers: number[];
+}
+
+/** « outils : Essai G, Essai X » (a tool no longer offered keeps its key), or null for a content token. */
+export function libelleOutils(j: JetonVue, offrables: OutilOffrable[]): string | null {
+  if (!j.outils || j.outils.length === 0) return null;
+  return `outils : ${j.outils.map((c) => offrables.find((o) => o.cle === c)?.libelle ?? c).join(', ')}`;
 }
 
 /** A universe the owner may choose. */

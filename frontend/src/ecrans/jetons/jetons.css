@@ -11,3 +11,4 @@
 .fenetre .titre-liste-acces { font-size: var(--t-12); font-weight: 500; color: var(--texte-2); margin-bottom: calc(-1 * var(--e-2)); }
 .fenetre .jeton-montre-nom { margin: 0 0 var(--e-2); color: var(--texte-2); font-size: var(--t-13); }
 .fenetre-actions { display: flex; justify-content: flex-end; gap: var(--e-2); margin-top: var(--e-4); }
+.fenetre .cases-outils { display: flex; flex-direction: column; gap: var(--e-2); }

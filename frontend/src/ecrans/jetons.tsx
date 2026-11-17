@@ -6,17 +6,18 @@ import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import { BoiteDialogue, Bouton, ChargementListe, ErreurChargement, LigneJeton, ListeJetons, Pastille, useToasts } from '../ui';
 import { FormulaireJeton } from './jetons/formulaire';
-import { MOT_NIVEAU, metaJeton, type JetonVue, type UniversChoix } from './jetons/format';
+import { MOT_NIVEAU, libelleOutils, metaJeton, type JetonVue, type OutilOffrable, type UniversChoix } from './jetons/format';
 import './ecrans.css';
 import './liste.css';
 
 interface Reponse {
   jetons: JetonVue[];
   univers: UniversChoix[];
+  outilsOffrables?: OutilOffrable[];
 }
 
 /** The accesses of a line: « Tous mes univers — lecture + écriture · Éneria : lecture », or the list. */
-function AccesLigne({ j, univers }: { j: JetonVue; univers: UniversChoix[] }) {
+function AccesLigne({ j, univers, outils }: { j: JetonVue; univers: UniversChoix[]; outils: OutilOffrable[] }) {
   const connus = new Set(univers.map((u) => u.id));
   const plus = (id: number) => (connus.has(id) ? null : <small> (plus membre)</small>);
   const morceaux = j.univers.map((u) => (
@@ -26,15 +27,23 @@ function AccesLigne({ j, univers }: { j: JetonVue; univers: UniversChoix[] }) {
     </span>
   ));
   const avec = (liste: React.ReactNode[]) => liste.flatMap((x, i) => (i === 0 ? [x] : [' · ', x]));
+  const lesOutils = libelleOutils(j, outils);
+  const fin = lesOutils ? <> · {lesOutils}</> : null;
   if (j.tous) {
     return (
       <>
         <strong>Tous mes univers</strong> — {MOT_NIVEAU[j.niveauTous ?? 'lecture']}
         {morceaux.length > 0 && <> · {avec(morceaux)}</>}
+        {fin}
       </>
     );
   }
-  return <>{morceaux.length > 0 ? avec(morceaux) : '—'}</>;
+  return (
+    <>
+      {morceaux.length > 0 ? avec(morceaux) : '—'}
+      {fin}
+    </>
+  );
 }
 
 function PastillesJeton({ j }: { j: JetonVue }) {
@@ -101,6 +110,7 @@ function MesJetons() {
   if (!donnees) return <ChargementListe texte="Chargement de vos jetons…" />;
 
   const { jetons, univers } = donnees;
+  const outilsOffrables = donnees.outilsOffrables ?? [];
   return (
     <div className="page-liste page-jetons">
       <header className="tete-liste">
@@ -133,7 +143,7 @@ function MesJetons() {
                 key={j.id}
                 nom={j.nom}
                 pastilles={<PastillesJeton j={j} />}
-                acces={<AccesLigne j={j} univers={univers} />}
+                acces={<AccesLigne j={j} univers={univers} outils={outilsOffrables} />}
                 meta={metaJeton(j, maintenant)}
                 inactif={j.etat !== 'actif'}
                 hors={perdue}
@@ -158,6 +168,7 @@ function MesJetons() {
       {creation && (
         <FormulaireJeton
           univers={univers}
+          outilsOffrables={outilsOffrables}
           url="/api/compte/jetons"
           onFermer={() => setCreation(false)}
           onChange={(m) => {

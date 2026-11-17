@@ -3,7 +3,7 @@ import { useState, type FormEvent } from 'react';
 
 import { ErreurApi, appeler } from '../../api';
 import './jetons.css';
-import { Alerte, Bouton, ChoixSegmente, Champ, Fenetre, ListeAcces, ValeurCopiable, type ChoixAcces } from '../../ui';
+import { Alerte, Bouton, Case, ChoixSegmente, Champ, Fenetre, ListeAcces, ValeurCopiable, type ChoixAcces } from '../../ui';
 import {
   corpsAcces,
   formeDe,
@@ -12,6 +12,7 @@ import {
   listeVide,
   type FormeAcces,
   type JetonVue,
+  type OutilOffrable,
   type UniversChoix,
 } from './format';
 
@@ -25,6 +26,10 @@ const DUREES = [
 const NIVEAUX = [
   { valeur: 'lecture', libelle: 'Lecture' },
   { valeur: 'ecriture', libelle: 'Lecture + écriture' },
+] as const;
+const PORTEES = [
+  { valeur: 'contenu', libelle: 'Contenu de l’univers' },
+  { valeur: 'outils', libelle: 'Outils' },
 ] as const;
 const modes = (admin: boolean) =>
   [
@@ -40,6 +45,7 @@ const modes = (admin: boolean) =>
 export function FormulaireJeton({
   jeton,
   univers,
+  outilsOffrables = [],
   url,
   titreModifier = 'Modifier les accès',
   admin = false,
@@ -50,6 +56,8 @@ export function FormulaireJeton({
   /** Absent: a creation. */
   jeton?: JetonVue;
   univers: UniversChoix[];
+  /** The tools a creation may offer (E-23 only: a scope cannot be changed afterwards). */
+  outilsOffrables?: OutilOffrable[];
   url: string;
   titreModifier?: string;
   /** E-5: the admin edits the accesses of someone else's token (wording in the third person). */
@@ -72,6 +80,9 @@ export function FormulaireJeton({
   const [revoque, setRevoque] = useState(false);
   const [montre, setMontre] = useState<{ nom: string; valeur: string } | null>(null);
   const [sansListe, setSansListe] = useState(false);
+  const [portee, setPortee] = useState<'contenu' | 'outils'>('contenu');
+  const [outils, setOutils] = useState<string[]>([]);
+  const [sansOutil, setSansOutil] = useState(false);
 
   const creation = !jeton;
   const lignes = lignesDe(univers, forme, courant);
@@ -85,13 +96,14 @@ export function FormulaireJeton({
     e?.preventDefault();
     if (enCours) return;
     if (creation && nom.trim() === '') return setNomVide(true);
+    if (creation && portee === 'outils' && outils.length === 0) return setSansOutil(true);
     if (listeVide(forme)) return setSansListe(true);
     setEnCours(true);
     setEchec(null);
     setChanges(false);
     try {
       if (creation) {
-        const r = await appeler<{ valeur: string }>('POST', url, { nom: nom.trim(), dureeJours: Number(duree), acces: corpsAcces(forme) });
+        const r = await appeler<{ valeur: string }>('POST', url, { nom: nom.trim(), dureeJours: Number(duree), acces: corpsAcces(forme), ...(portee === 'outils' ? { outils } : {}) });
         setMontre({ nom: nom.trim(), valeur: r.valeur });
         onChange();
       } else {
@@ -158,6 +170,38 @@ export function FormulaireJeton({
                 onChange={(e: { target: { value: string } }) => setNom(e.target.value)}
               />
               <ChoixSegmente legende="Durée" options={DUREES} valeur={duree} onChange={setDuree} />
+              <ChoixSegmente
+                legende="Portée"
+                options={PORTEES}
+                valeur={portee}
+                disabled={outilsOffrables.length === 0}
+                onChange={(v) => {
+                  setSansOutil(false);
+                  setPortee(v);
+                }}
+              />
+              {outilsOffrables.length === 0 && (
+                <p className="note-jeton">Aucun outil de vos univers ne reçoit de catalogue par l’API.</p>
+              )}
+              {portee === 'outils' && (
+                <>
+                  <p className="note-jeton">Un jeton d’outil n’écrit que le catalogue des outils cochés. Il n’ouvre ni fiches ni fichiers.</p>
+                  <div className="cases-outils" role="group" aria-label="Outils">
+                    {outilsOffrables.map((o) => (
+                      <Case
+                        key={o.cle}
+                        etiquette={`${o.libelle} · ${o.libelleModule}`}
+                        checked={outils.includes(o.cle)}
+                        onChange={(e) => {
+                          setSansOutil(false);
+                          setOutils((l) => (e.target.checked ? [...l, o.cle] : l.filter((c) => c !== o.cle)));
+                        }}
+                      />
+                    ))}
+                  </div>
+                  {sansOutil && <p role="alert" className="erreur-boite">Cochez au moins un outil.</p>}
+                </>
+              )}
             </>
           )}
           <ChoixSegmente
