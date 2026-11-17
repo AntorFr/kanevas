@@ -323,7 +323,7 @@ export function Panneau({ titre, reserveMj, danger, children }: { titre: string;
 }
 
 /** Full-width status banner, not dismissible (`role="status"`). */
-export function Bandeau({ sorte, children }: { sorte: 'bouchon' | 'perdue' | 'joueur'; children: ReactNode }) {
+export function Bandeau({ sorte, children }: { sorte: 'bouchon' | 'perdue' | 'joueur' | 'lecture'; children: ReactNode }) {
   return (
     <div className={`bandeau ${sorte}`} role="status">
       {sorte === 'perdue' && <WifiOff size={14} strokeWidth={1.75} aria-hidden="true" />}

@@ -271,9 +271,9 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/taille-images-import-besoin.test.ts` | `B-taille-1 import : fiche poussée avant son fichier (clé en attente) puis fichier : le réglage est conservé ; le rejeu ne change rien` | affichage | — | gardé |
 | `src/e2e/taille-images-import-besoin.test.ts` | `B-taille-1 import : un titre qui n’est pas un réglage reste dans le texte et ne style pas l’image ; sans titre, aucune classe` | affichage | — | gardé |
 
-**Fichiers de l’epic `kanevas-battlemap`** (bibliothèque d’assets et direction artistique, E-25 et E-26, ajoutés après l’inventaire) : 73 tests, classés `affichage` et gardés tels quels ; leurs effets (droits, comptes, empreinte, retrait) sont déjà prouvés par les tests de routes et de services du module `battlemap`, non reclassés ici.
+**Fichiers de l’epic `kanevas-battlemap`** (bibliothèque d’assets et direction artistique, E-25 et E-26, ajoutés après l’inventaire) : 73 tests (puis 15 de l’éditeur et de la liste, E-28 et E-10, au même classement), classés `affichage` et gardés tels quels ; leurs effets (droits, comptes, empreinte, retrait) sont déjà prouvés par les tests de routes et de services du module `battlemap`, non reclassés ici.
 
-| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Léa lit la bibliothèque : neuf assets semés moins le MJ seul, aucun contrôle d’écriture` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Léa lit la bibliothèque : dix assets semés moins le MJ seul, aucun contrôle d’écriture` | affichage | — | gardé |
 | `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Léa cherche « Coffre piégé » (MJ seul) : aucun résultat, et « coffre » ne trouve que « Coffre »` | affichage | — | gardé |
 | `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Léa lit l’image d’un asset visible, mais pas les octets d’un asset MJ seul` | affichage | — | gardé |
 | `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `E-26 · Léa : « Page introuvable. » sur la direction artistique, et l’API la lui refuse` | affichage | — | gardé |
@@ -346,3 +346,24 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/battlemap-direction-e26.test.ts` | `erreur : lecture en échec → message + Réessayer` | affichage | — | gardé |
 | `src/e2e/battlemap-direction-e26.test.ts` | `chargement : le texte s’affiche tant que la lecture n’a pas répondu` | affichage | — | gardé |
 | `src/e2e/battlemap-direction-e26.test.ts` | `captures : deux thèmes, 1440 / 768 / 390` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > nominal : sol, deux salles, un mur défait, fermer et rouvrir` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > deux onglets : le second qui écrit donne « Cette carte a changé » au premier` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > carte pleine : le serveur répond 409 carte_pleine, « Carte pleine » et le geste est annulé` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > taille : « 200 cases au plus. » sans requête, puis le refus du serveur pour les éléments hors limites` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > joueur : Léa et le MJ en mode Joueur lisent « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > mobile : à 390 px les outils de dessin sont masqués` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-objets-revue.test.ts` | `E-28 objets, calques, propriétés > pose, calque MJ seul, échelle 2, duplication, lien, délien, réouverture` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-objets-revue.test.ts` | `E-28 objets, calques, propriétés > asset retiré : un asset posé sur 3 cartes, retiré en E-25 → « Asset retiré » dans l’éditeur` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-objets-revue.test.ts` | `E-28 objets, calques, propriétés > le 21e calque est refusé : « 20 calques au plus. »` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-objets-revue.test.ts` | `E-28 objets, calques, propriétés > reprise du verify : champs de la carte actifs sans sélection, calque MJ seul hachuré, libellé « Asset retiré » sur le canevas` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-ensemble-besoin.test.ts` | `E-28 Éditeur de carte : ce que voit Antor > E-10 puis E-28 : « Créer » ouvre l’éditeur — calques, onglets, indication de carte vide, « Jouer » désactivé` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-ensemble-besoin.test.ts` | `E-28 Éditeur de carte : ce que voit Antor > premier geste : l’indication disparaît et « Enregistré » s’affiche ; Ctrl+Z la fait revenir` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-ensemble-besoin.test.ts` | `E-28 Éditeur de carte : ce que voit Antor > deux onglets : le second qui écrit lit « Cette carte a changé » et « Recharger » montre l’élément du premier` | les deux | `src/outils/battlemap/editeur-ensemble-besoin.test.ts` : `B-101 échec : deux écritures sur la même version, la seconde est un conflit « version » et n’écrit rien ; un asset inconnu refuse tout le lot` | gardé — the effect (what the server holds) is also read on screen on purpose |
+| `src/e2e/battlemap-editeur-ensemble-besoin.test.ts` | `E-28 Éditeur de carte : ce que voit Antor > E-25 : retirer un asset posé sur 3 cartes dit « Utilisé sur 3 cartes », puis l’asset disparaît de la bibliothèque` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-ensemble-besoin.test.ts` | `E-28 Éditeur de carte : ce que voit Antor > E-28 : un asset retiré est remplacé, pour le MJ, par un repère qui porte « Asset retiré » sans avoir à le sélectionner` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-ensemble-besoin.test.ts` | `E-28 Éditeur de carte : ce que voit Antor > joueuse : l’adresse de l’éditeur donne « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > liste : Cantine de la station avec sa taille, titre-lien vers l’éditeur` | affichage | — | gardé |
+| `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > largeur 201 et nom vide refusés sous le champ, rien n’est créé` | affichage | — | gardé |
+| `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > création 30 × 20 : la carte est listée et l’éditeur s’ouvre ; la taille de case réglée à 100 est reprise` | affichage | — | gardé |
+| `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > joueuse : la carte composée est listée sans lien ni menu` | affichage | — | gardé |
+| `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > suppression : confirmation par le nom, puis la ligne disparaît` | affichage | — | gardé |

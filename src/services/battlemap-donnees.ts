@@ -22,3 +22,24 @@ export function effacerDonneesBattlemap(db: Db, universId: number): void {
   db.prepare('DELETE FROM bm_direction_images WHERE univers_id = ?').run(universId);
   db.prepare('DELETE FROM bm_direction WHERE univers_id = ?').run(universId);
 }
+
+/**
+ * What the map reads of the library to filter or check a document: among `ids` (the `asset_id` strings of a document),
+ * the assets that exist in the universe (`connus`, a draft excepted: it is not offered, rule 5) and, among them, those
+ * whose file is GM-only (`mjSeul`). An id that is no number is unknown.
+ */
+export function etatAssets(db: Db, universId: number, ids: Iterable<string>): { connus: Set<string>; mjSeul: Set<string> } {
+  const numeriques = [...new Set(ids)].filter((i) => /^[1-9][0-9]{0,15}$/.test(i));
+  const connus = new Set<string>();
+  const mjSeul = new Set<string>();
+  const lire = db.prepare(
+    `SELECT a.id, f.visibilite FROM bm_assets a JOIN fichiers f ON f.id = a.fichier_id
+     WHERE a.univers_id = ? AND a.etat = 'valide' AND a.id = ?`);
+  for (const id of numeriques) {
+    const l = lire.get(universId, Number(id)) as { id: number; visibilite: string } | undefined;
+    if (!l) continue;
+    connus.add(id);
+    if (l.visibilite === 'mj') mjSeul.add(id);
+  }
+  return { connus, mjSeul };
+}
