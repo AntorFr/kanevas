@@ -289,3 +289,4 @@ Tests of the harness itself (`harnais-*`, `demarrage-suite-besoin`, `diagnostic-
 | `src/e2e/jetons-ecran-compte.test.ts` | `bords_nom_vide_liste_vide_et_connexion_coupee` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
 | `src/e2e/jetons-ecran-compte.test.ts` | `modifie_par_admin_pastille_effacee_et_acces_changes_pendant_la_boite` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
 | `src/e2e/jetons-ecran-compte.test.ts` | `jeton_outils_essai_g_ligne_catalogue_ecrit_fiches_401` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
+| `src/e2e/jetons-ecran-compte.test.ts` | `liste_acces_nom_univers_long_passe_a_la_ligne_sans_troncature` | affichage | — | gardé — mise en page (nom non tronqué), rien à prouver par la porte |
