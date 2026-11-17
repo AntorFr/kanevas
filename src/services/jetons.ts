@@ -254,7 +254,7 @@ function verifierSaisie(entree: { nom: unknown; dureeJours: unknown }): { nom: s
   return { nom, duree: entree.dureeJours as number };
 }
 
-type EntreeJeton = { nom: unknown; dureeJours: unknown; acces: unknown };
+type EntreeJeton = { nom: unknown; dureeJours: unknown; acces: unknown; outils?: unknown };
 type EntreeJetonUnivers = { nom: unknown; dureeJours: unknown; outils?: unknown };
 
 /**
@@ -279,7 +279,8 @@ export function creerJeton(
   if (typeof a !== 'number') {
     const { nom, duree } = verifierSaisie(a);
     const acces = normaliser(db, compteId, a.acces, new Set());
-    return { jeton: inserer(db, compteId, nom, duree, valeur, b instanceof Date ? b : new Date(), acces, []), valeur };
+    const outils = a.outils === undefined ? [] : outilsChoisis(db, compteId, acces, a.outils);
+    return { jeton: inserer(db, compteId, nom, duree, valeur, b instanceof Date ? b : new Date(), acces, outils), valeur };
   }
   const universId = a;
   const entree = b as EntreeJetonUnivers;
@@ -296,6 +297,49 @@ export function creerJeton(
   }
   const jeton = inserer(db, compteId, nom, duree, valeur, c ?? new Date(), listeSur(universId), outils);
   return { jeton: { ...jeton, universId }, valeur };
+}
+
+/**
+ * The tools of a new tool token (K-6): at least one, each one offered in a universe the token reaches and where the owner
+ * is a GM (`outilsOffrables`). Otherwise `invalide`, `champ: outils`.
+ */
+function outilsChoisis(
+  db: Db,
+  compteId: number,
+  acces: { tous: boolean; niveauTous: NiveauPose | null; lignes: { universId: number; niveau: NiveauAcces }[] },
+  brut: unknown,
+): string[] {
+  const faux = () => champ('Erreur : un outil ne reçoit pas de catalogue dans cet univers.', 'outils');
+  if (!Array.isArray(brut) || brut.length === 0 || brut.some((o) => typeof o !== 'string')) throw faux();
+  const offerts = new Set(
+    outilsOffrables(db, compteId)
+      .filter((o) => o.univers.some((u) => {
+        const l = acces.lignes.find((x) => x.universId === u);
+        return l ? l.niveau !== 'aucun' : acces.tous;
+      }))
+      .map((o) => o.cle),
+  );
+  if (brut.some((o) => !offerts.has(o as string))) throw faux();
+  return [...new Set(brut as string[])];
+}
+
+/** A tool an account may offer to a token (E-23, K-6), with the ids of the universes where it is offered. */
+export interface OutilOffrable extends OutilProposable {
+  univers: number[];
+}
+
+/** The tools offered in the universes where the account is a GM, in registry order. */
+export function outilsOffrables(db: Db, compteId: number): OutilOffrable[] {
+  const parCle = new Map<string, OutilOffrable>();
+  const mj = db.prepare("SELECT univers_id AS id FROM membres WHERE compte_id = ? AND role = 'mj' ORDER BY univers_id").all(compteId) as { id: number }[];
+  for (const { id } of mj) {
+    for (const o of proposables(db, id)) {
+      const e = parCle.get(o.cle) ?? { ...o, univers: [] };
+      e.univers.push(id);
+      parCle.set(o.cle, e);
+    }
+  }
+  return [...parCle.values()];
 }
 
 const listeSur = (universId: number) => ({

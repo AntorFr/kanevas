@@ -4,6 +4,7 @@ import {
   creerJeton,
   listerJetonsDuCompte,
   listerJetonsInstance,
+  outilsOffrables,
   modifierAcces,
   revoquerJeton,
   universChoisissables,
@@ -32,6 +33,7 @@ export function registerJetonsRoutes(app: FastifyInstance) {
     return {
       jetons: listerJetonsDuCompte(app.db, compteId, app.horloge()),
       univers: universChoisissables(app.db, compteId),
+      outilsOffrables: outilsOffrables(app.db, compteId),
     };
   });
 
@@ -40,7 +42,7 @@ export function registerJetonsRoutes(app: FastifyInstance) {
     const { jeton, valeur } = creerJeton(
       app.db,
       request.session!.id,
-      { nom: b.nom, dureeJours: b.dureeJours, acces: b.acces },
+      { nom: b.nom, dureeJours: b.dureeJours, acces: b.acces, outils: b.outils },
       app.horloge(),
     );
     return reply.code(201).send({ jeton, valeur });
@@ -57,8 +59,12 @@ export function registerJetonsRoutes(app: FastifyInstance) {
     const filtre = q.proprietaire === undefined ? {} : { proprietaire: idDeChemin(q.proprietaire) };
     const jetons = listerJetonsInstance(app.db, admin(request), filtre, app.horloge());
     const univers: Record<number, ReturnType<typeof universChoisissables>> = {};
-    for (const j of jetons) univers[j.compteId] ??= universChoisissables(app.db, j.compteId);
-    return { jetons, univers };
+    const outils: Record<number, ReturnType<typeof outilsOffrables>> = {};
+    for (const j of jetons) {
+      univers[j.compteId] ??= universChoisissables(app.db, j.compteId);
+      outils[j.compteId] ??= outilsOffrables(app.db, j.compteId);
+    }
+    return { jetons, univers, outilsOffrables: outils };
   });
 
   app.patch('/api/instance/jetons/:jid', async (request) =>
