@@ -258,7 +258,10 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
   /** The tokens of a DELETE ride in the query: `version` of the body or zone, `versionSysteme` of the system. */
   const jetons = (request: Req) => {
     const q = request.query as Record<string, unknown>;
-    return { version: nombre(q.version), versionSysteme: q.versionSysteme === undefined ? undefined : nombre(q.versionSysteme) };
+    return {
+      version: nombre(q.version), versionSysteme: q.versionSysteme === undefined ? undefined : nombre(q.versionSysteme),
+      ...(typeof q.nomAncrage === 'string' ? { nomAncrage: q.nomAncrage } : {}),
+    };
   };
 
   app.post(`${INT}/ancrage`, opts, interieur((request, a, i, q, r) => ancrer(app.db, a, i.univers, i.galaxie, q, r, corps(request))));

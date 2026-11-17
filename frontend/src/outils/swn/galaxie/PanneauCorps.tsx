@@ -1,5 +1,5 @@
 import { Minus, Plus } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 
 import { Alerte, Bouton, BoutonIcone, Fenetre } from '../../../ui';
 import { COTE_FLOU, dessineurDuCoeur } from './carte-sprites';
@@ -74,10 +74,12 @@ interface Props {
   base: string;
   /** `?mode=joueur` or empty. */
   suffixe: string;
+  /** The GM's gestures (« Retirer l'astre »…), after « Voir l'illustration »: nothing for a player. */
+  actions?: ReactNode;
 }
 
-/** E-23, the panel of a body (read-only: the same for a GM and a player). The rows are those of E-21's `gx-panneau`. */
-export default function PanneauCorps({ astre, q, r, base, suffixe }: Props) {
+/** E-23, the panel of a body: the same for a GM and a player, plus the GM's `actions`. The rows are those of E-21's `gx-panneau`. */
+export default function PanneauCorps({ astre, q, r, base, suffixe, actions }: Props) {
   const aspect = aspectDe(astre);
   const flou = useFlou(aspect);
   const [essai, setEssai] = useState(0);
@@ -98,7 +100,7 @@ export default function PanneauCorps({ astre, q, r, base, suffixe }: Props) {
       {net.k === 'indisponible' && (
         <Alerte action={<Bouton petit onClick={() => setEssai((n) => n + 1)}>Réessayer</Bouton>}>Illustration indisponible.</Alerte>
       )}
-      <div className="gx-tete"><h2>{nom}</h2></div>
+      <div className="gx-tete"><h2 title={nom} className="cs-nom">{nom}</h2></div>
       <dl className="gx-kv">
         <dt>Type</dt><dd>{type}</dd>
         <dt>Lieu</dt><dd>{placeAstre(astre)}</dd>
@@ -107,6 +109,7 @@ export default function PanneauCorps({ astre, q, r, base, suffixe }: Props) {
       <p className="gx-note">Hexagone {q}, {r}</p>
       <div className="gx-actions">
         <Bouton disabled={ouverte && hd.k === 'chargement'} onClick={() => setOuverte(true)}>Voir l’illustration</Bouton>
+        {actions}
       </div>
       {ouverte && (
         <FenetreImage titre={nom} libelle={`Illustration de ${nom}, ${type}`} flou={flou} hd={hd} onFermer={fermer} onReessayer={() => setEssaiHd((n) => n + 1)} />

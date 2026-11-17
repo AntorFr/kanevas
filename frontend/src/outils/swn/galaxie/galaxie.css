@@ -202,3 +202,9 @@
 @media (prefers-reduced-motion: reduce) { .cs-net { transition: none; } }
 .cs-grande { aspect-ratio: auto; height: min(70vh, 80vw); overflow: auto; }
 .cs-grande img { transform-origin: center; }
+
+/* E-23 writes (kanevas-carte-spatiale-edition-ancrage): a long name is cut with « … » (whole in `title`); a failure sits in its dialog. */
+.cs-nom { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gx-echec { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); margin-top: var(--e-2); }
+.gx-echec .echec { margin: 0; color: var(--danger); }
+.gx-systeme-page .gx-entete .menu-racine { margin-left: var(--e-1); }

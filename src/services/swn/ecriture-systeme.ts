@@ -288,6 +288,12 @@ function cleNeuve(nom: string, existantes: readonly string[]): string {
 }
 
 const jetonDe = (entree: unknown): unknown => objet(entree).versionSysteme;
+/** The name the anchoring dialog typed, carried by the first write of a drawn system (`nomAncrage`; `ancrer` reads `nom`). */
+const nomAncrageDe = (entree: unknown): string | null => {
+  const e = objet(entree);
+  if (!present(e, 'nomAncrage')) return null;
+  try { return nomValide(e.nomAncrage); } catch { throw invalide('nomAncrage', 'Le nom : de 1 à 80 caractères.'); }
+};
 
 const astreDe = (c: Contexte, cle: unknown): LigneAstre => {
   const a = typeof cle === 'string'
@@ -334,7 +340,7 @@ export interface AstreEntree extends JetonSysteme {
 export function ajouterAstre(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
   entree: AstreEntree): ResultatEcriture {
   const e = objet(entree);
-  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), null, (c) => {
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const genre = e.genre;
     if (typeof genre !== 'string' || !GENRES_AJOUT.includes(genre)) {
       throw invalide('genre', 'Le genre : planète, lune ou comète (une étoile ne s\'ajoute pas).');
@@ -374,7 +380,7 @@ export interface AstreModification extends AstreEntree { version?: unknown }
 export function modifierAstre(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
   cle: string, entree: AstreModification): ResultatEcriture {
   const e = objet(entree);
-  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), null, (c) => {
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const a = astreDe(c, cle);
     if (versionValide('version', e.version) !== a.version) throw aChange();
     for (const k of ['genre', 'parent_cle', 'etoile_rang']) if (present(e, k)) throw invalide(k, 'Ce champ ne change pas.');
@@ -406,7 +412,7 @@ export function modifierAstre(db: Db, acteur: Acteur | number, universId: number
 export function retirerAstre(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
   cle: string, entree: JetonSysteme & { version?: unknown }): ResultatEcriture {
   const e = objet(entree);
-  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), null, (c) => {
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const a = astreDe(c, cle);
     if (versionValide('version', e.version) !== a.version) throw aChange();
     if (a.genre === 'etoile') {
@@ -431,7 +437,7 @@ const PARAMETRES_DEFAUT: Record<string, Record<string, unknown>> = {
 export function ajouterZone(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
   entree: ZoneEntree): ResultatEcriture {
   const e = objet(entree);
-  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), null, (c) => {
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const forme = e.forme;
     if (forme !== 'anneau' && forme !== 'nuage') throw invalide('forme', 'La forme : anneau ou nuage.');
     const nom = present(e, 'nom') ? nomValide(e.nom) : null;
@@ -450,7 +456,7 @@ export function ajouterZone(db: Db, acteur: Acteur | number, universId: number, 
 export function modifierZone(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
   cle: string, entree: ZoneEntree & { version?: unknown }): ResultatEcriture {
   const e = objet(entree);
-  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), null, (c) => {
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const f = formationDe(c, cle);
     if (versionValide('version', e.version) !== f.version) throw aChange();
     for (const k of ['etoile_rang']) if (present(e, k)) throw invalide(k, 'Ce champ ne change pas.');
@@ -469,7 +475,7 @@ export function modifierZone(db: Db, acteur: Acteur | number, universId: number,
 export function retirerZone(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
   cle: string, entree: JetonSysteme & { version?: unknown }): ResultatEcriture {
   const e = objet(entree);
-  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), null, (c) => {
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const f = formationDe(c, cle);
     if (versionValide('version', e.version) !== f.version) throw aChange();
     c.db.prepare('DELETE FROM swn_formations WHERE id = ?').run(f.id);
@@ -484,7 +490,7 @@ export function retirerZone(db: Db, acteur: Acteur | number, universId: number, 
 export function poserTransition(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
   entree: JetonSysteme & { transition?: unknown }): ResultatEcriture {
   const e = objet(entree);
-  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), null, (c) => {
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     if (!present(e, 'transition')) throw invalide('transition', 'Le rayon : un nombre ou null.');
     let rayon: number | null = null;
     if (e.transition !== null) {

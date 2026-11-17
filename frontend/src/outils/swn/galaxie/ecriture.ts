@@ -58,7 +58,8 @@ import { appeler } from '../../../api';
 import type { InterieurSysteme as Interieur } from './types';
 
 /** The token every write carries: the system's own `versionSysteme`, read with the interior (GM only). */
-export interface JetonSysteme { versionSysteme?: number }
+/** `nomAncrage`: the name typed in the anchoring dialog, taken only if this write anchors a drawn system. */
+export interface JetonSysteme { versionSysteme?: number; nomAncrage?: string }
 export type CorpsAstre = JetonSysteme & {
   genre?: string; nom?: string; description?: string; type?: string; taille?: number; aspect?: unknown; etoile_rang?: number;
   parent_cle?: string; orbite?: number; heure?: number; plan?: { x: number; y: number }; galactique?: { q: number; r: number };
@@ -71,12 +72,12 @@ export type CorpsZone = JetonSysteme & {
 const chemin = (galaxieId: number, q: number, r: number, universId: number, suite: string) =>
   `/api/univers/${universId}/outils/swn/galaxie/galaxies/${galaxieId}/interieur/${q}/${r}/${suite}`;
 const requete = (v: { version: number } & JetonSysteme) =>
-  `?version=${v.version}${v.versionSysteme === undefined ? '' : `&versionSysteme=${v.versionSysteme}`}`;
+  `?version=${v.version}${v.versionSysteme === undefined ? '' : `&versionSysteme=${v.versionSysteme}`}${v.nomAncrage === undefined ? '' : `&nomAncrage=${encodeURIComponent(v.nomAncrage)}`}`;
 
 export interface Place { universId: number; galaxieId: number; q: number; r: number }
 const url = (p: Place, suite: string) => chemin(p.galaxieId, p.q, p.r, p.universId, suite);
 
-export const ancrerSysteme = (p: Place, corps: JetonSysteme & { nom?: string } = {}) => appeler<Interieur>('POST', url(p, 'ancrage'), corps);
+export const ancrerSysteme = (p: Place, corps: { versionSysteme?: number; nom?: string } = {}) => appeler<Interieur>('POST', url(p, 'ancrage'), corps);
 export const ajouterAstreSysteme = (p: Place, corps: CorpsAstre) => appeler<Interieur>('POST', url(p, 'astres'), corps);
 export const modifierAstreSysteme = (p: Place, cle: string, corps: CorpsAstre) =>
   appeler<Interieur>('PATCH', url(p, `astres/${encodeURIComponent(cle)}`), corps);
