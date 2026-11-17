@@ -394,11 +394,11 @@ test('B-50 exclusions · Léa ne voit ni menu ni clé, aucune réponse qu’elle
     assert.ok(!t.includes('lieu:port-sel') && !t.includes('Importée'));
     assert.equal(await lea.page.getByRole('button', { name: /Autres actions sur « Port-Sel »/ }).count(), 0);
     await ouvrirFiche(antor.page, m, faite.json.id);
-    // The menu also carries « Changer le type… » , « Déplacer sous… » and « Alias et étiquettes… » (kanevas-types-ecran-fiche, kanevas-arbre-fiche, kanevas-recherche-e9): what stays true is that a sheet
+    // The menu also carries « Changer le type… » , « Déplacer sous… » and « Alias et étiquettes… » and « Historique » (kanevas-types-ecran-fiche, kanevas-arbre-fiche, kanevas-recherche-e9, kanevas-synchro-historique-ecran): what stays true is that a sheet
     // made in Kanevas has no origin line.
     await antor.page.getByRole('button', { name: /Autres actions sur « Fait main »/ }).click();
     const menuFait = ((await antor.page.getByRole('menu').innerText()) as string).replace(/\s+/g, ' ').trim();
-    assert.equal(menuFait, 'Changer le type… Marquer détruit Déplacer sous… Alias et étiquettes… Supprimer la fiche…', 'no key, no origin line');
+    assert.equal(menuFait, 'Changer le type… Marquer détruit Déplacer sous… Alias et étiquettes… Historique Supprimer la fiche…', 'no key, no origin line');
     assert.ok(!(await lire(antor.page)).includes('Importée'));
   } finally {
     await lea.ctx.close();
