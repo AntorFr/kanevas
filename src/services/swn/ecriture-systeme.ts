@@ -6,6 +6,7 @@
 import type { Db } from '../../db/db.js';
 import { cleDe } from '../../outils/swn/regles/cle.js';
 import { chargerModule } from '../../wasm/charger.js';
+import { randomBytes } from 'node:crypto';
 import { ErreurService, introuvable } from '../erreurs.js';
 import type { Acteur } from '../types.js';
 import { apresEcriture, placerSysteme, sansSignal } from './ecriture-carte.js';
@@ -235,6 +236,23 @@ interface Contexte {
   ancre: boolean;
 }
 
+/**
+ * The guard of every write. A caller who may not write gets what the read would answer first: a hidden system is
+ * `introuvable`, the same body as `lireInterieur`; an ordinary hexagon stays `refuse`.
+ */
+function garde(db: Db, ac: Acteur, universId: number, galaxieId: number, q: unknown, r: unknown): LigneGalaxie {
+  try {
+    return exigerEcritureGalaxie(db, ac, universId, galaxieId);
+  } catch (e) {
+    if (e instanceof ErreurService && e.code === 'refuse') {
+      try { lireInterieur(db, ac, universId, galaxieId, q as number, r as number); } catch (lecture) {
+        if (lecture instanceof ErreurService && lecture.code === 'introuvable') throw lecture;
+      }
+    }
+    throw e;
+  }
+}
+
 /** The frame of every write: one immediate transaction, the guard, the anchoring if drawn, the gesture, the signal. */
 function ecrire(
   db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: unknown, r: unknown,
@@ -242,7 +260,7 @@ function ecrire(
 ): ResultatEcriture {
   const ac = acteurDe(acteur);
   return db.transaction((): ResultatEcriture => {
-    const g = exigerEcritureGalaxie(db, ac, universId, galaxieId);
+    const g = garde(db, ac, universId, galaxieId, q, r);
     if (!Number.isSafeInteger(q) || !Number.isSafeInteger(r)) throw introuvable();
     const qq = q as number, rr = r as number;
     let systeme = systemeDe(db, g, qq, rr);
@@ -255,6 +273,18 @@ function ecrire(
     if (ancre || ecrit !== false) apresEcriture(db, ac.compteId, universId);
     return { ...sortie, interieur: lireInterieur(db, ac, universId, galaxieId, qq, rr) };
   }).immediate();
+}
+
+/**
+ * A key never reused (AD-edition-3): the slug of the name and a random suffix. Nothing is stored to remember the
+ * removed keys (no migration), so the suffix is what keeps a removed `mere` from coming back.
+ */
+function cleNeuve(nom: string, existantes: readonly string[]): string {
+  const base = cleDe(nom, []);
+  for (;;) {
+    const cle = `${base}-${randomBytes(3).toString('hex')}`;
+    if (!existantes.includes(cle)) return cle;
+  }
 }
 
 const jetonDe = (entree: unknown): unknown => objet(entree).versionSysteme;
@@ -331,7 +361,7 @@ export function ajouterAstre(db: Db, acteur: Acteur | number, universId: number,
     const place = lirePlace(e, genre === 'lune', () => repereDe(c));
     const orbite = place.orbite ?? 1, heure = place.heure ?? 0;
     const existantes = (c.db.prepare('SELECT cle FROM swn_astres WHERE systeme_id = ?').all(c.systeme.id) as { cle: string }[]).map((x) => x.cle);
-    const cle = cleDe(nom ?? genre, existantes);
+    const cle = cleNeuve(nom ?? genre, existantes);
     c.db.prepare(`INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, description, orbite, heure, taille, aspect)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(c.systeme.id, cle, genre, parentId, rang, type, nom, description, orbite, heure, taille, aspect);
     return { cle };
@@ -410,7 +440,7 @@ export function ajouterZone(db: Db, acteur: Acteur | number, universId: number, 
     const parametres = parametresValides(forme, present(e, 'parametres') ? e.parametres : PARAMETRES_DEFAUT[forme]);
     if (!etoileExiste(c, rang)) throw astreInconnu();
     const existantes = (c.db.prepare('SELECT cle FROM swn_formations WHERE systeme_id = ?').all(c.systeme.id) as { cle: string }[]).map((x) => x.cle);
-    const cle = cleDe(nom ?? forme, existantes);
+    const cle = cleNeuve(nom ?? forme, existantes);
     c.db.prepare(`INSERT INTO swn_formations (systeme_id, cle, forme, etoile_rang, nom, description, parametres) VALUES (?, ?, ?, ?, ?, ?, ?)`)
       .run(c.systeme.id, cle, forme, rang, nom, description, parametres);
     return { cle };
