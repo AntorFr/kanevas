@@ -9,8 +9,9 @@
 .entetes-jetons .vers-lecteurs { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .ligne-table-jeton { padding: 8px 0; border-top: 1px solid var(--bord); font-size: var(--t-13); color: var(--texte-2); }
 .ligne-table-jeton > span { min-width: 0; overflow-wrap: anywhere; }
-.ligne-table-jeton .cel-nom { display: flex; align-items: center; gap: var(--e-2); }
-.ligne-table-jeton .cel-nom b { font-size: var(--t-14); font-weight: 500; color: var(--texte); }
+.ligne-table-jeton .cel-nom { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-2); }
+.ligne-table-jeton .cel-nom > :not(b) { flex: none; }
+.ligne-table-jeton .cel-nom b { min-width: 0; overflow-wrap: anywhere; font-size: var(--t-14); font-weight: 500; color: var(--texte); }
 .ligne-table-jeton.inactif .cel-nom b { color: var(--texte-2); }
 .ligne-table-jeton .cel-prop { color: var(--texte); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ligne-table-jeton .cel-acces strong { color: var(--texte); font-weight: 500; }

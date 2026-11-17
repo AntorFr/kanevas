@@ -125,7 +125,7 @@ export function JetonsApi() {
         {donnees.jetons.map((j) => (
           <div key={j.id} role="row" className={`ligne-table-jeton${j.etat !== 'actif' ? ' inactif' : ''}${perdue ? ' hors' : ''}`}>
             <span role="cell" className="cel-nom">
-              <b className="tronque" title={j.nom}>{j.nom}</b>
+              <b title={j.nom}>{j.nom}</b>
               <Etat j={j} />
             </span>
             <span role="cell" className="cel-prop" title={j.proprietaire}>{j.proprietaire}</span>
