@@ -122,3 +122,32 @@ fn les_bords_sont_transparents_le_corps_est_opaque() {
     let c = (32 * 64 + 32) * 4;
     assert_eq!(o[c + 3], 255, "centre is opaque");
 }
+
+/// B-89 (recette): a sky body fades inside its square; no straight edge of faint haze may show.
+fn bords_transparents(t: &str, cote: u32) {
+    let o = dessiner(&aspect(t), cote, VERSION_RENDU).unwrap();
+    let n = cote as usize;
+    // the outer sixteenth: no haze either, or a lighter frame shows against the sky
+    for k in 0..n / 16 {
+        for i in 0..n {
+            for (x, y) in [(i, k), (i, n - 1 - k), (k, i), (n - 1 - k, i)] {
+                assert_eq!(o[(y * n + x) * 4 + 3], 0, "{t} {cote}: alpha at ({x},{y})");
+            }
+        }
+    }
+    assert!(couleurs(&o) > 1, "{t} {cote}: still drawn");
+}
+
+#[test]
+fn la_comete_n_a_aucun_cadre_a_son_bord() {
+    for c in [64, 128, 256] {
+        bords_transparents("comete", c);
+    }
+}
+
+#[test]
+fn la_comete_garde_sa_tete_et_ses_queues() {
+    let o = dessiner(&aspect("comete"), 256, VERSION_RENDU).unwrap();
+    let visibles = o.chunks(4).filter(|p| p[3] > 40).count();
+    assert!(visibles > 256, "head and tails stay visible, got {visibles}");
+}
