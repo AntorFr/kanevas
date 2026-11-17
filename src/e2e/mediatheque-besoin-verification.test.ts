@@ -285,10 +285,14 @@ test('E-19 contenu long · 102 fichiers : 100 puis « Charger la suite », le de
   await preparer102Fichiers();
   await a2.goto(`/univers/${u2}/mediatheque`);
   await attendre(a2);
-  const tuiles = () => a2.locator('main').getByRole('button', { name: /f\d{3}\.pdf/ }).count();
+  const lesTuiles = a2.locator('main').getByRole('button', { name: /f\d{3}\.pdf/ });
+  const tuiles = () => lesTuiles.count();
+  // The tiles are awaited (the n-th one shown), not counted at once: under load they arrive after the settle.
+  await lesTuiles.nth(99).waitFor({ state: 'visible' });
   assert.equal(await tuiles(), 100);
   await a2.getByRole('button', { name: 'Charger la suite' }).click();
   await attendreAbsent(a2.getByRole('button', { name: 'Charger la suite' }));
+  await lesTuiles.nth(101).waitFor({ state: 'visible' });
   assert.equal(await tuiles(), 102);
   assert.equal(await a2.getByRole('button', { name: 'Charger la suite' }).count(), 0);
   await a2.screenshot({ path: '/tmp/scr/ver-102.png' });
