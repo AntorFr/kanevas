@@ -2,7 +2,8 @@ import '@fastify/multipart';
 import type { FastifyInstance, FastifyReply, FastifyRequest, preHandlerHookHandler } from 'fastify';
 
 import { acteur } from '../../routes/fiches.js';
-import { ErreurService, invalide } from '../../services/erreurs.js';
+import { ErreurService, invalide, refuse } from '../../services/erreurs.js';
+import { accessible } from '../../services/outils.js';
 import {
   ajouterAsset, ajouterAssetDepuisFichier, compterUsage, listerAssets, listerFichiersDisponibles, modifierAssets, retirerAssets,
   type SaisieAsset,
@@ -196,7 +197,21 @@ export function routesBattlemap(app: FastifyInstance, garde: (cle: string) => pr
 
   // ---- Generation batches (AD-battlemap-generation-1). Guarded by the tool `generation`: without an image engine it is absent and
   // each of these paths is a `callNotFound`. No route serves a draft's picture: its GM-only file goes through the library's file route.
-  const lots = { preHandler: garde('battlemap/generation') };
+  // E-27: a GM in Player mode is `refuse` on a write (the tool is hidden from the Player view, so the common guard would answer 404),
+  // `introuvable` on a read. A write by whoever could not use the tool even outside Player mode stays the 404 of an unknown path.
+  const gardeLots = garde('battlemap/generation');
+  const lots = {
+    preHandler: async (request: FastifyRequest, reply: FastifyReply) => {
+      if (request.method !== 'GET') {
+        const a = acteur(request);
+        const id = Number((request.params as { id?: string }).id);
+        if (a.modeJoueur && Number.isSafeInteger(id) && accessible(app.db, { ...a, modeJoueur: false }, id, 'battlemap/generation')) {
+          throw refuse();
+        }
+      }
+      return gardeLots.call(app, request, reply, () => undefined);
+    },
+  };
   const ligne = (request: Req) => entier((request.params as { lid: string }).lid);
   const MAX_DIRECTION_VUE = 140;
 
