@@ -13,7 +13,7 @@ reads `auth.json` and prints nothing the engine wrote.
 
 ## Result
 
-**Non joué : pas de moteur dans ce pod.** The pod running the task has the `codex` executable (codex-cli 0.162.1) but no
+**Not played** (« non joué : pas de moteur dans ce pod »). The pod running the task has the `codex` executable (codex-cli 0.162.1) but no
 `auth.json` under `CODEX_HOME`, so `choisirAdaptateur()` is `aucun`. Run on 2026-11-17 (the stub run only).
 
 | Question | Answer |
