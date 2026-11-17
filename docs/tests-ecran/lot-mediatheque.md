@@ -382,3 +382,8 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > hors ligne : la connexion perdue désactive les actions` | affichage | — | gardé |
 | `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > téléphone : à 768 px la liste et le lot s’empilent, à 1280 ils sont côte à côte` | affichage | — | gardé |
 | `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > redémarrage : un lot en cours repart « Interrompu », « Reprendre » le relance` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > onglets : les trois onglets sont entiers dans l’écran de 390 px, sans défilement latéral` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > prepare-nom : dans un lot préparé, le nom « Console de commande » (19 caractères) se lit en entier dans son champ` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > prepare-rangee : dans un lot préparé, nom, catégorie, empreinte et « Retirer » tiennent sur une même rangée, sans chevauchement` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > brouillon : vignette réduite à gauche du nom, nom entier, gestes dans l’écran` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > brouillon-pastille : la pastille « Brouillon prêt » est verte` | affichage | — | gardé |
