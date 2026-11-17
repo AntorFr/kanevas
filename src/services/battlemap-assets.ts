@@ -3,6 +3,7 @@ import { attachmentsDir } from '../config/env.js';
 import { exigerRole, vueMJ } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { cartesUtilisant } from './battlemap-cartes.js';
+import { ecarterLignesDeBrouillons } from './battlemap-lots.js';
 import { ajouterFichier, effacerFichier, modifierFichier, type FluxEntrant } from './fichiers.js';
 import { estImage } from './fichiers-lecture.js';
 import type { Acteur } from './types.js';
@@ -276,15 +277,27 @@ export function compterUsage(db: Db, acteur: Acteur, universId: number, ids: num
 
 /** Removes a selection of assets, all or none; the files stay in the media library (and keep their visibility). */
 export function retirerAssets(db: Db, acteur: Acteur, universId: number, ids: number[]): number {
-  return db.transaction(() => {
+  const fichiers: number[] = [];
+  const n = db.transaction(() => {
     exigerEcriture(db, acteur, universId);
     const uniques = [...new Set(ids)];
     if (uniques.length === 0) throw invalide('Aucun asset sélectionné.');
     for (const id of uniques) lireAsset(db, universId, id);
+    // A draft removed is a draft discarded (E-25): its batch line is written off with it and its file goes too.
+    const brouillons = uniques.filter((id) => lireAsset(db, universId, id).etat === 'brouillon');
+    ecarterLignesDeBrouillons(db, brouillons);
+    for (const id of brouillons) {
+      const f = retirerLigneBrouillon(db, universId, id);
+      if (f !== null) fichiers.push(f);
+    }
     const del = db.prepare('DELETE FROM bm_assets WHERE id = ?');
     for (const id of uniques) del.run(id);
     return uniques.length;
   })();
+  for (const f of fichiers) {
+    try { effacerFichier(db, acteur, universId, f); } catch { /* row gone already; a file left is an orphan of the library */ }
+  }
+  return n;
 }
 
 export interface FichierDisponible { id: number; nom: string; type: string; taille: number; visible: boolean; jeton: string }

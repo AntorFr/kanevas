@@ -244,6 +244,24 @@ export function arreterLot(db: Db, acteur: Acteur, universId: number): LotVue | 
   return null;
 }
 
+/**
+ * « Retirer » on a Draft card of E-25 is « Écarter »: the lines backed by these drafts become `ecarte` and let go of them, the
+ * batch closes if nothing is left. Called by `retirerAssets` inside its transaction, so no line is left without its image.
+ */
+export function ecarterLignesDeBrouillons(db: Db, assetIds: number[]): void {
+  const lots = new Set<number>();
+  for (const id of assetIds) {
+    const l = db.prepare("SELECT id, lot_id FROM bm_lots_lignes WHERE asset_id = ? AND etat = 'brouillon'").get(id) as { id: number; lot_id: number } | undefined;
+    if (!l) continue;
+    db.prepare("UPDATE bm_lots_lignes SET etat = 'ecarte', asset_id = NULL, code_echec = NULL WHERE id = ?").run(l.id);
+    lots.add(l.lot_id);
+  }
+  for (const lotId of lots) {
+    db.prepare('UPDATE bm_lots SET modifie_le = ? WHERE id = ?').run(maintenant(), lotId);
+    fermerSiFini(db, lotId);
+  }
+}
+
 function retirerAsset(db: Db, universId: number, assetId: number | null): number | null {
   return assetId === null ? null : retirerLigneBrouillon(db, universId, assetId);
 }
