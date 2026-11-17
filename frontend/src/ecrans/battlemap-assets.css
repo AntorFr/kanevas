@@ -58,10 +58,10 @@ body:has(.bm-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .bm-gen-vide, .bm-gen-fin, .bm-gen-note { margin: 0; color: var(--texte-2); font-size: var(--t-13); }
 .bm-gen-saisies, .bm-gen-lignes, .bm-gen-lecture { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-3); }
 /* A line of the list: the label of each field is read by the screen reader and the placeholder tells the sighted. */
-.bm-gen-saisie { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr) 150px auto; gap: var(--e-2); align-items: center; padding: var(--e-3); border: 1px solid var(--bordure); border-radius: var(--rayon-item); }
+.bm-gen-saisie { display: grid; grid-template-columns: minmax(90px, 1.4fr) minmax(90px, 0.9fr) 110px auto; gap: var(--e-2); align-items: center; padding: var(--e-3); border: 1px solid var(--bordure); border-radius: var(--rayon-item); }
 .bm-gen-saisie .champ > .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.bm-gen-empreinte { display: flex; gap: var(--e-2); }
-.bm-gen-empreinte input[type=number] { width: 70px; }
+.bm-gen-empreinte { display: flex; gap: var(--e-1, 4px); }
+.bm-gen-empreinte input[type=number] { width: 52px; padding-inline: var(--e-2); }
 .bm-gen-saisie-indication { grid-column: 1 / -1; }
 .bm-gen .champ { margin: 0; }
 .bm-gen-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); }
