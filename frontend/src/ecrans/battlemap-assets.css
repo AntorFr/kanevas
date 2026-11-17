@@ -43,3 +43,41 @@ body:has(.bm-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 /* The floating assistant button (fixed, bottom right) must never cover E-25 / E-26 content: keep a column free for it. */
 @media (min-width: 760px) { main.principal:has(.bm-page) { margin-inline: 0 auto; } .page-liste.bm-page { max-width: 900px; } }
 @media (max-width: 759px) { .page-liste.bm-page { padding-right: calc(44px + var(--e-3)); } }
+
+/* E-27 — Génération (docs/maquettes/e27-generation.html). Tokens only; no new component. */
+.bm-gen { display: flex; flex-direction: column; gap: var(--e-3); margin-top: var(--e-3); }
+.bm-gen-direction { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--e-3); padding: var(--e-3); border: 1px solid var(--bordure); border-radius: var(--rayon-item); background: var(--surface-2); font-size: var(--t-13); color: var(--texte-2); }
+.bm-gen-direction a { color: var(--accent); }
+.bm-gen-perime { margin: 0; font-size: var(--t-13); color: var(--texte-3); }
+.bm-gen-colonnes { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--e-4); align-items: start; }
+.bm-gen-liste, .bm-gen-lot { display: flex; flex-direction: column; gap: var(--e-3); min-width: 0; }
+.bm-gen-lot { max-height: 70vh; overflow-y: auto; }
+.bm-gen-entete { display: flex; align-items: center; gap: var(--e-3); }
+.bm-gen-entete h2 { margin: 0; font: 500 var(--t-16)/1.3 var(--police-titre); }
+.bm-gen-compte { margin-left: auto; font-size: var(--t-13); color: var(--texte-2); }
+.bm-gen-vide, .bm-gen-fin, .bm-gen-note { margin: 0; color: var(--texte-2); font-size: var(--t-13); }
+.bm-gen-saisies, .bm-gen-lignes, .bm-gen-lecture { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-3); }
+.bm-gen-saisie { display: grid; grid-template-columns: 1fr 120px; gap: var(--e-2) var(--e-3); padding: var(--e-3); border: 1px solid var(--bordure); border-radius: var(--rayon-item); align-items: end; }
+.bm-gen-saisie > :nth-child(3), .bm-gen-saisie > :nth-child(4) { grid-column: 1 / -1; }
+.bm-gen-empreinte { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
+.bm-gen-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.bm-gen-refus { display: block; }
+.bm-gen-lecture li { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: baseline; overflow-wrap: anywhere; }
+.bm-gen-lecture span, .bm-gen-lecture small { color: var(--texte-2); }
+.bm-gen-ligne { display: flex; flex-direction: column; gap: var(--e-2); padding: var(--e-3); border: 1px solid var(--bordure); border-radius: var(--rayon-item); }
+.bm-gen-ligne.etat-ecarte { opacity: 0.6; }
+.bm-gen-ligne-tete { display: flex; align-items: center; gap: var(--e-3); min-width: 0; }
+.bm-gen-nom { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.bm-gen-meta { color: var(--texte-2); font-size: var(--t-13); white-space: nowrap; }
+.bm-gen-ligne-tete .pastille { margin-left: auto; flex: none; }
+.bm-gen-indice { color: var(--texte-2); overflow-wrap: anywhere; }
+.bm-gen-statut, .bm-gen-echec { margin: 0; font-size: var(--t-13); }
+.bm-gen-echec { color: var(--danger); }
+.bm-gen-image { aspect-ratio: 4 / 3; max-width: 260px; }
+.bm-gen-image img { width: 100%; height: 100%; object-fit: contain; }
+.bm-gen-image-cassee { font-size: var(--t-13); color: var(--texte-2); padding: var(--e-3); }
+.bm-gen-lien { font-size: var(--t-13); color: var(--accent); }
+.bm-gen-remarque { display: flex; flex-direction: column; gap: var(--e-2); }
+.bm-brouillon-actions { display: flex; gap: var(--e-2); margin-top: var(--e-2); }
+@media (max-width: 1024px) { .bm-gen-colonnes { grid-template-columns: minmax(0, 1fr); } .bm-gen-lot { max-height: none; } }
+@media (max-width: 760px) { .bm-gen .bouton, .bm-brouillon-actions .bouton { min-height: 44px; } .bm-gen-saisie { grid-template-columns: 1fr; } }
