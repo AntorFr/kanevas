@@ -462,9 +462,10 @@ export function choisirTestsEcran(touches, fichiers, lire = (f) => readFileSync(
     .filter((f) => TEST_ECRAN.test(f))
     .filter((f) => {
       const declares = ecransDeclares(lire(f), connus, f); // an unknown name is an error, chosen or not
+      if (declares === null) throw new Error(`${f}: a screen test with no « // ecrans: » line (AD-touches-6); run scripts/proposer-ecrans.mjs and keep its line.`);
       if (modifies.has(f)) return true;
       if (!atteints.size) return false;
-      return declares === null || declares.some((n) => atteints.has(n));
+      return declares.some((n) => atteints.has(n));
     })
     .sort();
 }

@@ -1,3 +1,4 @@
+// ecrans: membres, parametres
 // Measured render of E-4 and E-14 (arbitrated 13/10): the role pastilles end at the right end of the row rule
 // (no empty column left by the hidden « Retirer »), and the three GM blocks of E-14 are the closed hatched block of E-6/E-9.
 // Panne visée : « Retirer » invisible garde sa largeur après la pastille (≈89 px de vide) ; blocs MJ à cadre ouvert (dégradé, filet 2 px).
