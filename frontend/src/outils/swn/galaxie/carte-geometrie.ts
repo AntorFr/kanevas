@@ -11,6 +11,27 @@ export const U = 44;
 /** Radius of an orbit in world pixels: regularly spaced, the first ones tighter (the mockup's scale). */
 export const rayonOrbite = (orbite: number): number => (orbite < 1 ? 1.5 * U * orbite : U * (orbite + 0.5));
 
+/** Inverse of `rayonOrbite`: the orbit whose circle has this radius in world pixels. */
+export const orbiteDepuisRayon = (rayon: number): number => (rayon < 1.5 * U ? rayon / (1.5 * U) : rayon / U - 0.5);
+
+const arrondi2 = (n: number) => Math.round(n * 100) / 100;
+const ORBITE_MAX = 1000;
+
+/** The stored place (orbit, hour) of a point of the plane relative to a centre, in world pixels: 12 at the top, 3 at the right (the core's convention, AD-143). */
+export function placeDepuisPoint(x: number, y: number): { orbite: number; heure: number } {
+  const heure = arrondi2((((Math.atan2(x, -y) * 180) / Math.PI / 30) % 12 + 12) % 12);
+  return { orbite: Math.min(ORBITE_MAX, Math.max(0, arrondi2(orbiteDepuisRayon(Math.hypot(x, y))))), heure: heure >= 12 ? 0 : heure };
+}
+
+/** One arrow press on a place: the orbit stays within 0 to 1 000, the hour wraps around 12; a moon has no orbit to move. */
+export function placeApresPas(orbite: number | null, heure: number, pas: { orbite: number; heure: number }, lune: boolean): { orbite: number | null; heure: number } {
+  const h = arrondi2((((heure + pas.heure) % 12) + 12) % 12);
+  return {
+    orbite: lune || orbite === null ? orbite : Math.min(ORBITE_MAX, Math.max(0, arrondi2(orbite + pas.orbite))),
+    heure: h >= 12 ? 0 : h,
+  };
+}
+
 const RAYON_MIN = 5;
 const RAYON_MAX = 64;
 /** Disc radius of a body in world pixels, from its `taille` (an orbit-unit radius): bounded so no body hides the map. */

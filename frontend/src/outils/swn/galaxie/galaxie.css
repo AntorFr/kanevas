@@ -219,3 +219,10 @@
 .ed-defile { display: flex; flex-direction: column; gap: var(--e-1); max-height: 60vh; overflow-y: auto; padding-right: var(--e-1); }
 .ed-form { max-height: none; }
 @media (max-width: 760px) { .ed-form { max-height: none; } .ed-defile { max-height: none; } }
+
+/* E-23, drag of a body (GM): the grab cursor on the handle, the label of a body waiting for the answer. */
+.cs-corps.glissable { cursor: grab; }
+.cs-ciel:active .cs-corps.glissable { cursor: grabbing; }
+.cs-enregistrement { position: absolute; transform: translateX(-50%); white-space: nowrap; pointer-events: none; line-height: 15px; color: var(--texte-2); font-style: italic;
+  text-shadow: 0 0 4px var(--ciel-halo), 0 0 8px var(--ciel-halo); }
+.cs-echec { margin-top: 8px; }
