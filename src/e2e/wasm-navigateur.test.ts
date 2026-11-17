@@ -128,6 +128,21 @@ test('the coeur module in Chromium draws the same bytes as the Node binding (AD-
     }
     assert.notEqual(images[0], images[1]);
     assert.deepEqual(JSON.parse((await page.textContent('#coeur-rendu-refus'))!), [true, true]);
+    // the edition calls (AD-edition-3, AD-edition-4)
+    await page.waitForFunction(() => document.getElementById('coeur-edition')?.textContent, undefined, { timeout: 30_000 });
+    const e = JSON.parse((await page.textContent('#coeur-edition'))!);
+    assert.deepEqual(e.types.planete.sort(), ['gazeuse', 'glace', 'lave', 'rocheux', 'tellurique', 'verrouillee']);
+    assert.deepEqual(e.types.lune.sort(), ['glace', 'lave', 'rocheux']);
+    assert.deepEqual(e.types.comete, ['comete']);
+    assert.equal(e.galactique.length, 6);
+    for (const g of e.galactique) {
+      assert.ok(Math.abs(g.orbite - 3.37) <= 0.0051);
+      assert.equal(g.heure, g.voisin);
+    }
+    assert.deepEqual(e.galactique.map((g: Any) => g.heure).sort((a: number, b: number) => a - b), [1, 3, 5, 7, 9, 11]);
+    assert.deepEqual(JSON.parse(e.aspect), { mer: 0.5 });
+    assert.deepEqual(JSON.parse(e.formation), { de: 1, a: 2 });
+    assert.deepEqual(e.refus, [true, true, true, true, true]);
   } finally {
     await page.close();
   }

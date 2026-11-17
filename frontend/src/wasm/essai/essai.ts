@@ -7,6 +7,7 @@ import { chargerModule } from '../charger';
 import {
   dessiner,
   densiteDefaut,
+  galactiqueVersOrbiteHeure,
   hexVersPlan,
   orbiteHeureVersPlan,
   planVersHex,
@@ -14,6 +15,9 @@ import {
   tirerBloc,
   tirerSysteme,
   transitionDefaut,
+  typesAstre,
+  validerAspect,
+  validerFormation,
 } from '../coeur';
 
 const sortie = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
@@ -97,6 +101,37 @@ async function afficherRendu(): Promise<void> {
   sortie('coeur-rendu-refus').textContent = JSON.stringify(refus);
 }
 
+// The edition calls (AD-edition-3, AD-edition-4): values returned, and whether each refusal throws.
+async function afficherEdition(): Promise<void> {
+  const refuse = async (appel: () => Promise<unknown>): Promise<boolean> => {
+    try {
+      await appel();
+      return false;
+    } catch {
+      return true;
+    }
+  };
+  const voisins: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]];
+  const galactique: { orbite: number; heure: number; voisin: number }[] = [];
+  for (const [dq, dr] of voisins) {
+    const [orbite, heure] = await galactiqueVersOrbiteHeure(dq, dr, 3.37);
+    galactique.push({ orbite, heure, voisin: (await chargerModule('coeur')).heure_vers_voisin(7, -3, 7 + dq, -3 + dr) });
+  }
+  sortie('coeur-edition').textContent = JSON.stringify({
+    types: { planete: await typesAstre('planete'), lune: await typesAstre('lune'), comete: await typesAstre('comete') },
+    galactique,
+    aspect: await validerAspect('tellurique', '{"mer":0.5}'),
+    formation: await validerFormation('anneau', '{"de":1,"a":2}'),
+    refus: [
+      await refuse(() => typesAstre('ceinture')),
+      await refuse(() => validerAspect('tellurique', '{"licorne":1}')),
+      await refuse(() => validerAspect('tellurique', '{"mer":2}')),
+      await refuse(() => validerFormation('anneau', '{"de":2,"a":1}')),
+      await refuse(() => validerFormation('nuage', '{"centres":[[1001,4,1]]}')),
+    ],
+  });
+}
+
 async function afficher(): Promise<void> {
   try {
     const exemple = await chargerModule('exemple');
@@ -104,6 +139,7 @@ async function afficher(): Promise<void> {
     sortie('version').textContent = exemple.version();
     await afficherCoeur();
     await afficherRendu();
+    await afficherEdition();
   } catch {
     const erreur = sortie('erreur');
     erreur.hidden = false;
