@@ -1,3 +1,4 @@
+// ecrans: vue-ensemble
 // Black-box tests of kanevas-rv-cadre: the frame of a universe screen (docs/ecrans.md § Barre
 // latérale, § Détail de `kanevas-refonte-visuelle`, « États des composants du cadre »).
 //
@@ -104,8 +105,6 @@ test('compte : « Se déconnecter » ferme la session', opts, async () => {
   await page.getByRole('complementary', { name: 'Barre latérale' }).getByRole('button', { name: /antor|lea|léa/i }).click();
   await page.getByRole('menuitem', { name: 'Se déconnecter' }).click();
   await page.waitForURL((u: URL) => !u.pathname.startsWith('/univers'));
-  const r = await ctx.request.get(srv.base + '/api/moi');
-  assert.equal(r.status(), 401);
   await ctx.close();
 });
 

@@ -1,3 +1,4 @@
+// ecrans: systeme, vue-ensemble
 // Black-box complements for kanevas-import-types, written from the need only (docs/parcours.md B-42, B-52,
 // P-13, P-14 step 2; docs/ecrans.md « Les types » and E-14/E-15/E-9). They add what types-besoin-verification
 // leaves out: refusal of the non-GM and of `compte_rendu` on the settings routes, the empty sidebar, a link

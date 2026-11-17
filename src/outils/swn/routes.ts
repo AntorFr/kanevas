@@ -9,6 +9,9 @@ import {
 import {
   changerGraine, contenuGalaxie, creerGalaxie, exigerEcritureGalaxie, lireGalaxie, lireGraine, renommerGalaxie, rendreVisibleGalaxie, supprimerGalaxie,
 } from '../../services/swn/galaxies.js';
+import { illustrationAstre } from '../../services/swn/illustration.js';
+import { lireInterieur } from '../../services/swn/interieur.js';
+import { lireSorties } from '../../services/swn/sorties.js';
 import { lireBlocs, lireRoute, lireSysteme, lireZone, rechercherSystemes } from '../../services/swn/lecture-carte.js';
 import { calculerTrajet } from '../../services/swn/trajet.js';
 
@@ -64,6 +67,40 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
     const i = ids(request);
     return lireSysteme(app.db, a, i.univers, i.galaxie, i.cle!);
   }));
+
+  // The interior of a system, addressed by its hexagon; a non-integer coordinate is `introuvable`, never a 400.
+  app.get(`${BASE}/interieur/:q/:r`, opts, lire((request, a) => {
+    const i = ids(request);
+    const p = request.params as { q: string; r: string };
+    const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
+    return lireInterieur(app.db, a, i.univers, i.galaxie, ent(p.q), ent(p.r));
+  }));
+
+  // The exits of a system: same guards as the interior, composed from the readable routes (AD-carte-3).
+  app.get(`${BASE}/interieur/:q/:r/sorties`, opts, lire((request, a) => {
+    const i = ids(request);
+    const p = request.params as { q: string; r: string };
+    const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
+    return lireSorties(app.db, a, i.univers, i.galaxie, ent(p.q), ent(p.r));
+  }));
+
+  // The picture of a body: the guards of the interior, then a cached WebP drawn off the request thread (AD-carte-2).
+  app.get(`${BASE}/interieur/:q/:r/astres/:cle/illustration`, opts, async (request, reply) => {
+    const i = ids(request);
+    const p = request.params as { q: string; r: string };
+    const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
+    const cote = (request.query as Record<string, unknown>).cote;
+    try {
+      const vue = await illustrationAstre(app.db, acteur(request as never), i.univers, i.galaxie, ent(p.q), ent(p.r), i.cle!,
+        typeof cote === 'string' && /^\d{1,15}$/.test(cote) ? Number(cote) : NaN, { siEtag: request.headers['if-none-match'] });
+      reply.header('Cache-Control', 'private, no-cache').header('ETag', vue.etag);
+      if (vue.octets === null) return reply.code(304).send();
+      return reply.type(vue.type).send(vue.octets);
+    } catch (e) {
+      if (e instanceof ErreurService && e.code === 'introuvable') return reply.callNotFound();
+      throw e;
+    }
+  });
 
   app.get(`${BASE}/recherche`, opts, lire((request, a) => {
     const i = ids(request);

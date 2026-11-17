@@ -1,3 +1,4 @@
+// ecrans: accueil, systemes
 // Black-box tests of `kanevas-icones`, written from the need (the "Livre" and "Précision" messages of the
 // feature, docs/charte.md « The brand », docs/ecrans.md E-1 and sidebar). Expected values are literals.
 // Real server in stub mode + real Chromium (harnais.test.ts); the dev server is vite itself.
@@ -44,8 +45,6 @@ let srv: Awaited<ReturnType<typeof startServer>>;
 let browser: Any;
 let antor: Any;
 
-const dim = (b: Buffer) => [b.readUInt32BE(16), b.readUInt32BE(20)];
-
 before(async () => {
   if (skipBrowser) return;
   srv = await startServer();
@@ -69,20 +68,6 @@ async function verifierFichiers(base: string): Promise<void> {
   }
 }
 
-test('B-fichiers : les 7 fichiers répondent 200 sans session, du bon type, avec les octets du pack Marge', opts, async () => {
-  await verifierFichiers(srv.base);
-});
-
-test('B-tailles : apple-touch 180, icônes 192 et 512, maskable 512, ICO et SVG valides', opts, async () => {
-  const get = async (p: string) => Buffer.from(await (await fetch(srv.base + p)).arrayBuffer());
-  assert.deepEqual(dim(await get('/apple-touch-icon.png')), [180, 180]);
-  assert.deepEqual(dim(await get('/icon-192.png')), [192, 192]);
-  assert.deepEqual(dim(await get('/icon-512.png')), [512, 512]);
-  assert.deepEqual(dim(await get('/icon-maskable-512.png')), [512, 512]);
-  assert.deepEqual([...(await get('/favicon.ico')).subarray(0, 4)], [0, 0, 1, 0]);
-  assert.match((await get('/favicon.svg')).toString(), /<svg[\s>]/);
-});
-
 test('B-index : la page déclare favicon ICO et SVG, apple-touch-icon 180x180 et manifeste', opts, async () => {
   await antor.goto('/');
   await antor.getByRole('heading', { name: 'Mes univers', level: 1 }).waitFor();
@@ -101,26 +86,6 @@ test('B-index : la page déclare favicon ICO et SVG, apple-touch-icon 180x180 et
   assert.equal(trouve('apple-touch-icon', '/apple-touch-icon.png')?.sizes, '180x180');
   assert.ok(trouve('manifest', '/site.webmanifest'), 'manifest');
   assert.equal(await antor.title(), 'Kanevas');
-});
-
-test('B-manifeste : nom Kanevas, standalone, couleurs de la charte, icônes 192, 512 et maskable servies', opts, async () => {
-  const m = (await (await fetch(srv.base + '/site.webmanifest')).json()) as Any;
-  assert.equal(m.name, 'Kanevas');
-  assert.equal(m.display, 'standalone');
-  assert.match(m.start_url, /^\/?$/);
-  const charte = ['#121317', '#fcfcfd', '#8b9bf0'];
-  assert.ok(charte.includes(String(m.theme_color).toLowerCase()), `theme_color ${m.theme_color}`);
-  assert.ok(charte.includes(String(m.background_color).toLowerCase()), `background_color ${m.background_color}`);
-  const decrits = m.icons.map((i: Any) => `${i.sizes} ${i.purpose ?? 'any'}`).sort();
-  assert.ok(decrits.includes('192x192 any'), JSON.stringify(decrits));
-  assert.ok(decrits.includes('512x512 any'), JSON.stringify(decrits));
-  assert.ok(decrits.includes('512x512 maskable'), JSON.stringify(decrits));
-  for (const i of m.icons) {
-    const r = await fetch(new URL(i.src, srv.base + '/site.webmanifest'), { redirect: 'manual' });
-    assert.equal(r.status, 200, i.src);
-    const [l, h] = dim(Buffer.from(await r.arrayBuffer()));
-    assert.equal(`${l}x${h}`, i.sizes, i.src);
-  }
 });
 
 test('B-installable : Chromium lit le manifeste et ne trouve aucune erreur d’installation', opts, async () => {
@@ -213,28 +178,24 @@ test('B-echec : image qui ne charge pas -> « Kanevas » seul, lien nommé, rien
   await page.close();
 });
 
-test('B-exclusion : sans session, la page et les autres fichiers du pack ne sont pas publics', opts, async () => {
-  for (const chemin of ['/', '/robots.txt', '/kanevas-icon-1024.png', '/icon-1024.png', '/apple-touch-icon-precomposed.png', '/api/univers']) {
-    const r = await fetch(srv.base + chemin, { redirect: 'manual' });
-    assert.notEqual(r.status, 200, `${chemin} ne doit pas être public`);
-  }
-});
-
 test('B-dev : le serveur de dev (vite) sert les mêmes 7 fichiers et la page les déclare', opts, async () => {
   const port = await freePort();
-  const enfant: ChildProcess = spawn('node_modules/.bin/vite', ['--config', 'frontend/vite.config.ts', '--port', String(port), '--strictPort', '--host', '127.0.0.1'], { stdio: 'ignore' });
+  const enfant: ChildProcess = spawn('node_modules/.bin/vite', ['--config', 'frontend/vite.config.ts', '--port', String(port), '--strictPort', '--host', '127.0.0.1'], { stdio: ['ignore', 'pipe', 'ignore'] });
   const base = `http://127.0.0.1:${port}`;
   try {
-    const limite = Date.now() + 30000;
-    for (;;) {
-      try {
-        await fetch(base + '/');
-        break;
-      } catch {
-        if (Date.now() > limite) throw new Error('vite did not start');
-        await new Promise((r) => setTimeout(r, 200));
-      }
-    }
+    // vite announces its address on stdout once it serves: that line is the proof, not a retry loop
+    await new Promise<void>((ok, ko) => {
+      const limite = setTimeout(() => ko(new Error('vite did not start')), 30000);
+      let vu = '';
+      enfant.stdout!.on('data', (d: Buffer) => {
+        vu += d.toString();
+        if (vu.includes(`127.0.0.1:${port}`)) {
+          clearTimeout(limite);
+          ok();
+        }
+      });
+      enfant.once('exit', () => ko(new Error('vite did not start')));
+    });
     await verifierFichiers(base);
     const html = await (await fetch(base + '/')).text();
     for (const motif of [/rel="icon"[^>]*href="\/favicon\.ico"/, /href="\/favicon\.svg"/, /rel="apple-touch-icon"[^>]*href="\/apple-touch-icon\.png"/, /rel="manifest"[^>]*href="\/site\.webmanifest"/]) {

@@ -134,3 +134,70 @@
 
 .gx-menu .menu-declencheur { border: 1px solid var(--bord-champ); background: var(--surface-2); padding: 0 var(--e-3); }
 .gx-menu .menu-declencheur:hover { background: var(--surface); border-color: var(--bord-fort); }
+
+/* E-23, text version (docs/maquettes/e23-liste-corps.html). */
+.gx-systeme-page { display: flex; flex-direction: column; gap: var(--e-3); }
+.gx-systeme-page section h2 { margin: 0 0 var(--e-2); font-size: var(--t-16); }
+.gx-retour { margin-left: auto; color: var(--accent-texte); font-size: var(--t-13); }
+.gx-systeme-page .etat { border: 1px dashed var(--bord-fort); border-radius: 10px; padding: 18px; text-align: center; color: var(--texte-2); }
+.gx-systeme-page .etat h2 { margin: 0; font-size: inherit; font-weight: 400; color: var(--texte-2); }
+.gx-lignes { list-style: none; margin: 0; padding: 0; border: 1px solid var(--bord); border-radius: var(--rayon-panneau); background: var(--surface); }
+.gx-lignes li { border-top: 1px solid var(--bord); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--e-3); padding: var(--e-2) var(--e-3); }
+.gx-lignes li.cliquable { display: block; padding: 0; }
+.gx-lignes li.cliquable > .ligne-corps { all: unset; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--e-3); width: 100%; padding: var(--e-2) var(--e-3); cursor: pointer; }
+.gx-lignes li.cliquable > .ligne-corps:hover { background: var(--surface-2); }
+.gx-lignes li.cliquable > .ligne-corps:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.gx-lignes li.choisi > .ligne-corps { background: var(--accent-fond); }
+.gx-lignes li:first-child { border-top: 0; }
+.gx-lignes li.lune { padding-left: var(--e-6); }
+.gx-lignes li.cliquable.lune { padding-left: 0; }
+.gx-lignes li.cliquable.lune > .ligne-corps { padding-left: var(--e-6); }
+.gx-lignes .nom { grid-area: 1 / 1; font-weight: 600; overflow-wrap: anywhere; }
+.gx-lignes .nom.vide { font-weight: 400; color: var(--texte-2); font-style: italic; }
+.gx-lignes .meta { grid-area: 2 / 1; color: var(--texte-2); font-size: var(--t-13); overflow-wrap: anywhere; }
+.gx-lignes .place { grid-area: 1 / 2; color: var(--texte-2); font-size: var(--t-13); text-align: right; white-space: nowrap; }
+@media (max-width: 560px) {
+  .gx-lignes li, .gx-lignes li.cliquable > .ligne-corps { grid-template-columns: minmax(0, 1fr); }
+  .gx-lignes .nom, .gx-lignes .meta, .gx-lignes .place { grid-area: auto; text-align: left; white-space: normal; }
+}
+
+/* E-23, the canvas (AD-carte-3). The sky is dark in both themes; everything on it reads `--ciel*`. */
+.cs-carte { display: flex; flex-direction: column; gap: var(--e-2); }
+.cs-controles { display: flex; align-items: center; gap: var(--e-4); flex-wrap: wrap; }
+.cs-boutons { margin-left: auto; display: inline-flex; gap: var(--e-1); }
+.cs-ciel {
+  position: relative; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
+  width: 100%; height: clamp(320px, 62vw, 560px); border: 1px solid var(--bord); border-radius: var(--rayon-panneau);
+  background: radial-gradient(circle at 50% 50%, var(--ciel-lueur), var(--ciel) 70%);
+  color: var(--texte); font-size: var(--t-12); cursor: grab;
+}
+.cs-ciel:active { cursor: grabbing; }
+.cs-etat { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--texte-2); }
+.cs-traits, .cs-toile { position: absolute; left: 0; top: 0; pointer-events: none; }
+.cs-orbite { fill: none; stroke: var(--ciel-trait); stroke-width: 1; }
+.cs-heure line { stroke: var(--ciel-trait); stroke-width: 1; opacity: .35; }
+.cs-heure text { fill: var(--texte-3); font-size: var(--t-12); }
+.cs-transition { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 6; stroke-linecap: round; }
+.cs-corps { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; border: 0; padding: 0; background: transparent; cursor: pointer; }
+.cs-corps:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.cs-sortie { position: absolute; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 50%; padding: 0; cursor: pointer;
+  border: 2px solid var(--accent); background: var(--ciel); }
+.cs-sortie::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--accent); }
+.cs-sortie:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.cs-etiquette { position: absolute; white-space: nowrap; pointer-events: none; line-height: 15px; color: var(--texte);
+  text-shadow: 0 0 4px var(--ciel-halo), 0 0 8px var(--ciel-halo); }
+.cs-etiquette.zone { color: var(--texte-2); font-style: italic; }
+.cs-etiquette.sortie { color: var(--accent); }
+
+/* E-23, the panel of a body and its picture (no new panel class: `gx-bloc gx-panneau`). The panel sits right of the sky, below it on a phone. */
+.cs-zone { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e-3); align-items: start; }
+@media (min-width: 900px) { .cs-zone.avec-panneau { grid-template-columns: minmax(0, 1fr) 320px; } }
+.cs-zone .gx-panneau { max-height: none; }
+.cs-illustration, .cs-grande { position: relative; aspect-ratio: 4 / 3; border: 1px solid var(--bord); border-radius: var(--rayon-champ);
+  background: radial-gradient(circle at 50% 50%, var(--ciel-lueur), var(--ciel) 70%); overflow: hidden; margin-bottom: var(--e-2); }
+.cs-illustration img, .cs-grande img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.cs-net { opacity: 0; transition: opacity var(--duree) linear; }
+.cs-net.pret { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .cs-net { transition: none; } }
+.cs-grande { aspect-ratio: auto; height: min(70vh, 80vw); overflow: auto; }
+.cs-grande img { transform-origin: center; }
