@@ -60,7 +60,7 @@ export function FormulaireJeton({
   const [nomVide, setNomVide] = useState(false);
   const [duree, setDuree] = useState<'7' | '30' | '90' | '365'>('30');
   const [forme, setForme] = useState<FormeAcces>(() => (jeton ? formeDe(jeton) : formeVide()));
-  const [ouvertLe] = useState(jeton?.modifieParAdmin?.le ?? null);
+  const [ouvertLe, setOuvertLe] = useState(jeton?.modifieParAdmin?.le ?? null);
   const [courant, setCourant] = useState<JetonVue | undefined>(jeton);
   const [enCours, setEnCours] = useState(false);
   const [echec, setEchec] = useState<string | null>(null);
@@ -98,6 +98,7 @@ export function FormulaireJeton({
           if (frais.etat !== 'actif') setRevoque(true);
           else {
             setCourant(frais);
+            setOuvertLe(frais.modifieParAdmin?.le ?? null);
             setForme(formeDe(frais));
             setChanges(true);
           }
