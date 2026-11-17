@@ -50,6 +50,11 @@ function monde() {
   return { db, q, univers, g, a, poser, astre };
 }
 type W = ReturnType<typeof monde>;
+/** What the GM alone holds (AD-edition-2): the write tokens. Removed to compare what every reader sees. */
+const sansJetons = (v: any) => {
+  const { peutEcrire, versionSysteme, ...reste } = v;
+  return { ...reste, astres: v.astres.map(({ version, ...a }: any) => a), formations: v.formations.map(({ version, ...f }: any) => f) };
+};
 const code = (f: () => unknown) => { try { f(); } catch (e: any) { return `${e.code ?? e.constructor.name}|${e.message}`; } return 'aucune'; };
 const cible = FS.systemes[0].entree as { q: number; r: number };
 
@@ -86,8 +91,11 @@ test('système tiré : deux lectures identiques, état tire, nom nul, MJ et joue
   const { q, r } = cible;
   const a = lireInterieur(w.db, w.a('antor'), w.univers, w.g, q, r);
   assert.deepEqual(lireInterieur(w.db, w.a('antor'), w.univers, w.g, q, r), a);
-  assert.deepEqual(lireInterieur(w.db, w.a('lea'), w.univers, w.g, q, r), a);
-  assert.deepEqual(lireInterieur(w.db, w.a('antor', true), w.univers, w.g, q, r), a);
+  const joueuse = lireInterieur(w.db, w.a('lea'), w.univers, w.g, q, r);
+  assert.deepEqual(joueuse, sansJetons(a));
+  assert.deepEqual(lireInterieur(w.db, w.a('antor', true), w.univers, w.g, q, r), joueuse);
+  assert.equal(a.peutEcrire, true); assert.equal(a.versionSysteme, w.q('SELECT version FROM swn_galaxies WHERE id=?', w.g)[0].version);
+  assert.ok(a.astres.every((x) => x.version === 1));
   assert.equal(a.etat, 'tire'); assert.equal(a.nom, null);
   assert.deepEqual([a.q, a.r], [q, r]);
   assert.ok(a.astres.length >= 4);
@@ -206,11 +214,15 @@ test('aucune réponse ne porte fiche_id, secret, id ni compte de caché (tiré, 
     lireInterieur(w.db, w.a('antor'), w.univers, w.g, FS.systemes[1].entree.q, FS.systemes[1].entree.r),
   ];
   for (const v of lectures) {
-    const s = JSON.stringify(v);
+    const s = JSON.stringify(sansJetons(v));
     assert.ok(!/fiche|secret|"id"|cach|masqu|compte|systeme_id|version"/i.test(s), s.slice(0, 200));
-    assert.deepEqual(Object.keys(v).sort(), ['astres', 'etat', 'formations', 'nom', 'q', 'r', 'transition', 'version_generateur']);
-    for (const a of v.astres) assert.deepEqual(Object.keys(a).sort(), ['aspect', 'cle', 'etoile_rang', 'genre', 'heure', 'nom', 'orbite', 'parent_cle', 'taille', 'type']);
-    for (const f of v.formations) assert.deepEqual(Object.keys(f).sort(), ['cle', 'etoile_rang', 'forme', 'nom', 'parametres']);
+    // The GM's reading adds only the tokens of AD-edition-2.
+    assert.deepEqual(Object.keys(v).sort(), ['astres', 'etat', 'formations', 'nom', 'peutEcrire', 'q', 'r', 'transition', 'versionSysteme', 'version_generateur']);
+    for (const a of v.astres) assert.deepEqual(Object.keys(a).sort(), ['aspect', 'cle', 'etoile_rang', 'genre', 'heure', 'nom', 'orbite', 'parent_cle', 'taille', 'type', 'version']);
+    for (const f of v.formations) assert.deepEqual(Object.keys(f).sort(), ['cle', 'etoile_rang', 'forme', 'nom', 'parametres', 'version']);
+    const p = sansJetons(v);
+    assert.deepEqual(Object.keys(p).sort(), ['astres', 'etat', 'formations', 'nom', 'q', 'r', 'transition', 'version_generateur']);
+    for (const a of p.astres) assert.deepEqual(Object.keys(a).sort(), ['aspect', 'cle', 'etoile_rang', 'genre', 'heure', 'nom', 'orbite', 'parent_cle', 'taille', 'type']);
   }
 });
 

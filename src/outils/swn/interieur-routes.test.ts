@@ -39,7 +39,13 @@ test('route : défini lu par tous, secret 404 pour la joueuse (même corps qu\'u
   assert.equal(mj.statusCode, 200);
   const v = mj.json();
   assert.equal(v.etat, 'defini'); assert.equal(v.astres[0].type, 'anomalie');
-  assert.deepEqual((await w.get('lea', '42/43')).json(), v);
+  // The player reads the same bodies without the GM's write tokens (AD-edition-2).
+  const joueuse = (await w.get('lea', '42/43')).json();
+  assert.equal(joueuse.peutEcrire, undefined); assert.equal(joueuse.versionSysteme, undefined);
+  assert.ok(joueuse.astres.every((a: any) => a.version === undefined));
+  assert.equal(v.peutEcrire, true);
+  const { peutEcrire, versionSysteme, ...vSans } = v;
+  assert.deepEqual(joueuse, { ...vSans, astres: v.astres.map(({ version, ...a }: any) => a), formations: v.formations.map(({ version, ...f }: any) => f) });
   assert.ok(!/fiche_id|secret|"id"/.test(mj.body));
   assert.equal((await w.get('antor', '40/41')).statusCode, 200);
   const vide = await w.get('lea', '41/7777');
