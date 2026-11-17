@@ -284,8 +284,10 @@ Tests of the harness itself (`harnais-*`, `demarrage-suite-besoin`, `diagnostic-
 | `src/e2e/jetons-ecran-admin.test.ts` | `exclusion_mj_non_admin_sans_panneau_et_route_introuvable` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
 | `src/e2e/jetons-ecran-admin.test.ts` | `filtre_proprietaire_et_jeton_revoque_entre_temps` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
 | `src/e2e/jetons-ecran-admin.test.ts` | `largeur_360_blocs_sans_debordement` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
+| `src/e2e/jetons-ecran-admin.test.ts` | `nom_long_non_tronque_a_cote_de_la_pastille_revoque` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
 | `src/e2e/jetons-ecran-compte.test.ts` | `jeton_liste_valeur_une_fois_puis_api` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
 | `src/e2e/jetons-ecran-compte.test.ts` | `tous_avec_exception_tiret_puis_modifier_et_revoquer` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
 | `src/e2e/jetons-ecran-compte.test.ts` | `bords_nom_vide_liste_vide_et_connexion_coupee` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
 | `src/e2e/jetons-ecran-compte.test.ts` | `modifie_par_admin_pastille_effacee_et_acces_changes_pendant_la_boite` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
 | `src/e2e/jetons-ecran-compte.test.ts` | `jeton_outils_essai_g_ligne_catalogue_ecrit_fiches_401` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
+| `src/e2e/jetons-ecran-compte.test.ts` | `liste_acces_nom_univers_long_passe_a_la_ligne_sans_troncature` | affichage | — | gardé — écran écrit pour la tranche ; les effets sont à `src/routes/jetons-session.test.ts` |
