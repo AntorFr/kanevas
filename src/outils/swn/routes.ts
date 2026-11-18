@@ -9,7 +9,7 @@ import {
 import {
   changerGraine, contenuGalaxie, creerGalaxie, exigerEcritureGalaxie, lireGalaxie, lireGraine, renommerGalaxie, rendreVisibleGalaxie, supprimerGalaxie,
 } from '../../services/swn/galaxies.js';
-import { illustrationAstre } from '../../services/swn/illustration.js';
+import { illustrationAstre, illustrerFiche } from '../../services/swn/illustration.js';
 import {
   ajouterAstre, ajouterZone, ancrer, etatMasque, masquerSysteme, modifierAstre, modifierZone as modifierZoneSysteme, poserTransition, retirerAstre, retirerZone as retirerZoneSysteme,
   type ResultatEcriture,
@@ -100,6 +100,21 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
       reply.header('Cache-Control', 'private, no-cache').header('ETag', vue.etag);
       if (vue.octets === null) return reply.code(304).send();
       return reply.type(vue.type).send(vue.octets);
+    } catch (e) {
+      if (e instanceof ErreurService && e.code === 'introuvable') return reply.callNotFound();
+      throw e;
+    }
+  });
+
+  // « Illustrer la fiche » (AD-liens-4): the GM only; the dialog's `cote` rides in the body. Anchors nothing, writes no `swn_*`.
+  app.post(`${BASE}/interieur/:q/:r/astres/:cle/illustrer-fiche`, opts, async (request, reply) => {
+    const i = ids(request);
+    const p = request.params as { q: string; r: string };
+    const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
+    const cote = corps(request as { body?: unknown }).cote;
+    try {
+      return reply.code(200).send(await illustrerFiche(app.db, acteur(request as never), i.univers, i.galaxie, ent(p.q), ent(p.r), i.cle!,
+        typeof cote === 'number' ? cote : NaN));
     } catch (e) {
       if (e instanceof ErreurService && e.code === 'introuvable') return reply.callNotFound();
       throw e;
