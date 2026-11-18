@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Db } from '../db/db.js';
 import { empreinteEntete, empreinteSection, type CleDe } from './empreintes.js';
-import { resoudreFiche } from './cles.js';
+import { cleDeFiche, resoudreFiche } from './cles.js';
 import { roleDe } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { changerSousType, changerTypeFiche, deplacerFiche, renommerFiche } from './fiches.js';
@@ -118,11 +118,10 @@ function derniereLigne(db: Db): number {
 
 /** The key of a sheet or of a file, for the import form of a link or of a file reference. */
 export function cleDe(db: Db): CleDe {
-  const fiche = db.prepare('SELECT cle FROM fiches WHERE id = ?');
   const fichier = db.prepare('SELECT cle_origine AS cle FROM fichiers WHERE id = ?');
   return (id, nature = 'fiche') => {
-    const r = (nature === 'fichier' ? fichier : fiche).get(id) as { cle: string | null } | undefined;
-    return r?.cle ?? null;
+    if (nature !== 'fichier') return cleDeFiche(db, id);
+    return (fichier.get(id) as { cle: string | null } | undefined)?.cle ?? null;
   };
 }
 
