@@ -65,9 +65,11 @@ export interface ResultatFiche {
 interface SectionEntree {
   cle: string;
   titre: string;
-  contenu: string;
-  joueursLisent: boolean;
-  joueursEcrivent: boolean;
+  /** `undefined`: the request says nothing (an existing section keeps it; a new one starts empty). */
+  contenu?: string;
+  /** `undefined`: the request says nothing (an existing section keeps it; a new one is closed to players). */
+  joueursLisent?: boolean;
+  joueursEcrivent?: boolean;
   /** Origin keys of the files joined to the section; `undefined`: the request says nothing. */
   fichiers?: string[];
 }
@@ -79,8 +81,9 @@ interface FicheEntree {
   statut?: string;
   /** `undefined`: the request says nothing (left as is); `null`: no sub-type wanted. */
   sousType?: string | null;
-  pj: boolean;
-  /** Absent on types without the mark; otherwise defaults to false. */
+  /** `undefined`: the request says nothing (left as is; a new character is not a PC). */
+  pj?: boolean;
+  /** Absent on types without the mark, or when the request says nothing (left as is). */
   disparu?: boolean;
   campagne?: string;
   campagneId?: number;
@@ -127,8 +130,8 @@ function date(v: unknown, champ: string, maintenant: Date): string | undefined {
   return new Date(ms).toISOString();
 }
 
-function booleen(v: unknown, champ: string, objet: string): boolean {
-  if (v === undefined) return false;
+function booleen(v: unknown, champ: string, objet: string): boolean | undefined {
+  if (v === undefined) return undefined;
   if (typeof v !== 'boolean') throw new Refus(champ, objet, `${champ} : un booléen est attendu`);
   return v;
 }
@@ -217,11 +220,11 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
     if (vues.has(s.cle)) throw new Refus(`${ch}.cle`, 'section', `section « ${s.cle} » : clé en double`);
     vues.add(s.cle);
     const titreS = texte(s.titre, `${ch}.titre`, 'section', 1, 80, `section « ${s.cle} » : titre`);
-    const contenu = s.contenu === undefined ? '' : s.contenu;
-    if (typeof contenu !== 'string') {
+    const contenu = s.contenu;
+    if (contenu !== undefined && typeof contenu !== 'string') {
       throw new Refus(`${ch}.contenu`, 'section', `section « ${titreS} » : contenu en texte attendu`);
     }
-    if (contenu.length > MAX_CONTENU_SECTION) {
+    if (contenu !== undefined && contenu.length > MAX_CONTENU_SECTION) {
       throw new Refus(
         `${ch}.contenu`,
         'section',
@@ -391,7 +394,7 @@ function ecrire(
     .get(universId, cle) as FicheLue | undefined;
   const charge = e.type === 'aventure'
     ? CHARGES.aventure.parse({ v: 1, statut: e.statut })
-    : e.type === 'personnage' ? { pj: e.pj } : {};
+    : e.type === 'personnage' && e.pj !== undefined ? { pj: e.pj } : {};
 
   if (!existante) {
     if (!typeActif(db, universId, e.type)) prevenir('fiche', desactive(e.type));
@@ -406,7 +409,7 @@ function ecrire(
       type: e.type,
       titre: e.titre,
       sousType: e.sousType ?? null,
-      charge,
+      charge: e.type === 'personnage' ? { pj: e.pj ?? false } : charge,
       origine,
     });
     if (e.disparu !== undefined) marquerDisparu(db, { compteId }, universId, fiche.id, e.disparu);
@@ -442,8 +445,8 @@ function ecrire(
 
   // Type (and PJ, for a character) are one unit.
   const pjCourant = pjDe(existante.type, existante.charge);
-  const pjVoulu = e.type === 'personnage' ? e.pj : null;
-  if (existante.type !== e.type || pjCourant !== pjVoulu) {
+  const pjChange = e.type === 'personnage' && e.pj !== undefined && pjCourant !== e.pj;
+  if (existante.type !== e.type || pjChange) {
     if (e.type === 'compte_rendu' || existante.type === 'compte_rendu') {
       prevenir('fiche', 'type : un compte rendu ne change pas de type, ignoré');
     } else {
@@ -663,6 +666,12 @@ function poserParent(
   return true;
 }
 
+/** The audience a section is created with: what is sent, closed to players otherwise. */
+const audienceDe = (s: SectionEntree) => ({
+  joueursLisent: s.joueursLisent ?? false,
+  joueursEcrivent: s.joueursEcrivent ?? false,
+});
+
 /** Appends an imported section; returns its id. */
 function creerSection(
   db: Db,
@@ -673,14 +682,11 @@ function creerSection(
   existante?: { id: number; version: number },
 ): number {
   const { universId, compteId } = jeton;
-  const v = existante ?? ajouterSection(db, compteId, universId, ficheId, { titre: s.titre, contenu: s.contenu });
+  const v = existante ?? ajouterSection(db, compteId, universId, ficheId, { titre: s.titre, contenu: s.contenu ?? '' });
   if (existante || s.joueursLisent || s.joueursEcrivent) {
-    changerAudience(db, compteId, universId, ficheId, v.id, {
-      joueursLisent: s.joueursLisent,
-      joueursEcrivent: s.joueursEcrivent,
-    });
+    changerAudience(db, compteId, universId, ficheId, v.id, audienceDe(s));
   }
-  prevenirTexte(preparerContenu(db, universId, compteId, s.contenu), s.titre, prevenir);
+  prevenirTexte(preparerContenu(db, universId, compteId, s.contenu ?? ''), s.titre, prevenir);
   poserJoints(db, universId, { id: v.id, titre: s.titre }, s.fichiers, prevenir);
   db.prepare('UPDATE sections SET cle = ? WHERE id = ?').run(s.cle, v.id);
   return v.id;
@@ -703,18 +709,17 @@ function majSection(
     ecrit = true;
   }
 
-  if ((ligne.joueurs_lisent === 1) !== s.joueursLisent || (ligne.joueurs_ecrivent === 1) !== s.joueursEcrivent) {
-    changerAudience(db, compteId, universId, ficheId, ligne.id, {
-      joueursLisent: s.joueursLisent,
-      joueursEcrivent: s.joueursEcrivent,
-    });
+  const lisent = s.joueursLisent ?? ligne.joueurs_lisent === 1;
+  const ecrivent = s.joueursEcrivent ?? ligne.joueurs_ecrivent === 1;
+  if (lisent !== (ligne.joueurs_lisent === 1) || ecrivent !== (ligne.joueurs_ecrivent === 1)) {
+    changerAudience(db, compteId, universId, ficheId, ligne.id, { joueursLisent: lisent, joueursEcrivent: ecrivent });
     ecrit = true;
   }
 
   if (poserJoints(db, universId, ligne, s.fichiers, prevenir)) ecrit = true;
 
   // The text is compared once the known keys are resolved (AD-104): a link already resolved is « inchangée ».
-  const voulu = preparerContenu(db, universId, compteId, s.contenu);
+  const voulu = s.contenu === undefined ? ligne.contenu : preparerContenu(db, universId, compteId, s.contenu);
   if (ligne.contenu !== voulu) {
     const courant = db.prepare('SELECT version FROM sections WHERE id = ?').get(ligne.id) as { version: number };
     ecrireContenu(db, compteId, universId, ficheId, ligne.id, voulu, courant.version);
