@@ -1,3 +1,4 @@
+import { ecrire } from './historique.js';
 import type { Db } from '../db/db.js';
 import { aventureLue, campagneDuCompteRendu, exigerMJ, exigerRole } from './droits.js';
 import { tirerCleFiche } from './cles.js';
@@ -40,7 +41,7 @@ export function creerCompteRendu(
   exigerSansBloc(role, texte);
   const now = new Date().toISOString();
   const o = entree.origine;
-  const ficheId = db.transaction(() => {
+  const ficheId = ecrire(db, compteId, () => {
     const f = db
       .prepare(
         `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle, creee_via, dernier_import)
@@ -66,7 +67,7 @@ export function creerCompteRendu(
       auteurEcrit: joueur ? 1 : 0,
     });
     return id;
-  })();
+  });
   return lireFiche(db, { compteId }, universId, ficheId);
 }
 

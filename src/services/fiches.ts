@@ -10,6 +10,7 @@ import {
   vueMJ,
   vueSection,
 } from './droits.js';
+import { ecrire } from './historique.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { etiquetageDe } from './etiquettes.js';
 import { mentionsDe } from './mentions.js';
@@ -189,7 +190,7 @@ export function creerFiche(
       throw invalide('Réglage d’audience invalide.');
     }
   }
-  return db.transaction(() => {
+  return ecrire(db, compteId, () => {
     const now = new Date().toISOString();
     const o = entree.origine;
     const cree = o?.creeLe ?? now;
@@ -218,7 +219,7 @@ export function creerFiche(
       if (section.joueursLisent === true) changerAudience(db, compteId, universId, id, s.id, { joueursLisent: true });
     }
     return versFiche(chargerFiche(db, universId, id));
-  })();
+  });
 }
 
 /** Play state, GM outside player mode only; changing it does not modify the text date (AD-123). */
@@ -238,7 +239,9 @@ export function changerStatutFiche(
     throw invalide('Statut invalide pour ce type de fiche.');
   }
   const charge = CHARGES[fiche.type].parse({ v: 1, statut });
-  db.prepare('UPDATE fiches SET charge = ? WHERE id = ?').run(JSON.stringify(charge), ficheId);
+  ecrire(db, acteur.compteId, () =>
+    db.prepare('UPDATE fiches SET charge = ? WHERE id = ?').run(JSON.stringify(charge), ficheId),
+  );
   return versFiche(chargerFiche(db, universId, ficheId));
 }
 
@@ -259,10 +262,8 @@ export function renommerFiche(
   if (a.modeJoueur) throw refuse();
   chargerFiche(db, universId, ficheId);
   const t = validerTitre(titre, 120, 'Le titre');
-  db.prepare('UPDATE fiches SET titre = ?, modifie_le = ? WHERE id = ?').run(
-    t,
-    new Date().toISOString(),
-    ficheId,
+  ecrire(db, a.compteId, () =>
+    db.prepare('UPDATE fiches SET titre = ?, modifie_le = ? WHERE id = ?').run(t, new Date().toISOString(), ficheId),
   );
   return versFiche(chargerFiche(db, universId, ficheId));
 }
@@ -278,10 +279,8 @@ export function changerSousType(
   exigerMJ(db, universId, compteId);
   chargerFiche(db, universId, ficheId);
   const valeur = sousType === null ? null : validerSousType(sousType);
-  db.prepare('UPDATE fiches SET sous_type = ?, modifie_le = ? WHERE id = ?').run(
-    valeur,
-    new Date().toISOString(),
-    ficheId,
+  ecrire(db, compteId, () =>
+    db.prepare('UPDATE fiches SET sous_type = ?, modifie_le = ? WHERE id = ?').run(valeur, new Date().toISOString(), ficheId),
   );
   return versFiche(chargerFiche(db, universId, ficheId));
 }
@@ -303,10 +302,10 @@ export function marquerDisparu(
   if (!porteMarqueDisparu(fiche.type)) throw invalide('Cette fiche ne peut pas être marquée disparue.');
   if (typeof disparu !== 'boolean') throw invalide('Requête invalide.');
   const charge = { ...(JSON.parse(fiche.charge) as Record<string, unknown>), disparu };
-  db.prepare('UPDATE fiches SET charge = ?, modifie_le = ? WHERE id = ?').run(
-    JSON.stringify(charge),
-    new Date().toISOString(),
-    ficheId,
+  ecrire(db, acteur.compteId, () =>
+    db
+      .prepare('UPDATE fiches SET charge = ?, modifie_le = ? WHERE id = ?')
+      .run(JSON.stringify(charge), new Date().toISOString(), ficheId),
   );
   return versFiche(chargerFiche(db, universId, ficheId));
 }
@@ -344,12 +343,10 @@ export function changerTypeFiche(
   const c = CHARGES[type].safeParse({ v: 1, ...base, ...charge, ...marque });
   if (!c.success) throw invalide('Charge utile invalide pour ce type de fiche.');
   const garde = type === actuelle.type ? actuelle.sous_type : null;
-  db.prepare('UPDATE fiches SET type = ?, charge = ?, sous_type = ?, modifie_le = ? WHERE id = ?').run(
-    type,
-    JSON.stringify(c.data),
-    voulu ?? garde,
-    new Date().toISOString(),
-    ficheId,
+  ecrire(db, compteId, () =>
+    db
+      .prepare('UPDATE fiches SET type = ?, charge = ?, sous_type = ?, modifie_le = ? WHERE id = ?')
+      .run(type, JSON.stringify(c.data), voulu ?? garde, new Date().toISOString(), ficheId),
   );
   return versFiche(chargerFiche(db, universId, ficheId));
 }
@@ -442,16 +439,19 @@ export function bilanSuppressionFiche(db: Db, acteur: Acteur, universId: number,
  */
 export function supprimerFiche(db: Db, acteur: Acteur, universId: number, ficheId: number): void {
   const f = porteSuppression(db, acteur, universId, ficheId, true);
-  const { disques } = db.transaction(() => {
+  const { disques } = ecrire(db, acteur.compteId, () => {
     const bilan = recenser(db, f);
     db.prepare('UPDATE fiches SET parent_id = ? WHERE parent_id = ?').run(f.parent_id, f.id);
     db.prepare('DELETE FROM relations WHERE cible_fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM elements_carte WHERE fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM taches_preparation WHERE fiche_id = ?').run(f.id);
-    db.prepare('DELETE FROM sections WHERE fiche_id = ?').run(f.id);
+    // The sheet goes first so that its history line keeps its sections (AD-147, trigger BEFORE DELETE);
+    // the sections then go without a line of their own, their sheet being gone. The check waits for the commit.
+    db.pragma('defer_foreign_keys = ON');
     db.prepare('DELETE FROM fiches WHERE id = ?').run(f.id);
+    db.prepare('DELETE FROM sections WHERE fiche_id = ?').run(f.id);
     return bilan;
-  })();
+  });
   for (const d of disques) supprimerFichier(d);
 }
 
@@ -515,7 +515,7 @@ export function deplacerFiche(
       ).parent_id;
     }
   }
-  db.prepare('UPDATE fiches SET parent_id = ? WHERE id = ?').run(parentId, ficheId);
+  ecrire(db, acteur.compteId, () => db.prepare('UPDATE fiches SET parent_id = ? WHERE id = ?').run(parentId, ficheId));
   return versFiche(chargerFiche(db, universId, ficheId));
 }
 

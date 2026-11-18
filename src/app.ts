@@ -12,6 +12,7 @@ import { registerSessionRoutes } from './routes/session.js';
 import { ConnexionClaude } from './services/assistant/connexion-claude.js';
 import type { ConfigAssistant } from './services/assistant/disponibilite.js';
 import type { DepsRepondre } from './services/assistant/repondre.js';
+import { purgerHistorique } from './services/historique.js';
 import { chargerCleSession } from './services/session.js';
 import { verifierRegistre } from './outils/registre.js';
 
@@ -65,6 +66,12 @@ export async function buildApp() {
   await registerAuthRoutes(app);
   await registerBouchonRoutes(app);
   await registerImportRoutes(app);
+
+  // The history keeps 30 days of values and 90 of lines (B-93): purged at mount, then every 24 hours.
+  purgerHistorique(db, app.horloge());
+  const minuterie = setInterval(() => purgerHistorique(db, app.horloge()), 24 * 60 * 60 * 1000);
+  minuterie.unref();
+  app.addHook('onClose', async () => clearInterval(minuterie));
   await registerSessionRoutes(app);
 
   return app;

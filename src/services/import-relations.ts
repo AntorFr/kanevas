@@ -1,3 +1,4 @@
+import { avecContexte } from './historique.js';
 import type { Db } from '../db/db.js';
 import { exigerMJ } from './droits.js';
 import { ErreurService, introuvable } from './erreurs.js';
@@ -37,7 +38,7 @@ export function assurerRelations(
     .get(universId, cle) as { id: number } | undefined;
   if (!source) throw introuvable();
 
-  return corps.map((brut: unknown) => db.transaction((): ResultatRelationImport => {
+  return corps.map((brut: unknown) => avecContexte(db, { compteId: jeton.compteId, jetonId: jeton.id, origine: 'import', lotId }, (): ResultatRelationImport => {
     const b = typeof brut === 'object' && brut !== null && !Array.isArray(brut)
       ? brut as Record<string, unknown> : {};
     const entree = {
@@ -96,5 +97,5 @@ export function assurerRelations(
       if (e.detail === 'auto_relation' || e.detail === 'limite_relations') return refuser(e.message, e.detail);
       throw e;
     }
-  })());
+  }));
 }

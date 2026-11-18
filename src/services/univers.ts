@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { ecrire, retirerHistoriqueUnivers } from './historique.js';
 import type { Db } from '../db/db.js';
 import { tirerCleUnivers } from './cles.js';
 import { effacerDonneesUniversComplet } from './outils-donnees.js';
@@ -126,7 +127,7 @@ export function supprimerUnivers(db: Db, acteur: Acteur, universId: number, nom:
   if (typeof nom !== 'string' || nom !== u.nom) {
     throw new ErreurService('invalide', "Le nom ne correspond pas à celui de l'univers.", 'nom_different');
   }
-  const disques = db.transaction(() => {
+  const disques = ecrire(db, acteur.compteId, () => {
     const colonne = (sql: string) => (db.prepare(sql).all(universId) as { d: string }[]).map((r) => r.d);
     const aEffacer = [
       ...colonne('SELECT disque AS d FROM fichiers WHERE univers_id = ?'),
@@ -154,8 +155,9 @@ export function supprimerUnivers(db: Db, acteur: Acteur, universId: number, nom:
     run('DELETE FROM types_univers WHERE univers_id = ?');
     run('DELETE FROM fichiers WHERE univers_id = ?');
     run('DELETE FROM membres WHERE univers_id = ?');
+    retirerHistoriqueUnivers(db, universId); // after the deletes above, which leave their lines
     run('DELETE FROM univers WHERE id = ?');
     return aEffacer;
-  })();
+  });
   for (const d of disques) supprimerFichier(d);
 }

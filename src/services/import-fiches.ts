@@ -1,3 +1,4 @@
+import { avecContexte } from './historique.js';
 import { creerCompteRendu, TITRE_SECTION_COMPTE_RENDU } from './comptes_rendus.js';
 import type { Db } from '../db/db.js';
 import { exigerMJ } from './droits.js';
@@ -388,14 +389,14 @@ export function assurerFiche(
   }
 
   try {
-    return db.transaction((): ResultatFiche => {
+    return avecContexte(db, { compteId: jeton.compteId, jetonId: jeton.id, origine: 'import', lotId }, (): ResultatFiche => {
       const avert: EntreeRapport[] = [];
       const prevenir = (objet: string, raison: string) =>
         avert.push({ cle, objet, raison, gravite: 'avertissement' });
       const resultat = ecrire(db, jeton, cle, entree, prevenir);
       if (lotId !== null) noterDansLot(db, lotId, 'fiches', ISSUE[resultat.etat], avert, maintenant);
       return { ...resultat, avertissements: avert.map((a) => a.raison) };
-    })();
+    });
   } catch (e) {
     // A bare id that points nowhere: the whole request is refused, nothing of it is written.
     if (e instanceof ErreurService && e.detail === 'lien_illisible') {
@@ -926,14 +927,14 @@ export function supprimerFicheImport(
     if (lot.closLe !== null) throw new ErreurService('conflit', 'Le lot est clos.', 'lot_clos');
   }
   if (!cleValide(cle)) return;
-  db.transaction(() => {
+  avecContexte(db, { compteId: jeton.compteId, jetonId: jeton.id, origine: 'import', lotId }, () => {
     const f = db
       .prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle = ?')
       .get(jeton.universId, cle) as { id: number } | undefined;
     if (!f) return;
     supprimerFiche(db, { compteId: jeton.compteId }, jeton.universId, f.id);
     if (lotId !== null) noterDansLot(db, lotId, 'fiches', 'supprimees', [], maintenant);
-  })();
+  });
 }
 
 /** Reads the `?lot=` of a write: absent → no batch; otherwise an id. */

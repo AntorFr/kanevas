@@ -46,8 +46,8 @@ export function BoiteDialogue({
   icone?: LucideIcon;
   /** Optional glyph before the confirmation label. */
   iconeAction?: LucideIcon;
-  /** `danger` (red bin, danger button) or `mj` (GM amber badge, primary button): a reversible GM closing. */
-  variante?: 'danger' | 'mj';
+  /** `danger` (red bin, danger button) or `mj` (GM amber badge, primary button): a reversible GM closing; `neutre` (accent badge, primary button): a restoration (E-24). */
+  variante?: 'danger' | 'mj' | 'neutre';
   children?: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -111,7 +111,7 @@ export function BoiteDialogue({
         aria-describedby={idTexte}
         ref={ref}
       >
-        <span className={`boite-icone${variante === 'mj' ? ' mj' : ''}`} aria-hidden="true">
+        <span className={`boite-icone${variante === 'mj' ? ' mj' : variante === 'neutre' ? ' neutre' : ''}`} aria-hidden="true">
           <Icone size={16} strokeWidth={1.75} />
         </span>
         <div className="boite-corps">
@@ -124,7 +124,7 @@ export function BoiteDialogue({
             </button>
             {action && <Bouton
               icone={iconeAction}
-              variante={variante === 'mj' ? 'principal' : 'danger'}
+              variante={variante === 'danger' ? 'danger' : 'principal'}
               enCours={libelleEnCours ? undefined : enCours}
               disabled={desactive || (libelleEnCours ? enCours : undefined)}
               ecrit

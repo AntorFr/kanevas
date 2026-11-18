@@ -1,3 +1,4 @@
+import { avecContexte, ecrire, ecrireSysteme } from './historique.js';
 import type { Readable } from 'node:stream';
 
 import { attachmentsDir } from '../config/env.js';
@@ -137,7 +138,7 @@ export async function assurerFichier(
     temporaire = ecrit.temporaire;
     if (ecrit.taille === 0) invalider('fichier', 'fichier vide : 0 octet, refusé');
     const type = typeParSignature(ecrit.debut);
-    const resultat = db.transaction((): ResultatFichierImport => {
+    const resultat = avecContexte(db, { compteId: jeton.compteId, jetonId: jeton.id, origine: 'import', lotId }, (): ResultatFichierImport => {
       // Uploading yields to other requests: check the role and the batch again before writing.
       autoriserImport();
       const courant = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND cle_origine = ?')
@@ -194,7 +195,7 @@ export async function assurerFichier(
         noterDansLot(db, lotId, 'fichiers', issues[etat], rapport, maintenant);
       }
       return { id, etat, avertissements };
-    })();
+    });
     valide = true;
     if (ancienDisque) supprimerFichier(ancienDisque, racine);
     return resultat;
@@ -431,7 +432,7 @@ export async function ajouterFichier(
         'pas_une_image',
       );
     }
-    const id = db.transaction(() => {
+    const id = ecrire(db, acteur.compteId, () => {
       const { visibilite } = autoriser(db, acteur, universId, cible);
       disque = promouvoir(ecrit.temporaire, racine);
       const info = db
@@ -446,7 +447,7 @@ export async function ajouterFichier(
         db.prepare('UPDATE fiches SET illustration_fichier_id = ? WHERE id = ?').run(fichierId, cible.ficheId);
       }
       return fichierId;
-    })();
+    });
     const v = vue(chargerFichier(db, universId, id));
     if (cible.ou === 'section' && cible.maniere === 'texte') v.reference = `fichier:${id}`;
     return v;
@@ -466,7 +467,7 @@ export function joindreFichier(
   sectionId: number,
   fichierId: number,
 ): FichierVue {
-  return db.transaction(() => {
+  return ecrire(db, acteur.compteId, () => {
     const { role, s } = contexteSection(db, acteur, universId, ficheId, sectionId);
     exigerEcritureSection(role, s, acteur);
     const f = fichierVisible(db, acteur, universId, fichierId);
@@ -478,7 +479,7 @@ export function joindreFichier(
       poserJointure(db, f.id, s.id);
     }
     return vue(f);
-  })();
+  });
 }
 
 /** Removes the reference of a joined file (the file stays in the library); who writes the section may. */
@@ -490,7 +491,7 @@ export function retirerJointure(
   sectionId: number,
   fichierId: number,
 ): void {
-  db.transaction(() => {
+  ecrire(db, acteur.compteId, () => {
     const { role, s } = contexteSection(db, acteur, universId, ficheId, sectionId);
     exigerEcritureSection(role, s, acteur);
     const ligne = db
@@ -504,7 +505,7 @@ export function retirerJointure(
     } else {
       db.prepare('DELETE FROM fichiers_sections WHERE fichier_id = ? AND section_id = ?').run(fichierId, s.id);
     }
-  })();
+  });
 }
 
 /** The GM sets an existing image of the library as the illustration of a sheet. */
@@ -515,7 +516,7 @@ export function choisirIllustration(
   ficheId: number,
   fichierId: number,
 ): FichierVue {
-  return db.transaction(() => {
+  return ecrire(db, acteur.compteId, () => {
     exigerMJDeFiche(db, universId, acteur, ficheId);
     const f = chargerFichier(db, universId, fichierId);
     if (!estImage(f.type)) {
@@ -527,15 +528,15 @@ export function choisirIllustration(
     }
     db.prepare('UPDATE fiches SET illustration_fichier_id = ? WHERE id = ?').run(f.id, ficheId);
     return vue(f);
-  })();
+  });
 }
 
 /** Removes the illustration of a sheet (a no-op when there is none); the file stays in the library. */
 export function retirerIllustration(db: Db, acteur: Acteur, universId: number, ficheId: number): void {
-  db.transaction(() => {
+  ecrire(db, acteur.compteId, () => {
     exigerMJDeFiche(db, universId, acteur, ficheId);
     db.prepare('UPDATE fiches SET illustration_fichier_id = NULL WHERE id = ?').run(ficheId);
-  })();
+  });
 }
 
 /** The GM renames a file and/or changes its visibility. */
@@ -573,14 +574,14 @@ export function effacerFichier(
   fichierId: number,
   racine: string = attachmentsDir,
 ): void {
-  const disque = db.transaction(() => {
+  const disque = ecrire(db, acteur.compteId, () => {
     exigerMJReel(db, universId, acteur);
     const f = chargerFichier(db, universId, fichierId);
     db.prepare('UPDATE fiches SET illustration_fichier_id = NULL WHERE illustration_fichier_id = ?').run(f.id);
     db.prepare('DELETE FROM fichiers_sections WHERE fichier_id = ?').run(f.id);
     db.prepare('DELETE FROM fichiers WHERE id = ?').run(f.id);
     return f.disque;
-  })();
+  });
   supprimerFichier(disque, racine);
 }
 
@@ -1019,7 +1020,8 @@ export function resoudreFichierEnAttente(
   for (const sid of textes) {
     const { contenu } = db.prepare('SELECT contenu FROM sections WHERE id = ?').get(sid) as { contenu: string };
     const neuf = reecrireClesFichier(contenu, (k) => (k === cle ? fichier.id : null));
-    if (neuf !== contenu) poserContenu(db, sid, neuf, null);
+    // The text only resolves a waiting key: nothing a reader sees changes (`systeme`, AD-147).
+    if (neuf !== contenu) ecrireSysteme(db, () => poserContenu(db, sid, neuf, null));
     recalculerFichiersSection(db, sid, neuf, contenuPublic(neuf));
   }
   for (const l of lignes) {
@@ -1030,7 +1032,8 @@ export function resoudreFichierEnAttente(
         | { titre: string; dernier_import: string | null }
         | undefined;
       if (!s) continue;
-      if (!joindreParImport(db, l.section_id!, fichier.id)) {
+      // The reference was already pushed with the sheet: resolving it changes nothing a reader sees (`systeme`, AD-147).
+      if (!ecrireSysteme(db, () => joindreParImport(db, l.section_id!, fichier.id))) {
         avertissements.push(`section « ${s.titre} » : ${MAX_FICHIERS_JOINTS} fichiers joints au plus, « ${cle} » reste en attente`);
         continue;
       }
