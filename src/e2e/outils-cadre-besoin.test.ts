@@ -108,7 +108,7 @@ async function ouvrirSysteme(p: Any, id = SYS): Promise<void> {
   await p.getByRole('heading', { name: 'Essai A', level: 2 }).waitFor();
 }
 
-/** The system's tool cards (3 essai tools + swn/galaxie) are all displayed: counts of switches come after it. */
+/** The system's tool cards (3 essai tools, 2 swn tools, 3 battlemap tools) are all displayed: counts of switches come after it. */
 async function attendreCartesSysteme(p: Any, n = 4): Promise<void> {
   await p.waitForFunction((k: number) => document.querySelectorAll('section.outil-carte').length >= k, n, { timeout: 15000 });
 }
@@ -456,8 +456,8 @@ test('mira : sur « Système ancien » (sans responsable stocké) elle a l’int
   const A = carte(mira, 'Essai A');
   await attendreCartesSysteme(mira);
   assert.equal(await A.getByRole('switch').count(), 1);
-  // 7 interrupteurs : les trois outils d'essai, swn/galaxie (module swn), battlemap/assets et battlemap/cartes (module battlemap), portée « tous »
-  assert.equal(await mira.getByRole('switch').count(), 7);
+  // 8 interrupteurs : les trois outils d'essai, swn/galaxie et swn/vaisseaux (module swn), battlemap/generation, battlemap/assets et battlemap/cartes (module battlemap), portée « tous »
+  assert.equal(await mira.getByRole('switch').count(), 8);
   await ecrire(mira, /\/systemes\/4\/outils\/essai\/a\/activation$/, () => A.getByRole('switch').click());
   await A.getByText(rx('Système · Activé')).waitFor();
   await photo(mira, 'systeme-ancien-mira');
@@ -673,7 +673,7 @@ test('transfert : Antor transfère à Mira ; elle a l’interrupteur au système
   await ouvrirSysteme(mira);
   await mira.getByText(/Responsable : vous/).waitFor();
   await attendreCartesSysteme(mira);
-  assert.equal(await mira.getByRole('switch').count(), 7);
+  assert.equal(await mira.getByRole('switch').count(), 8);
   await photo(mira, 'apres-transfert-mira');
   // Mira really writes at the system now; Antor's write is refused
   const avantG = await carte(mira, 'Essai G').getByRole('switch').getAttribute('aria-checked');
