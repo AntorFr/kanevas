@@ -361,7 +361,7 @@ test('B-48 files > only the name changed in Kanevas: one warning, the visibility
   assert.ok(!(await m.biblio(m.lea)).body.includes('A renommée'), 'the visibility of the script was applied: Léa no longer sees it');
 });
 
-test('B-48 files > the illustration and the joined files changed in Kanevas are not restored by the replay, which names each and writes the rest', async () => {
+test('B-47 replay > the illustration and the joined files changed in Kanevas: the script’s are written back, a file the script does not name stays joined, no warning', async () => {
   const m = await monde();
   await m.lotComplet(async (lot) => [
     await m.putFichier('img:a', { nom: 'Image A', octets: ROUGE, lot }),
@@ -380,16 +380,19 @@ test('B-48 files > the illustration and the joined files changed in Kanevas are 
   assert.equal((await m.rest(m.antor, 'DELETE', `/api/univers/${m.essai}/fiches/${fid}/sections/${sid}/fichiers/${m.idFichier('doc:x')}`)).statusCode, 204);
   assert.equal((await m.rest(m.antor, 'POST', `/api/univers/${m.essai}/fiches/${fid}/sections/${sid}/fichiers`, { fichierId: m.idFichier('doc:y') })).statusCode, 201);
   const l2 = await m.lotComplet((lot) => m.putFiche('lieu:q', fiche('Quais de Port-Sel'), lot));
-  assert.equal(l2.res.json().etat, 'mise_a_jour', 'the rest is written');
-  const av: string[] = l2.res.json().avertissements;
-  assert.ok(av.some((a) => /illustration/i.test(a)), `the illustration is named: ${av.join(' | ')}`);
-  assert.ok(av.some((a) => /fichiers? joints?|jointe/i.test(a)), `the joined files are named: ${av.join(' | ')}`);
+  assert.equal(l2.res.json().etat, 'mise_a_jour');
+  assert.deepEqual(l2.res.json().avertissements, []);
+  assert.doesNotMatch(JSON.stringify(l2.res.json()), /non écrasé/);
   vue = (await m.fiche(m.antor, fid)).json();
   assert.equal(vue.titre, 'Quais de Port-Sel');
-  assert.equal(vue.illustration.id, m.idFichier('img:b'), 'the illustration chosen in Kanevas stays');
+  assert.equal(vue.illustration.id, m.idFichier('img:a'), 'the illustration the script carries is back');
   const noms: string = vue.sections[0].piecesJointes.map((p: Any) => p.nom).join('|');
-  assert.ok(noms.includes('Doc Y'), noms);
-  assert.ok(!noms.includes('Doc X'), 'the file Antor removed does not come back: ' + noms);
+  assert.ok(noms.includes('Doc X'), 'the file Antor removed and the script names is joined again: ' + noms);
+  assert.ok(noms.includes('Doc Y'), 'a joined file the script does not name is not removed by omission: ' + noms);
+  // a body without illustration leaves the one in place
+  const l3 = await m.lotComplet((lot) => m.putFiche('lieu:q', { type: 'lieu', titre: 'Quais de Port-Sel', sections: [] }, lot));
+  assert.equal(l3.res.json().etat, 'inchangee');
+  assert.equal((await m.fiche(m.antor, fid)).json().illustration.id, m.idFichier('img:a'));
 });
 
 test('AD-111 limit > 100 joined files per section are accepted, 101 refused (400 invalide, champ fichiers, counted refused); GET / says 100', async () => {
