@@ -162,6 +162,11 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
         {d !== null && mesure && <><dt>Distance</dt><dd>{cases(d)} depuis {mesure.nom}</dd></>}
         {s.routes.length > 0 && <><dt>Routes</dt><dd><ul className="gx-routes">{s.routes.map((r) => <li key={r.avec.cle}>{r.avec.nom} · {cases(r.longueur)}</li>)}</ul></dd></>}
       </dl>
+      {gestes && (
+        <CommutateurMasque place={{ universId: gestes.masque.universId, galaxieId: gestes.masque.galaxieId, q: s.q, r: s.r }}
+          secret={estSecret} tire={false} jeton={s.version} onFait={gestes.masque.onFait}
+          onRecharger={gestes.masque.onRecharger} onIntrouvable={gestes.masque.onIntrouvable} />
+      )}
       <div className="gx-actions">
         <Bouton icone={IconeRoute} onClick={() => onDepuis(ici)}>Trajet depuis ici</Bouton>
         <Bouton icone={MapPin} onClick={() => onVers(ici)}>Trajet vers ici</Bouton>
@@ -174,11 +179,6 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
           <Bouton icone={Pencil} ecrit onClick={gestes.onModifier}>Modifier</Bouton>
           <Bouton icone={Trash2} variante="danger" ecrit onClick={gestes.onRetirer}>Retirer</Bouton>
         </div>
-      )}
-      {gestes && (
-        <CommutateurMasque place={{ universId: gestes.masque.universId, galaxieId: gestes.masque.galaxieId, q: s.q, r: s.r }}
-          secret={estSecret} tire={false} jeton={s.version} onFait={gestes.masque.onFait}
-          onRecharger={gestes.masque.onRecharger} onIntrouvable={gestes.masque.onIntrouvable} />
       )}
       {champ !== null && <input ref={saisie} className="gx-lien" readOnly value={champ} aria-label="Adresse du système" onFocus={(e) => e.currentTarget.select()} />}
     </section>
