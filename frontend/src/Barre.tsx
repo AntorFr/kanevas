@@ -213,7 +213,7 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
   const role = lu?.role;
   const groupes = moi.etat === 'ok' ? moi.valeur.groups : [];
   const visible = (i: Item, chemin: string) => ecranEnregistre(chemin, undefined) && (!i.groupe || groupes.includes(i.groupe));
-  const items = dedans ? ITEMS_UNIVERS.filter((i) => visible(i, i.chemin(id)) && (!i.role || i.role === role)) : [];
+  const items = dedans ? ITEMS_UNIVERS.filter((i) => visible(i, i.chemin(id)) && (!i.role || i.role === role) && !(i.horsModeJoueur && mode === 'joueur')) : [];
   // « Lore » comes from the types the server sends, between the first group and « Univers ».
   const typesLu = useTypes();
   const lore = dedans ? itemsLore(typesActifs(typesLu.types)) : [];

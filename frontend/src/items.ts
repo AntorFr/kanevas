@@ -34,6 +34,8 @@ export interface Item {
   horsUnivers?: boolean;
   /** The link carries the player-mode view of the GM (`?mode=joueur`) when it is on. */
   garderMode?: boolean;
+  /** Hidden while the GM is in player mode (E-24: the history is the GM's, not the player's view). */
+  horsModeJoueur?: boolean;
 }
 
 /** Authelia group carried by `GET /api/moi` that makes an instance admin (B-6). */
@@ -48,7 +50,7 @@ export const ITEMS_UNIVERS: Item[] = [
   { libelle: 'Membres', icone: ContactRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/membres` },
   { libelle: 'Paramètres', icone: Settings2, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/parametres` },
   { libelle: 'Accès par API', icone: KeyRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/acces-api` },
-  { libelle: 'Historique', icone: History, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/historique` },
+  { libelle: 'Historique', icone: History, section: 'Univers', role: 'mj', horsModeJoueur: true, chemin: (id) => `/univers/${id}/historique` },
   // « Administration » (E-5): instance admins only, wherever the bar is.
   { libelle: 'Administration', icone: ShieldCheck, section: 'Instance', groupe: GROUPE_ADMIN, horsUnivers: true, chemin: () => '/administration' },
 ];

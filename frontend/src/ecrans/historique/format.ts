@@ -16,6 +16,10 @@ export interface LigneVue {
   lotId: number | null;
   valeurConservee: boolean;
   restaurable: boolean;
+  sectionTitre: string | null;
+  champ: string | null;
+  /** A relation line: the key of its target. */
+  cible: string | null;
 }
 
 export interface DetailVue {
@@ -51,12 +55,25 @@ const VERBE = {
   relation: { creee: 'ajoutée', modifiee: 'modifiée', supprimee: 'retirée' },
 } as const;
 
-/** What the line says it changed. The header's fields are not told apart on the list: the detail names them. */
+const CHAMPS: Record<string, string> = {
+  titre: 'Titre changé',
+  type: 'Type changé',
+  parent: 'Fiche déplacée',
+  'alias+': 'Alias ajouté',
+  'alias-': 'Alias retiré',
+  'etiquette+': 'Étiquette ajoutée',
+  'etiquette-': 'Étiquette retirée',
+};
+
+/** What the line says it changed (docs/ecrans.md, E-24 « What a line says »). */
 export function libelleDe(l: LigneVue): string {
   if (l.objet === 'fiche') return l.action === 'supprimee' ? 'Fiche supprimée' : 'Fiche créée';
-  if (l.objet === 'section') return `Section « ${l.objetCle ?? ''} » ${VERBE.section[l.action]}`;
-  if (l.objet === 'relation') return `Relation ${VERBE.relation[l.action]}`;
-  return 'En-tête modifié';
+  if (l.objet === 'section') return `Section « ${l.sectionTitre ?? l.objetCle ?? ''} » ${VERBE.section[l.action]}`;
+  if (l.objet === 'relation') {
+    const cible = l.cible ? ` vers ${l.cible}` : '';
+    return `Relation${cible} ${VERBE.relation[l.action]}`;
+  }
+  return (l.champ !== null && CHAMPS[l.champ]) || 'En-tête modifié';
 }
 
 export const PERIODES = [

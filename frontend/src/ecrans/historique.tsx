@@ -409,7 +409,7 @@ function Historique() {
                       contributeur={l.compte?.username ?? 'Compte inconnu'}
                       via={viaDe(l)}
                       origine={o}
-                      fiche={l.ficheId === null || l.objet === 'fiche' && l.action === 'supprimee' ? null : { vers: `/univers/${id}/fiche/${l.ficheCle}`, titre: l.ficheTitre }}
+                      fiche={l.ficheId === null || (l.objet === 'fiche' && l.action === 'supprimee') ? { titre: l.ficheTitre } : { vers: `/univers/${id}/fiche/${l.ficheCle}`, titre: l.ficheTitre }}
                       libelle={libelleDe(l)}
                       vers={versLigne(l.id)}
                       courante={ligneOuverte === String(l.id)}

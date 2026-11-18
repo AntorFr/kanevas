@@ -68,8 +68,8 @@ describe('kanevas-synchro-historique-ecran, E-24', { skip: skipBrowser }, () => 
     await lignes(antor).first().waitFor();
     const texte = await antor.getByRole('list', { name: 'Modifications de l’univers' }).innerText();
     assert.match(texte, /Section « .* » réécrite/);
-    assert.match(texte, /En-tête modifié/);
-    assert.match(texte, /Relation retirée/);
+    assert.match(texte, /Fiche déplacée/);
+    assert.match(texte, /Relation vers lieu:cap-brume retirée/);
     assert.match(texte, /antor/);
     assert.match(texte, /écran/);
     assert.match(texte, /\d{2}\/\d{2}\/\d{4}/);

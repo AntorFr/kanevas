@@ -268,6 +268,12 @@ export interface LigneHistorique {
   /** False once `valeur_avant` is gone (purged, or past 30 days) or never existed. */
   valeurConservee: boolean;
   restaurable: boolean;
+  /** A section line: the section's title (its value before, else as it stands, else null). */
+  sectionTitre: string | null;
+  /** A header line: what it changed (`titre`, `type`, `parent`, `alias+`, `alias-`, `etiquette+`, `etiquette-`), null when unknown. */
+  champ: string | null;
+  /** A relation line: the key of its target (a creation has no value before: read from the next line on that section, else the section's only relation). */
+  cible: string | null;
 }
 
 /** The history is the GM's: a player never learns a line exists (a line can reveal a GM block). */
@@ -290,8 +296,68 @@ function restaurableLigne(l: LigneRow): boolean {
   return false;
 }
 
-function versLigne(l: LigneRow, maintenant: Date): LigneHistorique {
+function titreDeSection(db: Db, l: LigneRow): string | null {
+  if (l.objet !== 'section') return null;
+  const avant = l.valeur_avant === null ? null : (JSON.parse(l.valeur_avant) as { titre?: string });
+  if (typeof avant?.titre === 'string') return avant.titre;
+  if (l.fiche_id === null || l.objet_cle === null) return null;
+  const s = db.prepare('SELECT titre FROM sections WHERE fiche_id = ? AND cle = ?').get(l.fiche_id, l.objet_cle) as
+    | { titre: string }
+    | undefined;
+  return s?.titre ?? null;
+}
+
+function cibleDeRelation(db: Db, l: LigneRow): string | null {
+  if (l.objet !== 'relation') return null;
+  const cleDeAvant = (v: string | null) => (v === null ? null : ((JSON.parse(v) as { cible_cle?: string | null }).cible_cle ?? null));
+  if (l.action !== 'creee') return cleDeAvant(l.valeur_avant);
+  if (l.fiche_id === null || l.objet_cle === null) return null;
+  const suivante = db
+    .prepare(
+      "SELECT valeur_avant FROM historique WHERE fiche_id = ? AND objet = 'relation' AND objet_cle = ? AND id > ? AND valeur_avant IS NOT NULL ORDER BY id LIMIT 1",
+    )
+    .get(l.fiche_id, l.objet_cle, l.id) as { valeur_avant: string } | undefined;
+  if (suivante !== undefined) return cleDeAvant(suivante.valeur_avant);
+  const cibles = db
+    .prepare(
+      `SELECT f.cle FROM relations r JOIN sections s ON s.id = r.section_id JOIN fiches f ON f.id = r.cible_fiche_id
+        WHERE s.fiche_id = ? AND s.cle = ?`,
+    )
+    .all(l.fiche_id, l.objet_cle) as { cle: string }[];
+  return cibles.length === 1 ? cibles[0]!.cle : null;
+}
+
+type EtatEntete = Pick<EnteteAvant, 'titre' | 'type' | 'parent_id' | 'alias' | 'etiquettes'>;
+
+/** What a header line changed: its value before against the next state (the next header line's value before, else the sheet now). */
+function champDeEntete(db: Db, l: LigneRow): string | null {
+  if (l.objet !== 'entete' || l.fiche_id === null || l.valeur_avant === null) return null;
+  const avant = JSON.parse(l.valeur_avant) as EtatEntete;
+  const suivante = db
+    .prepare(
+      "SELECT valeur_avant FROM historique WHERE fiche_id = ? AND objet = 'entete' AND id > ? ORDER BY id LIMIT 1",
+    )
+    .get(l.fiche_id, l.id) as { valeur_avant: string | null } | undefined;
+  let apres: EtatEntete | null;
+  if (suivante === undefined) apres = enteteCourante(db, l.fiche_id);
+  else apres = suivante.valeur_avant === null ? null : (JSON.parse(suivante.valeur_avant) as EtatEntete);
+  if (apres === null) return null;
+  if (avant.titre !== apres.titre) return 'titre';
+  if (avant.type !== apres.type) return 'type';
+  if (avant.parent_id !== apres.parent_id) return 'parent';
+  const liste = (a: string[] | undefined) => a ?? [];
+  if (liste(avant.alias).length !== liste(apres.alias).length) return liste(apres.alias).length > liste(avant.alias).length ? 'alias+' : 'alias-';
+  if (liste(avant.etiquettes).length !== liste(apres.etiquettes).length)
+    return liste(apres.etiquettes).length > liste(avant.etiquettes).length ? 'etiquette+' : 'etiquette-';
+  if (liste(avant.alias).join('\n') !== liste(apres.alias).join('\n')) return 'alias+';
+  return null;
+}
+
+function versLigne(db: Db, l: LigneRow, maintenant: Date): LigneHistorique {
   return {
+    sectionTitre: titreDeSection(db, l),
+    champ: champDeEntete(db, l),
+    cible: cibleDeRelation(db, l),
     id: l.id,
     creeLe: l.cree_le,
     ficheId: l.fiche_id,
@@ -368,7 +434,7 @@ export function listerHistorique(
     .all(...params, LIGNES_PAR_PAGE + 1) as LigneRow[];
   const page = rows.slice(0, LIGNES_PAR_PAGE);
   return {
-    lignes: page.map((r) => versLigne(r, maintenant)),
+    lignes: page.map((r) => versLigne(db, r, maintenant)),
     curseur: rows.length > LIGNES_PAR_PAGE ? String(page[page.length - 1]!.id) : null,
   };
 }
@@ -509,7 +575,7 @@ export function lireLigne(
 ): DetailLigne {
   exigerMJHistorique(db, acteur, universId);
   const l = chargerLigne(db, universId, hid);
-  const ligne = versLigne(l, maintenant);
+  const ligne = versLigne(db, l, maintenant);
   const gardee = !expiree(l, maintenant);
   if (l.objet === 'fiche') {
     if (l.action !== 'supprimee') return { ligne, avant: null, courante: null };

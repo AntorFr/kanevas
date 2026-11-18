@@ -35,8 +35,8 @@ export function LigneHistorique({
   /** « via Foundry », « assistant », « import · lot 3 ». */
   via?: string;
   origine: { mot: string; icone: LucideIcon };
-  /** Absent: the sheet is deleted, shown as plain text with its pastille. */
-  fiche: { vers: string; titre: string } | null;
+  /** Without `vers`: the sheet is deleted, its title shown as plain text with its pastille. */
+  fiche: { vers?: string; titre: string };
   libelle: string;
   /** Address of the detail. */
   vers: string;
@@ -56,13 +56,13 @@ export function LigneHistorique({
           </Pastille>
         </div>
         <div className="ligne-historique-quoi">
-          {fiche ? (
+          {fiche.vers ? (
             <Link className="ligne-historique-fiche" to={fiche.vers}>
               {fiche.titre}
             </Link>
           ) : (
             <span className="ligne-historique-supprimee">
-              Fiche <Pastille sens="neutre">supprimée</Pastille>
+              {fiche.titre} <Pastille sens="neutre">supprimée</Pastille>
             </span>
           )}
           <span aria-hidden="true">—</span>
