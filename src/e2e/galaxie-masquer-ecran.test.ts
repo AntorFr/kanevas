@@ -127,6 +127,11 @@ describe('E-21 masquer un système : « Secret (MJ seul) » du panneau, case vid
     await systeme(page, 'Aube').waitFor();
     assert.equal(await page.locator('.gx-route').count(), 2);
     assert.ok(await page.locator('g.gx-systeme').count() >= 3, 'trois étoiles pour le MJ');
+    // the badge « MJ seul » under the hidden star (E-21): the GM only, and only on the hidden one
+    const marque = page.locator('g.gx-marque-mj');
+    await marque.first().waitFor();
+    assert.equal(await marque.count(), 1, 'un seul badge : le système masqué');
+    assert.equal((await marque.textContent())?.trim(), 'MJ seul');
     await hors(page, '04-galaxie-mj');
     await ctx.close();
   });
@@ -140,6 +145,7 @@ describe('E-21 masquer un système : « Secret (MJ seul) » du panneau, case vid
     assert.equal(await page.locator('circle[data-genere="3,-4"]').count(), 0, 'case vide : pas d\'étoile tirée');
     assert.deepEqual(await genere(page), voisins);
     assert.equal(await page.getByText('MJ seul').count(), 0);
+    assert.equal(await page.locator('g.gx-marque-mj').count(), 0, 'aucun badge pour la joueuse');
     await hors(page, '05-lea');
     await page.goto(`${adresse}?systeme=${cle}`);
     await page.getByText('Page introuvable.').waitFor();
