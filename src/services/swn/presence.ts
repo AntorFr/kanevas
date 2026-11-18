@@ -67,6 +67,9 @@ export function presenceDeFiche(db: Db, acteur: Acteur, universId: number, fiche
       const de = num(p.de), a = num(p.a);
       ordre = de ?? 0;
       if (de !== null && a !== null) place = `, orbite ${nombre(de)} à ${nombre(a)}`;
+    } else if (f.forme === 'nuage') {
+      ordre = num(p.orbite) ?? 0;
+      place = ', nuage';
     } else {
       const o = num(p.orbite), h = num(p.heure);
       ordre = o ?? 0;
