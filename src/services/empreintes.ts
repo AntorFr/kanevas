@@ -97,7 +97,7 @@ export interface EnteteEmpreinte {
 }
 
 /** The keys of the payload that the registry declares for the type (the schema's shape), `v` aside. */
-function champsDeCharge(type: string): string[] {
+export function champsDeCharge(type: string): string[] {
   const schema = (CHARGES as Record<string, unknown>)[type] as { shape?: Record<string, unknown> } | undefined;
   return Object.keys(schema?.shape ?? {})
     .filter((k) => k !== 'v')
@@ -118,4 +118,31 @@ export function empreinteEntete(fiche: EnteteEmpreinte, cleDe: CleDe): string {
     charge,
     creeLe: fiche.creeLe,
   });
+}
+
+/** What `empreinteRelation` reads of a relation: the key of its section and the id of its target. */
+export interface RelationEmpreinte {
+  /** Key of the section that carries the relation. */
+  sectionCle: string;
+  cibleId: number;
+  nature: string;
+  qualificatif: string;
+}
+
+/** Fingerprint of a relation (AD-139): section, target (its key when it has one), nature, qualifier. */
+export function empreinteRelation(relation: RelationEmpreinte, cleDe: CleDe): string {
+  return empreinte({
+    section: relation.sectionCle,
+    cible: cleDe(relation.cibleId, 'fiche') ?? `#${relation.cibleId}`,
+    nature: relation.nature,
+    qualificatif: relation.qualificatif,
+  });
+}
+
+/**
+ * Fingerprint of a sheet (AD-139): its header's, then those of its sections and of its relations, in the
+ * order given. The caller hands the fingerprints of what the reader sees.
+ */
+export function empreinteFiche(entete: string, sections: readonly string[], relations: readonly string[]): string {
+  return empreinte({ entete, sections, relations });
 }
