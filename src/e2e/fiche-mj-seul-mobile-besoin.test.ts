@@ -1,3 +1,4 @@
+// ecrans: fiche, recherche
 // Phone width (390 px) of the « MJ seul » pill (B-57): the E-17 result keeps its title readable and the
 // E-9 header row keeps the type pill on one line without pushing the title block. Real server + Chromium.
 import assert from 'node:assert/strict';

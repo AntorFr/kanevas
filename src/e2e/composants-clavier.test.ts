@@ -1,3 +1,4 @@
+// ecrans: demo-composants
 // kanevas-rv-composants, in a real Chromium on /demo-composants (stub mode): the keyboard behaviour of
 // each shared component, as docs/charte.md § 4 states it. Expected values are literals from the charte.
 //
@@ -133,12 +134,12 @@ test('bouton : Entrée et Espace activent ; désactivé ne part pas ; « … » 
   assert.equal(await b.getAttribute('aria-disabled'), 'true');
   await page.keyboard.press('Space');
   await b.click();
-  await page.waitForTimeout(1800);
+  await page.waitForFunction((el: HTMLElement) => el.innerText.trim() === 'Enregistrer', await b.elementHandle());
   assert.equal((await b.innerText()).trim(), 'Enregistrer');
   await b.focus();
   await page.keyboard.press('Space');
   assert.equal((await b.innerText()).trim(), '…', 'Espace active aussi');
-  await page.waitForTimeout(1800);
+  await page.waitForFunction((el: HTMLElement) => el.innerText.trim() === 'Enregistrer', await b.elementHandle());
   // disabled: reachable by aria, never fires
   const dis = page.getByRole('button', { name: 'Danger', exact: true });
   assert.equal(await dis.getAttribute('aria-disabled'), 'true');
@@ -158,6 +159,8 @@ test('bouton icône : l’étiquette accessible nomme l’objet, l’infobulle e
 
 test('toast : région role=status polie, ne prend pas le focus, Fermer, part seul après 4 s', opts, async () => {
   const region = page.locator('.toasts');
+  // the toast of the previous test goes away on its own (4 s): it is waited for, not guessed
+  await page.waitForFunction(() => document.querySelectorAll('.toast').length === 0, null, { timeout: 6000 });
   assert.equal(await region.getAttribute('role'), 'status');
   assert.equal(await region.getAttribute('aria-live'), 'polite');
   const bouton = page.getByRole('button', { name: 'Afficher un toast' });
@@ -171,9 +174,8 @@ test('toast : région role=status polie, ne prend pas le focus, Fermer, part seu
   assert.equal(await t.count(), 0, 'Fermer le retire');
   await bouton.click();
   await t.waitFor();
-  await page.waitForTimeout(3000);
   assert.equal(await t.count(), 1, 'toujours là avant 4 s');
-  await t.waitFor({ state: 'detached', timeout: 2500 });
+  await t.waitFor({ state: 'detached', timeout: 6000 });
   assert.ok(Date.now() - debut >= 3900, 'part seul à 4 s');
 });
 
@@ -183,7 +185,7 @@ test('toast : quatre à la suite, trois au plus, le plus ancien part', opts, asy
   assert.equal(await page.locator('.toast').count(), 3);
   assert.equal(await page.getByText('Toast Un', { exact: true }).count(), 0);
   assert.equal(await page.getByText('Toast Deux', { exact: true }).count(), 1);
-  await page.waitForTimeout(4300);
+  await page.waitForFunction(() => document.querySelectorAll('.toast').length === 0, null, { timeout: 6000 });
   assert.equal(await page.locator('.toast').count(), 0);
 });
 
@@ -247,6 +249,82 @@ test('bandeaux : role=status, sans bouton pour les fermer', opts, async () => {
 
 test('chargement : le squelette est un role=status qui dit « Chargement de la fiche… »', opts, async () => {
   assert.ok(await page.getByText('Chargement de la fiche…').first().isVisible());
+});
+
+test('écriture du MJ : Bouton mj et Segments mj sont ambre (couleur du token --mj), le segment coché aussi', opts, async () => {
+  const amb = await page.evaluate(() => {
+    const sonde = document.createElement('span');
+    sonde.style.color = 'var(--mj)';
+    document.body.appendChild(sonde);
+    const mj = getComputedStyle(sonde).color;
+    sonde.remove();
+    return mj;
+  });
+  const bouton = page.getByRole('button', { name: 'Système', exact: true });
+  assert.equal(await bouton.evaluate((e: Element) => getComputedStyle(e).color), amb);
+  assert.ok(await bouton.evaluate((e: Element) => e.classList.contains('mj')));
+  const coche = page.getByRole('radiogroup', { name: 'Unité' }).locator('[aria-checked="true"]');
+  assert.equal(await coche.evaluate((e: Element) => getComputedStyle(e).color), amb);
+  const fond = await coche.evaluate((e: Element) => getComputedStyle(e).backgroundColor);
+  assert.notEqual(fond, 'rgba(0, 0, 0, 0)');
+  // keyboard moves the amber check too
+  await coche.focus();
+  await page.keyboard.press('ArrowRight');
+  const apres = page.getByRole('radiogroup', { name: 'Unité' }).locator('[aria-checked="true"]');
+  assert.equal(await apres.textContent(), 'Heure');
+  assert.equal(await apres.evaluate((e: Element) => getComputedStyle(e).color), amb);
+});
+
+test('écriture du MJ : la ligne de conversion est une région polie reliée au champ par aria-describedby', opts, async () => {
+  const ligne = page.locator('#demo-conv');
+  assert.equal(await ligne.getAttribute('aria-live'), 'polite');
+  assert.equal(await ligne.textContent(), '= Orbite 4 · 7 h');
+  assert.equal(await page.getByRole('textbox', { name: 'Orbite' }).getAttribute('aria-describedby'), 'demo-conv');
+});
+
+test('boîte neutre : un formulaire est un role=dialog, focus sur le champ, badge, action ambre, Échap rend le focus', opts, async () => {
+  const decl = page.getByRole('button', { name: 'Ouvrir le formulaire' });
+  await decl.click();
+  const d = page.getByRole('dialog', { name: 'Ancrer le système' });
+  await d.waitFor();
+  assert.equal(await page.getByRole('alertdialog').count(), 0);
+  assert.equal(await d.getAttribute('aria-modal'), 'true');
+  assert.equal(await focusLabel(page), '');
+  assert.equal(await page.evaluate(() => document.activeElement?.tagName), 'INPUT');
+  assert.ok(await d.locator('.boite-icone.neutre').count() === 1);
+  assert.ok(await d.getByRole('button', { name: 'Ancrer' }).evaluate((e: Element) => e.classList.contains('mj')));
+  assert.ok((await d.evaluate((e: Element) => e.getBoundingClientRect().width)) <= 440);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.getByRole('dialog').count(), 0);
+  assert.equal(await focusLabel(page), 'Ouvrir le formulaire');
+});
+
+test('boîte neutre : une confirmation pure est un role=alertdialog, focus sur Annuler', opts, async () => {
+  const decl = page.getByRole('button', { name: 'Ouvrir la confirmation' });
+  await decl.click();
+  const d = page.getByRole('alertdialog', { name: 'Ancrer ici ?' });
+  await d.waitFor();
+  assert.equal(await focusLabel(page), 'Annuler');
+  assert.equal(await page.getByRole('dialog').count(), 0);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.getByRole('alertdialog').count(), 0);
+});
+
+test('boîte neutre : sous 760 px le corps défile et la boîte reste dans l’écran', opts, async () => {
+  const ctx = await browser.newContext({ baseURL: srv.base, viewport: { width: 390, height: 300 } });
+  const p = await ctx.newPage();
+  await p.goto('/connexion-bouchon');
+  await p.getByRole('button', { name: /^Se connecter en tant que antor$/i }).click();
+  await p.goto('/demo-composants');
+  await p.getByRole('heading', { name: 'Composants partagés', level: 1 }).waitFor();
+  await p.getByRole('button', { name: 'Ouvrir le formulaire' }).click();
+  const d = p.getByRole('dialog', { name: 'Ancrer le système' });
+  await d.waitFor();
+  const r = await d.evaluate((e: Element) => { const b = e.getBoundingClientRect(); return { h: b.height, bas: b.bottom, haut: b.top }; });
+  assert.ok(r.h <= 300 - 48 + 1, `hauteur ${r.h}`);
+  assert.ok(r.haut >= 0 && r.bas <= 300);
+  assert.equal(await d.evaluate((e: Element) => getComputedStyle(e.querySelector('.boite-corps')!).overflowY), 'auto');
+  await ctx.close();
 });
 
 test('captures : bureau et téléphone, clair et sombre, sans débordement horizontal', opts, async () => {

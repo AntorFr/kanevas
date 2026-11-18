@@ -1,3 +1,4 @@
+// ecrans: fiche, vue-ensemble
 // Browser proof of kanevas-scenarios-suivi-blocs (B-60, B-19, E-9 blocks, E-13, E-3 « Derniers comptes-rendus », AD-124):
 // the « Préparation » (GM, outside player mode) and « Comptes-rendus » (every member) blocks of an adventure sheet.
 // Adventures are made through the routes of the sheets. Real server in stub mode + Chromium; waits are on
