@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Feature-level black-box tests of kanevas-sous-type-dialogue, written from the need only (Monsieur's
 // « Livre » of 2026-10-29; docs/parcours.md B-52 and the P-14 step added by the feature; docs/ecrans.md E-9
 // « Changer le type… » and « Le sous-type montre qu'il s'édite »). Real server in stub mode WITH the
@@ -291,7 +292,7 @@ describe('kanevas-sous-type-dialogue : ensemble depuis le besoin', { skip: skipB
       await bouton(boite).click();
       await boite.getByText(rx('Erreur : 60 caractères au plus.')).waitFor();
       assert.equal((await boite.innerText()).split('Erreur :').length - 1, 1, 'un seul « Erreur : »');
-      await p.waitForTimeout(300);
+      await attendre(p);
       p.removeAllListeners('request');
       assert.deepEqual(patchs, []);
       assert.equal(await p.getByRole('dialog').count(), 1);

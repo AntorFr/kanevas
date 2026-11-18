@@ -1,3 +1,4 @@
+// ecrans: acces-api
 // Black-box test of kanevas-outils-galaxie-tenir, import of a galaxy by the API, seen on screen: the batch report
 // (E-18, « Accès API ») counts the elements created by nature after the first push (4 systems, 1 zone, 3 routes, no refusal) and
 // as unchanged after the replay, and a route between two systems absent from the batch is counted refused. The literal

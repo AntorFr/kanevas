@@ -1,3 +1,4 @@
+// ecrans: comptes-rendus, fiche, fiches, vue-ensemble
 // Black-box tests of the E-3 blocks and E-13 on adventure sheets (kanevas-scenarios-suivi-pivot, AD-127), from
 // docs/ecrans.md « E-13 Comptes-rendus », « Blocs de E-3 » and the « kanevas-scenarios » amendments.
 // Real server in stub mode + real Chromium. Expected texts are literals from the doc.
@@ -133,13 +134,10 @@ test('comptes-rendus : cinq derniers sur E-3, ordre de création sur E-13, retou
     return r.body.id as number;
   };
   const premier = await cr(antor, 'Prologue');
-  await dormir(1100);
   for (const n of [2, 3, 4, 5, 6]) {
     await cr(antor, `Session ${n}`);
-    await dormir(1100);
   }
   await cr(lea.page, 'Récit de Léa');
-  await dormir(1100);
   session11 = await cr(antor, 'Session 11');
 
   // edit the oldest one: it must not climb

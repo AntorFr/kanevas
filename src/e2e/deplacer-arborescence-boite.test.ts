@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of the « Déplacer sous… » box of E-9 (kanevas-deplacer-arborescence-boite), written from the
 // task's exit criterion and docs/ecrans.md « Ce que `kanevas-deplacer-arborescence` construit ».
 // Real server in stub mode + real Chromium; expected values are literals from the criterion.
