@@ -1,4 +1,4 @@
-import { Anchor, CircleDashed, Plus } from 'lucide-react';
+import { Anchor, ChevronDown, CircleDashed, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { useConnexionPerdue } from '../../../api';
@@ -24,7 +24,7 @@ export default function MenuSysteme({ onAjouterAstre, onAjouterZone }: { onAjout
   ];
   return (
     <>
-      <Menu etiquette="Système" declencheur="Système" varianteDeclencheur="fantome-petit" aligne="debut" entrees={entrees} desactive={perdue} />
+      <Menu etiquette="Système" declencheur={<>Système <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" /></>} varianteDeclencheur="mj" aligne="debut" entrees={entrees} desactive={perdue} />
       {rayon && <DialogueRayon onFermer={() => setRayon(false)} />}
     </>
   );
