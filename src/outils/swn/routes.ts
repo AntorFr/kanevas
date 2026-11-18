@@ -11,7 +11,7 @@ import {
 } from '../../services/swn/galaxies.js';
 import { illustrationAstre, illustrerFiche } from '../../services/swn/illustration.js';
 import {
-  ajouterAstre, ajouterZone, ancrer, etatMasque, masquerSysteme, modifierAstre, modifierZone as modifierZoneSysteme, poserTransition, retirerAstre, retirerZone as retirerZoneSysteme,
+  ajouterAstre, ajouterZone, ancrer, delierAstre, delierZone, etatMasque, lierAstre, lierZone, masquerSysteme, modifierAstre, modifierZone as modifierZoneSysteme, poserTransition, retirerAstre, retirerZone as retirerZoneSysteme,
   type ResultatEcriture,
 } from '../../services/swn/ecriture-systeme.js';
 import { lireInterieur } from '../../services/swn/interieur.js';
@@ -286,6 +286,11 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
   app.post(`${INT}/zones`, opts, interieur((request, a, i, q, r) => ajouterZone(app.db, a, i.univers, i.galaxie, q, r, corps(request)), 201));
   app.patch(`${INT}/zones/:cle`, opts, interieur((request, a, i, q, r) => modifierZoneSysteme(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
   app.delete(`${INT}/zones/:cle`, opts, interieur((request, a, i, q, r) => retirerZoneSysteme(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
+  // The link to a sheet (AD-liens-1): the same guard and cookie as the writes above; the body is the interior as the read gives it.
+  app.put(`${INT}/astres/:cle/fiche`, opts, interieur((request, a, i, q, r) => lierAstre(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.put(`${INT}/zones/:cle/fiche`, opts, interieur((request, a, i, q, r) => lierZone(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.delete(`${INT}/astres/:cle/fiche`, opts, interieur((request, a, i, q, r) => delierAstre(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
+  app.delete(`${INT}/zones/:cle/fiche`, opts, interieur((request, a, i, q, r) => delierZone(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
   app.put(`${INT}/secret`, opts, interieur((request, a, i, q, r) => masquerSysteme(app.db, a, i.univers, i.galaxie, q, r, corps(request))));
   app.get(`${INT}/secret`, opts, async (request: Req, reply: FastifyReply) => {
     try {
