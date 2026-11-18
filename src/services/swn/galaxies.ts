@@ -1,17 +1,15 @@
 import type { Db } from '../../db/db.js';
 import { randomBytes } from 'node:crypto';
 import { roleDe, vueMJ } from '../droits.js';
+import { niveauLecture, OUTIL_GALAXIE, sqlSystemeLisible, type NiveauLecture } from './lisibilite.js';
 import { ErreurService, introuvable, refuse } from '../erreurs.js';
 import { retirerSectionGeree } from '../retrait-section.js';
-import { accessible, resoudreOutil } from '../outils.js';
+import { resoudreOutil } from '../outils.js';
 import { env } from '../../config/env.js';
 import type { Acteur } from '../types.js';
 import { densiteParDefaut } from './tirage-etoiles.js';
 
-/** The tool key; the module `swn` declares it (`src/outils/swn/index.ts`). */
-export const OUTIL_GALAXIE = 'swn/galaxie';
-
-export type NiveauLecture = 'mj' | 'joueur';
+export { OUTIL_GALAXIE, niveauLecture, type NiveauLecture } from './lisibilite.js';
 
 export interface LigneGalaxie {
   id: number; univers_id: number; titre: string; visible: number; graine: string; densite_defaut: number;
@@ -29,23 +27,12 @@ export interface LigneZone {
   densite: number | null; secret: number; version: number;
 }
 
-/**
- * The one place a role becomes a reading level (G-2): `'mj'` for a GM outside Player mode, `'joueur'` for a
- * player and for a GM in Player mode, `null` without a role or when the tool is not accessible to the actor.
- */
-export function niveauLecture(db: Db, acteur: Acteur, universId: number): NiveauLecture | null {
-  const role = roleDe(db, universId, acteur.compteId);
-  if (!role) return null;
-  if (!accessible(db, acteur, universId, OUTIL_GALAXIE)) return null;
-  return vueMJ(role, acteur) ? 'mj' : 'joueur';
-}
-
 /** Row filters of G-2, written once: every read of the galaxy (view, system, search, journey, cache) uses them. */
-export const FILTRE_SYSTEMES: Record<NiveauLecture, string> = { mj: '1 = 1', joueur: 's.secret = 0' };
+export const FILTRE_SYSTEMES: Record<NiveauLecture, string> = { mj: sqlSystemeLisible('s', 'mj'), joueur: sqlSystemeLisible('s', 'joueur') };
 export const FILTRE_ZONES: Record<NiveauLecture, string> = { mj: '1 = 1', joueur: 'z.secret = 0' };
 /** Routes: aliased `ro`, with the systems of their ends joined as `d` and `v`. */
 export const FILTRE_ROUTES: Record<NiveauLecture, string> = {
-  mj: '1 = 1', joueur: 'ro.publique = 1 AND d.secret = 0 AND v.secret = 0',
+  mj: '1 = 1', joueur: `ro.publique = 1 AND ${sqlSystemeLisible('d', 'joueur')} AND ${sqlSystemeLisible('v', 'joueur')}`,
 };
 
 export function systemesLisibles(db: Db, galaxieId: number, niveau: NiveauLecture): LigneSysteme[] {
@@ -274,6 +261,27 @@ export function semerGalaxieEssai(db: Db, universId: number): number {
     route.run(g, universId, port, hesper, 0, 6);
     db.prepare(`INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, densite, secret)
       VALUES (?, ?, 'marches-interdites', 'Marches interdites', '[[-12,2],[-4,2],[-4,8],[-12,8]]', 'rouge', 0, 1)`).run(g, universId);
+    return g;
+  })();
+}
+
+/** The drawn system of the hiding galaxy: a star the fixed seed holds there (the generator never draws on a row multiple of 5, so not at (3, -5)). */
+export const SYSTEME_TIRE_MASQUAGE = { q: 3, r: -4 } as const;
+
+/**
+ * Seed-only (stub mode and server fixtures): a galaxy for hiding a system (B-97). Fixed seed `masquage-14` draws a star at
+ * `SYSTEME_TIRE_MASQUAGE`; two readable defined systems, `aube` (5, -4) and `brume` (1, -3), sit two hexagons away so the draw
+ * does not move. No route yet: a route needs both ends as rows, so one is traced once the drawn system is anchored.
+ */
+export function semerGalaxieMasquage(db: Db, universId: number): number {
+  if (env.KANEVAS_STUB !== '1' && env.NODE_ENV !== 'test') throw refuse();
+  return db.transaction(() => {
+    const g = Number(db.prepare(`INSERT INTO swn_galaxies (univers_id, titre, visible, graine, densite_defaut)
+      VALUES (?, 'Galaxie du secret', 1, 'masquage-14', ?)`).run(universId, densiteParDefaut()).lastInsertRowid);
+    const sys = db.prepare(`INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret)
+      VALUES (?, ?, ?, ?, ?, ?, 2, 'ambre', 'Inventé.', 0)`);
+    sys.run(g, universId, 'aube', 'Aube', 5, -4);
+    sys.run(g, universId, 'brume', 'Brume', 1, -3);
     return g;
   })();
 }
