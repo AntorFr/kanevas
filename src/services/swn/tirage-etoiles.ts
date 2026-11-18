@@ -25,9 +25,6 @@ function leCoeur(): Coeur {
   return coeur;
 }
 
-/** The generator version of the cache key: constant until the settings slice (AD-etoiles-6). */
-export const VERSION_GENERATEUR = 1;
-
 /** Default density of a new galaxy: the core's (AD-etoiles-7). */
 export const densiteParDefaut = (): number => leCoeur().densite_defaut();
 

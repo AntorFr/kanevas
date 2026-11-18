@@ -9,11 +9,11 @@ import { chargerModule } from '../../wasm/charger.js';
 import { introuvable } from '../erreurs.js';
 import type { Acteur } from '../types.js';
 import { galaxieLisible, zonesLisibles, type LigneGalaxie, type NiveauLecture } from './galaxies.js';
-import { entreesBloc, systemesExclusants, tirerEtoileComplete, VERSION_GENERATEUR } from './tirage-etoiles.js';
+import { entreesBloc, systemesExclusants, tirerEtoileComplete } from './tirage-etoiles.js';
+import { reglagesDe } from './reglages.js';
 
 interface Coeur {
   tirer_systeme(q: number, r: number, taille: number, lettre: string, version: number, valeurs: string): string;
-  reglages_defaut(version: number): string;
   transition_defaut(astres: string, formations: string): number;
 }
 
@@ -90,14 +90,14 @@ function ordonnerFormations(formations: FormationVue[]): FormationVue[] {
 
 function composer(
   q: number, r: number, nom: string | null, etat: InterieurVue['etat'], transition: number | null,
-  astres: AstreVue[], formations: FormationVue[],
+  astres: AstreVue[], formations: FormationVue[], versionGenerateur: number,
 ): InterieurVue {
   const triees = ordonner(astres);
   const fs = ordonnerFormations(formations);
   return {
     q, r, nom, etat,
     transition: transition ?? leCoeur().transition_defaut(JSON.stringify(triees), JSON.stringify(fs)),
-    astres: triees, formations: fs, version_generateur: VERSION_GENERATEUR,
+    astres: triees, formations: fs, version_generateur: versionGenerateur,
   };
 }
 
@@ -122,13 +122,13 @@ export function lireInterieur(
     const formations = (db.prepare(`SELECT cle, forme, nom, parametres, etoile_rang, version, description FROM swn_formations
         WHERE systeme_id = ? ORDER BY id`).all(ligne.id) as LigneFormation[])
       .map(({ description, ...f }) => ({ ...f, parametres: JSON.parse(f.parametres) as Record<string, unknown>, ...(description ? { description } : {}) }));
-    const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, astres, formations);
+    const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, astres, formations, reglagesDe(db, galaxie.id).versionGenerateur);
     return niveau === 'mj' ? ouvrirEcriture(vue, ligneVersion(db, ligne.id)) : sansJetons(vue);
   }
   // No row: the star must be the one the block's draw holds at (q, r), with the exclusions of every reader.
   const tire = lireTire(db, galaxie, niveau, q, r);
   if (!tire) throw introuvable();
-  const vue = composer(q, r, null, 'tire', tire.transition, tire.astres, tire.formations);
+  const vue = composer(q, r, null, 'tire', tire.transition, tire.astres, tire.formations, reglagesDe(db, galaxie.id).versionGenerateur);
   return niveau === 'mj' ? ouvrirEcriture(vue, galaxie.version) : sansJetons(vue);
 }
 
@@ -145,6 +145,11 @@ function sansJetons(vue: InterieurVue): InterieurVue {
   return vue;
 }
 
+/** The core's draw of the interior of a star, as its JSON: the one call of `tirer_systeme`, with a version and an override. */
+export function tirerInterieur(etoile: { q: number; r: number; taille: number; lettre: string }, version: number, valeurs: string): string {
+  return leCoeur().tirer_systeme(etoile.q, etoile.r, etoile.taille, etoile.lettre, version, valeurs);
+}
+
 /**
  * The system the draw holds at `(q, r)` for this level, with its star, or null: the one place a drawn interior is
  * computed, which the anchoring of `ecriture-systeme.ts` reuses so that what it freezes is what was read.
@@ -157,7 +162,8 @@ export function lireTire(db: Db, galaxie: LigneGalaxie, niveau: NiveauLecture, q
   const entrees = entreesBloc(bx, by, zones, galaxie.densite_defaut, systemesExclusants(db, galaxie.id, { bx, by }, { bx, by }));
   const etoile = tirerEtoileComplete(galaxie.graine, bx, by, entrees);
   if (!etoile || etoile.q !== q || etoile.r !== r) return null;
-  const tire = JSON.parse(leCoeur().tirer_systeme(q, r, etoile.taille, etoile.lettre, VERSION_GENERATEUR, leCoeur().reglages_defaut(VERSION_GENERATEUR))) as
+  const reglages = reglagesDe(db, galaxie.id);
+  const tire = JSON.parse(tirerInterieur(etoile, reglages.versionGenerateur, reglages.valeurs)) as
     { astres: AstreVue[]; formations: FormationVue[]; transition: number };
   return { etoile, ...tire };
 }
