@@ -8,8 +8,8 @@
 //   B-61 nominal   : PUT campagne:couronne (aventure, Campagne, en_cours) then scenario:acte-2 (parent, prete)
 //                    -> both « creee », statuses kept, the scenario sits under the campaign
 //   B-61 bords     : status omitted -> en_preparation ; identical replay -> « inchangee » ; unknown status -> 400
-//   B-61 B-48      : after Antor sets the scenario « En cours », replay (prete) keeps « en_cours » and warns
-//                    « statut modifié dans Kanevas » ; same for a sub-type and a parent changed in Kanevas
+//   B-61 B-48      : withdrawn (kanevas-synchro-ecriture-retrait-fiches), no screen test left
+//                    (a status, sub-type or parent changed in Kanevas goes back at the replay)
 //   B-61 CR        : a compte_rendu with campagne:campagne:couronne reads « Campagne : La Couronne brisée »;
 //                    an unknown campagne key is refused 400
 //   B-61 GET base  : names « aventure » among the types, no campagne/scenario type, lists the statuts
