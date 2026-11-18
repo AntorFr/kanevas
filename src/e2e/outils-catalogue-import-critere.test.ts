@@ -1,3 +1,4 @@
+// ecrans: parametres, systeme
 // Browser test of kanevas-outils-catalogue-import, written from the exit criterion and docs/ecrans.md
 // (E-20 « The import dialog ») — not from the code. Stub world with the seed; files derived from the
 // sample at run time. Screenshots go to /tmp/cap-catalogue-import (never into the workspace).

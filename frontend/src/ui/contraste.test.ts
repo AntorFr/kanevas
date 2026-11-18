@@ -57,6 +57,9 @@ const paires: [string, string, string | null, number][] = [
   ['accent-texte', 'accent-fond', 'surface', 4.5],
   ['mj', 'surface', null, 4.5],
   ['mj', 'mj-fond', 'surface', 4.5],
+  ['mj', 'mj-fond', 'surface-2', 4.5], // `mj` Button on a dialog or panel, checked amber segment
+  ['mj', 'mj-fond', 'fond', 4.5], // `mj` Button on the page (« Système » trigger)
+  ['mj', 'surface-2', null, 4.5], // `mj` text on the neutral badge
   ['table', 'surface', null, 4.5],
   ['table', 'table-fond', 'surface', 4.5],
   ['danger', 'surface', null, 4.5],

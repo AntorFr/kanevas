@@ -67,12 +67,14 @@ test('migration : neuf tables créées, lignes existantes intactes, foreign_key_
   const tablesAvant = swn();
   const derniere = Math.max(...readdirSync(source).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))));
   assert.deepEqual(migrate(db), Array.from({ length: derniere - 23 }, (_, i) => 24 + i));
+  // 0037 (AD-etoiles-7) moves a galaxy left at the former default 0.2 to the core's 0.68, nothing else.
+  avant[3] = (avant[3] as any[]).map((g) => ({ ...g, densite_defaut: 0.68 }));
   assert.deepEqual(snap(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const tables = swn().filter((t) => !tablesAvant.includes(t));
-  assert.deepEqual(tables, ['swn_catalogue_amenagements', 'swn_catalogue_armes', 'swn_catalogue_coques', 'swn_catalogue_defenses',
+  assert.deepEqual(tables, ['swn_astres', 'swn_catalogue_amenagements', 'swn_catalogue_armes', 'swn_catalogue_coques', 'swn_catalogue_defenses',
     'swn_catalogue_exemples', 'swn_catalogue_modifications', 'swn_catalogue_moteurs', 'swn_catalogue_retraits',
-    'swn_conceptions', 'swn_fiches_generees']);
+    'swn_conceptions', 'swn_fiches_generees', 'swn_formations']);
 });
 
 test('migration : CHECK de bornes, masque réservé à l\'univers, unicité par niveau', () => {

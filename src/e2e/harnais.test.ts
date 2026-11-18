@@ -1,22 +1,30 @@
+// ecrans: accueil
 // Harness shared by the black-box tests of kanevas-premiere-fiche (no test of its own).
 // It starts the real server in stub mode (AD-55) on a throw-away SQLite file and drives it
 // with a real Chromium through Playwright. Playwright is not a dependency of the repo: it is
-// taken from the image (global install) and, when it or Chromium is missing, the browser
-// tests are skipped with a message instead of failing.
+// taken from the image (global install) and, when it or Chromium is missing, importing this
+// file throws (AD-harnais-4): the suite fails, it never skips. Every browser it launches carries the request
+// counter `attendre` reads, and `waitForLoadState('networkidle')` of its pages runs `attendre` (AD-harnais-1).
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, unlinkSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, rmSync, statSync, symlinkSync, unlinkSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Any = any;
 
+/** Where Playwright is looked for; `HARNAIS_RACINES_PLAYWRIGHT` (colon-separated) replaces the list, which lets a test run the harness without it. */
+function racinesPlaywright(): string[] {
+  const forcees = process.env.HARNAIS_RACINES_PLAYWRIGHT;
+  if (forcees !== undefined) return forcees.split(':').filter(Boolean).map((r) => r.replace(/\/?$/, '/'));
+  return [process.cwd() + '/', '/usr/lib/node_modules/', '/usr/local/lib/node_modules/'];
+}
+
 export function loadPlaywright(): Any | null {
-  const roots = [process.cwd() + '/', '/usr/lib/node_modules/', '/usr/local/lib/node_modules/'];
-  for (const r of roots) {
+  for (const r of racinesPlaywright()) {
     try {
       return createRequire(r)('playwright');
     } catch {
@@ -26,10 +34,28 @@ export function loadPlaywright(): Any | null {
   return null;
 }
 
-export const playwright = loadPlaywright();
-export const skipBrowser: string | false = playwright
-  ? false
-  : 'playwright is not installed in this image: browser tests skipped';
+function chargerPlaywright(): Any {
+  const pw = loadPlaywright();
+  if (!pw) {
+    throw new Error(
+      'Playwright cannot be loaded (looked in ' + racinesPlaywright().join(', ') + '): the browser tests cannot run. Install it (npm i -g playwright) — they are never skipped.',
+    );
+  }
+  let chemin = '';
+  try {
+    chemin = pw.chromium.executablePath();
+  } catch {
+    /* reported below */
+  }
+  if (!chemin || !existsSync(chemin)) {
+    throw new Error('Playwright is loaded but its Chromium is missing (' + (chemin || 'no path') + '): run `npx playwright install chromium`.');
+  }
+  return pw;
+}
+
+export const playwright = chargerPlaywright();
+/** Kept for the guards of the test files; always `false` now (AD-harnais-4). */
+export const skipBrowser: string | false = false;
 
 export async function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -42,10 +68,45 @@ export async function freePort(): Promise<number> {
   });
 }
 
-/** Runs `npm run build` once if `dist/public` is missing; a stale `dist/` is not rebuilt (the server runs from dist/server.js). */
+const SOURCES_BUILD = ['src', 'frontend/src', 'frontend/index.html', 'package.json', 'tsconfig.json', 'frontend/tsconfig.json', 'frontend/vite.config.ts'];
+const PRODUITS_BUILD = ['dist/server.js', 'dist/public/index.html'];
+
+function plusRecent(chemin: string): number {
+  let st;
+  try {
+    st = statSync(chemin);
+  } catch {
+    return 0;
+  }
+  if (!st.isDirectory()) return st.mtimeMs;
+  let max = 0; // a directory's own mtime moves with a rename, only files count
+  for (const e of readdirSync(chemin)) {
+    if (e === 'node_modules') continue;
+    max = Math.max(max, plusRecent(join(chemin, e)));
+  }
+  return max;
+}
+
+/** Pure decision (AD-harnais-5): rebuild when a product of the build is missing or older than the newest source under `racine`. */
+export function doitReconstruire(racine: string): boolean {
+  let produit = Infinity;
+  for (const p of PRODUITS_BUILD) {
+    const f = join(racine, p);
+    if (!existsSync(f)) return true;
+    produit = Math.min(produit, statSync(f).mtimeMs);
+  }
+  return SOURCES_BUILD.some((s) => plusRecent(join(racine, s)) > produit);
+}
+
+/** Runs `npm run build` when `dist/` is missing or older than its sources; a failure carries the build output. */
 export function ensureBuilt(): void {
-  if (existsSync('dist/public/index.html')) return;
-  execFileSync('npm', ['run', 'build'], { stdio: 'ignore' });
+  if (!doitReconstruire(resolve('.'))) return;
+  try {
+    execFileSync('npm', ['run', 'build'], { stdio: 'pipe', encoding: 'utf8' });
+  } catch (e) {
+    const err = e as { stdout?: string; stderr?: string; message: string };
+    throw new Error('npm run build failed:\n' + [err.stdout, err.stderr].filter(Boolean).join('\n').slice(-4000) || err.message);
+  }
 }
 
 export interface Server {
@@ -310,6 +371,148 @@ async function startExpectingExitUnlocked(
   return { ...result, stderr };
 }
 
+/** Counts the same-origin fetch/XHR in flight (fonts and other origins are not the application's). Runs in every frame, before the page's scripts. */
+function compteurRequetes(): void {
+  const w = window as Any;
+  if (w.__kvEnVol !== undefined) return;
+  w.__kvEnVol = 0;
+  const memeOrigine = (u: Any): boolean => {
+    try {
+      return new URL(String(u && u.url ? u.url : u), location.href).origin === location.origin;
+    } catch {
+      return false;
+    }
+  };
+  const fetchOrigine = w.fetch;
+  w.fetch = function (this: Any, ...args: Any[]) {
+    if (!memeOrigine(args[0])) return fetchOrigine.apply(this, args);
+    w.__kvEnVol++;
+    return fetchOrigine.apply(this, args).finally(() => {
+      w.__kvEnVol--;
+    });
+  };
+  const ouvrir = XMLHttpRequest.prototype.open;
+  const envoyer = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.open = function (this: Any, ...args: Any[]) {
+    this.__kvMeme = memeOrigine(args[1]);
+    return (ouvrir as Any).apply(this, args);
+  };
+  XMLHttpRequest.prototype.send = function (this: Any, ...args: Any[]) {
+    if (this.__kvMeme) {
+      w.__kvEnVol++;
+      let fini = false;
+      const fin = () => {
+        if (!fini) {
+          fini = true;
+          w.__kvEnVol--;
+        }
+      };
+      this.addEventListener('loadend', fin);
+    }
+    return (envoyer as Any).apply(this, args);
+  };
+}
+
+/** Time `attendre` gives the page to settle: under the 30 s default timeout, so the message below reaches the test. */
+const DELAI_ATTENTE_MS = 25_000;
+
+/** In-page wait: no request in flight, no loading sign, DOM unmutated for two frames. Returns the unsettled sign on timeout, else null. */
+async function attendreDansLaPage(delai: number): Promise<string | null> {
+  const w = window as Any;
+  const signe = (): string | null => {
+    const n = w.__kvEnVol ?? 0;
+    if (n > 0) return `${n} requête(s) fetch/XHR en vol`;
+    // A demo showcase (`.demo-etat`, page /demo) shows loading states for good: not a page that is still settling.
+    const vitrine = (el: Element) => el.closest('.demo-etat') !== null;
+    const occupe = Array.from(document.querySelectorAll('[aria-busy="true"]')).find((el) => !vitrine(el));
+    if (occupe) return `élément occupé <${occupe.tagName.toLowerCase()} aria-busy="true">${occupe.id ? '#' + occupe.id : ''}`;
+    for (const el of Array.from(document.querySelectorAll('[role="status"]'))) {
+      const t = (el.textContent ?? '').trim();
+      if (!vitrine(el) && /^Chargement/.test(t) && (el as HTMLElement).getClientRects().length > 0) return `chargement visible (role=status « ${t.slice(0, 40)} »)`;
+    }
+    return null;
+  };
+  let mute = true;
+  const obs = new MutationObserver(() => {
+    mute = true;
+  });
+  obs.observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
+  const fin = Date.now() + delai;
+  const image = () => new Promise<void>((r) => {
+    let fait = false;
+    const f = () => {
+      if (!fait) {
+        fait = true;
+        r();
+      }
+    };
+    requestAnimationFrame(f);
+    setTimeout(f, 50);
+  });
+  let calmes = 0;
+  let dernier: string | null = null;
+  try {
+    for (;;) {
+      mute = false;
+      await image();
+      dernier = signe();
+      if (!dernier && !mute) {
+        if (++calmes >= 2) return null;
+      } else {
+        calmes = 0;
+        if (!dernier) dernier = 'le DOM change encore (mutations)';
+      }
+      if (Date.now() > fin) return dernier;
+    }
+  } finally {
+    obs.disconnect();
+  }
+}
+
+/** Source of a function run in the page: the loader (tsx) wraps named functions in `__name`, which the page does not have. */
+function enSource(fn: (...a: Any[]) => unknown, args: unknown[] = []): string {
+  return `var __name = function (f) { return f; };(${fn.toString()})(${args.map((a) => JSON.stringify(a)).join(',')})`;
+}
+
+/** Equips a context of the harness: request counter, and `waitForLoadState('networkidle')` of its pages runs `attendre`. */
+function equiperContexte(ctx: Any): Any {
+  if (ctx.__kvEquipe) return ctx;
+  ctx.__kvEquipe = true;
+  void ctx.addInitScript({ content: enSource(compteurRequetes) });
+  const rediriger = (page: Any): void => {
+    if (page.__kvOrigine) return;
+    const origine = page.waitForLoadState.bind(page);
+    page.__kvOrigine = origine;
+    page.waitForLoadState = (etat?: string, opts?: Any) => (etat === 'networkidle' ? attendre(page) : origine(etat, opts));
+  };
+  ctx.pages().forEach(rediriger);
+  ctx.on('page', rediriger);
+  return ctx;
+}
+
+let navigateurEquipe = false;
+function equiperNavigateur(browser: Any): Any {
+  if (browser.__kvEquipe) return browser;
+  browser.__kvEquipe = true;
+  const nouveau = browser.newContext.bind(browser);
+  browser.newContext = async (...args: Any[]) => equiperContexte(await nouveau(...args));
+  const nouvellePage = browser.newPage.bind(browser);
+  browser.newPage = async (...args: Any[]) => {
+    const page = await nouvellePage(...args);
+    equiperContexte(page.context());
+    return page;
+  };
+  return browser;
+}
+/** Every browser the harness's Playwright launches, `launch()` or a file's own `chromium.launch`, carries the equipment. */
+function equiperPlaywright(): void {
+  if (navigateurEquipe || !playwright) return;
+  navigateurEquipe = true;
+  const lancer = playwright.chromium.launch.bind(playwright.chromium);
+  playwright.chromium.launch = async (...args: Any[]) => equiperNavigateur(await lancer(...args));
+}
+equiperPlaywright();
+
 export async function launch(): Promise<Any> {
   return withStartupLock(() => playwright.chromium.launch({ args: ['--no-sandbox'] }));
 }
@@ -321,7 +524,7 @@ export async function connecte(browser: Any, base: string, compte: string): Prom
   page.setDefaultTimeout(30000);
   await page.goto('/connexion-bouchon');
   await page.getByRole('button', { name: new RegExp(`^Se connecter en tant que ${compte}$`, 'i') }).click();
-  await page.waitForLoadState('networkidle');
+  await attendre(page);
   return { ctx, page };
 }
 
@@ -339,8 +542,48 @@ export async function texte(page: Any): Promise<string> {
   return ((await page.locator('body').innerText()) as string).replace(/’/g, "'");
 }
 
+/** Waits until the page is settled (AD-harnais-1): no application request in flight, no loading sign, DOM still for two frames. Never network silence. */
 export async function attendre(page: Any): Promise<void> {
-  await page.waitForLoadState('networkidle');
+  const fin = Date.now() + DELAI_ATTENTE_MS;
+  const origine = page.__kvOrigine ?? page.waitForLoadState.bind(page);
+  await origine('domcontentloaded');
+  for (;;) {
+    try {
+      const reste = Math.max(fin - Date.now(), 100);
+      const signe = await page.evaluate(enSource(attendreDansLaPage, [reste]));
+      if (signe === null) return;
+      throw new Error(`attendre: la page ne se pose pas, signe restant : ${signe}`);
+    } catch (e) {
+      // A navigation destroyed the context mid-wait: the new document is waited for in turn.
+      if (/Execution context was destroyed|navigat|Target page, context or browser has been closed/i.test(String((e as Error).message)) && !/ne se pose pas/.test(String((e as Error).message)) && Date.now() < fin && !page.isClosed()) {
+        await origine('domcontentloaded').catch(() => undefined);
+        continue;
+      }
+      throw e;
+    }
+  }
+}
+
+/** Waits for a locator to show (the visible result of an action). */
+export async function attendreVisible(cible: Any): Promise<void> {
+  await cible.first().waitFor({ state: 'visible' });
+}
+
+/** Waits for a locator to be gone (the vanished control, the closed dialog). */
+export async function attendreAbsent(cible: Any): Promise<void> {
+  await cible.first().waitFor({ state: 'hidden' });
+}
+
+/** Waits for a text (string, tolerant to the typographic apostrophe, or RegExp) to show on the page. */
+export async function attendreTexte(page: Any, texte: string | RegExp): Promise<void> {
+  await page.getByText(typeof texte === 'string' ? rx(texte) : texte).first().waitFor({ state: 'visible' });
+}
+
+/** Waits until no finite CSS transition or animation is running (a fade, a dialog opening): the result of a hover or an opening, not a delay. */
+export async function attendreTransitions(page: Any): Promise<void> {
+  await page.waitForFunction(() =>
+    document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getComputedTiming().iterations === Infinity),
+  );
 }
 
 // --- user gestures, after docs/ecrans.md (the doc's labels) ---
@@ -436,11 +679,10 @@ export async function regler(page: Any, titre: string, reglage: string, actif: b
     const case_ = s.getByLabel(rx(reglage));
     if ((await case_.isChecked()) === actif) return;
     await case_.click({ noWaitAfter: true });
-    for (let i = 0; i < 50; i++) {
-      if ((await case_.isChecked()) === actif) return;
-      await page.waitForTimeout(100);
-    }
-    throw new Error(`audience "${reglage}" of "${titre}" did not become ${actif}`);
+    await page
+      .waitForFunction(({ el, actif }: Any) => el.checked === actif, { el: await case_.elementHandle(), actif }, { timeout: 5000 })
+      .catch(() => { throw new Error(`audience "${reglage}" of "${titre}" did not become ${actif}`); });
+    return;
   }
   await pastille.click();
   const boite = page.getByRole('dialog', { name: /^Qui voit/ });
@@ -448,12 +690,9 @@ export async function regler(page: Any, titre: string, reglage: string, actif: b
   const interrupteur = boite.getByRole('switch', { name: rx(reglage) });
   if ((await interrupteur.getAttribute('aria-checked')) !== String(actif)) {
     await interrupteur.click({ noWaitAfter: true });
-    let ok = false;
-    for (let i = 0; i < 50 && !ok; i++) {
-      ok = (await interrupteur.getAttribute('aria-checked')) === String(actif);
-      if (!ok) await page.waitForTimeout(100);
-    }
-    if (!ok) throw new Error(`audience "${reglage}" of "${titre}" did not become ${actif}`);
+    await page
+      .waitForFunction(({ el, actif }: Any) => el.getAttribute('aria-checked') === String(actif), { el: await interrupteur.elementHandle(), actif }, { timeout: 5000 })
+      .catch(() => { throw new Error(`audience "${reglage}" of "${titre}" did not become ${actif}`); });
   }
   await page.keyboard.press('Escape');
   await boite.waitFor({ state: 'detached' });
@@ -465,8 +704,9 @@ export async function choisirAuteur(page: Any, titre: string, identifiant: strin
   const boite = page.getByRole('dialog', { name: /^Qui voit/ });
   const liste = boite.getByRole('combobox', { name: /Auteur/ });
   await liste.selectOption({ label: identifiant });
-  await boite.getByRole('switch', { name: rx('L’auteur la lit') }).waitFor();
-  for (let i = 0; i < 50 && (await boite.getByRole('switch', { name: rx('L’auteur la lit') }).isDisabled()); i++) await page.waitForTimeout(100);
+  const lit = boite.getByRole('switch', { name: rx('L’auteur la lit') });
+  await lit.waitFor();
+  await page.waitForFunction((el: Any) => !el.disabled && el.getAttribute('aria-disabled') !== 'true', await lit.elementHandle(), { timeout: 5000 });
   await liste.focus();
   await page.keyboard.press('Escape');
   await boite.waitFor({ state: 'detached' });

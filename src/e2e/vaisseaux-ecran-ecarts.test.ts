@@ -1,3 +1,4 @@
+// ecrans: fiche, outil
 // Review tests of kanevas-outils-vaisseaux-ecran, from docs/ecrans.md (E-22, E-9): the motive and buttons of a blocked save stay
 // visible at 390 px, « Caractéristiques » is a horizontal framed table, a catalogue row carries « Univers » and its figures.
 import assert from 'node:assert/strict';

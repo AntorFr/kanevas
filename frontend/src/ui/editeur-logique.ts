@@ -153,3 +153,60 @@ export function idsFichiers(texte: string): number[] {
   for (const m of texte.matchAll(/\(fichier:([1-9]\d{0,14})\)/g)) ids.add(Number(m[1]));
   return [...ids];
 }
+
+/**
+ * Twin of the server's `lireReglageImage` (`services/markdown.ts`, AD-taille-1): the same nine
+ * `<taille>-<placement>` pairs, anything else is no setting. A test feeds both the same cases.
+ */
+export const TAILLES_IMAGE = ['petit', 'moyen', 'grand'] as const;
+export const PLACEMENTS_IMAGE = ['gauche', 'droite', 'centre'] as const;
+export type TailleImage = (typeof TAILLES_IMAGE)[number];
+export type PlacementImage = (typeof PLACEMENTS_IMAGE)[number];
+export interface ReglageImage {
+  taille: TailleImage;
+  placement: PlacementImage;
+}
+
+export function lireReglageImage(titre: string | null | undefined): ReglageImage | null {
+  const m = /^(petit|moyen|grand)-(gauche|droite|centre)$/.exec(titre ?? '');
+  return m ? { taille: m[1] as TailleImage, placement: m[2] as PlacementImage } : null;
+}
+
+/** An `![alt](fichier:N "titre")` reference found in a text: where it starts, ends, and its title (null: none). */
+export interface ReferenceImage {
+  debut: number;
+  fin: number;
+  titre: string | null;
+}
+
+const REFERENCE_IMAGE = /!\[[^\]\n]*\]\(fichier:[^\s)"]+(?:[ \t]+"([^"\n]*)")?\)/y;
+
+/** The reference whose `![` starts at `debut`, if one is written there. */
+export function referenceImageEn(texte: string, debut: number): ReferenceImage | null {
+  REFERENCE_IMAGE.lastIndex = debut;
+  const m = REFERENCE_IMAGE.exec(texte);
+  return m ? { debut, fin: debut + m[0].length, titre: m[1] ?? null } : null;
+}
+
+/** The image reference the caret stands in (between the nearest `![` before it and its `)`), or null. */
+export function referenceImageAuCurseur(texte: string, caret: number): ReferenceImage | null {
+  const debut = texte.lastIndexOf('![', caret);
+  if (debut < 0) return null;
+  const r = referenceImageEn(texte, debut);
+  return r && caret <= r.fin ? r : null;
+}
+
+/** Writes (or, with null, removes) the title of the reference starting at `debut`; the text is returned as is when none stands there. */
+export function ecrireReglageImage(texte: string, debut: number, reglage: ReglageImage | null): { texte: string; fin: number } {
+  const r = referenceImageEn(texte, debut);
+  if (!r) return { texte, fin: debut };
+  const ref = texte.slice(r.debut, r.fin);
+  const base = ref.replace(/[ \t]+"[^"\n]*"\)$/, ')').slice(0, -1);
+  const neuve = reglage ? `${base} "${reglage.taille}-${reglage.placement}")` : `${base})`;
+  return { texte: texte.slice(0, r.debut) + neuve + texte.slice(r.fin), fin: r.debut + neuve.length };
+}
+
+/** A choice in one group: the other group is completed by `moyen` / `centre` when no setting stood yet. */
+export function choisirReglageImage(courant: ReglageImage | null, choix: { taille: TailleImage } | { placement: PlacementImage }): ReglageImage {
+  return { taille: 'moyen', placement: 'centre', ...courant, ...choix };
+}

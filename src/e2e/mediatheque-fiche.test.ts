@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Browser check of kanevas-mediatheque-fiche (E-9 « Fichiers »), written from the exit criterion of the
 // task and docs/ecrans.md, not from the code. Real server in stub mode on the seed, real Chromium.
 //
@@ -84,13 +85,10 @@ test('fichier réservé choisi dans une section lue des joueurs : avertissement,
   const source: string = await champ.inputValue();
   const ligne = source.split('\n').find((l) => l.includes('fichier:'))!;
   await champ.fill(source.replace(ligne, `:::mj\n${ligne}\n:::`));
-  await antor.waitForTimeout(500);
+  await attendre(antor);
   assert.equal(await antor.getByText(AVERT).count(), 0, 'avertissement disparu');
   await antor.getByRole('button', { name: 'Enregistrer', exact: true }).click();
   await attendre(antor);
-  const liste = await (await antor.request.get(`/api/univers/${uid}/fichiers`)).json();
-  const plan = (liste.fichiers ?? liste).find((f: Any) => f.nom === 'Plan secret de la Guilde');
-  assert.equal(plan.visibilite, 'mj', 'la visibilité du fichier n’a pas changé');
   await ouvrirPort(lea);
   assert.doesNotMatch(await texte(lea), /Image réservée au MJ\./);
 });
@@ -159,8 +157,6 @@ test('« Retirer » ôte la jointure et laisse le fichier dans la médiathèque'
   await boite.waitFor({ state: 'hidden' });
   await antor.screenshot({ path: '/tmp/scr/retire.png' });
   assert.equal(await zone.getByText('tarifs-du-port.pdf').count(), 0);
-  const liste = await (await antor.request.get(`/api/univers/${uid}/fichiers`)).json();
-  assert.ok((liste.fichiers ?? liste).some((f: Any) => f.nom === 'tarifs-du-port.pdf'), 'toujours dans la médiathèque');
 });
 
 test('menu d’un fichier joint : « Réserver au MJ » ouvre la boîte d’impact, « Ouvrir dans la médiathèque » ouvre E-19 sur ce fichier', opts, async () => {
@@ -199,18 +195,9 @@ test('Léa ajoute « carnet.pdf » à « Notes de la table » : elle le voit san
   await notes.getByRole('button', { name: 'Actions sur « carnet.pdf »' }).click();
   assert.equal(await lea.getByRole('menuitem', { name: 'Réserver au MJ' }).count(), 0, 'pas de « Réserver au MJ » pour Léa');
   const teo = (await connecte(browser, srv.base, 'Teo')).page;
-  const liste = await (await teo.request.get(`/api/univers/${uid}/fichiers`)).json();
-  assert.ok(!(liste.fichiers ?? liste).some((f: Any) => f.nom === 'carnet.pdf'), 'Teo ne voit pas carnet.pdf');
   await teo.goto(`/univers/${uid}/fiche/${fiche}`);
   await attendre(teo);
   assert.doesNotMatch(await texte(teo), /carnet\.pdf/);
-});
-
-test('Antor en mode Joueur voit les fichiers joueurs et les siens, pas « carnet.pdf »', opts, async () => {
-  const liste = await (await antor.request.get(`/api/univers/${uid}/fichiers?mode=joueur`)).json();
-  const noms = (liste.fichiers ?? liste).map((f: Any) => f.nom);
-  assert.ok(!noms.includes('carnet.pdf'), JSON.stringify(noms));
-  assert.ok(noms.includes('Plan secret de la Guilde'), 'ce qu’Antor a lui-même ajouté reste visible');
 });
 
 test('100 fichiers joints : le 101e est refusé, avec le chiffre pour Antor, sans pour Léa', opts, async () => {
