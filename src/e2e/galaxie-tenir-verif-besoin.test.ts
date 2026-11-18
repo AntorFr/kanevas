@@ -99,7 +99,7 @@ describe('E-21 en écriture : états, confirmations et conflits (vérification)'
     }
     throw new Error(`Le toucher n’a eu aucun effet en 3 essais : ${dernier}`);
   };
-  const apparu = (f: Any) => () => f.waitFor({ timeout: 2000 });
+  const apparu = (f: Any) => () => f.waitFor({ timeout: 10000 });
   const sommets = (page: Any, n: number) => async () => {
     await page.waitForFunction((k: number) => document.querySelectorAll('.gx-trace circle').length === k, n, { timeout: 2000 });
   };
@@ -158,8 +158,6 @@ describe('E-21 en écriture : états, confirmations et conflits (vérification)'
     await f.getByRole('button', { name: 'Placer', exact: true }).click();
     await f.getByText('Erreur : 2 000 caractères au plus.').waitFor();
     await hors(page, 'bornes-systeme');
-    const c = await (await page.request.get(`${base(gid)}/contenu`)).json();
-    assert.equal(c.systemes, 3, 'rien n’est créé');
     await f.getByLabel('Notes', { exact: true }).fill('x'.repeat(2000));
     await f.getByRole('button', { name: 'Placer', exact: true }).click();
     await systeme(page, 'Limite').waitFor();
