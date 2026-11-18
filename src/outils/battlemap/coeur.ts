@@ -74,6 +74,45 @@ export function detourerFondUni(octets: Uint8Array): Uint8Array {
   }
 }
 
+export interface ContexteTable { empreintes: Record<string, [number, number]>; acteur?: 'mj' | 'joueur' }
+export interface ContexteVue extends ContexteFiltre { empreintes: Record<string, [number, number]> }
+export interface EtatTable {
+  schema: number;
+  pions: { id: string; nom: string; asset_id: string | null; fiche_id: string | null; x: number; y: number; visible: boolean }[];
+  brouillard: string; vue: { x: number; y: number; l: number; h: number } | null; calques_masques: string[];
+}
+
+/** The state of a new table: nothing revealed. */
+export function etatVide(largeur: number, hauteur: number): string {
+  try {
+    return coeur().etatVide(largeur, hauteur);
+  } catch (e) {
+    throw new ErreurCoeur(String(e));
+  }
+}
+
+/** A batch of table commands applied whole: the new state (text, as the core wrote it) or the core's refusal. */
+export function appliquerTable(document: string, etat: string, lot: unknown, contexte: ContexteTable): { ok: true; etat: string } | RefusCoeur {
+  const r = JSON.parse(coeur().appliquerTable(document, etat, JSON.stringify(lot), JSON.stringify(contexte))) as
+    { ok: true; etat: unknown } | RefusCoeur;
+  return r.ok ? { ok: true, etat: JSON.stringify(r.etat) } : r;
+}
+
+/** What a player reads: the filtered document, the tokens, the bitmap and the shared view. */
+export function vueJoueur(document: string, etat: string, contexte: ContexteVue): { document: unknown; pions: unknown[]; brouillard: string; vue: unknown } {
+  try {
+    return JSON.parse(coeur().vueJoueur(document, etat, JSON.stringify(contexte)));
+  } catch (e) {
+    throw new ErreurCoeur(String(e));
+  }
+}
+
+export function redimensionnerEtat(etat: string, avant: [number, number], apres: [number, number], contexte: ContexteTable): { ok: true; etat: string } | RefusCoeur {
+  const r = JSON.parse(coeur().redimensionnerEtat(etat, avant[0], avant[1], apres[0], apres[1], JSON.stringify(contexte))) as
+    { ok: true; etat: unknown } | RefusCoeur;
+  return r.ok ? { ok: true, etat: JSON.stringify(r.etat) } : r;
+}
+
 /** A refusal of the core outside a batch: `message` is its fixed code. */
 export class ErreurCoeur extends Error {
   constructor(code: string) {

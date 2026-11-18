@@ -1,5 +1,6 @@
 import { compterAssets, compterDirection, compterLots, effacerDonneesBattlemap, effacerLots } from '../../services/battlemap-donnees.js';
 import { cartesComposees, compterCartes, creerCarte, effacerCartes, rendreVisibleCarte, supprimerCarte, utilisationsCartes } from '../../services/battlemap-cartes.js';
+import { lignesTables } from '../../services/battlemap-tables.js';
 import { choisirAdaptateur } from '../../services/images/index.js';
 import type { DeclarationAide, DeclarationCarte, DeclarationGenerateur, DeclarationModule, LigneDonnees } from '../declaration.js';
 
@@ -73,7 +74,7 @@ export const battlemapCartes: DeclarationCarte = {
     supprimer: (db, acteur, universId, id) => supprimerCarte(db, acteur, universId, id),
   },
   donnees: {
-    compter: (db, portee) => (portee.niveau === 'univers' ? compterCartes(db, portee.universId) : []),
+    compter: (db, portee) => (portee.niveau === 'univers' ? [...compterCartes(db, portee.universId), ...lignesTables(db, portee.universId)] : []),
     effacer(db, portee) {
       if (portee.niveau === 'univers') effacerCartes(db, portee.universId);
     },

@@ -4,6 +4,7 @@ import type { Db } from '../db/db.js';
 import { attachmentsDir } from '../config/env.js';
 import { ajouterAsset, modifierAssets, type Categorie } from '../services/battlemap-assets.js';
 import { appliquerCommandes, creerCarte, reglerCarte } from '../services/battlemap-cartes.js';
+import { appliquerCommandesTable, creerTable, definirProprietaire } from '../services/battlemap-tables.js';
 import { ajouterReference, ecrireDirection } from '../services/battlemap-direction.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerFiche } from '../services/fiches.js';
@@ -86,5 +87,24 @@ function semerCantine(db: Db, antor: { compteId: number }, universId: number, sy
     { type: 'poser_porte', calque: 'mj', x: 21, y: 12, cote: 'h', porte: true },
   ]);
   reglerCarte(db, antor, universId, id, 2, { visible: true });
+  semerTable(db, antor, universId, id, fiche);
+}
+
+/**
+ * The table of « Cantine de la station » (AD-battlemap-table-8), built by the core's commands through the service: the first room
+ * revealed, « Mira » (the seeded sheet, owned by « lea »), « Vox » (owned by « roxane »), both in that room, and « Garde », a plain
+ * disc without owner in the second room, visible but still under the fog. No shared view.
+ */
+function semerTable(db: Db, antor: { compteId: number }, universId: number, carteId: number, fiche: number): void {
+  creerTable(db, antor, universId, carteId);
+  appliquerCommandesTable(db, antor, universId, carteId, 1, [
+    { type: 'ajouter_pion', id: 'mira', nom: 'Mira', fiche_id: String(fiche), x: 3, y: 3 },
+    { type: 'ajouter_pion', id: 'vox', nom: 'Vox', x: 3, y: 7 },
+    { type: 'ajouter_pion', id: 'garde', nom: 'Garde', x: 20, y: 6 },
+    { type: 'reveler_piece', x: 3, y: 3 },
+  ]);
+  for (const [pion, compte] of [['mira', 'lea'], ['vox', 'roxane']] as const) {
+    definirProprietaire(db, antor, universId, carteId, pion, assurerCompte(db, compte).id);
+  }
 }
 

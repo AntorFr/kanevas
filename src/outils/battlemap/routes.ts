@@ -13,6 +13,7 @@ import {
   accepterLigne, arreterLot, ecarterLigne, enregistrerLot, lancerLot, lireLot, reessayerLigne, regenererLigne, reprendreLot,
 } from '../../services/battlemap-lots.js';
 import { appliquerCommandes, creerCarte, lireCarte, reglerCarte, supprimerCarte } from '../../services/battlemap-cartes.js';
+import { appliquerCommandesTable, creerTable, definirProprietaire, lireTable } from '../../services/battlemap-tables.js';
 import {
   ajouterReference, ajouterReferenceDepuisFichier, ecrireDirection, legenderReference, lireDirection, retirerReference,
 } from '../../services/battlemap-direction.js';
@@ -193,6 +194,33 @@ export function routesBattlemap(app: FastifyInstance, garde: (cle: string) => pr
   app.delete(`${RACINE}/cartes/:cid(^[0-9]+$)`, cartes, (request, reply) => {
     supprimerCarte(app.db, acteur(request), univers(request), carte(request));
     return reply.code(204).send();
+  });
+
+  // ---- Game tables (AD-battlemap-table-5). Same guard as the maps. A map the caller cannot read, a hidden map for a player or for a GM in
+  // Player mode: `introuvable` (the common handler's 404); a readable map with no table is `{commencee: false}`. `limite_depassee` is a 422 here.
+  app.get(`${RACINE}/cartes/:cid(^[0-9]+$)/table`, cartes, (request) => lireTable(app.db, acteur(request), univers(request), carte(request)));
+
+  app.post(`${RACINE}/cartes/:cid(^[0-9]+$)/table`, cartes, (request, reply) => {
+    const r = creerTable(app.db, acteur(request), univers(request), carte(request));
+    return reply.code(r.creee ? 201 : 200).send(r.table);
+  });
+
+  app.post(`${RACINE}/cartes/:cid(^[0-9]+$)/table/commandes`, cartes, (request, reply) => {
+    const b = corps(request);
+    try {
+      return appliquerCommandesTable(app.db, acteur(request), univers(request), carte(request), b.version, b.commandes);
+    } catch (e) {
+      if (e instanceof ErreurService && e.detail === 'limite_depassee') {
+        return reply.code(422).send({ message: e.message, code: 'limite_depassee', ...(e.champ ? { champ: e.champ } : {}) });
+      }
+      throw e;
+    }
+  });
+
+  app.put(`${RACINE}/cartes/:cid(^[0-9]+$)/table/pions/:pid/proprietaire`, cartes, (request) => {
+    const pid = (request.params as { pid: string }).pid;
+    const b = corps(request);
+    return definirProprietaire(app.db, acteur(request), univers(request), carte(request), pid, b.compte_id);
   });
 
   // ---- Generation batches (AD-battlemap-generation-1). Guarded by the tool `generation`: without an image engine it is absent and
