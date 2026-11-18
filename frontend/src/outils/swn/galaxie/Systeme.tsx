@@ -124,7 +124,7 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
                       <span className={a.nom ? 'nom' : 'nom vide'}>{nomAstre(a)}</span>
                       <span className="place">{placeAstre(a)}</span>
                       <span className="meta">{typeAstre(a)}</span>
-                      {a.fiche && <span className="meta">Fiche : {a.fiche.titre}</span>}
+                      {a.fiche && <span className="meta gx-fiche">Fiche : {a.fiche.titre}</span>}
                     </button>
                   </li>
                 ))}
@@ -142,7 +142,7 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
                       <span className={f.nom ? 'nom' : 'nom vide'}>{nomFormation(f)}</span>
                       <span className="place">{placeFormation(f)}</span>
                       <span className="meta">{typeFormation(f)}</span>
-                      {f.fiche && <span className="meta">Fiche : {f.fiche.titre}</span>}
+                      {f.fiche && <span className="meta gx-fiche">Fiche : {f.fiche.titre}</span>}
                     </button>
                   </li>
                 ))}

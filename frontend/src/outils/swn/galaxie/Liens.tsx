@@ -7,6 +7,7 @@ import { Alerte, Bouton, Champ, Fenetre, useToasts } from '../../../ui';
 import { ListeLiens, useRechercheLiens, type FicheLien } from '../../../ui/liste-liens';
 import { delierAstreFiche, delierZoneFiche, illustrerFicheAstre, lierAstreFiche, lierZoneFiche } from './ecriture';
 import { MessageEchec, lireEchecEdition, useEdition, type EchecEdition } from './Edition';
+import { nomAstre, nomFormation } from './systeme-libelles';
 import type { AstreSysteme, FicheLiee, FormationSysteme } from './types';
 
 /** The address of a sheet (E-9). */
@@ -20,7 +21,7 @@ export function LigneFiche({ fiche }: { fiche?: FicheLiee | null }) {
 }
 
 type Cible = { k: 'astre'; astre: AstreSysteme } | { k: 'zone'; zone: FormationSysteme };
-const nomCible = (c: Cible) => (c.k === 'astre' ? c.astre.nom : c.zone.nom) ?? (c.k === 'astre' ? 'ce corps' : 'cette zone');
+const nomCible = (c: Cible) => (c.k === 'astre' ? nomAstre(c.astre) : nomFormation(c.zone));
 
 /** « Lier à une fiche… » / « Changer la fiche liée… » and « Délier » (GM, E-23), plus « Illustrer la fiche » for a body. */
 export function ActionsLien({ cible }: { cible: Cible }) {
