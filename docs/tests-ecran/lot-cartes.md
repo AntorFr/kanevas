@@ -471,7 +471,7 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/carte-systeme-canvas-ecran.test.ts` | `les deux thèmes : captures du ciel (1280 et 390 px), le ciel reste sombre` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `${l} px : un corps sélectionné ouvre son panneau (nom, type, lieu, hexagone) ; le ciel vide le ferme` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `un astre sans nom lit « Astre sans nom »` | affichage | — | gardé |
-| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `le MJ et la joueuse lisent le même panneau, sans action de plus` | affichage | — | gardé |
+| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `le MJ lit le panneau de la joueuse et seulement trois gestes d’écriture de plus (E-23 édition)` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `cœur indisponible : une ligne de liste ouvre le panneau` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `route d’illustration en erreur : « Illustration indisponible. » et « Réessayer » relance la requête` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `« Voir l’illustration » : fenêtre sur le flou, « Chargement de l’illustration… », puis l’image nette ; Esc ferme et rend le focus` | affichage | — | gardé |
@@ -479,3 +479,20 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `fenêtre : une route qui répond introuvable → « Page introuvable. »` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `captures de recette : chaque famille de corps, chaque thème, 1280 et 390 px` | affichage | — | gardé |
 | `src/e2e/wasm-navigateur.test.ts` | `the coeur module in Chromium draws the same bytes as the Node binding (AD-carte-1) and refuses an unknown type and a side of 8` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `glisser une planète d'un système défini : une seule écriture au relâchement, la place suit après rechargement, la voisine n'a pas bougé` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `une lune glissée tourne autour de sa planète : son heure seule change, jamais son orbite` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `trois pressions de flèche rapprochées n'envoient qu'une requête, 600 ms après la dernière ; « Alpha déplacé. » s'annonce` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `Maj + flèche : pas ×4 ; l'heure fait le tour de 12` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `erreur du serveur : le corps retourne à sa place et « Impossible d'enregistrer. » se lit` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `système tiré : le dialogue s'ouvre au relâchement, « Annuler » n'écrit rien et ramène la planète ; « Ancrer » écrit, la marque lit « Défini »` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `une joueuse n'a aucune poignée et un glisser n'écrit rien` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `le MJ en mode joueur n'a pas de poignée non plus` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `au toucher : un glisser simple déplace la vue sans écrire ; un appui long de 300 ms puis glisser déplace le corps` | affichage | — | gardé |
+| `src/e2e/edition-ensemble-besoin.test.ts` | `critère : « Déplacer » une planète d'un système tiré, le dialogue d'ancrage paraît d'abord, la marque lit « Défini », la planète est à sa nouvelle heure après rechargement, les voisins tirés n'ont pas bougé` | les deux | `src/outils/swn/edition-ensemble-besoin.test.ts : B-93 nominal : le MJ déplace une planète d'un système tiré, le système devient défini, la planète est à sa nouvelle heure à la relecture, les voisins tirés n'ont pas bougé` | gardé — corps relu: the order of the dialog before the write, the mark and the toast are the display; the stored hour and the neighbours are at the door |
+| `src/e2e/edition-ensemble-besoin.test.ts` | `« Annuler » dans le dialogue d'ancrage : rien n'est envoyé, la marque lit toujours « Tiré »` | affichage | — | gardé |
+| `src/e2e/edition-ensemble-besoin.test.ts` | `une orbite négative et l'heure 12 se lisent « Orbite invalide. », « Enregistrer » est désactivé et rien n'est envoyé` | affichage | — | gardé |
+| `src/e2e/edition-ensemble-besoin.test.ts` | `segment « Hexagone » : « abc » se lit « Nombre attendu. » avec la ligne « = — » ; le centre se lit « Position invalide. »` | affichage | — | gardé |
+| `src/e2e/edition-ensemble-besoin.test.ts` | `l'hexagone voisin saisi dans le formulaire se lit « = Orbite <rayon> · 3 h » : sur le cercle de transition, à l'heure du voisin` | affichage | — | gardé |
+| `src/e2e/edition-ensemble-besoin.test.ts` | `un autre MJ a changé le tirage entre-temps : à « Ancrer », « Cet astre a changé depuis que vous l'avez ouvert. » et « Recharger » dans le dialogue, rien n'est ancré` | affichage | — | gardé |
+| `src/e2e/edition-ensemble-besoin.test.ts` | `menu « Système › Ancrer ce système » : « Annuler » laisse « Tiré » ; « Ancrer » lit « Défini », annonce « Système ancré. » et retire l'entrée du menu` | affichage | — | gardé |
+| `src/e2e/edition-ensemble-besoin.test.ts` | `Léa (joueuse) et Antor en mode joueur : ni menu « Système », ni « Déplacer », ni « Modifier… », ni « Retirer »` | affichage | — | gardé |

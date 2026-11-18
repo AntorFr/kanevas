@@ -51,10 +51,16 @@ export interface AstreSysteme {
   nom: string | null; orbite: number | null; heure: number; taille: number; aspect?: Record<string, unknown>;
   /** Plain text, when the answer carries one. */
   description?: string | null;
+  /** GM only. */
+  version?: number;
 }
-export interface FormationSysteme { cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number }
+export interface FormationSysteme { cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number; version?: number;
+  /** Plain text, for the writing GM only. */
+  description?: string }
 export interface InterieurSysteme {
   q: number; r: number; nom: string | null; etat: 'tire' | 'defini'; transition?: number; astres: AstreSysteme[]; formations: FormationSysteme[];
+  /** The GM outside Player mode only (AD-edition-2): the write tokens. Absent for everyone else. */
+  peutEcrire?: true; versionSysteme?: number;
 }
 /** An exit towards a neighbouring system (`…/interieur/:q/:r/sorties`); a hidden neighbour or a private route has no entry. */
 export interface SortieSysteme { q: number; r: number; heure: number; nom: string | null }

@@ -26,6 +26,10 @@ interface Coeur {
   dessiner_astre(aspect: string, cote: number, versionRendu: number): Uint8Array;
   version_rendu(): number;
   catalogue_aspects(): string;
+  types_astre(genre: string): string;
+  galactique_vers_orbite_heure(dq: number, dr: number, rayon: number): Float64Array;
+  valider_aspect(type: string, json: string): string;
+  valider_formation(forme: string, json: string): string;
 }
 
 const coeur = (): Promise<Coeur> => chargerModule<Coeur>('coeur');
@@ -93,4 +97,25 @@ export async function catalogueAspects(): Promise<string> {
 /** Direction, as an hour in [0, 12), of the system at (q2, r2) seen from (q1, r1) (AD-143). */
 export async function heureVersVoisin(q1: number, r1: number, q2: number, r2: number): Promise<number> {
   return (await coeur()).heure_vers_voisin(q1, r1, q2, r2);
+}
+
+/** Types of the aspects catalogue a body of `genre` (`etoile`, `planete`, `lune`, `comete`) may take. Throws for another genre. */
+export async function typesAstre(genre: string): Promise<string[]> {
+  return JSON.parse((await coeur()).types_astre(genre)) as string[];
+}
+
+/** `[orbite, heure]` of a galactic offset `(dq, dr)` (hexagons, real), the adjacent hexagons falling on the circle of radius `rayon` (AD-edition-4). */
+export async function galactiqueVersOrbiteHeure(dq: number, dr: number, rayon: number): Promise<[number, number]> {
+  const p = (await coeur()).galactique_vers_orbite_heure(dq, dr, rayon);
+  return [p[0]!, p[1]!];
+}
+
+/** The aspect JSON re-serialised if it is valid for the type (<= 4 KiB, known keys, bounds). Throws with the core's message otherwise. */
+export async function validerAspect(type: string, json: string): Promise<string> {
+  return (await coeur()).valider_aspect(type, json);
+}
+
+/** The parameters JSON re-serialised if they are valid for the shape (`anneau` or `nuage`, <= 8 KiB). Throws with the core's message otherwise. */
+export async function validerFormation(forme: string, json: string): Promise<string> {
+  return (await coeur()).valider_formation(forme, json);
 }

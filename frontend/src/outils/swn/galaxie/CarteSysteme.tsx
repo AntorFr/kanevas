@@ -2,20 +2,27 @@ import { Minus, Plus, ScanSearch } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as PointerReact } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { lire } from '../../../api';
+import { lire, useConnexionPerdue } from '../../../api';
 import { chargerModule } from '../../../wasm/charger';
-import { Alerte, BoutonIcone, Case } from '../../../ui';
-import { centresNuage, coteDemande, disposer, grainsAnneau, PORTEE_COURONNE, queuesComete, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
+import { Alerte, Bouton, BoutonIcone, Case, useToasts } from '../../../ui';
+import { APPUI_LONG_MS, DELAI_FLECHES_MS, pasFleche } from '../../../ui/glisser';
+import { centresNuage, coteDemande, disposer, grainsAnneau, placeApresPas, placeDepuisPoint, PORTEE_COURONNE, queuesComete, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
 import { Sprites, dessineurDuCoeur } from './carte-sprites';
 import { placerEtiquettes, type CorpsEtiquette, type EtiquettePlacee, type Obstacle } from './etiquettes';
+import { lireEchecEdition, useEdition, type EchecEdition } from './Edition';
+import { modifierAstreSysteme } from './ecriture';
 import { nomAstre, nomFormation, placeAstre, typeAstre } from './systeme-libelles';
-import type { InterieurSysteme, SortieSysteme } from './types';
+import type { AstreSysteme, InterieurSysteme, SortieSysteme } from './types';
 
 export const ZOOM_MIN = 0.5;
 export const ZOOM_MAX = 4;
 const PAS = 1.5;
 const POLICE = '12px';
 const HAUTEUR_ETIQUETTE = 15;
+/** A body waiting for the server's answer is dimmed by opacity alone (charte, drag gesture). */
+const OPACITE_ENVOI = 0.4;
+/** A finger that moves this far (px) before the long press is over is panning the view. */
+const SEUIL_DEPLACEMENT = 4;
 
 /** What a browser test reads of the map (AD-carte-4: the placement is read through a hook, never by pixels). */
 export interface CroquisCarte {
@@ -47,6 +54,11 @@ const lireTokens = (el: Element) => {
 };
 
 /** E-23, the canvas (AD-carte-3): the interior as `lireInterieur` answered it, drawn by the core; nothing is filtered here. */
+/** A body placed by hand and not yet answered by the server (drag, arrows): shown at once, dropped when the answer is in. */
+type Provisoire = Record<string, { orbite: number | null; heure: number }>;
+/** The star of rank 0 has no place of its own: it is the centre. */
+const deplacable = (a: AstreSysteme | undefined): a is AstreSysteme => a !== undefined && !(a.genre === 'etoile' && a.etoile_rang === 0);
+
 export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, selection, onSelection }: Props) {
   const navigate = useNavigate();
   const racine = useRef<HTMLDivElement>(null);
@@ -61,6 +73,20 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   const [heures, setHeures] = useState(true);
   const [sorties, setSorties] = useState<SortieSysteme[]>([]);
   const [, retracer] = useState(0);
+  // The GM's gestures on the bodies (E-23, Déplacer 1 and 2): none of this exists for who may not write.
+  const edition = useEdition();
+  const editionRef = useRef(edition);
+  editionRef.current = edition;
+  const mj = edition.peutEcrire;
+  const perdue = useConnexionPerdue();
+  const { toast } = useToasts();
+  const [provisoire, setProvisoire] = useState<Provisoire>({});
+  const provRef = useRef<Provisoire>({});
+  const [enEnvoi, setEnEnvoi] = useState<Set<string>>(new Set());
+  const enEnvoiRef = useRef(enEnvoi);
+  const [echecGeste, setEchecGeste] = useState<EchecEdition>();
+  const poser = (p: Provisoire) => { provRef.current = p; setProvisoire(p); };
+  const changerEnvoi = (f: (s: Set<string>) => Set<string>) => { const n = f(enEnvoiRef.current); enEnvoiRef.current = n; setEnEnvoi(n); };
   const dpr = typeof window === 'undefined' ? 1 : Math.min(2, window.devicePixelRatio || 1);
   const reduit = useMemo(() => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches, []);
 
@@ -91,7 +117,14 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     return () => { vivant = false; };
   }, [base, interieur.q, interieur.r, suffixe]);
 
-  const dispo: Disposition | null = useMemo(() => (plan ? disposer(interieur, plan) : null), [plan, interieur]);
+  // The interior as shown: the places set by hand over the one the answer gave (a moon follows its planet in `disposer`).
+  const affiche = useMemo<InterieurSysteme>(() => (
+    Object.keys(provisoire).length === 0 ? interieur
+      : { ...interieur, astres: interieur.astres.map((a) => (provisoire[a.cle] ? { ...a, ...provisoire[a.cle] } : a)) }
+  ), [interieur, provisoire]);
+  const dispo: Disposition | null = useMemo(() => (plan ? disposer(affiche, plan) : null), [plan, affiche]);
+  // The scale is that of the answer, so the view does not move under the pointer while a body is dragged.
+  const etendue = useMemo(() => (plan ? disposer(interieur, plan).etendue : 1), [plan, interieur]);
 
   // Size of the sky.
   useEffect(() => {
@@ -103,7 +136,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     return () => o.disconnect();
   }, [etat]);
 
-  const ajuste = dispo && taille.w > 0 ? Math.min(taille.w, taille.h) / 2 / (dispo.etendue * 1.12) : 1;
+  const ajuste = dispo && taille.w > 0 ? Math.min(taille.w, taille.h) / 2 / (etendue * 1.12) : 1;
   const echelle = ajuste * vue.zoom;
   const cx = taille.w / 2 + vue.dx;
   const cy = taille.h / 2 + vue.dy;
@@ -229,7 +262,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
         const cote = c.cote * echelle;
         if (x + cote < 0 || y + cote < 0 || x - cote > taille.w || y - cote > taille.h) continue;
         for (const { image: im, alpha } of sprites.current?.couches(c.cle, coteDemande(cote, dpr), maintenant) ?? []) {
-          g.globalAlpha = alpha;
+          g.globalAlpha = enEnvoiRef.current.has(c.cle) ? alpha * OPACITE_ENVOI : alpha;
           g.drawImage(im, x - cote / 2 + c.decalage[0] * cote, y - cote / 2 + c.decalage[1] * cote, cote, cote);
         }
         g.globalAlpha = 1;
@@ -271,17 +304,117 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   const pointeurs = useRef(new Map<number, { x: number; y: number }>());
   const geste = useRef({ bouge: false, depart: { x: 0, y: 0 }, dist: 0 });
 
+  // A body taken by the pointer: waiting (a touch must hold 300 ms; a mouse must move), armed (the hold is done), dragged.
+  const corpsGeste = useRef<{ cle: string; id: number; etat: 'attente' | 'arme' | 'glisse'; tactile: boolean; minuteur?: ReturnType<typeof setTimeout>; depart: { x: number; y: number } } | null>(null);
+  const finCorps = () => { if (corpsGeste.current) clearTimeout(corpsGeste.current.minuteur); corpsGeste.current = null; };
+  useEffect(() => finCorps, []);
+
+  /** The world point under a pointer. */
+  const versMonde = (e: { clientX: number; clientY: number }): [number, number] => {
+    const r = racine.current!.getBoundingClientRect();
+    return [(e.clientX - r.left - cx) / echelle, (e.clientY - r.top - cy) / echelle];
+  };
+  /** The place a pointer designates for a body: a moon turns around its planet, the others around the centre. */
+  const placeSous = (astre: AstreSysteme, e: { clientX: number; clientY: number }) => {
+    const [wx, wy] = versMonde(e);
+    if (astre.genre === 'lune') {
+      const mere = dispo?.corps.find((c) => c.cle === astre.parent_cle);
+      return { orbite: null, heure: placeDepuisPoint(wx - (mere?.x ?? 0), wy - (mere?.y ?? 0)).heure };
+    }
+    return placeDepuisPoint(wx, wy);
+  };
+
+  /** Writes a body's place through the anchoring door; the body stays where it was put (dimmed) on a defined system, and goes back otherwise or on a failure. */
+  const enregistrer = async (cle: string, place: { orbite: number | null; heure: number }) => {
+    const ed = editionRef.current;
+    const astre = ed.interieur.astres.find((a) => a.cle === cle);
+    if (!astre) { poser({}); return; }
+    setEchecGeste(undefined);
+    const lune = astre.genre === 'lune';
+    const dessous = ed.interieur.etat === 'tire';
+    // On a drawn system the anchoring dialog opens now and the body returns to its place under it.
+    if (dessous) { const { [cle]: _, ...reste } = provRef.current; poser(reste); } else changerEnvoi((s) => new Set(s).add(cle));
+    try {
+      const r = await ed.avecAncrage((jeton) => modifierAstreSysteme(ed.place, cle, {
+        ...jeton, version: astre.version ?? 1, ...(lune ? { heure: place.heure } : { orbite: place.orbite ?? 0, heure: place.heure }),
+      }));
+      if (r) toast(`${nomAstre(astre)} déplacé.`);
+    } catch (e) {
+      const f = lireEchecEdition(e);
+      if (f.sorte === 'refus') toast(f.message); else setEchecGeste(f);
+    } finally {
+      const { [cle]: _, ...reste } = provRef.current;
+      poser(reste);
+      changerEnvoi((s) => { const n = new Set(s); n.delete(cle); return n; });
+    }
+  };
+
+  const fleches = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(fleches.current), []);
+
+  const clavier = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!mj || e.altKey || e.ctrlKey || e.metaKey || selection === null) return;
+    const pas = pasFleche(e.key, e.shiftKey);
+    const astre = interieur.astres.find((a) => a.cle === selection);
+    if (!pas || !deplacable(astre)) return;
+    e.preventDefault();
+    const lune = astre.genre === 'lune';
+    if (perdue || enEnvoiRef.current.has(astre.cle) || (lune && pas.heure === 0)) return;
+    setEchecGeste(undefined);
+    const avant = provRef.current[astre.cle] ?? { orbite: astre.orbite, heure: astre.heure };
+    poser({ ...provRef.current, [astre.cle]: placeApresPas(avant.orbite, avant.heure, pas, lune) });
+    clearTimeout(fleches.current);
+    const cle = astre.cle;
+    fleches.current = setTimeout(() => { const p = provRef.current[cle]; if (p) void enregistrer(cle, p); }, DELAI_FLECHES_MS);
+  };
+
   const abaisse = (e: PointerReact<HTMLDivElement>) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     pointeurs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pointeurs.current.size === 1) geste.current = { bouge: false, depart: { x: e.clientX, y: e.clientY }, dist: 0 };
-    else { const [a, b] = [...pointeurs.current.values()]; geste.current.dist = Math.hypot(a!.x - b!.x, a!.y - b!.y); geste.current.bouge = true; }
+    if (pointeurs.current.size === 1) {
+      geste.current = { bouge: false, depart: { x: e.clientX, y: e.clientY }, dist: 0 };
+      finCorps();
+      const cle = (e.target as HTMLElement).closest<HTMLElement>('.cs-corps')?.dataset.cle;
+      const astre = cle === undefined ? undefined : interieur.astres.find((a) => a.cle === cle);
+      if (mj && !perdue && deplacable(astre) && !enEnvoiRef.current.has(astre.cle)) {
+        const tactile = e.pointerType !== 'mouse';
+        const c: NonNullable<typeof corpsGeste.current> = { cle: astre.cle, id: e.pointerId, etat: 'attente', tactile, depart: { x: e.clientX, y: e.clientY } };
+        if (tactile) c.minuteur = setTimeout(() => { if (corpsGeste.current === c && !geste.current.bouge) c.etat = 'arme'; }, APPUI_LONG_MS);
+        corpsGeste.current = c;
+      }
+    } else {
+      finCorps();
+      const [a, b] = [...pointeurs.current.values()]; geste.current.dist = Math.hypot(a!.x - b!.x, a!.y - b!.y); geste.current.bouge = true;
+    }
+  };
+  /** The pointer moves a body: true when this move was the body's (the view stays still). */
+  const suivreCorps = (e: PointerReact<HTMLDivElement>): boolean => {
+    const c = corpsGeste.current;
+    if (!c || c.id !== e.pointerId) return false;
+    const loin = Math.hypot(e.clientX - c.depart.x, e.clientY - c.depart.y) > SEUIL_DEPLACEMENT;
+    if (c.etat === 'attente') {
+      // A mouse takes the body at once; a finger that moves before the hold is over pans the view instead.
+      if (c.tactile) { if (loin) finCorps(); return false; }
+      if (!loin) return true;
+    }
+    if (c.etat === 'arme' && !loin) return true;
+    if (c.etat !== 'glisse') {
+      c.etat = 'glisse';
+      geste.current.bouge = true;
+      try { racine.current?.setPointerCapture(e.pointerId); } catch { /* a synthetic pointer cannot be captured */ }
+      onSelection(c.cle);
+      setEchecGeste(undefined);
+    }
+    const astre = interieur.astres.find((a) => a.cle === c.cle);
+    if (astre) poser({ ...provRef.current, [c.cle]: placeSous(astre, e) });
+    return true;
   };
   const deplace = (e: PointerReact<HTMLDivElement>) => {
     const avant = pointeurs.current.get(e.pointerId);
     if (!avant) return;
     const r = racine.current!.getBoundingClientRect();
     pointeurs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (suivreCorps(e)) return;
     if (pointeurs.current.size >= 2) {
       const [a, b] = [...pointeurs.current.values()];
       const d = Math.hypot(a!.x - b!.x, a!.y - b!.y);
@@ -296,6 +429,16 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   };
   const leve = (e: PointerReact<HTMLDivElement>) => {
     if (!pointeurs.current.delete(e.pointerId)) return;
+    const c = corpsGeste.current;
+    if (c && c.id === e.pointerId) {
+      finCorps();
+      const p = provRef.current[c.cle];
+      if (c.etat === 'glisse' && p) {
+        if (e.type === 'pointerup') void enregistrer(c.cle, p); else { const { [c.cle]: _, ...reste } = provRef.current; poser(reste); }
+        if (pointeurs.current.size < 2) geste.current.dist = 0;
+        return;
+      }
+    }
     if (pointeurs.current.size === 0 && !geste.current.bouge && e.type === 'pointerup' && !(e.target as HTMLElement).closest('button')) {
       onSelection(null);
     }
@@ -351,6 +494,8 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
         onPointerMove={deplace}
         onPointerUp={leve}
         onPointerCancel={leve}
+        onKeyDown={clavier}
+        onContextMenu={(e) => { if (mj && (e.target as HTMLElement).closest('.cs-corps')) e.preventDefault(); }}
       >
         {etat === 'chargement' && <p className="cs-etat" role="status">Chargement du système…</p>}
         {dispo && taille.w > 0 && (
@@ -374,7 +519,14 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
             </svg>
             <canvas ref={toile} className="cs-toile" aria-hidden="true"
               width={Math.round(taille.w * dpr)} height={Math.round(taille.h * dpr)} style={{ width: taille.w, height: taille.h }} />
-            {dispo.corps.map((c) => <BoutonCorps key={c.cle} c={c} ecran={ecran} echelle={echelle} choisi={c.cle === selection} onChoisir={() => onSelection(c.cle)} />)}
+            {dispo.corps.map((c) => (
+              <BoutonCorps key={c.cle} c={c} ecran={ecran} echelle={echelle} choisi={c.cle === selection} onChoisir={() => onSelection(c.cle)}
+                glissable={mj && !perdue && deplacable(c.astre)} />
+            ))}
+            {dispo.corps.filter((c) => enEnvoi.has(c.cle)).map((c) => {
+              const [x, y] = ecran(c.x, c.y);
+              return <span key={c.cle} className="cs-enregistrement" style={{ left: x, top: y + Math.max(10, c.rayon * echelle) + 4 }}>Enregistrement…</span>;
+            })}
             {cibles.sorties.map((s) => (
               <button
                 key={`${s.q},${s.r}`}
@@ -392,19 +544,25 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
           </>
         )}
       </div>
+      {echecGeste && (
+        <div className="ed-echec cs-echec-geste">
+          <p className="echec" role="alert">{echecGeste.message}</p>
+          {echecGeste.recharger && <Bouton petit onClick={() => { void edition.recharger().then(() => setEchecGeste(undefined), () => undefined); }}>Recharger</Bouton>}
+        </div>
+      )}
     </div>
   );
 }
 
-function BoutonCorps({ c, ecran, echelle, choisi, onChoisir }: {
-  c: CorpsPlace; ecran: (x: number, y: number) => [number, number]; echelle: number; choisi: boolean; onChoisir: () => void;
+function BoutonCorps({ c, ecran, echelle, choisi, onChoisir, glissable }: {
+  c: CorpsPlace; ecran: (x: number, y: number) => [number, number]; echelle: number; choisi: boolean; onChoisir: () => void; glissable: boolean;
 }) {
   const [x, y] = ecran(c.x, c.y);
   const d = Math.max(22, c.rayon * echelle * 2);
   return (
     <button
       type="button"
-      className="cs-corps"
+      className={`cs-corps${glissable ? ' glissable' : ''}`}
       data-cle={c.cle}
       aria-pressed={choisi}
       aria-label={`${nomAstre(c.astre)}, ${typeAstre(c.astre)}, ${placeAstre(c.astre)}`}

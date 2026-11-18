@@ -34,7 +34,7 @@
 .gx-systeme:focus-visible .gx-halo, .gx-systeme:focus-visible .gx-point { stroke: var(--focus); stroke-width: 3; }
 .gx-chargement { position: absolute; left: var(--e-3); top: var(--e-3); margin: 0; padding: var(--e-1) var(--e-3); background: var(--surface-2); border-radius: var(--rayon-item); color: var(--texte-2); }
 .gx-etiquette { position: absolute; transform: translate(-50%, -100%); margin: 0; padding: var(--e-1) var(--e-2); background: var(--surface-3); color: var(--texte); border: 1px solid var(--bord-fort); border-radius: var(--rayon-item); font-size: var(--t-13); white-space: nowrap; pointer-events: none; }
-.gx-echec { position: absolute; left: var(--e-3); right: 64px; bottom: 56px; margin: 0; }
+.cs-echec { position: absolute; left: var(--e-3); right: 64px; bottom: 56px; margin: 0; }
 .gx-zoom { position: absolute; right: var(--e-2); top: var(--e-2); display: flex; flex-direction: column; gap: var(--e-2); }
 .gx-zoom .bouton { min-width: 44px; min-height: 44px; justify-content: center; }
 .gx-legende-zone { position: absolute; left: var(--e-2); bottom: var(--e-2); display: flex; flex-direction: column-reverse; gap: var(--e-2); align-items: flex-start; }
@@ -195,9 +195,34 @@
 .cs-zone .gx-panneau { max-height: none; }
 .cs-illustration, .cs-grande { position: relative; aspect-ratio: 4 / 3; border: 1px solid var(--bord); border-radius: var(--rayon-champ);
   background: radial-gradient(circle at 50% 50%, var(--ciel-lueur), var(--ciel) 70%); overflow: hidden; margin-bottom: var(--e-2); }
+.cs-illustration.reduite { width: 96px; }
 .cs-illustration img, .cs-grande img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .cs-net { opacity: 0; transition: opacity var(--duree) linear; }
 .cs-net.pret { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .cs-net { transition: none; } }
 .cs-grande { aspect-ratio: auto; height: min(70vh, 80vw); overflow: auto; }
 .cs-grande img { transform-origin: center; }
+
+/* E-23 writes (kanevas-carte-spatiale-edition-ancrage): a long name is cut with « … » (whole in `title`); a failure sits in its dialog. */
+.cs-nom { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ed-echec { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); margin-top: var(--e-2); }
+.ed-echec .echec { margin: 0; color: var(--danger); }
+.gx-systeme-page .gx-entete .menu-racine { margin-left: var(--e-1); }
+
+/* E-23, the forms of the GM (-formulaires): tokens only. */
+.ed-champs { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--e-1); }
+.ed-ligne { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
+.ed-actions { justify-content: flex-start; padding-top: var(--e-2); } /* left: the fixed assistant pill sits bottom-right and would cover « Enregistrer » */
+.ed-graine { display: flex; align-items: flex-end; gap: var(--e-3); }
+.ed-graine .champ { flex: 1; min-width: 0; }
+.ed-vignette { margin: var(--e-2) 0; }
+.ed-defile { display: flex; flex-direction: column; gap: var(--e-1); max-height: 60vh; overflow-y: auto; padding-right: var(--e-1); }
+.ed-form { max-height: none; }
+@media (max-width: 760px) { .ed-form { max-height: none; } .ed-defile { max-height: none; } }
+
+/* E-23, drag of a body (GM): the grab cursor on the handle, the label of a body waiting for the answer. */
+.cs-corps.glissable { cursor: grab; }
+.cs-ciel:active .cs-corps.glissable { cursor: grabbing; }
+.cs-enregistrement { position: absolute; transform: translateX(-50%); white-space: nowrap; pointer-events: none; line-height: 15px; color: var(--texte-2); font-style: italic;
+  text-shadow: 0 0 4px var(--ciel-halo), 0 0 8px var(--ciel-halo); }
+.cs-echec-geste { margin-top: 0; }

@@ -77,10 +77,16 @@ test('B-88 nominal : le premier système tiré, valeurs de la fixture d\'Éneria
   assert.deepEqual([planete.genre, planete.type, planete.orbite, planete.heure], ['planete', 'lave', 1.03, 0.6]);
 });
 
+/** The MJ's body without the write tokens of AD-edition-2, which no one else reads. */
+const sansJetons = (corps: string): string => {
+  const { peutEcrire, versionSysteme, ...v } = JSON.parse(corps);
+  return JSON.stringify({ ...v, astres: v.astres.map(({ version, ...a }: any) => a), formations: v.formations.map(({ version, ...f }: any) => f) });
+};
+
 test('B-88 la joueuse lit les mêmes corps que le MJ, et le MJ en mode joueur aussi', async () => {
   const w = await monde();
   for (const [q, r] of [[-49, -48], [48, 27], [-2, -49]]) {
-    const mj = (await w.get('antor', q, r)).body;
+    const mj = sansJetons((await w.get('antor', q, r)).body);
     assert.equal((await w.get('lea', q, r)).body, mj, `joueuse ${q},${r}`);
     assert.equal((await w.get('antor', q, r, '?mode=joueur')).body, mj, `mode joueur ${q},${r}`);
   }
@@ -100,8 +106,8 @@ test('critère : un système posé en base est rendu avec ses lignes, « defini 
   assert.deepEqual(v.astres.map((x: any) => [x.type, x.nom, x.orbite, x.heure]),
     [['orange', null, 0, 0], ['gazeux', 'Vael II', 4, 7], ['anomalie', null, 5.5, 3.4]]);
   assert.deepEqual(v.formations, []);
-  assert.equal((await w.get('lea', -49, -48)).body, mj.body);
-  assert.equal((await w.get('antor', -49, -48, '?mode=joueur')).body, mj.body);
+  assert.equal((await w.get('lea', -49, -48)).body, sansJetons(mj.body));
+  assert.equal((await w.get('antor', -49, -48, '?mode=joueur')).body, sansJetons(mj.body));
 });
 
 test('critère : un système défini sans aucune ligne est lu défini et vide, pour tous', async () => {

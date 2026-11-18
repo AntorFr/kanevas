@@ -520,3 +520,8 @@ The doors written by this lot are in `src/routes/*-lot-ecrans.test.ts` (the shar
 | `src/e2e/theme-nulle-part-ailleurs.test.ts` | `le thème n’est réglable que depuis le menu de l’avatar, sur tous les écrans du MJ (${nom}) *(parameterised)*` | affichage | — | gardé |
 | `src/e2e/theme-nulle-part-ailleurs.test.ts` | `un Joueur règle le thème au même endroit et nulle part ailleurs` | affichage | — | gardé |
 | `src/e2e/theme-nulle-part-ailleurs.test.ts` | `choisir Sombre depuis le menu de l’avatar d’un écran s’applique à un autre écran` | affichage | — | gardé |
+| `src/e2e/composants-clavier.test.ts` | `écriture du MJ : Bouton mj et Segments mj sont ambre (couleur du token --mj), le segment coché aussi` | affichage | — | gardé |
+| `src/e2e/composants-clavier.test.ts` | `écriture du MJ : la ligne de conversion est une région polie reliée au champ par aria-describedby` | affichage | — | gardé |
+| `src/e2e/composants-clavier.test.ts` | `boîte neutre : un formulaire est un role=dialog, focus sur le champ, badge, action ambre, Échap rend le focus` | affichage | — | gardé |
+| `src/e2e/composants-clavier.test.ts` | `boîte neutre : une confirmation pure est un role=alertdialog, focus sur Annuler` | affichage | — | gardé |
+| `src/e2e/composants-clavier.test.ts` | `boîte neutre : sous 760 px le corps défile et la boîte reste dans l’écran` | affichage | — | gardé |
