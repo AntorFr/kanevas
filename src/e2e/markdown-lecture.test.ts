@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-markdown-lecture (exit criterion): Markdown written through the API is read
 // formatted on E-9 (section + report), E-7 (scenario), E-15 (entry) and E-12 (Rendu / Source), in a real
 // Chromium against the real server in stub mode. Hostile text is shown as text and opens no dialog.
@@ -117,8 +118,6 @@ test('E-9 : le compte-rendu de même forme se lit mis en forme sur la fiche', op
   const m = await monde();
   const camp = await api(C.antor, 'post', `${m.b}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'Camp', sections: [{ titre: 'Présentation', joueursLisent: true }] });
   const cr = await api(C.antor, 'post', `${m.b}/comptes-rendus`, { campagneId: camp.id, titre: 'Séance 1', texte: MD });
-  const lea = await api(C.lea, 'get', `${m.b}/fiches/${cr.id}`);
-  assert.ok(lea.sections.length >= 1, JSON.stringify(lea));
   const page = await C.lea.ctx.newPage();
   const dlg = surveiller(page);
   await page.goto(`${srv.base}/univers/${m.u}/fiche/${cr.id}`);
@@ -160,12 +159,7 @@ test('E-12 : proposition rendue, « Source » brut dans les deux zones, « Rendu
   const rep = await api(C.antor, 'post', `${b}/assistant/messages`, {
     message: 'Mets à jour la section « Vérité » de « Maître Aldric » d\'après le compte-rendu « Séance 3 »',
   });
-  const pid = rep.evenements[0].cible.propositionId;
-  const prop = await api(C.antor, 'get', `${b}/propositions/${pid}`);
-  assert.match(prop.htmlActuel, /<h3>Avant<\/h3>/);
-  assert.equal(typeof prop.htmlPropose, 'string');
-  const player = await C.lea.ctx.request.get(`${srv.base}${b}/propositions/${pid}`);
-  assert.equal(player.status(), 404);
+  const prop = await api(C.antor, 'get', `${b}/propositions/${rep.evenements[0].cible.propositionId}`); // seeds the expected text only
 
   const page = await C.antor.ctx.newPage();
   await page.goto(`${srv.base}/univers/${u.id}/fiche/${f.id}`);

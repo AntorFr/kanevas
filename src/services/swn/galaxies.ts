@@ -6,6 +6,7 @@ import { retirerSectionGeree } from '../retrait-section.js';
 import { accessible, resoudreOutil } from '../outils.js';
 import { env } from '../../config/env.js';
 import type { Acteur } from '../types.js';
+import { densiteParDefaut } from './tirage-etoiles.js';
 
 /** The tool key; the module `swn` declares it (`src/outils/swn/index.ts`). */
 export const OUTIL_GALAXIE = 'swn/galaxie';
@@ -162,7 +163,7 @@ export function creerGalaxie(db: Db, acteur: Acteur | number, universId: number,
   const t = titreValide(titre);
   const graine = randomBytes(6).toString('hex');
   const id = Number(db.prepare(`INSERT INTO swn_galaxies (univers_id, titre, visible, graine, densite_defaut, version)
-    VALUES (?, ?, 0, ?, 0.2, 1)`).run(universId, t, graine).lastInsertRowid);
+    VALUES (?, ?, 0, ?, ?, 1)`).run(universId, t, graine, densiteParDefaut()).lastInsertRowid);
   return { id };
 }
 
@@ -258,7 +259,7 @@ export function semerGalaxieEssai(db: Db, universId: number): number {
   if (env.KANEVAS_STUB !== '1' && env.NODE_ENV !== 'test') throw refuse();
   return db.transaction(() => {
     const g = Number(db.prepare(`INSERT INTO swn_galaxies (univers_id, titre, visible, graine, densite_defaut)
-      VALUES (?, 'Galaxie d''essai', 1, 'essai-1', 0.2)`).run(universId).lastInsertRowid);
+      VALUES (?, 'Galaxie d''essai', 1, 'essai-1', ?)`).run(universId, densiteParDefaut()).lastInsertRowid);
     const sys = db.prepare(`INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
     const id = (cle: string, nom: string, q: number, r: number, taille: number, couleur: string, notes: string, secret: number) =>

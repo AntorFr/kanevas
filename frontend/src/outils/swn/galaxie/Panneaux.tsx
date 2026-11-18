@@ -1,5 +1,6 @@
 import { Calculator, ChevronDown, Link2, MapPin, Pencil, Route as IconeRoute, Search, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { Bouton } from '../../../ui';
@@ -97,10 +98,12 @@ export type EtatPanneau =
 /** The selected system's panel, or « Système non défini » for a generated hexagon. */
 export interface GestesSysteme { onModifier: () => void; onRetirer: () => void; onPromouvoir: (q: number, r: number) => void }
 
-export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, onVers, onReessayer, gestes }: {
+export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, onVers, onReessayer, adresseInterieur, gestes }: {
   selection: { k: 'systeme'; cle: string } | { k: 'genere'; q: number; r: number };
   etat: EtatPanneau; secret?: boolean; mesure: Reference | null;
   onDepuis: (r: Resultat) => void; onVers: (r: Resultat) => void; onReessayer: () => void;
+  /** The address of E-23 for a hexagon: « Ouvrir le système » (a link, for everyone who reads the panel). */
+  adresseInterieur: (q: number, r: number) => string;
   /** The GM's gestures (absent in Player mode and for a player: the buttons are not rendered). */
   gestes?: GestesSysteme;
 }) {
@@ -117,6 +120,7 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
         <h2>Système non défini</h2>
         <dl className="gx-kv"><dt>Coordonnées</dt><dd>{selection.q}, {selection.r}</dd>
           {d !== null && <><dt>Distance</dt><dd>{cases(d)}{mesure ? ` depuis ${mesure.nom}` : ''}</dd></>}</dl>
+        <div className="gx-actions"><Link className="bouton neutre" to={adresseInterieur(selection.q, selection.r)}>Ouvrir le système</Link></div>
         {gestes && <div className="gx-actions"><Bouton icone={Pencil} ecrit onClick={() => gestes.onPromouvoir(selection.q, selection.r)}>Promouvoir ce système</Bouton></div>}
       </section>
     );
@@ -151,6 +155,7 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
         <Bouton icone={IconeRoute} onClick={() => onDepuis(ici)}>Trajet depuis ici</Bouton>
         <Bouton icone={MapPin} onClick={() => onVers(ici)}>Trajet vers ici</Bouton>
         <Bouton icone={Link2} onClick={() => void copier()}>Copier le lien</Bouton>
+        <Link className="bouton neutre" to={adresseInterieur(s.q, s.r)}>Ouvrir le système</Link>
         {copie && <span role="status" className="gx-note">Lien copié</span>}
       </div>
       {gestes && (

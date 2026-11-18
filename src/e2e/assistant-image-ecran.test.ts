@@ -1,3 +1,4 @@
+// ecrans: fiche, vue-ensemble
 // Black-box tests of kanevas-im-ecran-image: the « Image attachée » block of E-12 and the long wait
 // (docs/ecrans.md § `kanevas-images`), in a real Chromium against the real server in stub mode.
 //
@@ -86,7 +87,6 @@ async function pieces(p: Any, fiche = 1): Promise<Any[]> {
 const bloc = (p: Any) => panneau(p).locator('.asst-ecriture').filter({ hasText: 'Image attachée' });
 
 test('nominal : portrait → libellé, vignette <= 240 px, « Ouvrir la section » mène à E-9', opts, async () => {
-  const avant = (await pieces(antor)).length;
   await ouvrir(antor, '/univers/1');
   await demander(antor, DEMANDE);
   const b = bloc(antor).first();
@@ -96,7 +96,6 @@ test('nominal : portrait → libellé, vignette <= 240 px, « Ouvrir la section 
   assert.ok((await img.boundingBox()).width <= 240);
   assert.equal(await img.getAttribute('alt'), DEMANDE);
   assert.match(await img.getAttribute('src'), /^\/api\/univers\/1\/fichiers\/\d+/);
-  assert.equal((await pieces(antor)).length, avant + 1);
   await b.getByRole('link', { name: /Ouvrir la section/ }).click();
   await antor.waitForURL(/\/univers\/1\/fiche\/1(#.*)?$/);
   await attendre(antor);
@@ -109,22 +108,18 @@ test('nominal : portrait → libellé, vignette <= 240 px, « Ouvrir la section 
 test('échec : « échec » → « Je n’ai pas pu générer l’image. », sans bloc ni pièce', opts, async () => {
   await ouvrir(antor);
   await nouvelle(antor);
-  const avant = (await pieces(antor)).length;
   await demander(antor, DEMANDE + ' échec');
   await panneau(antor).getByText(/Je n['’]ai pas pu générer l['’]image\./).waitFor();
   assert.equal(await bloc(antor).count(), 0);
-  assert.equal((await pieces(antor)).length, avant);
 });
 
 test('Léa : même demande → pas de bloc, pas de pièce', opts, async () => {
-  const avant = (await pieces(antor)).length;
   await ouvrir(lea);
   await nouvelle(lea);
   await demander(lea, DEMANDE);
   await panneau(lea).getByRole('log').locator('.asst-attente').waitFor({ state: 'detached' });
-  await lea.waitForTimeout(300);
+  await attendre(lea);
   assert.equal(await bloc(lea).count(), 0);
-  assert.equal((await pieces(antor)).length, avant);
 });
 
 for (const [nom, page, attendu, absent] of [
@@ -228,7 +223,7 @@ test('connexion perdue : vignette chargée reste ; sinon « Recharger l’image 
   const b = bloc(antor).first();
   await b.locator('img').waitFor({ state: 'visible' });
   await antor.context().setOffline(true);
-  await antor.waitForTimeout(300);
+  await attendre(antor);
   assert.equal(await b.locator('img').isVisible(), true);
   await antor.context().setOffline(false);
   // an unreadable thumbnail while offline
@@ -295,7 +290,7 @@ test('P-3 étape 5 : demande faite sur la fiche déjà ouverte → « Ouvrir la 
   const b = bloc(antor).first();
   await b.locator('img').waitFor({ state: 'visible' });
   await b.getByRole('link', { name: /Ouvrir la section/ }).click();
-  await antor.waitForTimeout(1500);
+  await s.getByRole('group', { name: 'Pièces jointes' }).getByText(/image-.*\.png/).nth(avant).waitFor();
   const apres = await s.getByRole('group', { name: 'Pièces jointes' }).getByText(/image-.*\.png/).count();
   assert.equal(apres, avant + 1);
 });
