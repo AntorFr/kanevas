@@ -108,6 +108,11 @@ async function ouvrirSysteme(p: Any, id = SYS): Promise<void> {
   await p.getByRole('heading', { name: 'Essai A', level: 2 }).waitFor();
 }
 
+/** The system's tool cards (3 essai tools + swn/galaxie) are all displayed: counts of switches come after it. */
+async function attendreCartesSysteme(p: Any, n = 4): Promise<void> {
+  await p.waitForFunction((k: number) => document.querySelectorAll('section.outil-carte').length >= k, n, { timeout: 15000 });
+}
+
 async function ouvrirUnivers(p: Any, id = ENERIA): Promise<void> {
   await p.goto(`/univers/${id}/parametres?onglet=outils`);
   await p.getByRole('heading', { name: 'Essai A', level: 2 }).waitFor();
@@ -449,6 +454,7 @@ test('mira : sur « Système ancien » (sans responsable stocké) elle a l’int
   await ouvrirSysteme(mira, ANCIEN);
   await mira.getByText('Aucun responsable : tout MJ d’un univers rattaché agit').or(mira.getByText(rx('Aucun responsable : tout MJ d’un univers rattaché agit'))).first().waitFor();
   const A = carte(mira, 'Essai A');
+  await attendreCartesSysteme(mira);
   assert.equal(await A.getByRole('switch').count(), 1);
   // 7 interrupteurs : les trois outils d'essai, swn/galaxie (module swn), battlemap/assets et battlemap/cartes (module battlemap), portée « tous »
   assert.equal(await mira.getByRole('switch').count(), 7);
@@ -657,6 +663,7 @@ test('transfert : Antor transfère à Mira ; elle a l’interrupteur au système
   await ecrire(antor, /\/api\/systemes\/3\/responsable$/, () => d.getByRole('button', { name: 'Transférer', exact: true }).click(), 'POST');
   await antor.getByText(/Responsable : mira/i).waitFor();
   await antor.getByRole('heading', { name: 'Essai A', level: 2 }).waitFor();
+  await attendreCartesSysteme(antor);
   assert.equal(await antor.getByRole('switch').count(), 0);
   assert.equal(await antor.getByRole('checkbox').count(), 0);
   assert.equal(await antor.getByRole('button', { name: /Transférer|Remplacer/ }).count(), 0);
@@ -665,6 +672,7 @@ test('transfert : Antor transfère à Mira ; elle a l’interrupteur au système
 
   await ouvrirSysteme(mira);
   await mira.getByText(/Responsable : vous/).waitFor();
+  await attendreCartesSysteme(mira);
   assert.equal(await mira.getByRole('switch').count(), 7);
   await photo(mira, 'apres-transfert-mira');
   // Mira really writes at the system now; Antor's write is refused
