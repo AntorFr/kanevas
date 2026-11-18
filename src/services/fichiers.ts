@@ -1032,7 +1032,8 @@ export function resoudreFichierEnAttente(
         | { titre: string; dernier_import: string | null }
         | undefined;
       if (!s) continue;
-      if (!joindreParImport(db, l.section_id!, fichier.id)) {
+      // The reference was already pushed with the sheet: resolving it changes nothing a reader sees (`systeme`, AD-147).
+      if (!ecrireSysteme(db, () => joindreParImport(db, l.section_id!, fichier.id))) {
         avertissements.push(`section « ${s.titre} » : ${MAX_FICHIERS_JOINTS} fichiers joints au plus, « ${cle} » reste en attente`);
         continue;
       }
