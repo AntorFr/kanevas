@@ -11,6 +11,7 @@ import {
   PageIntrouvable, PanneauLateral, PuceFiltre, Segments, useSurvolPage, useToasts, VoileDepot, ZoneDepot,
 } from '../ui';
 import { DirectionArtistique } from './battlemap/direction';
+import { Generation, useLots, type EtatLots, type LigneLot } from './battlemap/generation';
 import './ecrans.css';
 import './battlemap-assets.css';
 
@@ -56,10 +57,13 @@ const src = (universId: string, a: { fichierId?: number; id?: number; jeton: str
 
 type Echec = { texte: string; reessayer?: () => void };
 
-function Bibliotheque({ id, ecriture, suffixe }: { id: string; ecriture: boolean; suffixe: string }) {
+type Segment = '' | Categorie | 'brouillons';
+
+function Bibliotheque({ id, ecriture, suffixe, lots }: { id: string; ecriture: boolean; suffixe: string; lots: EtatLots | null }) {
   const { toast } = useToasts();
   const perdue = useConnexionPerdue();
-  const [categorie, setCategorie] = useState<'' | Categorie>('');
+  const [segment, setSegment] = useState<Segment>('');
+  const categorie: '' | Categorie = segment === 'brouillons' ? '' : segment;
   const [q, setQ] = useState('');
   const [qEffective, setQEffective] = useState('');
   const [tags, setTags] = useState<string[]>([]);
@@ -79,6 +83,14 @@ function Bibliotheque({ id, ecriture, suffixe }: { id: string; ecriture: boolean
   const [retrait, setRetrait] = useState<{ ids: number[]; noms: string; cartes: number | null } | null>(null);
   const [enCours, setEnCours] = useState(false);
   const recharger = useCallback(() => setEssai((n) => n + 1), []);
+  // The drafts of the running batch (GM only, tool present): their line answers « Accepter » / « Écarter ».
+  const generation = lots !== null && lots.etat === 'ok';
+  const lignesBrouillon = useMemo(
+    () => (generation ? (lots.donnees?.lot?.lignes ?? []).filter((l) => l.etat === 'brouillon' && l.assetId !== null) : []),
+    [generation, lots?.donnees], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const signatureBrouillons = lignesBrouillon.map((l) => `${l.assetId}:${l.id}`).join(',');
+  const [actionBrouillon, setActionBrouillon] = useState<number | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setQEffective(q.trim()), 250);
@@ -107,9 +119,11 @@ function Bibliotheque({ id, ecriture, suffixe }: { id: string; ecriture: boolean
     return () => {
       actif = false;
     };
-  }, [id, categorie, qEffective, tags, suffixe, essai]);
+  }, [id, categorie, qEffective, tags, suffixe, essai, signatureBrouillons]);
 
-  const assets = liste?.assets ?? [];
+  const assetsListes = liste?.assets ?? [];
+  const assets = segment === 'brouillons' ? assetsListes.filter((a) => a.etat === 'brouillon') : assetsListes;
+  const nbBrouillons = lignesBrouillon.length;
   const total = liste?.comptes.total ?? 0;
   const bibliothequePleine = pleine || (liste !== null && !categorie && !qEffective && tags.length === 0 && total >= MAX_ASSETS);
   const filtres = qEffective !== '' || tags.length > 0;
@@ -253,12 +267,32 @@ function Bibliotheque({ id, ecriture, suffixe }: { id: string; ecriture: boolean
     }
   }
 
-  const effacerFiltres = () => { setQ(''); setQEffective(''); setTags([]); setCategorie(''); };
+  const effacerFiltres = () => { setQ(''); setQEffective(''); setTags([]); setSegment(''); };
+
+  async function repondreBrouillon(l: LigneLot, geste: 'accepter' | 'ecarter') {
+    setEchec(null);
+    setActionBrouillon(l.id);
+    try {
+      await appeler('POST', `/api/univers/${id}/outils/battlemap/lots/lignes/${l.id}/${geste}`, {});
+      toast(geste === 'accepter' ? `« ${l.nom} » accepté.` : `« ${l.nom} » écarté.`);
+    } catch (e) {
+      const code = e instanceof ErreurApi ? e.code : undefined;
+      setEchec({
+        texte: code === 'bibliotheque_pleine' ? MESSAGE_PLEINE
+          : code === 'etat_ligne' || (e instanceof ErreurApi && e.statut === 404) ? 'Cette ligne a changé.' : 'L’action n’a pas abouti.',
+      });
+    } finally {
+      setActionBrouillon(null);
+      lots?.recharger();
+      recharger();
+    }
+  }
 
   // ---- render
   const options = [
-    { valeur: '' as const, libelle: 'Tous', compte: liste?.comptes.total },
+    { valeur: '' as Segment, libelle: 'Tous', compte: liste?.comptes.total },
     ...CATEGORIES.map((c) => ({ ...c, compte: liste?.comptes[c.valeur] })),
+    ...(nbBrouillons > 0 || segment === 'brouillons' ? [{ valeur: 'brouillons' as const, libelle: 'Brouillons', compte: nbBrouillons }] : []),
   ];
 
   let corps;
@@ -269,13 +303,16 @@ function Bibliotheque({ id, ecriture, suffixe }: { id: string; ecriture: boolean
   } else if (assets.length === 0) {
     corps = filtres
       ? <div className="etat bm-vide"><p>Aucun asset ne correspond.</p><Bouton onClick={effacerFiltres}>Effacer les filtres</Bouton></div>
-      : categorie
+      : segment
         ? <div className="etat bm-vide"><p>Aucun asset dans cette catégorie.</p></div>
-        : <div className="etat bm-vide"><p>{ecriture ? 'Aucun asset. Déposez des images.' : 'La bibliothèque est vide.'}</p></div>;
+        : <div className="etat bm-vide"><p>{ecriture ? (generation ? 'Aucun asset. Déposez des images ou lancez une génération.' : 'Aucun asset. Déposez des images.') : 'La bibliothèque est vide.'}</p></div>;
   } else {
     corps = (
       <ul className="bm-grille" aria-label="Assets">
-        {assets.map((a, i) => (
+        {assets.map((a, i) => {
+          const brouillon = a.etat === 'brouillon';
+          const ligneBrouillon = brouillon ? lignesBrouillon.find((l) => l.assetId === a.id) : undefined;
+          return (
           <li key={a.id}>
             <CarteAsset
               nom={a.nom}
@@ -284,14 +321,21 @@ function Bibliotheque({ id, ecriture, suffixe }: { id: string; ecriture: boolean
               vueDessus={a.vueDessus}
               mj={ecriture && !a.visible}
               brouillon={a.etat === 'brouillon'}
-              selectionnable={ecriture}
+              selectionnable={ecriture && !brouillon}
               selectionnee={selection.includes(a.id)}
               ouverte={ouvert === a.id}
-              onOuvrir={ecriture ? () => setOuvert(a.id) : undefined}
+              onOuvrir={ecriture && !brouillon ? () => setOuvert(a.id) : undefined}
               onSelection={(etendre) => basculer(a, i, etendre)}
             />
+            {ecriture && ligneBrouillon && (
+              <div className="bm-brouillon-actions">
+                <Bouton petit variante="principal" ecrit enCours={actionBrouillon === ligneBrouillon.id} aria-label={`Accepter ${a.nom}`} onClick={() => void repondreBrouillon(ligneBrouillon, 'accepter')}>Accepter</Bouton>
+                <Bouton petit ecrit disabled={actionBrouillon === ligneBrouillon.id} aria-label={`Écarter ${a.nom}`} onClick={() => void repondreBrouillon(ligneBrouillon, 'ecarter')}>Écarter</Bouton>
+              </div>
+            )}
           </li>
-        ))}
+          );
+        })}
       </ul>
     );
   }
@@ -299,7 +343,7 @@ function Bibliotheque({ id, ecriture, suffixe }: { id: string; ecriture: boolean
   return (
     <div className={`bm-assets${ouvertAsset ? ' bm-panneau-ouvert' : ''}`} {...survol.props}>
       {survol.survol && <VoileDepot texte="Déposez les images pour les ajouter." />}
-      <Segments legende="Catégorie" options={options} valeur={categorie} onChange={(v) => { setCategorie(v); setSelection([]); }} />
+      <Segments legende="Catégorie" options={options} valeur={categorie} onChange={(v) => { setSegment(v); setSelection([]); }} />
       <div className="bm-filtres">
         <div className="bm-outils">
           <Champ etiquette="Rechercher un asset" type="search" value={q} placeholder="Nom ou étiquette" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQ(e.target.value)} />
@@ -519,6 +563,18 @@ function BibliothequeEcran() {
     return () => { actif = false; };
   }, [id, suffixe, essai, univers.etat]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const ecritureP = mj && !joueur;
+  const lots = useLots(id!, ecritureP && portail === 'ok');
+  const etaitPresente = useRef(false);
+  const [perdu, setPerdu] = useState(false);
+  useEffect(() => {
+    if (lots.etat === 'ok') etaitPresente.current = true;
+    else if (lots.etat === 'absent' && etaitPresente.current) {
+      etaitPresente.current = false;
+      setPerdu(true);
+    }
+  }, [lots.etat]);
+
   if (portail === 'introuvable') return <PageIntrouvable />;
   if (portail === 'erreur') return <ErreurChargement page texte="Impossible de charger l’outil." onReessayer={() => setEssai((n) => n + 1)} />;
   if (portail === 'chargement') return <Chargement texte="Chargement de la bibliothèque…" />;
@@ -526,7 +582,11 @@ function BibliothequeEcran() {
   const ecriture = mj && !joueur;
   // The art direction tab is the GM's only; a player (or the GM in Player mode) has no tab bar at all.
   if (!ecriture && params.get('onglet') === 'direction') return <PageIntrouvable />;
-  const onglet = ecriture && params.get('onglet') === 'direction' ? 'direction' : 'assets';
+  const demande = params.get('onglet');
+  const generationVisible = ecriture && (lots.etat === 'ok' || lots.etat === 'erreur' || (lots.etat === 'chargement' && demande === 'generation'));
+  const onglet: 'assets' | 'direction' | 'generation' = !ecriture ? 'assets'
+    : demande === 'direction' ? 'direction' : demande === 'generation' && generationVisible ? 'generation' : 'assets';
+  const lotsPourAssets = ecriture && lots.etat === 'ok' ? lots : null;
   return (
     <div className="page-liste bm-page">
       <header className="tete-liste">
@@ -537,14 +597,19 @@ function BibliothequeEcran() {
         <Onglets
           legende="Bibliothèque"
           actif={onglet}
-          onglets={[{ valeur: 'assets', libelle: 'Assets' }, { valeur: 'direction', libelle: 'Direction artistique' }]}
+          onglets={[
+            { valeur: 'assets', libelle: 'Assets' },
+            { valeur: 'direction', libelle: 'Direction artistique' },
+            ...(generationVisible ? [{ valeur: 'generation' as const, libelle: 'Génération' }] : []),
+          ]}
           onChange={(v) => setParams(v === 'assets' ? {} : { onglet: v }, { replace: true })}
         />
       )}
       <div role={ecriture ? 'tabpanel' : undefined}>
+        {perdu && onglet === 'assets' && <Alerte sens="avertissement">La génération n’est plus disponible.</Alerte>}
         {onglet === 'assets'
-          ? <Bibliotheque id={id!} ecriture={ecriture} suffixe={suffixe} />
-          : <DirectionArtistique id={id!} />}
+          ? <Bibliotheque id={id!} ecriture={ecriture} suffixe={suffixe} lots={lotsPourAssets} />
+          : onglet === 'direction' ? <DirectionArtistique id={id!} /> : <Generation id={id!} lots={lots} />}
       </div>
     </div>
   );

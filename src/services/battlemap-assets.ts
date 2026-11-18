@@ -3,6 +3,7 @@ import { attachmentsDir } from '../config/env.js';
 import { exigerRole, vueMJ } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { cartesUtilisant } from './battlemap-cartes.js';
+import { ecarterLignesDeBrouillons } from './battlemap-lots.js';
 import { ajouterFichier, effacerFichier, modifierFichier, type FluxEntrant } from './fichiers.js';
 import { estImage } from './fichiers-lecture.js';
 import type { Acteur } from './types.js';
@@ -276,15 +277,27 @@ export function compterUsage(db: Db, acteur: Acteur, universId: number, ids: num
 
 /** Removes a selection of assets, all or none; the files stay in the media library (and keep their visibility). */
 export function retirerAssets(db: Db, acteur: Acteur, universId: number, ids: number[]): number {
-  return db.transaction(() => {
+  const fichiers: number[] = [];
+  const n = db.transaction(() => {
     exigerEcriture(db, acteur, universId);
     const uniques = [...new Set(ids)];
     if (uniques.length === 0) throw invalide('Aucun asset sélectionné.');
     for (const id of uniques) lireAsset(db, universId, id);
+    // A draft removed is a draft discarded (E-25): its batch line is written off with it and its file goes too.
+    const brouillons = uniques.filter((id) => lireAsset(db, universId, id).etat === 'brouillon');
+    ecarterLignesDeBrouillons(db, brouillons);
+    for (const id of brouillons) {
+      const f = retirerLigneBrouillon(db, universId, id);
+      if (f !== null) fichiers.push(f);
+    }
     const del = db.prepare('DELETE FROM bm_assets WHERE id = ?');
     for (const id of uniques) del.run(id);
     return uniques.length;
   })();
+  for (const f of fichiers) {
+    try { effacerFichier(db, acteur, universId, f); } catch { /* row gone already; a file left is an orphan of the library */ }
+  }
+  return n;
 }
 
 export interface FichierDisponible { id: number; nom: string; type: string; taille: number; visible: boolean; jeton: string }
@@ -301,4 +314,46 @@ export function listerFichiersDisponibles(db: Db, acteur: Acteur, universId: num
        AND NOT EXISTS (SELECT 1 FROM bm_assets a WHERE a.fichier_id = f.id) ORDER BY f.id DESC`,
   ).all(universId) as { id: number; nom: string; type: string; taille: number; visibilite: string; disque: string }[];
   return rows.map((r) => ({ id: r.id, nom: r.nom, type: r.type, taille: r.taille, visible: r.visibilite === 'joueurs', jeton: r.disque }));
+}
+
+export interface SaisieBrouillon { nom: string; categorie: Categorie; largeur: number | null; hauteur: number | null }
+
+/**
+ * A draft of the generation (AD-battlemap-generation-3): the asset row of a file the batch just added (GM-only). The caller
+ * (`battlemap-lots.ts`) has checked the rights; the library's ceiling counts drafts too (`bibliotheque_pleine`).
+ */
+export function insererBrouillon(db: Db, universId: number, fichierId: number, b: SaisieBrouillon): number {
+  exigerPlace(db, universId);
+  const sans = b.categorie === 'sol' || b.categorie === 'mur';
+  const info = db.prepare(
+    `INSERT INTO bm_assets (univers_id, fichier_id, nom, categorie, largeur, hauteur, vue_dessus, tags, etat, cree_le)
+     VALUES (?, ?, ?, ?, ?, ?, ?, '[]', 'brouillon', ?)`,
+  ).run(universId, fichierId, b.nom, b.categorie, sans ? null : b.largeur, sans ? null : b.hauteur, sans ? 0 : 1, new Date().toISOString());
+  return Number(info.lastInsertRowid);
+}
+
+/** Draft → valid asset (« Accepter »): refused `bibliotheque_pleine` when the universe holds 5 000 valid assets. */
+export function validerBrouillon(db: Db, universId: number, assetId: number): void {
+  const { n } = db.prepare("SELECT COUNT(*) AS n FROM bm_assets WHERE univers_id = ? AND etat = 'valide'").get(universId) as { n: number };
+  if (n >= MAX_ASSETS) throw erreur('conflit', 'Bibliothèque pleine (5 000 assets).', 'bibliotheque_pleine');
+  db.prepare("UPDATE bm_assets SET etat = 'valide' WHERE id = ? AND univers_id = ? AND etat = 'brouillon'").run(assetId, universId);
+}
+
+/** Removes the row of a draft and says which file backed it; the caller deletes the file after its commit. */
+export function retirerLigneBrouillon(db: Db, universId: number, assetId: number): number | null {
+  const l = db.prepare("SELECT fichier_id FROM bm_assets WHERE id = ? AND univers_id = ? AND etat = 'brouillon'").get(assetId, universId) as
+    { fichier_id: number } | undefined;
+  if (!l) return null;
+  db.prepare('DELETE FROM bm_assets WHERE id = ?').run(assetId);
+  return l.fichier_id;
+}
+
+export function fichierDeAsset(db: Db, universId: number, assetId: number): { fichierId: number; jeton: string } | null {
+  const l = db.prepare('SELECT a.fichier_id, f.disque FROM bm_assets a JOIN fichiers f ON f.id = a.fichier_id WHERE a.id = ? AND a.univers_id = ?')
+    .get(assetId, universId) as { fichier_id: number; disque: string } | undefined;
+  return l ? { fichierId: l.fichier_id, jeton: l.disque } : null;
+}
+
+export function assetsEnBibliotheque(db: Db, universId: number): number {
+  return (db.prepare('SELECT COUNT(*) AS n FROM bm_assets WHERE univers_id = ?').get(universId) as { n: number }).n;
 }

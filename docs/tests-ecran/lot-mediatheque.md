@@ -271,7 +271,7 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/taille-images-import-besoin.test.ts` | `B-taille-1 import : fiche poussée avant son fichier (clé en attente) puis fichier : le réglage est conservé ; le rejeu ne change rien` | affichage | — | gardé |
 | `src/e2e/taille-images-import-besoin.test.ts` | `B-taille-1 import : un titre qui n’est pas un réglage reste dans le texte et ne style pas l’image ; sans titre, aucune classe` | affichage | — | gardé |
 
-**Fichiers de l’epic `kanevas-battlemap`** (bibliothèque d’assets et direction artistique, E-25 et E-26, ajoutés après l’inventaire) : 73 tests (puis 15 de l’éditeur et de la liste, E-28 et E-10, au même classement), classés `affichage` et gardés tels quels ; leurs effets (droits, comptes, empreinte, retrait) sont déjà prouvés par les tests de routes et de services du module `battlemap`, non reclassés ici.
+**Fichiers de l’epic `kanevas-battlemap`** (bibliothèque d’assets et direction artistique, E-25 et E-26, ajoutés après l’inventaire) : 73 tests (puis 15 de l’éditeur et de la liste, E-28 et E-10, puis 15 de la génération, E-27, au même classement), classés `affichage` et gardés tels quels ; leurs effets (droits, comptes, empreinte, retrait) sont déjà prouvés par les tests de routes et de services du module `battlemap`, non reclassés ici.
 
 | `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Léa lit la bibliothèque : dix assets semés moins le MJ seul, aucun contrôle d’écriture` | affichage | — | gardé |
 | `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Léa cherche « Coffre piégé » (MJ seul) : aucun résultat, et « coffre » ne trouve que « Coffre »` | affichage | — | gardé |
@@ -367,3 +367,25 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > création 30 × 20 : la carte est listée et l’éditeur s’ouvre ; la taille de case réglée à 100 est reprise` | affichage | — | gardé |
 | `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > joueuse : la carte composée est listée sans lien ni menu` | affichage | — | gardé |
 | `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > suppression : confirmation par le nom, puis la ligne disparaît` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > absent : sans la route des lots, pas d’onglet Génération, E-25 s’ouvre avec ses dépôts` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > vide : textes d’état, bandeau sans direction, lancement désactivé` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > joueuse : l’onglet n’existe pas et l’API répond 404` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > parcours : trois lignes, trois brouillons un par un, deux acceptés, un régénéré avec remarque, un écarté` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > arrêt : « Arrêter le lot » demande confirmation puis écarte les lignes non acceptées` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > préparé : un lot `prepare` posé par l’API s’affiche « Préparé » avec ses lignes` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > coller : les lignes lisibles sont gardées, les autres nommées par leur numéro ; la 21e est refusée` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > autosave : une ligne sans nom n’est pas envoyée, la liste part d’un coup quand tout est lisible` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > direction : le bandeau dit la direction artistique de l’univers` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > échec : le motif s’affiche, « Réessayer » relance la ligne` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > moteur occupé : une ligne en cours montre l’alerte` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > périmé : « Cette ligne a changé. » et rechargement de la lecture` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > hors ligne : la connexion perdue désactive les actions` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > téléphone : à 768 px la liste et le lot s’empilent, à 1280 ils sont côte à côte` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > redémarrage : un lot en cours repart « Interrompu », « Reprendre » le relance` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > onglets : les trois onglets sont entiers dans l’écran de 390 px, sans défilement latéral` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > prepare-nom : dans un lot préparé, le nom « Console de commande » (19 caractères) se lit en entier dans son champ` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > prepare-rangee : dans un lot préparé, le nom a sa propre ligne, catégorie, empreinte et « Retirer » tiennent dessous dans l’écran, sans chevauchement` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > brouillon : vignette réduite à gauche du nom, nom entier, gestes dans l’écran` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > brouillon-pastille : la pastille « Brouillon prêt » est verte` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-bureau-besoin.test.ts` | `E-27 Génération au bureau (1280 px), lot préparé > rangee : nom, catégorie, empreinte et « Retirer » d’une ligne tiennent sur une seule rangée, dans cet ordre` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-bureau-besoin.test.ts` | `E-27 Génération au bureau (1280 px), lot préparé > lancer : « Lancer le lot (2) » est à droite de « Ajouter une ligne » et « Coller des lignes », sur la même rangée` | affichage | — | gardé |

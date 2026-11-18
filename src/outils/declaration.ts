@@ -87,6 +87,8 @@ interface BaseOutil {
   catalogue?: DeclarationCatalogue;
   donnees?: DonneesOutil;
   importation?: DeclarationImportation;
+  /** `false` hides the tool from the registry (decided at each read, never stored): the generation without an image engine (AD-88). */
+  disponible?(): boolean;
   outilsAssistant?(ctx: ContexteOutil): Outil[];
   ecran: { libelle: string; icone: string };
 }
@@ -206,7 +208,7 @@ const declaration = z.strictObject({
         libelle: z.string().min(1), libellePluriel: z.string().min(1) })).min(1),
       appliquer: fonction,
     }).optional(),
-    reglages, outilsAssistant: fonction.optional(), cartes: fonction.optional(),
+    reglages, disponible: fonction.optional(), outilsAssistant: fonction.optional(), cartes: fonction.optional(),
     creation: z.strictObject({ libelle: z.string().min(1), creer: fonction, rendreVisible: fonction, supprimer: fonction.optional() }).optional(),
     sections: z.array(z.strictObject({
       type: z.string().regex(/^[a-z][a-z0-9_-]*$/), libelle: z.string().min(1), usage: z.string().min(1),

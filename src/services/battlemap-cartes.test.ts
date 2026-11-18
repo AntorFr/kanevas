@@ -311,7 +311,7 @@ test('montée de la migration 0038 depuis 0037 : table créée, contraintes tenu
   migrate(db, dir);
   assert.equal(db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'bm_cartes'").get(), undefined);
   db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', '2026-11-01T00:00:00.000Z')").run();
-  assert.deepEqual(migrate(db), [38]);
+  assert.deepEqual(migrate(db), [38, 39]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const ins = (titre: string, l: unknown, h: unknown, doc: string) => db.prepare(
     "INSERT INTO bm_cartes (univers_id, titre, largeur, hauteur, document, cree_le, modifie_le) VALUES (1, ?, ?, ?, ?, 'a', 'a')").run(titre, l, h, doc);

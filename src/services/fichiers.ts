@@ -1,3 +1,4 @@
+import { typeParSignature } from './signature.js';
 import type { Readable } from 'node:stream';
 
 import { attachmentsDir } from '../config/env.js';
@@ -87,7 +88,8 @@ export type CibleFichier =
   | { ou: 'section'; sectionId: number; maniere: 'joint' | 'texte'; dansBlocMj?: boolean }
   | { ou: 'illustration'; ficheId: number }
   | { ou: 'bibliotheque' }
-  | { ou: 'direction' };
+  | { ou: 'direction' }
+  | { ou: 'brouillon' };
 
 export type FluxEntrant = Readable | AsyncIterable<Buffer | Uint8Array>;
 
@@ -217,26 +219,7 @@ export async function assurerFichier(
   }
 }
 
-/**
- * Type of the file from its first bytes, never from what the client says
- * (AD-66): four image formats, everything else is an opaque download.
- */
-export function typeParSignature(debut: Buffer): string {
-  const b = debut;
-  if (b.length >= 8 && b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])))
-    return 'image/png';
-  if (b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'image/jpeg';
-  if (b.length >= 6 && ['GIF87a', 'GIF89a'].includes(b.subarray(0, 6).toString('latin1')))
-    return 'image/gif';
-  if (
-    b.length >= 12 &&
-    b.subarray(0, 4).toString('latin1') === 'RIFF' &&
-    b.subarray(8, 12).toString('latin1') === 'WEBP'
-  )
-    return 'image/webp';
-  return 'application/octet-stream';
-}
-
+export { typeParSignature };
 
 function vue(f: FichierRow): FichierVue {
   return {
@@ -363,10 +346,11 @@ function autoriser(db: Db, acteur: Acteur, universId: number, cible: CibleFichie
       return { visibilite: 'joueurs' };
     case 'bibliotheque':
     case 'direction':
+    case 'brouillon':
       // The write surface of the battle map's library does not exist for a player (AD-battlemap-assets-5).
       if (role !== 'mj') throw introuvable();
       if (acteur.modeJoueur) throw refuse();
-      return { visibilite: cible.ou === 'bibliotheque' ? 'joueurs' : 'mj' };
+      return { visibilite: cible.ou === 'bibliotheque' ? 'joueurs' : 'mj' }; // a draft is GM-only (AD-battlemap-generation-3)
     case 'illustration': {
       exigerMJDeFiche(db, universId, acteur, cible.ficheId);
       // Visible of the players when at least one section of the sheet is read by them (AD-111).
@@ -432,7 +416,7 @@ export async function ajouterFichier(
       throw new ErreurService('invalide', 'Le fichier est vide.', 'fichier_vide');
     }
     const type = typeParSignature(ecrit.debut);
-    if ((cible.ou === 'illustration' || cible.ou === 'bibliotheque' || cible.ou === 'direction') && !estImage(type)) {
+    if ((cible.ou === 'illustration' || cible.ou === 'bibliotheque' || cible.ou === 'direction' || cible.ou === 'brouillon') && !estImage(type)) {
       throw new ErreurService(
         'invalide',
         'Ce fichier n’est pas une image (PNG, JPEG, GIF ou WebP).',

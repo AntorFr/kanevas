@@ -16,6 +16,20 @@ export function compterDirection(db: Db, universId: number): { references: numbe
   return { references: n, texte: t ? 1 : 0 };
 }
 
+/** Batches and their lines (AD-battlemap-generation-1); the module lists them before the assets. */
+export function compterLots(db: Db, universId: number): { lots: number; lignes: number } {
+  const lots = (db.prepare('SELECT COUNT(*) AS n FROM bm_lots WHERE univers_id = ?').get(universId) as { n: number }).n;
+  const lignes = (db.prepare('SELECT COUNT(*) AS n FROM bm_lots_lignes WHERE lot_id IN (SELECT id FROM bm_lots WHERE univers_id = ?)')
+    .get(universId) as { n: number }).n;
+  return { lots, lignes };
+}
+
+/** Lines, then batches, before the assets' rows. The files stay. */
+export function effacerLots(db: Db, universId: number): void {
+  db.prepare('DELETE FROM bm_lots_lignes WHERE lot_id IN (SELECT id FROM bm_lots WHERE univers_id = ?)').run(universId);
+  db.prepare('DELETE FROM bm_lots WHERE univers_id = ?').run(universId);
+}
+
 /** Assets, then references, then the text: the order of `compter`. The files stay (so `RESTRICT` is never hit). */
 export function effacerDonneesBattlemap(db: Db, universId: number): void {
   db.prepare('DELETE FROM bm_assets WHERE univers_id = ?').run(universId);
