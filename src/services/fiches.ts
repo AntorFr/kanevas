@@ -160,7 +160,7 @@ export function creerFiche(
     parent?: number | null;
     sections?: { titre: string; joueursLisent?: boolean }[];
     /** Import only (B-50, AD-107): the origin key and dates of the sheet, and what the import wrote. */
-    origine?: { cle: string; creeLe?: string; modifieLe?: string; dernierImport: unknown };
+    origine?: { cle: string; creeLe?: string; modifieLe?: string };
     /** Where the sheet is created from (`creee_via`); the import is `import`, else `ecran` by default. */
     via?: 'ecran' | 'assistant' | 'mcp';
   },
@@ -196,8 +196,8 @@ export function creerFiche(
     const cree = o?.creeLe ?? now;
     const info = db
       .prepare(
-        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle, creee_via, dernier_import)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle, creee_via)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         universId,
@@ -208,7 +208,6 @@ export function creerFiche(
         o?.modifieLe ?? (cree > now ? cree : now),
         o?.cle ?? tirerCleFiche(db, universId, type, titre),
         o ? 'import' : (entree.via ?? 'ecran'),
-        o ? JSON.stringify(o.dernierImport) : null,
       );
     const id = Number(info.lastInsertRowid);
     // A separate write: a base short of 0013 (the migration test seeds one through the services) has no column.
@@ -247,8 +246,7 @@ export function changerStatutFiche(
 
 /**
  * The GM renames a sheet, a session report included (AD-119 (1)): the one write of the title from the
- * screen. `dernier_import` is left alone, so a title that now differs from the one the import wrote is
- * protected at the next replay (B-48). A bare account id (the import) is a GM outside player mode.
+ * screen; the import replays through it too, and its next replay writes the title it carries (AD-138). A bare account id (the import) is a GM outside player mode.
  */
 export function renommerFiche(
   db: Db,
@@ -286,8 +284,7 @@ export function changerSousType(
 }
 
 /**
- * The GM sets the public gone mark outside player mode (AD-132). Like a title, this
- * leaves `dernier_import` alone: the import compares its last write before replaying.
+ * The GM sets the public gone mark outside player mode (AD-132).
  */
 export function marquerDisparu(
   db: Db,
