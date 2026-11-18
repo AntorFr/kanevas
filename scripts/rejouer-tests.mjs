@@ -3,6 +3,8 @@
 // resultats.tap; a name found in no file is an error (an unknown name is not a green).
 //
 //   node scripts/rejouer-tests.mjs "<name>" ["<name>" ...]    # or names separated by | or line ends
+//   node scripts/rejouer-tests.mjs "<name>" --installe        # the Wasm build was done by `tests.installation`: skip it
+//   node scripts/rejouer-tests.mjs --fichiers "<name>" ...    # prints `name<TAB>file`, plays and builds nothing (`tests.fichiers`)
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -11,7 +13,10 @@ import { readFileSync } from 'node:fs';
 import { assurerPlaywright } from './playwright.mjs';
 import { cheminDeclare, choisirFichiers, motif, resoudre } from './niveaux-tests.mjs';
 
-const demandes = process.argv.slice(2);
+const args = process.argv.slice(2);
+const installe = args.includes('--installe');
+const listeFichiers = args.includes('--fichiers');
+const demandes = args.filter((a) => a !== '--installe' && a !== '--fichiers');
 if (demandes.join('').trim() === '') {
   console.error('Usage: node scripts/rejouer-tests.mjs "<test name>" ...');
   process.exit(2);
@@ -33,7 +38,16 @@ for (const [f, noms] of [...parFichier]) {
 }
 if (introuvables.length > 0) {
   for (const n of introuvables) console.error(`Test not found in any file: ${n}`);
+  if (listeFichiers) {
+    for (const f of [...parFichier.keys()].sort()) for (const n of [...parFichier.get(f)]) console.log(`${n}\t${f}`);
+  }
   process.exit(1);
+}
+
+if (listeFichiers) {
+  // The replay's own resolution, printed: one line per (name, file) pair, the names found even when another is not.
+  for (const f of [...parFichier.keys()].sort()) for (const n of [...parFichier.get(f)]) console.log(`${n}\t${f}`);
+  process.exit(0);
 }
 
 const fichiers = [...parFichier.keys()].sort();
@@ -43,7 +57,7 @@ const noms = [...new Set([...parFichier.values()].flatMap((s) => [...s]))];
 const ecran = fichiers.some((f) => f.startsWith('src/e2e/'));
 const wasm = fichiers.some((f) => f.startsWith('src/wasm/'));
 const etapes = [];
-if (ecran || wasm) etapes.push(['npm', ['run', 'build:wasm']]);
+if ((ecran || wasm) && !installe) etapes.push(['npm', ['run', 'build:wasm']]);
 if (ecran) etapes.push(['npm', ['run', 'build']]);
 else if (wasm) etapes.push([process.execPath, ['scripts/copier-wasm.mjs']]);
 if (ecran) assurerPlaywright();
