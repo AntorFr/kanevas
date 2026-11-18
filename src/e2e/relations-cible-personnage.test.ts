@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Review non-regression: a relation whose target is a character (PNJ or PJ) must render, survive a reload and be removable
 // (the screen once crashed reading `charge.pj` of the shortened target). Real stub server + Chromium.
 import assert from 'node:assert/strict';

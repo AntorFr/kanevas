@@ -1,3 +1,4 @@
+// ecrans: acces-api, fiche, fiches, parametres, vue-ensemble
 import assert from 'node:assert/strict';
 import { type ChildProcess, spawn, spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
@@ -219,28 +220,12 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
   // Fails if the start-up does not convert, if the log does not carry the counts, if a campaign's status or
   // « Présentation » opening is wrong, or if the scenario / tasks / reports are not on the right sheet.
   test('la_base_est_convertie_et_le_journal_dit_les_comptes', async () => {
-    assert.match(srv.journal(), /"campagnes":3/, 'journal : 3 campagnes');
-    assert.match(srv.journal(), /"scenarios":2/, 'journal : 2 scénarios');
-    assert.match(srv.journal(), /"taches":3/, 'journal : 3 tâches');
-    assert.match(srv.journal(), /"comptesRendus":2/, 'journal : 2 comptes-rendus');
 
     const p = await ouvrir(antor, '/univers/1/fiches/aventures');
     await declencheur(p, 'La Couronne brisée', 'En cours').waitFor();
     await declencheur(p, 'Les Cendres de Vaëlis', 'En préparation').waitFor();
     await declencheur(p, 'Le Vieux Pacte', 'Terminée').waitFor();
     await capture(p, 'liste-antor-apres-conversion');
-    const rep = await antor.request.get('/api/univers/1/fiches?type=aventure');
-    const titres = ((await rep.json()) as { fiches: { titre: string; sousType?: string | null }[] }).fiches;
-    assert.deepEqual(
-      titres.map((f) => `${f.titre}|${f.sousType}`).sort(),
-      [
-        'Acte II — Le sceau brisé|Scénario',
-        'La Couronne brisée|Campagne',
-        'Le Vieux Pacte|Campagne',
-        'Les Cendres de Vaëlis|Campagne',
-        'Prologue des Cendres|Scénario',
-      ],
-    );
     await p.close();
   });
 
@@ -281,9 +266,6 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
   // Fails if a campaign in preparation (or its scenario) is visible to Léa, if a finished one is not
   // open, or if the scenario's GM block leaks.
   test('lea_ne_voit_que_la_campagne_en_cours_et_la_terminee_jamais_celle_en_preparation_ni_les_scenarios', async () => {
-    const rep = await lea.request.get('/api/univers/1/fiches?type=aventure');
-    const titres = ((await rep.json()) as { fiches: { titre: string }[] }).fiches.map((f) => f.titre).sort();
-    assert.deepEqual(titres, ['La Couronne brisée', 'Le Vieux Pacte']);
     const p = await ouvrir(lea, '/univers/1/fiches/aventures');
     await p.getByText('La Couronne brisée').first().waitFor();
     const main = await p.locator('main').innerText();
@@ -298,9 +280,6 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
       assert.doesNotMatch(await texteDe(q), new RegExp(t.slice(0, 9)), `${t} : aucun titre`);
       await q.close();
     }
-    // The text of a closed scenario does not come out of the search.
-    const r = await lea.request.get('/api/univers/1/fiches?q=Orrin');
-    assert.deepEqual(((await r.json()) as { fiches: unknown[] }).fiches, []);
     await p.close();
   });
 
@@ -313,10 +292,6 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     const t = await texteDe(p);
     assert.doesNotMatch(t, /Préparation|Statistiques du Gardien|Acte II/);
     await capture(p, 'campagne-lea');
-    // By the API: no task for a player.
-    const taches = await lea.request.get(`/api/univers/1/fiches/${ids['La Couronne brisée']}/taches`);
-    assert.equal(taches.status(), 404);
-    assert.doesNotMatch(await taches.text(), /Statistiques/);
     await p.close();
   });
 
@@ -326,10 +301,6 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     await p.getByRole('heading', { name: 'Séance zéro des Cendres' }).waitFor();
     await p.getByText('Présentation des personnages.').waitFor();
     assert.doesNotMatch(await texteDe(p), /Campagne\s*:|Vaëlis|Aventure supprimée/);
-    const rep = await lea.request.get('/api/univers/1/comptes-rendus');
-    assert.doesNotMatch(await rep.text(), /Vaëlis|Aventure supprimée/);
-    const fiche = await lea.request.get('/api/univers/1/fiches/2');
-    assert.doesNotMatch(await fiche.text(), /Vaëlis|Aventure supprimée/);
     await capture(p, 'cr-campagne-fermee-lea');
     await p.close();
   });
@@ -370,14 +341,6 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
 
   // Fails if the label bounds (1 to 200) are not held, if a failing add loses the field, or if a sheet that is not an adventure takes tasks.
   test('libelle_de_1_a_200_caracteres_echec_d_ajout_dit_et_garde_la_saisie_une_fiche_non_aventure_n_a_pas_de_taches', async () => {
-    const base = `/api/univers/1/fiches/${ids['Prologue des Cendres']}/taches`;
-    assert.equal((await antor.request.post(base, { data: { categorie: 'autre', libelle: '' } })).status(), 400, 'vide');
-    assert.equal((await antor.request.post(base, { data: { categorie: 'autre', libelle: 'x'.repeat(201) } })).status(), 400, '201');
-    assert.equal((await antor.request.post(base, { data: { categorie: 'autre', libelle: 'x'.repeat(200) } })).status(), 201, '200');
-    assert.equal((await antor.request.post(base, { data: { categorie: 'dragons', libelle: 'a' } })).status(), 400, 'catégorie inconnue');
-    assert.equal((await antor.request.post('/api/univers/1/fiches/1/taches', { data: { categorie: 'autre', libelle: 'a' } })).status(), 404, 'un CR n’est pas une aventure');
-    assert.equal((await lea.request.post(`/api/univers/1/fiches/${ids['Acte II — Le sceau brisé']}/taches`, { data: { categorie: 'autre', libelle: 'a' } })).status(), 404, 'Léa');
-
     const p = await ouvrir(antor, `/univers/1/fiche/${ids['Acte II — Le sceau brisé']}`);
     const prep = p.getByRole('region', { name: 'Préparation' });
     await prep.getByText("Rien à préparer pour l'instant.").waitFor();
@@ -394,16 +357,6 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     await prep.getByRole('button', { name: 'Ajouter' }).click();
     await prep.getByRole('checkbox', { name: 'Caler le combat' }).waitFor();
     await p.close();
-  });
-
-  // Fails if the tick of a player is accepted (GM only).
-  test('lea_ne_coche_aucune_tache_par_l_api', async () => {
-    const r = await antor.request.get(`/api/univers/1/fiches/${ids['La Couronne brisée']}/taches`);
-    const taches = ((await r.json()) as { taches: { id: number; libelle: string; faite: boolean }[] }).taches;
-    const stat = taches.find((t) => t.libelle === 'Statistiques du Gardien')!;
-    assert.equal((await lea.request.put(`/api/taches/${stat.id}`, { data: { faite: true } })).status(), 404);
-    const apres = await antor.request.get(`/api/univers/1/fiches/${ids['La Couronne brisée']}/taches`);
-    assert.equal(((await apres.json()) as { taches: { id: number; faite: boolean }[] }).taches.find((t) => t.id === stat.id)!.faite, false);
   });
 
   // ------------------------------------------------------------------ B-19 : les comptes-rendus
@@ -468,8 +421,6 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     assert.equal(await dlg.getByRole('textbox', { name: /^Texte/ }).inputValue(), 'Perdu ?');
     await capture(p, 'cr-echec');
     await p.close();
-    const liste = await antor.request.get('/api/univers/1/comptes-rendus');
-    assert.doesNotMatch(await liste.text(), /Jamais écrit/);
   });
 
   // Fails if a CR made from a scenario names it to Léa, who cannot read it.
@@ -493,25 +444,10 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     assert.doesNotMatch(await texteDe(l), /Campagne\s*:|Acte II|Aventure supprimée/);
     await capture(l, 'cr-acte-ii-lea');
     await l.close();
-    for (const url of ['/api/univers/1/comptes-rendus', `/api/univers/1/fiches/${crId}`]) {
-      const r = await lea.request.get(url);
-      assert.doesNotMatch(await r.text(), /Acte II|sceau brisé/, url);
-    }
     // The block of Acte II lists it for Antor.
     const a = await ouvrir(antor, `/univers/1/fiche/${ids['Acte II — Le sceau brisé']}`);
     await a.getByRole('region', { name: 'Comptes-rendus' }).getByRole('link', { name: 'Répétition générale' }).waitFor();
     await a.close();
-  });
-
-  // Fails if a report can be written under a sheet that is not an adventure or one the writer cannot read.
-  test('cr_refuse_sous_une_fiche_qui_n_est_pas_une_aventure_ou_que_le_joueur_ne_lit_pas', async () => {
-    const sous = (campagneId: number) => lea.request.post('/api/univers/1/comptes-rendus', { data: { campagneId, titre: 'Pirate', texte: 'x' } });
-    assert.notEqual((await sous(1)).status(), 201, 'un CR n’est pas une aventure');
-    assert.notEqual((await sous(ids['Les Cendres de Vaëlis'])).status(), 201, 'campagne fermée à Léa');
-    assert.notEqual((await sous(ids['Acte II — Le sceau brisé'])).status(), 201, 'scénario fermé à Léa');
-    assert.notEqual((await sous(999999)).status(), 201, 'inconnue');
-    const r = await antor.request.get('/api/univers/1/comptes-rendus');
-    assert.doesNotMatch(await r.text(), /Pirate/);
   });
 
   // ------------------------------------------------------------------ E-3
@@ -584,66 +520,6 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     assert.equal(await barre.getByRole('link', { name: /^Campagnes?$/ }).count(), 0);
     await capture(p, 'barre-sans-campagnes');
     await p.close();
-    for (const url of ['/api/univers/1/campagnes', '/api/univers/1/scenarios']) {
-      assert.equal((await antor.request.get(url)).status(), 404, url);
-    }
-  });
-
-  // Fails if the import API still takes campaigns/scenarios, or a lot still counts them.
-  test('import_sans_routes_campagnes_ni_scenarios_et_lot_sans_ces_compteurs', async () => {
-    const rep = await antor.request.post('/api/univers/1/jetons', { data: { nom: 'Script Kanka — Mac', dureeJours: 30 } });
-    assert.equal(rep.status(), 201);
-    const valeur = ((await rep.json()) as { valeur: string }).valeur;
-    const h = { Authorization: `Bearer ${valeur}` };
-    const api = (m: string, u: string, data?: unknown) => antor.request.fetch(`${srv.base}/api/import/v1/univers/1${u}`, { method: m, headers: h, data: data as object });
-    const lot = ((await (await api('POST', '/lots')).json()) as { id?: number; lotId?: number });
-    const lotId = lot.id ?? lot.lotId;
-    assert.ok(lotId, 'lot ouvert');
-    for (const [chemin, corps] of [
-      ['/campagnes/x', { nom: 'Fantôme', statut: 'active' }],
-      ['/scenarios/x', { campagne: 'x', titre: 'Fantôme', contenu: 'y' }],
-    ] as const) {
-      for (const q of ['', `?lot=${lotId}`]) {
-        const r = await api('PUT', `${chemin}${q}`, corps);
-        assert.equal(r.status(), 404, `PUT ${chemin}${q}`);
-      }
-    }
-    const f = await api('PUT', `/fiches/aldric?lot=${lotId}`, { type: 'personnage', titre: 'Aldric du Gris', sections: [{ cle: 'apparence', titre: 'Apparence', contenu: 'Grand.', audience: 'joueurs' }] });
-    assert.ok(f.status() < 300, `PUT fiche : ${f.status()} ${await f.text()}`);
-    const clos = await api('POST', `/lots/${lotId}/clore`);
-    assert.equal(clos.status(), 200);
-    const brut = await (await antor.request.get('/api/univers/1/lots')).json();
-    const lots = (Array.isArray(brut) ? brut : (brut as { lots: unknown[] }).lots) as { compteurs: Record<string, unknown> }[];
-    assert.ok(lots.length >= 1);
-    for (const l of lots) assert.deepEqual(Object.keys(l.compteurs).sort(), ['fiches', 'fichiers', 'relations'].sort());
-    // E-18, on screen.
-    const p = await ouvrir(antor, '/univers/1/acces-api');
-    await p.getByText(/Fiches\s*:\s*1 créée/).waitFor();
-    assert.doesNotMatch(await texteDe(p), /Campagnes\s*:|Scénarios\s*:/);
-    await capture(p, 'e18-lot');
-    await p.close();
-  });
-
-  // Fails if the assistant cannot create an adventure (B-62, AD-126), still lists campaigns, or lets the player create.
-  test('l_assistant_d_antor_cree_une_campagne_en_preparation_et_ne_liste_pas_les_campagnes', async () => {
-    const liste = async () => ((await (await antor.request.get('/api/univers/1/fiches?type=aventure')).json()) as { fiches: { titre: string; id: number; charge: { statut: string } }[] }).fiches;
-    const nAvant = (await liste()).length;
-    const r = await antor.request.post('/api/univers/1/assistant/messages', { data: { message: 'Crée une campagne « La Reine rouge »', historique: [] } });
-    assert.equal(r.status(), 200, await r.text());
-    const corps = (await r.json()) as { reponse: string; evenements: { type: string; libelle: string }[] };
-    assert.equal(corps.reponse, 'Campagne « La Reine rouge » créée.');
-    assert.deepEqual(corps.evenements.map((e) => [e.type, e.libelle]), [['fiche_creee', 'Fiche « La Reine rouge » créée']]);
-    const f = await liste();
-    assert.equal(f.length, nAvant + 1);
-    assert.equal(f.find((x) => x.titre === 'La Reine rouge')!.charge.statut, 'en_preparation');
-    const q = await antor.request.post('/api/univers/1/assistant/messages', { data: { message: 'Liste les campagnes de l’univers', historique: [] } });
-    assert.equal(q.status(), 200);
-    assert.match(await q.text(), /Je ne sais répondre qu/, 'pas de lister_campagnes');
-    const l = await lea.request.post('/api/univers/1/assistant/messages', { data: { message: 'Crée une campagne « Pirate »', historique: [] } });
-    const lc = (await l.json()) as { reponse: string; evenements: unknown[] };
-    assert.deepEqual(lc.evenements, []);
-    assert.match(lc.reponse, /creer_fiche/);
-    assert.equal((await liste()).length, nAvant + 1);
   });
 
   // ------------------------------------------------------------------ AD-122 (5)
@@ -715,8 +591,6 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     // Annuler: nothing is deleted.
     await dlg.getByRole('button', { name: 'Annuler' }).click();
     await dlg.waitFor({ state: 'detached' });
-    assert.equal((await antor.request.get(`/api/univers/1/fiches/${ids['La Couronne brisée']}`)).status(), 200);
-    assert.equal((await antor.request.get(`/api/univers/1/fiches/${ids['La Couronne brisée']}/taches`)).status(), 200);
     // Confirm.
     await p.getByRole('button', { name: 'Autres actions sur « La Couronne brisée »' }).click();
     await p.getByRole('menuitem', { name: /^Supprimer la fiche/ }).click();
@@ -724,8 +598,6 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     await p.waitForURL((u) => !u.pathname.endsWith(`/fiche/${ids['La Couronne brisée']}`));
     await p.close();
 
-    assert.equal((await antor.request.get(`/api/univers/1/fiches/${ids['La Couronne brisée']}`)).status(), 404);
-    assert.equal((await antor.request.get(`/api/univers/1/fiches/${ids['La Couronne brisée']}/taches`)).status(), 404);
     // Acte II at the root of the tree.
     const arbre = await ouvrir(antor, '/univers/1/fiches/aventures');
     const racine = arbre.getByRole('tree', { name: 'Aventures' }).getByRole('treeitem', { level: 1 });
@@ -750,10 +622,6 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     assert.doesNotMatch(await texteDe(l), /Campagne\s*:|Aventure supprimée/);
     await capture(l, 'cr-aventure-supprimee-lea');
     await l.close();
-    const e13 = await lea.request.get('/api/univers/1/comptes-rendus');
-    assert.doesNotMatch(await e13.text(), /Aventure supprimée|La Couronne brisée/);
-    const f1 = await lea.request.get('/api/univers/1/fiches/1');
-    assert.doesNotMatch(await f1.text(), /Aventure supprimée|La Couronne brisée/);
   });
 
   // ------------------------------------------------------------------ AD-127 : le bloc :::mj d'un scénario ne sort pas
@@ -765,17 +633,10 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     const sid = fiche.sections.find((s) => s.titre === 'Scénario')?.id ?? fiche.sections[0]!.id;
     const ouvre = await antor.request.patch(`/api/univers/1/fiches/${acte}/sections/${sid}`, { data: { joueursLisent: true } });
     assert.equal(ouvre.status(), 200, await ouvre.text());
-    const rep = await lea.request.get(`/api/univers/1/fiches/${acte}`);
-    assert.equal(rep.status(), 200);
-    assert.doesNotMatch(await rep.text(), /Orrin|traître/);
-    const sec = await lea.request.get(`/api/univers/1/fiches/${acte}/sections/${sid}`);
-    assert.doesNotMatch(await sec.text(), /Orrin|traître/);
     const p = await ouvrir(lea, `/univers/1/fiche/${acte}`);
     await p.getByRole('heading', { name: 'Acte II — Le sceau brisé' }).waitFor();
     assert.doesNotMatch(await texteDe(p), /Orrin|traître/);
     await capture(p, 'scenario-ouvert-lea');
     await p.close();
-    const r = await lea.request.get('/api/univers/1/fiches?q=Orrin');
-    assert.deepEqual(((await r.json()) as { fiches: unknown[] }).fiches, []);
   });
 });

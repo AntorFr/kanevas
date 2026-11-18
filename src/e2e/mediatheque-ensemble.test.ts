@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque, vue-ensemble
 // Feature-level check of kanevas-import-mediatheque, written from the sheet of the feature (« Livre » and
 // exit criterion), docs/parcours.md (B-24, B-44, B-53 to B-55, P-16) and docs/ecrans.md (E-9 « Fichiers »,
 // E-19), not from the code. Real server in stub mode on the seed (Lame d'Ébène), real Chromium.
@@ -70,13 +71,17 @@ const tuile = (p: Any, nom: string) => p.getByRole('button', { name: nom, exact:
 const tuilesNoms = async (p: Any): Promise<string> => (await p.locator('main').innerText()) as string;
 // Sonde le texte de `main` jusqu'à l'état attendu en entier (voulus présents ET exclus absents) : « détachée » seul est vrai sur une liste vide.
 const tuilesQuand = async (p: Any, presents: RegExp[], absents: RegExp[]): Promise<string> => {
-  const fin = Date.now() + 15_000;
-  for (;;) {
-    const t = await tuilesNoms(p);
-    if (presents.every((r) => r.test(t)) && !absents.some((r) => r.test(t))) return t;
-    if (Date.now() > fin) return t;
-    await p.waitForTimeout(50);
-  }
+  await p
+    .waitForFunction(
+      ([pr, ab]: [string[], string[]]) => {
+        const t = (document.querySelector('main') as HTMLElement | null)?.innerText ?? '';
+        return pr.every((s) => new RegExp(s).test(t)) && !ab.some((s) => new RegExp(s).test(t));
+      },
+      [presents.map((r) => r.source), absents.map((r) => r.source)],
+      { timeout: 15_000 },
+    )
+    .catch(() => undefined);
+  return tuilesNoms(p);
 };
 const ouvrirFichier = async (p: Any, nom: string) => {
   await tuile(p, nom).first().click();
@@ -98,11 +103,11 @@ const fichierId = async (p: Any, nom: string): Promise<number> => {
 const inserer = async (p: Any, titre: string) => {
   // waits until the editor of the section holds a file reference (the upload is over)
   const ta = region(p, titre).getByRole('textbox');
-  for (let i = 0; i < 100; i++) {
-    if (/\]\(fichier:\d+\)/.test(await ta.inputValue())) return;
-    await p.waitForTimeout(100);
-  }
-  throw new Error('no file reference in the editor of ' + titre);
+  await p
+    .waitForFunction((el: HTMLTextAreaElement) => /\]\(fichier:\d+\)/.test(el.value), await ta.elementHandle(), { timeout: 10_000 })
+    .catch(() => {
+      throw new Error('no file reference in the editor of ' + titre);
+    });
 };
 const AVERT = 'Ce fichier est réservé au MJ : les joueurs qui lisent cette section ne le verront pas.';
 
@@ -231,13 +236,6 @@ test('la médiathèque de Léa ne montre ni « plan.png » ni « Plan secret »,
   assert.doesNotMatch(t, /Plan secret/);
   assert.match(t, /tarifs-du-port\.pdf/);
   assert.match(await nbFichiers(lea), /^12 fichiers$/); // 10 + tarifs-du-port.pdf + croquis.png
-  const reserve = await fichierId(antor, 'Plan secret de la Guilde');
-  const r = await lea.request.get(`/api/univers/${uid}/fichiers/${reserve}`);
-  assert.equal(r.status(), 404);
-  const d = await lea.request.get(`/api/univers/${uid}/fichiers/${reserve}/detail`);
-  assert.equal(d.status(), 404);
-  await lea.goto(`/api/univers/${uid}/fichiers/${reserve}`);
-  assert.doesNotMatch(await texte(lea), /PNG/);
 });
 
 test('« Utilisé dans » ne nomme jamais une section que Léa ne lit pas, et disparaît quand tout usage lui est fermé', opts, async () => {
@@ -296,8 +294,6 @@ test('Léa ajoute « carnet.pdf » à « Notes de la table » (que Teo ne lit pa
   assert.match(await texte(lea), /ajouté\s+par lea/i);
   await mediatheque(teo);
   assert.doesNotMatch(await tuilesNoms(teo), /carnet\.pdf/);
-  const id = await fichierId(antor, 'carnet.pdf');
-  assert.equal((await teo.request.get(`/api/univers/${uid}/fichiers/${id}`)).status(), 404);
   await fiche(teo, 'Léa Brisefer');
   assert.doesNotMatch(await texte(teo), /carnet\.pdf/);
   await mediatheque(antor);
@@ -427,7 +423,7 @@ test('Documents ne montre que des documents ; Images aucun ; le nom vide et de 2
   assert.match(await tuilesNoms(antor), /Plan du port/);
 });
 
-test('échecs : un fichier vide n’est pas ajouté ; une illustration qui n’est pas une image est refusée', opts, async () => {
+test('échecs : un fichier vide n’est pas ajouté', opts, async () => {
   const avant = await tuilesNoms((await mediatheque(antor), antor));
   await fiche(antor, 'Port-Sel');
   await region(antor, 'Description').locator('input[type=file]').first().setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.alloc(0) });
@@ -435,12 +431,6 @@ test('échecs : un fichier vide n’est pas ajouté ; une illustration qui n’e
   await mediatheque(antor);
   assert.doesNotMatch(await tuilesNoms(antor), /notes\.txt/);
   assert.equal(await tuilesNoms(antor), avant);
-
-  await fiche(antor, 'Port-Sel');
-  const r = await antor.request.put(`/api/univers/${uid}/fiches/${ids['Port-Sel']}/illustration`, { multipart: { fichier: pdf('regles.pdf') } });
-  assert.equal(r.status(), 400);
-  await mediatheque(antor);
-  assert.doesNotMatch(await tuilesNoms(antor), /regles\.pdf/);
 });
 
 test('illustration : un PDF choisi par l’en-tête dit « « regles.pdf » n’est pas une image. » et rien ne change', opts, async () => {

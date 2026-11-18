@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Independent feature-level check of kanevas-import-mediatheque, third pass, written from the sheet of the feature
 // (« Livre », exit criterion), docs/parcours.md (B-44, B-54, B-55, P-16) and docs/ecrans.md (E-9 « Fichiers »,
 // « Le bloc Pièces jointes », E-19), NOT from the code and NOT from the other tests. It covers what the earlier

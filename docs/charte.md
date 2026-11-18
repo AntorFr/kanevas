@@ -111,6 +111,7 @@ Since `kanevas-import` (new types and screens, same set, same rules): « Créatu
 « Races » `dna`, « Vaisseaux » `ship`, « Savoirs » `lightbulb` (general knowledge: history, phenomena, resources, chronology), « Récits » `book-open`, « Règles » `scale`, « Notes »
 `sticky-note`, « Rechercher » `search`, « Accès par API » `key-round`, « Médiathèque » `images`, document `file-text` (PDF), `file-spreadsheet` (spreadsheet), `file-archive` (archive), `file` (other), editor's « Fichier » `paperclip`, « Cartes » `map` (the bar had it without a fixed icon), GM-only image `lock` (neutral frame, `--texte-3`), label `tag`, « Contient »
 `folder-tree`, « Mentionnée dans » `link-2`, tree view `list-tree`, broken link `link-2-off`.
+Since `kanevas-battlemap-assets` (E-25): « Bibliothèque » `images`, selection bar « Catégorie » `shapes`, « Empreinte » `scaling`, « Vue de dessus » `layers`, « Visibilité » `eye`, « Retirer… » `trash-2`, « Ajouter des images » `upload`, « Choisir dans la médiathèque » `library`.
 
 **Motion.** `--duree` 160 ms, `--courbe` *(new)* `cubic-bezier(.2,.7,.2,1)`. Only
 these move: a menu, settings panel or dialog appearing (opacity and 4 px), the drawer,
@@ -210,6 +211,14 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   entry; ↑ ↓ move it; Escape closes and returns focus to the button; clicking outside closes.
   An unavailable entry (« Monter » on the first section) is `aria-disabled`, visible,
   inert. A section's menu: « Monter », « Descendre », then « Retirer la section ».
+- `kanevas-taille-images` (E-taille-1, verdict of the guardian: existing component, no new one): `Menu`
+  gains (1) the trigger variant `varianteDeclencheur: 'outil'`, rendered as the editor's `.outil-md` (Lucide
+  `image`, label « Image »), `desactive` outside « Écrire » or with the caret outside an `![…](fichier:N…)`
+  reference; (2) the textarea selection is read at opening and the write uses that frozen position, the focus
+  goes back to the field on close; (3) the current choice of a `groupe` comes from the title read in the text
+  (`aria-checked`), none when the title is no setting. Icons of the `groupe` options: placement `align-left`,
+  `align-right`, `align-center`; size three Lucide `square` at 12, 16 and 20 px; labels in `aria-label` and
+  `title`. Keyboard: ↑ ↓ cross the choices (no ← →). No token added.
 
 **Switch** (the four boolean audience settings).
 - V: 32 × 18 px; off `--surface-3` bordered by `--bord-champ`, thumb `--texte-2`; on
@@ -448,8 +457,24 @@ instead of an image.
   Player nor in Player mode; clicking the image opens the original in a new tab;
   removal is confirmed inline (« Annuler » takes focus).
 
+**Components of `kanevas-battlemap-assets`** (verdict of the design-system guardian; mockups `e25-bibliotheque.html`, `e26-direction.html`; the mockups keep their own variables and hard-coded radii, the code takes the tokens).
+- **Tabs** (`ui/onglets.tsx`, extracted from the markup of `ecrans/parametres.tsx`, reused by E-27). V: 36 px bar, `--bord` bottom rule; tab `--texte-2`, hover `--texte`, active `--texte` with a 2 px `--accent` underline. C: `role="tablist"` / `tab` (`aria-selected`) / `tabpanel`, left/right arrows, one tab stop; the active tab is in the address (`?onglet=`). Not `Segments` (a value choice).
+- **Filter chip** (`ui/puce-filtre.tsx`, drawn from `Pastille`). V: 24 px, `--rayon-pastille`, 12 px, `--texte-2` on `--surface-2` with `--bord`; active `--accent-texte` on `--accent-fond` with a 12 px `check`. C: `<button aria-pressed>`, several at once, never colour alone; the row wraps, never scrolls sideways.
+- **Asset card** (`ui/carte-asset.tsx`, from the sheet card). V: 4:3 thumbnail on a transparency checkerboard of `--surface-2` and `--bord-fort` (never hatching), name then footprint « 2×1 » in `--texte-3` 12 px; no frame, no shadow; selected: 2 px `--accent` ring; GM-only asset: `--mj-bord`; 16 px selection box top right. C: the card is a `<button>` opening the side panel; the box is a separate checkbox « Sélectionner <nom> », shift-click selects a range; 44 px target on a phone; marks are `Pastille` (« Vue de dessus » neutral, « MJ » variant `mj`).
+- **Drop zone** (`ui/zone-depot.tsx`, extracted from `ecrans/mediatheque.tsx`, reused by E-19, E-25, E-26). V: 1 px dashed `--bord-champ`; a file over it: `--accent` and `--accent-fond`. C: the button opens the file picker, several files; `aria-live="polite"` « 3 images déposées »; a refused file is an `Alerte` naming it, the others go through.
+- **Selection bar** (`ui/barre-selection.tsx`, content are existing `Menu`, `Champ`, `Interrupteur`, `Bouton`). V: 44 px, `--accent-fond`, `--accent-texte` border at 40 %, `--rayon-panneau`, « N sélectionné » on the left; on a phone sticky at the bottom. C: `role="toolbar"` named; exists only with a selection and never for a player; arrows between controls, Esc clears; changes are saved at once with a toast.
+- **Side panel** (`ui/panneau-lateral.tsx`, promoted from `.med-panneau` of `ecrans/mediatheque.tsx`, reused by E-19 and E-25). V: 300 px, `--surface`, `--bord` left rule, icon label and « Fermer » header; full-screen sheet on a phone. C: named `aside`, Esc closes and returns the focus to the card.
+- **Variants added**: `Segments` « count » (a `--texte-3` number after the label); `Alerte` `avertissement` in a **neutral** tint (amber means « GM only »); the attachment thumbnail with an editable caption (E-26 reference images).
+
 **Loading state.** V: `--squelette` skeletons shaped like the sheet (type, title,
 rule, two sections). C: `role="status"`, « Chargement de la fiche… » read and written below.
+
+**Components of `kanevas-battlemap-editeur`** (verdict of the design-system guardian; mockup `e28-editeur-carte.html`; the mockup keeps its own variables, the code takes the tokens: `--accent` not the mockup's violet, `--mj` / `--mj-bord` / `--mj-trame` for GM-only, Lucide icons only).
+- **Existing, reused as is**: `Bouton` (« Jouer » primary and disabled), `BoutonIcone` (undo / redo), `Champ`, `Interrupteur` (« Aimanter à la grille »), `Chargement`, `Alerte`, `Bandeau` (a kind `lecture` is added to the existing `joueur` kind), `Toast`, `Pastille` (« Asset retiré », « Masquée aux joueurs »), `Menu`, `BoiteDialogue`, `Fenetre`, `Segments`; `Onglets`, `Asset card`, `Side panel` and `Filter chip` from `kanevas-battlemap-assets`.
+- **Tool column** (`ui/colonne-outils.tsx`, new, from `Segments` and `BoutonIcone`). V: 56 px on `--surface`, `--bord` right rule; 40 px cells, Lucide 16 px icons without text, `--rayon-item`; rest `--texte-3`, hover `--surface-2`, active `--accent-fond` with icon and outline `--accent`, disabled 45 %; « Aimanter » at the bottom. C: `role="toolbar"` `aria-orientation="vertical"`, one tab stop (the active tool), ↑ ↓ move and select, wrapping; each tool has an `aria-label` and a tooltip naming its key; the active state is carried by shape and `aria-checked`, not tint alone; 44 px on a phone.
+- **Layers panel** (`ui/panneau-calques.tsx`, new, from `LigneRelation`). V: 36 px rows, no frame, `--bord` separators; grip, name, three 28 px `BoutonIcone` (eye, lock, menu); a GM-only layer has `--mj-trame` and a `--mj-bord` rule (not an amber frame on each row); the selected layer a `--accent` ring. C: a `listbox`; each icon button is a named `aria-pressed` (« Masquer le calque Objets »); order by Alt+↑ / Alt+↓ or the menu entries; deletion by `BoiteDialogue` naming the verb, the layer and what goes with it; the eye says « vue éditeur seulement ».
+- **Canvas** (`ui/canevas-carte.tsx`, new; the drawing is Canvas 2D from the document, the rules are the core's). V: ground `--surface-2`, grid `--bord`; floors and walls are drawn from the assets (never from tokens); a GM-only element has `--mj-trame` and a dashed `--mj-bord`; the selection a 2 px `--accent` outline with 8 px handles of contrast ≥ 3:1 against the cell. C: focusable (`tabindex=0`, focus ring), arrows move the selection one cell, Suppr deletes, Ctrl+Z / Ctrl+Maj+Z, Ctrl+C / Ctrl+V; a polite `aria-live` summary of the selection (« Console, case 12, 4, calque Objets »); wheel / pinch zoom, no animation under reduced motion; it filters nothing (the server sends the filtered document).
+- **Inventory to write with the code**: `Onglets` (moved from `ecrans/ecrans.css` by the assets slice), the three components above with their support files under `frontend/src/ui/`. **Deliberate gap**: none. **Note**: the `.sdlc.yaml` of the repository declares no `design_system` block, so the guardian worked from the paths of this charte and `CLAUDE.md`.
 
 ## 5. Thresholds
 

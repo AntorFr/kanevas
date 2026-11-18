@@ -54,6 +54,8 @@ export interface DeclarationCatalogue {
    * rely on the valid ones of the same file declared before it. A refusal gives the field and the reason.
    */
   verifier?(nature: string, donnees: Record<string, unknown>, ctx: ContexteVerification): { champ: string; raison: string } | null;
+  /** The part of a valid element the storage keeps; the replay compares this form with the stored one. Left out: all of it. */
+  conserve?(nature: string, donnees: Record<string, unknown>): Record<string, unknown>;
 }
 /** Where a tool's data are counted and erased: one universe, or one system's shared level (D-1). */
 export type Portee = { niveau: 'univers'; universId: number } | { niveau: 'systeme'; systemeId: number };
@@ -85,11 +87,19 @@ interface BaseOutil {
   catalogue?: DeclarationCatalogue;
   donnees?: DonneesOutil;
   importation?: DeclarationImportation;
+  /** `false` hides the tool from the registry (decided at each read, never stored): the generation without an image engine (AD-88). */
+  disponible?(): boolean;
   outilsAssistant?(ctx: ContexteOutil): Outil[];
   ecran: { libelle: string; icone: string };
 }
 /** `version` is the optimistic-concurrency token of the map's own row, when its tool can change its visibility (E-10). */
-export interface CarteOutil { id: number; titre: string; visible: boolean; version?: number }
+export interface CarteOutil {
+  id: number; titre: string; visible: boolean; version?: number;
+  /** Size in cells, for the maps that have one (a composed map). */
+  largeur?: number; hauteur?: number;
+  /** Where the map opens in its editor, for the callers who may edit it; absent for the maps that have none. */
+  adresse?: string;
+}
 /** Maps recompute on read after a setting changes (AD-128). */
 export interface DeclarationCarte extends BaseOutil {
   type: 'carte';
@@ -101,8 +111,11 @@ export interface DeclarationCarte extends BaseOutil {
 /** How E-10 creates and shows a map of this tool without the core knowing the module (T-6). */
 export interface CreationCarte {
   libelle: string;
-  creer(db: Db, acteur: Acteur, universId: number, titre: string): { id: number };
+  /** `taille` is optional: the tool applies its own defaults (AD-155, composed maps). */
+  creer(db: Db, acteur: Acteur, universId: number, titre: string, taille?: { largeur?: number; hauteur?: number }): { id: number };
   rendreVisible(db: Db, acteur: Acteur, universId: number, id: number, visible: boolean, version: number): { version: number };
+  /** Deletes one map of the tool; a tool whose maps cannot be deleted from E-10 leaves it out. */
+  supprimer?(db: Db, acteur: Acteur, universId: number, id: number): void;
 }
 export interface ContexteSection {
   db: Db;
@@ -187,6 +200,7 @@ const declaration = z.strictObject({
       stockage: z.strictObject({ lister: fonction, lirePar: fonction, ecrire: fonction,
         poserMasque: fonction, retraits: fonction, poserRetrait: fonction, compter: fonction, effacer: fonction }),
       verifier: fonction.optional(),
+      conserve: fonction.optional(),
     }).optional(),
     donnees: z.strictObject({ compter: fonction, effacer: fonction, utilisations: fonction.optional() }).optional(),
     importation: z.strictObject({
@@ -194,8 +208,8 @@ const declaration = z.strictObject({
         libelle: z.string().min(1), libellePluriel: z.string().min(1) })).min(1),
       appliquer: fonction,
     }).optional(),
-    reglages, outilsAssistant: fonction.optional(), cartes: fonction.optional(),
-    creation: z.strictObject({ libelle: z.string().min(1), creer: fonction, rendreVisible: fonction }).optional(),
+    reglages, disponible: fonction.optional(), outilsAssistant: fonction.optional(), cartes: fonction.optional(),
+    creation: z.strictObject({ libelle: z.string().min(1), creer: fonction, rendreVisible: fonction, supprimer: fonction.optional() }).optional(),
     sections: z.array(z.strictObject({
       type: z.string().regex(/^[a-z][a-z0-9_-]*$/), libelle: z.string().min(1), usage: z.string().min(1),
       recalcul: z.enum(['geste', 'proposition']), composant: z.boolean().optional(), versionSource: fonction, produire: fonction, apresEcriture: fonction.optional(),

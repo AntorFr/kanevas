@@ -3,16 +3,25 @@
 - Language (public repository): code, comments, README, `docs/` (the product's design docs
   included), ADRs and release notes in **English**; `.agent/*` stays French. Existing French
   docs are translated by a feature of their own, not rewritten in passing: new text is English.
-- Attested tests: `npm run tests:attestes` plays the whole suite (typecheck, build, every test,
-  none skipped, two files at a time by default, `--concurrence N` to change it) on the committed tree and rewrites `rapport-tests.json` (git-ignored) at each run; `-- --publier` posts the
-  `tests-complets` commit status when green. The image build and the `main` rule require it; the
-  CI runs no test by itself.
+- Attested tests: the suite is declared in `.sdlc.yaml` (`tests:`), and `attester --publier` plays it on the pushed
+  commit and posts the `tests-complets` status when green — the only way to post it, never by hand. `npm run tests:attestes`
+  is just the suite (typecheck, build, every test, two files at a time by default, `--concurrence N` to change it) and writes
+  the per-test TAP report `resultats.tap` (git-ignored); it writes no report and posts no status. The image build (tag `v*`
+  only) and the `main` rule require the status; no workflow plays a test or runs on a branch push or a pull request.
+  Five levels in `.sdlc.yaml` (and `ecrans_liste:` `node scripts/niveaux-tests.mjs --liste ecrans {base}`, not a level: it names the screen tests `ecrans:` would play, without `npm ci`): `commande:` (the whole suite, above, about 37 min), `fiche:` `npm ci && npm run tests:fiche -- {base}` (the suite minus the screen
+  tests the change does not touch), `ecrans:` `npm ci && npm run tests:ecrans -- {base}` (only the chosen screen tests), `local:` `npm ci && npm run tests:local` (every file but
+  `src/e2e/`, no `build`, no Playwright; about 4 min) and `rejouer:` `npm ci && node scripts/rejouer-tests.mjs {tests}` (only the named
+  tests, `describe > test` as in `resultats.tap`; non-zero for a name no file declares as a literal test title). A screen test declares its screens on its first line (`// ecrans: a, b`);
+  read a choice without playing it: `node scripts/niveaux-tests.mjs --liste ecrans|fiche <base>`; durations measured in the README. The `tests-complets` status says its level (description starting with « niveau »), the tag build refuses one that does not. Test choice logic: `scripts/niveaux-tests.mjs`.
+- Before writing a screen test (`src/e2e/`): prove an effect (a row, a right, a status code, a count) through its door (`inject` in `src/routes/` or a service test), keep on screen only what the user sees; rule and inventory in `docs/tests-ecran/README.md`, and every new screen test needs a line in a `docs/tests-ecran/lot-*.md` or `src/scripts-tests/inventaire-ecrans.test.ts` fails.
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
 - Build and test in containers (reference). In a pod without Docker, Node >= 20 on the host runs the same commands
-  (`npm ci && npm run typecheck && npm test`), see the README:
-  `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"`
+  (`npm ci && npm run build:wasm && npm run typecheck && npm test`), see the README. The Node-only image
+  (`docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"`)
+  has no Rust: it only works once `rust/pkg/` exists (see the Rust → Wasm item below), and neither Playwright nor Chromium: the e2e tests **fail** without them (AD-harnais-4), so that route covers typecheck and the non-e2e tests only; `npm ci && npm run tests:attestes` (which installs Playwright locally) plays everything.
+- Rust → Wasm (`rust/`, AD-rust-1 to 10): the Node-only Docker command above is not enough any more, it has no Rust; `npm run build:wasm` (needs `cargo`, the wasm target and `wasm-bindgen`, see README « Rust / WebAssembly ») must have run before `typecheck`, `build` and `npm test`; `tests:attestes` runs it itself.
 - `npm run typecheck` : `tsc --noEmit` on the API and on `frontend/`. `npm test` : `node --import tsx --test`
   on the files found by `find` in `src` and `frontend/src` — Node 20 (CI, image) does not expand globs
   itself, so never pass it a quoted `src/**` pattern; no extra test runner
@@ -43,7 +52,7 @@
   `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET); the seven brand files of `frontend/public` (`favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `site.webmanifest`) are served before the guard, without a session (AD-135). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
-  the sidebar for the screens of a universe; sidebar items live in `items.ts` and show only when a registered screen answers
+  the sidebar for the screens of a universe; sidebar items live in `frontend/src/items.ts` and show only when a registered screen answers
   their address. The two outside-universe links (« Mes univers », « Systèmes de jeu ») are fixed in
   `Barre.tsx` and the universe selector menu. Colours only through `frontend/src/ui/tokens.css` (`docs/charte.md`). Tests of the
   built-app routes set `FRONTEND_DIR` (under `NODE_ENV=test` no build is looked up otherwise).

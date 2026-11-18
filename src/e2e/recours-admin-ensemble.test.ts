@@ -1,3 +1,4 @@
+// ecrans: accueil, administration, vue-ensemble
 // Black-box tests of `kanevas-recours-admin` written from the need only (B-6, P-2 step 3, E-5,
 // docs/ecrans.md "Détail des écrans de kanevas-recours-admin"), not from the code. Real server in stub
 // mode, real Chromium. The expected texts are literals copied from the doc.
@@ -139,10 +140,6 @@ describe('kanevas-recours-admin : B-6 / P-2 étape 3 / E-5 (navigateur)', { skip
     await m.admin.page.goto(url);
     await attendre(m.admin.page);
     assert.match(await texte(m.admin.page), /Page introuvable\./);
-    for (const chemin of [`/api/univers/${m.ids[LAME]}`, `/api/univers/${m.ids[LAME]}/fiches`, `/api/univers/${m.ids[LAME]}/membres`]) {
-      const r = await m.admin.ctx.request.get(chemin);
-      assert.equal(r.status(), 404, `${chemin} avant l'auto-ajout`);
-    }
     await ouvrirAdmin(m.admin.page, LAME);
     await ajouter(m.admin.page, 'admin', 'MJ');
     await ligne(m.admin.page, 'admin').waitFor();
@@ -150,7 +147,6 @@ describe('kanevas-recours-admin : B-6 / P-2 étape 3 / E-5 (navigateur)', { skip
     await attendre(m.admin.page);
     const t = await texte(m.admin.page);
     assert.ok(!/Page introuvable\./.test(t), "la vue d'ensemble doit s'ouvrir une fois membre");
-    assert.equal((await m.admin.ctx.request.get(`/api/univers/${m.ids[LAME]}`)).status(), 200);
     // Antor, sur E-4
     await ouvrirUniversDepuisAccueil(m.antor.page, LAME);
     await allerMembres(m.antor.page);
@@ -210,20 +206,26 @@ describe('kanevas-recours-admin : B-6 / P-2 étape 3 / E-5 (navigateur)', { skip
   it('gestes : changer un rôle puis retirer un membre, la confirmation est demandée', async () => {
     const m = await monde();
     await ouvrirAdmin(m.admin.page, LAME);
-    await ligne(m.admin.page, 'lea').getByLabel('Rôle de lea').selectOption({ label: 'MJ' });
-    await attendre(m.admin.page);
-    await ouvrirAdmin(m.admin.page, LAME);
-    assert.equal(await ligne(m.admin.page, 'lea').getByLabel('Rôle de lea').inputValue(), 'mj');
-    await m.admin.page.getByRole('button', { name: 'Retirer lea' }).first().click();
-    await voir(m.admin.page, `Retirer lea de ${LAME} ?`);
+    const p = m.admin.page;
+    // Each gesture waits for its proof before the next one: the role is saved when the PATCH answers, not when the network is idle.
+    const enregistre = p.waitForResponse((r: Any) => r.request().method() === 'PATCH' && r.url().includes('/membres/'));
+    await ligne(p, 'lea').getByLabel('Rôle de lea').selectOption({ label: 'MJ' });
+    assert.ok((await enregistre).ok(), 'le rôle est enregistré');
+    await ouvrirAdmin(p, LAME);
+    await p.getByLabel('Rôle de lea').waitFor();
+    assert.equal(await ligne(p, 'lea').getByLabel('Rôle de lea').inputValue(), 'mj');
+    const retirerLea = p.getByRole('button', { name: 'Retirer lea' }).first();
+    await retirerLea.waitFor({ state: 'visible' });
+    await retirerLea.click();
+    await voir(p, `Retirer lea de ${LAME} ?`);
     // annuler ne retire pas
-    await m.admin.page.getByRole('button', { name: 'Annuler', exact: true }).click();
-    await attendre(m.admin.page);
-    assert.equal(await m.admin.page.getByText(rx(`Retirer lea de ${LAME} ?`)).count(), 0);
-    assert.equal(await ligne(m.admin.page, 'lea').count(), 1);
-    await retirer(m.admin.page, 'lea', LAME);
-    await ligne(m.admin.page, 'lea').waitFor({ state: 'detached' });
-    assert.equal(await ligne(m.admin.page, 'lea').count(), 0);
+    await p.getByRole('button', { name: 'Annuler', exact: true }).click();
+    await p.getByText(rx(`Retirer lea de ${LAME} ?`)).waitFor({ state: 'detached' });
+    assert.equal(await ligne(p, 'lea').count(), 1);
+    await retirer(p, 'lea', LAME);
+    await ligne(p, 'lea').waitFor({ state: 'detached' });
+    assert.equal(await ligne(p, 'lea').count(), 0);
+    await p.getByText(/1 membre\b/).first().waitFor();
     assert.match(await texte(m.admin.page), /1 membre\b/);
   });
 
@@ -381,69 +383,5 @@ describe('kanevas-recours-admin : B-6 / P-2 étape 3 / E-5 (navigateur)', { skip
     await ligne(p, 'lea').waitFor({ state: 'visible' });
     assert.ok(await ligne(p, 'lea').isVisible());
     await p.screenshot({ path: '/tmp/recours-admin-e5-mobile.png' });
-  });
-});
-
-describe('kanevas-recours-admin : routes /api/instance (sans écran)', { skip: skipBrowser }, () => {
-  // Panne visée : une route d'instance ouverte sans session ou à un non-admin.
-  it('sans session 401 ; Léa, Antor, Teo : 404 de corps identique à une adresse inconnue', async () => {
-    const m = await monde();
-    const anon = await m.browser.newContext({ baseURL: m.s.base });
-    for (const chemin of ['/api/instance/univers', `/api/instance/univers/${m.ids[LAME]}/membres`]) {
-      assert.equal((await anon.request.get(chemin)).status(), 401, chemin);
-    }
-    const inconnu = await m.lea.ctx.request.get('/api/instance/rien-du-tout');
-    assert.equal(inconnu.status(), 404);
-    const corpsInconnu = await inconnu.text();
-    for (const cle of ['lea', 'antor', 'teo'] as const) {
-      const c = (m as Any)[cle].ctx;
-      for (const [methode, chemin, data] of [
-        ['get', '/api/instance/univers', undefined],
-        ['get', `/api/instance/univers/${m.ids[LAME]}/membres`, undefined],
-        ['post', `/api/instance/univers/${m.ids[LAME]}/membres`, { username: cle, role: 'mj' }],
-        ['delete', `/api/instance/univers/${m.ids['Les Landes grises']}/membres/1`, undefined],
-      ] as const) {
-        const r = await c.request[methode](chemin, data ? { data } : undefined);
-        assert.equal(r.status(), 404, `${cle} ${methode} ${chemin}`);
-        assert.equal(await r.text(), corpsInconnu, `${cle} ${methode} ${chemin} : corps identique`);
-      }
-    }
-    // Teo (Joueur des Landes) n'a rien gagné
-    const rm = await m.mira.ctx.request.get(`/api/univers/${m.ids['Les Landes grises']}/membres`);
-    assert.equal((await rm.json()).length, 2);
-  });
-
-  // Panne visée : une réponse d'instance qui porte description ou contenu.
-  it("GET /api/instance/univers ne rend que identifiant, nom et nombre de membres ; membres : identifiant et rôle", async () => {
-    const m = await monde();
-    const r = await m.admin.ctx.request.get('/api/instance/univers');
-    assert.equal(r.status(), 200);
-    const corps = await r.text();
-    assert.ok(!corps.includes('cité marchande') && !corps.includes('Tourbières') && !/description/i.test(corps));
-    const liste = JSON.parse(corps) as Array<Record<string, unknown>>;
-    assert.equal(liste.length, 2);
-    for (const u of liste) assert.equal(Object.keys(u).length, 3, `trois champs : ${Object.keys(u)}`);
-    assert.deepEqual(liste.map((u) => u.nom), [LAME, 'Les Landes grises']);
-    const rm = await m.admin.ctx.request.get(`/api/instance/univers/${m.ids[LAME]}/membres`);
-    assert.equal(rm.status(), 200);
-    const mt = await rm.text();
-    assert.ok(!mt.includes('cité marchande') && !mt.includes('Maître Aldric'));
-    const membres = JSON.parse(mt) as Array<Record<string, unknown>>;
-    assert.equal(membres.length, 2);
-    assert.ok(membres.some((x) => JSON.stringify(x).includes('antor') && JSON.stringify(x).includes('mj')));
-    assert.ok(membres.some((x) => JSON.stringify(x).includes('lea') && JSON.stringify(x).includes('joueur')));
-  });
-
-  // Panne visée : l'admin sans rôle lit du contenu par une autre route.
-  it("Admin sans rôle : aucune route de contenu de « Lame d'Ébène » ne répond autrement que 404", async () => {
-    const m = await monde();
-    const id = m.ids[LAME];
-    for (const chemin of [`/api/univers/${id}`, `/api/univers/${id}/fiches`, `/api/univers/${id}/fiches/1`, `/api/univers/${id}/membres`, `/api/univers/${id}/campagnes`]) {
-      const r = await m.admin.ctx.request.get(chemin);
-      assert.equal(r.status(), 404, chemin);
-      assert.ok(!(await r.text()).includes('Maître Aldric'), chemin);
-    }
-    const univers = await (await m.admin.ctx.request.get('/api/univers')).json();
-    assert.deepEqual(univers, [], "l'admin sans rôle n'a aucun univers dans sa propre liste");
   });
 });

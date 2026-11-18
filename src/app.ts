@@ -2,6 +2,8 @@ import cookie from '@fastify/cookie';
 import Fastify from 'fastify';
 
 import { dbPath, env } from './config/env.js';
+import { brancherExecuteur } from './services/battlemap-generation.js';
+import { interrompreLotsEnCours } from './services/battlemap-lots.js';
 import { comptesDuPivot, migrate, openDb, type Db } from './db/db.js';
 import { viderTmp } from './services/stockage.js';
 import { registerAuthRoutes } from './routes/auth.js';
@@ -40,6 +42,9 @@ export async function buildApp() {
   const db = openDb(dbPath);
   const aConvertir = comptesDuPivot(db);
   migrate(db);
+  // Lines the last run left `attente` / `en_cours` are `interrompu`: nothing starts by itself (AD-battlemap-generation-7).
+  interrompreLotsEnCours(db);
+  brancherExecuteur();
   if (aConvertir) app.log.info(aConvertir, 'Migration 0017: campaigns and scenarios converted to adventure sheets.');
   // Uploads cut short by a restart leave files in tmp/ (AD-65); in memory (tests) the dir is shared, leave it.
   if (dbPath !== ':memory:') await viderTmp();

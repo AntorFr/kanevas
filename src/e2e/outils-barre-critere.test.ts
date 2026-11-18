@@ -1,3 +1,4 @@
+// ecrans: outil, vue-ensemble
 // Browser test of kanevas-outils-cadre-barre, written from the exit criterion (AD-133, B-59, B-70).
 // Stub world with the seed: « Éneria d'essai » (Antor GM, Léa player, system with the trial module).
 import assert from 'node:assert/strict';
@@ -10,7 +11,7 @@ describe('section « Outils » de la barre et écran d’un outil', { skip: skip
   let universId: number;
   let systemeId: number;
   before(async () => {
-    srv = await startServer({ KANEVAS_SANS_SEMIS: '' });
+    srv = await startServer({ KANEVAS_SANS_SEMIS: '', KANEVAS_SANS_SEMIS_BATTLEMAP: '1' });
     browser = await launch();
   });
   after(async () => {
