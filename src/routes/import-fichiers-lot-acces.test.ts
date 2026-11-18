@@ -170,7 +170,7 @@ test('criterion > a sheet pushed before its files is created with 2 waiting refe
   assert.equal(l3.rapport.avertissements, 0);
 });
 
-test('B-56 GM-only file > a file sent mj is not in Léa’s library, its bytes are refused to her and served to the GM, the sheet shows the placeholder; made visible by the GM the replay does not restore it and the lot says so', async () => {
+test('B-56 GM-only file > a file sent mj is not in Léa’s library, its bytes are refused to her and served to the GM, the sheet shows the placeholder; made visible by the GM, the replay that sends mj hides it again, without a warning', async () => {
   const m = await monde();
   const f = await m.lotComplet((lot) => m.putFichier('img:plan', { nom: 'Plan du Repaire', visibilite: 'mj', octets: BLEU, lot }));
   assert.equal(f.res.json().etat, 'creee');
@@ -196,10 +196,10 @@ test('B-56 GM-only file > a file sent mj is not in Léa’s library, its bytes a
   assert.ok((await m.biblio(m.lea)).body.includes('Plan du Repaire'), 'Léa now has the file: the setting was made');
   const rejeu = await m.lotComplet((lot) => m.putFichier('img:plan', { nom: 'Plan du Repaire', visibilite: 'mj', octets: BLEU, lot }));
   assert.equal(rejeu.res.statusCode, 200, rejeu.res.body);
-  assert.equal(rejeu.res.json().etat, 'inchangee', 'nothing else changed');
-  assert.ok(rejeu.res.json().avertissements.some((a: string) => /visibilité modifiée dans Kanevas : non écrasée/.test(a)), rejeu.res.body);
-  assert.equal(rejeu.rapport.avertissements, 1);
-  assert.ok((await m.biblio(m.lea)).body.includes('Plan du Repaire'), 'still visible to the players after the replay');
+  assert.equal(rejeu.res.json().etat, 'mise_a_jour', 'the script sends mj: it is written back');
+  assert.deepEqual(rejeu.res.json().avertissements, []);
+  assert.equal(rejeu.rapport.avertissements, 0);
+  assert.ok(!(await m.biblio(m.lea)).body.includes('Plan du Repaire'), 'hidden from the players again: the script said mj');
 });
 
 test('B-56 empty file > 0 byte is refused (400, champ fichier), counted refused in the batch with its key and the reason « fichier vide : 0 octet, refusé », nothing stored, the next file is written', async () => {
@@ -326,7 +326,7 @@ test('B-56 refusals > no token, a wrong token or the cookie: 401 jeton_invalide,
   assert.equal(m.nb("SELECT count(*) n FROM fichiers WHERE cle_origine = 'img:x'"), 0);
 });
 
-test('B-48 files > name and visibility changed in Kanevas are not restored, each is named in the lot; the new bytes are written', async () => {
+test('B-47 files > name and visibility changed in Kanevas: the replay writes the script’s back with the new bytes, no warning', async () => {
   const m = await monde();
   await m.lotComplet((lot) => m.putFichier('doc:reglement', { nom: 'Règlement', visibilite: 'mj', octets: pdf('v1'), lot }));
   const id = m.idFichier('doc:reglement');
@@ -335,30 +335,26 @@ test('B-48 files > name and visibility changed in Kanevas are not restored, each
   const l = await m.lotComplet((lot) => m.putFichier('doc:reglement', { nom: 'Règlement', visibilite: 'mj', octets: pdf('v2'), lot }));
   assert.equal(l.res.statusCode, 200, l.res.body);
   assert.equal(l.res.json().etat, 'mise_a_jour', 'the new bytes are written');
-  const av: string[] = l.res.json().avertissements;
-  assert.equal(av.length, 2, `one warning per protected field: ${av.join(' | ')}`);
-  assert.ok(av.some((a) => /nom modifié dans Kanevas : non écrasé/.test(a)), av.join(' | '));
-  assert.ok(av.some((a) => /visibilité modifiée dans Kanevas : non écrasée/.test(a)), av.join(' | '));
-  assert.equal(l.rapport.avertissements, 2);
-  assert.ok(l.rapport.rapport.every((r: Any) => r.cle === 'doc:reglement'), 'the report names the key of the file');
-  const lib = await m.biblio(m.lea);
-  assert.ok(lib.body.includes('Règlement révisé par Antor'), 'the name set in Kanevas stays');
-  assert.ok(!lib.body.includes('"Règlement"'), 'the script name did not come back');
-  const octets = await m.rest(m.lea, 'GET', `/api/univers/${m.essai}/fichiers/${id}`);
-  assert.equal(octets.statusCode, 200, 'still visible to the players');
+  assert.deepEqual(l.res.json().avertissements, []);
+  assert.equal(l.rapport.avertissements, 0);
+  const lib = await m.biblio(m.antor);
+  assert.ok(!lib.body.includes('Règlement révisé par Antor'), 'the name of the script came back');
+  assert.ok(lib.body.includes('Règlement'));
+  assert.equal((await m.rest(m.lea, 'GET', `/api/univers/${m.essai}/fichiers/${id}`)).statusCode, 404, 'mj again');
+  const octets = await m.rest(m.antor, 'GET', `/api/univers/${m.essai}/fichiers/${id}`);
   assert.deepEqual(octets.rawPayload, pdf('v2'));
 });
 
-test('B-48 files > only the name changed in Kanevas: one warning, the visibility of the script applies', async () => {
+test('B-47 files > only the name changed in Kanevas: the replay restores the script’s name and applies its visibility, no warning', async () => {
   const m = await monde();
   await m.lotComplet((lot) => m.putFichier('img:a', { nom: 'A', visibilite: 'joueurs', octets: ROUGE, lot }));
   const id = m.idFichier('img:a');
   assert.equal((await m.rest(m.antor, 'PATCH', `/api/univers/${m.essai}/fichiers/${id}`, { nom: 'A renommée' })).statusCode, 200);
   const l = await m.lotComplet((lot) => m.putFichier('img:a', { nom: 'A', visibilite: 'mj', octets: ROUGE, lot }));
   assert.equal(l.res.json().etat, 'mise_a_jour');
-  assert.equal(l.res.json().avertissements.length, 1, l.res.body);
-  assert.match(l.res.json().avertissements[0], /nom modifié dans Kanevas : non écrasé/);
-  assert.ok(!(await m.biblio(m.lea)).body.includes('A renommée'), 'the visibility of the script was applied: Léa no longer sees it');
+  assert.deepEqual(l.res.json().avertissements, []);
+  assert.ok(!(await m.biblio(m.lea)).body.includes('"A"'), 'the visibility of the script was applied: Léa no longer sees it');
+  assert.ok(!(await m.biblio(m.antor)).body.includes('A renommée'), 'the name of the script is back');
 });
 
 test('B-47 replay > the illustration and the joined files changed in Kanevas: the script’s are written back, a file the script does not name stays joined, no warning', async () => {
@@ -528,7 +524,7 @@ test('B-56 GM-only file > a file sent mj is neither listed nor served to Léa (4
   assert.ok((await m.biblio(m.antor)).body.includes('secret.png'));
 });
 
-test('B-48 files > visibility made players in Kanevas is not restored by the replay, the report names the key; the same for the name', async () => {
+test('B-47 files > visibility made players in Kanevas is written back by a replay that sends mj, and kept by one that omits it; the name follows the script; no warning', async () => {
   const m = await monde();
   const c = await m.lotComplet((lot) => m.putFichier('img:plan', { nom: 'plan.png', octets: ROUGE, visibilite: 'mj', lot }));
   const id = c.res.json().id as number;
@@ -536,18 +532,19 @@ test('B-48 files > visibility made players in Kanevas is not restored by the rep
   assert.equal((await lea()).statusCode, 404);
   assert.equal((await m.rest(m.antor, 'PATCH', `/api/univers/${m.essai}/fichiers/${id}`, { visibilite: 'joueurs' })).statusCode, 200);
   assert.equal((await lea()).statusCode, 200);
+  const l1 = await m.lotComplet((lot) => m.putFichier('img:plan', { nom: 'plan.png', octets: ROUGE, lot }));
+  assert.equal(l1.res.json().etat, 'inchangee', 'no visibility sent: Kanevas\'s stays');
+  assert.equal((await lea()).statusCode, 200);
   const l2 = await m.lotComplet((lot) => m.putFichier('img:plan', { nom: 'plan.png', octets: ROUGE, visibilite: 'mj', lot }));
   assert.equal(l2.res.statusCode, 200);
-  assert.equal((await lea()).statusCode, 200, 'visibility restored to mj by the replay');
-  assert.ok(l2.res.body.includes('visibilité modifiée dans Kanevas : non écrasée'), l2.res.body);
-  const rapport = JSON.stringify((await m.rest(m.antor, 'GET', `/api/univers/${m.essai}/lots`)).json());
-  assert.ok(rapport.includes('img:plan'), 'the report names the origin key');
-  assert.ok(rapport.includes('visibilité modifiée dans Kanevas : non écrasée'));
+  assert.equal((await lea()).statusCode, 404, 'visibility set to mj by the replay');
+  assert.ok(!l2.res.body.includes('non écrasée'), l2.res.body);
+  assert.equal(l2.rapport.avertissements, 0);
   assert.equal((await m.rest(m.antor, 'PATCH', `/api/univers/${m.essai}/fichiers/${id}`, { nom: 'plan-du-port.png' })).statusCode, 200);
   const l3 = await m.lotComplet((lot) => m.putFichier('img:plan', { nom: 'plan.png', octets: ROUGE, visibilite: 'mj', lot }));
-  assert.ok(l3.res.body.includes('nom modifié dans Kanevas : non écrasé'), l3.res.body);
+  assert.ok(!l3.res.body.includes('non écrasé'), l3.res.body);
   const liste = (await m.biblio(m.antor)).body;
-  assert.ok(liste.includes('plan-du-port.png') && !liste.includes('"plan.png"'), 'name restored by the replay');
+  assert.ok(liste.includes('"plan.png"') && !liste.includes('plan-du-port.png'), 'name restored by the replay');
 });
 
 test('B-49 counters > a batch counts « 2 created, 1 refused » files and 3 waiting links and references (2 of the sheet + 1 of the stub seed)', async () => {

@@ -82,7 +82,7 @@ test('montée 0039 : données intactes, historique vide, déclencheurs posés', 
     const avant = (t: string) => db.prepare(`SELECT * FROM ${t} ORDER BY 1, 2`).all();
     const tables = ['univers', 'fiches', 'sections', 'relations', 'fiche_alias', 'etiquettes', 'fiche_etiquettes', 'fichiers', 'fichiers_sections'];
     const snap = tables.map(avant);
-    assert.deepEqual(migrate(db), [39]);
+    assert.deepEqual(migrate(db), [39, 40]);
     assert.deepEqual(tables.map(avant), snap, 'data untouched');
     assert.equal(lignes(db).length, 0, 'no past write reconstructed');
     assert.deepEqual(db.pragma('foreign_key_check'), []);
