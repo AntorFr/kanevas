@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { Bouton } from '../../../ui';
+import { CommutateurMasque } from './Masquer';
 import { cases, distanceHex } from './geo';
 import type { PanneauSysteme, Reference, Resultat, VueTrajet } from './types';
 
@@ -96,7 +97,11 @@ export type EtatPanneau =
   | { k: 'ok'; s: PanneauSysteme };
 
 /** The selected system's panel, or « Système non défini » for a generated hexagon. */
-export interface GestesSysteme { onModifier: () => void; onRetirer: () => void; onPromouvoir: (q: number, r: number) => void }
+export interface GestesSysteme {
+  onModifier: () => void; onRetirer: () => void; onPromouvoir: (q: number, r: number) => void;
+  /** The « Secret (MJ seul) » switch: where it writes, the galaxy's token for a drawn hexagon, and what follows a write. */
+  masque: { universId: number; galaxieId: number; versionGalaxie: number; onFait: () => void; onRecharger: () => void; onIntrouvable: () => void };
+}
 
 export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, onVers, onReessayer, adresseInterieur, gestes }: {
   selection: { k: 'systeme'; cle: string } | { k: 'genere'; q: number; r: number };
@@ -122,6 +127,11 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
           {d !== null && <><dt>Distance</dt><dd>{cases(d)}{mesure ? ` depuis ${mesure.nom}` : ''}</dd></>}</dl>
         <div className="gx-actions"><Link className="bouton neutre" to={adresseInterieur(selection.q, selection.r)}>Ouvrir le système</Link></div>
         {gestes && <div className="gx-actions"><Bouton icone={Pencil} ecrit onClick={() => gestes.onPromouvoir(selection.q, selection.r)}>Promouvoir ce système</Bouton></div>}
+        {gestes && (
+          <CommutateurMasque place={{ universId: gestes.masque.universId, galaxieId: gestes.masque.galaxieId, q: selection.q, r: selection.r }}
+            secret={false} tire jeton={gestes.masque.versionGalaxie} onFait={gestes.masque.onFait}
+            onRecharger={gestes.masque.onRecharger} onIntrouvable={gestes.masque.onIntrouvable} />
+        )}
       </section>
     );
   }
@@ -130,6 +140,7 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
     <section className="gx-bloc gx-panneau"><p className="echec" role="alert">Impossible de charger le système. <Bouton petit onClick={onReessayer}>Réessayer</Bouton></p></section>
   );
   const s = etat.s;
+  const estSecret = s.secret ?? secret ?? false;
   const ici: Resultat = { cle: selection.cle, nom: s.nom, q: s.q, r: s.r };
   const adresse = new URL(s.lien, window.location.origin).toString();
   const d = mesure && mesure.cle !== selection.cle ? distanceHex(s, mesure) : null;
@@ -144,7 +155,7 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
   }
   return (
     <section className="gx-bloc gx-panneau" aria-label="Système sélectionné">
-      <div className="gx-tete"><h2>{s.nom}</h2>{secret && <span className="pastille mj">MJ seul</span>}</div>
+      <div className="gx-tete"><h2>{s.nom}</h2>{estSecret && <span className="pastille mj">MJ seul</span>}</div>
       <dl className="gx-kv">
         <dt>Taille</dt><dd>{TAILLES[s.taille] ?? `Taille ${s.taille}`}</dd>
         {s.notes !== '' && <><dt>Notes</dt><dd className="gx-notes">{s.notes}</dd></>}
@@ -163,6 +174,11 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
           <Bouton icone={Pencil} ecrit onClick={gestes.onModifier}>Modifier</Bouton>
           <Bouton icone={Trash2} variante="danger" ecrit onClick={gestes.onRetirer}>Retirer</Bouton>
         </div>
+      )}
+      {gestes && (
+        <CommutateurMasque place={{ universId: gestes.masque.universId, galaxieId: gestes.masque.galaxieId, q: s.q, r: s.r }}
+          secret={estSecret} tire={false} jeton={s.version} onFait={gestes.masque.onFait}
+          onRecharger={gestes.masque.onRecharger} onIntrouvable={gestes.masque.onIntrouvable} />
       )}
       {champ !== null && <input ref={saisie} className="gx-lien" readOnly value={champ} aria-label="Adresse du système" onFocus={(e) => e.currentTarget.select()} />}
     </section>

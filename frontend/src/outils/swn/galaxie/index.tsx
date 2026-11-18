@@ -123,6 +123,14 @@ function CarteGalaxie({ universId, cible, prealable, suffixeMode }: PropsOutil) 
     }
   }, []);
 
+  // A drawn hexagon the GM has just anchored (hidden) is now a defined system: the panel follows it.
+  useEffect(() => {
+    if (selection?.k !== 'genere') return;
+    for (const s of objets.systemes.values()) {
+      if (s.q === selection.q && s.r === selection.r) { setSelection({ k: 'systeme', cle: s.cle, secret: s.secret }); return; }
+    }
+  }, [objets, selection]);
+
   const surIntrouvable = useCallback(() => setIntrouvable(true), []);
 
   // ---- Writing: every success reads the map and the galaxy again.
@@ -328,6 +336,10 @@ function CarteGalaxie({ universId, cible, prealable, suffixeMode }: PropsOutil) 
                 gestes={mj ? {
                   onModifier: () => systemeSel && selection.k === 'systeme' && modifier(systemeSel, selection.cle),
                   onRetirer: () => setDialogue('retirer'),
+                  masque: {
+                    universId, galaxieId: galaxie.id, versionGalaxie: galaxie.version, onFait: rafraichir,
+                    onRecharger: () => { setEssai((n) => n + 1); rafraichir(); }, onIntrouvable: surIntrouvable,
+                  },
                   onPromouvoir: (q, r) => setFormulaire({ k: 'systeme', mode: 'promouvoir', q, r, brouillon: brouillonSystemeVide(), nbRoutes: 0, n: Date.now() }),
                 } : undefined}
               />
