@@ -34,8 +34,10 @@ import {
   ecrireFlux,
   lireFichier,
   promouvoir,
+  sha256Stocke,
   supprimerFichier,
 } from './stockage.js';
+import { empreinteFichier } from './empreintes.js';
 import type { Acteur, PieceJointeVue, Role, SectionRow } from './types.js';
 
 /**
@@ -1074,3 +1076,95 @@ export function illustrationEnAttente(db: Db, ficheId: number): string | null {
   return r?.cle ?? null;
 }
 
+
+/** Page size of the token reads of the library and of the maps (B-90). */
+export const PAGE_LECTURE_API = 1000;
+
+export interface FichierApi {
+  id: number;
+  cle: string | null;
+  nom: string;
+  visibilite: Visibilite;
+  taille: number;
+  sha256: string | null;
+  empreinte: string | null;
+}
+
+/** The cursor of a token read: an id, nothing else. */
+export function curseurApi(apres: unknown): number {
+  if (apres === undefined) return 0;
+  const n = typeof apres === 'string' && /^\d+$/.test(apres) ? Number(apres) : NaN;
+  if (!Number.isSafeInteger(n)) throw new ErreurService('invalide', 'Le curseur est invalide.', undefined, 'apres');
+  return n;
+}
+
+async function sha256De(f: FichierRow): Promise<string | null> {
+  return f.empreinte ?? (await sha256Stocke(f.disque));
+}
+
+/**
+ * The files the caller reads, in id order, a thousand per page (B-90, AD-149). The one read rule
+ * decides; a closed file is neither listed nor counted. `suivant` is the cursor of the next page.
+ * The fingerprint is the one of the file's name, visibility and bytes (AD-139).
+ */
+export async function listerFichiersApi(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  apres: unknown,
+): Promise<{ fichiers: FichierApi[]; suivant: number | null }> {
+  const role = exigerRole(db, universId, acteur.compteId);
+  let curseur = curseurApi(apres);
+  const lus: FichierRow[] = [];
+  const requete = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND id > ? ORDER BY id LIMIT ?');
+  for (let fini = false; !fini && lus.length <= PAGE_LECTURE_API; ) {
+    const lot = requete.all(universId, curseur, PAGE_LECTURE_API) as FichierRow[];
+    for (const f of lot) {
+      curseur = f.id;
+      if (lisiblePar(role, acteur, f)) lus.push(f);
+      if (lus.length > PAGE_LECTURE_API) break;
+    }
+    fini = lot.length < PAGE_LECTURE_API;
+  }
+  const page = lus.slice(0, PAGE_LECTURE_API);
+  const fichiers: FichierApi[] = [];
+  for (const f of page) {
+    const sha256 = await sha256De(f);
+    fichiers.push({
+      id: f.id,
+      cle: f.cle_origine,
+      nom: f.nom,
+      visibilite: f.visibilite,
+      taille: f.taille,
+      sha256,
+      empreinte: sha256 === null ? null : empreinteFichier({ nom: f.nom, visibilite: f.visibilite, sha256 }),
+    });
+  }
+  return { fichiers, suivant: lus.length > PAGE_LECTURE_API ? page[page.length - 1]!.id : null };
+}
+
+/**
+ * The bytes of a file by origin key or id, under the one read rule with the caller's real rights.
+ * A key wins over an id; a file the caller does not read is the same `introuvable` as an unknown one (AD-66).
+ */
+export async function ouvrirFichierParReference(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  reference: string,
+  racine: string = attachmentsDir,
+): Promise<{ flux: Readable; nom: string; type: string; taille: number }> {
+  exigerRole(db, universId, acteur.compteId);
+  let f = db
+    .prepare('SELECT * FROM fichiers WHERE univers_id = ? AND cle_origine = ?')
+    .get(universId, reference) as FichierRow | undefined;
+  if (!f && /^\d+$/.test(reference)) {
+    f = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND id = ?').get(universId, Number(reference)) as
+      | FichierRow
+      | undefined;
+  }
+  if (!f || !fichierLisible(db, { compteId: acteur.compteId }, f)) throw introuvable();
+  const o = await lireFichier(f.disque, racine);
+  if (!o) throw introuvable();
+  return { flux: o.flux, nom: f.nom, type: f.type, taille: o.taille };
+}

@@ -146,3 +146,29 @@ export function empreinteRelation(relation: RelationEmpreinte, cleDe: CleDe): st
 export function empreinteFiche(entete: string, sections: readonly string[], relations: readonly string[]): string {
   return empreinte({ entete, sections, relations });
 }
+
+/** What `empreinteFichier` reads of a library file: its name, its visibility and its bytes' SHA-256. */
+export interface FichierEmpreinte {
+  nom: string;
+  visibilite: 'joueurs' | 'mj' | string;
+  sha256: string;
+}
+
+/** Fingerprint of a library file (AD-139, B-90): name, visibility, SHA-256 of the bytes. */
+export function empreinteFichier(fichier: FichierEmpreinte): string {
+  return empreinte({ nom: fichier.nom, visibilite: fichier.visibilite, sha256: fichier.sha256 });
+}
+
+/** What `empreinteCarte` reads of a map: title, form, visibility and the SHA-256 of its background. */
+export interface CarteEmpreinte {
+  titre: string;
+  forme: string;
+  visible: boolean;
+  /** SHA-256 of the background, null when the map has none. */
+  sha256Fond: string | null;
+}
+
+/** Fingerprint of a map (AD-139, B-90): title, form, visible, SHA-256 of the background. */
+export function empreinteCarte(carte: CarteEmpreinte): string {
+  return empreinte({ titre: carte.titre, forme: carte.forme, visible: carte.visible, sha256Fond: carte.sha256Fond });
+}
