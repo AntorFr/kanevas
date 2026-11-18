@@ -98,7 +98,7 @@ describe('E-23 le panneau d’un corps', { skip: skipBrowser, timeout: 600000 },
     await ctx.close();
   });
 
-  it('le MJ et la joueuse lisent le même panneau, sans action de plus', async () => {
+  it('le MJ lit le panneau de la joueuse et seulement trois gestes d’écriture de plus (E-23 édition)', async () => {
     const lus: string[] = [];
     for (const compte of ['Léa', 'Antor']) {
       const { page, ctx } = await ouvrir(compte, 1280, 800);
@@ -107,7 +107,7 @@ describe('E-23 le panneau d’un corps', { skip: skipBrowser, timeout: 600000 },
       lus.push(await panneau(page).innerText());
       await ctx.close();
     }
-    assert.equal(lus[0], lus[1]);
+    assert.equal(lus[1], `${lus[0]}\nDéplacer\nModifier…\nRetirer l’astre`);
   });
 
   it('cœur indisponible : une ligne de liste ouvre le panneau', async () => {

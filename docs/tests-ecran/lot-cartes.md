@@ -471,7 +471,7 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/carte-systeme-canvas-ecran.test.ts` | `les deux thèmes : captures du ciel (1280 et 390 px), le ciel reste sombre` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `${l} px : un corps sélectionné ouvre son panneau (nom, type, lieu, hexagone) ; le ciel vide le ferme` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `un astre sans nom lit « Astre sans nom »` | affichage | — | gardé |
-| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `le MJ et la joueuse lisent le même panneau, sans action de plus` | affichage | — | gardé |
+| `src/e2e/carte-systeme-panneau-ecran.test.ts` | `le MJ lit le panneau de la joueuse et seulement trois gestes d’écriture de plus (E-23 édition)` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `cœur indisponible : une ligne de liste ouvre le panneau` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `route d’illustration en erreur : « Illustration indisponible. » et « Réessayer » relance la requête` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `« Voir l’illustration » : fenêtre sur le flou, « Chargement de l’illustration… », puis l’image nette ; Esc ferme et rend le focus` | affichage | — | gardé |
