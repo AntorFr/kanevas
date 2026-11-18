@@ -11,6 +11,7 @@ import { ErreurService, introuvable } from '../erreurs.js';
 import type { Acteur } from '../types.js';
 import { apresEcriture, placerSysteme, sansSignal } from './ecriture-carte.js';
 import { exigerEcritureGalaxie, type LigneGalaxie, type LigneSysteme } from './galaxies.js';
+import { estMasque } from './lisibilite.js';
 import { lireInterieur, lireTire, type AstreVue, type FormationVue, type InterieurVue } from './interieur.js';
 
 interface Coeur {
@@ -194,9 +195,9 @@ const tailleSysteme = (t: number): number => (t < 1.0 ? 1 : t < 1.6 ? 2 : 3);
  * draw does not move (AD-138). The token must be the galaxy's `version` at reading, else `a_change`.
  */
 function ancrerTire(db: Db, ac: Acteur, universId: number, g: LigneGalaxie, q: number, r: number,
-  jeton: unknown, nom: string | null): LigneSysteme {
+  jeton: unknown, nom: string | null, inconnu: () => ErreurService = introuvable): LigneSysteme {
   const tire = lireTire(db, g, 'mj', q, r);
-  if (!tire) throw introuvable();
+  if (!tire) throw inconnu();
   if (jeton === undefined || jeton === null) throw invalide('versionSysteme', 'Version du système requise.');
   if (versionValide('versionSysteme', jeton) !== g.version) throw aChange();
   // One signal per call, sent by the caller after the gesture (`sansSignal` holds back the one of `placerSysteme`).
@@ -257,6 +258,8 @@ function garde(db: Db, ac: Acteur, universId: number, galaxieId: number, q: unkn
 function ecrire(
   db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: unknown, r: unknown,
   jeton: unknown, nomAncrage: string | null, geste: (c: Contexte) => Omit<ResultatEcriture, 'interieur'> & { ecrit?: false },
+  /** What an hexagon with neither row nor drawn star answers once the caller may write (default: the plain `introuvable`). */
+  inconnu?: () => ErreurService,
 ): ResultatEcriture {
   const ac = acteurDe(acteur);
   return db.transaction((): ResultatEcriture => {
@@ -266,7 +269,7 @@ function ecrire(
     let systeme = systemeDe(db, g, qq, rr);
     let ancre = false;
     if (!systeme) {
-      systeme = ancrerTire(db, ac, universId, g, qq, rr, jeton, nomAncrage);
+      systeme = ancrerTire(db, ac, universId, g, qq, rr, jeton, nomAncrage, inconnu);
       ancre = true;
     }
     const { ecrit, ...sortie } = geste({ db, ac, universId, g, systeme, q: qq, r: rr, ancre });
@@ -502,4 +505,42 @@ export function poserTransition(db: Db, acteur: Acteur | number, universId: numb
     c.db.prepare('UPDATE swn_systemes SET transition = ?, version = version + 1 WHERE id = ?').run(rayon, c.systeme.id);
     return {};
   });
+}
+
+const systemeInconnu = () => new ErreurService('introuvable', 'Système introuvable.', 'systeme_inconnu');
+
+/**
+ * « Secret (MJ seul) » (B-97, AD-masquer-1): hides or shows a whole system. A drawn system is anchored first, in the
+ * same transaction and by the same function as every other write (`promu` true, the neighbours' draw unchanged), then
+ * flagged; the token is the one of `poserTransition`. An hexagon with no system at all is `systeme_inconnu` (introuvable).
+ */
+export function masquerSysteme(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
+  entree: JetonSysteme & { secret?: unknown; nomAncrage?: unknown }): ResultatEcriture {
+  const e = objet(entree);
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
+    if (typeof e.secret !== 'boolean') throw invalide('secret', 'Valeur invalide.');
+    // A system defined before the call compares the token with its own row; a drawn one was checked by the anchoring.
+    if (!c.ancre && versionValide('versionSysteme', jetonDe(e)) !== c.systeme.version) {
+      throw new ErreurService('conflit', "Ce système a changé depuis que vous l'avez ouvert.", 'a_change');
+    }
+    if (estMasque(c.systeme) === e.secret) return c.ancre ? {} : { ecrit: false };
+    c.db.prepare('UPDATE swn_systemes SET secret = ?, version = version + 1 WHERE id = ?').run(e.secret ? 1 : 0, c.systeme.id);
+    return {};
+  }, systemeInconnu);
+}
+
+/**
+ * The GM's own read of the state (the badge and the switch of E-21): `{secret, promu}` of the defined system at `(q, r)`,
+ * `{secret: false, promu: false}` of a drawn one. Reserved to a GM outside Player mode; anyone else gets what
+ * `lireInterieur` answers (the same `introuvable` for an unreadable hexagon, `refuse` otherwise).
+ */
+export function etatMasque(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number):
+  { secret: boolean; promu: boolean; versionSysteme: number } {
+  const ac = acteurDe(acteur);
+  const g = garde(db, ac, universId, galaxieId, q, r);
+  if (!Number.isSafeInteger(q) || !Number.isSafeInteger(r)) throw introuvable();
+  const ligne = systemeDe(db, g, q, r);
+  if (ligne) return { secret: estMasque(ligne), promu: ligne.promu === 1, versionSysteme: ligne.version };
+  if (!lireTire(db, g, 'mj', q, r)) throw systemeInconnu();
+  return { secret: false, promu: false, versionSysteme: g.version };
 }
