@@ -29,7 +29,6 @@ import {
   ajouterMembre,
   allerMembres,
   attendre,
-  attendreAbsent,
   connecte,
   creerUnivers,
   launch,
@@ -274,7 +273,7 @@ test('E-19 contenu long · 102 fichiers : 100 puis « Charger la suite », le de
   const tuiles = () => a2.locator('main').getByRole('button', { name: /f\d{3}\.pdf/ }).count();
   assert.equal(await tuiles(), 100);
   await a2.getByRole('button', { name: 'Charger la suite' }).click();
-  await attendreAbsent(a2.getByRole('button', { name: 'Charger la suite' }));
+  await a2.locator('main').getByRole('button', { name: /f000\.pdf/ }).first().waitFor({ state: 'visible' });
   assert.equal(await tuiles(), 102);
   assert.equal(await a2.getByRole('button', { name: 'Charger la suite' }).count(), 0);
   await a2.screenshot({ path: '/tmp/scr/ver-102.png' });
