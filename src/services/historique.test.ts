@@ -79,7 +79,9 @@ test('montée 0039 : données intactes, historique vide, déclencheurs posés', 
     const db = openDb(':memory:');
     assert.equal(migrate(db, dir + '/').at(-1), 38);
     semer(db);
-    const avant = (t: string) => db.prepare(`SELECT * FROM ${t} ORDER BY 1, 2`).all();
+    // 0040 drops the four import marks: the data compared are the other columns.
+    const avant = (t: string) => (db.prepare(`SELECT * FROM ${t} ORDER BY 1, 2`).all() as Record<string, unknown>[])
+      .map(({ dernier_import, version_importee, ...r }) => r);
     const tables = ['univers', 'fiches', 'sections', 'relations', 'fiche_alias', 'etiquettes', 'fiche_etiquettes', 'fichiers', 'fichiers_sections'];
     const snap = tables.map(avant);
     assert.deepEqual(migrate(db), [39, 40]);
