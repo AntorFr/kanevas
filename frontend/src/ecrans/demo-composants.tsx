@@ -71,6 +71,8 @@ function Demo() {
   const [couleur, setCouleur] = useState('#3a4cc0');
   const [choix, setChoix] = useState<string | null>('b');
   const [decompte, setDecompte] = useState<string | undefined>(undefined);
+  const [erreurCurseur, setErreurCurseur] = useState(false);
+  const [secteur, setSecteur] = useState('#12abcd');
   const [applique, setApplique] = useState(0);
 
   return (
@@ -323,15 +325,16 @@ function Demo() {
       <Groupe id="d-curseur" titre="Curseur">
         <Etat titre="Valeur, erreur, désactivé">
           <Curseur etiquette="Densité des étoiles" valeur={curseur} min={0} max={1} onChange={setCurseur} />
-          <Curseur etiquette="Rayon" valeur={2} min={0} max={4} pas={1} onChange={() => {}} erreur="Hors des bornes." />
+          <Bouton onClick={() => setErreurCurseur(!erreurCurseur)}>Montrer l’erreur du curseur</Bouton>
+          <Curseur etiquette="Rayon" valeur={2} min={0} max={4} pas={1} onChange={() => {}} erreur={erreurCurseur ? 'Hors des bornes.' : undefined} />
           <Curseur etiquette="Bruit" valeur={0.25} min={0} max={1} onChange={() => {}} disabled />
         </Etat>
       </Groupe>
 
-      <Groupe id="d-champ-couleur" titre="Champ couleur">
+      <Groupe id="d-champ-couleur" titre="Saisie de couleur">
         <Etat titre="Valide, invalide, vide">
           <ChampCouleur etiquette="Couleur de la faction" valeur={couleur} onChange={setCouleur} />
-          <ChampCouleur etiquette="Couleur du secteur" valeur="#12" onChange={() => {}} />
+          <ChampCouleur etiquette="Couleur du secteur" valeur={secteur} onChange={setSecteur} />
           <ChampCouleur etiquette="Couleur libre" valeur="" onChange={() => {}} />
         </Etat>
       </Groupe>

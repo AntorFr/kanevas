@@ -98,6 +98,9 @@ test('curseur : étiquette liée, valeur affichée, flèches de 0,05 bornées à
 
 test('curseur : l’erreur est préfixée « Erreur : » et reliée par aria-describedby ; désactivé est inerte', async () => {
   const c = page.getByRole('slider', { name: /Rayon/ });
+  assert.equal(await c.getAttribute('aria-invalid'), null);
+  await page.getByRole('button', { name: 'Montrer l’erreur du curseur' }).click();
+  await page.locator('input[type=range][aria-invalid="true"]').waitFor();
   assert.equal(await c.getAttribute('aria-invalid'), 'true');
   const id = await c.getAttribute('aria-describedby');
   assert.ok(id);
@@ -112,6 +115,9 @@ test('champ couleur : « Couleur invalide : #rrggbb. » pour une saisie fausse, 
   const mauvais = page.getByLabel('Couleur du secteur');
   const vide = page.getByLabel('Couleur libre');
   assert.equal(await bon.inputValue(), '#3a4cc0');
+  assert.equal(await page.getByText('Couleur invalide : #rrggbb.').count(), 0, 'valides et vide : aucune erreur');
+  await mauvais.fill('#12');
+  await page.getByText('Couleur invalide : #rrggbb.').waitFor();
   assert.equal(await page.getByText('Couleur invalide : #rrggbb.').count(), 1, 'seul « #12 » est refusé, « vide » ne crie pas');
   const id = await mauvais.getAttribute('aria-describedby');
   assert.ok(id);
@@ -126,9 +132,10 @@ test('champ couleur : « Couleur invalide : #rrggbb. » pour une saisie fausse, 
   await bon.fill('#ff0000');
   await page.waitForFunction(() => (document.querySelectorAll('.pastille-couleur')[0] as HTMLElement).style.background !== '' && getComputedStyle(document.querySelectorAll('.pastille-couleur')[0]!).backgroundColor === 'rgb(255, 0, 0)');
   await bon.fill('#ff00');
-  await page.getByText('Couleur invalide : #rrggbb.').nth(1).waitFor();
+  await page.waitForFunction(() => document.querySelectorAll('.champ-couleur .erreur').length === 2);
   assert.match(await pastille(bon), /vide/, 'invalide : pastille vide');
   await bon.fill('#3a4cc0');
+  await mauvais.fill('#12abcd');
 });
 
 test('liste de choix : un seul arrêt (la sélection), ↑ ↓ Home End déplacent le focus, Entrée choisit', async () => {
@@ -190,7 +197,7 @@ test('rendu : les cinq composants, clair et sombre, 1280 et 390 px, sans débord
       await p.waitForLoadState('networkidle');
       await p.getByRole('heading', { name: 'Onglets', level: 2 }).waitFor();
       assert.equal(await p.evaluate(() => document.documentElement.getAttribute('data-theme')), theme === 'clair' ? 'light' : 'dark', `thème ${theme}`);
-      for (const g of ['Onglets', 'Curseur', 'Champ couleur', 'Liste de choix', 'Barre d’application'])
+      for (const g of ['Onglets', 'Curseur', 'Saisie de couleur', 'Liste de choix', 'Barre d’application'])
         assert.ok(await p.getByRole('heading', { name: g, level: 2 }).isVisible(), `${g} ${vp}/${theme}`);
       assert.equal(await p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1), false, `${vp}/${theme} : pas de défilement horizontal`);
       const hauteur = await p.getByRole('slider', { name: /Densité/ }).evaluate((e: HTMLElement) => e.getBoundingClientRect().height);
