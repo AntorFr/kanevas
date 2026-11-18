@@ -62,7 +62,7 @@ const en_tete = "import assert from 'node:assert/strict';\nimport { describe, te
 describe('niveau local : déclaration dans .sdlc.yaml', () => {
   test('local: et rejouer: sont déclarés, avec leur gabarit', () => {
     assert.equal(champ('local'), 'npm ci && npm run tests:local');
-    assert.equal(champ('rejouer'), 'npm ci && node scripts/rejouer-tests.mjs {tests}');
+    assert.equal(champ('rejouer'), 'node scripts/rejouer-tests.mjs {tests} --installe');
   });
   test('la suite attestée est inchangée : commande, rapport, format, délai', () => {
     assert.equal(champ('commande'), 'npm ci && npm run tests:attestes');
