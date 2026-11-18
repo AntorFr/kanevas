@@ -89,7 +89,6 @@ test('import : clé inconnue en attente, puis résolue à la création sans touc
   assert.equal(apres.version, avant.version);
   assert.equal(apres.modifie_le, avant.modifie_le);
   assert.deepEqual(app.db.prepare('SELECT cible_fiche_id c, cible_cle k FROM liens WHERE section_id = ?').all(sid), [{ c: g.json().id, k: null }]);
-  assert.equal((app.db.prepare('SELECT version_importee v FROM sections WHERE id = ?').get(sid) as { v: unknown }).v, (app.db.prepare('SELECT version_importee v FROM sections WHERE id = ?').get(sid) as { v: unknown }).v);
 
   assert.equal((await put('lieu:port-sel', PORT)).json().etat, 'inchangee');
   assert.equal((await put('faction:guilde', GUILDE)).json().etat, 'inchangee');

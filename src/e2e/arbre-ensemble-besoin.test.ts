@@ -242,7 +242,7 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
 
   // P-10 + AD-104 : critère d'import, de bout en bout. Panne : parent absent bloque l'écriture, ou rejeu sans effet,
   // ou rejeu qui écrase un parent changé à la main.
-  test('P-10 / AD-104 : le fil de Les Docks importé sans son parent, puis avec lui, puis rangé à la main', async () => {
+  test('P-10 / AD-104 : le fil de Les Docks importé sans son parent, puis avec lui, puis rangé à la main et rejoué', async () => {
     const lot1 = (await importer('POST', '/lots')).corps.lotId;
     const r1 = await importer('PUT', `/fiches/${encodeURIComponent('lieu:les-docks')}?lot=${lot1}`, {
       type: 'lieu', titre: 'Les Docks', sections: [], parent: 'lieu:port-sel-absent',
@@ -265,7 +265,7 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
     assert.equal(await filTexte(antor), 'Essai Kanka › Lieux › Port-Sel Kanka › Les Docks');
     await antor.screenshot({ path: `${SHOTS}/import-rejeu.png` });
 
-    // un parent changé à la main n'est plus écrasé
+    // un parent changé à la main est remis par le rejeu : le script le porte (B-48 retiré)
     const anse = (await api(antor, 'GET', `/api/univers/${E}/fiches?q=Anse-aux-Sels`)).fiches[0].id;
     const main = await brut(antor, 'PATCH', `/api/univers/${E}/fiches/${docks}`, { parent: anse });
     assert.equal(main.status, 200, main.texte);
@@ -275,6 +275,6 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
     });
     assert.equal(encore.status, 200);
     await ouvrir(antor, E, docks, 'Les Docks');
-    assert.equal(await filTexte(antor), 'Essai Kanka › Lieux › Anse-aux-Sels › Les Docks');
+    assert.equal(await filTexte(antor), 'Essai Kanka › Lieux › Port-Sel Kanka › Les Docks');
   });
 });

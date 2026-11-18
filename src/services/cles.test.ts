@@ -284,7 +284,7 @@ test('creee_via : écran par défaut, assistant, import (clé d’origine gardé
   const via = (id: number) => (m.db.prepare('SELECT creee_via v FROM fiches WHERE id = ?').get(id) as { v: string }).v;
   const a = creerFiche(m.db, m.mj.id, m.u.id, { type: 'lieu', titre: 'A', via: 'assistant' });
   const i = creerFiche(m.db, m.mj.id, m.u.id, {
-    type: 'lieu', titre: 'Importée', origine: { cle: 'lieu:ma-cle', dernierImport: {} },
+    type: 'lieu', titre: 'Importée', origine: { cle: 'lieu:ma-cle' },
   });
   assert.deepEqual([via(lieu(m, 'B').id), via(a.id), via(i.id)], ['ecran', 'assistant', 'import']);
   assert.equal(m.cle(i.id), 'lieu:ma-cle');

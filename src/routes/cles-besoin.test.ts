@@ -123,10 +123,11 @@ test('B-104 : l’import adresse une section née dans Kanevas par sa clé : ni 
   assert.ok(r.statusCode === 200 || r.statusCode === 201, r.body);
   const lue = (await w.req(w.antor, 'GET', `/api/univers/${uid}/fiches/${f.id}`)).json();
   assert.equal(lue.sections.length, 1);
-  // reached by its key: the import neither refuses it nor duplicates it; the text edited in Kanevas is protected, not overwritten
+  // reached by its key: the import neither refuses it nor duplicates it; the script's text is written (Kanevas keeps no memory of the import, B-48 withdrawn)
   assert.equal(lue.sections[0].cle, 'histoire');
-  assert.equal(lue.sections[0].contenu, 'ancien');
-  assert.match(r.body, /Histoire/);
+  assert.equal(lue.sections[0].contenu, 'nouveau');
+  assert.equal(r.json().etat, 'mise_a_jour');
+  assert.deepEqual(r.json().avertissements, []);
   await w.app.close();
 });
 
