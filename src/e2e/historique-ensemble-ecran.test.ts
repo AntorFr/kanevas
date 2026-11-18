@@ -318,7 +318,7 @@ describe('kanevas-synchro-historique, E-24 Historique de l’univers', () => {
     const motif = /\/api\/univers\/[^/]+\/historique(\?.*)?$/;
     const panne = (r: Any) => r.fulfill({ status: 500, body: '{"message":"boom"}', contentType: 'application/json' });
     await antor.route(motif, panne);
-    await antor.goto(`/univers/${UCLE}/historique?mode=joueur`);
+    await antor.goto(`/univers/${UCLE}/historique`);
     await antor.getByText(/Impossible de charger l.historique\./).waitFor();
     await antor.screenshot({ path: `${SHOTS}/e24-erreur.png`, fullPage: true });
     await antor.unroute(motif, panne);
@@ -359,7 +359,7 @@ describe('kanevas-synchro-historique, E-24 Historique de l’univers', () => {
       assert.equal(await lea.getByRole('menuitem', { name: 'Historique' }).count(), 0);
       await lea.keyboard.press('Escape');
     }
-    await lea.goto(`/univers/${UCLE}/historique?mode=joueur`);
+    await lea.goto(`/univers/${UCLE}/historique`);
     await lea.getByText('Page introuvable.').waitFor();
     assert.equal(await lignes(lea).count(), 0);
     await lea.screenshot({ path: `${SHOTS}/e24-joueuse.png`, fullPage: true });
