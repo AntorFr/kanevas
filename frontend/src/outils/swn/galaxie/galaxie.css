@@ -229,3 +229,5 @@
 
 /* « Secret (MJ seul) » of the system panel (E-21, B-97). */
 .gx-masque { display: flex; flex-direction: column; gap: var(--e-2); margin-top: var(--e-2); }
+.gx-marque-mj rect { fill: var(--mj-trame); stroke: var(--mj); stroke-width: 1; }
+.gx-systeme .gx-marque-mj text { fill: var(--mj); stroke: none; font-size: var(--t-12); font-weight: 600; }
