@@ -12,7 +12,8 @@ import { galaxieLisible, zonesLisibles, type LigneGalaxie, type NiveauLecture } 
 import { entreesBloc, systemesExclusants, tirerEtoileComplete, VERSION_GENERATEUR } from './tirage-etoiles.js';
 
 interface Coeur {
-  tirer_systeme(q: number, r: number, taille: number, lettre: string, version: number): string;
+  tirer_systeme(q: number, r: number, taille: number, lettre: string, version: number, valeurs: string): string;
+  reglages_defaut(version: number): string;
   transition_defaut(astres: string, formations: string): number;
 }
 
@@ -156,7 +157,7 @@ export function lireTire(db: Db, galaxie: LigneGalaxie, niveau: NiveauLecture, q
   const entrees = entreesBloc(bx, by, zones, galaxie.densite_defaut, systemesExclusants(db, galaxie.id, { bx, by }, { bx, by }));
   const etoile = tirerEtoileComplete(galaxie.graine, bx, by, entrees);
   if (!etoile || etoile.q !== q || etoile.r !== r) return null;
-  const tire = JSON.parse(leCoeur().tirer_systeme(q, r, etoile.taille, etoile.lettre, VERSION_GENERATEUR)) as
+  const tire = JSON.parse(leCoeur().tirer_systeme(q, r, etoile.taille, etoile.lettre, VERSION_GENERATEUR, leCoeur().reglages_defaut(VERSION_GENERATEUR))) as
     { astres: AstreVue[]; formations: FormationVue[]; transition: number };
   return { etoile, ...tire };
 }

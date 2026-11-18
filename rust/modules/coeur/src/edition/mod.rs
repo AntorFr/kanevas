@@ -14,6 +14,7 @@ use std::fmt;
 use wasm_bindgen::prelude::*;
 
 pub use aspect::valider_aspect;
+pub(crate) use aspect::{COULEURS, NOMBRES};
 pub use formation::valider_formation;
 
 /// Largest JSON of an aspect, in bytes.
