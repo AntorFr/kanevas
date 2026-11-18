@@ -200,7 +200,7 @@ function DialogueAncrage({ interieur, place, demande, adopter, recharger, onFini
   );
 }
 
-/** Radius of the transition by default (the core's), shown in « Par défaut : 12 ». */
+/** Fallback shown only when the answer carries no radius; the real default is the core's, computed from the farthest body. */
 export const TRANSITION_DEFAUT = 12;
 const TRANSITION_MAX = 1000;
 
@@ -265,8 +265,8 @@ export function DialogueRayon({ onFermer }: { onFermer: () => void }) {
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setTexte(e.target.value); setTouche(true); }}
         onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' && lu.valeur !== undefined) { e.preventDefault(); void envoyer(lu.valeur); } }}
       />
-      <p className="gx-note">Par défaut : {TRANSITION_DEFAUT}</p>
-      <Bouton petit disabled={enCours} onClick={() => { setTexte(String(TRANSITION_DEFAUT)); void envoyer(null); }}>Revenir au défaut</Bouton>
+      <p className="gx-note">Par défaut : calculé selon le corps le plus éloigné du système.</p>
+      <Bouton petit disabled={enCours} onClick={() => { void envoyer(null); }}>Revenir au défaut</Bouton>
       {echec && <MessageEchec echec={echec} onReessayer={() => void envoyer(lu.valeur ?? null)} onRecharger={() => { void recharger().finally(onFermer); }} />}
     </BoiteDialogue>
   );

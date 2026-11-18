@@ -479,3 +479,12 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `fenêtre : une route qui répond introuvable → « Page introuvable. »` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `captures de recette : chaque famille de corps, chaque thème, 1280 et 390 px` | affichage | — | gardé |
 | `src/e2e/wasm-navigateur.test.ts` | `the coeur module in Chromium draws the same bytes as the Node binding (AD-carte-1) and refuses an unknown type and a side of 8` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `glisser une planète d'un système défini : une seule écriture au relâchement, la place suit après rechargement, la voisine n'a pas bougé` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `une lune glissée tourne autour de sa planète : son heure seule change, jamais son orbite` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `trois pressions de flèche rapprochées n'envoient qu'une requête, 600 ms après la dernière ; « Alpha déplacé. » s'annonce` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `Maj + flèche : pas ×4 ; l'heure fait le tour de 12` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `erreur du serveur : le corps retourne à sa place et « Impossible d'enregistrer. » se lit` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `système tiré : le dialogue s'ouvre au relâchement, « Annuler » n'écrit rien et ramène la planète ; « Ancrer » écrit, la marque lit « Défini »` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `une joueuse n'a aucune poignée et un glisser n'écrit rien` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `le MJ en mode joueur n'a pas de poignée non plus` | affichage | — | gardé |
+| `src/e2e/carte-systeme-glisser-ecran.test.ts` | `au toucher : un glisser simple déplace la vue sans écrire ; un appui long de 300 ms puis glisser déplace le corps` | affichage | — | gardé |
