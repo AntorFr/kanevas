@@ -226,3 +226,8 @@
 .cs-enregistrement { position: absolute; transform: translateX(-50%); white-space: nowrap; pointer-events: none; line-height: 15px; color: var(--texte-2); font-style: italic;
   text-shadow: 0 0 4px var(--ciel-halo), 0 0 8px var(--ciel-halo); }
 .cs-echec-geste { margin-top: 0; }
+
+/* « Secret (MJ seul) » of the system panel (E-21, B-97). */
+.gx-masque { display: flex; flex-direction: column; gap: var(--e-2); margin-top: var(--e-2); }
+.gx-marque-mj rect { fill: var(--mj-trame); stroke: var(--mj); stroke-width: 1; }
+.gx-systeme .gx-marque-mj text { fill: var(--mj); stroke: none; font-size: var(--t-12); font-weight: 600; }
