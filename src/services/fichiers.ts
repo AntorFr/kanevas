@@ -98,7 +98,7 @@ export interface ResultatFichierImport {
 
 /**
  * Ensures an imported library file (AD-104, B-48). Unlike an interactive upload, the import
- * explicitly chooses its visibility. The origin key, never the name, identifies the file.
+ * may send its visibility (omitted: « joueurs » at creation, untouched on a replay, B-91). The origin key, never the name, identifies the file.
  * Bytes, metadata and batch outcome are committed together; an unchanged upload keeps its disk token.
  */
 export async function assurerFichier(
@@ -129,7 +129,9 @@ export async function assurerFichier(
     if (!cleValide(cle)) invalider('cle', "Clé d'origine invalide.");
     if (typeof entree.nom !== 'string') invalider('nom', 'Nom du fichier manquant.');
     const nom = nomPropre(entree.nom as string);
-    const visibilite = entree.visibilite ?? 'joueurs';
+    // B-91: an omitted visibility is not sent — « joueurs » at creation only, never on a replay.
+    const envoyee = entree.visibilite !== undefined && entree.visibilite !== null;
+    const visibilite = envoyee ? entree.visibilite : 'joueurs';
     if (visibilite !== 'joueurs' && visibilite !== 'mj') {
       invalider('visibilite', 'La visibilité doit être « joueurs » ou « mj ».');
     }
@@ -163,13 +165,13 @@ export async function assurerFichier(
           ? JSON.parse(courant.dernier_import) as { nom?: string; visibilite?: Visibilite }
           : {};
         const noms = courant.nom === nom || marque.nom === courant.nom;
-        const visibilites = courant.visibilite === visibilite || marque.visibilite === courant.visibilite;
+        const visibilites = envoyee && (courant.visibilite === visibilite || marque.visibilite === courant.visibilite);
         const nomEcrit = noms ? nom : courant.nom;
         const visibiliteEcrite = visibilites ? visibilite as Visibilite : courant.visibilite;
         if (noms) marque.nom = nom;
         else avertissements.push('nom modifié dans Kanevas : non écrasé');
         if (visibilites) marque.visibilite = visibilite as Visibilite;
-        else avertissements.push('visibilité modifiée dans Kanevas : non écrasée');
+        else if (envoyee) avertissements.push('visibilité modifiée dans Kanevas : non écrasée');
         const octetsChanges = courant.empreinte !== ecrit.empreinte;
         if (octetsChanges) {
           nouveauDisque = promouvoir(ecrit.temporaire, racine);
