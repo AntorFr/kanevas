@@ -8,6 +8,7 @@
 //   npm run tests:attestes -- --concurrence 2    # test files at a time (default min(CPUs, 2))
 //   npm run tests:local                          # --local: no src/e2e/ file, no `build`, no Playwright
 //   npm run tests:ecrans -- <base>               # --ecrans <base>: only the screen tests chosen for <base>..HEAD
+//   --installe (after the other arguments): `tests.installation` already ran `build:wasm`; skip only that step
 //   npm run tests:fiche -- <base>                # --fiche <base>: the suite minus the screen tests not chosen
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
@@ -23,6 +24,7 @@ const TAP = 'resultats.tap';
 
 const args = process.argv.slice(2);
 const local = args.includes('--local');
+const installe = args.includes('--installe');
 const niveau = ['ecrans', 'fiche'].find((n) => args.includes(`--${n}`));
 const iConc = args.indexOf('--concurrence');
 const concurrence = iConc >= 0 ? Number(args[iConc + 1]) : Math.min(availableParallelism(), MAX_CONCURRENCY);
@@ -69,7 +71,7 @@ if (!local && fichiers.some((f) => f.startsWith('src/e2e/'))) assurerPlaywright(
 console.log(`Test file concurrency: ${concurrence}${iConc < 0 ? ' (default)' : ' (--concurrence)'}. Harness startups run one at a time.`);
 // `ecrans:` plays only what its screen tests need (wasm, build); the rest is the business of `local:`.
 const etapes = local ? ['build:wasm', 'typecheck'] : niveau === 'ecrans' ? ['build:wasm', 'build'] : ['build:wasm', 'typecheck', 'build'];
-for (const script of etapes) {
+for (const script of etapes.filter((e) => !(installe && e === 'build:wasm'))) {
   // The build too: a screen test checks what the built application serves and skips without dist/.
   const r = spawnSync('npm', ['run', script], { stdio: 'inherit' });
   if (r.status !== 0) process.exit(r.status ?? 1);
