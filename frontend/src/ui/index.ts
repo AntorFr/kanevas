@@ -1,12 +1,22 @@
 import './tokens.css';
 import './ui.css';
+import './jetons.css';
+import './historique.css';
 
 export * from './composants';
 export * from './etats';
 export * from './menu';
 export * from './interrupteur';
+export * from './segments';
 export * from './toast';
 export * from './dialogue';
 export * from './blocs';
 export * from './markdown';
 export * from './editeur';
+export * from './ligne-fiche-liee';
+export * from './choix-segmente';
+export * from './liste-acces';
+export * from './ligne-jeton';
+export * from './valeur-copiable';
+export * from './ligne-historique';
+export * from './comparaison';

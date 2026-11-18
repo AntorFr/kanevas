@@ -1,3 +1,4 @@
+// ecrans: parametres, vue-ensemble
 // kanevas-rv-composants (reopened by verify): every « MJ seul » panel (E-3 « Préparation », E-14 settings) shows a
 // padlock before the words, in light and dark, like the audience pill (charte § Composants: icon, word, tint).
 import assert from 'node:assert/strict';

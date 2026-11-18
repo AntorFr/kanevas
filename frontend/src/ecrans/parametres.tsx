@@ -1,6 +1,6 @@
 import { ArrowRight, Check, Link2, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
 import { useCharge, useUnivers } from '../cadre-contexte';
@@ -8,6 +8,7 @@ import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { BoiteDialogue, Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Panneau, useToasts } from '../ui';
 import { PanneauTypesUnivers } from './types-reglage/panneau-univers';
+import { PanneauOutils } from './outils/panneau';
 import './ecrans.css';
 import './liste.css';
 import './reglages.css';
@@ -17,6 +18,9 @@ const DESCRIPTION_MAX = 500;
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 const PLUS_MJ = 'Vous ne pouvez plus modifier ces paramètres.';
 const AUCUN = 'aucun';
+const IDENT_FORME = 'Lettres minuscules, chiffres et tirets, 2 à 40, avec au moins une lettre.';
+const IDENT_PRIS = 'Cet identifiant est déjà pris.';
+const ECHEC_PARAMETRES = 'Impossible d’enregistrer les paramètres. Réessayez.';
 
 interface SystemeCatalogue {
   id: number;
@@ -35,6 +39,9 @@ function messageEchec(e: unknown): string {
 /** E-14 Paramètres de l'univers (GM only): identity, game system attach/detach, create a system. */
 function Parametres() {
   const { id } = useParams();
+  const [params, setParams] = useSearchParams();
+  const surOutils = params.get('onglet') === 'outils';
+  const surTypes = params.get('onglet') === 'types';
   const { recharger: rechargerUnivers } = useUnivers();
   const { toast } = useToasts();
   const navigate = useNavigate();
@@ -67,6 +74,8 @@ function Parametres() {
 
   const [nom, setNom] = useState('');
   const [description, setDescription] = useState('');
+  const [identifiant, setIdentifiant] = useState('');
+  const [erreurIdentifiant, setErreurIdentifiant] = useState<string>();
   const [nomVide, setNomVide] = useState(false);
   const [liste, setListe] = useState<SystemeCatalogue[]>([]);
   const [systeme, setSysteme] = useState<SystemeUnivers | null>(null);
@@ -87,6 +96,7 @@ function Parametres() {
     if (univers.etat === 'ok') {
       setNom(univers.valeur.nom);
       setDescription(univers.valeur.description);
+      setIdentifiant(univers.valeur.cle ?? '');
     }
   }, [univers]);
   useEffect(() => {
@@ -105,6 +115,7 @@ function Parametres() {
   const etats = [univers, catalogue, courant];
   if (etats.some((e) => e.etat === 'chargement')) return <ChargementListe texte="Chargement des paramètres…" />;
   // A player, no role, or an unknown universe: the same answer. (No system is a 404 of its own.)
+  if (surOutils && params.get('mode') === 'joueur') return <PageIntrouvable />;
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
   if (univers.etat === 'ok' && univers.valeur.role !== 'mj') return <PageIntrouvable />;
   if (catalogue.etat === 'erreur' && catalogue.statut === 403) return <PageIntrouvable />;
@@ -152,19 +163,45 @@ function Parametres() {
   async function enregistrer(e: FormEvent) {
     e.preventDefault();
     setEchecIdentite(undefined);
+    setErreurIdentifiant(undefined);
     if (nom.trim() === '') return setNomVide(true);
     if (nom.length > NOM_MAX || description.length > DESCRIPTION_MAX) return;
+    const cleActuelle = univers.etat === 'ok' ? univers.valeur.cle : undefined;
+    const nouvelle = identifiant.trim();
+    const changee = cleActuelle !== undefined && nouvelle !== cleActuelle;
+    let refuse = false;
+    let cleEcrite: string | undefined;
     const ok = await ecrire(
       'identite',
       async () => {
-        await appeler('PATCH', base, { nom, description });
+        try {
+          // An unchanged identifier is not sent; a refused one saves nothing (the name stays unsaved).
+          await appeler('PATCH', base, changee ? { nom, description, cle: nouvelle } : { nom, description });
+          if (changee) cleEcrite = nouvelle;
+        } catch (err) {
+          if (changee && err instanceof ErreurApi && err.statut === 409 && err.code === 'cle_prise') {
+            refuse = true;
+            return setErreurIdentifiant(IDENT_PRIS);
+          }
+          if (changee && err instanceof ErreurApi && err.statut === 400 && err.details?.champ === 'cle') {
+            refuse = true;
+            return setErreurIdentifiant(IDENT_FORME);
+          }
+          throw err;
+        }
         rechargerUnivers();
       },
-      setEchecIdentite,
+      (m) => setEchecIdentite(m === ECHEC ? ECHEC_PARAMETRES : m),
     );
+    if (refuse) {
+      requestAnimationFrame(() => document.querySelector<HTMLInputElement>('.parametres-univers input[aria-invalid="true"]')?.focus());
+      return;
+    }
     if (ok) {
       setNomVide(false);
       toast('Enregistré.');
+      // The address of the whole screen is replaced; the former identifier keeps leading here.
+      if (cleEcrite) navigate(`/univers/${cleEcrite}/parametres${window.location.search}`, { replace: true });
     }
   }
 
@@ -252,6 +289,11 @@ function Parametres() {
       : nomSystemeVide && nomSysteme.trim() === ''
         ? 'le nom est obligatoire.'
         : undefined;
+  const inchange =
+    univers.etat === 'ok' &&
+    nom === univers.valeur.nom &&
+    description === univers.valeur.description &&
+    identifiant.trim() === (univers.valeur.cle ?? '');
   const saisie = (set: (v: string) => void, avant?: () => void) => (e: { target: { value: string } }) => {
     avant?.();
     set(e.target.value);
@@ -265,7 +307,17 @@ function Parametres() {
         </span>
         <h1>Paramètres de l’univers</h1>
       </header>
-      <div className="panneaux-suivi">
+      <div className="onglets outils-onglets" role="tablist" aria-label="Paramètres de l’univers">
+        <button type="button" role="tab" aria-selected={!surOutils && !surTypes} className={!surOutils && !surTypes ? 'actif' : undefined}
+          onClick={() => setParams({}, { replace: true })}>Général</button>
+        <button type="button" role="tab" aria-selected={surTypes} className={surTypes ? 'actif' : undefined}
+          onClick={() => setParams({ onglet: 'types' }, { replace: true })}>Types de fiche</button>
+        <button type="button" role="tab" aria-selected={surOutils} className={surOutils ? 'actif' : undefined}
+          onClick={() => setParams({ onglet: 'outils' }, { replace: true })}>Outils</button>
+      </div>
+      {surOutils && <div role="tabpanel"><PanneauOutils key={`${id}-${systeme?.id ?? 'sans'}`} id={id!} niveau="univers" sansSysteme={systeme === null} /></div>}
+      {surTypes && <div role="tabpanel"><PanneauTypesUnivers universId={id!} universNom={nomUnivers} avecSysteme={systeme !== null} /></div>}
+      {!surOutils && !surTypes && <div className="panneaux-suivi">
         <Panneau titre="Identité" reserveMj>
           {echecIdentite && (
             <div className="echec" role="alert">
@@ -274,9 +326,22 @@ function Parametres() {
           )}
           <form onSubmit={enregistrer} noValidate>
             <Champ etiquette="Nom" value={nom} erreur={erreurNom} onChange={saisie(setNom)} />
+            <Champ
+              etiquette="Identifiant"
+              value={identifiant}
+              erreur={erreurIdentifiant}
+              readOnly={enCours === 'identite'}
+              autoComplete="off"
+              spellCheck={false}
+              style={{ fontFamily: 'var(--police-code)' }}
+              onChange={saisie(setIdentifiant, () => setErreurIdentifiant(undefined))}
+            />
+            <p className="aide-champ">
+              Il sert d’adresse : /univers/{identifiant.trim() || (univers.etat === 'ok' ? univers.valeur.cle : '')}. L’ancien identifiant continue de mener à l’univers.
+            </p>
             <Champ etiquette="Description" zone rows={4} value={description} erreur={erreurDescription} onChange={saisie(setDescription)} />
             <div className="actions">
-              <Bouton type="submit" variante="principal" ecrit icone={Check} enCours={enCours === 'identite'}>
+              <Bouton type="submit" variante="principal" ecrit icone={Check} enCours={enCours === 'identite'} disabled={inchange}>
                 Enregistrer
               </Bouton>
             </div>
@@ -345,7 +410,7 @@ function Parametres() {
             </Bouton>
           </div>
         </Panneau>
-      </div>
+      </div>}
       {boiteSuppression && (
         <BoiteDialogue
           titre={`Supprimer « ${nomUnivers} » ?`}

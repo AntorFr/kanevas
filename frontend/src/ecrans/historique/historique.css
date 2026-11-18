@@ -1,0 +1,7 @@
+/* E-24: the filters and the detail's frame; the line and the comparison live in ui/historique.css. */
+.page-historique .filtres-historique { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--e-3); margin-top: var(--e-4); align-items: end; }
+.page-historique .filtre-fiche-ligne { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: center; }
+.page-historique .actions-fenetre { display: flex; justify-content: flex-end; margin-top: var(--e-3); }
+.page-historique .meta-ligne { margin: 0 0 var(--e-3); color: var(--texte-2); font-size: var(--t-13); overflow-wrap: anywhere; }
+.page-historique .actions-detail { display: flex; margin-top: var(--e-3); }
+.page-historique .suite-historique { display: flex; justify-content: center; margin-top: var(--e-4); }

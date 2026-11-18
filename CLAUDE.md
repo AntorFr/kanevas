@@ -3,16 +3,26 @@
 - Language (public repository): code, comments, README, `docs/` (the product's design docs
   included), ADRs and release notes in **English**; `.agent/*` stays French. Existing French
   docs are translated by a feature of their own, not rewritten in passing: new text is English.
-- Attested tests: `npm run tests:attestes` plays the whole suite (typecheck, build, every test,
-  none skipped, two files at a time by default, `--concurrence N` to change it) on the committed tree and rewrites `rapport-tests.json` (git-ignored) at each run; `-- --publier` posts the
-  `tests-complets` commit status when green. The image build and the `main` rule require it; the
-  CI runs no test by itself.
+- Attested tests: the suite is declared in `.sdlc.yaml` (`tests:`), and `attester --publier` plays it on the pushed
+  commit and posts the `tests-complets` status when green — the only way to post it, never by hand. `npm run tests:attestes`
+  is just the suite (typecheck, build, every test, two files at a time by default, `--concurrence N` to change it) and writes
+  the per-test TAP report `resultats.tap` (git-ignored); it writes no report and posts no status. The image build (tag `v*`
+  only) and the `main` rule require the status; no workflow plays a test or runs on a branch push or a pull request.
+  Five levels in `.sdlc.yaml` (and `ecrans_liste:` `node scripts/niveaux-tests.mjs --liste ecrans {base}`, not a level: it names the screen tests `ecrans:` would play, without `npm ci`): `commande:` (the whole suite, above, about 37 min), `fiche:` `npm ci && npm run tests:fiche -- {base}` (the suite minus the screen
+  tests the change does not touch), `ecrans:` `npm ci && npm run tests:ecrans -- {base}` (only the chosen screen tests), `local:` `npm ci && npm run tests:local` (every file but
+  `src/e2e/`, no `build`, no Playwright; about 4 min) and `rejouer:` `npm ci && node scripts/rejouer-tests.mjs {tests}` (only the named
+  tests, `describe > test` as in `resultats.tap`; non-zero for a name no file declares as a literal test title). A screen test declares its screens on its first line (`// ecrans: a, b`);
+  read a choice without playing it: `node scripts/niveaux-tests.mjs --liste ecrans|fiche <base>`; durations measured in the README. The `tests-complets` status says its level (description starting with « niveau »), the tag build refuses one that does not. Test choice logic: `scripts/niveaux-tests.mjs`.
+- Before writing a screen test (`src/e2e/`): prove an effect (a row, a right, a status code, a count) through its door (`inject` in `src/routes/` or a service test), keep on screen only what the user sees; rule and inventory in `docs/tests-ecran/README.md`, and every new screen test needs a line in a `docs/tests-ecran/lot-*.md` or `src/scripts-tests/inventaire-ecrans.test.ts` fails.
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
 - Build and test in containers (reference). In a pod without Docker, Node >= 20 on the host runs the same commands
-  (`npm ci && npm run typecheck && npm test`), see the README:
-  `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"`
+  (`npm ci && npm run typecheck && npm test`), see the README. The e2e tests need Playwright and Chromium and **fail** without
+  them (AD-harnais-4): `node:20-bookworm-slim` has neither, so the Docker route covers typecheck and the non-e2e tests only;
+  `npm ci && npm run tests:attestes` (which installs Playwright locally) plays everything:
+  `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"` (e2e files fail there)
+- Rust → Wasm (`rust/`, AD-rust-1 to 10): the Node-only Docker command above is not enough any more, it has no Rust; `npm run build:wasm` (needs `cargo`, the wasm target and `wasm-bindgen`, see README « Rust / WebAssembly ») must have run before `typecheck`, `build` and `npm test`; `tests:attestes` runs it itself.
 - `npm run typecheck` : `tsc --noEmit` on the API and on `frontend/`. `npm test` : `node --import tsx --test`
   on the files found by `find` in `src` and `frontend/src` — Node 20 (CI, image) does not expand globs
   itself, so never pass it a quoted `src/**` pattern; no extra test runner
@@ -43,7 +53,7 @@
   `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET); the seven brand files of `frontend/public` (`favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `site.webmanifest`) are served before the guard, without a session (AD-135). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
-  the sidebar for the screens of a universe; sidebar items live in `items.ts` and show only when a registered screen answers
+  the sidebar for the screens of a universe; sidebar items live in `frontend/src/items.ts` and show only when a registered screen answers
   their address. The two outside-universe links (« Mes univers », « Systèmes de jeu ») are fixed in
   `Barre.tsx` and the universe selector menu. Colours only through `frontend/src/ui/tokens.css` (`docs/charte.md`). Tests of the
   built-app routes set `FRONTEND_DIR` (under `NODE_ENV=test` no build is looked up otherwise).
@@ -78,7 +88,7 @@
   function (AD-63). The FTS5 indexes (migration 0005) only deliver candidate ids and are kept by SQL
   triggers (AD-21) — never write to `recherche_*` from code. A relation is read under both guards
   (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
-  placeholder for hidden ones. The `cible` of a relation carries `charge: {pj}` for a personnage and no other charge key (the badge reads only that; more would leak data of the target sheet; `chargeDeCible`). Refusal codes: `auto_relation` (invalide), `relation_existante` and
+  placeholder for hidden ones. The `cible` of a relation carries `charge: {pj}` for a personnage and no other charge key (the badge reads only that; more would leak data of the target sheet; `chargeDeCible`). Refusal codes: `auto_relation` and `nature_incompatible` (invalide), `relation_existante` and
   `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.
 - Maps (`kanevas-cartes-graphes`, migration 0007): `src/services/cartes.ts`. `lireCarte` is the only read
   of a map, elements and graph links included (AD-68); the browser filters nothing. Graph links are never
@@ -116,10 +126,9 @@
   moved, else `en_attente`), never stored. `appliquerProposition` writes through `ecrireContenu` with
   `version_origine` in the same transaction as the mark (`section_modifiee`, `proposition_appliquee` as
   `ErreurService.detail`, both `conflit`). Never write a section from here by another path (AD-48).
-- Import API (`kanevas-import-fil`, migration 0010, AD-103/104): `routes/import.ts` is the scope `/api/import/v1`, beside the
-  session guard — only a `Bearer kvs_…` token opens it (`verifierJeton`: fingerprint, not revoked, not expired, creator still
-  GM), the cookie is ignored there and no other route reads `Authorization`. Refusal is always the same 401 `jeton_invalide`
-  and opens no batch; another universe is 404. The clock is `app.horloge()` (tests move it). `services/jetons.ts` and
+- Import API (`kanevas-import-fil`, migration 0010, AD-103/104): `routes/import.ts` is the scope `/api/v1` (`/api/import/v1` is its alias, same handlers; the universe is addressed by id or key), beside the
+  session guard — only a `Bearer kvs_…` token opens it (`verifierJeton`: fingerprint, not revoked, not expired; it reads no role — the guard of `routes/import.ts` then takes the lesser of the token's access and the account's current role, `niveauEffectif`) — a `lecture` token gets 403 `lecture_seule` on anything but GET/HEAD, and a universe out of its reach is 404, like an unknown one, the cookie is ignored there and no other route reads `Authorization`. Refusal is always the same 401 `jeton_invalide`
+  and opens no batch; another universe, or an account with no role in it, is 404. The clock is `app.horloge()` (tests move it). `services/jetons.ts` and
   `services/lots.ts` are the only readers/writers of `jetons_api` / `lots_import`; write services of later slices count
   through `noterDansLot` (counters per nature, report capped at 1 000).
 - Markdown (AD-95, AD-113): the only renderer is `rendreMarkdown` in `services/markdown.ts` (`html: false`, links limited to http/https/mailto); a view returns `html` to everyone and the source `contenu` only to who may write it — never render elsewhere, never ship the source to a reader. The ceiling is 100 000 characters (`MAX_CONTENU_SECTION`).
@@ -157,4 +166,24 @@
   with `stdio: 'ignore'` and nothing of it is logged. The `codex` adapter lists `generated_images/` before and
   after (one engine at a time: `verrou.ts`), deletes the new file(s) and its scratch directory, 150 s deadline
   (AD-90). The Dockerfile pins `@openai/codex` (`CODEX_VERSION`).
+- Tools API (`kanevas-outils-cadre`, `routes/outils.ts`, C-5): in the guarded scope only, never in the import scope. A tool the caller
+  cannot use (disabled, hidden from the role, unknown) answers `reply.callNotFound()`, byte for byte like an unregistered path — never a
+  service `introuvable` JSON. Module routes are registered by `DeclarationModule.routes(app, garde)`; `catalogueDe` appends
+  `outilsAssistant` of every accessible tool of `modulesActifs()` without naming any.
+- Catalogues (`kanevas-outils-catalogue`, migration 0021, K-1 to K-8 in `ARCHITECTURE.md`): only `services/catalogues.ts` reads a module's
+  `StockageCatalogue` and resolves the two levels (never a module's computation on its own tables); an import (preview or application, one
+  transaction) never writes `masque` nor the withdrawals (B-48) and changes the catalogue version only when an element is added or modified;
+  no gesture hides a system element. A token with no `jetons_outils` row opens no tool route, a tool token opens no content route
+  (`config.portee` of each route in `routes/import.ts`).
+- Managed sections (`kanevas-outils-sections-gerees`, migration 0020, AD-127/128): a section with `gere_par` (`module/outil/type`) is written
+  only by its tool. `ecrireContenu` refuses it (`refuse`, `detail: 'section_geree'`) unless its last parameter `geree` is passed — and
+  **only `services/sections-gerees.ts` passes it** (`poserSectionGeree`, on behalf of the account, never more rights than it has;
+  a source-scan test fails otherwise). `source_version` is written in that branch, same transaction; never a new `INSERT INTO sections` /
+  `UPDATE sections SET contenu`. The state is `etatGere` (`a_jour` / `perime` / `desactive`), **computed at each read, never stored**; a
+  disabled or unknown tool gives no name, a tool not visible to the reader gives `libelle: null`. A view of a managed section never carries
+  `contenu` (the source) — `vueSection` gives `peutEcrire: false` — except the assistant's `'markdown'` form. `creerProposition` and the
+  import (`code: 'section_geree'`, before the transaction) refuse a managed section too.
 - Sheet visibility (`kanevas-fiche-mj-seul`, B-57, rule 11 of `docs/donnees.md`): a sheet has none of its own. `visibleJoueurs` is computed in the query (`SQL_VISIBLE_JOUEURS`, `services/fiches.ts`) from `sections.joueurs_lisent` and given to the GM outside player mode only; never store it in a column, never recompute it in the browser, never count the author's right of a player as « visible ».
+- Tool data deletion (`kanevas-outils-retrait`, D-1 to D-8): `services/outils-donnees.ts` is the only caller of a module's `donnees` and of the catalogue port's `compter` / `effacer`; `libererSections` (`sections-gerees.ts`) is the only way to free a lock when data go (sheets and their text are never deleted); the `…/suppression` routes sit beside `garde(...)` (they answer for a disabled tool); no assistant tool and no import route deletes tool data. Disabling erases nothing.
+- Keys (`kanevas-synchro-cles`, migration 0037, AD-146): `src/services/cles.ts` is the only place that draws, changes and resolves keys, and the only reader/writer of `cles_anciennes` and `univers_cles_anciennes` (a creation stores the key drawn there, the import the key it carries; nothing else writes `univers.cle`, `fiches.cle` or `sections.cle`); the creation of a sheet, section or universe draws its key there (`tirerCle*`), `insererSection` never receives a key from a caller, and only `creerFiche` receives the import's (the import sets a section's key afterwards by an `UPDATE`). A key is changed only by `changerCleFiche` / `changerCleUnivers` (the former one keeps resolving), resolved by `resoudreFiche` / `resoudreUnivers` (digits only = an id). `fiches.cle_origine` and `sections.cle_origine` no longer exist (`fichiers.cle_origine` does); the pure shapes are in `cles-forme.ts`, whose SQL twins `openDb` registers for the migration.
+- History (`kanevas-synchro-historique`, migration 0039, AD-147): triggers on `fiches`, `sections`, `relations`, `fiche_alias`, `fiche_etiquettes` and `fichiers_sections` set `modifie_le` and write the `historique` line from the write context `contexte_ecriture`; never write `fiches.modifie_le` by hand. Every write service runs inside `ecrire(db, compteId, fn)` (`services/historique.ts`; `ecrireSysteme` for a link resolution or a cache rewrite, which writes no line; `avecContexte` is their low level); a new writer of those tables is added to `ECRIVAINS` in `src/services/inventaire-ecritures.test.ts`, or it files under « inconnu ».
