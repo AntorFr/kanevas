@@ -16,6 +16,7 @@ import { importerGalaxieParJeton } from '../services/swn/import-galaxie-lot.js';
 import { listerGalaxiesImport } from '../services/swn/import-galaxie.js';
 import { OUTIL_GALAXIE } from '../services/swn/galaxies.js';
 import { lireContexteImport } from '../services/import.js';
+import { modifierEnTete } from '../services/import-entete.js';
 import { assurerFiche, lotDeRequete, supprimerFicheImport } from '../services/import-fiches.js';
 import { listerHistorique } from '../services/historique.js';
 import { assurerFichier, listerFichiersApi, MAX_FICHIERS_JOINTS, ouvrirFichierParReference } from '../services/fichiers.js';
@@ -192,6 +193,13 @@ export async function registerImportRoutes(app: FastifyInstance) {
         const { cle } = request.params as { cle: string };
         const { lot } = request.query as { lot?: unknown };
         return assurerFiche(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
+      });
+
+      // Targeted write of the header (B-82, AD-ecriture-1): only the fields sent move; a former key reaches the sheet (AD-146).
+      scope.patch(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request) => {
+        const { cle } = request.params as { cle: string };
+        const { lot } = request.query as { lot?: unknown };
+        return modifierEnTete(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, request.headers, app.horloge());
       });
 
       scope.post(`${base}/fiches/:cle/relations`, { config: { portee: 'contenu' } }, async (request) => {

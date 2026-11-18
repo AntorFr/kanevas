@@ -284,6 +284,20 @@ export function changerSousType(
 }
 
 /**
+ * The GM sets the creation date of origin of a sheet (the import carries it, B-82). The history triggers do not
+ * watch this column, so the sheet is dated here: a script reading `?depuis=` sees the change.
+ */
+export function poserCreeLe(db: Db, compteId: number, universId: number, ficheId: number, creeLe: string): void {
+  exigerMJ(db, universId, compteId);
+  chargerFiche(db, universId, ficheId);
+  ecrire(db, compteId, () =>
+    db
+      .prepare('UPDATE fiches SET cree_le = ?, modifie_le = ? WHERE id = ?')
+      .run(creeLe, new Date().toISOString(), ficheId),
+  );
+}
+
+/**
  * The GM sets the public gone mark outside player mode (AD-132).
  */
 export function marquerDisparu(
