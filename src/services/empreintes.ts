@@ -97,7 +97,7 @@ export interface EnteteEmpreinte {
 }
 
 /** The keys of the payload that the registry declares for the type (the schema's shape), `v` aside. */
-function champsDeCharge(type: string): string[] {
+export function champsDeCharge(type: string): string[] {
   const schema = (CHARGES as Record<string, unknown>)[type] as { shape?: Record<string, unknown> } | undefined;
   return Object.keys(schema?.shape ?? {})
     .filter((k) => k !== 'v')
@@ -118,4 +118,57 @@ export function empreinteEntete(fiche: EnteteEmpreinte, cleDe: CleDe): string {
     charge,
     creeLe: fiche.creeLe,
   });
+}
+
+/** What `empreinteRelation` reads of a relation: the key of its section and the id of its target. */
+export interface RelationEmpreinte {
+  /** Key of the section that carries the relation. */
+  sectionCle: string;
+  cibleId: number;
+  nature: string;
+  qualificatif: string;
+}
+
+/** Fingerprint of a relation (AD-139): section, target (its key when it has one), nature, qualifier. */
+export function empreinteRelation(relation: RelationEmpreinte, cleDe: CleDe): string {
+  return empreinte({
+    section: relation.sectionCle,
+    cible: cleDe(relation.cibleId, 'fiche') ?? `#${relation.cibleId}`,
+    nature: relation.nature,
+    qualificatif: relation.qualificatif,
+  });
+}
+
+/**
+ * Fingerprint of a sheet (AD-139): its header's, then those of its sections and of its relations, in the
+ * order given. The caller hands the fingerprints of what the reader sees.
+ */
+export function empreinteFiche(entete: string, sections: readonly string[], relations: readonly string[]): string {
+  return empreinte({ entete, sections, relations });
+}
+
+/** What `empreinteFichier` reads of a library file: its name, its visibility and its bytes' SHA-256. */
+export interface FichierEmpreinte {
+  nom: string;
+  visibilite: 'joueurs' | 'mj' | string;
+  sha256: string;
+}
+
+/** Fingerprint of a library file (AD-139, B-90): name, visibility, SHA-256 of the bytes. */
+export function empreinteFichier(fichier: FichierEmpreinte): string {
+  return empreinte({ nom: fichier.nom, visibilite: fichier.visibilite, sha256: fichier.sha256 });
+}
+
+/** What `empreinteCarte` reads of a map: title, form, visibility and the SHA-256 of its background. */
+export interface CarteEmpreinte {
+  titre: string;
+  forme: string;
+  visible: boolean;
+  /** SHA-256 of the background, null when the map has none. */
+  sha256Fond: string | null;
+}
+
+/** Fingerprint of a map (AD-139, B-90): title, form, visible, SHA-256 of the background. */
+export function empreinteCarte(carte: CarteEmpreinte): string {
+  return empreinte({ titre: carte.titre, forme: carte.forme, visible: carte.visible, sha256Fond: carte.sha256Fond });
 }

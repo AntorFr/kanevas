@@ -18,7 +18,11 @@ import { OUTIL_GALAXIE } from '../services/swn/galaxies.js';
 import { lireContexteImport } from '../services/import.js';
 import { assurerFiche, lotDeRequete, supprimerFicheImport } from '../services/import-fiches.js';
 import { listerHistorique } from '../services/historique.js';
-import { assurerFichier, MAX_FICHIERS_JOINTS } from '../services/fichiers.js';
+import { assurerFichier, listerFichiersApi, MAX_FICHIERS_JOINTS, ouvrirFichierParReference } from '../services/fichiers.js';
+import { lireFicheApi, listerFichesApi } from '../services/lecture-api.js';
+import { estId } from '../services/cles-forme.js';
+import { listerCartesApi } from '../services/cartes.js';
+import { dispositionAttachement } from './fichiers.js';
 import { STATUT_AVENTURE, TYPES_FICHE, typeActif } from '../services/types-fiche.js';
 import { registerErreurs } from './erreurs.js';
 
@@ -194,6 +198,67 @@ export async function registerImportRoutes(app: FastifyInstance) {
         const { cle } = request.params as { cle: string };
         const { lot } = request.query as { lot?: unknown };
         return assurerRelations(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
+      });
+
+      // Reads of the sheets (B-80, B-81, AD-149): the account's rights; unreadable, unknown or foreign is one 404.
+      scope.get(`${base}/fiches`, { config: { portee: 'contenu' } }, async (request) => {
+        const j = jetonDe(request);
+        const q = request.query as { depuis?: unknown; apres?: unknown };
+        const options: { depuis?: string; apres?: number } = {};
+        if (q.depuis !== undefined) {
+          if (typeof q.depuis !== 'string') throw new ErreurService('invalide', '« depuis » doit être une date ISO 8601.', undefined, 'depuis');
+          options.depuis = q.depuis;
+        }
+        if (q.apres !== undefined) {
+          if (typeof q.apres !== 'string' || !estId(q.apres)) {
+            throw new ErreurService('invalide', '« apres » doit être un identifiant.', undefined, 'apres');
+          }
+          options.apres = Number(q.apres);
+        }
+        return listerFichesApi(app.db, { compteId: j.compteId }, j.universId, options);
+      });
+
+      // Static `id/` wins over `:cle`: only this route reads by id.
+      scope.get(`${base}/fiches/id/:fid`, { config: { portee: 'contenu' } }, async (request) => {
+        const j = jetonDe(request);
+        const { fid } = request.params as { fid: string };
+        if (!estId(fid)) throw introuvable();
+        return lireFicheApi(app.db, { compteId: j.compteId }, j.universId, fid);
+      });
+
+      // A key or a former key; digits only is never a key, so an id is never read here.
+      scope.get(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request) => {
+        const j = jetonDe(request);
+        const { cle } = request.params as { cle: string };
+        if (estId(cle)) throw introuvable();
+        return lireFicheApi(app.db, { compteId: j.compteId }, j.universId, cle);
+      });
+
+      // Reads of the library and of the maps (B-90, AD-149): the account's rights, a closed object is a 404.
+      scope.get(`${base}/fichiers`, { config: { portee: 'contenu' } }, async (request) => {
+        const j = jetonDe(request);
+        return listerFichiersApi(app.db, { compteId: j.compteId }, j.universId, (request.query as { apres?: unknown }).apres);
+      });
+
+      scope.get(`${base}/fichiers/:cle/contenu`, { config: { portee: 'contenu' } }, async (request, reply) => {
+        const j = jetonDe(request);
+        const { cle } = request.params as { cle: string };
+        const f = await ouvrirFichierParReference(app.db, { compteId: j.compteId }, j.universId, cle);
+        reply
+          .header('X-Content-Type-Options', 'nosniff')
+          .header('Content-Security-Policy', "default-src 'none'; sandbox")
+          .header('Cache-Control', 'private, no-store')
+          .header('Content-Length', f.taille);
+        if (f.type.startsWith('image/')) return reply.type(f.type).header('Content-Disposition', 'inline').send(f.flux);
+        return reply
+          .type('application/octet-stream')
+          .header('Content-Disposition', dispositionAttachement(f.nom))
+          .send(f.flux);
+      });
+
+      scope.get(`${base}/cartes`, { config: { portee: 'contenu' } }, async (request) => {
+        const j = jetonDe(request);
+        return listerCartesApi(app.db, j.compteId, j.universId, (request.query as { apres?: unknown }).apres);
       });
 
       // The script sends `nom` and optional `visibilite` before the streamed `fichier` part.
