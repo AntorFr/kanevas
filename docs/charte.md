@@ -334,11 +334,11 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
 - C: `aria-live="polite"`; each field of the form points to it with `aria-describedby`. Its text comes from `texteConversion` (`ui/glisser.ts`).
 
 **Tabs** (`frontend/src/ui/onglets.tsx`, E-24; the three screens that styled their own — settings, system, tool catalogue — take it when they are next touched).
-- V: a horizontal list under the header, `--texte-3`; the active tab `--texte` with a 2 px `--accent` rule; no literal value.
+- V: a horizontal list under the header, `--texte-3`; the active tab `--texte` with a 2 px `--accent` rule; no literal value. Its class is `.onglets-liste` (the legacy `.onglets` of the three screens is left alone).
 - C: `role="tablist"`, `role="tab"` with `aria-selected`, one tab stop, ← → move; the tab rides in the address query (`?onglet=`).
 
 **Slider** (`frontend/src/ui/curseur.tsx`, E-24; twin of the neighbouring `Champ`).
-- V: a native `<input type="range">` styled: 4 px track `--surface-2`, fill `--accent`, 16 px thumb `--texte` bordered 2 px `--accent`, hit area at least 24 px, the standard focus ring.
+- V: a native `<input type="range">` styled: 4 px track `--bord-champ` (3:1, WCAG 1.4.11; `--surface-2` would vanish on the page), fill `--accent`, the value beside the label, 16 px thumb `--texte` bordered 2 px `--accent`, hit area at least 24 px, the standard focus ring.
 - C: step 0,05, arrows and Page keys; the same bounds as the field, which carries the error; labelled like the field.
 
 **Colour field** (`frontend/src/ui/champ-couleur.tsx`, E-24).
@@ -350,7 +350,7 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
 - C: `role="listbox"` / `role="option"` with `aria-selected`, one tab stop, ↑ ↓ move; scrolls inside, Enter or click opens the editor.
 
 **Apply bar** (`frontend/src/ui/barre-application.tsx`, E-24).
-- V: sticky at the foot, `--surface` with a `--bord` top rule; the sentence on the left (detail small below), the primary `Bouton` on the right; the content keeps a bottom margin so the bar never hides the focused field (WCAG 2.4.11). A translucent background no token covers would be a decision of Monsieur, not made here.
+- V: sticky at the foot, `--surface` with a `--bord` top rule; the sentence on the left (detail small below), the primary `Bouton` on the right, an optional neutral `Bouton` before it (« Annuler les changements »); no count → « Rien à appliquer. » and the action off; the content keeps a bottom margin so the bar never hides the focused field (WCAG 2.4.11). A translucent background no token covers would be a decision of Monsieur, not made here.
 - C: the sentence is an `aria-live="polite"` region; the button is disabled when nothing is to apply or the count failed; after the confirmation the focus returns to it.
 
 **Section block** (« Relations », « Pièces jointes »).
