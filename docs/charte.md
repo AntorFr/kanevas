@@ -269,7 +269,7 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
 - C: a toast per successful action (« « Rumeurs entendues » enregistrée », « Audience de
   « Apparence » enregistrée », « Section « … » retirée »), in a `role="status"` region with
   `aria-live="polite"`; it leaves on its own after 4 s, or on « Fermer »; it never takes focus.
-  A failure is not a toast: it is an inline message that stays.
+  A failure is not a toast: it is an inline message that stays. The variant with an action is specified below.
 
 **Dialog** (section removal confirmation).
 - V: `--surface` on `--voile`, `--ombre-flottant`, radius `--rayon-panneau`, at most 440 px,
