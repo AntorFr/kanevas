@@ -90,3 +90,9 @@ export const retirerZoneSysteme = (p: Place, cle: string, jeton: { version: numb
   appeler<Interieur>('DELETE', url(p, `zones/${encodeURIComponent(cle)}${requete(jeton)}`));
 export const poserTransitionSysteme = (p: Place, corps: JetonSysteme & { transition: number | null }) =>
   appeler<Interieur>('PUT', url(p, 'transition'), corps);
+
+/** « Secret (MJ seul) » (B-97): hides or shows a whole system; a drawn one is anchored by the same call. */
+export const masquerSysteme = (p: Place, corps: JetonSysteme & { secret: boolean }) => appeler<Interieur>('PUT', url(p, 'secret'), corps);
+/** The GM's own read of the flag (the badge of E-23): never sent to a player. */
+export const lireEtatMasque = (p: Place, suffixe = '') =>
+  appeler<{ secret: boolean; promu: boolean; versionSysteme: number }>('GET', `${url(p, 'secret')}${suffixe}`);

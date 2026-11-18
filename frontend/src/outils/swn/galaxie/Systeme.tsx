@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useCharge, useTitreAriane } from '../../../cadre-contexte';
@@ -8,6 +8,7 @@ import { Bouton, EtatVide, Pastille } from '../../../ui';
 import type { PropsOutil } from '../../types';
 import CarteSysteme from './CarteSysteme';
 import { FournisseurEdition, useEdition } from './Edition';
+import { lireEtatMasque } from './ecriture';
 import MenuSysteme from './MenuSysteme';
 import PanneauCorps from './PanneauCorps';
 import PanneauFormation from './PanneauFormation';
@@ -33,7 +34,15 @@ export default function Systeme({ universId, cible, prealable, suffixeMode }: Pr
 
 function Page({ universId, cible, base, suffixeMode }: { universId: number; cible?: string; base: string; suffixeMode?: string }) {
   // The GM outside Player mode reads as a GM (the answer carries `peutEcrire` for him only); in Player mode he reads what a player reads.
-  const { interieur: s, peutEcrire: mj } = useEdition();
+  const { interieur: s, peutEcrire: mj, place } = useEdition();
+  // The flag is the GM's own read (B-97): a player's answer never carries it, and a player never reaches a hidden system.
+  const [secret, setSecret] = useState(false);
+  useEffect(() => {
+    if (!mj) { setSecret(false); return; }
+    let actif = true;
+    lireEtatMasque(place).then((e) => actif && setSecret(e.secret), () => undefined);
+    return () => { actif = false; };
+  }, [mj, place, s.etat, s.versionSysteme]);
   const titre = s.nom !== null && s.nom !== '' ? s.nom : `Système sans nom (${s.q}, ${s.r})`;
   useTitreAriane(titre, 'Cartes');
   const vide = s.astres.length === 0 && s.formations.length === 0;
@@ -59,6 +68,7 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
       <header className="gx-entete">
         <h1>{titre}</h1>
         <Pastille sens="neutre">{s.etat === 'tire' ? 'Tiré' : 'Défini'}</Pastille>
+        {mj && secret && <Pastille sens="mj">MJ seul</Pastille>}
         <Pastille sens="neutre">Hexagone {s.q}, {s.r}</Pastille>
         <MenuSysteme onAjouterAstre={() => setAjout('astre')} onAjouterZone={() => setAjout('zone')} />
         <Link className="gx-retour" to={`/univers/${universId}/outils/swn/galaxie/${cible ?? ''}`}>← Galaxie</Link>

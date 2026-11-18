@@ -11,7 +11,7 @@ import {
 } from '../../services/swn/galaxies.js';
 import { illustrationAstre } from '../../services/swn/illustration.js';
 import {
-  ajouterAstre, ajouterZone, ancrer, modifierAstre, modifierZone as modifierZoneSysteme, poserTransition, retirerAstre, retirerZone as retirerZoneSysteme,
+  ajouterAstre, ajouterZone, ancrer, etatMasque, masquerSysteme, modifierAstre, modifierZone as modifierZoneSysteme, poserTransition, retirerAstre, retirerZone as retirerZoneSysteme,
   type ResultatEcriture,
 } from '../../services/swn/ecriture-systeme.js';
 import { lireInterieur } from '../../services/swn/interieur.js';
@@ -250,7 +250,7 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
         const res = fn(request, acteur(request as never), ids(request), ent(p.q), ent(p.r));
         return reply.code(statut).send(res.interieur);
       } catch (e) {
-        if (e instanceof ErreurService && e.code === 'introuvable' && e.detail !== 'astre_inconnu') return reply.callNotFound();
+        if (e instanceof ErreurService && e.code === 'introuvable' && e.detail !== 'astre_inconnu' && e.detail !== 'systeme_inconnu') return reply.callNotFound();
         throw e;
       }
     };
@@ -271,6 +271,17 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
   app.post(`${INT}/zones`, opts, interieur((request, a, i, q, r) => ajouterZone(app.db, a, i.univers, i.galaxie, q, r, corps(request)), 201));
   app.patch(`${INT}/zones/:cle`, opts, interieur((request, a, i, q, r) => modifierZoneSysteme(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
   app.delete(`${INT}/zones/:cle`, opts, interieur((request, a, i, q, r) => retirerZoneSysteme(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
+  app.put(`${INT}/secret`, opts, interieur((request, a, i, q, r) => masquerSysteme(app.db, a, i.univers, i.galaxie, q, r, corps(request))));
+  app.get(`${INT}/secret`, opts, async (request: Req, reply: FastifyReply) => {
+    try {
+      const p = request.params as { q: string; r: string };
+      const i = ids(request);
+      return reply.send(etatMasque(app.db, acteur(request as never), i.univers, i.galaxie, ent(p.q), ent(p.r)));
+    } catch (e) {
+      if (e instanceof ErreurService && e.code === 'introuvable' && e.detail !== 'systeme_inconnu') return reply.callNotFound();
+      throw e;
+    }
+  });
   app.put(`${INT}/transition`, opts, interieur((request, a, i, q, r) => poserTransition(app.db, a, i.univers, i.galaxie, q, r, corps(request))));
 
   app.get(`${BASE}/document`, opts, ecrire((request, a) => {

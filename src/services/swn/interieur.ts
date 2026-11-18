@@ -8,6 +8,7 @@ import type { Point } from '../../outils/swn/regles/hex.js';
 import { chargerModule } from '../../wasm/charger.js';
 import { introuvable } from '../erreurs.js';
 import type { Acteur } from '../types.js';
+import { systemeLisible } from './lisibilite.js';
 import { galaxieLisible, zonesLisibles, type LigneGalaxie, type NiveauLecture } from './galaxies.js';
 import { entreesBloc, systemesExclusants, tirerEtoileComplete } from './tirage-etoiles.js';
 import { reglagesDe } from './reglages.js';
@@ -111,10 +112,10 @@ export function lireInterieur(
 ): InterieurVue {
   const { galaxie, niveau } = galaxieLisible(db, acteur, universId, galaxieId);
   if (!Number.isSafeInteger(q) || !Number.isSafeInteger(r)) throw introuvable();
-  const ligne = db.prepare('SELECT id, nom, secret, transition FROM swn_systemes WHERE galaxie_id = ? AND q = ? AND r = ?')
-    .get(galaxie.id, q, r) as { id: number; nom: string; secret: number; transition: number | null } | undefined;
+  const ligne = db.prepare('SELECT id, nom, transition FROM swn_systemes WHERE galaxie_id = ? AND q = ? AND r = ?')
+    .get(galaxie.id, q, r) as { id: number; nom: string; transition: number | null } | undefined;
   if (ligne) {
-    if (ligne.secret === 1 && niveau !== 'mj') throw introuvable();
+    if (!systemeLisible(db, acteur, ligne.id)) throw introuvable();
     const astres = (db.prepare(`SELECT a.cle, a.genre, p.cle AS parent_cle, a.etoile_rang, a.type, a.nom, a.orbite, a.heure,
         a.taille, a.aspect, a.version, a.description FROM swn_astres a LEFT JOIN swn_astres p ON p.id = a.parent_id
         WHERE a.systeme_id = ? ORDER BY a.id`).all(ligne.id) as LigneAstre[])
