@@ -7,6 +7,13 @@ import { chargerModule } from '../charger';
 import {
   dessiner,
   densiteDefaut,
+  fusionnerReglages,
+  reglagesDefaut,
+  typesCatalogue,
+  validerAspectType,
+  validerReglages,
+  versionGenerateurCourante,
+  versionsGenerateur,
   galactiqueVersOrbiteHeure,
   hexVersPlan,
   orbiteHeureVersPlan,
@@ -132,6 +139,38 @@ async function afficherEdition(): Promise<void> {
   });
 }
 
+// The settings calls (AD-reglages-1, AD-reglages-6): what each export returns, and whether the refusals throw.
+async function afficherReglages(): Promise<void> {
+  const defaut = await reglagesDefaut(1);
+  const refuse = async (appel: () => Promise<unknown>): Promise<boolean> => {
+    try {
+      await appel();
+      return false;
+    } catch {
+      return true;
+    }
+  };
+  sortie('coeur-reglages').textContent = JSON.stringify({
+    defaut,
+    versions: await versionsGenerateur(),
+    courante: await versionGenerateurCourante(),
+    valide: await validerReglages(1, '{"frequences":{"comete":0.9}}'),
+    refuse: await validerReglages(1, '{"frequences":{"comete":2}}'),
+    fusion: await fusionnerReglages(1, '{"frequences":{"comete":0.9}}'),
+    fusionVide: await fusionnerReglages(1, '{}'),
+    aspect: await validerAspectType('tellurique', '{"mer":0.5}'),
+    aspectRefuse: await validerAspectType('tellurique', '{"licorne":1}'),
+    catalogue: await typesCatalogue(),
+    comete: await tirerSysteme(0, 0, 0.8, 'K', 1, '{"frequences":{"comete":1}}'),
+    refus: [
+      await refuse(() => reglagesDefaut(2)),
+      await refuse(() => fusionnerReglages(1, '{"frequences":{"comete":2}}')),
+      await refuse(() => tirerSysteme(0, 0, 0.8, 'K', 2, '{}')),
+      await refuse(() => tirerSysteme(0, 0, 0.8, 'K', 1, '{"licorne":1}')),
+    ],
+  });
+}
+
 async function afficher(): Promise<void> {
   try {
     const exemple = await chargerModule('exemple');
@@ -140,6 +179,7 @@ async function afficher(): Promise<void> {
     await afficherCoeur();
     await afficherRendu();
     await afficherEdition();
+    await afficherReglages();
   } catch {
     const erreur = sortie('erreur');
     erreur.hidden = false;

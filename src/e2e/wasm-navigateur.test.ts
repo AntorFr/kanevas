@@ -113,6 +113,7 @@ test('the coeur module in Chromium draws the fixtures\' systems and the exact JS
 
 test('the coeur module in Chromium draws the same bytes as the Node binding (AD-carte-1) and refuses an unknown type and a side of 8', { skip: skipBrowser }, async () => {
   const { dessiner, versionRendu } = await import('../wasm/coeur.js');
+  const { fusionnerReglages, reglagesDefaut, tirerSysteme, typesCatalogue, validerAspectType, validerReglages, versionGenerateurCourante, versionsGenerateur } = await import('../wasm/coeur.js');
   const v = await versionRendu();
   const aspects = ['{"type":"tellurique"}', '{"type":"jaune"}', '{"type":"gazeuse","aspect":{"palette":["#102030","#a0b0c0"]}}'];
   const page = await browser.newPage();
@@ -143,6 +144,23 @@ test('the coeur module in Chromium draws the same bytes as the Node binding (AD-
     assert.deepEqual(JSON.parse(e.aspect), { mer: 0.5 });
     assert.deepEqual(JSON.parse(e.formation), { de: 1, a: 2 });
     assert.deepEqual(e.refus, [true, true, true, true, true]);
+    // the settings calls (AD-reglages-1, AD-reglages-6): the same values as the Node layer
+    await page.waitForFunction(() => document.getElementById('coeur-reglages')?.textContent, undefined, { timeout: 30_000 });
+    const g = JSON.parse((await page.textContent('#coeur-reglages'))!);
+    assert.equal(g.defaut, await reglagesDefaut(1));
+    assert.deepEqual(g.versions, await versionsGenerateur());
+    assert.equal(g.courante, await versionGenerateurCourante());
+    assert.deepEqual(JSON.parse(g.valide), JSON.parse(await validerReglages(1, '{"frequences":{"comete":0.9}}')));
+    assert.deepEqual(JSON.parse(g.valide), { ok: true, canonique: { frequences: { comete: 0.9 } } });
+    assert.equal(JSON.parse(g.refuse).champ, 'frequences.comete');
+    assert.equal(JSON.parse(g.refuse).borne, 'Entre 0 et 1.');
+    assert.equal(g.fusion, await fusionnerReglages(1, '{"frequences":{"comete":0.9}}'));
+    assert.equal(g.fusionVide, g.defaut);
+    assert.equal(g.aspect, await validerAspectType('tellurique', '{"mer":0.5}'));
+    assert.equal(JSON.parse(g.aspectRefuse).ok, false);
+    assert.equal(g.catalogue, await typesCatalogue());
+    assert.equal(g.comete, await tirerSysteme(0, 0, 0.8, 'K', 1, '{"frequences":{"comete":1}}'));
+    assert.deepEqual(g.refus, [true, true, true, true]);
   } finally {
     await page.close();
   }
