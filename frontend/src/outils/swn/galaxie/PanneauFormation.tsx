@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { nomFormation, placeFormation, typeFormation } from './systeme-libelles';
+import { LigneFiche } from './Liens';
 import type { FormationSysteme } from './types';
 
 /** E-23, the panel of a zone: its name, its form and its place; the GM's `actions` (« Retirer la zone ») follow. */
@@ -14,6 +15,7 @@ export default function PanneauFormation({ zone, q, r, actions }: { zone: Format
         <dt>Lieu</dt><dd>{placeFormation(zone)}</dd>
       </dl>
       <p className="gx-note">Hexagone {q}, {r}</p>
+      <LigneFiche fiche={zone.fiche} />
       {actions && <div className="gx-actions">{actions}</div>}
     </section>
   );
