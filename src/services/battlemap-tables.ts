@@ -5,6 +5,7 @@ import { etatAssets } from './battlemap-donnees.js';
 import {
   assetsDe, contexteFiltre, fichesDe, fichesLisibles, invalideChamp, ligne, maintenant, type Document, type Ligne,
 } from './battlemap-cartes.js';
+import { annoncer } from './battlemap-flux.js';
 import { roleDe, vueMJ } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
 import type { Acteur } from './types.js';
@@ -126,7 +127,8 @@ export function lireTable(db: Db, acteur: Acteur, universId: number, carteId: nu
 
 /** « Jouer » on a map: creates its table, hidden everywhere, once. GM outside Player mode; a second call changes nothing. */
 export function creerTable(db: Db, acteur: Acteur, universId: number, carteId: number): { creee: boolean; table: TableLue } {
-  return db.transaction(() => {
+  let annonce = false;
+  const r = db.transaction(() => {
     const l = carteEcrite(db, acteur, universId, carteId);
     let creee = false;
     if (!tableDe(db, l.id)) {
@@ -134,9 +136,12 @@ export function creerTable(db: Db, acteur: Acteur, universId: number, carteId: n
       db.prepare('INSERT INTO bm_tables (carte_id, etat, version, cree_le, modifie_le) VALUES (?, ?, 1, ?, ?)')
         .run(l.id, coeur.etatVide(l.largeur, l.hauteur), now, now);
       creee = true;
+      annonce = true;
     }
     return { creee, table: lireTable(db, acteur, universId, carteId) };
   })();
+  if (annonce) annoncer(db, carteId);
+  return r;
 }
 
 export const MAX_COMMANDES_TABLE = 500;
@@ -170,7 +175,7 @@ function verifierReferences(db: Db, acteur: Acteur, universId: number, commandes
  */
 export function appliquerCommandesTable(db: Db, acteur: Acteur, universId: number, carteId: number,
   version: unknown, commandes: unknown): { version: number } {
-  return db.transaction(() => {
+  const r = db.transaction(() => {
     const l = carteEcrite(db, acteur, universId, carteId);
     if (!Number.isInteger(version) || (version as number) < 1) throw invalideChamp('version', 'Version invalide.');
     if (!Array.isArray(commandes) || commandes.length === 0 || commandes.length > MAX_COMMANDES_TABLE) {
@@ -195,6 +200,8 @@ export function appliquerCommandesTable(db: Db, acteur: Acteur, universId: numbe
     for (const pid of Object.keys(proprietairesDe(db, l.id))) if (!restants.has(pid)) supprimer.run(l.id, pid);
     return { version: ecrireEtat(db, l.id, r.etat, t.version) };
   })();
+  annoncer(db, carteId);
+  return r;
 }
 
 /**
@@ -203,7 +210,7 @@ export function appliquerCommandesTable(db: Db, acteur: Acteur, universId: numbe
  */
 export function definirProprietaire(db: Db, acteur: Acteur, universId: number, carteId: number,
   pionId: string, compteId: unknown): { version: number } {
-  return db.transaction(() => {
+  const r = db.transaction(() => {
     const l = carteEcrite(db, acteur, universId, carteId);
     const t = tableDe(db, l.id);
     if (!t) throw new ErreurService('introuvable', 'Page introuvable.', 'table_absente');
@@ -221,6 +228,8 @@ export function definirProprietaire(db: Db, acteur: Acteur, universId: number, c
     }
     return { version: ecrireEtat(db, l.id, t.etat, t.version) };
   })();
+  annoncer(db, carteId);
+  return r;
 }
 
 /**
@@ -262,4 +271,16 @@ export function effacerTables(db: Db, universId: number): void {
   const cartes = 'SELECT id FROM bm_cartes WHERE univers_id = ?';
   db.prepare(`DELETE FROM bm_pions_proprietaires WHERE carte_id IN (${cartes})`).run(universId);
   db.prepare(`DELETE FROM bm_tables WHERE carte_id IN (${cartes})`).run(universId);
+}
+
+/**
+ * What opening the stream of a map needs (AD-battlemap-table-6): the versions to announce and whether the reader is a GM. The map
+ * is read like the table is — a map the caller cannot read, a hidden one for a player (or a GM in Player mode) and an unknown id
+ * are the same `introuvable`. A display (`affichage`, AD-160) always reads as a player, whatever the session's mode.
+ */
+export function ouvertureFlux(db: Db, acteur: Acteur, universId: number, carteId: number, affichage: boolean):
+  { carte: number; table: number | null; mj: boolean } {
+  const lecteur: Acteur = affichage ? { ...acteur, modeJoueur: true } : acteur;
+  const { l, mj } = carteLue(db, lecteur, universId, carteId);
+  return { carte: l.version, table: tableDe(db, l.id)?.version ?? null, mj };
 }

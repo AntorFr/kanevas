@@ -8,12 +8,13 @@ import {
   ajouterAsset, ajouterAssetDepuisFichier, compterUsage, listerAssets, listerFichiersDisponibles, modifierAssets, retirerAssets,
   type SaisieAsset,
 } from '../../services/battlemap-assets.js';
+import { fermerTout, ouvrirFlux } from '../../services/battlemap-flux.js';
 import { moteurOccupe } from '../../services/battlemap-generation.js';
 import {
   accepterLigne, arreterLot, ecarterLigne, enregistrerLot, lancerLot, lireLot, reessayerLigne, regenererLigne, reprendreLot,
 } from '../../services/battlemap-lots.js';
 import { appliquerCommandes, creerCarte, lireCarte, reglerCarte, supprimerCarte } from '../../services/battlemap-cartes.js';
-import { appliquerCommandesTable, creerTable, definirProprietaire, lireTable } from '../../services/battlemap-tables.js';
+import { appliquerCommandesTable, creerTable, definirProprietaire, lireTable, ouvertureFlux } from '../../services/battlemap-tables.js';
 import {
   ajouterReference, ajouterReferenceDepuisFichier, ecrireDirection, legenderReference, lireDirection, retirerReference,
 } from '../../services/battlemap-direction.js';
@@ -222,6 +223,24 @@ export function routesBattlemap(app: FastifyInstance, garde: (cle: string) => pr
     const b = corps(request);
     return definirProprietaire(app.db, acteur(request), univers(request), carte(request), pid, b.compte_id);
   });
+
+  // The stream of AD-159 (AD-battlemap-table-6): versions and a display count only. Same refusals as the table's read.
+  app.addHook('onClose', async () => fermerTout());
+  app.get(`${RACINE}/cartes/:cid(^[0-9]+$)/flux`, cartes, proteger((request, reply) => {
+    const affichage = (request.query as Record<string, unknown>).role === 'affichage';
+    const v = ouvertureFlux(app.db, acteur(request), univers(request), carte(request), affichage);
+    reply.hijack();
+    const sortie = reply.raw;
+    sortie.writeHead(200, {
+      'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-transform', 'X-Accel-Buffering': 'no', Connection: 'keep-alive',
+    });
+    sortie.write('retry: 3000\n\n');
+    const fermer = () => { if (!sortie.writableEnded) sortie.end(); };
+    const liberer = ouvrirFlux(carte(request), v, affichage ? 'affichage' : 'jeu', v.mj && !affichage,
+      (octets) => { sortie.write(octets); }, fermer);
+    request.raw.on('close', liberer);
+    sortie.on('close', liberer);
+  }));
 
   // ---- Generation batches (AD-battlemap-generation-1). Guarded by the tool `generation`: without an image engine it is absent and
   // each of these paths is a `callNotFound`. No route serves a draft's picture: its GM-only file goes through the library's file route.

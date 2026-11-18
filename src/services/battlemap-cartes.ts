@@ -1,6 +1,7 @@
 import type { Db } from '../db/db.js';
 import type { CarteOutil, LigneDonnees } from '../outils/declaration.js';
 import * as coeur from '../outils/battlemap/coeur.js';
+import { annoncer } from './battlemap-flux.js';
 import { etatAssets } from './battlemap-donnees.js';
 import { roleDe, sqlFicheLisible, vueMJ } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
@@ -230,7 +231,7 @@ function verifierReferences(db: Db, acteur: Acteur, universId: number, doc: Docu
  */
 export function appliquerCommandes(db: Db, acteur: Acteur, universId: number, id: number,
   version: unknown, commandes: unknown): { version: number; inverses: unknown[] } {
-  return db.transaction(() => {
+  const res = db.transaction(() => {
     const l = exigerEcriture(db, acteur, universId, id);
     if (!Number.isInteger(version) || (version as number) < 1) throw invalideChamp('version', 'Version invalide.');
     if (!Array.isArray(commandes) || commandes.length === 0 || commandes.length > MAX_COMMANDES) {
@@ -242,6 +243,8 @@ export function appliquerCommandes(db: Db, acteur: Acteur, universId: number, id
     if (!r.ok) throw refusDuCoeur(r);
     return { version: ecrireDocument(db, l, r.document), inverses: r.inverses };
   })();
+  annoncer(db, id);
+  return res;
 }
 
 /** Stores a document the core produced; the size columns follow it. */
@@ -263,7 +266,7 @@ export interface ReglagesCarte {
  */
 export function reglerCarte(db: Db, acteur: Acteur, universId: number, id: number,
   version: unknown, reglages: ReglagesCarte): { version: number } {
-  return db.transaction(() => {
+  const res = db.transaction(() => {
     const l = exigerEcriture(db, acteur, universId, id);
     if (!Number.isInteger(version) || (version as number) < 1) throw invalideChamp('version', 'Version invalide.');
     if (version !== l.version) throw PERIMEE();
@@ -290,6 +293,8 @@ export function reglerCarte(db: Db, acteur: Acteur, universId: number, id: numbe
     if (sets.length === 0 && document === l.document) throw invalideChamp('reglages', 'Rien à changer.');
     return { version: ecrireDocument(db, l, document, { sql: sets.map((s) => `, ${s}`).join(''), params }) };
   })();
+  annoncer(db, id);
+  return res;
 }
 
 export const rendreVisibleCarte = (db: Db, acteur: Acteur, universId: number, id: number, visible: boolean, version: number): { version: number } =>
@@ -301,6 +306,7 @@ export function supprimerCarte(db: Db, acteur: Acteur, universId: number, id: nu
     const l = exigerEcriture(db, acteur, universId, id);
     db.prepare('DELETE FROM bm_cartes WHERE id = ?').run(l.id);
   })();
+  annoncer(db, id);
 }
 
 /** The composed maps for E-10: the editor's address only for a GM outside Player mode; a player gets the visible ones. */
@@ -334,8 +340,10 @@ export function compterCartes(db: Db, universId: number): LigneDonnees[] {
 }
 
 export function effacerCartes(db: Db, universId: number): void {
+  const ids = (db.prepare('SELECT id FROM bm_cartes WHERE univers_id = ?').all(universId) as { id: number }[]).map((r) => r.id);
   effacerTables(db, universId);
   db.prepare('DELETE FROM bm_cartes WHERE univers_id = ?').run(universId);
+  for (const id of ids) annoncer(db, id);
 }
 
 /** The maps of the universes of a system where the tool is on: they stay when the system's data go (D-2). */
