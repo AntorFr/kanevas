@@ -83,7 +83,7 @@ const champ = (c: string, message: string, detail = 'reglage_invalide') => new E
  * The GM of the galaxy's universe: any other role, an unknown galaxy and a tool the caller cannot use are the same
  * `introuvable`. A GM in Player mode reads; a write answers `refuse` / `mode_joueur`.
  */
-function galaxieDuMJ(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, ecriture: boolean): LigneGalaxie {
+export function galaxieDuMJ(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, ecriture: boolean): LigneGalaxie {
   const a = acteurDe(acteur);
   const role = roleDe(db, universId, a.compteId);
   if (role !== 'mj' || !niveauLecture(db, a, universId)) throw introuvable();

@@ -12,6 +12,7 @@ import { systemeLisible } from './lisibilite.js';
 import { galaxieLisible, zonesLisibles, type LigneGalaxie, type NiveauLecture } from './galaxies.js';
 import { entreesBloc, systemesExclusants, tirerEtoileComplete } from './tirage-etoiles.js';
 import { reglagesDe } from './reglages.js';
+import { fusionSurcharges, surchargesDe } from './catalogue-aspects.js';
 
 interface Coeur {
   tirer_systeme(q: number, r: number, taille: number, lettre: string, version: number, valeurs: string): string;
@@ -123,14 +124,20 @@ export function lireInterieur(
     const formations = (db.prepare(`SELECT cle, forme, nom, parametres, etoile_rang, version, description FROM swn_formations
         WHERE systeme_id = ? ORDER BY id`).all(ligne.id) as LigneFormation[])
       .map(({ description, ...f }) => ({ ...f, parametres: JSON.parse(f.parametres) as Record<string, unknown>, ...(description ? { description } : {}) }));
-    const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, astres, formations, reglagesDe(db, galaxie.id).versionGenerateur);
+    const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, avecAspectEffectif(db, galaxie.id, astres), formations, reglagesDe(db, galaxie.id).versionGenerateur);
     return niveau === 'mj' ? ouvrirEcriture(vue, ligneVersion(db, ligne.id)) : sansJetons(vue);
   }
   // No row: the star must be the one the block's draw holds at (q, r), with the exclusions of every reader.
   const tire = lireTire(db, galaxie, niveau, q, r);
   if (!tire) throw introuvable();
-  const vue = composer(q, r, null, 'tire', tire.transition, tire.astres, tire.formations, reglagesDe(db, galaxie.id).versionGenerateur);
+  const vue = composer(q, r, null, 'tire', tire.transition, avecAspectEffectif(db, galaxie.id, tire.astres), tire.formations, reglagesDe(db, galaxie.id).versionGenerateur);
   return niveau === 'mj' ? ouvrirEcriture(vue, galaxie.version) : sansJetons(vue);
+}
+
+/** Each body with its effective aspect (AD-reglages-6): the galaxy's override of its type under its own aspect. */
+function avecAspectEffectif(db: Db, galaxieId: number, astres: AstreVue[]): AstreVue[] {
+  const surcharges = surchargesDe(db, galaxieId);
+  return astres.map((a) => ({ ...a, aspect: fusionSurcharges(surcharges, a.type, a.aspect) }));
 }
 
 const ligneVersion = (db: Db, systemeId: number): number =>
