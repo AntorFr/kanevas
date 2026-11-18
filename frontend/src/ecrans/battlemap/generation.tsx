@@ -358,8 +358,8 @@ export function Generation({ id, lots }: { id: string; lots: EtatLots }) {
                 <Alerte action={<Bouton petit onClick={() => void enregistrer(liste)}>Réessayer</Bouton>}>Impossible d’enregistrer la liste.</Alerte>
               )}
               <div className="bm-gen-actions">
-                <Bouton icone={Plus} ecrit disabled={liste.length >= MAX_LIGNES} onClick={() => changer((s) => [...s, nouvelleSaisie()])}>Ajouter une ligne</Bouton>
-                <Bouton icone={ClipboardPaste} ecrit disabled={liste.length >= MAX_LIGNES} onClick={() => { setRefusCollage([]); setCollage(true); }}>Coller des lignes</Bouton>
+                <Bouton petit icone={Plus} ecrit disabled={liste.length >= MAX_LIGNES} onClick={() => changer((s) => [...s, nouvelleSaisie()])}>Ajouter une ligne</Bouton>
+                <Bouton petit icone={ClipboardPaste} ecrit disabled={liste.length >= MAX_LIGNES} onClick={() => { setRefusCollage([]); setCollage(true); }}>Coller des lignes</Bouton>
                 <Bouton variante="principal" icone={Play} ecrit enCours={occupe === 'lancer'} disabled={!pretes || inactif} onClick={() => void lancer()}>
                   {liste.length > 0 ? `Lancer le lot (${liste.length})` : 'Lancer le lot'}
                 </Bouton>

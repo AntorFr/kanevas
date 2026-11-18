@@ -68,7 +68,7 @@ body:has(.bm-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .bm-gen-saisie-indication { grid-column: 1 / -1; }
 .bm-gen-actions > .bouton.principal { margin-left: auto; }
 .bm-gen .champ { margin: 0; }
-.bm-gen-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.bm-gen-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
 .bm-gen-refus { display: block; }
 .bm-gen-lecture li { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: baseline; overflow-wrap: anywhere; }
 .bm-gen-lecture span, .bm-gen-lecture small { color: var(--texte-2); }
