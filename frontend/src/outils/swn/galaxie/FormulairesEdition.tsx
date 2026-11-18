@@ -545,7 +545,7 @@ export function DialogueAjouterAstre({ onFermer, onAjoute }: { onFermer: () => v
   const sansPlanete = planetes.length === 0;
   return (
     <BoiteDialogue
-      variante="mj" icone={Plus} formulaire focusChamp
+      variante="neutre" icone={Plus} formulaire focusChamp
       titre="Ajouter un astre"
       texte="Le nouvel astre est ajouté au système et sélectionné."
       action="Ajouter" libelleEnCours="Enregistrement…"
@@ -597,7 +597,7 @@ export function DialogueAjouterZone({ onFermer, onAjoute }: { onFermer: () => vo
   if (ancrageOuvert) return null;
   return (
     <BoiteDialogue
-      variante="mj" icone={Plus} formulaire focusChamp
+      variante="neutre" icone={Plus} formulaire focusChamp
       titre="Ajouter une zone"
       texte="La nouvelle zone est ajoutée au système et sélectionnée."
       action="Ajouter" libelleEnCours="Enregistrement…"

@@ -212,7 +212,7 @@
 /* E-23, the forms of the GM (-formulaires): tokens only. */
 .ed-champs { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--e-1); }
 .ed-ligne { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
-.ed-actions { justify-content: flex-end; position: sticky; bottom: 0; background: var(--surface); padding-top: var(--e-2); }
+.ed-actions { justify-content: flex-start; padding-top: var(--e-2); } /* left: the fixed assistant pill sits bottom-right and would cover « Enregistrer » */
 .ed-graine { display: flex; align-items: flex-end; gap: var(--e-3); }
 .ed-graine .champ { flex: 1; min-width: 0; }
 .ed-vignette { margin: var(--e-2) 0; }
