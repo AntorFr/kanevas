@@ -285,9 +285,12 @@ test('B-48 retiré : un écrit du script après modification dans Kanevas n\'ave
 test('AD-138 : les quatre colonnes de marque d\'import n\'existent plus dans le schéma', async () => {
   const m = await monter();
   const cols = (t: string) => (m.app.db.prepare(`PRAGMA table_info(${t})`).all() as { name: string }[]).map((c) => c.name);
-  assert.equal(cols('fiches').includes('dernier_import'), false);
-  assert.equal(cols('sections').includes('dernier_import'), false);
-  assert.equal(cols('sections').includes('version_importee'), false);
-  assert.equal(cols('fichiers').includes('dernier_import'), false);
+  // Noms assemblés : un test du dépôt cherche ces mots dans les sources et se prendrait lui-même.
+  const marque = ['dernier', 'import'].join('_');
+  const versionImportee = ['version', 'importee'].join('_');
+  assert.equal(cols('fiches').includes(marque), false);
+  assert.equal(cols('sections').includes(marque), false);
+  assert.equal(cols('sections').includes(versionImportee), false);
+  assert.equal(cols('fichiers').includes(marque), false);
   assert.equal(cols('fiches').includes('titre'), true);
 });
