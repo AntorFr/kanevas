@@ -115,6 +115,7 @@ export default function Reglages({ universId, cible, prealable, suffixeMode }: P
   // ---- The samples: the core draws them in the browser, a refused draft keeps the last valid draw.
   const [exemples, setExemples] = useState<Record<string, InterieurSysteme | null>>({ m: null, g: null, a: null });
   const cleSurcharge = canon(lecture.surcharge);
+  const densiteChangee = lecture.densite !== undefined && Math.abs(lecture.densite - vue.densite_defaut) > 1e-9;
   const valide = lecture.surcharge !== undefined && Object.keys(lecture.erreurs).filter((k) => k !== 'densite').length === 0;
   useEffect(() => {
     if (!valide) return;
@@ -318,7 +319,7 @@ export default function Reglages({ universId, cible, prealable, suffixeMode }: P
 
       {confirmation && decompte.k === 'ok' && (
         <BoiteDialogue titre="Appliquer ces réglages ?" variante="mj" action="Appliquer" enCours={enCours}
-          texte={`${phraseDecompte(decompte.apercu)} Les étoiles de la galaxie ne bougent pas.`}
+          texte={densiteChangee ? phraseDecompte(decompte.apercu) : `${phraseDecompte(decompte.apercu)} Les étoiles de la galaxie ne bougent pas.`}
           onConfirmer={() => void appliquer(true)} onFermer={() => setConfirmation(false)} />
       )}
       {bloqueur.state === 'blocked' && (
