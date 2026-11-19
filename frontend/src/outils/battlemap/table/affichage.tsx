@@ -104,8 +104,8 @@ export function Affichage({ universId, cid }: { universId: number; cid: string }
       cache.current.set(id, im);
     }
     return im.complete && im.naturalWidth > 0 ? im : null;
-  }, [assets, parId, universId]);
-  void images;
+  // `images` is a dependency on purpose: a new identity redraws the canvas when a picture has loaded.
+  }, [assets, parId, universId, images]);
 
   const doc = charge.k === 'ok' ? charge.table.document : undefined;
   const brouillard = charge.k === 'ok' ? charge.table.brouillard : undefined;
