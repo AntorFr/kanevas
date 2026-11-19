@@ -25,7 +25,7 @@ import type { AstreSysteme, FormationSysteme, InterieurSysteme } from './types';
 const COEUR: ConvertisseurCoeur = { planVersOrbiteHeure, galactiqueVersOrbiteHeure };
 
 /** True once the core answered, false if it cannot load, null while it loads. */
-function useCoeurPret(): boolean | null {
+export function useCoeurPret(): boolean | null {
   const [pret, setPret] = useState<boolean | null>(null);
   useEffect(() => {
     let vivant = true;
@@ -60,7 +60,7 @@ function useTypes(genre: string): string[] {
 // ---------------------------------------------------------------------------------------------------------------
 // The send: one hook for every form (saving, failure, anchoring)
 
-interface Envoi {
+export interface Envoi {
   enCours: boolean;
   echec: EchecEdition | undefined;
   /** A conflict or an unknown body blocks « Enregistrer » until « Recharger ». */
@@ -69,7 +69,7 @@ interface Envoi {
   effacer: () => void;
 }
 
-function useEnvoi(onFermer: () => void): Envoi {
+export function useEnvoi(onFermer: () => void, lecteur: (e: unknown) => EchecEdition = lireEchecEdition): Envoi {
   const { avecAncrage } = useEdition();
   const { toast } = useToasts();
   const [enCours, setEnCours] = useState(false);
@@ -84,7 +84,7 @@ function useEnvoi(onFermer: () => void): Envoi {
       const r = await avecAncrage(geste);
       if (r) { toast(typeof ok === 'string' ? ok : ok(r)); apres(r); }
     } catch (e) {
-      const f = lireEchecEdition(e);
+      const f = lecteur(e);
       if (f.sorte === 'refus') { toast(f.message); onFermer(); return; }
       if (vivant.current) setEchec(f);
     } finally {
@@ -96,7 +96,7 @@ function useEnvoi(onFermer: () => void): Envoi {
 }
 
 /** The failure line of a form: « Recharger » rereads the system (and closes the form if the body is gone). */
-function EchecForm({ envoi, onReessayer, onFermer }: { envoi: Envoi; onReessayer: () => void; onFermer: () => void }) {
+export function EchecForm({ envoi, onReessayer, onFermer }: { envoi: Envoi; onReessayer: () => void; onFermer: () => void }) {
   const { recharger } = useEdition();
   if (!envoi.echec) return null;
   const inconnu = envoi.echec.sorte === 'inconnu';
@@ -115,7 +115,7 @@ const REPERES_LUNE = [{ valeur: 'orbite', libelle: 'Orbite et heure' }] as const
 interface EtatPlace {
   repere: Repere; a: string; b: string; touche: boolean;
 }
-interface Place {
+export interface Place {
   etat: EtatPlace;
   setRepere: (r: Repere) => void;
   setA: (v: string) => void;
@@ -129,7 +129,7 @@ interface Place {
 }
 
 /** The state of the place fields and its conversion; `lune`: orbit and hour only. */
-function usePlace(orbite: number, heure: number, coeurPret: boolean | null): Place {
+export function usePlace(orbite: number, heure: number, coeurPret: boolean | null): Place {
   const { interieur } = useEdition();
   const rayon = interieur.transition ?? TRANSITION_DEFAUT;
   const [etat, setEtat] = useState<EtatPlace>({ repere: 'orbite', a: texteNombre(orbite), b: texteNombre(heure), touche: false });
@@ -175,7 +175,7 @@ function usePlace(orbite: number, heure: number, coeurPret: boolean | null): Pla
 }
 
 /** The « Repère » choice and the two fields of the chosen one, with the converted line (when the core is there). */
-function ChampsPlace({ place, lune, coeurPret, idLigne }: { place: Place; lune: boolean; coeurPret: boolean | null; idLigne: string }) {
+export function ChampsPlace({ place, lune, coeurPret, idLigne }: { place: Place; lune: boolean; coeurPret: boolean | null; idLigne: string }) {
   const { etat } = place;
   const [la, lb] = etat.repere === 'orbite' ? ['Orbite', 'Heure'] : etat.repere === 'plan' ? ['X', 'Y'] : ['q', 'r'];
   const options = lune || coeurPret === false ? REPERES_LUNE : REPERES;
@@ -205,7 +205,7 @@ function useRendreFocus(ouvreur: string) {
   }, [ouvreur]);
 }
 
-function CadreForm({ titre, ouvreur, envoi, pret, onEnvoyer, onFermer, children }: {
+export function CadreForm({ titre, ouvreur, envoi, pret, onEnvoyer, onFermer, children }: {
   titre: string; ouvreur: string; envoi: Envoi; pret: boolean; onEnvoyer: () => void; onFermer: () => void; children: ReactNode;
 }) {
   const perdue = useConnexionPerdue();
@@ -475,9 +475,9 @@ const DEFAUT_TAILLE: Record<Genre, number> = { planete: 0.105, lune: 0.05, comet
 const DEFAUT_TYPE: Record<Genre, string> = { planete: 'tellurique', lune: 'rocheux', comete: 'comete' };
 
 /** The key of the row an answer holds that the previous interior did not. */
-const cleNouvelle = (avant: InterieurSysteme, apres: InterieurSysteme, liste: 'astres' | 'formations'): string | undefined => {
-  const vues = new Set(avant[liste].map((x) => x.cle));
-  return apres[liste].find((x) => !vues.has(x.cle))?.cle;
+export const cleNouvelle = (avant: InterieurSysteme, apres: InterieurSysteme, liste: 'astres' | 'formations' | 'elements'): string | undefined => {
+  const vues = new Set((avant[liste] ?? []).map((x) => x.cle));
+  return (apres[liste] ?? []).find((x) => !vues.has(x.cle))?.cle;
 };
 
 export function DialogueAjouterAstre({ onFermer, onAjoute }: { onFermer: () => void; onAjoute: (cle: string | undefined) => void }) {

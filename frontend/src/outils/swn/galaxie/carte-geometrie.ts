@@ -123,6 +123,8 @@ export function disposer(s: InterieurSysteme, plan: Plan): Disposition {
   const transition = rayonOrbite(Math.max(0, num(s.transition, 0)));
   let etendue = Math.max(transition, 3 * U);
   for (const c of corps) etendue = Math.max(etendue, Math.hypot(c.x, c.y) + c.rayon);
+  // An element by orbit and hour extends the system as a body does; one on a body is already inside it.
+  for (const e of s.elements ?? []) if (e.sur === null) etendue = Math.max(etendue, rayonOrbite(Math.max(0, num(e.orbite))) + 14);
   for (const z of zones) {
     if (z.forme === 'anneau') etendue = Math.max(etendue, rayonOrbite(num(z.formation.parametres.a)) + 8);
     else for (const c of centresNuage(z.formation)) etendue = Math.max(etendue, rayonOrbite(c[0]) + c[2] * U);
