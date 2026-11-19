@@ -159,9 +159,12 @@ test('B-73 bords : longueur jamais saisie, deux extrémités distinctes, paire u
 test('B-73 bords : nom 1 à 80 caractères, coordonnées ±100 000, notes 2 000, couleur de la palette', async () => {
   const m = await monde();
   const place = (c: Any) => appel(m, 'antor', 'POST', galerie(m, m.gid, '/systemes'), { q: 20, r: 20, ...c });
+  const avant = (await lire(m, 'antor', galerie(m, m.gid, '/contenu'))).json.systemes;
   assert.equal((await place({ nom: '' })).status, 400);
   assert.equal((await place({ nom: '   ' })).status, 400);
   assert.equal((await place({ nom: 'a'.repeat(81) })).status, 400);
+  assert.equal((await place({ nom: 'Notes', q: 21, notes: 'n'.repeat(2001) })).status, 400);
+  assert.equal((await lire(m, 'antor', galerie(m, m.gid, '/contenu'))).json.systemes, avant, 'rien n’est créé par les refus');
   assert.equal((await place({ nom: 'a'.repeat(80) })).status, 201);
   assert.equal((await place({ nom: 'Loin', q: 100001 })).status, 400);
   assert.equal((await place({ nom: 'Loin', q: 100000, r: -100000 })).status, 201);
