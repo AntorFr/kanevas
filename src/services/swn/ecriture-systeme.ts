@@ -348,7 +348,7 @@ function marquerImportee(c: Contexte, table: 'swn_astres' | 'swn_formations', id
 
 /** The key the import gives, or a drawn one; a key already in the system is a `conflit`. */
 function cleDonnee(c: Contexte, table: 'swn_astres' | 'swn_formations', m: MarquesImport, nom: string, defaut: string): string {
-  if (!m.cle !== undefined) {
+  if (m.cle === undefined) {
     const existantes = (c.db.prepare(`SELECT cle FROM ${table} WHERE systeme_id = ?`).all(c.systeme.id) as { cle: string }[]).map((x) => x.cle);
     return cleNeuve(nom || defaut, existantes);
   }
