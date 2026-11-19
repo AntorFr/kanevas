@@ -45,7 +45,8 @@ main.principal:has(> .jeu), body.asst-present main.principal:has(> .jeu) { max-w
 .jeu-haut .outil-md, .jeu-haut .bouton { white-space: nowrap; }
 /* Calques tab: one row per layer, the switch at the right of the name (its label is read, not shown). */
 .jeu-calques .editeur-calques-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-1); }
-.jeu-calque { min-height: 44px; }
+.jeu-calque { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); padding: 0 var(--e-2); }
+.jeu-calque .editeur-calque-nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .jeu-calque .interrupteur { width: 64px; min-height: 44px; flex: none; justify-content: center; padding: 0; }
 .jeu-calque .interrupteur-libelle { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* The floating assistant button sits bottom right: the zoom and the follow switch stack above it. */
