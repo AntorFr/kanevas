@@ -14,7 +14,7 @@ import { exigerEcritureGalaxie, type LigneGalaxie, type LigneSysteme } from './g
 import { estMasque } from './lisibilite.js';
 import { lireInterieur, lireTire, type AstreVue, type FormationVue, type InterieurVue } from './interieur.js';
 
-interface Coeur {
+export interface Coeur {
   plan_vers_orbite_heure(x: number, y: number): Float64Array;
   galactique_vers_orbite_heure(dq: number, dr: number, rayon: number): Float64Array;
   types_astre(genre: string): string;
@@ -30,15 +30,15 @@ try {
 } catch {
   coeur = undefined;
 }
-function leCoeur(): Coeur {
+export function leCoeur(): Coeur {
   if (!coeur) throw new Error('Wasm module "coeur" is missing or unreadable.');
   return coeur;
 }
 
-const ORBITE_MAX = 1000;
-const NOM_MAX = 80;
-const DESCRIPTION_MAX = 2000;
-const TAILLE_MAX = 100;
+export const ORBITE_MAX = 1000;
+export const NOM_MAX = 80;
+export const DESCRIPTION_MAX = 2000;
+export const TAILLE_MAX = 100;
 const CODE_ORBITE = 'orbite_invalide';
 
 const invalide = (champ: string, message: string, detail?: string) => new ErreurService('invalide', message, detail, champ);
@@ -335,13 +335,37 @@ const DEFAUT_TAILLE: Record<string, number> = { planete: 0.105, lune: 0.05, come
 const DEFAUT_TYPE: Record<string, string> = { planete: 'tellurique', lune: 'rocheux', comete: 'comete' };
 const GENRES_AJOUT = ['planete', 'lune', 'comete'];
 
+/**
+ * The import's two marks (AD-atlas-3), read by the functions that create or change a row: `cle` is the key the file
+ * gives (a screen's creation draws its own), `importee` stamps `version_importee = version` once the row is written.
+ */
+export interface MarquesImport { cle?: unknown; importee?: unknown }
+
+/** `version_importee = version` of a row the import just wrote (B-48: only the import's rows carry it). */
+function marquerImportee(c: Contexte, table: 'swn_astres' | 'swn_formations', id: number, m: MarquesImport): void {
+  if (m.importee === true) c.db.prepare(`UPDATE ${table} SET version_importee = version WHERE id = ?`).run(id);
+}
+
+/** The key the import gives, or a drawn one; a key already in the system is a `conflit`. */
+function cleDonnee(c: Contexte, table: 'swn_astres' | 'swn_formations', m: MarquesImport, nom: string, defaut: string): string {
+  if (m.cle === undefined) {
+    const existantes = (c.db.prepare(`SELECT cle FROM ${table} WHERE systeme_id = ?`).all(c.systeme.id) as { cle: string }[]).map((x) => x.cle);
+    return cleNeuve(nom || defaut, existantes);
+  }
+  if (typeof m.cle !== 'string' || m.cle === '' || m.cle.length > 200) throw invalide('cle', 'La clé : de 1 à 200 caractères.');
+  if (c.db.prepare(`SELECT 1 FROM ${table} WHERE systeme_id = ? AND cle = ?`).get(c.systeme.id, m.cle)) {
+    throw new ErreurService('conflit', 'Clé déjà utilisée dans ce système.', 'cle_existante', 'cle');
+  }
+  return m.cle;
+}
+
 export interface AstreEntree extends JetonSysteme {
   genre?: unknown; nom?: unknown; description?: unknown; type?: unknown; taille?: unknown; aspect?: unknown;
   etoile_rang?: unknown; parent_cle?: unknown; orbite?: unknown; heure?: unknown; plan?: unknown; galactique?: unknown;
 }
 
 export function ajouterAstre(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
-  entree: AstreEntree): ResultatEcriture {
+  entree: AstreEntree, marques: MarquesImport = {}): ResultatEcriture {
   const e = objet(entree);
   return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const genre = e.genre;
@@ -369,10 +393,38 @@ export function ajouterAstre(db: Db, acteur: Acteur | number, universId: number,
     }
     const place = lirePlace(e, genre === 'lune', () => repereDe(c));
     const orbite = place.orbite ?? 1, heure = place.heure ?? 0;
-    const existantes = (c.db.prepare('SELECT cle FROM swn_astres WHERE systeme_id = ?').all(c.systeme.id) as { cle: string }[]).map((x) => x.cle);
-    const cle = cleNeuve(nom ?? genre, existantes);
-    c.db.prepare(`INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, description, orbite, heure, taille, aspect)
+    const cle = cleDonnee(c, 'swn_astres', marques, nom ?? '', genre);
+    const { lastInsertRowid } = c.db.prepare(`INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, description, orbite, heure, taille, aspect)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(c.systeme.id, cle, genre, parentId, rang, type, nom, description, orbite, heure, taille, aspect);
+    marquerImportee(c, 'swn_astres', Number(lastInsertRowid), marques);
+    return { cle };
+  });
+}
+
+export interface EtoileEntree extends JetonSysteme {
+  etoile_rang?: unknown; type?: unknown; nom?: unknown; taille?: unknown; aspect?: unknown; orbite?: unknown; heure?: unknown;
+}
+
+/**
+ * A star, for the import alone (the screen never adds one: « une étoile ne s'ajoute pas »): the rank is the file's and
+ * must be free; the main star (rank 0) sits at the centre unless the file says otherwise.
+ */
+export function ajouterEtoile(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
+  entree: EtoileEntree, marques: MarquesImport = {}): ResultatEcriture {
+  const e = objet(entree);
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
+    const rang = rangValide(e.etoile_rang);
+    if (etoileExiste(c, rang)) throw new ErreurService('conflit', 'Ce rang est déjà pris.', 'rang_pris', 'etoile_rang');
+    const type = typeValide('etoile', e.type);
+    const nom = present(e, 'nom') ? nomValide(e.nom) : null;
+    const taille = tailleValide(e.taille);
+    const aspect = present(e, 'aspect') && e.aspect !== null ? aspectValide(type, e.aspect) : aspectParDefaut(type);
+    const orbite = present(e, 'orbite') ? orbiteValide(e.orbite) : 0;
+    const heure = present(e, 'heure') ? heureValide(e.heure) : 0;
+    const cle = cleDonnee(c, 'swn_astres', marques, nom ?? '', 'etoile');
+    const { lastInsertRowid } = c.db.prepare(`INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille, aspect)
+      VALUES (?, ?, 'etoile', NULL, ?, ?, ?, ?, ?, ?, ?)`).run(c.systeme.id, cle, rang, type, nom, orbite, heure, taille, aspect);
+    marquerImportee(c, 'swn_astres', Number(lastInsertRowid), marques);
     return { cle };
   });
 }
@@ -381,7 +433,7 @@ export interface AstreModification extends AstreEntree { version?: unknown }
 
 /** « Déplacer » is this function with `orbite` / `heure` (or `plan`, `galactique`) alone. */
 export function modifierAstre(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
-  cle: string, entree: AstreModification): ResultatEcriture {
+  cle: string, entree: AstreModification, marques: MarquesImport = {}): ResultatEcriture {
   const e = objet(entree);
   return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const a = astreDe(c, cle);
@@ -407,6 +459,7 @@ export function modifierAstre(db: Db, acteur: Acteur | number, universId: number
     if (place.heure !== undefined) poser('heure', place.heure);
     if (sets.length === 0) throw invalide('nom', 'Rien à modifier.');
     c.db.prepare(`UPDATE swn_astres SET ${[...sets, 'version = version + 1'].join(', ')} WHERE id = ?`).run(...vals, a.id);
+    marquerImportee(c, 'swn_astres', a.id, marques);
     return { cle: a.cle };
   });
 }
@@ -452,25 +505,27 @@ function ficheDeLUnivers(c: Contexte, v: unknown): number {
 
 /** Links a body to a sheet; a body already linked has its link replaced. */
 export function lierAstre(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
-  cle: string, entree: LienEntree): ResultatEcriture {
+  cle: string, entree: LienEntree, marques: MarquesImport = {}): ResultatEcriture {
   const e = objet(entree);
   return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const a = astreDe(c, cle);
     if (versionValide('version', e.version) !== a.version) throw aChange();
     const ficheId = ficheDeLUnivers(c, e.ficheId);
     c.db.prepare('UPDATE swn_astres SET fiche_id = ?, version = version + 1 WHERE id = ?').run(ficheId, a.id);
+    marquerImportee(c, 'swn_astres', a.id, marques);
     return { cle: a.cle };
   });
 }
 
 export function lierZone(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
-  cle: string, entree: LienEntree): ResultatEcriture {
+  cle: string, entree: LienEntree, marques: MarquesImport = {}): ResultatEcriture {
   const e = objet(entree);
   return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const f = formationDe(c, cle);
     if (versionValide('version', e.version) !== f.version) throw aChange();
     const ficheId = ficheDeLUnivers(c, e.ficheId);
     c.db.prepare('UPDATE swn_formations SET fiche_id = ?, version = version + 1 WHERE id = ?').run(ficheId, f.id);
+    marquerImportee(c, 'swn_formations', f.id, marques);
     return { cle: f.cle };
   });
 }
@@ -498,7 +553,7 @@ export function delierZone(db: Db, acteur: Acteur | number, universId: number, g
 }
 
 export function ajouterZone(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
-  entree: ZoneEntree): ResultatEcriture {
+  entree: ZoneEntree, marques: MarquesImport = {}): ResultatEcriture {
   const e = objet(entree);
   return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const forme = e.forme;
@@ -508,16 +563,16 @@ export function ajouterZone(db: Db, acteur: Acteur | number, universId: number, 
     const rang = present(e, 'etoile_rang') ? rangValide(e.etoile_rang) : 0;
     const parametres = parametresValides(forme, present(e, 'parametres') ? e.parametres : PARAMETRES_DEFAUT[forme]);
     if (!etoileExiste(c, rang)) throw astreInconnu();
-    const existantes = (c.db.prepare('SELECT cle FROM swn_formations WHERE systeme_id = ?').all(c.systeme.id) as { cle: string }[]).map((x) => x.cle);
-    const cle = cleNeuve(nom ?? forme, existantes);
-    c.db.prepare(`INSERT INTO swn_formations (systeme_id, cle, forme, etoile_rang, nom, description, parametres) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+    const cle = cleDonnee(c, 'swn_formations', marques, nom ?? '', forme);
+    const { lastInsertRowid } = c.db.prepare(`INSERT INTO swn_formations (systeme_id, cle, forme, etoile_rang, nom, description, parametres) VALUES (?, ?, ?, ?, ?, ?, ?)`)
       .run(c.systeme.id, cle, forme, rang, nom, description, parametres);
+    marquerImportee(c, 'swn_formations', Number(lastInsertRowid), marques);
     return { cle };
   });
 }
 
 export function modifierZone(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
-  cle: string, entree: ZoneEntree & { version?: unknown }): ResultatEcriture {
+  cle: string, entree: ZoneEntree & { version?: unknown }, marques: MarquesImport = {}): ResultatEcriture {
   const e = objet(entree);
   return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const f = formationDe(c, cle);
@@ -531,6 +586,7 @@ export function modifierZone(db: Db, acteur: Acteur | number, universId: number,
     if (present(e, 'parametres')) poser('parametres', parametresValides(f.forme, e.parametres));
     if (sets.length === 0) throw invalide('nom', 'Rien à modifier.');
     c.db.prepare(`UPDATE swn_formations SET ${[...sets, 'version = version + 1'].join(', ')} WHERE id = ?`).run(...vals, f.id);
+    marquerImportee(c, 'swn_formations', f.id, marques);
     return { cle: f.cle };
   });
 }
@@ -551,7 +607,8 @@ export function retirerZone(db: Db, acteur: Acteur | number, universId: number, 
  * is the system's (a drawn system: the galaxy's `version` at reading, a defined one: the row's own `version`).
  */
 export function poserTransition(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
-  entree: JetonSysteme & { transition?: unknown }): ResultatEcriture {
+  entree: JetonSysteme & { transition?: unknown },
+  marques: MarquesImport = {}): ResultatEcriture {
   const e = objet(entree);
   return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     if (!present(e, 'transition')) throw invalide('transition', 'Le rayon : un nombre ou null.');
@@ -563,6 +620,10 @@ export function poserTransition(db: Db, acteur: Acteur | number, universId: numb
     // A system defined before the call compares the token with its own row; a drawn one was checked by the anchoring.
     if (!c.ancre && versionValide('versionSysteme', jetonDe(e)) !== c.systeme.version) throw aChange();
     c.db.prepare('UPDATE swn_systemes SET transition = ?, version = version + 1 WHERE id = ?').run(rayon, c.systeme.id);
+    // The import keeps the system in step with its own file (B-48): the system row the galaxy import wrote stays unmodified.
+    if (marques.importee === true) {
+      c.db.prepare('UPDATE swn_systemes SET version_importee = version WHERE id = ? AND version_importee = ?').run(c.systeme.id, c.systeme.version);
+    }
     return {};
   });
 }
