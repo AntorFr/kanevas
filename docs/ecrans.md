@@ -4587,7 +4587,7 @@ the palette and parameters of each, a live thumbnail, « Revenir au défaut » p
 | error | Loading fails: « Impossible de charger les réglages. » + « Réessayer » (no form). Saving fails (« Appliquer » or a type's « Enregistrer »): « Impossible d'enregistrer les réglages. » + « Réessayer » in the apply bar, or under the type's editor; the draft is kept. The core of the map fails to load: samples and thumbnails fall back to the E-23 text « La carte ne peut pas s'afficher ici. » and the form stays usable. An out-of-range value: the field is marked with the bound, « Appliquer » disabled, the bar says « Corrigez les champs marqués. » |
 | offline | « Connexion perdue. » banner, form read-only; the unapplied draft is kept in memory, « Appliquer » comes back on reconnection |
 | refusal | Player or no role: « Page introuvable. » ; GM in Player mode: read-only, « Mode joueur actif. » |
-| long content | a catalogue of 40 types scrolls, the tab list stays; a long galaxy name or type label is truncated with an ellipsis and its full text in `title`; the bounds (0, 100 %, 250 × 250) are shown as written. There is no search on this screen (a short list of fixed groups), hence no empty-search state |
+| long content | a catalogue of 21 types scrolls, the tab list stays; a long galaxy name or type label is truncated with an ellipsis and its full text in `title`; the bounds (0, 100 %, 250 × 250) are shown as written. There is no search on this screen (a short list of fixed groups), hence no empty-search state |
 | conflict | « Ces réglages ont changé depuis que vous les avez ouverts. » + « Recharger » |
 
 Criteria:
