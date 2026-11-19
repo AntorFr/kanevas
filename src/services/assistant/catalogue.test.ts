@@ -57,7 +57,11 @@ test('sans rôle ou univers inconnu : même refus, pas de catalogue', () => {
 test('chercher Aldric sans type : la fiche, pas une autre', () => {
   const { lea, outil, aldric } = monde();
   const r = ok(outil(lea.id, 'chercher', { mots: 'Aldric' }));
-  assert.deepEqual(r.donnees, { fiches: [{ id: aldric.id, type: 'personnage', titre: 'Maître Aldric' }], tronquee: false });
+  assert.equal(r.donnees.curseur, null);
+  assert.equal(r.donnees.fiches.length, 1);
+  const { id, type, titre, fiche } = r.donnees.fiches[0];
+  assert.deepEqual({ id, type, titre }, { id: aldric.id, type: 'personnage', titre: 'Maître Aldric' });
+  assert.equal(String(fiche).length > 0, true);
 });
 
 test('chercher Aldric : un mot présent seulement dans la section fermée ne trouve rien pour Léa', () => {
@@ -80,26 +84,27 @@ test('chercher Garde sans type : 20 fiches triées par titre (AD-118), tronquée
   mk('faction', 7, 'Garde-faction');
   const r = ok(outil(lea.id, 'chercher', { mots: 'Garde' })).donnees;
   assert.equal(r.fiches.length, 20);
-  assert.equal(r.tronquee, true);
+  assert.equal(typeof r.curseur, 'string');
+  assert.ok(!('tronquee' in r));
   // One call to listerFiches, every type: the list's order, by title without case.
   const titres = r.fiches.map((f: any) => f.titre);
   assert.deepEqual(titres, [...titres].sort((x: string, y: string) => x.toLowerCase().localeCompare(y.toLowerCase())));
   // exactly 20 → not truncated; with type → only that type
   const t = ok(outil(lea.id, 'chercher', { mots: 'Garde', type: 'lieu' })).donnees;
   assert.equal(t.fiches.length, 10);
-  assert.equal(t.tronquee, false);
+  assert.equal(t.curseur, null);
 });
 
 test('lire_fiche et lire_section selon le rôle', () => {
   const { lea, antor, outil, aldric, app, verite } = monde();
-  const f = ok(outil(lea.id, 'lire_fiche', { ficheId: aldric.id })).donnees;
+  const f = ok(outil(lea.id, 'lire_fiche', { fiche: aldric.id })).donnees;
   assert.deepEqual(f.sections.map((s: any) => [s.titre, s.version]), [['Apparence', 1]]);
-  assert.equal(ok(outil(antor.id, 'lire_fiche', { ficheId: aldric.id })).donnees.sections.length, 2);
-  const cache = outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: verite.id });
-  const inex = outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: 99999 });
+  assert.equal(ok(outil(antor.id, 'lire_fiche', { fiche: aldric.id })).donnees.sections.length, 2);
+  const cache = outil(lea.id, 'lire_section', { fiche: aldric.id, sectionId: verite.id });
+  const inex = outil(lea.id, 'lire_section', { fiche: aldric.id, sectionId: 99999 });
   assert.deepEqual(cache, { ok: false, erreur: 'Introuvable.' });
   assert.deepEqual(inex, cache);
-  assert.equal(ok(outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: app.id })).donnees.contenu, '<p>Grand.</p>\n');
+  assert.equal(ok(outil(lea.id, 'lire_section', { fiche: aldric.id, sectionId: app.id })).donnees.contenu, '<p>Grand.</p>\n');
 });
 
 test('une aventure créée par le MJ se cherche et se lit comme une fiche ; Léa ne lit pas une Présentation fermée', () => {
@@ -107,12 +112,12 @@ test('une aventure créée par le MJ se cherche et se lit comme une fiche ; Léa
   ajouterSection(db, antor.id, u.id, camp.id, { titre: 'Présentation', contenu: 'Secret.' });
   assert.deepEqual(outil(lea.id, 'chercher', { mots: 'Couronne' }), { ok: false, erreur: 'Introuvable.' });
   assert.ok(JSON.stringify(ok(outil(antor.id, 'chercher', { mots: 'Couronne', type: 'aventure' })).donnees).includes('Couronne'));
-  assert.deepEqual(outil(lea.id, 'lire_fiche', { ficheId: camp.id }), { ok: false, erreur: 'Introuvable.' });
+  assert.deepEqual(outil(lea.id, 'lire_fiche', { fiche: camp.id }), { ok: false, erreur: 'Introuvable.' });
 });
 
 test('modifier_section : remplace avec la version lue, refuse une version périmée sans événement', () => {
   const { antor, outil, aldric, verite } = monde();
-  const a = { ficheId: aldric.id, sectionId: verite.id };
+  const a = { fiche: aldric.id, sectionId: verite.id };
   const r = ok(outil(antor.id, 'modifier_section', { ...a, contenu: 'Nouveau.', version: 1 }));
   assert.equal(r.evenement.type, 'section_modifiee');
   assert.equal(ok(outil(antor.id, 'lire_section', a)).donnees.contenu, 'Nouveau.');
@@ -126,21 +131,21 @@ test('ajouter_a_section de Léa : écrit après l’existant ; lecture seule et 
   const { db, antor, lea, u, outil, aldric, app } = monde();
   const sec = ajouterSection(db, antor.id, u.id, aldric.id, { titre: 'Notes', contenu: 'Avant.' });
   changerAudience(db, antor.id, u.id, aldric.id, sec.id, { auteurId: lea.id, auteurLit: true, auteurEcrit: true });
-  const a = { ficheId: aldric.id, sectionId: sec.id };
+  const a = { fiche: aldric.id, sectionId: sec.id };
   const r = ok(outil(lea.id, 'ajouter_a_section', { ...a, texte: 'Après.', version: 1 }));
   assert.equal(r.evenement.type, 'section_completee');
   assert.equal(ok(outil(lea.id, 'lire_section', a)).donnees.contenu, 'Avant.\n\nAprès.');
   const vieux = outil(lea.id, 'ajouter_a_section', { ...a, texte: 'Z', version: 1 });
   assert.deepEqual(vieux, { ok: false, erreur: "La section a changé depuis que vous l'avez lue. Relisez-la." });
-  const ro = outil(lea.id, 'ajouter_a_section', { ficheId: aldric.id, sectionId: app.id, texte: 'Z', version: 1 });
+  const ro = outil(lea.id, 'ajouter_a_section', { fiche: aldric.id, sectionId: app.id, texte: 'Z', version: 1 });
   assert.deepEqual(ro, { ok: false, erreur: 'Vous ne pouvez pas modifier cette section.' });
-  assert.equal(ok(outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: app.id })).donnees.contenu, '<p>Grand.</p>\n');
+  assert.equal(ok(outil(lea.id, 'lire_section', { fiche: aldric.id, sectionId: app.id })).donnees.contenu, '<p>Grand.</p>\n');
 });
 
 test('paramètres inconnus ou invalides : échec sans effet', () => {
   const { lea, outil, aldric, antor } = monde();
-  assert.equal(outil(lea.id, 'lire_fiche', { ficheId: aldric.id, compteId: antor.id }).ok, false);
-  assert.equal(outil(antor.id, 'lire_fiche', { ficheId: 'x' }).ok, false);
+  assert.equal(outil(lea.id, 'lire_fiche', { fiche: aldric.id, compteId: antor.id }).ok, false);
+  assert.equal(outil(antor.id, 'lire_fiche', { fiche: 'x' }).ok, false);
 });
 
 test('bouchon : chercher salport (Antor, sans type) rend Port-Sel ; sous-main (Léa) : Introuvable., aucun événement', async () => {
