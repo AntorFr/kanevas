@@ -40,6 +40,7 @@ export function LigneRelation({
   type,
   vers,
   actions,
+  sansFleche,
 }: {
   lien: string;
   /** With a nature: the line reads « nature · target — qualifier » (qualifier in grey). */
@@ -50,6 +51,8 @@ export function LigneRelation({
   /** Address of the target sheet: the token becomes a link. */
   vers?: string;
   actions?: ReactNode;
+  /** Variant « target then type, no arrow »: the line reads « target · type » (`lien` is unused; `actions` follow the type). */
+  sansFleche?: boolean;
 }) {
   const nature = qualificatif !== undefined;
   const jeton = (
@@ -58,9 +61,26 @@ export function LigneRelation({
       <span className="jeton-titre" title={cible}>
         {cible}
       </span>
-      {!nature && <span className="jeton-type">{type}</span>}
+      {!nature && !sansFleche && <span className="jeton-type">{type}</span>}
     </>
   );
+  if (sansFleche) {
+    return (
+      <div className="relation relation-nature">
+        <span className="relation-texte">
+          {vers ? (
+            <Link className="jeton" to={vers}>
+              {jeton}
+            </Link>
+          ) : (
+            <span className="jeton">{jeton}</span>
+          )}
+        </span>
+        <span className="jeton-type relation-type">{type}</span>
+        {actions}
+      </div>
+    );
+  }
   if (nature) {
     return (
       <div className="relation relation-nature">

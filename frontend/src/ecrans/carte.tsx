@@ -10,8 +10,10 @@ import { Bouton, Champ, Chargement, ErreurChargement, PageIntrouvable, Pastille 
 import './ecrans.css';
 import './cartes/cartes.css';
 import './carte/carte.css';
-import { adresseFond, FORMES } from './cartes/commun';
+import { adresseFond, FORMES, type Carte } from './cartes/commun';
 import { AjoutFiche } from './carte/ajout-fiche';
+import { LigneRattachee } from './carte/rattache';
+import { TexteCarte } from './carte/texte';
 import { CadreGraphe } from './carte/cadre-graphe';
 import { CadreIllustre } from './carte/cadre-illustre';
 import { libelleDuType, useTypes } from '../types-contexte';
@@ -129,6 +131,9 @@ function Corps({
     setAjout(false);
     setErreurAjout(undefined);
   }, []);
+
+  const majCarte = useCallback((c: Carte) => maj((l) => ({ ...l, carte: { ...l.carte, ...c } })), [maj]);
+  const relireCarte = useCallback(() => lire<CarteLue>(base).then((t) => t.carte, () => undefined), [base]);
 
   async function deplacer(elementId: number, x: number, y: number): Promise<boolean> {
     setEchec(false);
@@ -307,6 +312,7 @@ function Corps({
           </Bouton>
         )}
       </div>
+      {gerer && carte.cleOrigine && <p className="carte-cle">{carte.cleOrigine}</p>}
       <div className="carte-sous">
         <span>{FORMES[carte.forme]}</span>
         {gerer && carte.visible !== undefined && (
@@ -318,6 +324,7 @@ function Corps({
           </>
         )}
       </div>
+      <LigneRattachee universId={universId} base={base} carte={carte} gerer={gerer} onCarte={majCarte} />
       {echec && (
         <div className="echec" role="alert">
           {ECHEC}
@@ -381,6 +388,8 @@ function Corps({
           vide={videTexte}
         />
       )}
+
+      <TexteCarte universId={universId} base={base} carte={carte} gerer={gerer} onCarte={majCarte} relire={relireCarte} />
 
       {gerer && choisi && (
         <div className="carte-panneau mj">

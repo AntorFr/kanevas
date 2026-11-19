@@ -31,3 +31,6 @@
   .ajout-tache-fiche > .bouton { margin-top: 0; justify-self: start; }
   .categorie-fiche .case, .cochees-fiche summary { min-height: 40px; }
 }
+
+/* Block « Cartes » (E-9): one line per attached map. */
+.liste-cartes-fiche { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-1); }

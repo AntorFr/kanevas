@@ -52,3 +52,8 @@
 /* « Retirer de la carte » : contour danger, pas un aplat (maquette e11, btn dg), dans le panneau du token et la liste. */
 .carte-panneau .bouton.danger, .carte-sur .bouton.danger { background: transparent; color: var(--danger); border-color: var(--danger); font-weight: 400; filter: none; }
 .carte-panneau .bouton.danger:hover, .carte-sur .bouton.danger:hover { background: var(--danger-fond); filter: none; }
+
+.carte-cle { margin: 0 0 var(--e-2); color: var(--texte-3); font: 400 var(--t-12)/1.3 var(--police-code); overflow-wrap: anywhere; }
+.carte-rattachee { margin-bottom: var(--e-3); }
+.carte-rattachee-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
+.carte-rattachee-texte { color: var(--texte-2); min-width: 0; max-width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
