@@ -88,6 +88,14 @@ export const modifierZoneSysteme = (p: Place, cle: string, corps: CorpsZone) =>
   appeler<Interieur>('PATCH', url(p, `zones/${encodeURIComponent(cle)}`), corps);
 export const retirerZoneSysteme = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
   appeler<Interieur>('DELETE', url(p, `zones/${encodeURIComponent(cle)}${requete(jeton)}`));
+export const lierAstreFiche = (p: Place, cle: string, corps: JetonSysteme & { ficheId: number; version: number }) =>
+  appeler<Interieur>('PUT', url(p, `astres/${encodeURIComponent(cle)}/fiche`), corps);
+export const lierZoneFiche = (p: Place, cle: string, corps: JetonSysteme & { ficheId: number; version: number }) =>
+  appeler<Interieur>('PUT', url(p, `zones/${encodeURIComponent(cle)}/fiche`), corps);
+export const delierAstreFiche = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
+  appeler<Interieur>('DELETE', url(p, `astres/${encodeURIComponent(cle)}/fiche${requete(jeton)}`));
+export const delierZoneFiche = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
+  appeler<Interieur>('DELETE', url(p, `zones/${encodeURIComponent(cle)}/fiche${requete(jeton)}`));
 export const poserTransitionSysteme = (p: Place, corps: JetonSysteme & { transition: number | null }) =>
   appeler<Interieur>('PUT', url(p, 'transition'), corps);
 
@@ -96,3 +104,7 @@ export const masquerSysteme = (p: Place, corps: JetonSysteme & { secret: boolean
 /** The GM's own read of the flag (the badge of E-23): never sent to a player. */
 export const lireEtatMasque = (p: Place, suffixe = '') =>
   appeler<{ secret: boolean; promu: boolean; versionSysteme: number }>('GET', `${url(p, 'secret')}${suffixe}`);
+
+/** « Illustrer la fiche » (AD-liens-4): adds the body's picture, at `cote` px, to the linked sheet's illustration. Writes no `swn_*`. */
+export const illustrerFicheAstre = (p: Place, cle: string, cote: number) =>
+  appeler<{ fichierId: number; ficheId: number; titre: string }>('POST', url(p, `astres/${encodeURIComponent(cle)}/illustrer-fiche`), { cote });

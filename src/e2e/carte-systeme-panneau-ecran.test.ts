@@ -107,7 +107,8 @@ describe('E-23 le panneau d’un corps', { skip: skipBrowser, timeout: 600000 },
       lus.push(await panneau(page).innerText());
       await ctx.close();
     }
-    assert.equal(lus[1], `${lus[0]}\nDéplacer\nModifier…\nRetirer l’astre`);
+    // a fourth gesture since E-23 lien: « Lier à une fiche… » (the title keeps its inventory line)
+    assert.equal(lus[1], `${lus[0]}\nDéplacer\nModifier…\nLier à une fiche…\nRetirer l’astre`);
   });
 
   it('cœur indisponible : une ligne de liste ouvre le panneau', async () => {

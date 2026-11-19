@@ -155,10 +155,11 @@
 .gx-lignes .nom { grid-area: 1 / 1; font-weight: 600; overflow-wrap: anywhere; }
 .gx-lignes .nom.vide { font-weight: 400; color: var(--texte-2); font-style: italic; }
 .gx-lignes .meta { grid-area: 2 / 1; color: var(--texte-2); font-size: var(--t-13); overflow-wrap: anywhere; }
+.gx-lignes .meta.gx-fiche { grid-area: 3 / 1; }
 .gx-lignes .place { grid-area: 1 / 2; color: var(--texte-2); font-size: var(--t-13); text-align: right; white-space: nowrap; }
 @media (max-width: 560px) {
   .gx-lignes li, .gx-lignes li.cliquable > .ligne-corps { grid-template-columns: minmax(0, 1fr); }
-  .gx-lignes .nom, .gx-lignes .meta, .gx-lignes .place { grid-area: auto; text-align: left; white-space: normal; }
+  .gx-lignes .nom, .gx-lignes .meta, .gx-lignes .meta.gx-fiche, .gx-lignes .place { grid-area: auto; text-align: left; white-space: normal; }
 }
 
 /* E-23, the canvas (AD-carte-3). The sky is dark in both themes; everything on it reads `--ciel*`. */

@@ -51,10 +51,13 @@ export interface AstreSysteme {
   nom: string | null; orbite: number | null; heure: number; taille: number; aspect?: Record<string, unknown>;
   /** Plain text, when the answer carries one. */
   description?: string | null;
+  /** The sheet the body is linked to, when the reader reads it (AD-liens-2); `null` or absent otherwise. */
+  fiche?: FicheLiee | null;
   /** GM only. */
   version?: number;
 }
-export interface FormationSysteme { cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number; version?: number;
+export interface FicheLiee { id: number; titre: string }
+export interface FormationSysteme { cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number; version?: number; fiche?: FicheLiee | null;
   /** Plain text, for the writing GM only. */
   description?: string }
 export interface InterieurSysteme {

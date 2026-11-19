@@ -131,6 +131,11 @@ a { color: var(--accent-texte); }
   background: var(--surface); color: var(--texte); font-size: var(--t-13); border-radius: var(--rayon-champ); box-shadow: var(--ombre-flottant);
   animation: apparition var(--duree) var(--courbe); }
 .toast-icone { color: var(--table); flex: none; }
+.toast > span { min-width: 0; }
+.toast-action { flex: none; display: inline-flex; align-items: center; min-height: 24px; padding: 0 var(--e-1); background: none; border: 0;
+  border-radius: var(--rayon-champ); color: var(--accent-texte); font: inherit; font-size: var(--t-13); font-weight: 500; cursor: pointer; text-decoration: none; }
+.toast-action:hover, .toast-action:focus-visible { text-decoration: underline; }
+.toast-action:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 @media (max-width: 760px) { .toasts { left: var(--e-4); right: 72px; transform: none; align-items: stretch; } }
 
 .panneau { background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-panneau);

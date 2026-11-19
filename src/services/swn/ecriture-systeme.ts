@@ -437,6 +437,66 @@ const PARAMETRES_DEFAUT: Record<string, Record<string, unknown>> = {
   nuage: { orbite: 5, heure: 0, centres: [[5, 0, 1]] },
 };
 
+// ---------------------------------------------------------------------------------------------------------------
+// The link to a sheet (AD-liens-1): the only writer of `fiche_id`. The GM reads every sheet of the universe, so the
+// one refusal is `fiche_inconnue`, the same for an unknown id, a sheet of another universe and one deleted meanwhile.
+
+export interface LienEntree extends JetonSysteme { ficheId?: unknown; version?: unknown }
+
+function ficheDeLUnivers(c: Contexte, v: unknown): number {
+  const id = typeof v === 'number' && Number.isSafeInteger(v) ? v : undefined;
+  const ok = id !== undefined && c.db.prepare('SELECT 1 FROM fiches WHERE id = ? AND univers_id = ?').get(id, c.universId);
+  if (!ok) throw invalide('ficheId', 'Fiche introuvable.', 'fiche_inconnue');
+  return id as number;
+}
+
+/** Links a body to a sheet; a body already linked has its link replaced. */
+export function lierAstre(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
+  cle: string, entree: LienEntree): ResultatEcriture {
+  const e = objet(entree);
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
+    const a = astreDe(c, cle);
+    if (versionValide('version', e.version) !== a.version) throw aChange();
+    const ficheId = ficheDeLUnivers(c, e.ficheId);
+    c.db.prepare('UPDATE swn_astres SET fiche_id = ?, version = version + 1 WHERE id = ?').run(ficheId, a.id);
+    return { cle: a.cle };
+  });
+}
+
+export function lierZone(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
+  cle: string, entree: LienEntree): ResultatEcriture {
+  const e = objet(entree);
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
+    const f = formationDe(c, cle);
+    if (versionValide('version', e.version) !== f.version) throw aChange();
+    const ficheId = ficheDeLUnivers(c, e.ficheId);
+    c.db.prepare('UPDATE swn_formations SET fiche_id = ?, version = version + 1 WHERE id = ?').run(ficheId, f.id);
+    return { cle: f.cle };
+  });
+}
+
+export function delierAstre(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
+  cle: string, entree: JetonSysteme & { version?: unknown }): ResultatEcriture {
+  const e = objet(entree);
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
+    const a = astreDe(c, cle);
+    if (versionValide('version', e.version) !== a.version) throw aChange();
+    c.db.prepare('UPDATE swn_astres SET fiche_id = NULL, version = version + 1 WHERE id = ?').run(a.id);
+    return { cle: a.cle };
+  });
+}
+
+export function delierZone(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
+  cle: string, entree: JetonSysteme & { version?: unknown }): ResultatEcriture {
+  const e = objet(entree);
+  return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
+    const f = formationDe(c, cle);
+    if (versionValide('version', e.version) !== f.version) throw aChange();
+    c.db.prepare('UPDATE swn_formations SET fiche_id = NULL, version = version + 1 WHERE id = ?').run(f.id);
+    return { cle: f.cle };
+  });
+}
+
 export function ajouterZone(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
   entree: ZoneEntree): ResultatEcriture {
   const e = objet(entree);
