@@ -26,7 +26,7 @@ export interface PoigneeJeu { centre(): Point; rect(): Rect }
  */
 export function CanevasJeu({
   doc, tailleCase, empreinte, image, pions, selection, grille, mj, calquesMasques, apercu, libre, suivre, annonce, message,
-  surBas, surBouge, surHaut, surVue, poignee,
+  surBas, surBouge, surHaut, surVue, poignee, affichage = false,
 }: {
   doc: Document;
   tailleCase: number;
@@ -51,6 +51,8 @@ export function CanevasJeu({
   /** The user moved or zoomed the view (not a followed one): its rectangle in cells. */
   surVue?: (r: Rect) => void;
   poignee?: Ref<PoigneeJeu>;
+  /** E-30: nothing answers the user — no pan, zoom, key or control; the view is only the followed rectangle. */
+  affichage?: boolean;
 }) {
   const zone = useRef<HTMLDivElement>(null);
   const toile = useRef<HTMLCanvasElement>(null);
@@ -126,7 +128,7 @@ export function CanevasJeu({
 
   useEffect(() => {
     const el = toile.current;
-    if (!el) return;
+    if (!el || affichage) return;
     const roue = (ev: WheelEvent) => {
       ev.preventDefault();
       const r = el.getBoundingClientRect();
@@ -134,7 +136,7 @@ export function CanevasJeu({
     };
     el.addEventListener('wheel', roue, { passive: false });
     return () => el.removeEventListener('wheel', roue);
-  }, [zoomerSur]);
+  }, [zoomerSur, affichage]);
 
   useEffect(() => {
     const bas = (ev: KeyboardEvent) => { if (ev.code === 'Space') espace.current = true; };
@@ -384,16 +386,13 @@ export function CanevasJeu({
         ref={toile}
         className="canevas-carte"
         style={{ width: taille.w, height: taille.h, touchAction: 'none' }}
-        tabIndex={0}
+        tabIndex={affichage ? -1 : 0}
         aria-label="Carte"
-        onPointerDown={bas}
-        onPointerMove={bouge}
-        onPointerUp={haut}
-        onPointerCancel={annuler}
+        {...(affichage ? {} : { onPointerDown: bas, onPointerMove: bouge, onPointerUp: haut, onPointerCancel: annuler })}
       />
       <div className="sr-carte" role="status" aria-live="polite">{annonce}</div>
       {message !== '' && <div className="canevas-message" role="status">{message}</div>}
-      <div className="canevas-zoom" role="group" aria-label="Zoom">
+      {!affichage && <div className="canevas-zoom" role="group" aria-label="Zoom">
         <button type="button" className="canevas-zoom-bouton" aria-label="Zoom arrière" title="Zoom arrière" onClick={() => zoomerSur(1 / 1.25, taille.w / 2, taille.h / 2)}>
           <Minus size={16} strokeWidth={1.75} aria-hidden="true" />
         </button>
@@ -404,7 +403,7 @@ export function CanevasJeu({
         <button type="button" className="canevas-zoom-bouton" aria-label="Zoom avant" title="Zoom avant" onClick={() => zoomerSur(1.25, taille.w / 2, taille.h / 2)}>
           <Plus size={16} strokeWidth={1.75} aria-hidden="true" />
         </button>
-      </div>
+      </div>}
     </div>
   );
 }
