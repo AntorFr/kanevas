@@ -8,7 +8,11 @@ export const MAX_TOASTS = 3;
 export interface ToastInfo {
   id: number;
   texte: string;
+  action?: ActionToast;
 }
+
+/** An action carried by a toast: a real link (`href`) or a button (`onClick`). */
+export type ActionToast = { libelle: string } & ({ href: string; onClick?: never } | { onClick: () => void; href?: never });
 
 /** Adds a toast at the bottom of the stack; beyond three, the oldest leaves. Pure. */
 export function empiler(liste: ToastInfo[], nouveau: ToastInfo): ToastInfo[] {
@@ -16,8 +20,8 @@ export function empiler(liste: ToastInfo[], nouveau: ToastInfo): ToastInfo[] {
 }
 
 interface ContexteToasts {
-  /** Confirms a successful action. Never takes the focus. */
-  toast: (texte: string) => void;
+  /** Confirms a successful action, optionally with one action. Never takes the focus. */
+  toast: (texte: string, action?: ActionToast) => void;
 }
 const Contexte = createContext<ContexteToasts>({ toast: () => {} });
 
@@ -41,13 +45,25 @@ export function FournisseurToasts({ children }: { children: ReactNode }) {
     setListe((l) => l.filter((t) => t.id !== id));
   }, []);
 
-  const toast = useCallback(
-    (texte: string) => {
-      const id = prochain.current++;
-      setListe((l) => empiler(l, { id, texte }));
+  const armer = useCallback(
+    (id: number) => {
+      clearTimeout(minuteurs.current.get(id));
       minuteurs.current.set(id, setTimeout(() => retirer(id), DUREE_TOAST_MS));
     },
     [retirer],
+  );
+  const suspendre = useCallback((id: number) => {
+    clearTimeout(minuteurs.current.get(id));
+    minuteurs.current.delete(id);
+  }, []);
+
+  const toast = useCallback(
+    (texte: string, action?: ActionToast) => {
+      const id = prochain.current++;
+      setListe((l) => empiler(l, action ? { id, texte, action } : { id, texte }));
+      armer(id);
+    },
+    [armer],
   );
 
   useEffect(() => {
@@ -61,19 +77,67 @@ export function FournisseurToasts({ children }: { children: ReactNode }) {
       {children}
       <div className="toasts" role="status" aria-live="polite">
         {liste.map((t) => (
-          <Toast key={t.id} texte={t.texte} onFermer={() => retirer(t.id)} />
+          <Toast
+            key={t.id}
+            texte={t.texte}
+            action={t.action}
+            onFermer={() => retirer(t.id)}
+            onSuspendre={() => suspendre(t.id)}
+            onReprendre={() => armer(t.id)}
+          />
         ))}
       </div>
     </Contexte.Provider>
   );
 }
 
-/** One toast: a check, the text, « Fermer ». */
-export function Toast({ texte, onFermer }: { texte: string; onFermer: () => void }) {
+/**
+ * One toast: a check, the text, an optional action, « Fermer ». A toast with an action is held while the
+ * pointer or the focus is on it (WCAG 2.2.1) and its 4 s start again when both have left; it never takes the focus.
+ */
+export function Toast({
+  texte,
+  action,
+  onFermer,
+  onSuspendre,
+  onReprendre,
+}: {
+  texte: string;
+  action?: ActionToast;
+  onFermer: () => void;
+  onSuspendre?: () => void;
+  onReprendre?: () => void;
+}) {
+  const pointeur = useRef(false);
+  const focus = useRef(false);
+  const tenir = action ? onSuspendre : undefined;
+  const relacher = action ? onReprendre : undefined;
+  const maj = (p: boolean | null, f: boolean | null) => {
+    if (p !== null) pointeur.current = p;
+    if (f !== null) focus.current = f;
+    if (pointeur.current || focus.current) tenir?.();
+    else relacher?.();
+  };
   return (
-    <div className="toast">
+    <div
+      className="toast"
+      onPointerEnter={action ? () => maj(true, null) : undefined}
+      onPointerLeave={action ? () => maj(false, null) : undefined}
+      onFocus={action ? () => maj(null, true) : undefined}
+      onBlur={action ? () => maj(null, false) : undefined}
+    >
       <CircleCheck size={16} strokeWidth={1.75} aria-hidden="true" className="toast-icone" />
       <span>{texte}</span>
+      {action &&
+        (action.href !== undefined ? (
+          <a className="toast-action" href={action.href}>
+            {action.libelle}
+          </a>
+        ) : (
+          <button type="button" className="toast-action" onClick={action.onClick}>
+            {action.libelle}
+          </button>
+        ))}
       <button type="button" className="bouton-icone" aria-label="Fermer" title="Fermer" onClick={onFermer}>
         <X size={14} strokeWidth={1.75} aria-hidden="true" />
       </button>

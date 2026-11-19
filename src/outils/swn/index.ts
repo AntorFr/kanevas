@@ -5,6 +5,7 @@ import { apresEcritureRegles, produireRegles, versionSourceRegles } from '../../
 import { produireDocument, versionSourceDocument } from '../../services/swn/document-source.js';
 import { importerGalaxie, NATURES_GALAXIE } from '../../services/swn/import-galaxie.js';
 import { donneesGalaxie, donneesVaisseaux } from '../../services/swn/donnees-outils.js';
+import { presenceDeFiche } from '../../services/swn/presence.js';
 import { outilTrajet } from './assistant.js';
 import { outilVaisseau } from './assistant-vaisseaux.js';
 import type { DeclarationCarte, DeclarationGenerateur, DeclarationModule, SectionGeree } from '../declaration.js';
@@ -16,6 +17,7 @@ export const swnGalaxie: DeclarationCarte = {
   ecran: { libelle: 'Galaxie', icone: 'Map' },
   cartes: (db, acteur, universId) => cartesGalaxies(db, acteur, universId),
   outilsAssistant: outilTrajet,
+  blocsFiche: (db, acteur, universId, ficheId) => presenceDeFiche(db, acteur, universId, ficheId),
   donnees: donneesGalaxie,
   importation: { natures: NATURES_GALAXIE, appliquer: importerGalaxie },
   sections: [{

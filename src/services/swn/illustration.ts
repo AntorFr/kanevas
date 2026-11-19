@@ -2,6 +2,7 @@
 // a worker thread (never on the request thread), two renders at a time, kept in a derived cache on the volume (AD-142).
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { Readable } from 'node:stream';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Worker } from 'node:worker_threads';
@@ -10,8 +11,10 @@ import { cacheAstresDir } from '../../config/env.js';
 import type { Db } from '../../db/db.js';
 import { chargerModule } from '../../wasm/charger.js';
 import { ErreurService, introuvable } from '../erreurs.js';
+import { ajouterFichier } from '../fichiers.js';
 import { ecrireDerive } from '../stockage.js';
 import type { Acteur } from '../types.js';
+import { exigerEcritureGalaxie } from './galaxies.js';
 import { lireInterieur } from './interieur.js';
 
 export const COTE_MIN = 64;
@@ -155,4 +158,33 @@ async function octetsDe(racine: string, nom: string, aspectJson: string, cote: n
   }).finally(() => enVol.delete(cle));
   enVol.set(cle, travail);
   return travail;
+}
+
+export interface FicheIllustree { fichierId: number; ficheId: number; titre: string }
+
+/**
+ * « Illustrer la fiche » (AD-liens-4): the picture of the body `cle`, at the `cote` of the dialog, added to the illustration of
+ * its linked sheet through the media library (AD-117). Same guards as the read (hidden system: `introuvable`), then the write
+ * guard (a player: `refuse`); a body linked to no sheet is `non_liee`. The bytes are those of the picture route at that `cote`
+ * (same render, same cache). A failed render is `rendu_indisponible` and adds no file. Writes no row of `swn_*`.
+ */
+export async function illustrerFiche(
+  db: Db, acteur: Acteur, universId: number, galaxieId: number, q: number, r: number, cle: string, cote: number,
+  deps: DepsIllustration & { racineFichiers?: string } = {},
+): Promise<FicheIllustree> {
+  const astre = lireInterieur(db, acteur, universId, galaxieId, q, r).astres.find((a) => a.cle === cle);
+  if (!astre) throw introuvable();
+  exigerEcritureGalaxie(db, acteur, universId, galaxieId);
+  if (!astre.fiche) throw new ErreurService('invalide', "Ce corps n'est lié à aucune fiche.", 'non_liee');
+  let vue: IllustrationVue;
+  try {
+    vue = await illustrationAstre(db, acteur, universId, galaxieId, q, r, cle, cote, {}, deps);
+  } catch (e) {
+    if (e instanceof ErreurService && e.code === 'indisponible') throw new ErreurService('indisponible', e.message, 'rendu_indisponible');
+    throw e;
+  }
+  if (!vue.octets) throw new ErreurService('indisponible', 'Illustration indisponible.', 'rendu_indisponible');
+  const nom = `${(astre.nom ?? '').trim() || astre.cle}.webp`;
+  const fichier = await ajouterFichier(db, acteur, universId, Readable.from([vue.octets]), nom, { ou: 'illustration', ficheId: astre.fiche.id }, ...(deps.racineFichiers ? [deps.racineFichiers] : []));
+  return { fichierId: fichier.id, ficheId: astre.fiche.id, titre: astre.fiche.titre };
 }

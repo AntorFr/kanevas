@@ -8,6 +8,7 @@ import type { Point } from '../../outils/swn/regles/hex.js';
 import { chargerModule } from '../../wasm/charger.js';
 import { introuvable } from '../erreurs.js';
 import type { Acteur } from '../types.js';
+import { roleDe, sqlFicheLisible } from '../droits.js';
 import { systemeLisible } from './lisibilite.js';
 import { galaxieLisible, zonesLisibles, type LigneGalaxie, type NiveauLecture } from './galaxies.js';
 import { entreesBloc, systemesExclusants, tirerEtoileComplete, VERSION_GENERATEUR } from './tirage-etoiles.js';
@@ -29,17 +30,21 @@ function leCoeur(): Coeur {
   return coeur;
 }
 
+export interface FicheLiee { id: number; titre: string }
 export interface AstreVue {
   cle: string; genre: 'etoile' | 'planete' | 'lune' | 'comete'; parent_cle: string | null; etoile_rang: number; type: string;
   nom: string | null; orbite: number | null; heure: number; taille: number; aspect: Record<string, unknown>;
   /** Token of the write (AD-edition-2): a GM outside Player mode only; a drawn body reads 1. */
   version?: number;
+  /** The linked sheet, only when the reader reads it (AD-liens-2); a hidden sheet is `null`, like no link at all. */
+  fiche: FicheLiee | null;
   /** Plain text of a defined body, for the form « Modifier » of the writing GM only (absent when empty). */
   description?: string;
 }
 export interface FormationVue {
   cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number;
   version?: number;
+  fiche: FicheLiee | null;
   /** As for a body: the writing GM only. */
   description?: string;
 }
@@ -51,8 +56,8 @@ export interface InterieurVue {
   peutEcrire?: true; versionSysteme?: number;
 }
 
-interface LigneAstre extends Omit<AstreVue, 'aspect'> { aspect: string }
-interface LigneFormation extends Omit<FormationVue, 'parametres'> { parametres: string }
+interface LigneAstre extends Omit<AstreVue, 'aspect' | 'fiche'> { aspect: string; fiche_id: number | null }
+interface LigneFormation extends Omit<FormationVue, 'parametres' | 'fiche'> { parametres: string; fiche_id: number | null }
 export interface Tire {
   etoile: { q: number; r: number; taille: number; lettre: string };
   astres: AstreVue[]; formations: FormationVue[]; transition: number;
@@ -92,8 +97,8 @@ function composer(
   q: number, r: number, nom: string | null, etat: InterieurVue['etat'], transition: number | null,
   astres: AstreVue[], formations: FormationVue[],
 ): InterieurVue {
-  const triees = ordonner(astres);
-  const fs = ordonnerFormations(formations);
+  const triees = ordonner(astres.map((a) => ({ ...a, fiche: a.fiche ?? null })));
+  const fs = ordonnerFormations(formations.map((f) => ({ ...f, fiche: f.fiche ?? null })));
   return {
     q, r, nom, etat,
     transition: transition ?? leCoeur().transition_defaut(JSON.stringify(triees), JSON.stringify(fs)),
@@ -104,7 +109,7 @@ function composer(
 /**
  * The interior of the system at `(q, r)`. Role, unknown galaxy, hexagon without star and a secret system seen by a
  * player (or a GM in Player mode) are the same `introuvable`. There is no guard per body (AD-150) and nothing
- * hidden, no `fiche_id`, no `secret`, no row id leaves.
+ * hidden, no raw `fiche_id`, no `secret`, no row id leaves.
  */
 export function lireInterieur(
   db: Db, acteur: Acteur, universId: number, galaxieId: number, q: number, r: number,
@@ -115,13 +120,16 @@ export function lireInterieur(
     .get(galaxie.id, q, r) as { id: number; nom: string; transition: number | null } | undefined;
   if (ligne) {
     if (!systemeLisible(db, acteur, ligne.id)) throw introuvable();
-    const astres = (db.prepare(`SELECT a.cle, a.genre, p.cle AS parent_cle, a.etoile_rang, a.type, a.nom, a.orbite, a.heure,
-        a.taille, a.aspect, a.version, a.description FROM swn_astres a LEFT JOIN swn_astres p ON p.id = a.parent_id
-        WHERE a.systeme_id = ? ORDER BY a.id`).all(ligne.id) as LigneAstre[])
-      .map(({ description, ...a }) => ({ ...a, aspect: JSON.parse(a.aspect) as Record<string, unknown>, ...(description ? { description } : {}) }));
-    const formations = (db.prepare(`SELECT cle, forme, nom, parametres, etoile_rang, version, description FROM swn_formations
-        WHERE systeme_id = ? ORDER BY id`).all(ligne.id) as LigneFormation[])
-      .map(({ description, ...f }) => ({ ...f, parametres: JSON.parse(f.parametres) as Record<string, unknown>, ...(description ? { description } : {}) }));
+    const lignesAstres = db.prepare(`SELECT a.cle, a.genre, p.cle AS parent_cle, a.etoile_rang, a.type, a.nom, a.orbite, a.heure,
+        a.taille, a.aspect, a.version, a.description, a.fiche_id FROM swn_astres a LEFT JOIN swn_astres p ON p.id = a.parent_id
+        WHERE a.systeme_id = ? ORDER BY a.id`).all(ligne.id) as LigneAstre[];
+    const lignesFormations = db.prepare(`SELECT cle, forme, nom, parametres, etoile_rang, version, description, fiche_id FROM swn_formations
+        WHERE systeme_id = ? ORDER BY id`).all(ligne.id) as LigneFormation[];
+    const fiches = fichesLisibles(db, acteur, universId, [...lignesAstres, ...lignesFormations].map((x) => x.fiche_id));
+    const astres = lignesAstres
+      .map(({ description, fiche_id, ...a }) => ({ ...a, fiche: fiches.get(fiche_id ?? -1) ?? null, aspect: JSON.parse(a.aspect) as Record<string, unknown>, ...(description ? { description } : {}) }));
+    const formations = lignesFormations
+      .map(({ description, fiche_id, ...f }) => ({ ...f, fiche: fiches.get(fiche_id ?? -1) ?? null, parametres: JSON.parse(f.parametres) as Record<string, unknown>, ...(description ? { description } : {}) }));
     const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, astres, formations);
     return niveau === 'mj' ? ouvrirEcriture(vue, ligneVersion(db, ligne.id)) : sansJetons(vue);
   }
@@ -130,6 +138,21 @@ export function lireInterieur(
   if (!tire) throw introuvable();
   const vue = composer(q, r, null, 'tire', tire.transition, tire.astres, tire.formations);
   return niveau === 'mj' ? ouvrirEcriture(vue, galaxie.version) : sansJetons(vue);
+}
+
+/**
+ * The sheets of `ids` this reader reads, `{id, titre}` by id, in one query (AD-liens-2): the rule of `lireRelations`
+ * (`sqlFicheLisible`), the sheet's own title at each reading, a sheet of another universe never.
+ */
+function fichesLisibles(db: Db, acteur: Acteur, universId: number, ids: (number | null)[]): Map<number, FicheLiee> {
+  const uniques = [...new Set(ids.filter((i): i is number => i !== null))];
+  if (uniques.length === 0) return new Map();
+  const role = roleDe(db, universId, acteur.compteId);
+  if (!role) return new Map();
+  const lisible = sqlFicheLisible(role, acteur, 'f');
+  const lignes = db.prepare(`SELECT f.id, f.titre FROM fiches f WHERE f.univers_id = ? AND f.id IN (${uniques.map(() => '?').join(',')})
+      ${lisible ? `AND ${lisible.sql}` : ''}`).all(universId, ...uniques, ...(lisible?.params ?? [])) as FicheLiee[];
+  return new Map(lignes.map((l) => [l.id, { id: l.id, titre: l.titre }]));
 }
 
 const ligneVersion = (db: Db, systemeId: number): number =>

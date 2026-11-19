@@ -5,6 +5,7 @@ import { Alerte, Bouton, BoutonIcone, Fenetre } from '../../../ui';
 import { COTE_FLOU, dessineurDuCoeur } from './carte-sprites';
 import { aspectDe } from './carte-geometrie';
 import { nomAstre, placeAstre, typeAstre } from './systeme-libelles';
+import { LigneFiche } from './Liens';
 import type { AstreSysteme } from './types';
 
 type Image =
@@ -107,6 +108,7 @@ export default function PanneauCorps({ astre, q, r, base, suffixe, actions }: Pr
         {description !== '' && <><dt>Description</dt><dd className="gx-notes">{description}</dd></>}
       </dl>
       <p className="gx-note">Hexagone {q}, {r}</p>
+      <LigneFiche fiche={astre.fiche} />
       <div className="gx-actions">
         <Bouton disabled={ouverte && hd.k === 'chargement'} onClick={() => setOuverte(true)}>Voir l’illustration</Bouton>
         {actions}

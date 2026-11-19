@@ -215,14 +215,14 @@ test('aucune réponse ne porte fiche_id, secret, id ni compte de caché (tiré, 
   ];
   for (const v of lectures) {
     const s = JSON.stringify(sansJetons(v));
-    assert.ok(!/fiche|secret|"id"|cach|masqu|compte|systeme_id|version"/i.test(s), s.slice(0, 200));
+    assert.ok(!/fiche_id|secret|cach|masqu|compte|systeme_id|version"/i.test(s), s.slice(0, 200));
     // The GM's reading adds only the tokens of AD-edition-2.
     assert.deepEqual(Object.keys(v).sort(), ['astres', 'etat', 'formations', 'nom', 'peutEcrire', 'q', 'r', 'transition', 'versionSysteme', 'version_generateur']);
-    for (const a of v.astres) assert.deepEqual(Object.keys(a).sort(), ['aspect', 'cle', 'etoile_rang', 'genre', 'heure', 'nom', 'orbite', 'parent_cle', 'taille', 'type', 'version']);
-    for (const f of v.formations) assert.deepEqual(Object.keys(f).sort(), ['cle', 'etoile_rang', 'forme', 'nom', 'parametres', 'version']);
+    for (const a of v.astres) assert.deepEqual(Object.keys(a).sort(), ['aspect', 'cle', 'etoile_rang', 'fiche', 'genre', 'heure', 'nom', 'orbite', 'parent_cle', 'taille', 'type', 'version']);
+    for (const f of v.formations) assert.deepEqual(Object.keys(f).sort(), ['cle', 'etoile_rang', 'fiche', 'forme', 'nom', 'parametres', 'version']);
     const p = sansJetons(v);
     assert.deepEqual(Object.keys(p).sort(), ['astres', 'etat', 'formations', 'nom', 'q', 'r', 'transition', 'version_generateur']);
-    for (const a of p.astres) assert.deepEqual(Object.keys(a).sort(), ['aspect', 'cle', 'etoile_rang', 'genre', 'heure', 'nom', 'orbite', 'parent_cle', 'taille', 'type']);
+    for (const a of p.astres) assert.deepEqual(Object.keys(a).sort(), ['aspect', 'cle', 'etoile_rang', 'fiche', 'genre', 'heure', 'nom', 'orbite', 'parent_cle', 'taille', 'type']);
   }
 });
 
