@@ -149,7 +149,7 @@ they replace the old `GET /api/univers/:id/systeme` and `…/systeme/gabarits*` 
 | `POST /api/univers/:id/comptes-rendus` | `{campagneId, titre, texte?}`; any member (AD-61); returns the sheet — *`kanevas-scenarios`*: `campagneId` is the id of an adventure sheet (campaign or scenario) the caller reads |
 | `GET .../comptes-rendus` (`?campagne`, `?curseur`), ~~`GET .../campagnes/:cid/comptes-rendus`~~ (*removed by `kanevas-scenarios`*; `?campagne=<fiche id>` serves the block) | readable session reports, newest first, at most 100 per page and `suivant`; `?mode=joueur` |
 | `GET\|POST /api/univers/:id/cartes` | list of readable maps (`?curseur`); create `{titre, forme}` (`forme` required in JSON; the « illustrée » default belongs to the form and multipart path; `illustree` \| `graphe`), or multipart with `titre` and `forme` **before** `fichier` (background of an illustrated map). GM outside Player mode only (AD-72) |
-| `GET\|PATCH /api/univers/:id/cartes/:cid` | `lireCarte`: map, elements and links already filtered (AD-68); `?mode=joueur` reads as a Player (403 `mode_joueur` for the GM if the map is not visible); configure `{titre?, visible?}` |
+| `GET\|PATCH /api/univers/:id/cartes/:cid` | `lireCarte`: map, elements and links already filtered (AD-68); for a player, on a played map, the table's filter applies on top (hidden layers and elements under the fog are not in the bytes, AD-battlemap-table-4); `?mode=joueur` reads as a Player (403 `mode_joueur` for the GM if the map is not visible); configure `{titre?, visible?}` |
 | `PUT\|GET /api/univers/:id/cartes/:cid/fond` | replace background (multipart, `fichier` field, image of at most 25 MB, AD-69); read it (account's actual permission, no mode) |
 | `POST /api/univers/:id/cartes/:cid/elements`, `PATCH\|DELETE …/elements/:eid` | place `{ficheId, x, y}` (`x` and `y` required on an illustrated map, from 0 to 100 — out-of-bounds values clamped to the edge —, forbidden on a graph: `{ficheId}` only); move `{x, y}`; remove (204, the sheet stays) |
 
@@ -1829,7 +1829,7 @@ only (then they serve the GM and the assistant, which can describe them). The ca
 
 **AD-159 — Live play through an event stream.** `GET /api/univers/:id/outils/battlemap/cartes/:cid/flux` (SSE, session guard):
 the server pushes `{version}` after each accepted write to `bm_tables` and the client refetches the filtered state (small state, no
-diff protocol); the GM's moves and a player's own token moves go through `POST …/table/commandes` (the core validates: bounds,
+diff protocol); the GM's moves (and, from the next slice, a player's own token moves) go through `POST …/table/commandes` (the core validates: bounds,
 token ownership from `bm_pions_proprietaires`, never walls or fog — movement is free, the table judges). In-memory fan-out in the
 single process (the deployment has one replica, SQLite); the client reconnects with `Last-Event-ID` and falls back to a 3 s poll
 when the stream is blocked. A write needs the current `version`. The stream URL takes `?role=affichage` for E-30; the process counts these open streams per map, which gives the GM's « Écran joueurs connecté » (in memory, no table). *Rejected*: WebSocket (no need for client-to-server frames beyond POST); a

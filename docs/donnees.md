@@ -781,7 +781,7 @@ removes them (the files stay in the media library unless the GM removes them).
 x, y, `visible`), the fog, the shared view (center, zoom) and the layers **hidden** from the players, a list of layer ids (`calques_masques`; the only per-layer switch a player's read follows, besides `mj_seul` which always hides): empty at the table's creation, so a layer created later is shown, and an id whose layer no longer exists is ignored. A token is a table object, an *element* a document object: the sheet link of an element is `elements[].fiche_id`, that of a token `pions[].fiche_id`.
 
 **Rules.** (1) Only the GM outside player mode writes a map, the library, the art direction, a batch, and moves any token; a
-player moves only the tokens of `bm_pions_proprietaires` whose `compte_id` is hers, within the map. (2) A player's read of a
+player (from the next slice; in `kanevas-battlemap-table` her commands are always refused) moves only the tokens of `bm_pions_proprietaires` whose `compte_id` is hers, within the map. (2) A player's read of a
 map or of the table state is **filtered on the server by the core** (AD-156): GM-only layers and elements, hidden tokens, GM-only
 assets, and everything under the fog are absent from what is sent; no count says what was filtered. (3) An `asset_id` or
 `fiche_id` in a document belongs to the same universe; a `fiche_id` reaches a player only if the sheet is readable (the
