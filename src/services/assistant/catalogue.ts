@@ -148,7 +148,7 @@ export function catalogueDe(
             fiche: cleDe(f.id), ficheId: f.id, titreFiche: f.titre, type: f.type,
             section: p.section, titre: p.titre, extrait: p.extrait,
           })));
-        if (passages.length === 0) throw new ErreurService('introuvable', INTROUVABLE);
+        if (passages.length === 0 && page.suivant === null) throw new ErreurService('introuvable', INTROUVABLE); // a page of titles alone still carries its cursor
         return { donnees: { passages, curseur: page.suivant } };
       },
     ),
