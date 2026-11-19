@@ -10,7 +10,9 @@ import {
   idOnglet, idPanneau,
 } from '../../../ui';
 import type { PropsOutil } from '../../types';
+import Aspects from './Aspects';
 import CarteCompacte from './CarteCompacte';
+import { brouillonAspect, canonAspect, type BrouillonAspect } from './aspects-logique';
 import { DialogueGraine } from './Dialogues';
 import {
   CHAMPS_PLAGE, CLASSES, FREQUENCES, brouillonDe, canon, champFrequence, champPlage, lireBrouillon, phraseDecompte, phraseEtendue,
@@ -29,7 +31,7 @@ export const EXEMPLES = [
   { cle: 'a', libelle: 'Étoile blanche brillante (A)', q: 9010, r: -7002, taille: 1.6, lettre: 'A' },
 ] as const;
 
-const ONGLETS = [{ id: 'generateur', libelle: 'Générateur' }] as const;
+const ONGLETS = [{ id: 'generateur', libelle: 'Générateur' }, { id: 'aspects', libelle: 'Aspects' }] as const;
 type IdOnglet = (typeof ONGLETS)[number]['id'];
 
 const DELAI_DECOMPTE_MS = 400;
@@ -72,7 +74,12 @@ export default function Reglages({ universId, cible, prealable, suffixeMode }: P
   const lecture = useMemo(() => lireBrouillon(brouillon, vue.defauts), [brouillon, vue.defauts]);
   const propose = useMemo(() => proposition(brouillon, lecture, vue), [brouillon, lecture, vue]);
   const invalide = Object.keys(lecture.erreurs).length > 0;
-  const modifie = propose !== null || (invalide && canon(brouillon) !== canon(brouillonDe(vue.valeurs, vue.densite_defaut, vue.version_generateur)));
+  const [brouillonsAspects, setBrouillonsAspects] = useState<Record<string, BrouillonAspect>>({});
+  const aspectsModifies = Object.entries(brouillonsAspects).some(([t, b]) => {
+    const a = vue.aspects.find((x) => x.type === t);
+    return a !== undefined && canonAspect(b) !== canonAspect(brouillonAspect(a.defaut, a.surcharge));
+  });
+  const modifie = aspectsModifies || propose !== null || (invalide && canon(brouillon) !== canon(brouillonDe(vue.valeurs, vue.densite_defaut, vue.version_generateur)));
   const versionsPlusHautes = vue.versions_connues.filter((v) => v > brouillon.version);
   const parDefaut = vue.par_defaut;
 
@@ -142,7 +149,7 @@ export default function Reglages({ universId, cible, prealable, suffixeMode }: P
       const v = await lireReglages(universId, gid);
       setVue(v);
       setBrouillon(brouillonDe(v.valeurs, v.densite_defaut, v.version_generateur));
-      setConflit(false); setEchec(undefined); setConfirmation(false);
+      setBrouillonsAspects({}); setConflit(false); setEchec(undefined); setConfirmation(false);
     } catch (e) {
       if (e instanceof ErreurApi && e.statut === 404) setIntrouvable(true);
       else setEchec('Impossible de recharger les réglages.');
@@ -201,7 +208,12 @@ export default function Reglages({ universId, cible, prealable, suffixeMode }: P
       <Onglets etiquette="Réglages" onglets={ONGLETS} actif={onglet} prefixe="rg"
         onChange={(id) => { const p = new URLSearchParams(params); p.set('onglet', id); setParams(p, { replace: true }); }} />
 
-      <div role="tabpanel" id={idPanneau('rg', onglet)} aria-labelledby={idOnglet('rg', onglet)} className="rg-corps">
+      <div role="tabpanel" id={idPanneau('rg', onglet)} aria-labelledby={idOnglet('rg', onglet)} className={onglet === 'generateur' ? 'rg-corps' : 'rg-corps-aspects'}>
+        {onglet === 'aspects' ? (
+          <Aspects universId={universId} gid={gid} vue={vue} lectureSeule={lectureSeule} perdue={perdue} brouillons={brouillonsAspects}
+            onBrouillon={(t, b) => setBrouillonsAspects((o) => { const n = { ...o }; if (b === null) delete n[t]; else n[t] = b; return n; })}
+            onVue={setVue} onConflit={() => setConflit(true)} onIntrouvable={() => setIntrouvable(true)} onEchec={setEchec} />
+        ) : (<>
         <form className="rg-formulaire" onSubmit={(e) => e.preventDefault()} noValidate>
           <Panneau titre="Graine et version">
             {!lectureSeule && <p className="rg-ligne">Graine : <code><GraineLue key={vue.version} base={base} /></code></p>}
@@ -287,9 +299,10 @@ export default function Reglages({ universId, cible, prealable, suffixeMode }: P
             ))}
           </div>
         </aside>
+        </>)}
       </div>
 
-      {!lectureSeule && (
+      {!lectureSeule && onglet === 'generateur' && (
         <BarreApplication
           decompte={propose === null && !invalide ? undefined : phrase}
           detail={etendue ?? undefined}
@@ -299,7 +312,7 @@ export default function Reglages({ universId, cible, prealable, suffixeMode }: P
           secondaire={{ libelle: 'Annuler les changements', onClick: () => setBrouillon(brouillonDe(vue.valeurs, vue.densite_defaut, vue.version_generateur)) }}
         />
       )}
-      {!lectureSeule && decompte.k === 'echec' && (
+      {!lectureSeule && onglet === 'generateur' && decompte.k === 'echec' && (
         <div className="rg-reessai"><Bouton petit onClick={() => setEssaiDecompte((n) => n + 1)}>Réessayer</Bouton></div>
       )}
 

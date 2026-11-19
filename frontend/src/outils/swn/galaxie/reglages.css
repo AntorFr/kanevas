@@ -47,3 +47,24 @@
   .rg-table td { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
   .rg-etiquette-cellule { display: inline-block; min-width: 130px; color: var(--texte-2); }
 }
+
+/* E-24, « Aspects » */
+.rg-corps-aspects { margin-top: var(--e-4); padding-bottom: var(--e-5); }
+.rg-aspects { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: var(--e-5); align-items: start; }
+.rg-aspects-liste { min-width: 0; }
+.rg-aspects-editeur { min-width: 0; }
+.rg-aspects-editeur .panneau { display: flex; flex-direction: column; gap: var(--e-3); align-items: flex-start; }
+.rg-aspects-editeur .panneau > * { max-width: 100%; }
+.rg-aspect-grand { display: flex; align-items: center; gap: var(--e-4); flex-wrap: wrap; }
+.rg-vignette { display: block; border-radius: var(--rayon-champ); background: var(--ciel, var(--surface-2)); }
+.rg-palette { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0 var(--e-4); width: 100%; }
+.rg-palette legend { padding: 0; font-weight: 500; color: var(--texte-2); }
+.rg-nombre { display: flex; flex-direction: column; gap: var(--e-1); width: 100%; max-width: 360px; }
+.rg-aspects-editeur .champ-couleur { width: 100%; max-width: 280px; }
+
+@media (max-width: 759px) {
+  .rg-aspects { grid-template-columns: minmax(0, 1fr); }
+}
+.rg-nombres { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--e-4) var(--e-5); width: 100%; }
+.rg-nombres .rg-nombre { max-width: none; }
+.rg-nombre .rg-aide { font-size: var(--t-12); }
