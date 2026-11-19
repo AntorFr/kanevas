@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of the « Déplacer sous… » box of E-9 (kanevas-deplacer-arborescence-boite), written from the
 // task's exit criterion and docs/ecrans.md « Ce que `kanevas-deplacer-arborescence` construit ».
 // Real server in stub mode + real Chromium; expected values are literals from the criterion.
@@ -137,14 +138,14 @@ describe('kanevas-deplacer-arborescence-boite, E-9 « Déplacer sous… »', { s
 
   test('échec de lecture du niveau : « Impossible de charger ce niveau. », Réessayer relit', async () => {
     let echec = true;
-    await antor.route(/\/fiches\/\d+\/enfants/, (route: Any) => (echec ? route.fulfill({ status: 500, body: '{}' }) : route.continue()));
+    await antor.route(/\/fiches\/[^/]+\/enfants/, (route: Any) => (echec ? route.fulfill({ status: 500, body: '{}' }) : route.continue()));
     const d = await ouvrirBoite(antor, 'La Taverne du Kraken');
     await d.getByText('Impossible de charger ce niveau.').waitFor();
     assert.equal(await d.getByRole('button', { name: 'Les Sphères', exact: true }).isVisible(), true, 'le chemin reste utilisable');
     echec = false;
     await d.getByRole('button', { name: 'Réessayer' }).click();
     await d.getByText('Les Docks').first().waitFor();
-    await antor.unroute(/\/fiches\/\d+\/enfants/);
+    await antor.unroute(/\/fiches\/[^/]+\/enfants/);
     await d.getByRole('button', { name: 'Annuler' }).click();
   });
 
@@ -167,11 +168,11 @@ describe('kanevas-deplacer-arborescence-boite, E-9 « Déplacer sous… »', { s
   test('droit perdu (403) boîte ouverte : la boîte se ferme sans toast', async () => {
     const d = await ouvrirBoite(antor, 'La Taverne du Kraken');
     await d.getByLabel(/^Les Docks/).waitFor();
-    await antor.route(/\/fiches\/\d+\/enfants/, (route: Any) => route.fulfill({ status: 403, contentType: 'application/json', body: '{"erreur":"Refusé."}' }));
+    await antor.route(/\/fiches\/[^/]+\/enfants/, (route: Any) => route.fulfill({ status: 403, contentType: 'application/json', body: '{"erreur":"Refusé."}' }));
     await d.getByRole('button', { name: 'Les Sphères', exact: true }).click();
     await d.waitFor({ state: 'detached' });
     assert.equal(await antor.getByText('Fiche déplacée.').count(), 0);
-    await antor.unroute(/\/fiches\/\d+\/enfants/);
+    await antor.unroute(/\/fiches\/[^/]+\/enfants/);
   });
 
   test('plus de 50 enfants : 50 puis « Charger la suite » (Chargement… inactif), les 50 premiers restent', async () => {

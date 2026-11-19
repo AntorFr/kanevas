@@ -1,4 +1,6 @@
-import { useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+
+import { lire } from '../../api';
 
 /**
  * The assistant is mounted beside the router, in its own React root (one file, no edit of the
@@ -28,10 +30,43 @@ function abonner(f: () => void) {
 
 export const useChemin = () => useSyncExternalStore(abonner, () => window.location.pathname);
 
-/** The universe an address is inside, or null. */
+/** The universe reference of an address (an id or a readable key, B-101), or null outside a universe. */
+export function refUniversDe(chemin: string): string | null {
+  const m = /^\/univers\/([^/]+)(?:\/|$)/.exec(chemin);
+  return m && m[1] !== 'nouveau' ? decodeURIComponent(m[1]!) : null;
+}
+
+/** The universe an address is inside, or null (a key waits for the list of universes, B-101). */
 export function universDe(chemin: string): number | null {
-  const m = /^\/univers\/(\d+)(?:\/|$)/.exec(chemin);
-  return m ? Number(m[1]) : null;
+  const ref = refUniversDe(chemin);
+  return ref !== null && /^\d+$/.test(ref) ? Number(ref) : null;
+}
+
+/**
+ * The id of the universe the address is in. A readable address carries the universe's key: the assistant,
+ * mounted beside the router, resolves it through the account's list (`GET /api/univers`), read again when the
+ * key is not in the list it has (a key just changed).
+ */
+export function useUniversId(chemin: string): number | null {
+  const ref = refUniversDe(chemin);
+  const direct = universDe(chemin);
+  const [trouves, setTrouves] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (ref === null || direct !== null || trouves[ref] !== undefined) return;
+    let actif = true;
+    lire<{ id: number; cle?: string }[]>('/api/univers').then(
+      (liste) => {
+        if (!actif) return;
+        const u = liste.find((x) => x.cle === ref);
+        if (u) setTrouves((t) => ({ ...t, [ref]: u.id }));
+      },
+      () => undefined,
+    );
+    return () => {
+      actif = false;
+    };
+  }, [ref, direct, trouves]);
+  return direct ?? (ref !== null ? (trouves[ref] ?? null) : null);
 }
 
 export function aller(url: string) {

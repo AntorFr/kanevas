@@ -2,6 +2,7 @@ import {
   BookOpen,
   Dna,
   FileText,
+  Flame,
   Flag,
   Gem,
   Hourglass,
@@ -11,16 +12,30 @@ import {
   Scale,
   ScrollText,
   Shield,
+  ShieldOff,
   Ship,
+  Skull,
   StickyNote,
+  Users,
   UsersRound,
   type LucideIcon,
 } from 'lucide-react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { matchPath, useLocation } from 'react-router-dom';
 
+import { universDeRef } from './adresse-univers';
 import { lire } from './api';
 import { useUnivers } from './cadre-contexte';
+
+export interface MotsDisparu {
+  oui: string;
+  non: string;
+  menuOui: string;
+  menuNon: string;
+  filtre: { la: string; disparu: string; tous: string };
+  vide: { la: string; disparu: string };
+  icone: string;
+}
 
 /** A type as `GET /api/univers/:id/types` returns it (AD-120): the server owns the list, nothing is copied here. */
 export interface TypeVue {
@@ -32,6 +47,8 @@ export interface TypeVue {
   aucun: string;
   icone: string;
   reglable: boolean;
+  /** Words and glyph of the gone mark (AD-132); absent on a type that cannot be gone. */
+  disparu?: MotsDisparu;
   active: boolean;
   origine: 'univers' | 'systeme' | 'defaut';
   forcage: 'active' | 'desactive' | null;
@@ -41,10 +58,14 @@ export interface TypeVue {
 
 /** The Lucide name the server sends → its component. An unknown name falls back to a sheet icon. */
 const ICONES: Record<string, LucideIcon> = {
+  users: Users,
   flag: Flag,
   'users-round': UsersRound,
   'map-pin': MapPin,
   shield: Shield,
+  'shield-off': ShieldOff,
+  skull: Skull,
+  flame: Flame,
   gem: Gem,
   hourglass: Hourglass,
   'scroll-text': ScrollText,
@@ -80,9 +101,9 @@ export function FournisseurTypes({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { univers } = useUnivers();
   const brut = matchPath({ path: '/univers/:id/*' }, pathname)?.params.id;
-  const id = brut && /^\d+$/.test(brut) ? Number(brut) : null;
-  const connu = id !== null && univers.etat === 'ok' && univers.valeur.some((u) => u.id === id);
-  const cible = connu ? id : null;
+  // The address names the universe by id, key or former key (B-101): only the list gives the id.
+  const lu = brut && brut !== 'nouveau' && univers.etat === 'ok' ? universDeRef(univers.valeur, brut) : undefined;
+  const cible = lu ? lu.id : null;
   const [etat, setEtat] = useState<{ univers: number | null; etat: EtatTypes['etat']; types: TypeVue[] }>({
     univers: null,
     etat: 'chargement',
@@ -154,3 +175,9 @@ export function badgeFiche(types: TypeVue[], f: { type: string; charge?: { pj?: 
 
 /** The icon of a sheet type, the same as its sidebar item. */
 export const iconeDuType = (types: TypeVue[], type: string): LucideIcon => iconeDeNom(typeParType(types, type)?.icone);
+
+/** The mark of a gone sheet: the word of its type and the glyph; `null` when it is there or its type has no mark. */
+export function marqueDe(types: TypeVue[], f: { type: string; charge: { disparu?: boolean } }): { mot: string; Icone: LucideIcon } | null {
+  const mots = typeParType(types, f.type)?.disparu;
+  return mots && f.charge.disparu === true ? { mot: mots.oui, Icone: iconeDeNom(mots.icone) } : null;
+}

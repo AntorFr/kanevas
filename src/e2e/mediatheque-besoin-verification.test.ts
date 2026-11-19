@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Independent verification of kanevas-import-mediatheque, written from the sheet of the feature
 // (« Livre », exit criterion), docs/parcours.md (B-24, B-44, B-53, B-54, B-55, P-16) and
 // docs/ecrans.md (E-19, E-9 « Fichiers »), NOT from the code and NOT from the other tests of the
@@ -19,6 +20,7 @@
 //   B-24 retirer        : « Retirer » removes the reference, never the file
 //   E-19 sélecteur      : a file deleted between opening and choosing → « Ce fichier n'existe plus. »
 //   E-19 vide / long    : empty library, MJ and player sentences; 102 files = 100 then « Charger la suite »
+// Lot médiathèque: the API-only tests (rights, rename, join, retire) went to src/routes/fichiers-besoin-lot-mediatheque.test.ts.
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { after, before, test } from 'node:test';
@@ -27,6 +29,8 @@ import {
   ajouterMembre,
   allerMembres,
   attendre,
+  attendreAbsent,
+  attendreVisible,
   connecte,
   creerUnivers,
   launch,
@@ -123,49 +127,23 @@ test('B-53 · Léa n’a pas de filtre « Visibilité » mais voit « Usage » ;
   await lea.screenshot({ path: '/tmp/scr/ver-lea-mediatheque.png' });
 });
 
-test('B-53 · Teo (pas membre) et Admin (sans rôle dans l’univers) : « Page introuvable. », liste 404 ; sans session, pas d’octets', opts, async () => {
-  const carte = await fichierId(antor, 'Carte des Sphères');
+test('B-53 · Teo (pas membre) et Admin (sans rôle dans l’univers) : « Page introuvable. »', opts, async () => {
   for (const p of [teo, admin]) {
     await p.goto(`/univers/${uid}/mediatheque`);
     await attendre(p);
     assert.match(await texte(p), /Page introuvable\./);
-    assert.equal((await p.request.get(`/api/univers/${uid}/fichiers`)).status(), 404);
-    assert.equal((await p.request.get(`/api/univers/${uid}/fichiers/${carte}`)).status(), 404);
   }
-  const anonyme = await (await browser.newContext({ baseURL: srv.base })).request.get(`/api/univers/${uid}/fichiers/${carte}`);
-  assert.equal(anonyme.status(), 401);
-  assert.doesNotMatch(String(anonyme.headers()['content-type']), /image\/png/);
 });
 
-test('B-53 · Léa ne renomme, ne réserve ni ne supprime : l’état du fichier ne bouge pas', opts, async () => {
-  const id = await fichierId(antor, 'La Fresque effacée');
-  const avant = (await liste(antor)).find((f: Any) => f.id === id);
-  for (const r of [
-    await lea.request.patch(`/api/univers/${uid}/fichiers/${id}`, { data: { nom: 'Piraté' } }),
-    await lea.request.patch(`/api/univers/${uid}/fichiers/${id}`, { data: { visibilite: 'mj' } }),
-    await lea.request.delete(`/api/univers/${uid}/fichiers/${id}`),
-  ]) {
-    assert.ok(r.status() >= 400 && r.status() < 500, `refused, got ${r.status()}`);
-  }
-  const apres = (await liste(antor)).find((f: Any) => f.id === id);
-  assert.equal(apres.nom, 'La Fresque effacée');
-  assert.equal(apres.visibilite, 'joueurs');
-  assert.deepEqual(apres, avant);
-});
-
-test('B-53 · nom de 200 caractères accepté, de 201 refusé ; Léa lit le nouveau nom dans sa médiathèque', opts, async () => {
+test('B-53 · Léa lit dans sa médiathèque le nouveau nom donné par Antor', opts, async () => {
   const id = await fichierId(antor, 'port-sel-quais.webp');
-  const long = 'q'.repeat(200);
-  assert.equal((await antor.request.patch(`/api/univers/${uid}/fichiers/${id}`, { data: { nom: 'q'.repeat(201) } })).status(), 400);
-  assert.equal((await antor.request.patch(`/api/univers/${uid}/fichiers/${id}`, { data: { nom: long } })).status(), 200);
-  assert.equal((await liste(lea)).find((f: Any) => f.id === id).nom, long);
-  assert.equal((await antor.request.patch(`/api/univers/${uid}/fichiers/${id}`, { data: { nom: 'Quais de Port-Sel' } })).status(), 200);
+  await antor.request.patch(`/api/univers/${uid}/fichiers/${id}`, { data: { nom: 'Quais de Port-Sel' } });
   await mediatheque(lea);
   assert.match(await grille(lea), /Quais de Port-Sel/);
   assert.doesNotMatch(await grille(lea), /port-sel-quais\.webp/);
 });
 
-test('B-53 · « Ajouter des fichiers » : un PDF et un type inconnu entrent « Visible des joueurs » ; le fichier vide du même dépôt est refusé', opts, async () => {
+test('B-53 · « Ajouter des fichiers » : un PDF et un type inconnu entrent, le fichier vide du même dépôt dit « est vide. »', opts, async () => {
   await mediatheque(antor);
   await antor.locator('input[type=file]').first().setInputFiles([
     pdf('regles-de-la-guilde.pdf'),
@@ -174,18 +152,11 @@ test('B-53 · « Ajouter des fichiers » : un PDF et un type inconnu entrent « 
   ]);
   await antor.getByText('« vide.txt » est vide.').waitFor();
   await antor.screenshot({ path: '/tmp/scr/ver-depot-multiple.png' });
-  const noms = (await liste(antor)).map((f: Any) => f.nom);
-  assert.ok(noms.includes('regles-de-la-guilde.pdf'));
-  assert.ok(noms.includes('notes.xyz'));
-  assert.ok(!noms.includes('vide.txt'));
-  for (const nom of ['regles-de-la-guilde.pdf', 'notes.xyz']) {
-    const f = (await liste(lea)).find((x: Any) => x.nom === nom);
-    assert.equal(f.visibilite, 'joueurs');
-    assert.equal(f.image, false);
-  }
   await mediatheque(antor);
   await antor.getByRole('radio', { name: 'Documents' }).click();
   await antor.getByRole('button', { name: /port-sel-quais|Quais de Port-Sel/ }).first().waitFor({ state: 'detached' });
+  // Detached also holds before the grid has reloaded: wait for the document to be there.
+  await antor.getByRole('button', { name: /regles-de-la-guilde\.pdf/ }).first().waitFor({ state: 'visible' });
   assert.match(await grille(antor), /regles-de-la-guilde\.pdf/);
   assert.match(await grille(antor), /notes\.xyz/);
 });
@@ -196,10 +167,8 @@ test('B-54 · réserver un fichier sans usage : pas de boîte, le toast ; suppri
   await antor.getByRole('radio', { name: 'Réservé au MJ' }).click();
   await antor.getByText('Fichier réservé au MJ.').first().waitFor();
   assert.equal(await antor.getByRole('alertdialog').count() + (await antor.getByRole('dialog').count()), 0);
-  assert.equal((await liste(lea)).some((f: Any) => f.nom === 'regles-de-la-guilde.pdf'), false);
   await antor.getByRole('radio', { name: 'Visible des joueurs' }).click();
   await attendre(antor);
-  assert.equal((await liste(lea)).some((f: Any) => f.nom === 'regles-de-la-guilde.pdf'), true);
 
   await antor.getByRole('button', { name: 'Supprimer le fichier' }).click();
   const boite = antor.getByRole('alertdialog').or(antor.getByRole('dialog')).last();
@@ -209,12 +178,11 @@ test('B-54 · réserver un fichier sans usage : pas de boîte, le toast ; suppri
   await antor.screenshot({ path: '/tmp/scr/ver-supprimer-sans-usage.png' });
   await boite.getByRole('button', { name: 'Supprimer le fichier' }).click();
   await antor.getByText('Fichier supprimé.').first().waitFor();
-  assert.equal((await liste(antor)).some((f: Any) => f.nom === 'regles-de-la-guilde.pdf'), false);
 });
 
 test('B-44 · un document réservé lié dans le texte : Léa lit « Fichier réservé au MJ. » ; une image visible dans un bloc MJ : rien pour Léa, l’image pour Antor', opts, async () => {
   const doc = await (await depot(antor, 'tarif-secret.pdf', 'application/pdf', pdf('x').buffer)).json();
-  assert.equal((await antor.request.patch(`/api/univers/${uid}/fichiers/${doc.id}`, { data: { visibilite: 'mj' } })).status(), 200);
+  await antor.request.patch(`/api/univers/${uid}/fichiers/${doc.id}`, { data: { visibilite: 'mj' } });
   const grise = await fichierId(antor, 'Lames Grises');
   const s = await sectionDe(antor, 'Port-Sel', 'Description');
   const r = await antor.request.put(`/api/univers/${uid}/fiches/${ids['Port-Sel']}/sections/${s.id}/contenu`, {
@@ -223,44 +191,18 @@ test('B-44 · un document réservé lié dans le texte : Léa lit « Fichier ré
       contenu: `Voir [le tarif](fichier:${doc.id}).\n\n:::mj\n![blason](fichier:${grise})\n\nSecret du bloc.\n:::\n`,
     },
   });
-  assert.equal(r.status(), 200);
+  assert.ok(r.ok(), `setup of the section: ${r.status()}`);
   await lea.goto(`/univers/${uid}/fiche/${ids['Port-Sel']}`);
   await attendre(lea);
   const t = await texte(lea);
   assert.match(t, /Fichier réservé au MJ\./);
   assert.doesNotMatch(t, /Secret du bloc|blason/);
   const jetonGrise = (await liste(antor)).find((f: Any) => f.id === grise).jeton;
-  const vueLea = await (await lea.request.get(`/api/univers/${uid}/fiches/${ids['Port-Sel']}`)).json();
-  assert.doesNotMatch(JSON.stringify(vueLea), new RegExp(`Secret du bloc|blason|${jetonGrise}`));
   await lea.screenshot({ path: '/tmp/scr/ver-lea-document-reserve.png' });
   await antor.goto(`/univers/${uid}/fiche/${ids['Port-Sel']}`);
   await attendre(antor);
   assert.match(await texte(antor), /Secret du bloc/);
   assert.equal(await antor.locator(`img[src*="${jetonGrise}"], img[src*="/fichiers/${grise}"]`).count() > 0, true);
-});
-
-test('B-55 · le client ne choisit pas la visibilité ; Léa ne joint pas un fichier qu’elle ne voit pas', opts, async () => {
-  const s = await sectionDe(antor, 'Port-Sel', 'Description');
-  const v = await (await depot(antor, 'forcé.pdf', 'application/pdf', pdf('x').buffer, { section: String(s.id), maniere: 'joint', visibilite: 'mj' })).json();
-  assert.equal((await liste(antor)).find((f: Any) => f.id === v.id).visibilite, 'joueurs');
-
-  const notes = await sectionDe(antor, 'Port-Sel', 'Description');
-  const plan = await fichierId(antor, 'Plan secret de la Guilde');
-  const r = await lea.request.post(`/api/univers/${uid}/fiches/${ids['Port-Sel']}/sections/${notes.id}/fichiers`, { data: { fichierId: plan } });
-  assert.ok(r.status() >= 400 && r.status() < 500, `refused, got ${r.status()}`);
-  const apres = await sectionDe(antor, 'Port-Sel', 'Description');
-  assert.equal(JSON.stringify(apres.piecesJointes).includes('Plan secret'), false);
-});
-
-test('B-24 · « Retirer » ôte la référence de la section, jamais le fichier de la médiathèque', opts, async () => {
-  const s = await sectionDe(antor, 'Port-Sel', 'Description');
-  const v = (await liste(antor)).find((f: Any) => f.nom === 'forcé.pdf');
-  assert.ok(s.piecesJointes.some((p: Any) => p.nom === 'forcé.pdf'), 'joined');
-  const d = await antor.request.delete(`/api/univers/${uid}/fiches/${ids['Port-Sel']}/sections/${s.id}/fichiers/${v.id}`);
-  assert.equal(d.status(), 204);
-  const apres = await sectionDe(antor, 'Port-Sel', 'Description');
-  assert.equal(apres.piecesJointes.some((p: Any) => p.nom === 'forcé.pdf'), false);
-  assert.equal((await liste(lea)).some((f: Any) => f.nom === 'forcé.pdf'), true);
 });
 
 test('E-19 sélecteur · « Joindre un fichier » : un fichier supprimé entre l’ouverture et le choix dit « Ce fichier n’existe plus. » et la grille se recharge', opts, async () => {
@@ -271,7 +213,7 @@ test('E-19 sélecteur · « Joindre un fichier » : un fichier supprimé entre l
   await antor.getByRole('menuitem', { name: /Choisir dans la médiathèque/ }).click();
   const dlg = antor.getByRole('dialog');
   await dlg.getByRole('button', { name: /ephemere-jointe\.png/ }).waitFor();
-  assert.equal((await antor.request.delete(`/api/univers/${uid}/fichiers/${eph.id}`)).status(), 204);
+  await antor.request.delete(`/api/univers/${uid}/fichiers/${eph.id}`);
   await dlg.getByRole('button', { name: /ephemere-jointe\.png/ }).click();
   await antor.getByText(/Ce fichier n.existe plus\./).waitFor();
   await antor.screenshot({ path: '/tmp/scr/ver-selecteur-disparu-joindre.png' });
@@ -289,9 +231,9 @@ test('E-19 sélecteur · barre d’outils de l’éditeur : un fichier supprimé
   await antor.getByRole('menuitem', { name: /Choisir dans la médiathèque/ }).click();
   const dlg = antor.getByRole('dialog');
   await dlg.getByRole('button', { name: /ephemere-texte\.png/ }).waitFor();
-  assert.equal((await antor.request.delete(`/api/univers/${uid}/fichiers/${eph.id}`)).status(), 204);
+  await antor.request.delete(`/api/univers/${uid}/fichiers/${eph.id}`);
   await dlg.getByRole('button', { name: /ephemere-texte\.png/ }).click();
-  await antor.waitForTimeout(1500);
+  await attendre(antor);
   await antor.screenshot({ path: '/tmp/scr/ver-selecteur-disparu-texte.png' });
   const dit = await antor.getByText(/Ce fichier n.existe plus\./).count();
   const insere = (await d.getByRole('textbox').inputValue()).includes(`fichier:${eph.id}`);
@@ -333,7 +275,9 @@ test('E-19 contenu long · 102 fichiers : 100 puis « Charger la suite », le de
   const tuiles = () => a2.locator('main').getByRole('button', { name: /f\d{3}\.pdf/ }).count();
   assert.equal(await tuiles(), 100);
   await a2.getByRole('button', { name: 'Charger la suite' }).click();
-  for (let i = 0; i < 100 && (await tuiles()) < 102; i++) await a2.waitForTimeout(100);
+  await attendreAbsent(a2.getByRole('button', { name: 'Charger la suite' }));
+  // The count is read once the next page is drawn, not at the instant the button goes (rouge sous charge, vert seul).
+  await attendreVisible(a2.locator('main').getByRole('button', { name: /f\d{3}\.pdf/ }).nth(101));
   assert.equal(await tuiles(), 102);
   assert.equal(await a2.getByRole('button', { name: 'Charger la suite' }).count(), 0);
   await a2.screenshot({ path: '/tmp/scr/ver-102.png' });

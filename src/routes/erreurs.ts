@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 
+import { ErreurCatalogue } from '../services/catalogues.js';
 import { ErreurService, type CodeErreur } from '../services/erreurs.js';
 
 const STATUT: Record<CodeErreur, number> = {
@@ -16,7 +17,12 @@ const STATUT: Record<CodeErreur, number> = {
 export function registerErreurs(app: FastifyInstance) {
   app.setErrorHandler((erreur, request, reply) => {
     if (erreur instanceof ErreurService) {
-      const corps: { message: string; code?: string; champ?: string } = { message: erreur.message };
+      const corps: { message: string; code?: string; champ?: string; cause?: string; attendu?: string; recu?: unknown } =
+        { message: erreur.message };
+      if (erreur instanceof ErreurCatalogue) {
+        corps.cause = erreur.cause;
+        if (erreur.attendu !== undefined) Object.assign(corps, { attendu: erreur.attendu, recu: erreur.recu });
+      }
       if (erreur.detail) corps.code = erreur.detail;
       if (erreur.champ) {
         corps.champ = erreur.champ;
@@ -29,6 +35,8 @@ export function registerErreurs(app: FastifyInstance) {
       if (erreur.detail === 'limite_pieces') corps.code = erreur.detail;
       // A background over 25 MB (AD-69).
       if (erreur.detail === 'fond_trop_lourd') statut = 413;
+      // A stale fingerprint on an import write (AD-140): 412, where `section_modifiee` stays 409.
+      if (erreur.detail === 'empreinte_perimee') statut = 412;
       return reply.code(statut).send(corps);
     }
     const statut = (erreur as { statusCode?: number }).statusCode;

@@ -9,6 +9,8 @@ import { test } from 'node:test';
 import { comptesDuPivot, migrate, openDb } from './db.js';
 
 const D = '2022-02-02T10:00:00.000Z';
+const NUMEROS = readdirSync(new URL('./migrations/', import.meta.url)).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))).sort((a, b) => a - b);
+const depuis = (n: number) => NUMEROS.filter((x) => x >= n);
 
 function base0016() {
   const dir = mkdtempSync(join(tmpdir(), 'migration-pivot-'));
@@ -48,7 +50,7 @@ test('0017 convertit campagnes et scénarios en fiches aventure, tâches et CR r
     tache.run(2, 'autre', 'Les masques', 0, null, D);
 
     assert.deepEqual(comptesDuPivot(db), { campagnes: 2, scenarios: 3, taches: 3, comptesRendus: 2 }, 'les comptes que le démarrage journalise');
-    assert.deepEqual(migrate(db), [17]);
+    assert.deepEqual(migrate(db), depuis(17));
     assert.equal(comptesDuPivot(db), null, 'rien à convertir une fois la 0017 jouée');
 
     const avs = db.prepare("SELECT * FROM fiches WHERE type = 'aventure' ORDER BY id").all() as any[];
@@ -57,8 +59,7 @@ test('0017 convertit campagnes et scénarios en fiches aventure, tâches et CR r
     const couronne = par('La Couronne brisée');
     assert.equal(couronne.sous_type, 'Campagne');
     assert.equal(JSON.parse(couronne.charge).statut, 'en_cours');
-    assert.equal(couronne.cle_origine, 'couronne');
-    assert.equal(couronne.dernier_import, '{"nom":"La Couronne brisée"}');
+    assert.equal(couronne.cle, 'couronne');
     assert.equal(couronne.parent_id, null);
     const bal = par('Le Bal masqué');
     assert.equal(JSON.parse(bal.charge).statut, 'en_preparation');
@@ -77,12 +78,11 @@ test('0017 convertit campagnes et scénarios en fiches aventure, tâches et CR r
     assert.ok(!sec.contenu_public.includes(':::'), 'contenu_public ne porte aucun bloc :::mj');
     assert.ok(!sec.contenu_public.includes('Secret'));
     assert.equal(sec.version, 4);
-    assert.equal(sec.version_importee, 3);
-    assert.equal(acte2.cle_origine, 'acte-2');
+    assert.equal(acte2.cle, 'acte-2');
     const acte1 = par('Acte I');
     assert.equal((db.prepare("SELECT contenu_public FROM sections WHERE fiche_id = ?").get(acte1.id) as any).contenu_public, 'Tout public');
-    assert.equal(acte1.cle_origine, 'scenario:prise', 'clé en collision préfixée');
-    assert.equal((db.prepare('SELECT cle_origine FROM fiches WHERE id = 5').get() as any).cle_origine, 'prise');
+    assert.equal(acte1.cle, 'scenario:prise', 'clé en collision préfixée');
+    assert.equal((db.prepare('SELECT cle FROM fiches WHERE id = 5').get() as any).cle, 'prise');
 
     const taches = db.prepare('SELECT * FROM taches_preparation ORDER BY id').all() as any[];
     assert.deepEqual(taches.map((t) => t.fiche_id), [couronne.id, couronne.id, bal.id]);
@@ -110,7 +110,7 @@ test('0017 convertit campagnes et scénarios en fiches aventure, tâches et CR r
 test('0017 sur une base sans campagne ni scénario : rien à convertir, tâches intactes', () => {
   const { db, dir } = base0016();
   try {
-    assert.deepEqual(migrate(db), [17]);
+    assert.deepEqual(migrate(db), depuis(17));
     assert.equal((db.prepare("SELECT COUNT(*) AS n FROM fiches WHERE type='aventure'").get() as any).n, 0);
     assert.deepEqual(db.pragma('foreign_key_check'), []);
   } finally {
@@ -124,8 +124,8 @@ test('0017 : une clé de scénario déjà prise par un autre scénario de l\'uni
   try {
     db.exec(`INSERT INTO campagnes (id, univers_id, nom, statut, cree_le, cle_origine) VALUES (1,1,'A','terminee','${D}','k1'), (2,1,'B','active','${D}','k2')`);
     db.exec(`INSERT INTO scenarios (id, campagne_id, titre, contenu, version, cree_le, modifie_le, cle_origine) VALUES (1,1,'S1','',1,'${D}','${D}','s'), (2,2,'S2','',1,'${D}','${D}','s')`);
-    assert.deepEqual(migrate(db), [17]);
-    const keys = (db.prepare("SELECT cle_origine FROM fiches WHERE type='aventure' ORDER BY id").all() as any[]).map((r) => r.cle_origine);
+    assert.deepEqual(migrate(db), depuis(17));
+    const keys = (db.prepare("SELECT cle FROM fiches WHERE type='aventure' ORDER BY id").all() as any[]).map((r) => r.cle);
     assert.equal(new Set(keys).size, keys.length);
     assert.deepEqual(db.pragma('foreign_key_check'), []);
     // terminated campaign: Présentation open

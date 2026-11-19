@@ -260,10 +260,12 @@ test('suppression d\'univers : emporte aventures, tâches et CR sans trace', asy
 test('import : les routes des campagnes et scénarios répondent 404, un lot ne compte plus « campagnes » ni « scénarios »', async () => {
   const w = await monter();
   // Mint a token through the API as the GM and use it.
-  const jeton = await w.appel(w.antor, 'POST', `${w.base}/jetons`, { nom: 'essai', dureeJours: 30 });
-  if (jeton.statusCode !== 201) return assert.fail(`pas de jeton: ${jeton.statusCode} ${jeton.body}`);
-  const secret = jeton.json().jeton as string;
   const id = w.base.split('/').pop();
+  const jeton = await w.appel(w.antor, 'POST', '/api/compte/jetons', {
+    nom: 'essai', dureeJours: 30, acces: { tous: false, univers: [{ universId: Number(id), niveau: 'ecriture' }] },
+  });
+  if (jeton.statusCode !== 201) return assert.fail(`pas de jeton: ${jeton.statusCode} ${jeton.body}`);
+  const secret = jeton.json().valeur as string;
   const imp = (method: 'PUT' | 'GET' | 'POST', url: string, payload?: object) =>
     w.app.inject({ method, url: `/api/import/v1/univers/${id}${url}`, headers: { authorization: `Bearer ${secret}` }, payload });
   assert.equal((await imp('PUT', '/campagnes/x', { nom: 'X' })).statusCode, 404);

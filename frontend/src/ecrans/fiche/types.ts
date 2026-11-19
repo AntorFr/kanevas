@@ -21,6 +21,20 @@ export interface PieceJointe {
   attente?: string;
 }
 
+/** The `geree` object of a managed section's view (AD-128): never the source, only what the banner needs. */
+export interface Geree {
+  outil: string | null;
+  libelle: string | null;
+  type: string;
+  lien: string | null;
+  etat: 'a_jour' | 'perime' | 'desactive';
+  recalcul: 'geste' | 'proposition' | null;
+  peutRecalculer: boolean;
+  peutOuvrir: boolean;
+  propositionId: number | null;
+  composant: boolean;
+}
+
 export interface SectionVue {
   id: number;
   titre: string;
@@ -35,17 +49,21 @@ export interface SectionVue {
   piecesJointes?: PieceJointe[];
   /** Only in a GM view (never in player mode). */
   audience?: Audience;
+  /** Present for a section written by a tool (no editor, a banner). */
+  geree?: Geree;
 }
 
 export interface Fiche {
   id: number;
+  /** Readable key `type:name` (B-99): only in the body of a GM outside player mode (AD-146). */
+  cle?: string;
   universId: number;
   type: string;
   titre: string;
   creeLe?: string;
   /** Free sub-type under the title (AD-120), absent when the sheet has none. */
   sousType?: string | null;
-  charge: { v?: number; pj?: boolean; statut?: string };
+  charge: { v?: number; pj?: boolean; statut?: string; disparu?: boolean };
   /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
   illustration?: { id: number; jeton: string } | { fermee: true; message: string } | { attente: true; cle: string } | null;
   /** Aliases and labels (AD-118), sorted by the server. */
@@ -55,6 +73,8 @@ export interface Fiche {
   visibleJoueurs?: boolean;
   /** With a search: the alias that answers when the title does not. */
   aliasTrouve?: string;
+  /** Readable sub-place through which the linked-sheet search found this row (AD-130). */
+  via?: { id: number; titre: string };
   /** A report only: the adventure it names, for a reader of that adventure; `campagneSupprimee` for a GM when it is gone. */
   campagneId?: number;
   campagneNom?: string;

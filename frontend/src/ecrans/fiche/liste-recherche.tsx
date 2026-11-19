@@ -8,6 +8,7 @@ import '../liste.css';
 import type { Fiche, PageFiches } from './types';
 import type { TypeVue } from '../../types-contexte';
 import { CarteFiche, ChargementGrille } from './vignette';
+import { FiltreEtat, type EtatFiche } from './marque';
 import { Arbre, type VueListe } from './arbre';
 import { STATUTS_AVENTURE, statutValide, type Statut } from './statut';
 
@@ -24,6 +25,9 @@ interface Props {
   /** The sub-type filter in force (E-8); with `onSousType` the filter is offered. */
   sousType?: string;
   onSousType?: (sousType: string) => void;
+  /** The gone-mark filter in force (E-8); with `onEtat` and a type that carries the mark, the control is offered. */
+  etat?: EtatFiche;
+  onEtat?: (etat: EtatFiche) => void;
   statut?: string;
   onStatut?: (statut: string) => void;
   /** Editing is granted by E-8, never by a reusable list's default. */
@@ -51,7 +55,7 @@ interface Props {
 }
 
 /** The list of one lore type with its search field (E-8); reused by the « Relier » form of E-9. */
-export function ListeRecherche({ universId, type, recherche, onRecherche, sousType = '', onSousType, statut: brutStatut, onStatut, gestion = false, visibilite = '', onVisibilite, onToutEffacer, ligne, action, videListe, vue = 'grille', bascule, suffixeMode = '' }: Props) {
+export function ListeRecherche({ universId, type, recherche, onRecherche, sousType = '', onSousType, etat = '', onEtat, statut: brutStatut, onStatut, gestion = false, visibilite = '', onVisibilite, onToutEffacer, ligne, action, videListe, vue = 'grille', bascule, suffixeMode = '' }: Props) {
   const perdue = useConnexionPerdue();
   const [saisie, setSaisie] = useState(recherche);
   const [erreur, setErreur] = useState<string>();
@@ -85,7 +89,8 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
 
   const base = `/api/univers/${universId}/fiches?type=${type.type}`;
   const avecSousType = sousType === '' ? base : `${base}&sousType=${encodeURIComponent(sousType)}`;
-  const avecStatut = statut === '' ? avecSousType : `${avecSousType}&statut=${statut}`;
+  const avecEtat = etat === '' || !type.disparu ? avecSousType : `${avecSousType}&etat=${etat}`;
+  const avecStatut = statut === '' ? avecEtat : `${avecEtat}&statut=${statut}`;
   const avecVisibilite = visibilite === '' ? avecStatut : `${avecStatut}&visibilite=${visibilite}`;
   const chemin = (recherche === '' ? avecVisibilite : `${avecVisibilite}&q=${encodeURIComponent(recherche)}`) + suffixeMode;
   const etiquette = `Chercher dans ${dans(type)}`;
@@ -106,6 +111,7 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
             onKeyDown={touche}
           />
         </div>
+        {onEtat && type.disparu && <FiltreEtat mots={type.disparu} valeur={etat} onChoix={onEtat} />}
         {onSousType && <FiltreSousType universId={universId} type={type} valeur={sousType} onChoix={onSousType} suffixeMode={suffixeMode} />}
         {type.type === 'aventure' && onStatut && (
           <div className="filtre-sous-type">
@@ -128,7 +134,7 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
           {bascule}
         </div>
       </form>
-      {vue === 'arbre' && recherche === '' && sousType === '' && statut === '' && visibilite === '' ? (
+      {vue === 'arbre' && recherche === '' && sousType === '' && etat === '' && statut === '' && visibilite === '' ? (
         <Arbre key={`${type.type}${suffixeMode}`} universId={universId} type={type} suffixeMode={suffixeMode} videListe={videListe} gestion={gestion} />
       ) : (
       <Resultats
@@ -139,6 +145,8 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
         recherche={recherche}
         sousType={sousType}
         onSousType={onSousType}
+        etat={etat}
+        onEtat={onEtat}
         statut={statut}
         gestion={gestion}
         visibilite={visibilite}
@@ -161,6 +169,8 @@ function Resultats({
   recherche,
   sousType = '',
   onSousType,
+  etat = '',
+  onEtat,
   statut = '',
   gestion,
   visibilite = '',
@@ -170,7 +180,7 @@ function Resultats({
   action,
   videListe,
   onEffacer,
-}: Pick<Props, 'universId' | 'type' | 'recherche' | 'sousType' | 'onSousType' | 'statut' | 'gestion' | 'visibilite' | 'onVisibilite' | 'onToutEffacer' | 'ligne' | 'action' | 'videListe'> & {
+}: Pick<Props, 'universId' | 'type' | 'recherche' | 'sousType' | 'onSousType' | 'etat' | 'onEtat' | 'statut' | 'gestion' | 'visibilite' | 'onVisibilite' | 'onToutEffacer' | 'ligne' | 'action' | 'videListe'> & {
   chemin: string;
   onEffacer: () => void;
 }) {
@@ -216,7 +226,12 @@ function Resultats({
 
   return (
     <>
-      {fiches.length === 0 && type.type === 'aventure' && visibilite === '' && (cherche || sousType !== '' || statut !== '') ? (
+      {fiches.length === 0 && !cherche && etat !== '' && type.disparu ? (
+        <VideIcone icone={SearchX}>
+          <p>{etat === 'disparu' ? type.disparu.vide.disparu : type.disparu.vide.la}</p>
+          <Bouton onClick={() => onEtat?.('')}>Voir tous {dans(type)}.</Bouton>
+        </VideIcone>
+      ) : fiches.length === 0 && type.type === 'aventure' && visibilite === '' && (cherche || sousType !== '' || statut !== '') ? (
         <VideIcone icone={SearchX}>
           <p>{cherche || sousType !== '' ? 'Aucune aventure ne correspond.' : 'Aucune aventure avec ce statut.'}</p>
           <Bouton onClick={onToutEffacer ?? onEffacer}>Voir toutes les aventures</Bouton>

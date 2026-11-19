@@ -1,8 +1,8 @@
 import { Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { universDe, useChemin } from './adresse';
-import { choisirUnivers } from './fil';
+import { useChemin, useUniversId } from './adresse';
+import { choisirUnivers, surDemandeOuverture } from './fil';
 import { Panneau, useDisponibilite } from './panneau';
 import './assistant.css';
 
@@ -14,7 +14,7 @@ const TELEPHONE = '(max-width: 759px)';
  */
 export function Assistant() {
   const chemin = useChemin();
-  const universId = universDe(chemin);
+  const universId = useUniversId(chemin);
   const [dispo, relire] = useDisponibilite(universId);
   const [ouvert, setOuvert] = useState(false);
   const bouton = useRef<HTMLButtonElement>(null);
@@ -24,6 +24,8 @@ export function Assistant() {
     choisirUnivers(universId);
     setOuvert(false);
   }, [universId]);
+
+  useEffect(() => surDemandeOuverture(() => setOuvert(true)), []);
 
   const present = universId !== null && dispo.k !== 'absent';
   useEffect(() => {
