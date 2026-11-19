@@ -44,7 +44,7 @@ export function ActionsLien({ cible }: { cible: Cible }) {
       const version = el.version ?? 1;
       const r = await avecAncrage((jeton) => (cible.k === 'astre'
         ? delierAstreFiche(place, cle, { version, ...jeton }) : delierZoneFiche(place, cle, { version, ...jeton })));
-      if (r) toast('Lien retiré.');
+      if (r) toast('Fiche déliée.');
     } catch (e) {
       const f = lireEchecEdition(e);
       setEchec(f);
@@ -74,7 +74,7 @@ export function ActionsLien({ cible }: { cible: Cible }) {
       <Bouton variante="mj" ecrit icone={Link2} onClick={() => setOuvert(true)}>{fiche ? 'Changer la fiche liée…' : 'Lier à une fiche…'}</Bouton>
       {fiche && <Bouton variante="mj" ecrit icone={Link2Off} enCours={enCours} onClick={() => void delier()}>Délier</Bouton>}
       {fiche && cible.k === 'astre' && (
-        <Bouton variante="mj" ecrit icone={ImagePlus} enCours={illustration === 'cours'} onClick={() => void illustrer()}>
+        <Bouton variante="mj" ecrit icone={ImagePlus} disabled={illustration === 'cours'} onClick={() => void illustrer()}>
           {illustration === 'cours' ? 'Illustration en cours…' : 'Illustrer la fiche'}
         </Bouton>
       )}
@@ -91,8 +91,9 @@ export function ActionsLien({ cible }: { cible: Cible }) {
 function DialogueLier({ cible, onFermer }: { cible: Cible; onFermer: () => void }) {
   const { avecAncrage, ancrageOuvert, place, recharger } = useEdition();
   const { toast } = useToasts();
+  const el0 = cible.k === 'astre' ? cible.astre : cible.zone;
   const [texte, setTexte] = useState('');
-  const [choisie, setChoisie] = useState<FicheLien | null>(null);
+  const [choisie, setChoisie] = useState<FicheLien | null>(el0.fiche ? { id: el0.fiche.id, titre: el0.fiche.titre, type: '' } : null);
   const [courant, setCourant] = useState(0);
   const [enCours, setEnCours] = useState(false);
   const [echec, setEchec] = useState<EchecEdition>();
@@ -111,7 +112,7 @@ function DialogueLier({ cible, onFermer }: { cible: Cible; onFermer: () => void 
       const ficheId = choisie.id;
       const r = await avecAncrage((jeton) => (cible.k === 'astre'
         ? lierAstreFiche(place, el.cle, { ficheId, version, ...jeton }) : lierZoneFiche(place, el.cle, { ficheId, version, ...jeton })));
-      if (r) { toast(`${nom} lié à ${choisie.titre}.`); onFermer(); }
+      if (r) { toast(`${nom} : fiche liée, ${choisie.titre}.`); onFermer(); }
     } catch (e) {
       if (e instanceof ErreurApi && e.statut === 400 && e.details?.champ === 'ficheId') { setDisparue(true); setChoisie(null); }
       else {
@@ -145,7 +146,8 @@ function DialogueLier({ cible, onFermer }: { cible: Cible; onFermer: () => void 
         onKeyDown={touche}
       />
       <ListeLiens id="gx-liste-fiches" recherche={recherche} courant={courant} onCourant={setCourant}
-        onChoisir={(f) => { setChoisie(f); setDisparue(false); }} onReessayer={reessayer} />
+        onChoisir={(f) => { setChoisie(f); setDisparue(false); }} onReessayer={reessayer}
+        vide={texte.trim() === '' ? 'Aucune fiche dans cet univers.' : 'Aucune fiche ne correspond.'} />
       {choisie && <p className="gx-note">Fiche choisie : {choisie.titre}</p>}
       {echec && <MessageEchec echec={echec} onRecharger={() => { void recharger().finally(onFermer); }} onReessayer={() => void lier()} />}
       <div className="boite-actions">
