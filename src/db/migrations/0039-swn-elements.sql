@@ -1,6 +1,6 @@
 -- kanevas-carte-spatiale-elements-service (AD-elements-1; number provisional until the merge of the slice, AD-51).
 -- The non-celestial elements of a defined system (ships, cities, stations, bases), as `docs/donnees.md` writes them.
--- Only src/services/swn/ecriture-elements.ts writes them and `elementLisible` (lisibilite.ts) is the one reader of `secret` (AD-2).
+-- Only src/services/swn/ecriture-elements.ts writes them and lisibilite.ts is the one reader of `secret` for a reader (the writer reads it at GM level).
 -- An element on a body stores neither orbit nor hour: its place is the body's, derived at each read, so it follows the body.
 CREATE TABLE swn_elements (
   id INTEGER PRIMARY KEY,
