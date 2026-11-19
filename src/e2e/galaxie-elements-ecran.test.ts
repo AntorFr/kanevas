@@ -211,7 +211,8 @@ describe('E-23 éléments : le MJ place, déplace et réserve ; la joueuse ne vo
       const { page, ctx } = await ouvrir('Antor', C, l, h);
       await page.locator('button.cs-element').first().waitFor();
       assert.equal(await page.locator('button.cs-element').count(), 8);
-      await page.waitForTimeout(400);
+      await page.locator('.cs-etiquette').first().waitFor();
+      await page.waitForFunction(() => document.querySelectorAll('.cs-etiquette').length >= 8);
       const rects = await page.evaluate(`(() => {
         var r = function (e) { var b = e.getBoundingClientRect(); return { x: b.x, y: b.y, w: b.width, h: b.height, id: e.getAttribute('data-cle') || e.getAttribute('aria-label') || '' }; };
         var tous = function (q) { return Array.prototype.slice.call(document.querySelectorAll(q)).map(r); };
