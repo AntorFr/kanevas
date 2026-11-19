@@ -108,3 +108,29 @@ export const lireEtatMasque = (p: Place, suffixe = '') =>
 /** « Illustrer la fiche » (AD-liens-4): adds the body's picture, at `cote` px, to the linked sheet's illustration. Writes no `swn_*`. */
 export const illustrerFicheAstre = (p: Place, cle: string, cote: number) =>
   appeler<{ fichierId: number; ficheId: number; titre: string }>('POST', url(p, `astres/${encodeURIComponent(cle)}/illustrer-fiche`), { cote });
+
+// ---- The elements (B-96, AD-elements-1): the same door, the same answer (the system as the read gives it).
+export type CorpsElement = JetonSysteme & {
+  genre?: string; nom?: string; description?: string; aspect?: { icone?: string; couleur?: string }; secret?: boolean;
+  sur?: string; orbite?: number; heure?: number; plan?: { x: number; y: number }; galactique?: { q: number; r: number };
+  version?: number;
+};
+const cleEl = (cle: string) => encodeURIComponent(cle);
+export const ajouterElementSysteme = (p: Place, corps: CorpsElement) => appeler<Interieur>('POST', url(p, 'elements'), corps);
+export const modifierElementSysteme = (p: Place, cle: string, corps: CorpsElement) => appeler<Interieur>('PATCH', url(p, `elements/${cleEl(cle)}`), corps);
+export const deplacerElementSysteme = (p: Place, cle: string, corps: CorpsElement) => appeler<Interieur>('PUT', url(p, `elements/${cleEl(cle)}/place`), corps);
+export const reserverElementSysteme = (p: Place, cle: string, corps: JetonSysteme & { secret: boolean; version: number }) =>
+  appeler<Interieur>('PUT', url(p, `elements/${cleEl(cle)}/secret`), corps);
+export const lierElementFiche = (p: Place, cle: string, corps: JetonSysteme & { ficheId: number; version: number }) =>
+  appeler<Interieur>('PUT', url(p, `elements/${cleEl(cle)}/fiche`), corps);
+export const delierElementFiche = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
+  appeler<Interieur>('DELETE', url(p, `elements/${cleEl(cle)}/fiche${requete(jeton)}`));
+export const retirerElementSysteme = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
+  appeler<Interieur>('DELETE', url(p, `elements/${cleEl(cle)}${requete(jeton)}`));
+/** What the removal dialog of a body counts (GM outside Player mode): its elements and those of its moons, the reserved ones included. */
+export const compterElementsDuCorps = (p: Place, cle: string) =>
+  appeler<{ elements: number }>('GET', url(p, `astres/${cleEl(cle)}/elements`)).then((r) => r.elements);
+/** The icons and colours the server accepts for an element (`catalogueElements`). */
+export interface CatalogueElements { genres: string[]; icones: string[]; couleurs: string[] }
+export const lireCatalogueElements = (universId: number, galaxieId: number) =>
+  appeler<CatalogueElements>('GET', `/api/univers/${universId}/outils/swn/galaxie/galaxies/${galaxieId}/elements/aspects`);

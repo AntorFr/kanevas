@@ -10,7 +10,7 @@ import { DialogueRayon, useEdition } from './Edition';
  * « Ajouter un astre… » and « Ajouter une zone… » are there; they open the forms of the next slice
  * (`onAjouterAstre` / `onAjouterZone`), and stand inert while none is given.
  */
-export default function MenuSysteme({ onAjouterAstre, onAjouterZone }: { onAjouterAstre?: () => void; onAjouterZone?: () => void }) {
+export default function MenuSysteme({ onAjouterAstre, onAjouterZone, onAjouterElement }: { onAjouterAstre?: () => void; onAjouterZone?: () => void; onAjouterElement?: () => void }) {
   const { peutEcrire, interieur, ancrer } = useEdition();
   const perdue = useConnexionPerdue();
   const [rayon, setRayon] = useState(false);
@@ -19,6 +19,7 @@ export default function MenuSysteme({ onAjouterAstre, onAjouterZone }: { onAjout
     ...(interieur.etat === 'tire' ? [{ libelle: 'Ancrer ce système', icone: Anchor, onChoisir: () => void ancrer() }] : []),
     { libelle: 'Ajouter un astre…', icone: Plus, impossible: !onAjouterAstre, onChoisir: () => onAjouterAstre?.() },
     { libelle: 'Ajouter une zone…', icone: Plus, impossible: !onAjouterZone, onChoisir: () => onAjouterZone?.() },
+    { libelle: 'Ajouter un élément…', icone: Plus, impossible: !onAjouterElement, onChoisir: () => onAjouterElement?.() },
     { separateur: true },
     { libelle: 'Rayon de transition…', icone: CircleDashed, onChoisir: () => setRayon(true) },
   ];

@@ -1,5 +1,5 @@
 // Wording of E-23's text list (AD-systeme-5): pure, so that the screen only lays rows out.
-import type { AstreSysteme, FormationSysteme } from './types';
+import type { AstreSysteme, ElementSysteme, FormationSysteme, InterieurSysteme } from './types';
 
 const FORMAT = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 });
 /** A number to two decimals at most, French comma: `2,03`. */
@@ -51,3 +51,22 @@ export function placeFormation(f: FormationSysteme): string {
   const o = num(p.orbite), h = num(p.heure);
   return o === null ? 'Orbite' : h === null ? `Orbite ${nombre(o)}` : `Orbite ${nombre(o)} · ${nombre(h)} h`;
 }
+
+export const GENRES_ELEMENT = [
+  { valeur: 'vaisseau', libelle: 'Vaisseau' }, { valeur: 'ville', libelle: 'Ville' }, { valeur: 'station', libelle: 'Station' },
+  { valeur: 'base', libelle: 'Base' }, { valeur: 'autre', libelle: 'Autre' },
+] as const;
+export const libelleGenreElement = (g: string): string => GENRES_ELEMENT.find((x) => x.valeur === g)?.libelle ?? brut(g);
+export const nomElement = (e: ElementSysteme): string => (e.nom !== '' ? e.nom : 'Élément sans nom');
+
+/** « Sur Vael II » for an element on a body, else « Orbite 4 · 7 h ». */
+export function placeElement(e: ElementSysteme, astres: InterieurSysteme['astres']): string {
+  if (e.sur !== null) {
+    const a = astres.find((x) => x.cle === e.sur);
+    return `Sur ${a ? nomAstre(a) : 'un astre'}`;
+  }
+  return `Orbite ${nombre(e.orbite ?? 0)} · ${nombre(e.heure)} h`;
+}
+
+/** The consequence of removing a body, besides its moons: « Son élément (1) sera retiré. » / « Ses éléments (2) seront retirés. ». */
+export const consequenceElements = (n: number): string => (n <= 0 ? '' : n === 1 ? 'Son élément (1) sera retiré.' : `Ses éléments (${n}) seront retirés.`);

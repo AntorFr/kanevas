@@ -92,7 +92,13 @@ export function FournisseurEdition({ initial, base, suffixe, children }: { initi
 
   const recharger = useCallback(async () => {
     const i = courant.current;
-    adopter(await lire<Interieur>(`${base}/interieur/${i.q}/${i.r}${suffixe}`));
+    try {
+      adopter(await lire<Interieur>(`${base}/interieur/${i.q}/${i.r}${suffixe}`));
+    } catch (e) {
+      // The system is gone (« Ce système n'existe plus. »): the page reads again and answers for itself.
+      if (e instanceof ErreurApi && e.statut === 404 && typeof window !== 'undefined') window.location.reload();
+      throw e;
+    }
   }, [base, suffixe, adopter]);
 
   const place = useMemo(() => {

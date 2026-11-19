@@ -41,13 +41,13 @@ export const DESCRIPTION_MAX = 2000;
 export const TAILLE_MAX = 100;
 const CODE_ORBITE = 'orbite_invalide';
 
-const invalide = (champ: string, message: string, detail?: string) => new ErreurService('invalide', message, detail, champ);
-const aChange = () => new ErreurService('conflit', "Cet astre a changé depuis que vous l'avez ouvert.", 'a_change');
-const astreInconnu = () => new ErreurService('introuvable', 'Astre introuvable.', 'astre_inconnu');
+export const invalide = (champ: string, message: string, detail?: string) => new ErreurService('invalide', message, detail, champ);
+export const aChange = () => new ErreurService('conflit', "Cet astre a changé depuis que vous l'avez ouvert.", 'a_change');
+export const astreInconnu = () => new ErreurService('introuvable', 'Astre introuvable.', 'astre_inconnu');
 const acteurDe = (a: Acteur | number): Acteur => (typeof a === 'number' ? { compteId: a } : a);
-const objet = (v: unknown): Record<string, unknown> =>
+export const objet = (v: unknown): Record<string, unknown> =>
   (v !== null && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : {});
-const present = (c: Record<string, unknown>, k: string): boolean => Object.hasOwn(c, k) && c[k] !== undefined;
+export const present = (c: Record<string, unknown>, k: string): boolean => Object.hasOwn(c, k) && c[k] !== undefined;
 const arrondi2 = (v: number): number => Math.floor(v * 100 + 0.5) / 100;
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -57,19 +57,19 @@ function nombreFini(champ: string, v: unknown): number {
   if (typeof v !== 'number' || !Number.isFinite(v)) throw invalide(champ, `${champ} : un nombre.`);
   return v;
 }
-function versionValide(champ: string, v: unknown): number {
+export function versionValide(champ: string, v: unknown): number {
   if (!Number.isInteger(v) || (v as number) < 1) throw invalide(champ, 'Version invalide.');
   return v as number;
 }
 /** null or 1 to 80 characters once trimmed; an empty string is « no name ». */
-function nomValide(v: unknown): string | null {
+export function nomValide(v: unknown): string | null {
   if (v === null) return null;
   if (typeof v !== 'string') throw invalide('nom', 'Le nom : de 1 à 80 caractères.');
   const n = v.trim();
   if (n.length > NOM_MAX) throw invalide('nom', 'Le nom : de 1 à 80 caractères.');
   return n === '' ? null : n;
 }
-function descriptionValide(v: unknown): string | null {
+export function descriptionValide(v: unknown): string | null {
   if (v === null) return null;
   if (typeof v !== 'string' || v.length > DESCRIPTION_MAX) throw invalide('description', 'La description : 2 000 caractères au plus.');
   return v === '' ? null : v;
@@ -143,7 +143,7 @@ function resultat(o: number, h: number): Place {
 }
 
 /** Exactly one form among `orbite` / `heure`, `plan: {x, y}` and `galactique: {q, r}`; a moon takes the first only. */
-function lirePlace(c: Record<string, unknown>, lune: boolean, repere: () => Repere): Place {
+export function lirePlace(c: Record<string, unknown>, lune: boolean, repere: () => Repere): Place {
   const formes = [present(c, 'plan'), present(c, 'galactique'), present(c, 'orbite') || present(c, 'heure')];
   if (formes.filter(Boolean).length > 1) throw invalide('plan', 'Une seule forme de position : orbite et heure, plan ou hexagone.');
   if (lune && (formes[0] || formes[1])) {
@@ -231,7 +231,7 @@ export interface ResultatEcriture {
   retires?: number;
 }
 
-interface Contexte {
+export interface Contexte {
   db: Db; ac: Acteur; universId: number; g: LigneGalaxie; systeme: LigneSysteme; q: number; r: number;
   /** True when this call anchored the system (its token was already checked against the galaxy's `version`). */
   ancre: boolean;
@@ -255,7 +255,7 @@ function garde(db: Db, ac: Acteur, universId: number, galaxieId: number, q: unkn
 }
 
 /** The frame of every write: one immediate transaction, the guard, the anchoring if drawn, the gesture, the signal. */
-function ecrire(
+export function ecrire(
   db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: unknown, r: unknown,
   jeton: unknown, nomAncrage: string | null, geste: (c: Contexte) => Omit<ResultatEcriture, 'interieur'> & { ecrit?: false },
   /** What an hexagon with neither row nor drawn star answers once the caller may write (default: the plain `introuvable`). */
@@ -282,7 +282,7 @@ function ecrire(
  * A key never reused (AD-edition-3): the slug of the name and a random suffix. Nothing is stored to remember the
  * removed keys (no migration), so the suffix is what keeps a removed `mere` from coming back.
  */
-function cleNeuve(nom: string, existantes: readonly string[]): string {
+export function cleNeuve(nom: string, existantes: readonly string[]): string {
   const base = cleDe(nom, []);
   for (;;) {
     const cle = `${base}-${randomBytes(3).toString('hex')}`;
@@ -290,9 +290,9 @@ function cleNeuve(nom: string, existantes: readonly string[]): string {
   }
 }
 
-const jetonDe = (entree: unknown): unknown => objet(entree).versionSysteme;
+export const jetonDe = (entree: unknown): unknown => objet(entree).versionSysteme;
 /** The name the anchoring dialog typed, carried by the first write of a drawn system (`nomAncrage`; `ancrer` reads `nom`). */
-const nomAncrageDe = (entree: unknown): string | null => {
+export const nomAncrageDe = (entree: unknown): string | null => {
   const e = objet(entree);
   if (!present(e, 'nomAncrage')) return null;
   try { return nomValide(e.nomAncrage); } catch { throw invalide('nomAncrage', 'Le nom : de 1 à 80 caractères.'); }
@@ -316,7 +316,7 @@ const etoileExiste = (c: Contexte, rang: number): boolean =>
   !!c.db.prepare("SELECT 1 FROM swn_astres WHERE systeme_id = ? AND genre = 'etoile' AND etoile_rang = ?").get(c.systeme.id, rang);
 
 /** The transition circle of the system, where the hexagon form puts the neighbours (AD-edition-4). */
-function repereDe(c: Contexte): Repere {
+export function repereDe(c: Contexte): Repere {
   const vue = lireInterieur(c.db, c.ac, c.universId, c.g.id, c.q, c.r);
   return { q0: c.q, r0: c.r, rayon: vue.transition };
 }
@@ -496,7 +496,7 @@ const PARAMETRES_DEFAUT: Record<string, Record<string, unknown>> = {
 
 export interface LienEntree extends JetonSysteme { ficheId?: unknown; version?: unknown }
 
-function ficheDeLUnivers(c: Contexte, v: unknown): number {
+export function ficheDeLUnivers(c: Contexte, v: unknown): number {
   const id = typeof v === 'number' && Number.isSafeInteger(v) ? v : undefined;
   const ok = id !== undefined && c.db.prepare('SELECT 1 FROM fiches WHERE id = ? AND univers_id = ?').get(id, c.universId);
   if (!ok) throw invalide('ficheId', 'Fiche introuvable.', 'fiche_inconnue');
@@ -628,7 +628,7 @@ export function poserTransition(db: Db, acteur: Acteur | number, universId: numb
   });
 }
 
-const systemeInconnu = () => new ErreurService('introuvable', 'Système introuvable.', 'systeme_inconnu');
+export const systemeInconnu = () => new ErreurService('introuvable', 'Système introuvable.', 'systeme_inconnu');
 
 /**
  * « Secret (MJ seul) » (B-97, AD-masquer-1): hides or shows a whole system. A drawn system is anchored first, in the

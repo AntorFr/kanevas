@@ -52,3 +52,33 @@ export function hexagonesMasques(db: Db, galaxieId: number, niveau: NiveauLectur
 
 /** What the GM's own screens show of a row (the badge, the switch): the one place the flag is turned into a boolean. */
 export const estMasque = (systeme: { secret: number }): boolean => systeme.secret === 1;
+
+// ---------------------------------------------------------------------------------------------------------------
+// Elements (AD-elements-1, B-96): the one rule of « may this reader see this element? », and the only file that reads
+// `swn_elements.secret`. A reader sees an element when it reads its system and the element is not reserved to the GM;
+// a GM outside Player mode reads every element of a system it reads.
+
+/** The rule on a row already read. */
+export const elementLisibleAuNiveau = (niveau: NiveauLecture, element: { secret: number }): boolean =>
+  niveau === 'mj' || element.secret === 0;
+
+/** The SQL twin of the rule for lists: the element joined as `alias`, its system as `aliasSysteme`. */
+export const sqlElementLisible = (alias: string, aliasSysteme: string, niveau: NiveauLecture): string =>
+  `(${sqlSystemeLisible(aliasSysteme, niveau)}${niveau === 'mj' ? '' : ` AND ${alias}.secret = 0`})`;
+
+/** The column the writing GM reads as its badge « MJ seul » (the one place the flag is selected for display). */
+export const colonneReserve = (alias: string): string => `${alias}.secret AS reserve`;
+
+/** Is the element `elementId` readable by this actor? Unknown, hidden and unreadable-system elements are the same `false`. */
+export function elementLisible(db: Db, acteur: Acteur, elementId: number): boolean {
+  const ligne = Number.isSafeInteger(elementId)
+    ? db.prepare(`SELECT s.univers_id, s.secret AS systeme_secret, e.secret FROM swn_elements e JOIN swn_systemes s ON s.id = e.systeme_id WHERE e.id = ?`)
+      .get(elementId) as { univers_id: number; systeme_secret: number; secret: number } | undefined
+    : undefined;
+  if (!ligne) return false;
+  const niveau = niveauLecture(db, acteur, ligne.univers_id);
+  return niveau !== null && lisibleAuNiveau(niveau, { secret: ligne.systeme_secret }) && elementLisibleAuNiveau(niveau, ligne);
+}
+
+/** The flag of an element row selected with `colonneReserve`, as a boolean. */
+export const estReserve = (ligne: { reserve: number }): boolean => ligne.reserve === 1;

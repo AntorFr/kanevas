@@ -5,11 +5,16 @@ import type { Db } from '../../db/db.js';
 import type { BlocFiche } from '../../outils/declaration.js';
 import { FILTRE_SYSTEMES, niveauLecture } from './galaxies.js';
 import type { Acteur } from '../types.js';
+import { colonneReserve, estReserve, sqlElementLisible } from './lisibilite.js';
 
 export const MAX_LIGNES_PRESENCE = 50;
 
 interface Rangee {
-  gid: number; q: number; r: number; ordre: number; genre: 0 | 1; id: number; texte: string;
+  gid: number; q: number; r: number; ordre: number; genre: 0 | 1 | 2; id: number; texte: string;
+}
+interface LigneElementP {
+  id: number; gid: number; q: number; r: number; sys_nom: string; nom: string; sur_nom: string | null; sur_cle: string | null;
+  orbite: number | null; heure: number | null; reserve: number;
 }
 interface LigneAstreP {
   id: number; gid: number; q: number; r: number; sys_nom: string; nom: string | null; genre: string;
@@ -31,8 +36,8 @@ function systemeTexte(nom: string, q: number, r: number): string {
 }
 
 export function presenceDeFiche(db: Db, acteur: Acteur, universId: number, ficheId: number): BlocFiche | null {
-  // A database mid-way through its migrations (the « montée » tests seed it before 0038) has no interior tables yet: no line.
-  if (!db.prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'swn_astres'`).get()) return null;
+  // A database mid-way through its migrations (the « montée » tests seed it before 0039) has no interior tables yet: no line.
+  if ((db.prepare(`SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table' AND name IN ('swn_astres', 'swn_elements')`).get() as { n: number }).n < 2) return null;
   const niveau = niveauLecture(db, acteur, universId);
   if (!niveau) return null;
   const garde = `s.univers_id = ? AND ${FILTRE_SYSTEMES[niveau]}${niveau === 'mj' ? '' : ' AND g.visible = 1'}`;
@@ -44,6 +49,16 @@ export function presenceDeFiche(db: Db, acteur: Acteur, universId: number, fiche
   const formations = db.prepare(`SELECT f.id, g.id AS gid, s.q, s.r, s.nom AS sys_nom, f.nom, f.forme, f.parametres
     FROM swn_formations f JOIN swn_systemes s ON s.id = f.systeme_id JOIN swn_galaxies g ON g.id = s.galaxie_id
     WHERE f.fiche_id = ? AND ${garde}`).all(ficheId, universId) as LigneFormationP[];
+
+  // The elements read under the same predicate as the map (`sqlElementLisible`): a reserved one gives no line to a player
+  // or to the GM in Player mode, and the GM outside Player mode reads it with its badge.
+  const elements = db.prepare(`SELECT e.id, g.id AS gid, s.q, s.r, s.nom AS sys_nom, e.nom, a.nom AS sur_nom, a.cle AS sur_cle,
+      CASE WHEN e.astre_id IS NULL THEN e.orbite ELSE a.orbite END AS orbite,
+      CASE WHEN e.astre_id IS NULL THEN e.heure ELSE a.heure END AS heure, ${colonneReserve('e')}
+    FROM swn_elements e JOIN swn_systemes s ON s.id = e.systeme_id JOIN swn_galaxies g ON g.id = s.galaxie_id
+    LEFT JOIN swn_astres a ON a.id = e.astre_id
+    WHERE e.fiche_id = ? AND s.univers_id = ? AND ${sqlElementLisible('e', 's', niveau)}${niveau === 'mj' ? '' : ' AND g.visible = 1'}`)
+    .all(ficheId, universId) as LigneElementP[];
 
   const rangees: Rangee[] = [];
   for (const a of astres) {
@@ -80,6 +95,16 @@ export function presenceDeFiche(db: Db, acteur: Acteur, universId: number, fiche
     rangees.push({
       gid: f.gid, q: f.q, r: f.r, ordre, genre: 1, id: f.id,
       texte: `${nom} — ${systemeTexte(f.sys_nom, f.q, f.r)}${place}`,
+    });
+  }
+  for (const e of elements) {
+    const base = `${e.nom} — ${systemeTexte(e.sys_nom, e.q, e.r)}`;
+    let place = '';
+    if (e.sur_cle !== null) place = `, sur ${e.sur_nom !== null && e.sur_nom !== '' ? e.sur_nom : 'Astre sans nom'}`;
+    else if (e.orbite !== null && e.heure !== null) place = `, orbite ${nombre(e.orbite)} · ${nombre(e.heure)} h`;
+    rangees.push({
+      gid: e.gid, q: e.q, r: e.r, ordre: e.orbite ?? 0, genre: 2, id: e.id,
+      texte: `${base}${place}${estReserve(e) ? ' (MJ seul)' : ''}`,
     });
   }
   if (rangees.length === 0) return null;

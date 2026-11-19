@@ -10,8 +10,10 @@ import { centresNuage, coteDemande, disposer, grainsAnneau, placeApresPas, place
 import { Sprites, dessineurDuCoeur } from './carte-sprites';
 import { placerEtiquettes, type CorpsEtiquette, type EtiquettePlacee, type Obstacle } from './etiquettes';
 import { lireEchecEdition, useEdition, type EchecEdition } from './Edition';
+import { COTE_MARQUE, placerMarques } from './elements-geometrie';
+import { MarqueElement } from './MarqueElement';
 import { modifierAstreSysteme } from './ecriture';
-import { nomAstre, nomFormation, placeAstre, typeAstre } from './systeme-libelles';
+import { libelleGenreElement, nomAstre, nomElement, nomFormation, placeAstre, placeElement, typeAstre } from './systeme-libelles';
 import type { AstreSysteme, InterieurSysteme, SortieSysteme } from './types';
 
 export const ZOOM_MIN = 0.5;
@@ -45,7 +47,14 @@ interface Props {
   suffixe: string;
   selection: string | null;
   onSelection: (cle: string | null) => void;
+  /** The selected element (a key of `interieur.elements`) and its setter: the marks are buttons of the sky. */
+  selectionElement?: string | null;
+  onSelectionElement?: (cle: string | null) => void;
 }
+
+/** Under this width (px) of the sky, the labels of the elements show on selection only when the map holds more than `ELEMENTS_ETIQUETES`. */
+const LARGEUR_COMPACTE = 560;
+const ELEMENTS_ETIQUETES = 8;
 
 /** The sky's colours for the canvas, read from the tokens (a canvas cannot take a CSS variable). */
 const lireTokens = (el: Element) => {
@@ -59,7 +68,7 @@ type Provisoire = Record<string, { orbite: number | null; heure: number }>;
 /** The star of rank 0 has no place of its own: it is the centre. */
 const deplacable = (a: AstreSysteme | undefined): a is AstreSysteme => a !== undefined && !(a.genre === 'etoile' && a.etoile_rang === 0);
 
-export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, selection, onSelection }: Props) {
+export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, selection, onSelection, selectionElement = null, onSelectionElement }: Props) {
   const navigate = useNavigate();
   const racine = useRef<HTMLDivElement>(null);
   const toile = useRef<HTMLCanvasElement>(null);
@@ -167,6 +176,12 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     return (t: string) => ({ largeur: Math.ceil(c ? c.measureText(t).width : t.length * 7) + 2, hauteur: HAUTEUR_ETIQUETTE });
   }, [etat]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // The marks of the elements the reader reads (the answer holds no other), placed on their orbit or around their body.
+  const marques = useMemo(
+    () => (dispo && plan ? placerMarques(affiche.elements ?? [], dispo.corps, plan, ecran, echelle) : []),
+    [dispo, plan, affiche, ecran, echelle],
+  );
+
   const cibles = useMemo(() => {
     if (!dispo) return { liste: [] as CorpsEtiquette[], sorties: [] as { q: number; r: number; x: number; y: number; nom: string }[] };
     const liste: CorpsEtiquette[] = dispo.corps.map((c) => {
@@ -180,6 +195,12 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
       const [x, y] = ecran(z.ancre[0], z.ancre[1]);
       liste.push({ cle: `zone:${z.cle}`, genre: 'zone', nom: nomFormation(z.formation), x, y, rayon: 0 });
     }
+    // At a phone's width a crowded map labels the selected element only (the count is of the elements the reader reads).
+    const sobre = taille.w < LARGEUR_COMPACTE && marques.length > ELEMENTS_ETIQUETES;
+    for (const m of marques) {
+      const visible = !sobre || m.cle === selectionElement;
+      liste.push({ cle: `element:${m.cle}`, genre: 'element', nom: visible ? nomElement(m.element) : '', x: m.x, y: m.y, rayon: COTE_MARQUE / 2 });
+    }
     const ex = planRef.current && dispo.transition > 0
       ? sorties.map((s) => {
         const [wx, wy] = planRef.current!(dispo.transition, s.heure);
@@ -189,7 +210,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
       : [];
     for (const e of ex) liste.push({ cle: `sortie:${e.q},${e.r}`, genre: 'comete', nom: e.nom, x: e.x, y: e.y, rayon: 7 });
     return { liste, sorties: ex };
-  }, [dispo, ecran, echelle, sorties]);
+  }, [dispo, ecran, echelle, sorties, marques, taille.w, selectionElement]);
 
   // What a label must clear besides the bodies: the hour marks (when drawn) and the transition circle.
   const obstacles = useMemo(() => {
@@ -527,6 +548,12 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
               const [x, y] = ecran(c.x, c.y);
               return <span key={c.cle} className="cs-enregistrement" style={{ left: x, top: y + Math.max(10, c.rayon * echelle) + 4 }}>Enregistrement…</span>;
             })}
+            {marques.map((m) => (
+              <MarqueElement key={m.cle} cle={m.cle} x={m.x} y={m.y} icone={m.element.aspect.icone} couleur={m.element.aspect.couleur}
+                reserve={m.element.reserve === true} choisi={m.cle === selectionElement}
+                libelle={`${nomElement(m.element)}, ${libelleGenreElement(m.element.genre)}, ${placeElement(m.element, interieur.astres)}${m.element.reserve ? ', réservé au MJ' : ''}`}
+                onChoisir={() => onSelectionElement?.(m.cle)} />
+            ))}
             {cibles.sorties.map((s) => (
               <button
                 key={`${s.q},${s.r}`}
@@ -538,7 +565,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
               />
             ))}
             {etiquettes.filter((e) => e.visible).map((e) => (
-              <span key={e.cle} className={`cs-etiquette${e.cle.startsWith('zone:') ? ' zone' : e.cle.startsWith('sortie:') ? ' sortie' : ''}`}
+              <span key={e.cle} className={`cs-etiquette${e.cle.startsWith('zone:') ? ' zone' : e.cle.startsWith('sortie:') ? ' sortie' : e.cle.startsWith('element:') ? ' element' : ''}`}
                 data-cle={e.cle} style={{ left: e.x, top: e.y }}>{e.texte}</span>
             ))}
           </>

@@ -5,10 +5,11 @@ import { Link } from 'react-router-dom';
 import { ErreurApi } from '../../../api';
 import { Alerte, Bouton, Champ, Fenetre, useToasts } from '../../../ui';
 import { ListeLiens, useRechercheLiens, type FicheLien } from '../../../ui/liste-liens';
-import { delierAstreFiche, delierZoneFiche, illustrerFicheAstre, lierAstreFiche, lierZoneFiche } from './ecriture';
+import { delierAstreFiche, delierElementFiche, delierZoneFiche, illustrerFicheAstre, lierAstreFiche, lierElementFiche, lierZoneFiche } from './ecriture';
+import { lireEchecElement } from './echec-element';
 import { MessageEchec, lireEchecEdition, useEdition, type EchecEdition } from './Edition';
-import { nomAstre, nomFormation } from './systeme-libelles';
-import type { AstreSysteme, FicheLiee, FormationSysteme } from './types';
+import { nomAstre, nomElement, nomFormation } from './systeme-libelles';
+import type { AstreSysteme, ElementSysteme, FicheLiee, FormationSysteme } from './types';
 
 /** The address of a sheet (E-9). */
 export const adresseFiche = (universId: number, ficheId: number) => `/univers/${universId}/fiche/${ficheId}`;
@@ -20,8 +21,11 @@ export function LigneFiche({ fiche }: { fiche?: FicheLiee | null }) {
   return <p className="gx-note cs-fiche">Fiche : <Link to={adresseFiche(place.universId, fiche.id)}>{fiche.titre}</Link></p>;
 }
 
-type Cible = { k: 'astre'; astre: AstreSysteme } | { k: 'zone'; zone: FormationSysteme };
-const nomCible = (c: Cible) => (c.k === 'astre' ? nomAstre(c.astre) : nomFormation(c.zone));
+type Cible = { k: 'astre'; astre: AstreSysteme } | { k: 'zone'; zone: FormationSysteme } | { k: 'element'; element: ElementSysteme };
+const nomCible = (c: Cible) => (c.k === 'astre' ? nomAstre(c.astre) : c.k === 'zone' ? nomFormation(c.zone) : nomElement(c.element));
+const donneesCible = (c: Cible) => (c.k === 'astre' ? c.astre : c.k === 'zone' ? c.zone : c.element);
+/** The words of a refusal: an element's own (docs/ecrans.md, E-23 elements), else the bodies'. */
+const lecteurDe = (c: Cible) => (c.k === 'element' ? (e: unknown) => lireEchecElement(e) : lireEchecEdition);
 
 /** « Lier à une fiche… » / « Changer la fiche liée… » and « Délier » (GM, E-23), plus « Illustrer la fiche » for a body. */
 export function ActionsLien({ cible }: { cible: Cible }) {
@@ -32,7 +36,7 @@ export function ActionsLien({ cible }: { cible: Cible }) {
   const [echec, setEchec] = useState<EchecEdition>();
   const [illustration, setIllustration] = useState<'repos' | 'cours' | 'echec'>('repos');
   if (!peutEcrire) return null;
-  const el = cible.k === 'astre' ? cible.astre : cible.zone;
+  const el = donneesCible(cible);
   const fiche = el.fiche ?? null;
   const cle = el.cle;
 
@@ -42,11 +46,11 @@ export function ActionsLien({ cible }: { cible: Cible }) {
     setEchec(undefined);
     try {
       const version = el.version ?? 1;
-      const r = await avecAncrage((jeton) => (cible.k === 'astre'
-        ? delierAstreFiche(place, cle, { version, ...jeton }) : delierZoneFiche(place, cle, { version, ...jeton })));
+      const r = await avecAncrage((jeton) => (cible.k === 'astre' ? delierAstreFiche(place, cle, { version, ...jeton })
+        : cible.k === 'zone' ? delierZoneFiche(place, cle, { version, ...jeton }) : delierElementFiche(place, cle, { version, ...jeton })));
       if (r) toast('Fiche déliée.');
     } catch (e) {
-      const f = lireEchecEdition(e);
+      const f = lecteurDe(cible)(e);
       setEchec(f);
       if (f.sorte === 'refus') toast(f.message);
     } finally {
@@ -91,7 +95,7 @@ export function ActionsLien({ cible }: { cible: Cible }) {
 function DialogueLier({ cible, onFermer }: { cible: Cible; onFermer: () => void }) {
   const { avecAncrage, ancrageOuvert, place, recharger } = useEdition();
   const { toast } = useToasts();
-  const el0 = cible.k === 'astre' ? cible.astre : cible.zone;
+  const el0 = donneesCible(cible);
   const [texte, setTexte] = useState('');
   const [choisie, setChoisie] = useState<FicheLien | null>(el0.fiche ? { id: el0.fiche.id, titre: el0.fiche.titre, type: '' } : null);
   const [courant, setCourant] = useState(0);
@@ -99,7 +103,7 @@ function DialogueLier({ cible, onFermer }: { cible: Cible; onFermer: () => void 
   const [echec, setEchec] = useState<EchecEdition>();
   const [disparue, setDisparue] = useState(false);
   const [recherche, reessayer] = useRechercheLiens(String(place.universId), texte, true);
-  const el = cible.k === 'astre' ? cible.astre : cible.zone;
+  const el = donneesCible(cible);
   const nom = nomCible(cible);
 
   async function lier() {
@@ -110,13 +114,13 @@ function DialogueLier({ cible, onFermer }: { cible: Cible; onFermer: () => void 
     try {
       const version = el.version ?? 1;
       const ficheId = choisie.id;
-      const r = await avecAncrage((jeton) => (cible.k === 'astre'
-        ? lierAstreFiche(place, el.cle, { ficheId, version, ...jeton }) : lierZoneFiche(place, el.cle, { ficheId, version, ...jeton })));
+      const r = await avecAncrage((jeton) => (cible.k === 'astre' ? lierAstreFiche(place, el.cle, { ficheId, version, ...jeton })
+        : cible.k === 'zone' ? lierZoneFiche(place, el.cle, { ficheId, version, ...jeton }) : lierElementFiche(place, el.cle, { ficheId, version, ...jeton })));
       if (r) { toast(`${nom} : fiche liée, ${choisie.titre}.`); onFermer(); }
     } catch (e) {
       if (e instanceof ErreurApi && e.statut === 400 && e.details?.champ === 'ficheId') { setDisparue(true); setChoisie(null); }
       else {
-        const f = lireEchecEdition(e);
+        const f = lecteurDe(cible)(e);
         setEchec(f);
         if (f.sorte === 'refus') { toast(f.message); onFermer(); }
       }

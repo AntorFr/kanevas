@@ -1,4 +1,4 @@
--- kanevas-carte-spatiale-reglages-service (AD-reglages-1, AD-reglages-2; number provisional until the merge of the slice, AD-51).
+-- kanevas-carte-spatiale-reglages-service (AD-reglages-1, AD-reglages-2; numbered 0040 after the merge of the elements slice (0039), AD-51).
 -- The generator settings and the catalogue of aspects of a galaxy, as `docs/donnees.md` writes them. Only
 -- src/services/swn/reglages.ts reads or writes them. No row is inserted: absent = the core's defaults and generator
 -- version 1, so every galaxy existing now keeps drawing exactly what it drew.
