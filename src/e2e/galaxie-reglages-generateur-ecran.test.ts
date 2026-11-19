@@ -88,12 +88,14 @@ describe('E-24 réglages du générateur : compte avant confirmation, refus, con
   it('une fréquence de 2 est refusée au champ « Entre 0 et 1. », Appliquer désactivé, rien d’enregistré', async () => {
     const avant = (await lecture((await ouvrir('Antor')).page)).version;
     const { page, ctx } = await ouvrir('Antor');
+    const ecritures: string[] = [];
+    page.on('request', (rq: Any) => { if (rq.method() !== 'GET') ecritures.push(`${rq.method()} ${rq.url()}`); });
     await champ(page, 'Comètes').first().fill('2');
     await page.getByText('Entre 0 et 1.').first().waitFor();
     await page.getByText('Corrigez les champs marqués.').waitFor();
     assert.equal(await page.getByRole('button', { name: 'Appliquer' }).isDisabled(), true);
     await hors(page, '3-refus');
-    await page.waitForTimeout(700);
+    assert.deepEqual(ecritures, [], 'aucun envoi, ni aperçu ni écriture');
     const apres = await lecture(page);
     assert.equal(apres.version, avant);
     assert.equal(apres.par_defaut, true);
@@ -219,7 +221,6 @@ describe('E-24 réglages du générateur : compte avant confirmation, refus, con
     await hors(page, '5-mode-joueur');
     await page.getByRole('link', { name: '← Galaxie' }).click();
     await page.getByText('Mode Joueur : vous voyez ce que voit un joueur.').waitFor();
-    await page.waitForTimeout(500);
     if (await page.getByRole('button', { name: 'Galaxie ▾' }).count()) await page.getByRole('button', { name: 'Galaxie ▾' }).click();
     assert.equal(await page.getByRole('menuitem', { name: 'Réglages du générateur…' }).count(), 0, 'pas d’entrée en mode joueur');
     await ctx.close();
