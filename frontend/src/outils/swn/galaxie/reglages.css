@@ -1,0 +1,49 @@
+/* E-24 (docs/ecrans.md, e24-reglages.html): colours only through the tokens of ui/tokens.css. */
+.rg-entete { display: flex; align-items: center; gap: var(--e-3); flex-wrap: wrap; margin-bottom: var(--e-3); }
+.rg-entete h1 { margin: 0; }
+.rg-sous { margin: 0; color: var(--texte-2); overflow-wrap: anywhere; }
+.rg-retour { color: var(--accent); font-size: var(--t-14); }
+.rg-corps { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--e-5); align-items: start; margin-top: var(--e-4); padding-bottom: var(--e-5); }
+.rg-formulaire { display: flex; flex-direction: column; gap: var(--e-4); min-width: 0; }
+.rg-formulaire .panneau { display: flex; flex-direction: column; gap: var(--e-3); align-items: flex-start; }
+.rg-formulaire .panneau > * { max-width: 100%; }
+.rg-formulaire .panneau .champ { width: 100%; max-width: 280px; }
+.rg-ligne { margin: 0; }
+.rg-aide { margin: 0; color: var(--texte-2); font-size: var(--t-13); }
+.rg-frequence { display: flex; flex-wrap: wrap; gap: var(--e-3) var(--e-5); align-items: flex-start; width: 100%; }
+.rg-frequence .champ-curseur { flex: 1 1 200px; max-width: 360px; }
+.rg-champ { display: flex; flex-direction: column; gap: var(--e-1); }
+.rg-defaut { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-2); margin: 0; font-size: var(--t-12); color: var(--texte-2); }
+.rg-point { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--mj); }
+.rg-table { width: 100%; border-collapse: collapse; font-size: var(--t-13); }
+.rg-table th, .rg-table td { text-align: left; padding: var(--e-2) var(--e-1); border-bottom: 1px solid var(--bord); vertical-align: top; }
+.rg-table thead th { color: var(--texte-2); font-weight: 500; }
+.rg-table tbody th { font-weight: 500; }
+.rg-paire { display: inline-flex; align-items: center; gap: var(--e-1); }
+.rg-paire-champ { display: inline-flex; align-items: center; gap: var(--e-1); }
+.rg-entier { width: 42px; padding: 0 var(--e-1); text-align: center; min-height: 34px; font: inherit; font-size: var(--t-14); color: var(--texte); background: var(--surface); border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); }
+.rg-entier:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-fond); }
+.rg-entier[aria-invalid="true"] { border-color: var(--danger); }
+.rg-refuse .rg-entier { border-color: var(--danger); }
+.rg-erreur-cellule { display: block; color: var(--danger); font-size: var(--t-12); font-weight: 500; margin-top: var(--e-1); }
+.rg-etiquette-cellule { display: none; }
+.rg-pied { display: flex; gap: var(--e-3); }
+.rg-exemples { position: sticky; top: var(--e-4); display: flex; flex-direction: column; gap: var(--e-3); }
+.rg-exemples h2 { margin: 0; font-size: var(--t-14); color: var(--texte-2); font-weight: 500; }
+.rg-cartes { display: flex; flex-direction: column; gap: var(--e-3); }
+.rg-exemple { margin: 0; display: flex; flex-direction: column; align-items: center; gap: var(--e-2); padding: var(--e-3); background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-panneau); }
+.rg-exemple figcaption { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: var(--t-13); text-align: center; }
+.rg-exemple figcaption span { color: var(--texte-2); }
+.rg-carte { display: block; background: var(--ciel, var(--surface-2)); border-radius: var(--rayon-item); }
+.rg-reessai { margin-top: var(--e-2); }
+
+@media (max-width: 759px) {
+  .rg-corps { grid-template-columns: minmax(0, 1fr); }
+  .rg-exemples { position: static; }
+  .rg-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .rg-table, .rg-table tbody, .rg-table tr, .rg-table th, .rg-table td { display: block; width: 100%; }
+  .rg-table tr { padding: var(--e-2) 0; border-bottom: 1px solid var(--bord); }
+  .rg-table th, .rg-table td { border: 0; padding: var(--e-1) 0; }
+  .rg-table td { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
+  .rg-etiquette-cellule { display: inline-block; min-width: 130px; color: var(--texte-2); }
+}

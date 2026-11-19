@@ -31,6 +31,8 @@ export const OUTILS_CLIENT: Record<string, OutilClient> = {
     // The address of a system's inside (`…/:cible/interieur/:q/:r`, E-23) is read through its own route: the read is the check.
     verifier: (universId, cible, suffixe) => {
       const base = `/api/univers/${universId}/outils/swn/galaxie/galaxies/${encodeURIComponent(cible ?? '')}`;
+      // The settings screen (E-24) is read through its own route: a player, a non-member, an unknown galaxy get « Page introuvable. ».
+      if (/\/reglages\/?$/.test(window.location.pathname)) return lire(`${base}/reglages${suffixe}`);
       const m = /\/interieur\/([^/]+)\/([^/]+)\/?$/.exec(window.location.pathname);
       return lire(m ? `${base}/interieur/${encodeURIComponent(m[1] ?? '')}/${encodeURIComponent(m[2] ?? '')}${suffixe}` : `${base}${suffixe}`);
     },
