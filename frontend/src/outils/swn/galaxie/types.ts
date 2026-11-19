@@ -60,8 +60,15 @@ export interface FicheLiee { id: number; titre: string }
 export interface FormationSysteme { cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number; version?: number; fiche?: FicheLiee | null;
   /** Plain text, for the writing GM only. */
   description?: string }
+/** A non-celestial element (B-96). On a body its place is the body's (`sur` is that body's `cle`); `reserve` and `version`: the writing GM only. */
+export interface ElementSysteme {
+  cle: string; genre: 'vaisseau' | 'ville' | 'station' | 'base' | 'autre'; nom: string; sur: string | null; orbite: number | null; heure: number;
+  aspect: { icone: string; couleur: string }; fiche?: FicheLiee | null; description?: string;
+  reserve?: boolean; version?: number;
+}
 export interface InterieurSysteme {
   q: number; r: number; nom: string | null; etat: 'tire' | 'defini'; transition?: number; astres: AstreSysteme[]; formations: FormationSysteme[];
+  elements?: ElementSysteme[];
   /** The GM outside Player mode only (AD-edition-2): the write tokens. Absent for everyone else. */
   peutEcrire?: true; versionSysteme?: number;
 }

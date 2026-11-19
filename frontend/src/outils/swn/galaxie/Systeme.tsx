@@ -9,13 +9,15 @@ import type { PropsOutil } from '../../types';
 import CarteSysteme from './CarteSysteme';
 import { FournisseurEdition, useEdition } from './Edition';
 import { lireEtatMasque } from './ecriture';
+import { FormulaireDeplacerElement, FormulaireModifierElement, FormulairePoserSurAstre, DialogueAjouterElement } from './FormulairesElements';
+import PanneauElement, { ActionsElement } from './PanneauElement';
 import { ActionsLien } from './Liens';
 import MenuSysteme from './MenuSysteme';
 import PanneauCorps from './PanneauCorps';
 import PanneauFormation from './PanneauFormation';
 import { DialogueAjouterAstre, DialogueAjouterZone, FormulaireDeplacer, FormulaireModifierAstre, FormulaireModifierZone } from './FormulairesEdition';
 import BoutonRetirer from './Retrait';
-import { nomAstre, nomFormation, placeAstre, placeFormation, typeAstre, typeFormation } from './systeme-libelles';
+import { libelleGenreElement, nomAstre, nomElement, nomFormation, placeAstre, placeElement, placeFormation, typeAstre, typeFormation } from './systeme-libelles';
 import type { InterieurSysteme } from './types';
 import './galaxie.css';
 
@@ -46,22 +48,29 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
   }, [mj, place, s.etat, s.versionSysteme]);
   const titre = s.nom !== null && s.nom !== '' ? s.nom : `Système sans nom (${s.q}, ${s.r})`;
   useTitreAriane(titre, 'Cartes');
-  const vide = s.astres.length === 0 && s.formations.length === 0;
+  const elements = s.elements ?? [];
+  const vide = s.astres.length === 0 && s.formations.length === 0 && elements.length === 0;
   // The selected body (a key of the answer): set by the canvas, a list row or the keyboard; the panel (next task) reads it.
   const [selection, setSelection] = useState<string | null>(null);
   const choisi = selection === null ? null : s.astres.find((a) => a.cle === selection) ?? null;
   const [selectionZone, setSelectionZone] = useState<string | null>(null);
   const zoneChoisie = selectionZone === null ? null : s.formations.find((f) => f.cle === selectionZone) ?? null;
-  const choisirCorps = (cle: string | null) => { setSelection(cle); setFormulaire(null); if (cle !== null) setSelectionZone(null); };
+  // An element is selected like a body is (never both): a change of selection closes the form. A element the reader no longer reads is no longer selected.
+  const [selectionElement, setSelectionElement] = useState<string | null>(null);
+  const elementChoisi = selectionElement === null ? null : elements.find((e) => e.cle === selectionElement) ?? null;
+  const choisirCorps = (cle: string | null) => { setSelection(cle); setSelectionElement(null); setFormulaire(null); if (cle !== null) setSelectionZone(null); };
+  const choisirElement = (cle: string | null) => { setSelectionElement(cle); setSelection(null); setFormulaire(null); if (cle !== null) setSelectionZone(null); };
   // The form that replaces the panel (« Déplacer », « Modifier… ») and the dialog of « Ajouter » on show; a change of selection closes the form.
-  const [formulaire, setFormulaire] = useState<'deplacer' | 'modifier' | null>(null);
-  const [ajout, setAjout] = useState<'astre' | 'zone' | null>(null);
+  const [formulaire, setFormulaire] = useState<'deplacer' | 'modifier' | 'poser' | null>(null);
+  const [ajout, setAjout] = useState<'astre' | 'zone' | 'element' | null>(null);
   const fermerFormulaire = () => setFormulaire(null);
   const apresAjout = (genre: 'astre' | 'zone') => (cle: string | undefined) => {
     if (cle === undefined) return;
     if (genre === 'astre') { setSelection(cle); setSelectionZone(null); } else { setSelectionZone(cle); setSelection(null); }
+    setSelectionElement(null);
     setFormulaire(null);
   };
+  const apresAjoutElement = (cle: string | undefined) => { if (cle !== undefined) choisirElement(cle); };
   const adresseVoisin = `/univers/${universId}/outils/swn/galaxie/${cible ?? ''}/interieur/`;
 
   return (
@@ -71,7 +80,7 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
         <Pastille sens="neutre">{s.etat === 'tire' ? 'Tiré' : 'Défini'}</Pastille>
         {mj && secret && <Pastille sens="mj">MJ seul</Pastille>}
         <Pastille sens="neutre">Hexagone {s.q}, {s.r}</Pastille>
-        <MenuSysteme onAjouterAstre={() => setAjout('astre')} onAjouterZone={() => setAjout('zone')} />
+        <MenuSysteme onAjouterAstre={() => setAjout('astre')} onAjouterZone={() => setAjout('zone')} onAjouterElement={() => setAjout('element')} />
         <Link className="gx-retour" to={`/univers/${universId}/outils/swn/galaxie/${cible ?? ''}`}>← Galaxie</Link>
       </header>
       {vide ? (
@@ -80,7 +89,7 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
         </EtatVide>
       ) : (
         <>
-          <div className={`cs-zone${choisi || zoneChoisie ? ' avec-panneau' : ''}`}>
+          <div className={`cs-zone${choisi || zoneChoisie || elementChoisi ? ' avec-panneau' : ''}`}>
             <CarteSysteme
               interieur={s}
               base={base}
@@ -88,7 +97,20 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
               suffixe={suffixeMode ?? ''}
               selection={selection}
               onSelection={choisirCorps}
+              selectionElement={selectionElement}
+              onSelectionElement={choisirElement}
             />
+            {elementChoisi && mj && formulaire === 'deplacer' && <FormulaireDeplacerElement key={`ed-${elementChoisi.cle}`} element={elementChoisi} onFermer={fermerFormulaire} />}
+            {elementChoisi && mj && formulaire === 'poser' && <FormulairePoserSurAstre key={`ep-${elementChoisi.cle}`} element={elementChoisi} onFermer={fermerFormulaire} />}
+            {elementChoisi && mj && formulaire === 'modifier' && <FormulaireModifierElement key={`em-${elementChoisi.cle}`} element={elementChoisi} onFermer={fermerFormulaire} />}
+            {elementChoisi && !(mj && formulaire) && (
+              <PanneauElement key={elementChoisi.cle} element={elementChoisi} interieur={s}
+                actions={mj && (
+                  <ActionsElement element={elementChoisi} onOuvrir={setFormulaire} onRetire={() => setSelectionElement(null)}>
+                    <ActionsLien cible={{ k: 'element', element: elementChoisi }} />
+                  </ActionsElement>
+                )} />
+            )}
             {choisi && mj && formulaire === 'deplacer' && <FormulaireDeplacer key={`d-${choisi.cle}`} astre={choisi} onFermer={fermerFormulaire} />}
             {choisi && mj && formulaire === 'modifier' && <FormulaireModifierAstre key={`m-${choisi.cle}`} astre={choisi} onFermer={fermerFormulaire} />}
             {choisi && !(mj && formulaire) && (
@@ -131,6 +153,23 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
               </ul>
             </section>
           )}
+          {elements.length > 0 && (
+            <section>
+              <h2>Éléments ({elements.length})</h2>
+              <ul className="gx-lignes" aria-label="Éléments du système">
+                {elements.map((e) => (
+                  <li key={e.cle} title={nomElement(e)} className={`cliquable${selectionElement === e.cle ? ' choisi' : ''}`}>
+                    <button type="button" className="ligne-corps" aria-pressed={selectionElement === e.cle} onClick={() => choisirElement(e.cle)}>
+                      <span className="nom">{nomElement(e)}{e.reserve && <> <Pastille sens="mj">MJ seul</Pastille></>}</span>
+                      <span className="place">{placeElement(e, s.astres)}</span>
+                      <span className="meta">{libelleGenreElement(e.genre)}</span>
+                      {e.fiche && <span className="meta gx-fiche">Fiche : {e.fiche.titre}</span>}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           {s.formations.length > 0 && (
             <section>
               <h2>Zones ({s.formations.length})</h2>
@@ -152,6 +191,7 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
         </>
       )}
       {mj && ajout === 'astre' && <DialogueAjouterAstre onFermer={() => setAjout(null)} onAjoute={apresAjout('astre')} />}
+      {mj && ajout === 'element' && <DialogueAjouterElement onFermer={() => setAjout(null)} onAjoute={apresAjoutElement} />}
       {mj && ajout === 'zone' && <DialogueAjouterZone onFermer={() => setAjout(null)} onAjoute={apresAjout('zone')} />}
     </div>
   );

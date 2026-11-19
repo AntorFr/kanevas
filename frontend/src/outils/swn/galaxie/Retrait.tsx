@@ -2,18 +2,20 @@ import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { BoiteDialogue, Bouton, useToasts } from '../../../ui';
-import { retirerAstreSysteme, retirerZoneSysteme } from './ecriture';
+import { compterElementsDuCorps, retirerAstreSysteme, retirerZoneSysteme } from './ecriture';
 import { MessageEchec, lireEchecEdition, useEdition, type EchecEdition } from './Edition';
-import { nomAstre } from './systeme-libelles';
+import { consequenceElements, nomAstre } from './systeme-libelles';
 import type { AstreSysteme, FormationSysteme, InterieurSysteme } from './types';
 
 type Cible = { k: 'astre'; astre: AstreSysteme } | { k: 'zone'; zone: FormationSysteme };
 
 /** The consequence of removing a planet, counted from the interior the dialog opens on (the service returns the same number). */
-export function consequenceRetrait(i: InterieurSysteme, a: AstreSysteme): string {
+export function consequenceRetrait(i: InterieurSysteme, a: AstreSysteme, elements = 0): string {
   const n = i.astres.filter((x) => x.parent_cle === a.cle).length;
-  if (n === 0) return 'Cet astre sera retiré du système.';
-  return n === 1 ? 'Sa lune sera retirée.' : `Ses ${n} lunes seront retirées.`;
+  const suite = consequenceElements(elements);
+  if (n === 0) return suite === '' ? 'Cet astre sera retiré du système.' : suite;
+  const lunes = n === 1 ? 'Sa lune sera retirée.' : `Ses ${n} lunes seront retirées.`;
+  return suite === '' ? lunes : `${lunes} ${suite}`;
 }
 
 /**
@@ -25,6 +27,8 @@ export default function BoutonRetirer({ cible, onRetire }: { cible: Cible; onRet
   const { peutEcrire, ancrer, avecAncrage, recharger, place } = useEdition();
   const { toast } = useToasts();
   const [fige, setFige] = useState<InterieurSysteme | null>(null);
+  /** The elements the removal takes with the body (the server counts them, the reserved ones included). */
+  const [nbElements, setNbElements] = useState(0);
   const [enCours, setEnCours] = useState(false);
   const [echec, setEchec] = useState<EchecEdition>();
   if (!peutEcrire || (cible.k === 'astre' && cible.astre.genre === 'etoile')) return null;
@@ -36,7 +40,13 @@ export default function BoutonRetirer({ cible, onRetire }: { cible: Cible; onRet
   async function ouvrir() {
     setEchec(undefined);
     const i = await ancrer();
-    if (i) setFige(i);
+    if (!i) return;
+    let n = 0;
+    if (cible.k === 'astre') {
+      try { n = await compterElementsDuCorps(place, cible.astre.cle); } catch { toast('Impossible de compter les éléments de cet astre.'); return; }
+    }
+    setNbElements(n);
+    setFige(i);
   }
   async function retirer() {
     if (enCours || !fige) return;
@@ -67,7 +77,7 @@ export default function BoutonRetirer({ cible, onRetire }: { cible: Cible; onRet
       {fige && (
         <BoiteDialogue
           titre={cible.k === 'astre' ? `Retirer ${nom} ?` : nom === '' ? 'Retirer cette zone ?' : `Retirer ${nom} ?`}
-          texte={cible.k === 'astre' ? consequenceRetrait(fige, cible.astre) : 'Cette zone sera retirée du système.'}
+          texte={cible.k === 'astre' ? consequenceRetrait(fige, cible.astre, nbElements) : 'Cette zone sera retirée du système.'}
           action={libelle}
           enCours={enCours}
           onConfirmer={() => void retirer()}

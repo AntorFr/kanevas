@@ -232,3 +232,32 @@
 .gx-masque { display: flex; flex-direction: column; gap: var(--e-2); margin-top: var(--e-2); }
 .gx-marque-mj rect { fill: var(--mj-trame); stroke: var(--mj); stroke-width: 1; }
 .gx-systeme .gx-marque-mj text { fill: var(--mj); stroke: none; font-size: var(--t-12); font-weight: 600; }
+
+/* E-23, the elements (B-96): the mark (icon on a 2 px ring, a token colour of its own), the panel's pastille and the picker's swatches. */
+.cs-element[data-couleur="accent"], .cs-pastille-element[data-couleur="accent"], .sel-couleur[data-couleur="accent"] { --c: var(--element-accent); }
+.cs-element[data-couleur="table"], .cs-pastille-element[data-couleur="table"], .sel-couleur[data-couleur="table"] { --c: var(--element-table); }
+.cs-element[data-couleur="ambre"], .cs-pastille-element[data-couleur="ambre"], .sel-couleur[data-couleur="ambre"] { --c: var(--element-ambre); }
+.cs-element[data-couleur="danger"], .cs-pastille-element[data-couleur="danger"], .sel-couleur[data-couleur="danger"] { --c: var(--element-danger); }
+.cs-element[data-couleur="neutre"], .cs-pastille-element[data-couleur="neutre"], .sel-couleur[data-couleur="neutre"] { --c: var(--element-neutre); }
+.cs-element[data-couleur="clair"], .cs-pastille-element[data-couleur="clair"], .sel-couleur[data-couleur="clair"] { --c: var(--element-clair); }
+.cs-element {
+  --c: var(--element-accent);
+  position: absolute; transform: translate(-50%, -50%); width: 28px; height: 28px; box-sizing: border-box; padding: 0; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer; background: var(--ciel); color: var(--c); border: 2px solid var(--c);
+}
+.cs-element.reserve { border-style: dashed; }
+.cs-element.choisi { box-shadow: 0 0 0 3px var(--accent); }
+.cs-element:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.cs-cadenas { position: absolute; right: -5px; bottom: -5px; box-sizing: content-box; padding: 1px; border-radius: 50%; background: var(--ciel); color: var(--texte); }
+.cs-etiquette.element { color: var(--texte); }
+.cs-pastille-element { --c: var(--element-accent); flex: none; display: inline-grid; place-items: center; width: 28px; height: 28px; box-sizing: border-box; border-radius: 50%;
+  border: 2px solid var(--c); color: var(--c); background: var(--surface-2); }
+.gx-lignes .nom .pastille { margin-left: var(--e-1); }
+.sel-aspect { display: flex; flex-direction: column; gap: var(--e-2); margin: var(--e-2) 0; }
+.sel-legende { display: block; color: var(--texte-2); font-size: var(--t-13); margin-bottom: var(--e-1); }
+.sel-pastilles { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.sel-pastille { width: 28px; height: 28px; box-sizing: border-box; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+  background: var(--surface-2); color: var(--texte); border: 1px solid var(--bord-fort); }
+.sel-pastille[aria-checked="true"] { box-shadow: 0 0 0 3px var(--focus); }
+.sel-pastille:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.sel-couleur { display: block; width: 16px; height: 16px; border-radius: 50%; background: var(--c, var(--element-accent)); }

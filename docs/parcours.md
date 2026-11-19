@@ -1087,8 +1087,8 @@ a token whose creator is no longer GM, or an unknown system, gets the usual `jet
 
 ### P-25 — Take over Éneria's map (Monsieur, Saturday, Mac and private repository)
 
-From the private Éneria repository, a script reads `atlas/systemes/*.yaml`, `systemes.yaml` and `astres.yaml`, and sends them to the import API of the target galaxy
-(the galaxy already created on Éneria's seed by the conversion of P-20); the batch report counts created, unchanged and refused elements. *Moment fort:* the GM opens the galaxy and a system of
+From the private Éneria repository, a script reads `atlas/systemes/*.yaml`, `systemes.yaml` and `astres.yaml` (the ships, cities and stations of a system's file travel as its `elements` list), and sends them to the import API of the target galaxy
+(the galaxy already created on Éneria's seed by the conversion of P-20); the batch report counts created, unchanged and refused elements (bodies and map elements alike, each by its key). *Moment fort:* the GM opens the galaxy and a system of
 the lore and finds Éneria's bodies at their places with their illustrations. *Failure path:* a refused element is reported with its path in the file and nothing is half written (as P-20).
 
 ## Out of scope
@@ -1153,7 +1153,7 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
 
 On E-21 Antor selects the drawn system (3, −5), where the Hollow Fleet hides, and turns on « Secret (MJ seul) » (the dialogue says that hiding **defines** the system, B-93). *Moment fort:* Léa reloads the galaxy: the hexagon
 is an empty cell, and the two routes that led to it are gone; the system's address answers « Page introuvable. ». On another, visible system, Antor sets a station « Réservé au MJ » (E-23): Léa still sees all the bodies,
-and not the station. Antor can cancel the dialogue (nothing is written), turn the switch off to give the system back, and see what Léa sees in Player mode; the exit that led to the hidden system disappears from the E-23 of its neighbours. *Failure path:* a write by a non-GM is not offered; an element or a hidden system that no longer exists → « Ce système n'existe plus. »; a conflict or a network failure on the switch or the dialogue leaves the system unchanged and says so (E-21, « Dialog states »).
+and not the station. Antor can cancel the hiding dialogue (nothing is written), turn the switch off to give the system back, and see what Léa sees in Player mode; the exit that led to a hidden system disappears from the E-23 of its neighbours. He then moves the station onto a planet (« Poser sur un astre »), and removes the planet: the dialog says « Son élément (1) sera retiré. », and removing an element alone asks « Retirer <nom> ? ». *Failure path:* a write by a non-GM is not offered; an element on a system that no longer exists → « Ce système n'existe plus. »; an astre or an element removed by another GM meanwhile → « Cet astre n'existe plus. » / « Cet élément n'existe plus. »; an element changed meanwhile → « Cet élément a changé depuis que vous l'avez ouvert. » + « Recharger ».
 
 ### Out of scope of `kanevas-carte-spatiale`
 

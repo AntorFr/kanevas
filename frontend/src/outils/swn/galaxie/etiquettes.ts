@@ -1,7 +1,7 @@
 // Label placement of the system map (AD-carte-4, B-89, E-23): one pure pass, no DOM — the text measurer is an argument.
 // Bodies and labels are rectangles / discs in screen pixels; a placed label never meets a body disc nor another label.
 
-export type GenreCorps = 'etoile' | 'planete' | 'comete' | 'anomalie' | 'compagne' | 'lune' | 'zone';
+export type GenreCorps = 'etoile' | 'planete' | 'comete' | 'anomalie' | 'compagne' | 'lune' | 'zone' | 'element';
 
 /** A body of the map in screen pixels: `x`, `y` its centre, `rayon` its disc (0 for a zone, which only anchors its label). */
 export interface CorpsEtiquette { cle: string; genre: GenreCorps; nom: string; x: number; y: number; rayon: number;
@@ -32,7 +32,7 @@ export const ZOOM_ZONES = 0.75;
 const DISTANCES = [4, 14, 28];
 const MARGE = 1;
 
-const PRIORITE: Record<GenreCorps, number> = { etoile: 0, planete: 1, comete: 1, anomalie: 1, compagne: 2, lune: 3, zone: 4 };
+const PRIORITE: Record<GenreCorps, number> = { etoile: 0, planete: 1, comete: 1, anomalie: 1, compagne: 2, lune: 3, zone: 4, element: 5 };
 
 interface Rect { x: number; y: number; largeur: number; hauteur: number }
 
@@ -97,7 +97,7 @@ export function placerEtiquettes(corps: CorpsEtiquette[], vue: VueEtiquettes, me
     !corps.some((c) => coupeLeDisque(r, c)) && !obstacles.some((o) => toucheObstacle(r, o)) && !placees.some((p) => sechevauchent(r, p));
 
   for (const { c } of ordre) {
-    const replie = (c.genre === 'lune' && zoom < ZOOM_LUNES) || (c.genre === 'zone' && zoom < ZOOM_ZONES);
+    const replie = (c.genre === 'lune' && zoom < ZOOM_LUNES) || ((c.genre === 'zone' || c.genre === 'element') && zoom < ZOOM_ZONES);
     const plein = coupe(c.nom);
     let trouve: EtiquettePlacee | null = null;
     if (!replie && plein) {

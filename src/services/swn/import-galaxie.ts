@@ -23,6 +23,7 @@ export const NATURES_GALAXIE = [
   { nom: 'corps', libelle: 'corps', libellePluriel: 'corps' },
   { nom: 'points', libelle: 'point', libellePluriel: 'points' },
   { nom: 'formations', libelle: 'zone', libellePluriel: 'zones' },
+  { nom: 'elements', libelle: 'élément', libellePluriel: 'éléments' },
 ];
 
 export const MAX_SYSTEMES = 2000, MAX_ZONES = 500, MAX_ROUTES = 4000;
