@@ -1833,7 +1833,7 @@ graph starts empty, its sheets are selected on the map. « Annuler » closes the
 still available); Player « Aucune carte n'est visible pour l'instant. »; empty or
 long title: « Erreur : le titre est obligatoire. » / « Erreur : 80 caractères au plus. »; background that
 is not a PNG, JPEG, GIF or WebP image, or is empty: « Erreur : ce fichier n'est pas une image (PNG,
-JPEG, GIF ou WebP). »; background above 25 MB (413 response): « Erreur : l'image dépasse 25 Mo. » *(`kanevas-synchro`: « Image trop lourde : <N> Mo au plus. », N the instance setting, B-89)*; failed
+JPEG, GIF ou WebP). »; background above the instance limit (413 response): « Image trop lourde : <N> Mo au plus. » (N the instance setting, B-89); failed
 creation: « La carte n'a pas pu être créée. Réessayez. », form keeps its input (including the chosen
 background). A thumbnail that fails to load shows the neutral pattern.
 
@@ -1929,7 +1929,7 @@ read, **404**. A token whose sheet becomes unreadable disappears on next load, w
 carte. »; Player « Rien à voir sur cette carte pour l'instant. ». Graph without nodes: GM « Aucune fiche.
 Ajoutez des fiches pour voir leurs liens. »; Player « Rien à voir sur ce graphe pour l'instant. ».
 Background: non-image or empty file « Erreur : ce fichier n'est pas une image (PNG, JPEG, GIF ou WebP). »,
-above 25 MB « Erreur : l'image dépasse 25 Mo. » *(`kanevas-synchro`: the limit and its message are B-89's)*. 100 elements: « Cette carte porte déjà 100
+above the instance limit « Erreur : Image trop lourde : <N> Mo au plus. » (B-89). 100 elements: « Cette carte porte déjà 100
 éléments. ». Sheet becoming unknown during addition: « Cette fiche n'existe plus. » (window list
 reloads). Failed move, removal, addition, rename, visibility change or
 background change: « L'action n'a pas abouti. Réessayez. », and previous state returns (token returns to its

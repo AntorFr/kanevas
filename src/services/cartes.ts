@@ -8,6 +8,7 @@ import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { chargerFiche, LIMITE_LISTE, validerTitre } from './fiches.js';
 import { curseurApi, PAGE_LECTURE_API, typeParSignature } from './fichiers.js';
 import { empreinteCarte } from './empreintes.js';
+import { fondCarteMaxMo } from './reglages.js';
 import { libelleRelation } from './natures.js';
 import { lireRelations } from './relations.js';
 import {
@@ -22,8 +23,13 @@ import type { Acteur, Role, SectionRow, TypeFiche } from './types.js';
 
 /** At most this many elements per map (AD-72). */
 export const MAX_ELEMENTS_PAR_CARTE = 100;
-/** A background is at most 25 MB (AD-69). */
-export const MAX_FOND = 25 * 1024 * 1024;
+/** A background over the instance ceiling (AD-143): the limit rides with the refusal, in MB. */
+export class ErreurFondTropLourd extends ErreurService {
+  constructor(readonly limiteMo: number) {
+    super('invalide', `Image trop lourde : ${limiteMo} Mo au plus.`, 'fond_trop_lourd');
+    this.name = 'ErreurFondTropLourd';
+  }
+}
 const MAX_TITRE = 80;
 
 export type FormeCarte = 'illustree' | 'graphe';
@@ -185,23 +191,22 @@ function porteEcriture(db: Db, compteId: number, modeJoueur: boolean, carteId: n
 }
 
 /** Limits a stream to the background size, failing as soon as it is exceeded. */
-async function* limiter(flux: Flux): AsyncGenerator<Buffer | Uint8Array> {
+async function* limiter(flux: Flux, limiteMo: number): AsyncGenerator<Buffer | Uint8Array> {
   let n = 0;
   for await (const morceau of flux) {
     n += morceau.length;
-    if (n > MAX_FOND) {
-      throw refus('fond_trop_lourd', "L'image dépasse 25 Mo.");
-    }
+    if (n > limiteMo * 1024 * 1024) throw new ErreurFondTropLourd(limiteMo);
     yield morceau;
   }
 }
 
 /** Writes a background to `tmp/` and checks it is an image; leaves nothing behind on a refusal. */
 async function ecrireFond(
+  db: Db,
   flux: Flux,
   racine: string,
 ): Promise<{ temporaire: string; type: string }> {
-  const ecrit = await ecrireFlux(limiter(flux), racine);
+  const ecrit = await ecrireFlux(limiter(flux, fondCarteMaxMo(db)), racine);
   const type = ecrit.taille === 0 ? '' : typeParSignature(ecrit.debut);
   if (!type.startsWith('image/')) {
     await abandonner(ecrit.temporaire, racine);
@@ -236,7 +241,7 @@ export async function creerCarte(
   if (entree.fond !== undefined && entree.forme === 'graphe') {
     throw refus('fond_invalide', "Un graphe n'a pas de fond.");
   }
-  const ecrit = entree.fond === undefined ? null : await ecrireFond(entree.fond, racine);
+  const ecrit = entree.fond === undefined ? null : await ecrireFond(db, entree.fond, racine);
   let fichier: string | null = null;
   try {
     const id = db.transaction(() => {
@@ -290,7 +295,7 @@ export async function remplacerFond(
 ): Promise<CarteVue> {
   const avant = porteEcriture(db, compteId, modeJoueur, carteId);
   if (avant.forme === 'graphe') throw refus('fond_invalide', "Un graphe n'a pas de fond.");
-  const ecrit = await ecrireFond(flux, racine);
+  const ecrit = await ecrireFond(db, flux, racine);
   let fichier: string | null = null;
   let ancien: string | null = null;
   try {

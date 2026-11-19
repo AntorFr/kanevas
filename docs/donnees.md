@@ -287,7 +287,7 @@ sheet and role): an element's sheet is **in the same universe** as the map; an
 **illustrated** map carries elements with positions, a **graph** elements without positions; at most **100
 elements** per map (AD-72); only a GM outside Player mode creates a map, configures it (title,
 visibility), changes its background, places, moves or removes an element; a background is only an image of
-at most 25 MB (AD-69; *`kanevas-synchro`: the instance setting `fond_carte_max_mo`, AD-143*). Removing an element deletes its row, never the sheet.
+at most the instance setting `fond_carte_max_mo` (75 MB by default; AD-69, AD-143). Removing an element deletes its row, never the sheet.
 
 Reading, evaluated for **the caller's account and mode** (AD-68): a map is readable if the
 account is a GM outside Player mode, or if it is visible. An element is returned if its sheet is readable

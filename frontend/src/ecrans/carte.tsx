@@ -18,7 +18,9 @@ import { libelleDuType, useTypes } from '../types-contexte';
 import { adresseFiche, ECHEC, type CarteLue, type Element } from './carte/types';
 
 const NON_IMAGE = 'Erreur : ce fichier n’est pas une image (PNG, JPEG, GIF ou WebP).';
-const TROP_LOURD = 'Erreur : l’image dépasse 25 Mo.';
+/** The refusal carries the ceiling of the moment (B-89): the message says it. */
+const tropLourd = (limiteMo: unknown) =>
+  typeof limiteMo === 'number' ? `Image trop lourde : ${limiteMo} Mo au plus.` : 'Image trop lourde.';
 
 type Etat =
   | { k: 'chargement' }
@@ -237,7 +239,7 @@ function Corps({
       maj((l) => ({ ...l, carte: { ...l.carte, fond: c.fond ?? true } }));
       setJetonFond((n) => n + 1);
     } catch (e) {
-      if (e instanceof ErreurApi && (e.code === 'fond_trop_lourd' || e.statut === 413)) setMessageFond(TROP_LOURD);
+      if (e instanceof ErreurApi && (e.code === 'fond_trop_lourd' || e.statut === 413)) setMessageFond(tropLourd(e.details?.limiteMo));
       else if (e instanceof ErreurApi && e.code === 'fond_invalide') setMessageFond(NON_IMAGE);
       else setEchec(true);
     } finally {
