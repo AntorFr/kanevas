@@ -102,7 +102,7 @@ export interface ResultatFichierImport {
 }
 
 /**
- * Ensures an imported library file (AD-104, B-48). Unlike an interactive upload, the import
+ * Ensures an imported library file (AD-104). Unlike an interactive upload, the import
  * may send its visibility (omitted: « joueurs » at creation, untouched on a replay, B-91). The origin key, never the name, identifies the file.
  * Bytes, metadata and batch outcome are committed together; an unchanged upload keeps its disk token.
  */
