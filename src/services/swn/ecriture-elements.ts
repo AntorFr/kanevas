@@ -13,6 +13,8 @@ import {
 } from './ecriture-systeme.js';
 import { aspectParDefaut, COULEURS_ELEMENT, GENRES_ELEMENT, ICONES_ELEMENT, type AspectElement, type GenreElement } from './elements-aspect.js';
 import { lireInterieur } from './interieur.js';
+import { HORS_SYNCHRO } from './import-galaxie.js';
+import { aspectLu } from './elements-aspect.js';
 
 interface LigneElement {
   id: number; systeme_id: number; cle: string; genre: GenreElement; nom: string; description: string | null;
@@ -75,14 +77,22 @@ function placeDemandee(c: Contexte, e: Record<string, unknown>):
   return lirePlace(e, false, () => repereDe(c));
 }
 
-const cleLibre = (c: Contexte, nom: string): string => {
-  const prises = [
-    ...(c.db.prepare('SELECT cle FROM swn_astres WHERE systeme_id = ?').all(c.systeme.id) as { cle: string }[]),
-    ...(c.db.prepare('SELECT cle FROM swn_formations WHERE systeme_id = ?').all(c.systeme.id) as { cle: string }[]),
-    ...(c.db.prepare('SELECT cle FROM swn_elements WHERE systeme_id = ?').all(c.systeme.id) as { cle: string }[]),
-  ];
-  return cleNeuve(nom, prises.map((x) => x.cle));
+const clesPrises = (c: Contexte): string[] => [
+  ...(c.db.prepare('SELECT cle FROM swn_astres WHERE systeme_id = ?').all(c.systeme.id) as { cle: string }[]),
+  ...(c.db.prepare('SELECT cle FROM swn_formations WHERE systeme_id = ?').all(c.systeme.id) as { cle: string }[]),
+  ...(c.db.prepare('SELECT cle FROM swn_elements WHERE systeme_id = ?').all(c.systeme.id) as { cle: string }[]),
+].map((x) => x.cle);
+
+/** The `cle` of an element is unique for the whole system, bodies and zones included (AD-elements-1, 6). */
+const cleLibre = (c: Contexte, nom: string, donnee?: string): string => {
+  const prises = clesPrises(c);
+  if (donnee === undefined) return cleNeuve(nom, prises);
+  if (prises.includes(donnee)) throw new ErreurService('conflit', 'Clé déjà utilisée dans ce système.', 'cle_existante', 'cle');
+  return donnee;
 };
+
+/** The import's mark (AD-atlas-3): the key the file gives, where a screen's creation draws its own. */
+export interface MarqueElement { cle?: string }
 
 export interface ElementEntree extends JetonSysteme {
   genre?: unknown; nom?: unknown; description?: unknown; aspect?: unknown; secret?: unknown;
@@ -91,7 +101,7 @@ export interface ElementEntree extends JetonSysteme {
 
 /** Adds an element. The place is a body (`sur`, its `cle`) or an orbit and an hour (default orbit 1, hour 0). */
 export function ajouterElement(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, q: number, r: number,
-  entree: ElementEntree): ResultatEcriture {
+  entree: ElementEntree, marque: MarqueElement = {}): ResultatEcriture {
   const e = objet(entree);
   return ecrire(db, acteur, universId, galaxieId, q, r, jetonDe(e), nomAncrageDe(e), (c) => {
     const genre = genreValide(e.genre);
@@ -103,7 +113,7 @@ export function ajouterElement(db: Db, acteur: Acteur | number, universId: numbe
     let astreId: number | null = null, orbite: number | null = null, heure: number | null = null;
     if (place && 'astreId' in place) astreId = place.astreId;
     else { orbite = place?.orbite ?? 1; heure = place?.heure ?? 0; }
-    const cle = cleLibre(c, nom);
+    const cle = cleLibre(c, nom, marque.cle);
     c.db.prepare(`INSERT INTO swn_elements (systeme_id, cle, genre, nom, description, astre_id, orbite, heure, aspect, secret)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(c.systeme.id, cle, genre, nom, description, astreId, orbite, heure, aspect, reserve);
     return { cle };
@@ -217,3 +227,78 @@ export function elementsDuCorps(db: Db, acteur: Acteur, universId: number, galax
   if (!vue.astres.some((a) => a.cle === cle)) throw astreInconnu();
   return ligne.n;
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Import (AD-145, AD-elements-1 (6)): the atlas of a system carries elements; the whole request is `appliquerAtlas`'s
+// transaction. Everything is written through the gestures above, so the import has no rule of its own; the marks of the
+// import (`version_importee`, B-48) are written here, in the one file that writes the table.
+
+export interface ElementImporte {
+  cle: string; genre: string; nom: string; description: string | null;
+  /** `cle` of the body, or `null` (then `orbite` and `heure` are both set, or both null for the writer's default place). */
+  sur: string | null; orbite: number | null; heure: number | null;
+  aspect: { icone?: string; couleur?: string } | null;
+  /** `undefined`: the file says nothing, the state stays. */
+  secret: boolean | undefined;
+}
+export type IssueElement = 'creees' | 'mises_a_jour' | 'inchangees' | { refus: string; champ: string; code?: string; chemin?: string };
+
+/** Creates, leaves alone or updates one element by its `cle`; an absent optional field never clears what Kanevas holds. */
+export function importerElement(db: Db, acteur: Acteur, universId: number, galaxieId: number, q: number, r: number,
+  e: ElementImporte, ficheId: number | null): IssueElement {
+  const systeme = db.prepare('SELECT id FROM swn_systemes WHERE galaxie_id = ? AND q = ? AND r = ?').get(galaxieId, q, r) as { id: number } | undefined;
+  if (!systeme) throw systemeInconnu();
+  const AS = [db, acteur, universId, galaxieId, q, r] as const;
+  if (e.sur !== null && !db.prepare('SELECT 1 FROM swn_astres WHERE systeme_id = ? AND cle = ?').get(systeme.id, e.sur)) {
+    return { refus: 'Astre inconnu.', champ: 'sur', code: 'astre_inconnu', chemin: 'sur' };
+  }
+  const place = e.sur !== null ? { sur: e.sur } : e.orbite !== null ? { orbite: e.orbite, heure: e.heure } : {};
+  const marquer = () => db.prepare('UPDATE swn_elements SET version_importee = version WHERE systeme_id = ? AND cle = ?').run(systeme.id, e.cle);
+  const ligne = db.prepare('SELECT * FROM swn_elements WHERE systeme_id = ? AND cle = ?').get(systeme.id, e.cle) as
+    (LigneElement & { secret: number; fiche_id: number | null; version_importee: number | null }) | undefined;
+
+  if (!ligne) {
+    if (clesPrisesDe(db, systeme.id).includes(e.cle)) return { refus: 'Clé déjà utilisée dans ce système.', champ: 'cle', chemin: 'cle' };
+    ajouterElement(...AS, {
+      genre: e.genre, nom: e.nom, ...(e.description !== null ? { description: e.description } : {}),
+      ...(e.aspect ? { aspect: e.aspect } : {}), ...(e.secret !== undefined ? { secret: e.secret } : {}), ...place,
+    }, { cle: e.cle });
+    if (ficheId !== null) lierElement(...AS, e.cle, { ficheId, version: 1 });
+    marquer();
+    return 'creees';
+  }
+
+  const champs: Record<string, unknown> = {};
+  if (ligne.genre !== e.genre) champs.genre = e.genre;
+  if (ligne.nom !== e.nom) champs.nom = e.nom;
+  if (e.description !== null && ligne.description !== e.description) champs.description = e.description;
+  if (e.aspect) {
+    const actuel = aspectLu(ligne.genre, ligne.aspect);
+    const voulu = { icone: e.aspect.icone ?? actuel.icone, couleur: e.aspect.couleur ?? actuel.couleur };
+    if (voulu.icone !== actuel.icone || voulu.couleur !== actuel.couleur) champs.aspect = voulu;
+  }
+  let deplacer: Record<string, unknown> | null = null;
+  if (e.sur !== null) {
+    const courant = ligne.astre_id === null ? null
+      : (db.prepare('SELECT cle FROM swn_astres WHERE id = ?').get(ligne.astre_id) as { cle: string } | undefined)?.cle ?? null;
+    if (courant !== e.sur) deplacer = place;
+  } else if (e.orbite !== null && (ligne.astre_id !== null || ligne.orbite !== e.orbite || ligne.heure !== e.heure)) deplacer = place;
+  const etat = ligne as { secret: number };
+  const reserver = e.secret !== undefined && (etat.secret === 1) !== e.secret;
+  const lier = ficheId !== null && ligne.fiche_id !== ficheId;
+  const premier = Object.keys(champs)[0] ?? (deplacer ? Object.keys(deplacer)[0]! : reserver ? 'secret' : 'fiche');
+  if (Object.keys(champs).length === 0 && !deplacer && !reserver && !lier) return 'inchangees';
+  if (ligne.version !== ligne.version_importee) return { refus: HORS_SYNCHRO, champ: premier, code: 'hors_synchro' };
+
+  const version = () => (db.prepare('SELECT version FROM swn_elements WHERE id = ?').get(ligne.id) as { version: number }).version;
+  if (Object.keys(champs).length > 0) modifierElement(...AS, e.cle, { ...champs, version: version() });
+  if (deplacer) deplacerElement(...AS, e.cle, { ...deplacer, version: version() });
+  if (reserver) reserverElement(...AS, e.cle, { secret: e.secret, version: version() });
+  if (lier) lierElement(...AS, e.cle, { ficheId, version: version() });
+  marquer();
+  return 'mises_a_jour';
+}
+
+const clesPrisesDe = (db: Db, systemeId: number): string[] => (db.prepare(
+  `SELECT cle FROM swn_astres WHERE systeme_id = ? UNION SELECT cle FROM swn_formations WHERE systeme_id = ?
+   UNION SELECT cle FROM swn_elements WHERE systeme_id = ?`).all(systemeId, systemeId, systemeId) as { cle: string }[]).map((x) => x.cle);

@@ -13,9 +13,11 @@ import {
   ORBITE_MAX, poserTransition, TAILLE_MAX,
 } from './ecriture-systeme.js';
 import { exigerEcritureGalaxie } from './galaxies.js';
+import { COULEURS_ELEMENT, GENRES_ELEMENT, ICONES_ELEMENT } from './elements-aspect.js';
+import { importerElement, type ElementImporte } from './ecriture-elements.js';
 import { HORS_SYNCHRO } from './import-galaxie.js';
 
-export const MAX_ETOILES = 8, MAX_CORPS = 80, MAX_LUNES = 24, MAX_ZONES_ATLAS = 40, MAX_POINTS = 40;
+export const MAX_ETOILES = 8, MAX_CORPS = 80, MAX_LUNES = 24, MAX_ZONES_ATLAS = 40, MAX_POINTS = 40, MAX_ELEMENTS_ATLAS = 100;
 /** Refusals kept in the report; the rest is only counted (as the galaxy import's). */
 export const MAX_REFUS_ATLAS = 1000;
 /** Same pattern as the galaxy import's `cle`. */
@@ -42,6 +44,8 @@ export interface ZoneAtlas {
   cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>;
   fiche: string | null; description: string | null;
 }
+/** An element of the atlas (AD-145): a body by its `cle` (`sur`) or an orbit and an hour, a sheet by its `cle`. */
+export interface ElementAtlas extends ElementImporte { fiche: string | null }
 export interface Atlas {
   /** `undefined`: the file says nothing (unchanged); `null`: the core's default radius. */
   transition?: number | null;
@@ -49,6 +53,7 @@ export interface Atlas {
   corps: CorpsAtlas[];
   zones: ZoneAtlas[];
   points: PointAtlas[];
+  elements: ElementAtlas[];
 }
 export type LectureAtlas =
   | { ok: true; atlas: Atlas }
@@ -169,6 +174,52 @@ class Lecteur {
   }
 }
 
+function lireElement(l: Lecteur, o: unknown, i: number): ElementAtlas | null {
+  const base = `elements[${i}].`;
+  if (!objet(o)) { l.refuser(`elements[${i}]`, 'elements', 'Un élément est un objet.'); return null; }
+  l.inconnues(o, ['cle', 'genre', 'nom', 'description', 'sur', 'orbite', 'heure', 'aspect', 'fiche', 'secret'], base);
+  const cle = l.cle(o, base);
+  let genre = '';
+  if (typeof o.genre === 'string' && (GENRES_ELEMENT as readonly string[]).includes(o.genre)) genre = o.genre;
+  else l.refuser(`${base}genre`, 'genre', 'Le genre : vaisseau, ville, station, base ou autre.');
+  let nom = '';
+  if (typeof o.nom === 'string' && o.nom.trim() !== '' && o.nom.trim().length <= NOM_MAX) nom = o.nom.trim();
+  else l.refuser(`${base}nom`, 'nom', `Le nom : de 1 à ${NOM_MAX} caractères.`);
+  let sur: string | null = null;
+  if (present(o, 'sur') && o.sur !== null) {
+    if (typeof o.sur === 'string' && o.sur !== '') sur = o.sur;
+    else l.refuser(`${base}sur`, 'sur', 'sur : la clé d\'un corps du système.');
+  }
+  const aOrbite = present(o, 'orbite') && o.orbite !== null, aHeure = present(o, 'heure') && o.heure !== null;
+  let orbite: number | null = null, heure: number | null = null;
+  if (sur !== null && (aOrbite || aHeure)) l.refuser(`${base}sur`, 'sur', 'Un corps ou une orbite, pas les deux.');
+  else if (aOrbite !== aHeure) l.refuser(`${base}${aOrbite ? 'heure' : 'orbite'}`, aOrbite ? 'heure' : 'orbite', "L'orbite et l'heure vont ensemble.");
+  else if (aOrbite) { orbite = l.orbite(o, base, true); heure = l.heure(o, base, true); }
+  let aspect: ElementAtlas['aspect'] = null;
+  if (present(o, 'aspect') && o.aspect !== null) {
+    if (!objet(o.aspect)) l.refuser(`${base}aspect`, 'aspect', "L'aspect : un objet.");
+    else {
+      aspect = {};
+      l.inconnues(o.aspect, ['icone', 'couleur'], `${base}aspect.`);
+      const { icone, couleur } = o.aspect;
+      if (icone !== undefined) {
+        if (typeof icone === 'string' && (ICONES_ELEMENT as readonly string[]).includes(icone)) aspect.icone = icone;
+        else l.refuser(`${base}aspect.icone`, 'aspect', 'Icône inconnue.');
+      }
+      if (couleur !== undefined) {
+        if (typeof couleur === 'string' && (COULEURS_ELEMENT as readonly string[]).includes(couleur)) aspect.couleur = couleur;
+        else l.refuser(`${base}aspect.couleur`, 'aspect', 'Couleur inconnue.');
+      }
+    }
+  }
+  let secret: boolean | undefined;
+  if (present(o, 'secret')) {
+    if (typeof o.secret === 'boolean') secret = o.secret;
+    else l.refuser(`${base}secret`, 'secret', 'Un booléen est attendu.');
+  }
+  return { cle, genre, nom, description: l.description(o, base), sur, orbite, heure, aspect, secret, fiche: l.fiche(o, base) };
+}
+
 const COMMUNS = ['cle', 'type', 'nom', 'orbite', 'heure', 'taille', 'aspect', 'fiche'] as const;
 
 function lireEtoile(l: Lecteur, o: unknown, i: number, rangs: Map<number, number>): EtoileAtlas | null {
@@ -255,7 +306,7 @@ export function lireAtlas(corps: unknown): LectureAtlas {
     l.refuser('corps', 'corps', 'Le corps doit être un objet.');
     return { ok: false, refus: l.refus, refusTotal: l.total };
   }
-  l.inconnues(corps, ['transition', 'etoiles', 'corps', 'zones', 'points'], '');
+  l.inconnues(corps, ['transition', 'etoiles', 'corps', 'zones', 'points', 'elements'], '');
 
   let transition: number | null | undefined;
   if (present(corps, 'transition')) {
@@ -298,8 +349,11 @@ export function lireAtlas(corps: unknown): LectureAtlas {
   const zones = l.liste(corps, 'zones', MAX_ZONES_ATLAS, '')
     .map((z, i) => lireZone(l, z, i)).filter((z): z is ZoneAtlas => z !== null);
 
+  const elements = l.liste(corps, 'elements', MAX_ELEMENTS_ATLAS, '')
+    .map((e, i) => lireElement(l, e, i)).filter((e): e is ElementAtlas => e !== null);
+
   if (l.total > 0) return { ok: false, refus: l.refus, refusTotal: l.total };
-  const atlas: Atlas = { etoiles, corps: lesCorps, zones, points };
+  const atlas: Atlas = { etoiles, corps: lesCorps, zones, points, elements };
   if (transition !== undefined) atlas.transition = transition;
   return { ok: true, atlas };
 }
@@ -307,8 +361,8 @@ export function lireAtlas(corps: unknown): LectureAtlas {
 // ---------------------------------------------------------------------------------------------------------------
 // Application (AD-atlas-3): all or nothing, idempotent, never overwriting.
 
-export type NatureAtlas = 'systemes' | 'etoiles' | 'corps' | 'points' | 'formations';
-export const NATURES_ATLAS: NatureAtlas[] = ['systemes', 'etoiles', 'corps', 'points', 'formations'];
+export type NatureAtlas = 'systemes' | 'etoiles' | 'corps' | 'points' | 'formations' | 'elements';
+export const NATURES_ATLAS: NatureAtlas[] = ['systemes', 'etoiles', 'corps', 'points', 'formations', 'elements'];
 export interface CompteursAtlas { creees: number; mises_a_jour: number; inchangees: number; refusees: number }
 export interface RefusApplique extends RefusAtlas { nature: NatureAtlas; code?: string }
 export interface RapportAtlas {
@@ -327,6 +381,7 @@ function natureDe(chemin: string): NatureAtlas {
   if (chemin.startsWith('corps')) return 'corps';
   if (chemin.startsWith('points')) return 'points';
   if (chemin.startsWith('zones')) return 'formations';
+  if (chemin.startsWith('elements')) return 'elements';
   return 'systemes';
 }
 
@@ -400,6 +455,7 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
   }));
   const points = atlas.points.map((p, i) => ({ p, ...ficheDe(`points[${i}]`, p.fiche) }));
   const zones = atlas.zones.map((z, i) => ({ z, ...ficheDe(`zones[${i}]`, z.fiche) }));
+  const elements = atlas.elements.map((e, i) => ({ e, ...ficheDe(`elements[${i}]`, e.fiche) }));
   if (fichesRefus.length > 0) return rapportRefuse(fichesRefus, fichesRefus.length);
 
   const natures = vide();
@@ -417,11 +473,11 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
   const horsSynchro = (l: { version: number; version_importee: number | null }) => l.version !== l.version_importee;
 
   /** One item in its own savepoint; a service refusal is a refusal of the request, collected and reported by path. */
-  const item = (nature: NatureAtlas, chemin: string, corpsItem: () => keyof CompteursAtlas | { refus: string; champ: string; code?: string }): boolean => {
+  const item = (nature: NatureAtlas, chemin: string, corpsItem: () => keyof CompteursAtlas | { refus: string; champ: string; code?: string; chemin?: string }): boolean => {
     try {
       const issue = db.transaction(corpsItem)();
       if (typeof issue === 'string') { natures[nature][issue]++; return true; }
-      refuser(nature, chemin, issue.champ, issue.refus, issue.code);
+      refuser(nature, issue.chemin ? `${chemin}.${issue.chemin}` : chemin, issue.champ, issue.refus, issue.code);
       return false;
     } catch (e) {
       if (!(e instanceof ErreurService) || (e.code !== 'invalide' && e.code !== 'conflit' && e.code !== 'introuvable')) throw e;
@@ -530,6 +586,8 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
       }
       for (const { p, chemin, ficheId } of points) poserAstre('points', chemin, 'comete', p.cle, 0, null, p, ficheId);
       for (const { z, chemin, ficheId } of zones) poserZone(chemin, z, ficheId);
+      // Elements come last: a body they sit on may be created by this very request.
+      for (const { e, chemin, ficheId } of elements) item('elements', chemin, () => importerElement(db, acteur, universId, g.id, q, r, e, ficheId));
       if (refusTotal > 0) throw new Annulation();
     }).immediate());
     modifie = signal;
