@@ -6,10 +6,6 @@ import { OUTIL_GALAXIE } from './galaxies.js';
 import { appliquerAtlas, NATURES_ATLAS, type RapportAtlas } from './atlas.js';
 import { HORS_SYNCHRO, importerGalaxie, type Compteurs, type RapportGalaxie } from './import-galaxie.js';
 
-/**
- * Application through the token (K-6, T-9). With a batch, the counters and the refusals enter it in the same
- * transaction as the writes; without one, nothing remains but the answer.
- */
 /** The batch's guard, shared by both routes: open, and of the galaxy tool. */
 function garderLot(db: Db, jeton: Jeton, lotId: number | null, maintenant: Date): void {
   if (lotId === null) return;
@@ -43,6 +39,10 @@ export function importerAtlasParJeton(db: Db, jeton: Jeton, lotId: number | null
   return rapport;
 }
 
+/**
+ * Application through the token (K-6, T-9). With a batch, the counters and the refusals enter it in the same
+ * transaction as the writes; without one, nothing remains but the answer.
+ */
 export function importerGalaxieParJeton(db: Db, jeton: Jeton, lotId: number | null, galaxieId: number, corps: unknown,
   maintenant: Date = new Date()): RapportGalaxie {
   if (lotId !== null) {
