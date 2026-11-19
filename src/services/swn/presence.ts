@@ -31,6 +31,8 @@ function systemeTexte(nom: string, q: number, r: number): string {
 }
 
 export function presenceDeFiche(db: Db, acteur: Acteur, universId: number, ficheId: number): BlocFiche | null {
+  // A database mid-way through its migrations (the « montée » tests seed it before 0038) has no interior tables yet: no line.
+  if (!db.prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'swn_astres'`).get()) return null;
   const niveau = niveauLecture(db, acteur, universId);
   if (!niveau) return null;
   const garde = `s.univers_id = ? AND ${FILTRE_SYSTEMES[niveau]}${niveau === 'mj' ? '' : ' AND g.visible = 1'}`;
