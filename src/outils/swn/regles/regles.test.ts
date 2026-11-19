@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { distanceHex, hexVersPlan, planVersHex, pointDansPolygone } from './hex.js'
-import { bloc, densiteHexagone } from './generation.js'
+import { densiteHexagone } from './generation.js'
 import { plusCourtChemin } from './chemin.js'
 import { libelleTrajet, libelleDuree } from './format.js'
 
@@ -21,40 +21,8 @@ test('conversion hexagone <-> plan : aller-retour sur −20..20', () => {
     }
 })
 
-test('bloc : même liste deux fois, blocs négatifs compris, bornes du bloc', () => {
-  for (const [bx, by] of [[0, 0], [-1, -1], [-3, 2], [4, -7]] as const) {
-    const a = bloc('essai-1', bx, by, () => 0.5)
-    assert.deepEqual(a, bloc('essai-1', bx, by, () => 0.5))
-    for (const h of a) {
-      assert.ok(h.q >= 5 * bx && h.q <= 5 * bx + 4, `q ${h.q} bloc ${bx}`)
-      assert.ok(h.r >= 5 * by && h.r <= 5 * by + 4, `r ${h.r} bloc ${by}`)
-    }
-  }
-  assert.ok(bloc('essai-1', -1, -1, () => 0.5).length > 0)
-})
-
-test('bloc : densité 0 rien, densité 1 les 25 cases', () => {
-  assert.deepEqual(bloc('essai-1', 0, 0, () => 0), [])
-  assert.deepEqual(bloc('essai-1', -2, 3, () => 0), [])
-  const tout = bloc('essai-1', -2, 3, () => 1)
-  assert.equal(tout.length, 25)
-  assert.equal(new Set(tout.map((h) => `${h.q},${h.r}`)).size, 25)
-})
-
-test('bloc : positions figées pour « essai-1 » (0,0) à 0,2 ; autre graine, autre liste', () => {
-  assert.deepEqual(bloc('essai-1', 0, 0, () => 0.2), [
-    { q: 0, r: 0 }, { q: 2, r: 0 }, { q: 2, r: 3 }, { q: 4, r: 3 },
-    { q: 2, r: 4 }, { q: 3, r: 4 }, { q: 4, r: 4 },
-  ])
-  assert.deepEqual(bloc('essai-2', 0, 0, () => 0.2).slice(0, 3), [
-    { q: 1, r: 0 }, { q: 2, r: 0 }, { q: 0, r: 1 },
-  ])
-})
-
-test('bloc : le champ est interrogé case par case (densité par case)', () => {
-  const r = bloc('essai-1', 0, 0, (q, rr) => (q === 2 && rr === 0 ? 1 : 0))
-  assert.deepEqual(r, [{ q: 2, r: 0 }])
-})
+// The stars of a galaxy are drawn by the core (AD-etoiles-1, AD-148): its tests are generation-fixtures.test.ts, the Rust tests and
+// services/swn/tirage-etoiles.test.ts. The former SHA-256 draw is not called for them any more and no test pins it.
 
 const carre = (d: number | null, x0 = 0) => ({
   contour: [[x0, 0], [x0 + 10, 0], [x0 + 10, 10], [x0, 10]] as [number, number][],

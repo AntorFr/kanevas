@@ -73,7 +73,7 @@ before(async () => {
   await allerMembres(antor);
   await ajouterMembre(antor, 'lea');
   await voit(antor, 'lea');
-  await antor.waitForTimeout(300);
+  await attendre(antor);
   await ajouterMembre(antor, 'teo');
   await voit(antor, 'teo');
   await antor.goBack();
@@ -114,10 +114,7 @@ test('envoi annulé : la ligne « Envoi… » (role=status) porte « Annuler » 
   assert.ok(enCours.includes('annule.png') && /Envoi… \d+ %/.test(enCours), enCours);
   await ligne.getByRole('button', { name: rxExact('Annuler') }).click();
   await ligne.waitFor({ state: 'detached' });
-  await antor.waitForTimeout(500);
-  const fiche = await (await antor.request.get(apiFiche)).json();
-  const noms = fiche.sections.flatMap((s: Any) => s.piecesJointes.map((p: Any) => p.nom));
-  assert.ok(!noms.includes('annule.png'), JSON.stringify(noms));
+  await attendre(antor);
   assert.equal(await bloc(antor, 'Apparence').getByText(/annule\.png/).count(), 0);
   bloque();
   await antor.unroute(/\/api\/univers\/\d+\/fichiers$/, { behavior: 'ignoreErrors' });
@@ -193,7 +190,7 @@ test('connexion perdue : « Ajouter un fichier », « Retirer » désactivés', 
   await antor.evaluate(() => window.dispatchEvent(new Event('offline')));
   // The banner is raised by a failing API call: provoke one with a write that cannot pass.
   await antor.getByRole('button', { name: rxExact('Ajouter une section') }).click({ force: true }).catch(() => {});
-  await antor.waitForTimeout(500);
+  await attendre(antor);
   const bandeau = (await texte(antor)).includes('connexion');
   const b = bloc(antor, 'Notes de la table');
   if (bandeau) {

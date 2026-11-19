@@ -1,7 +1,8 @@
+// ecrans: parametres
 // E-14 « Supprimer l'univers » box on a phone: the danger button is as tall as « Annuler », its label on one line, nothing overflows.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { attendre, connecte, launch, skipBrowser, startServer, type Any, type Server } from './harnais.test.ts';
+import { attendre, attendreTransitions, connecte, launch, skipBrowser, startServer, type Any, type Server } from './harnais.test.ts';
 
 describe('boîte « Supprimer l’univers » : boutons de même hauteur au téléphone', { skip: skipBrowser }, () => {
   let srv: Server;
@@ -26,7 +27,7 @@ describe('boîte « Supprimer l’univers » : boutons de même hauteur au tél�
     await page.getByRole('button', { name: /Supprimer l.univers/ }).click();
     const boite = page.getByRole('alertdialog');
     await boite.waitFor();
-    await page.waitForTimeout(500);
+    await attendreTransitions(page);
     const danger = await boite.getByRole('button', { name: /^Supprimer l.univers$/ }).boundingBox();
     const annuler = await boite.getByRole('button', { name: 'Annuler' }).boundingBox();
     const cadre = await boite.boundingBox();

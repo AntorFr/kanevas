@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Re-check of kanevas-fiches-liees-natures, B-63: relating a sheet to a CHARACTER (allié de, ennemi de, « Sans nature »)
 // must give a line « nature · cible — qualificatif » on the source sheet, with no crash of the screen, in every case below.
 // Written from the need (docs/parcours.md B-63, docs/ecrans.md E-9 « Relier »), not from the code. Expected values are literals.

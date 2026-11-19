@@ -1,0 +1,26 @@
+{
+  "transition": 14.5,
+  "etoiles": [
+    { "cle": "soleil-essai", "type": "orange", "nom": "Soleil d'essai", "taille": 1.0 }
+  ],
+  "corps": [
+    {
+      "cle": "planete-un", "type": "tellurique", "nom": "Planète Un", "orbite": 3.5, "heure": 2.25, "taille": 1.0,
+      "etoile": "soleil-essai", "aspect": { "mer": 0.6, "nuages": 0.4 },
+      "description": "Une planète inventée pour l'essai.",
+      "lunes": [
+        { "cle": "lune-un", "type": "rocheux", "nom": "Lune Un", "orbite": 0.4, "heure": 6, "taille": 0.3 }
+      ]
+    },
+    {
+      "cle": "planete-deux", "type": "gazeuse", "nom": "Planète Deux", "orbite": 9, "heure": 8.5, "taille": 3,
+      "fiche": "fiche-essai"
+    }
+  ],
+  "zones": [
+    { "cle": "ceinture-essai", "forme": "anneau", "nom": "Ceinture d'essai", "parametres": { "de": 6, "a": 7 } }
+  ],
+  "points": [
+    { "cle": "comete-essai", "type": "comete", "nom": "Comète d'essai", "orbite": 12, "heure": 10, "taille": 0.2 }
+  ]
+}

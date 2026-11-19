@@ -1,9 +1,10 @@
+// ecrans: fiche
 // Browser test of kanevas-outils-sections-gerees-ecran, written from the exit criterion and
 // docs/ecrans.md « Screen details for kanevas-outils-sections-gerees » — not from the code.
 // Stub world with the seed (« Éneria d'essai »: Antor GM, Léa player). Screenshots: /tmp/cap-gere.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { connecte, launch, rx, section, skipBrowser, texte, type Any, type Server, startServer } from './harnais.test.ts';
+import { attendre, connecte, launch, rx, section, skipBrowser, texte, type Any, type Server, startServer } from './harnais.test.ts';
 
 const SHOTS = '/tmp/cap-gere';
 
@@ -225,7 +226,7 @@ describe('section gérée sur E-9 et proposition de recalcul sur E-12', { skip: 
     const libre = ((await f.json()) as Any).id;
     await a.page.goto(`/univers/${U}/fiche/${libre}`);
     await a.page.getByRole('heading', { name: 'Caillou' }).first().waitFor();
-    await a.page.waitForTimeout(500);
+    await attendre(a.page);
     assert.equal(vus.length, 0, 'pas de module pour une fiche sans section gérée');
 
     await ok(await a.page.request.put(`/api/systemes/${S}/outils/essai/g/activation`, { data: { active: false } }), 204, 'désactivation');

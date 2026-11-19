@@ -12,12 +12,14 @@ import {
   Case,
   Champ,
   Interrupteur,
+  LigneConversion,
   LigneFichier,
   LigneRelation,
   Menu,
   PageIntrouvable,
   PastilleAudience,
   PastilleRole,
+  Segments,
   SqueletteFiche,
   useToasts,
   Vignette,
@@ -55,6 +57,8 @@ function Demo() {
   const [envoi, setEnvoi] = useState(false);
   const [secrete, setSecrete] = useState(true);
   const [sur, setSur] = useState(false);
+  const [neutre, setNeutre] = useState<'aucun' | 'formulaire' | 'confirmation'>('aucun');
+  const [mode, setMode] = useState<'orbite' | 'heure'>('orbite');
 
   return (
     <div className="demo">
@@ -265,12 +269,65 @@ function Demo() {
         </Etat>
       </Groupe>
 
+      <Groupe id="d-mj" titre="Écriture du MJ">
+        <Etat titre="Bouton mj, segment coché ambre, ligne de conversion">
+          <div className="demo-ligne">
+            <Bouton variante="mj">Système</Bouton>
+            <Bouton variante="mj" icone={Plus}>Ajouter</Bouton>
+            <Bouton variante="mj" disabled>Désactivé</Bouton>
+          </div>
+          <Segments
+            legende="Unité"
+            variante="mj"
+            options={[{ valeur: 'orbite', libelle: 'Orbite' }, { valeur: 'heure', libelle: 'Heure' }]}
+            valeur={mode}
+            onChange={setMode}
+          />
+          <input aria-label="Orbite" aria-describedby="demo-conv" defaultValue="4" />
+          <LigneConversion id="demo-conv" texte="= Orbite 4 · 7 h" />
+        </Etat>
+        <Etat titre="Boîte neutre : formulaire (dialog), confirmation (alertdialog)">
+          <div className="demo-ligne">
+            <Bouton onClick={() => setNeutre('formulaire')}>Ouvrir le formulaire</Bouton>
+            <Bouton onClick={() => setNeutre('confirmation')}>Ouvrir la confirmation</Bouton>
+          </div>
+        </Etat>
+      </Groupe>
+
       <Groupe id="d-chargement" titre="Chargement">
         <Etat titre="Squelette de fiche">
           <SqueletteFiche />
         </Etat>
       </Groupe>
 
+      {neutre === 'formulaire' && (
+        <BoiteDialogue
+          variante="neutre"
+          formulaire
+          focusChamp
+          titre="Ancrer le système"
+          texte="Le système tiré sera posé sur la carte."
+          action="Ancrer"
+          onFermer={() => setNeutre('aucun')}
+          onConfirmer={() => setNeutre('aucun')}
+        >
+          <label>
+            Rayon
+            <input defaultValue="4" aria-describedby="demo-conv-d" />
+          </label>
+          <LigneConversion id="demo-conv-d" texte="= Orbite 4 · 7 h" />
+        </BoiteDialogue>
+      )}
+      {neutre === 'confirmation' && (
+        <BoiteDialogue
+          variante="neutre"
+          titre="Ancrer ici ?"
+          texte="Aucun champ à remplir."
+          action="Ancrer"
+          onFermer={() => setNeutre('aucun')}
+          onConfirmer={() => setNeutre('aucun')}
+        />
+      )}
       {dialogue && (
         <BoiteDialogue
           titre="Retirer la section « Apparence » ?"

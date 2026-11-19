@@ -10,15 +10,17 @@ import { Bouton, Champ, ErreurChargement, PageIntrouvable, SqueletteFiche, useTo
 import './ecrans.css';
 import './fiche/fiche.css';
 import { PanneauSection, type Joueur } from './fiche/section';
-import type { FicheVue, Mention } from './fiche/types';
+import type { BlocOutil, FicheVue, Mention } from './fiche/types';
 import { badgeFiche, iconeDuType, typeParType, useTypes } from '../types-contexte';
 import { BlocMentions } from './fiche/mentions';
+import { BlocsOutils } from './fiche/blocs-outils';
 import { BlocContient } from './fiche/contient';
 import { EnteteFiche, type MessageIllustration } from './fiche/entete';
 import { blocsFicheVisibles, placeDe } from './fiche/registre-blocs-fiche';
 
 /** Stable empty list: the mentions block resets on a new array. */
 const AUCUNE: Mention[] = [];
+const AUCUNE_BLOC: BlocOutil[] = [];
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 
 type Etat =
@@ -261,6 +263,7 @@ function PageFiche() {
           suffixeMode={suffixe}
         />
       )}
+      {etat.k === 'ok' && <BlocsOutils blocs={fiche.blocs ?? AUCUNE_BLOC} />}
       {gestion && etat.k === 'ok' && (
         <div className={`ajout-section${formulaire ? ' ouvert' : ''}`}>
           {!formulaire && sections.length > 0 && (

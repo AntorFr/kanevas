@@ -1,3 +1,4 @@
+// ecrans: outil
 // Revérification de kanevas-outils-vaisseaux-regles (E-22) : où se tient la bande « périmée » et comment s'intitule la colonne
 // des résultats. Écrit depuis docs/ecrans.md (« Stale design (workshop) ») : la bande est dans la colonne de droite, au-dessus de
 // « Résultats », « Recalculer » dans la bande ; l'étiquette « Résultat enregistré » apparaît une seule fois, sous le titre

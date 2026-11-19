@@ -8,6 +8,7 @@ const STATUT: Record<CodeErreur, number> = {
   refuse: 403,
   invalide: 400,
   conflit: 409,
+  indisponible: 503,
 };
 
 /**

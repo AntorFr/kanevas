@@ -10,6 +10,7 @@ import { CarteHex, type ObjetsCarte } from './Carte';
 import { DialogueDocument, DialogueGraine, DialogueRenommer, DialogueSuppression } from './Dialogues';
 import { FormRoute, FormSysteme, FormZone, brouillonSystemeVide, brouillonZoneVide, type BrouillonSysteme, type BrouillonZone } from './Formulaires';
 import { PanneauRoute, PanneauZone, RetraitSysteme } from './PanneauxEcriture';
+import Systeme from './Systeme';
 import { PanneauSystemeVue, Recherche, Trajet, type EtatPanneau } from './Panneaux';
 import { CONFLIT, couleurServeur, tailleNom } from './ecriture';
 import type { Geste, PanneauSysteme, Reference, Resultat, Selection, SystemeCarte, Touche, VueGalaxie, VueTrajet } from './types';
@@ -38,7 +39,13 @@ function useEtroit(): boolean {
 }
 
 /** E-21: reading (P-18 steps 1–3) and, for the GM outside Player mode, writing (steps 4–5). */
-export default function Galaxie({ universId, cible, prealable, suffixeMode }: PropsOutil) {
+export default function Galaxie(props: PropsOutil) {
+  // The address of a system's inside carries its own read (`verifier`): that screen is E-23, not the map.
+  if (props.prealable !== null && typeof props.prealable === 'object' && 'astres' in props.prealable) return <Systeme {...props} />;
+  return <CarteGalaxie {...props} />;
+}
+
+function CarteGalaxie({ universId, cible, prealable, suffixeMode }: PropsOutil) {
   const [galaxie, setGalaxie] = useState(prealable as VueGalaxie);
   const suffixe = suffixeMode ?? '';
   const baseNue = `/api/univers/${universId}/outils/swn/galaxie/galaxies/${galaxie.id}`;
@@ -115,6 +122,14 @@ export default function Galaxie({ universId, cible, prealable, suffixeMode }: Pr
       setTimeout(() => panneauRef.current?.scrollIntoView({ block: 'nearest' }), 0);
     }
   }, []);
+
+  // A drawn hexagon the GM has just anchored (hidden) is now a defined system: the panel follows it.
+  useEffect(() => {
+    if (selection?.k !== 'genere') return;
+    for (const s of objets.systemes.values()) {
+      if (s.q === selection.q && s.r === selection.r) { setSelection({ k: 'systeme', cle: s.cle, secret: s.secret }); return; }
+    }
+  }, [objets, selection]);
 
   const surIntrouvable = useCallback(() => setIntrouvable(true), []);
 
@@ -317,9 +332,14 @@ export default function Galaxie({ universId, cible, prealable, suffixeMode }: Pr
                 selection={selection} etat={panneau} secret={selection.k === 'systeme' ? selection.secret : undefined} mesure={mesure}
                 onDepuis={(r) => { setDepart(r); setResultat(null); }} onVers={(r) => { setArrivee(r); setResultat(null); }}
                 onReessayer={() => setEssai((n) => n + 1)}
+                adresseInterieur={(q, r) => `/univers/${universId}/outils/swn/galaxie/${galaxie.id}/interieur/${q}/${r}`}
                 gestes={mj ? {
                   onModifier: () => systemeSel && selection.k === 'systeme' && modifier(systemeSel, selection.cle),
                   onRetirer: () => setDialogue('retirer'),
+                  masque: {
+                    universId, galaxieId: galaxie.id, versionGalaxie: galaxie.version, onFait: rafraichir,
+                    onRecharger: () => { setEssai((n) => n + 1); rafraichir(); }, onIntrouvable: surIntrouvable,
+                  },
                   onPromouvoir: (q, r) => setFormulaire({ k: 'systeme', mode: 'promouvoir', q, r, brouillon: brouillonSystemeVide(), nbRoutes: 0, n: Date.now() }),
                 } : undefined}
               />

@@ -3,16 +3,27 @@
 - Language (public repository): code, comments, README, `docs/` (the product's design docs
   included), ADRs and release notes in **English**; `.agent/*` stays French. Existing French
   docs are translated by a feature of their own, not rewritten in passing: new text is English.
-- Attested tests: `npm run tests:attestes` plays the whole suite (typecheck, build, every test,
-  none skipped, two files at a time by default, `--concurrence N` to change it) on the committed tree and rewrites `rapport-tests.json` (git-ignored) at each run; `-- --publier` posts the
-  `tests-complets` commit status when green. The image build and the `main` rule require it; the
-  CI runs no test by itself.
+- Attested tests: the suite is declared in `.sdlc.yaml` (`tests:`), and `attester --publier` plays it on the pushed
+  commit and posts the `tests-complets` status when green — the only way to post it, never by hand. `npm run tests:attestes`
+  is just the suite (typecheck, build, every test, two files at a time by default, `--concurrence N` to change it) and writes
+  the per-test TAP report `resultats.tap` (git-ignored); it writes no report and posts no status. The image build (tag `v*`
+  only) and the `main` rule require the status; no workflow plays a test or runs on a branch push or a pull request.
+  Three more keys under `tests:` (not levels): `installation:` `npm ci && npm run build:wasm` (played once per extraction), `fichiers:` `node scripts/rejouer-tests.mjs --fichiers {tests}` (prints `name<TAB>file`, plays nothing) and `outillage:` `[package.json, scripts/]` (what the chain takes from `origin/main`); `ecrans:` and `rejouer:` start no `npm ci` and pass `--installe` after their argument (`tests:ecrans -- {base} --installe`, `rejouer-tests.mjs {tests} --installe`), which skips only `build:wasm`.
+  Five levels in `.sdlc.yaml` (and `ecrans_liste:` `node scripts/niveaux-tests.mjs --liste ecrans {base}`, not a level: it names the screen tests `ecrans:` would play, without `npm ci`): `commande:` (the whole suite, above, about 37 min), `fiche:` `npm ci && npm run tests:fiche -- {base}` (the suite minus the screen
+  tests the change does not touch), `ecrans:` `npm run tests:ecrans -- {base} --installe` (only the chosen screen tests), `local:` `npm ci && npm run tests:local` (every file but
+  `src/e2e/`, no `build`, no Playwright; about 4 min) and `rejouer:` `node scripts/rejouer-tests.mjs {tests} --installe` (only the named
+  tests, `describe > test` as in `resultats.tap`; non-zero for a name no file declares as a literal test title). A screen test declares its screens on its first line (`// ecrans: a, b`);
+  read a choice without playing it: `node scripts/niveaux-tests.mjs --liste ecrans|fiche <base>`; durations measured in the README. The `tests-complets` status says its level (description starting with « niveau »), the tag build refuses one that does not. Test choice logic: `scripts/niveaux-tests.mjs`.
+- Before writing a screen test (`src/e2e/`): prove an effect (a row, a right, a status code, a count) through its door (`inject` in `src/routes/` or a service test), keep on screen only what the user sees; rule and inventory in `docs/tests-ecran/README.md`, and every new screen test needs a line in a `docs/tests-ecran/lot-*.md` or `src/scripts-tests/inventaire-ecrans.test.ts` fails.
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
 - Build and test in containers (reference). In a pod without Docker, Node >= 20 on the host runs the same commands
-  (`npm ci && npm run typecheck && npm test`), see the README:
-  `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"`
+  (`npm ci && npm run typecheck && npm test`), see the README. The e2e tests need Playwright and Chromium and **fail** without
+  them (AD-harnais-4): `node:20-bookworm-slim` has neither, so the Docker route covers typecheck and the non-e2e tests only;
+  `npm ci && npm run tests:attestes` (which installs Playwright locally) plays everything:
+  `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"` (e2e files fail there)
+- Rust → Wasm (`rust/`, AD-rust-1 to 10): the Node-only Docker command above is not enough any more, it has no Rust; `npm run build:wasm` (needs `cargo`, the wasm target and `wasm-bindgen`, see README « Rust / WebAssembly ») must have run before `typecheck`, `build` and `npm test`; `tests:attestes` runs it itself.
 - `npm run typecheck` : `tsc --noEmit` on the API and on `frontend/`. `npm test` : `node --import tsx --test`
   on the files found by `find` in `src` and `frontend/src` — Node 20 (CI, image) does not expand globs
   itself, so never pass it a quoted `src/**` pattern; no extra test runner
@@ -43,7 +54,7 @@
   `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET); the seven brand files of `frontend/public` (`favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `site.webmanifest`) are served before the guard, without a session (AD-135). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
-  the sidebar for the screens of a universe; sidebar items live in `items.ts` and show only when a registered screen answers
+  the sidebar for the screens of a universe; sidebar items live in `frontend/src/items.ts` and show only when a registered screen answers
   their address. The two outside-universe links (« Mes univers », « Systèmes de jeu ») are fixed in
   `Barre.tsx` and the universe selector menu. Colours only through `frontend/src/ui/tokens.css` (`docs/charte.md`). Tests of the
   built-app routes set `FRONTEND_DIR` (under `NODE_ENV=test` no build is looked up otherwise).
@@ -175,4 +186,6 @@
   `contenu` (the source) — `vueSection` gives `peutEcrire: false` — except the assistant's `'markdown'` form. `creerProposition` and the
   import (`code: 'section_geree'`, before the transaction) refuse a managed section too.
 - Sheet visibility (`kanevas-fiche-mj-seul`, B-57, rule 11 of `docs/donnees.md`): a sheet has none of its own. `visibleJoueurs` is computed in the query (`SQL_VISIBLE_JOUEURS`, `services/fiches.ts`) from `sections.joueurs_lisent` and given to the GM outside player mode only; never store it in a column, never recompute it in the browser, never count the author's right of a player as « visible ».
+- System writes (`kanevas-carte-spatiale-edition`, AD-edition-1): `services/swn/ecriture-systeme.ts` is the only writer of `swn_astres` and `swn_formations` (anchoring included, one transaction per call); a source-scan test fails on any other `INSERT`/`UPDATE`/`DELETE` of these tables.
+- System visibility (`kanevas-carte-spatiale-masquer`, AD-masquer-1, B-97): `services/swn/lisibilite.ts` (`systemeLisible`, `lisibleAuNiveau`, `sqlSystemeLisible`, `hexagonesMasques`) is the only place that decides whether a reader may see a system; no other read reads `swn_systemes.secret`, and a source-scan test (`lisibilite.test.ts`) fails on any file of `src/services/` that names it outside six listed whole-file exceptions: `lisibilite.ts` (also `estMasque`, `niveauLecture`), `ecriture-systeme.ts` (the writes and the GM's state read `etatMasque`), `ecriture-carte.ts`, `import-galaxie.ts`, `document-source.ts` (GM level) and `galaxies.ts` (row types, trial galaxies, zones' filter).
 - Tool data deletion (`kanevas-outils-retrait`, D-1 to D-8): `services/outils-donnees.ts` is the only caller of a module's `donnees` and of the catalogue port's `compter` / `effacer`; `libererSections` (`sections-gerees.ts`) is the only way to free a lock when data go (sheets and their text are never deleted); the `…/suppression` routes sit beside `garde(...)` (they answer for a disabled tool); no assistant tool and no import route deletes tool data. Disabling erases nothing.

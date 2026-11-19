@@ -44,3 +44,26 @@ export type Geste =
 export type Touche =
   | { k: 'hex'; q: number; r: number; genere: boolean }
   | { k: 'systeme'; systeme: SystemeCarte };
+
+/** What `GET …/galaxies/:gid/interieur/:q/:r` returns (E-23); no key of a hidden thing is ever in it. */
+export interface AstreSysteme {
+  cle: string; genre: 'etoile' | 'planete' | 'lune' | 'comete'; parent_cle: string | null; etoile_rang: number; type: string;
+  nom: string | null; orbite: number | null; heure: number; taille: number; aspect?: Record<string, unknown>;
+  /** Plain text, when the answer carries one. */
+  description?: string | null;
+  /** The sheet the body is linked to, when the reader reads it (AD-liens-2); `null` or absent otherwise. */
+  fiche?: FicheLiee | null;
+  /** GM only. */
+  version?: number;
+}
+export interface FicheLiee { id: number; titre: string }
+export interface FormationSysteme { cle: string; forme: 'anneau' | 'nuage'; nom: string | null; parametres: Record<string, unknown>; etoile_rang: number; version?: number; fiche?: FicheLiee | null;
+  /** Plain text, for the writing GM only. */
+  description?: string }
+export interface InterieurSysteme {
+  q: number; r: number; nom: string | null; etat: 'tire' | 'defini'; transition?: number; astres: AstreSysteme[]; formations: FormationSysteme[];
+  /** The GM outside Player mode only (AD-edition-2): the write tokens. Absent for everyone else. */
+  peutEcrire?: true; versionSysteme?: number;
+}
+/** An exit towards a neighbouring system (`…/interieur/:q/:r/sorties`); a hidden neighbour or a private route has no entry. */
+export interface SortieSysteme { q: number; r: number; heure: number; nom: string | null }

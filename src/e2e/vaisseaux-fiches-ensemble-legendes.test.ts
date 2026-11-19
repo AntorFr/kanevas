@@ -1,3 +1,4 @@
+// ecrans: outil
 // Feature-level browser test of kanevas-outils-format-vaisseaux-fiches (B-82, E-22): the captions of the choice rows.
 // Written from docs/ecrans.md (« Choice rows »). Expected values are literals, calculated by hand; the trial catalogue is
 // written here and absent from the seed. Selectors are roles and visible texts.
