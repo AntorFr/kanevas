@@ -72,7 +72,7 @@ describe('tests d’écran hors écran (R25) : les 19 fichiers retirés et la du
   test('19 fichiers retirés : absents de src/e2e, présents dans avant.md, toutes leurs lignes « retiré » ; 256 restent (+ 7 de l’epic)', () => {
     assert.equal(retires.length, 19);
     const ecrans = readdirSync('src/e2e').filter((f) => f.endsWith('.test.ts'));
-    assert.equal(ecrans.length, 256 + 11); // 256 de l’inventaire + 11 fichiers battlemap de l’epic (lot-mediatheque.md)
+    assert.equal(ecrans.length, 256 + 12); // 256 de l’inventaire + 12 fichiers battlemap de l’epic (lot-mediatheque.md)
     for (const f of retires) {
       assert.equal(existsSync(f), false, `${f} existe encore`);
       assert.ok(avant.includes(`\`${f}\``), `${f} absent de avant.md`);
