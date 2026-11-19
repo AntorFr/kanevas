@@ -38,6 +38,7 @@ import {
   supprimerFichier,
 } from './stockage.js';
 import { empreinteFichier } from './empreintes.js';
+import { lirePrecondition, RAISON_EMPREINTE_PERIMEE, verifierPrecondition } from './precondition.js';
 import type { Acteur, PieceJointeVue, Role, SectionRow } from './types.js';
 
 /**
@@ -96,10 +97,12 @@ export interface ResultatFichierImport {
   id: number;
   etat: 'creee' | 'mise_a_jour' | 'inchangee';
   avertissements: string[];
+  /** Fingerprint of the file after the write (name, visibility, bytes; AD-139). */
+  empreinte: string;
 }
 
 /**
- * Ensures an imported library file (AD-104, B-48). Unlike an interactive upload, the import
+ * Ensures an imported library file (AD-104). Unlike an interactive upload, the import
  * may send its visibility (omitted: « joueurs » at creation, untouched on a replay, B-91). The origin key, never the name, identifies the file.
  * Bytes, metadata and batch outcome are committed together; an unchanged upload keeps its disk token.
  */
@@ -111,6 +114,7 @@ export async function assurerFichier(
   entree: { nom: unknown; visibilite?: unknown; flux: FluxEntrant | null },
   maintenant: Date = new Date(),
   racine: string = attachmentsDir,
+  entetes: Record<string, string | string[] | undefined> = {},
 ): Promise<ResultatFichierImport> {
   const acteur = { compteId: jeton.compteId };
   const autoriserImport = () => {
@@ -128,6 +132,7 @@ export async function assurerFichier(
   let ancienDisque: string | null = null;
   let valide = false;
   try {
+    const precondition = lirePrecondition(entetes, { creation: true });
     if (!cleValide(cle)) invalider('cle', "Clé d'origine invalide.");
     if (typeof entree.nom !== 'string') invalider('nom', 'Nom du fichier manquant.');
     const nom = nomPropre(entree.nom as string);
@@ -138,6 +143,17 @@ export async function assurerFichier(
       invalider('visibilite', 'La visibilité doit être « joueurs » ou « mj ».');
     }
     if (!entree.flux) invalider('fichier', 'Champ « fichier » manquant.');
+    // The precondition is held before a byte is stored; it is checked again in the transaction (the upload yields).
+    const empreinteCourante = async (): Promise<string | null> => {
+      const c = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND cle_origine = ?')
+        .get(jeton.universId, cle) as FichierRow | undefined;
+      if (!c) return null;
+      const sha256 = await sha256De(c);
+      return sha256 === null ? null : empreinteFichier({ nom: c.nom, visibilite: c.visibilite, sha256 });
+    };
+    if (precondition.siEmpreinte !== undefined || precondition.siAbsent) {
+      verifierPrecondition(precondition, await empreinteCourante());
+    }
     const ecrit = await ecrireFlux(entree.flux!, racine);
     temporaire = ecrit.temporaire;
     if (ecrit.taille === 0) invalider('fichier', 'fichier vide : 0 octet, refusé');
@@ -146,7 +162,14 @@ export async function assurerFichier(
       // Uploading yields to other requests: check the role and the batch again before writing.
       autoriserImport();
       const courant = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND cle_origine = ?')
-        .get(jeton.universId, cle) as (FichierRow & { dernier_import: string | null }) | undefined;
+        .get(jeton.universId, cle) as FichierRow | undefined;
+      // Same fingerprint as the read: the stored bytes' SHA-256 is the column (set at each write).
+      if (!courant || courant.empreinte !== null) {
+        verifierPrecondition(
+          precondition,
+          courant ? empreinteFichier({ nom: courant.nom, visibilite: courant.visibilite, sha256: courant.empreinte! }) : null,
+        );
+      }
       const avertissements: string[] = [];
       let id: number;
       let etat: ResultatFichierImport['etat'];
@@ -154,38 +177,27 @@ export async function assurerFichier(
         nouveauDisque = promouvoir(ecrit.temporaire, racine);
         const info = db.prepare(
           `INSERT INTO fichiers (univers_id, nom, type, taille, disque, empreinte, visibilite,
-             cle_origine, ajoute_par, ajoute_le, dernier_import) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             cle_origine, ajoute_par, ajoute_le) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         ).run(jeton.universId, nom, type, ecrit.taille, nouveauDisque, ecrit.empreinte, visibilite,
-          cle, jeton.compteId, maintenant.toISOString(), JSON.stringify({ nom, visibilite }));
+          cle, jeton.compteId, maintenant.toISOString());
         id = Number(info.lastInsertRowid);
         etat = 'creee';
         // The sheets that waited for this key now point at the file, in this transaction (AD-111).
         avertissements.push(...resoudreFichierEnAttente(db, jeton.universId, cle, { id, type }));
       } else {
         id = courant.id;
-        const marque = courant.dernier_import
-          ? JSON.parse(courant.dernier_import) as { nom?: string; visibilite?: Visibilite }
-          : {};
-        const noms = courant.nom === nom || marque.nom === courant.nom;
-        const visibilites = envoyee && (courant.visibilite === visibilite || marque.visibilite === courant.visibilite);
-        const nomEcrit = noms ? nom : courant.nom;
-        const visibiliteEcrite = visibilites ? visibilite as Visibilite : courant.visibilite;
-        if (noms) marque.nom = nom;
-        else avertissements.push('nom modifié dans Kanevas : non écrasé');
-        if (visibilites) marque.visibilite = visibilite as Visibilite;
-        else if (envoyee) avertissements.push('visibilité modifiée dans Kanevas : non écrasée');
+        // The script's name wins; its visibility too when it sends one (B-47, B-91), else Kanevas's stays.
+        const visibiliteEcrite = envoyee ? visibilite as Visibilite : courant.visibilite;
         const octetsChanges = courant.empreinte !== ecrit.empreinte;
         if (octetsChanges) {
           nouveauDisque = promouvoir(ecrit.temporaire, racine);
           ancienDisque = courant.disque;
         }
-        const change = octetsChanges || nomEcrit !== courant.nom || visibiliteEcrite !== courant.visibilite;
-        const json = JSON.stringify(marque);
-        if (change || json !== courant.dernier_import) {
+        const change = octetsChanges || nom !== courant.nom || visibiliteEcrite !== courant.visibilite;
+        if (change) {
           db.prepare(`UPDATE fichiers SET nom = ?, visibilite = ?, type = ?, taille = ?, disque = ?,
-            empreinte = ?, dernier_import = ? WHERE id = ?`)
-            .run(nomEcrit, visibiliteEcrite, type, ecrit.taille, nouveauDisque ?? courant.disque,
-              ecrit.empreinte, json, id);
+            empreinte = ? WHERE id = ?`)
+            .run(nom, visibiliteEcrite, type, ecrit.taille, nouveauDisque ?? courant.disque, ecrit.empreinte, id);
         }
         etat = change ? 'mise_a_jour' : 'inchangee';
       }
@@ -198,12 +210,25 @@ export async function assurerFichier(
         }));
         noterDansLot(db, lotId, 'fichiers', issues[etat], rapport, maintenant);
       }
-      return { id, etat, avertissements };
+      const f = db.prepare('SELECT nom, visibilite, empreinte FROM fichiers WHERE id = ?').get(id) as
+        { nom: string; visibilite: Visibilite; empreinte: string };
+      return {
+        id, etat, avertissements,
+        empreinte: empreinteFichier({ nom: f.nom, visibilite: f.visibilite, sha256: f.empreinte }),
+      };
     });
     valide = true;
     if (ancienDisque) supprimerFichier(ancienDisque, racine);
     return resultat;
   } catch (e) {
+    if (e instanceof ErreurService && e.detail === 'empreinte_perimee') {
+      if (lotId !== null) {
+        noterDansLot(db, lotId, 'fichiers', 'refusees', [
+          { cle, objet: 'fichier', raison: RAISON_EMPREINTE_PERIMEE, gravite: 'refus', code: 'empreinte_perimee' },
+        ], maintenant);
+      }
+      throw e;
+    }
     if (e instanceof ErreurService && e.code === 'invalide') {
       const erreur = e.champ ? e : new ErreurService('invalide', e.message, undefined, 'nom');
       if (lotId !== null) {
@@ -1001,13 +1026,10 @@ export function joindreParImport(db: Db, sectionId: number, fichierId: number): 
   return true;
 }
 
-const lireJsonObjet = (brut: string | null): Record<string, unknown> =>
-  brut === null ? {} : (JSON.parse(brut) as Record<string, unknown>);
-
 /**
  * The file of `cle` has just arrived (AD-111, AD-104): the texts that carried its key get `fichier:<id>`, the
  * joined references and the illustration that waited are set, and the rows go — all in the caller's
- * transaction, with neither `version`, nor `version_importee`, nor `modifie_le` moving. Returns the warnings.
+ * transaction, with neither `version` nor `modifie_le` moving. Returns the warnings.
  */
 export function resoudreFichierEnAttente(
   db: Db,
@@ -1032,8 +1054,8 @@ export function resoudreFichierEnAttente(
     if (l.maniere === 'texte') {
       supprimer.run(l.id);
     } else if (l.maniere === 'joint') {
-      const s = db.prepare('SELECT titre, dernier_import FROM sections WHERE id = ?').get(l.section_id) as
-        | { titre: string; dernier_import: string | null }
+      const s = db.prepare('SELECT titre FROM sections WHERE id = ?').get(l.section_id) as
+        | { titre: string }
         | undefined;
       if (!s) continue;
       // The reference was already pushed with the sheet: resolving it changes nothing a reader sees (`systeme`, AD-147).
@@ -1041,16 +1063,11 @@ export function resoudreFichierEnAttente(
         avertissements.push(`section « ${s.titre} » : ${MAX_FICHIERS_JOINTS} fichiers joints au plus, « ${cle} » reste en attente`);
         continue;
       }
-      const marque = lireJsonObjet(s.dernier_import);
-      const fichiers = (marque.fichiers ?? { ecrits: [] }) as { ecrits: number[] };
-      if (!fichiers.ecrits.includes(fichier.id)) fichiers.ecrits.push(fichier.id);
-      marque.fichiers = fichiers;
-      db.prepare('UPDATE sections SET dernier_import = ? WHERE id = ?').run(JSON.stringify(marque), l.section_id);
       supprimer.run(l.id);
     } else {
       supprimer.run(l.id);
-      const f = db.prepare('SELECT illustration_fichier_id AS ill, dernier_import FROM fiches WHERE id = ?').get(l.fiche_id) as
-        | { ill: number | null; dernier_import: string | null }
+      const f = db.prepare('SELECT illustration_fichier_id AS ill FROM fiches WHERE id = ?').get(l.fiche_id) as
+        | { ill: number | null }
         | undefined;
       if (!f) continue;
       if (!estImage(fichier.type)) {
@@ -1059,9 +1076,6 @@ export function resoudreFichierEnAttente(
         avertissements.push(`illustration modifiée dans Kanevas : « ${cle} » non posée`);
       } else {
         db.prepare('UPDATE fiches SET illustration_fichier_id = ? WHERE id = ?').run(fichier.id, l.fiche_id);
-        const marque = lireJsonObjet(f.dernier_import);
-        marque.illustration = { demande: cle, ecrit: fichier.id };
-        db.prepare('UPDATE fiches SET dernier_import = ? WHERE id = ?').run(JSON.stringify(marque), l.fiche_id);
       }
     }
   }

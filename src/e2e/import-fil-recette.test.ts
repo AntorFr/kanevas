@@ -17,8 +17,7 @@
 //  B-46 E-18      « Révoquer » dialog and toast, row « Révoqué »; Mira row « Inactif » once Joueuse.
 //  B-47 nominal   PUT lieu:port-sel -> creee; replay -> inchangee; one single fiche; six types accepted; changed title -> mise_a_jour.
 //  B-47 échec     compte_rendu without campaign -> 400 champ campagne, unknown type -> 400 champ type, nothing written.
-//  B-48           section title / section content / section audience / fiche title changed in Kanevas then replay ->
-//                 not overwritten, batch warns; the rest of the payload is written.
+//  B-48           withdrawn (kanevas-synchro-ecriture-retrait-fiches): a replay writes what it carries, the batch warns only of an unknown parent or file.
 //  B-49           E-18 batches: « Fiches : 1 créée », « Fiches : 1 inchangée », refusals and warnings unfold with key and reason;
 //                 empty states; a refused PUT without batch leaves no trace.
 //  B-50           creeLe kept; E-9 menu « ⋯ » « Importée · créée le 3 mars 2021 » for the MJ only;
@@ -335,12 +334,8 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
     await put(m, jeton, 'cr:seance-1', { type: 'compte_rendu', titre: 'Séance 1', sections: [] }, id);
     await put(m, jeton, 'monstre:gob', { type: 'monstre', titre: 'Gobelin', sections: [] }, id);
     await m.api('POST', `${m.essai}/lots/${id}/clore`, jeton);
-    // warnings: human title of the section and of the fiche, then replay
-    const f = (await fichesDe(m, 'antor')).find((x) => x.titre === 'Port-Sel')!;
-    const sec = ((await m.session('antor', 'GET', `/api/univers/${m.essai}/fiches/${f.id}`)).json.sections as Any[]).find((s) => s.titre === 'Description')!;
-    await m.session('antor', 'PATCH', `/api/univers/${m.essai}/fiches/${f.id}/sections/${sec.id}`, { titre: 'Aperçu' });
-    m.app.db.prepare('UPDATE fiches SET titre = ? WHERE id = ?').run('Port-Sel-sur-Brume', f.id);
-    await pousserEnLot(m, jeton, 'lieu:port-sel', PORT_SEL);
+    // warnings (B-48 is gone: a replay warns only of what it cannot write): an unknown parent and an unknown illustration
+    await pousserEnLot(m, jeton, 'lieu:port-sel', { ...PORT_SEL, parent: 'lieu:absent', illustration: 'img:absente' });
 
     const { ctx, page } = await ouvrirSession(browser, m, 'antor');
     await ouvrirE18(page, m);
@@ -362,8 +357,9 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
     await attendre(page);
     const t2 = await texte(page);
     assert.match(t2, /lieu:port-sel/);
-    assert.match(t2, /titre modifié dans Kanevas : non écrasé/);
-    assert.match(t2, /section « Aperçu » : titre modifié dans Kanevas : non écrasé/);
+    assert.match(t2, /parent lieu:absent inconnu : parent laissé tel quel/);
+    assert.match(t2, /fichier « img:absente » inconnu : illustration en attente/);
+    assert.doesNotMatch(t2, /non écrasé/);
     await page.screenshot({ path: join(SHOTS, 'e18-avertissements.png'), fullPage: true });
     await ctx.close();
   });

@@ -107,13 +107,13 @@ test('critère : une fiche de plus dans le JSON → 1 créée, 15 inchangées', 
 const campagneEneria = () =>
   app.db.prepare("SELECT id, json_extract(charge, '$.statut') AS statut FROM fiches WHERE type = 'aventure' AND titre = 'Éneria'").get() as { id: number; statut: string };
 
-test('critère : un statut d’aventure changé à la main n’est pas écrasé au rejeu suivant', async () => {
+test('critère : un statut d’aventure changé à la main revient à celui du script au rejeu suivant', async () => {
   const c = campagneEneria();
   assert.equal(c.statut, 'en_preparation');
   changerStatutFiche(app.db, { compteId: antor }, univers, c.id, 'terminee');
   const r = await pousser();
   assert.equal(r.code, 0, r.err + r.out);
-  assert.equal(campagneEneria().statut, 'terminee');
+  assert.equal(campagneEneria().statut, 'en_preparation');
 });
 
 test('critère : le scénario de 60 000 caractères est importé en entier, sous sa campagne, avec son lien par clé', () => {

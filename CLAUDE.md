@@ -47,7 +47,7 @@
 - Attachments (AD-7, AD-65): bytes under `<db dir>/attachments/` (`ATTACHMENTS_DIR`), written only through
   `services/stockage.ts` (tmp/ then rename; `tmp/` emptied at startup). `ajouterFichier` in
   `services/fichiers.ts` is the one upload function of the media library for the screens (AD-117: every file is a row of `fichiers`, its
-  visibility deduced from where it is added, never sent by the client); the import API's `assurerFichier` (same service, `PUT /fichiers/:cle`, AD-104) is the only other writer: its visibility comes from the script (`joueurs` or `mj`, B-48 protects it), and it resolves `fichiers_attente`; `fichierLisible` is the one read rule; only
+  visibility deduced from where it is added, never sent by the client); the import API's `assurerFichier` (same service, `PUT /fichiers/:cle`, AD-104) is the only other writer: its visibility comes from the script (`joueurs` or `mj`; B-48 is retired, a replay without it leaves the file's), and it resolves `fichiers_attente`; `fichierLisible` is the one read rule; only
   `services/` writes `fichiers*`); map backgrounds
   (`services/cartes.ts`, AD-69) go through `stockage.ts` directly, never write the volume themselves. The type is sniffed from the bytes, never trusted.
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
@@ -83,7 +83,7 @@
   names an adventure the caller reads (`aventureLue`, `droits.ts`); a report's adventure leaves the API only for a reader of it
   (`campagneId`/`campagneNom`, `campagneDuCompteRendu`), `campagneSupprimee` only for a GM when the id matches no sheet — a closed
   and a deleted adventure are the same silence for anyone else, `charge.campagne_id` included. A sheet's title is written only by
-  `renommerFiche` (it leaves `dernier_import` alone, AD-119); sheets and universes are deleted only by `supprimerFiche` and
+  `renommerFiche` (AD-119); sheets and universes are deleted only by `supprimerFiche` and
   `supprimerUnivers` (AD-119; the bilan of an adventure adds `taches`, `scenarios`, `comptesRendus`); a compte-rendu is deleted as a sheet.
 - Search and relations (`kanevas-relier-chercher`): search is `listerFiches({recherche})`, never a second
   function (AD-63). The FTS5 indexes (migration 0005) only deliver candidate ids and are kept by SQL
@@ -135,7 +135,7 @@
 - Markdown (AD-95, AD-113): the only renderer is `rendreMarkdown` in `services/markdown.ts` (`html: false`, links limited to http/https/mailto); a view returns `html` to everyone and the source `contenu` only to who may write it — never render elsewhere, never ship the source to a reader. The ceiling is 100 000 characters (`MAX_CONTENU_SECTION`).
 - Import of sheets (`kanevas-fil-fiches`): `PUT /fiches/:cle` calls `assurerFiche` (`services/import-fiches.ts`), which composes
   `creerFiche`, `renommerFiche`, `changerTypeFiche` and the section services, plus a few direct updates of its own
-  (`modifie_le`, `dernier_import`, `cle_origine`, `version_importee` — import bookkeeping only; content still goes through the services). Refusals are validated **before** the transaction
+  (`modifie_le`, `cle_origine` — bookkeeping only; content still goes through the services). Refusals are validated **before** the transaction
   (`ErreurService.champ`, sent as `champ` with code `invalide`); with `?lot=` they count « 1 refusée » in the batch, without it they leave
   no trace; a closed batch answers 409 `lot_clos`. The stub token is `JETON_BOUCHON` (`bouchon/depart.ts`), seeded in « Essai Kanka ».
 - Public content (feature `kanevas-import-secrets`, migration 0011, AD-114): `sections.contenu_public` is `contenu` without its `:::mj` blocks,

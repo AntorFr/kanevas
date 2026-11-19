@@ -134,15 +134,15 @@ test('B-91 : visibilité envoyée sur un fichier non retouché le change, dans l
   assert.equal(vis(app, id), 'joueurs');
 });
 
-test('B-48 gardée : visibilité retouchée dans Kanevas, rejeu avec visibilité ignoré après un rejeu sans', async () => {
+test('B-47 : visibilité retouchée dans Kanevas, un rejeu sans visibilité la garde, un rejeu avec la reprend, sans avertissement', async () => {
   const { put, app } = await monter();
   const id = (await put('img:b', PNG, { nom: 'b.png', visibilite: 'mj' })).json().id;
   app.db.prepare("UPDATE fichiers SET visibilite = 'joueurs' WHERE id = ?").run(id);
   await put('img:b', PNG, { nom: 'b.png' });
   assert.equal(vis(app, id), 'joueurs');
   const r = await put('img:b', PNG, { nom: 'b.png', visibilite: 'mj' });
-  assert.deepEqual(r.json().avertissements, ['visibilité modifiée dans Kanevas : non écrasée']);
-  assert.equal(vis(app, id), 'joueurs');
+  assert.deepEqual(r.json().avertissements, []);
+  assert.equal(vis(app, id), 'mj');
 });
 
 test('B-91 : un rejeu sans visibilité ne désarme pas la marque : le script peut ensuite changer un fichier non retouché', async () => {

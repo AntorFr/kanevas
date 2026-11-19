@@ -39,8 +39,7 @@ extra label and four relation probes are acceptance data. No credentials are sto
 
 Expected first batch: 15 sheets (2 campaign and 2 scenario adventures among them), 3 files and 3 relations created;
 one warning for the unknown relation target, zero refusals. Replay creates nothing;
-the unknown relation still warns and Nyx still waits. Change an adventure’s status in Kanevas
-and replay: it stays changed, with « statut modifié dans Kanevas : non écrasé ». Omitting
+the unknown relation still warns and Nyx still waits. Omitting
 `statut` leaves an existing status alone; a new adventure defaults to `en_preparation`. `refus.json` produces one refused
 sheet with `champ: campagne` and an unknown-campaign reason; the client prints the closed
 report and exits with status 1. A connection or fatal HTTP error leaves the batch open;

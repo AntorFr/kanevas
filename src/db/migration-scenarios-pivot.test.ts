@@ -60,7 +60,6 @@ test('0017 convertit campagnes et scénarios en fiches aventure, tâches et CR r
     assert.equal(couronne.sous_type, 'Campagne');
     assert.equal(JSON.parse(couronne.charge).statut, 'en_cours');
     assert.equal(couronne.cle, 'couronne');
-    assert.equal(couronne.dernier_import, '{"nom":"La Couronne brisée"}');
     assert.equal(couronne.parent_id, null);
     const bal = par('Le Bal masqué');
     assert.equal(JSON.parse(bal.charge).statut, 'en_preparation');
@@ -79,7 +78,6 @@ test('0017 convertit campagnes et scénarios en fiches aventure, tâches et CR r
     assert.ok(!sec.contenu_public.includes(':::'), 'contenu_public ne porte aucun bloc :::mj');
     assert.ok(!sec.contenu_public.includes('Secret'));
     assert.equal(sec.version, 4);
-    assert.equal(sec.version_importee, 3);
     assert.equal(acte2.cle, 'acte-2');
     const acte1 = par('Acte I');
     assert.equal((db.prepare("SELECT contenu_public FROM sections WHERE fiche_id = ?").get(acte1.id) as any).contenu_public, 'Tout public');

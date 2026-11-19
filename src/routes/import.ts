@@ -1,4 +1,5 @@
-import { assurerRelations } from '../services/import-relations.js';
+import { assurerRelations, modifierRelationImport, retirerRelationImport } from '../services/import-relations.js';
+import { ecrireSectionImport, retirerSectionImport } from '../services/import-sections.js';
 import { LIMITE_RELATIONS } from '../services/relations.js';
 import multipart from '@fastify/multipart';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
@@ -16,6 +17,7 @@ import { importerGalaxieParJeton } from '../services/swn/import-galaxie-lot.js';
 import { listerGalaxiesImport } from '../services/swn/import-galaxie.js';
 import { OUTIL_GALAXIE } from '../services/swn/galaxies.js';
 import { lireContexteImport } from '../services/import.js';
+import { modifierEnTete } from '../services/import-entete.js';
 import { assurerFiche, lotDeRequete, supprimerFicheImport } from '../services/import-fiches.js';
 import { listerHistorique } from '../services/historique.js';
 import { assurerFichier, listerFichiersApi, MAX_FICHIERS_JOINTS, ouvrirFichierParReference } from '../services/fichiers.js';
@@ -191,7 +193,42 @@ export async function registerImportRoutes(app: FastifyInstance) {
       scope.put(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request) => {
         const { cle } = request.params as { cle: string };
         const { lot } = request.query as { lot?: unknown };
-        return assurerFiche(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
+        return assurerFiche(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge(), request.headers);
+      });
+
+      // Targeted write of the header (B-82, AD-ecriture-1): only the fields sent move; a former key reaches the sheet (AD-146).
+      scope.patch(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request) => {
+        const { cle } = request.params as { cle: string };
+        const { lot } = request.query as { lot?: unknown };
+        return modifierEnTete(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, request.headers, app.horloge());
+      });
+
+      // Targeted write of one section (B-83, AD-ecriture-1): the key is read on the addressed sheet only.
+      scope.put(`${base}/fiches/:cle/sections/:scle`, { config: { portee: 'contenu' } }, async (request) => {
+        const { cle, scle } = request.params as { cle: string; scle: string };
+        const { lot } = request.query as { lot?: unknown };
+        return ecrireSectionImport(app.db, jetonDe(request), lotDeRequete(lot), cle, scle, request.body, request.headers, app.horloge());
+      });
+
+      scope.delete(`${base}/fiches/:cle/sections/:scle`, { config: { portee: 'contenu' } }, async (request, reply) => {
+        const { cle, scle } = request.params as { cle: string; scle: string };
+        const { lot } = request.query as { lot?: unknown };
+        retirerSectionImport(app.db, jetonDe(request), lotDeRequete(lot), cle, scle, request.headers, app.horloge());
+        return reply.code(204).send();
+      });
+
+      // One relation (B-84): nature and qualifier; both guards of AD-64 hold.
+      scope.patch(`${base}/relations/:rid`, { config: { portee: 'contenu' } }, async (request) => {
+        const { rid } = request.params as { rid: string };
+        const { lot } = request.query as { lot?: unknown };
+        return modifierRelationImport(app.db, jetonDe(request), lotDeRequete(lot), rid, request.body, request.headers, app.horloge());
+      });
+
+      scope.delete(`${base}/relations/:rid`, { config: { portee: 'contenu' } }, async (request, reply) => {
+        const { rid } = request.params as { rid: string };
+        const { lot } = request.query as { lot?: unknown };
+        retirerRelationImport(app.db, jetonDe(request), lotDeRequete(lot), rid, request.headers, app.horloge());
+        return reply.code(204).send();
       });
 
       scope.post(`${base}/fiches/:cle/relations`, { config: { portee: 'contenu' } }, async (request) => {
@@ -280,7 +317,7 @@ export async function registerImportRoutes(app: FastifyInstance) {
           nom: champ('nom'),
           visibilite: champ('visibilite'),
           flux: part?.fieldname === 'fichier' ? flux() : null,
-        }, app.horloge());
+        }, app.horloge(), undefined, request.headers);
       });
 
       scope.delete(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request, reply) => {

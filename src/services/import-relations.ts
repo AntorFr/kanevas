@@ -5,7 +5,18 @@ import { ErreurService, introuvable } from './erreurs.js';
 import { cleValide } from './import.js';
 import type { JetonRequete as Jeton } from './jetons.js';
 import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
-import { relierSection } from './relations.js';
+import { estId } from './cles-forme.js';
+import { lireFicheApi } from './lecture-api.js';
+import { lirePrecondition, sousPrecondition, type CompteLot } from './precondition.js';
+import {
+  empreinteDeRelation,
+  lireRelationLisible,
+  lireRelationParId,
+  modifierRelation,
+  relierSection,
+  retirerRelation,
+  trouverRelationExistante,
+} from './relations.js';
 
 export interface ResultatRelationImport {
   section?: string;
@@ -17,6 +28,8 @@ export interface ResultatRelationImport {
   /** The field a refusal is about, when it is one (`nature`). */
   champ?: string;
   id?: number;
+  /** Fingerprint of the relation (AD-139), for `creee` and `inchangee`. */
+  empreinte?: string;
   etat: 'creee' | 'inchangee' | 'ignoree' | 'refusee';
   code?: string;
   avertissements: string[];
@@ -86,16 +99,174 @@ export function assurerRelations(
       const relation = relierSection(db, compteId, universId, source.id, section.id,
         { cibleFicheId: cible.id, nature, qualificatif: qualificatif ?? '' });
       noter('creees');
-      return { ...entree, id: relation.id, etat: 'creee', avertissements };
+      const lue = lireRelationParId(db, universId, relation.id);
+      return { ...entree, id: relation.id, ...(lue ? { empreinte: empreinteDeRelation(db, lue) } : {}), etat: 'creee', avertissements };
     } catch (e) {
       if (!(e instanceof ErreurService)) throw e;
       if (e.detail === 'relation_existante') {
         noter('inchangees');
-        return { ...entree, etat: 'inchangee', avertissements };
+        const existante = trouverRelationExistante(db, universId, source.id, section.id, cible.id, nature, qualificatif ?? '');
+        return {
+          ...entree,
+          ...(existante ? { id: existante.id, empreinte: empreinteDeRelation(db, existante) } : {}),
+          etat: 'inchangee',
+          avertissements,
+        };
       }
       if (e.detail === 'nature_incompatible') return refuser(e.message, e.detail, 'nature');
       if (e.detail === 'auto_relation' || e.detail === 'limite_relations') return refuser(e.message, e.detail);
       throw e;
     }
   }));
+}
+
+export interface ResultatRelationModifiee {
+  id: number;
+  etat: 'mise_a_jour' | 'inchangee';
+  nature: string;
+  qualificatif: string;
+  /** Fingerprint of the relation, then of the sheet that carries it (AD-139). */
+  empreinte: string;
+  empreinteFiche: string;
+}
+
+type EnTetes = Record<string, string | string[] | undefined>;
+
+const invalideChamp = (champ: string, message: string, detail?: string) =>
+  new ErreurService('invalide', message, detail, champ);
+
+/** The body of `PATCH /relations/:rid`: `{nature?, qualificatif?}`, at least one (400 `invalide` with `champ`). */
+function validerChangement(corps: unknown): { nature?: string | null; qualificatif?: string } {
+  if (typeof corps !== 'object' || corps === null || Array.isArray(corps)) {
+    throw invalideChamp('corps', 'Corps de la requête : un objet est attendu.');
+  }
+  const c = corps as Record<string, unknown>;
+  for (const k of Object.keys(c)) {
+    if (k !== 'nature' && k !== 'qualificatif') throw invalideChamp(k, `${k} : champ inconnu.`, 'champ_inconnu');
+  }
+  if (c.nature === undefined && c.qualificatif === undefined) {
+    throw invalideChamp('corps', 'nature ou qualificatif : au moins un champ est attendu.');
+  }
+  const changement: { nature?: string | null; qualificatif?: string } = {};
+  if (c.nature !== undefined) {
+    if (c.nature !== null && typeof c.nature !== 'string') throw invalideChamp('nature', 'nature : un texte est attendu.');
+    changement.nature = c.nature === null ? null : c.nature.trim();
+  }
+  if (c.qualificatif !== undefined) {
+    if (typeof c.qualificatif !== 'string' || c.qualificatif.trim().length > 80) {
+      throw invalideChamp('qualificatif', 'qualificatif : 80 caractères au plus.');
+    }
+    changement.qualificatif = c.qualificatif.trim();
+  }
+  return changement;
+}
+
+function exigerLotOuvert(db: Db, jeton: Jeton, lotId: number | null, maintenant: Date): void {
+  if (lotId === null) return;
+  if (lireLot(db, jeton, lotId, maintenant).closLe !== null) throw new ErreurService('conflit', 'Le lot est clos.', 'lot_clos');
+}
+
+const idRelation = (rid: string): number | null => (estId(rid) ? Number(rid) : null);
+
+/**
+ * `PATCH /relations/:rid` (B-84, AD-ecriture-1): changes the nature and/or the qualifier sent. A relation of another
+ * universe, or one whose section or target the account cannot read (AD-64), is the same 404 as an unknown id.
+ * Counted under `relations` (`mises_a_jour`, `inchangees`, or `refusees` with the id).
+ */
+export function modifierRelationImport(
+  db: Db, jeton: Jeton, lotId: number | null, rid: string, corps: unknown, entetes: EnTetes, maintenant: Date = new Date(),
+): ResultatRelationModifiee {
+  const { universId, compteId } = jeton;
+  exigerMJ(db, universId, compteId);
+  exigerLotOuvert(db, jeton, lotId, maintenant);
+  const compte: CompteLot = { lotId, nature: 'relations', cle: rid, objet: 'relation', maintenant };
+  try {
+    const precondition = lirePrecondition(entetes);
+    const changement = validerChangement(corps);
+    const id = idRelation(rid);
+    return sousPrecondition(
+      db,
+      precondition,
+      compte,
+      () => {
+        if (id === null) throw introuvable();
+        return empreinteDeRelation(db, lireRelationLisible(db, { compteId }, universId, id));
+      },
+      () =>
+        avecContexte(db, { compteId, jetonId: jeton.id, origine: 'import', lotId }, (): ResultatRelationModifiee => {
+          let res;
+          try {
+            res = modifierRelation(db, compteId, universId, id!, changement);
+          } catch (e) {
+            if (e instanceof ErreurService && e.code === 'invalide' && !e.champ) {
+              throw new ErreurService('invalide', e.message, e.detail, e.detail === 'nature_incompatible' ? 'nature' : 'qualificatif');
+            }
+            throw e;
+          }
+          const etat = res.ecrit ? 'mise_a_jour' : 'inchangee';
+          if (lotId !== null) noterDansLot(db, lotId, 'relations', res.ecrit ? 'mises_a_jour' : 'inchangees', [], maintenant);
+          const lue = lireRelationParId(db, universId, id!)!;
+          const fiche = lireFicheApi(db, { compteId }, universId, String(lue.ficheId));
+          return {
+            id: id!, etat, nature: res.relation.nature, qualificatif: res.relation.qualificatif,
+            empreinte: empreinteDeRelation(db, lue), empreinteFiche: fiche.empreinte,
+          };
+        }),
+    );
+  } catch (e) {
+    if (e instanceof ErreurService && e.detail !== 'empreinte_perimee' && lotId !== null) {
+      noterDansLot(db, lotId, 'relations', 'refusees', [
+        { cle: rid, objet: 'relation', raison: e.message, gravite: 'refus', ...(e.detail ? { code: e.detail } : {}) },
+      ], maintenant);
+    }
+    throw e;
+  }
+}
+
+/**
+ * `DELETE /relations/:rid` (B-84): removes the relation; 204 also for an unknown id or one that is not readable by the
+ * account (idempotent). Counts its sheet as `mises_a_jour` under `fiches`.
+ */
+export function retirerRelationImport(
+  db: Db, jeton: Jeton, lotId: number | null, rid: string, entetes: EnTetes, maintenant: Date = new Date(),
+): void {
+  const { universId, compteId } = jeton;
+  exigerMJ(db, universId, compteId);
+  exigerLotOuvert(db, jeton, lotId, maintenant);
+  const compte: CompteLot = { lotId, nature: 'relations', cle: rid, objet: 'relation', maintenant };
+  const id = idRelation(rid);
+  const lisible = () => {
+    try {
+      return id === null ? null : lireRelationLisible(db, { compteId }, universId, id);
+    } catch (e) {
+      if (e instanceof ErreurService && e.code === 'introuvable') return null;
+      throw e;
+    }
+  };
+  try {
+    const precondition = lirePrecondition(entetes);
+    sousPrecondition(
+      db,
+      precondition,
+      compte,
+      () => {
+        const r = lisible();
+        return r === null ? null : empreinteDeRelation(db, r);
+      },
+      () =>
+        avecContexte(db, { compteId, jetonId: jeton.id, origine: 'import', lotId }, () => {
+          const r = lisible();
+          if (r === null) return;
+          retirerRelation(db, compteId, universId, r.id);
+          if (lotId !== null) noterDansLot(db, lotId, 'fiches', 'mises_a_jour', [], maintenant);
+        }),
+    );
+  } catch (e) {
+    if (e instanceof ErreurService && e.detail !== 'empreinte_perimee' && lotId !== null) {
+      noterDansLot(db, lotId, 'relations', 'refusees', [
+        { cle: rid, objet: 'relation', raison: e.message, gravite: 'refus', ...(e.detail ? { code: e.detail } : {}) },
+      ], maintenant);
+    }
+    throw e;
+  }
 }

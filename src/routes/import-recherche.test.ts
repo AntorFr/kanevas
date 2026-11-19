@@ -58,7 +58,7 @@ const PORT = (extra: object) => ({
   ...extra,
 });
 
-test('critère : alias et étiquettes créés, rejoués inchangés (ordre et casse libres), modif Kanevas non écrasée', async () => {
+test('critère : alias et étiquettes créés, rejoués inchangés (ordre et casse libres), modif Kanevas remplacée par le rejeu', async () => {
   const t = await monter();
   const l1 = await t.lot();
   const r1 = await t.put('lieu:port-sel', PORT({ alias: ['Salport', 'Port-aux-Sels'], etiquettes: ['Côte des Brumes'] }), l1);
@@ -79,17 +79,24 @@ test('critère : alias et étiquettes créés, rejoués inchangés (ordre et cas
   assert.deepEqual(t.sections(id), s0);
   assert.deepEqual(t.lire(id), { alias: ['Port-aux-Sels', 'Salport'], etiquettes: ['Côte des Brumes'] });
 
-  // Antor adds an alias in Kanevas.
+  // Antor adds an alias in Kanevas: the replay carries the set, so it replaces it (no « modifié dans Kanevas »).
   const m = await t.etiqueter(id, { alias: ['Salport', 'Port-aux-Sels', 'Salt Harbour'], etiquettes: ['Côte des Brumes'] });
   assert.equal(m.statusCode, 200, m.body);
   const l3 = await t.lot();
   const r4 = await t.put('lieu:port-sel', PORT({ alias: ['Salport', 'Port-aux-Sels'], etiquettes: ['Côte des Brumes'] }), l3);
-  assert.equal(r4.json().etat, 'inchangee');
-  assert.deepEqual(t.lire(id).alias, ['Port-aux-Sels', 'Salport', 'Salt Harbour']);
+  assert.equal(r4.json().etat, 'mise_a_jour');
+  assert.deepEqual(r4.json().avertissements, []);
+  assert.deepEqual(t.lire(id).alias, ['Port-aux-Sels', 'Salport']);
   assert.deepEqual(t.lire(id).etiquettes, ['Côte des Brumes']);
   const rap = await t.clore(l3);
-  assert.ok(JSON.stringify(rap).includes('alias modifiés dans Kanevas : non écrasés'), JSON.stringify(rap));
-  assert.ok(!JSON.stringify(rap).includes('étiquettes modifiées'));
+  assert.ok(!JSON.stringify(rap).includes('modifié'), JSON.stringify(rap));
+  // A body that says nothing of alias and labels leaves them as they are.
+  const m2 = await t.etiqueter(id, { alias: ['Seul'], etiquettes: ['Autre'] });
+  assert.equal(m2.statusCode, 200, m2.body);
+  const { alias: _a, etiquettes: _e, ...nu } = PORT({}) as Record<string, unknown>;
+  const r5 = await t.put('lieu:port-sel', nu);
+  assert.equal(r5.json().etat, 'inchangee');
+  assert.deepEqual(t.lire(id), { alias: ['Seul'], etiquettes: ['Autre'] });
 });
 
 test('ensemble inchangé dans Kanevas : le nouvel envoi remplace, mise_a_jour', async () => {

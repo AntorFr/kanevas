@@ -88,31 +88,32 @@ test('critère : créée, rejouée inchangée (ni version ni modifie_le), Léa s
   assert.equal(fa.json().sections.length, 2);
 });
 
-test('titre de section changé par le service : non écrasé, avertissement au lot', async () => {
+test('titre de section changé par le service : le rejeu le remet à celui du script, sans avertissement', async () => {
   const { app, u, put, lot, antor, lire } = await monter();
   const id = (await put('lieu:port-sel', PORT)).json().id;
   const sid = (app.db.prepare("SELECT id FROM sections WHERE cle='desc'").get() as { id: number }).id;
   renommerSection(app.db, antor, u.id, id, sid, 'Aperçu');
   const l = await lot();
   const r = await put('lieu:port-sel', PORT, l);
-  assert.equal(r.json().etat, 'inchangee');
-  assert.equal(r.json().avertissements.length, 1);
-  assert.equal(compte(app, 'SELECT COUNT(*) n FROM sections WHERE titre = ?', 'Aperçu'), 1);
+  assert.equal(r.json().etat, 'mise_a_jour');
+  assert.deepEqual(r.json().avertissements, []);
+  assert.equal(compte(app, 'SELECT COUNT(*) n FROM sections WHERE titre = ?', 'Aperçu'), 0);
+  assert.equal((app.db.prepare('SELECT titre FROM sections WHERE id = ?').get(sid) as { titre: string }).titre, 'Description');
   const lt = await lire(l);
-  assert.equal(lt.avertissements, 1);
-  assert.equal(lt.rapport[0].gravite, 'avertissement');
-  assert.equal(lt.rapport[0].cle, 'lieu:port-sel');
+  assert.equal(lt.avertissements, 0);
+  assert.doesNotMatch(JSON.stringify(lt), /non écrasé/);
 });
 
-test('titre de fiche changé en base : non écrasé, avertissement', async () => {
+test('titre de fiche changé en base : le rejeu le remet à celui du script, sans avertissement', async () => {
   const { app, put, lot, lire } = await monter();
   const id = (await put('lieu:port-sel', PORT)).json().id;
   app.db.prepare("UPDATE fiches SET titre = 'Port Salé' WHERE id = ?").run(id);
   const l = await lot();
   const r = await put('lieu:port-sel', PORT, l);
-  assert.equal(r.json().avertissements.length, 1);
-  assert.equal((app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(id) as { titre: string }).titre, 'Port Salé');
-  assert.equal((await lire(l)).avertissements, 1);
+  assert.equal(r.json().etat, 'mise_a_jour');
+  assert.deepEqual(r.json().avertissements, []);
+  assert.equal((app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(id) as { titre: string }).titre, 'Port-Sel');
+  assert.equal((await lire(l)).avertissements, 0);
 });
 
 test('rejeu : titre modifié à la source mis à jour tant que personne n’y a touché', async () => {
@@ -124,7 +125,7 @@ test('rejeu : titre modifié à la source mis à jour tant que personne n’y a 
   assert.equal((app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(id) as { titre: string }).titre, 'Port-Sel II');
 });
 
-test('contenu : mis à jour si intact, protégé si modifié dans Kanevas', async () => {
+test('contenu : mis à jour ; réécrit dans Kanevas puis rejoué, il revient à celui du script', async () => {
   const { app, u, put, antor } = await monter();
   const id = (await put('lieu:port-sel', PORT)).json().id;
   const maj = { ...PORT, sections: [{ ...PORT.sections[0]!, contenu: 'Un grand port.' }, PORT.sections[1]!] };
@@ -134,9 +135,9 @@ test('contenu : mis à jour si intact, protégé si modifié dans Kanevas', asyn
   ecrireContenu(app.db, antor, u.id, id, s.id, 'Réécrit à la main.', s.version);
   const maj2 = { ...PORT, sections: [{ ...PORT.sections[0]!, contenu: 'Source 3.' }, PORT.sections[1]!] };
   const r = await put('lieu:port-sel', maj2);
-  assert.equal(r.json().etat, 'inchangee');
-  assert.equal(r.json().avertissements.length, 1);
-  assert.equal((app.db.prepare('SELECT contenu FROM sections WHERE id = ?').get(s.id) as { contenu: string }).contenu, 'Réécrit à la main.');
+  assert.equal(r.json().etat, 'mise_a_jour');
+  assert.deepEqual(r.json().avertissements, []);
+  assert.equal((app.db.prepare('SELECT contenu FROM sections WHERE id = ?').get(s.id) as { contenu: string }).contenu, 'Source 3.');
 });
 
 test('section sans clé jamais touchée ; rien ne se supprime par omission', async () => {
@@ -245,7 +246,7 @@ test('creeLe donné par la source devient la date de la fiche ; atomicité d’u
   assert.equal(compte(app, "SELECT COUNT(*) n FROM fiches WHERE cle = 'lieu:gros'"), 0);
 });
 
-test('changement de type à la source : appliqué si intact, protégé sinon', async () => {
+test('changement de type à la source : écrit, même si le type a été changé dans Kanevas', async () => {
   const { app, put } = await monter();
   const id = (await put('x', { type: 'lieu', titre: 'X' })).json().id;
   const r = await put('x', { type: 'faction', titre: 'X' });
@@ -253,8 +254,9 @@ test('changement de type à la source : appliqué si intact, protégé sinon', a
   assert.equal((app.db.prepare('SELECT type FROM fiches WHERE id = ?').get(id) as { type: string }).type, 'faction');
   app.db.prepare("UPDATE fiches SET type = 'objet' WHERE id = ?").run(id);
   const r2 = await put('x', { type: 'lieu', titre: 'X' });
-  assert.equal(r2.json().avertissements.length, 1);
-  assert.equal((app.db.prepare('SELECT type FROM fiches WHERE id = ?').get(id) as { type: string }).type, 'objet');
+  assert.equal(r2.json().etat, 'mise_a_jour');
+  assert.deepEqual(r2.json().avertissements, []);
+  assert.equal((app.db.prepare('SELECT type FROM fiches WHERE id = ?').get(id) as { type: string }).type, 'lieu');
 });
 
 test('B-47 bords : clé d’origine de 1, 100, 150, 200 caractères acceptée ; 201 → 400 champ cle ; 200 multioctets acceptée', async () => {

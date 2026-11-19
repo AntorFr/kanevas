@@ -17,7 +17,7 @@
 //                               échec     : MJ demoted → 401 + « Inactif »; another MJ revokes
 //   B-47 idempotence nominal  : creee, then inchangee, one sheet; every one of the six types; changed content → mise_a_jour
 //                               échec     : compte_rendu without campaign → 400 champ campagne, unknown type → 400 champ type, nothing written; bad title / key → 400
-//   B-48 protection nominal   : section title, section content, section audience, sheet title changed in Kanevas → not overwritten
+//   B-47 replay (B-48 withdrawn) : a section title changed in Kanevas goes back at the replay; the lot says « 1 mise à jour »
 //                               and named in the batch; the rest is written
 //   B-49 lots       nominal   : two batches on E-18, counters per nature, refusals unfolded with key and reason
 //                               bords     : empty states, « En cours », « Abandonné »
@@ -239,7 +239,7 @@ async function sectionsDe(m: Monde, cookie: string, fid: number) {
   return f.json;
 }
 
-test('B-48 · Antor renomme la section « Description » puis le script rejoue : la ligne du lot dit « Fiches : 1 inchangée »', opts, async () => {
+test('B-47 · Antor renomme la section « Description » puis le script rejoue : le titre du script revient et la ligne du lot dit « Fiches : 1 mise à jour »', opts, async () => {
   const m = await monde();
   const jeton = await jetonPar(m, 'antor');
   const c = await cookieDe(m, 'antor');
@@ -251,12 +251,14 @@ test('B-48 · Antor renomme la section « Description » puis le script rejoue :
   const ren = await rest(m, c, 'PATCH', `/api/univers/${m.essai}/fiches/${fid}/sections/${sid}`, { titre: 'Aspect du port' });
   assert.equal(ren.statut, 200, ren.txt);
   await lotComplet(m, jeton, [['lieu:port-sel', PORT_SEL]]);
+  assert.match(JSON.stringify(await sectionsDe(m, c, fid)), /"titre":"Description"/, 'the script’s title is back');
   const { ctx, page } = await session(m, 'antor');
   try {
     await allerE18(page, m);
-    await page.getByText(rx('Fiches : 1 inchangée')).first().waitFor();
+    await page.getByText(rx('Fiches : 1 mise à jour')).first().waitFor();
     await page.locator('details, [aria-expanded]').filter({ hasText: /Fiches : 1/ }).first().click().catch(() => {});
-    await capture(page, 'b48-section-non-ecrasee');
+    assert.doesNotMatch(await page.locator('body').innerText(), /non écrasé|modifié dans Kanevas/);
+    await capture(page, 'b47-section-reecrite');
   } finally {
     await ctx.close();
   }

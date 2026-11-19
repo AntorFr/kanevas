@@ -26,7 +26,7 @@ export function creerCompteRendu(
     titre: string;
     texte?: string;
     /** Import only: origin metadata, validated by the import service before creation. */
-    origine?: { cle: string; creeLe?: string; modifieLe?: string; dernierImport: unknown };
+    origine?: { cle: string; creeLe?: string; modifieLe?: string };
     /** Where the report is created from (`creee_via`); the import is `import`, else `ecran` by default. */
     via?: 'ecran' | 'assistant' | 'mcp';
   },
@@ -44,13 +44,12 @@ export function creerCompteRendu(
   const ficheId = ecrire(db, compteId, () => {
     const f = db
       .prepare(
-        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle, creee_via, dernier_import)
-         VALUES (?, 'compte_rendu', ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle, creee_via)
+         VALUES (?, 'compte_rendu', ?, ?, ?, ?, ?, ?)`,
       )
       .run(universId, titre, JSON.stringify({ v: 1, campagne_id: campagneId }),
         o?.creeLe ?? now, o?.modifieLe ?? now, o?.cle ?? tirerCleFiche(db, universId, 'compte_rendu', titre),
-        o ? 'import' : (entree.via ?? 'ecran'),
-        o ? JSON.stringify(o.dernierImport) : null);
+        o ? 'import' : (entree.via ?? 'ecran'));
     const id = Number(f.lastInsertRowid);
     const joueur = role === 'joueur';
     const contenu = preparerContenu(db, universId, compteId, texte);

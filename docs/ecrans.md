@@ -4311,8 +4311,7 @@ mark. The grammatical gender of the word follows the type's label (« Détruite 
   « Sous-type », kept in the address (`?etat=la|disparu` — the two values are the same for every
   type, the words differ); a filtered state renders the grid; empty: « Aucun personnage mort. »,
   « Aucun lieu détruit. »… with « Voir tous les … ».
-- **Import**: `disparu: true|false` on a sheet of a type that carries the mark (default false,
-  protected by B-48 like `pj`); refused with `champ_inconnu` on another type.
+- **Import**: `disparu: true|false` on a sheet of a type that carries the mark (default false); refused with `champ_inconnu` on another type.
 
 **Values and words.** `?etat=la|disparu` : `la` is « there » (alive, intact, active : the mark absent), `disparu`
 is the mark set ; the words of the table are what is shown, never the key. The filter is offered, for the seven

@@ -2,6 +2,8 @@ import { ecrire } from './historique.js';
 import type { Db } from '../db/db.js';
 import { exigerRole, peutLireSection, peutVoirFiche } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
+import { cleDe } from './historique.js';
+import { empreinteRelation } from './empreintes.js';
 import { chargerFiche } from './fiches.js';
 import { natureConvient, natureDe, estNature } from './natures.js';
 import type { Acteur, SectionRow, TypeFiche } from './types.js';
@@ -112,6 +114,126 @@ export function relierSection(
       qualificatif,
       cible: { id: cible.id, titre: cible.titre, type: cible.type, ...chargeDeCible(cible.type, cible.charge) },
     };
+  });
+}
+
+/** A relation of this universe with what its fingerprint and its guards read (AD-64, AD-139). */
+export interface RelationLue {
+  id: number;
+  sectionId: number;
+  sectionCle: string;
+  ficheId: number;
+  cibleId: number;
+  nature: string;
+  qualificatif: string;
+}
+
+/** The relation `relationId` if it carries a section of a sheet of this universe, else null (unknown and foreign alike). */
+export function lireRelationParId(db: Db, universId: number, relationId: number): RelationLue | null {
+  const r = db
+    .prepare(
+      `SELECT r.id, r.section_id AS sectionId, s.cle AS sectionCle, s.fiche_id AS ficheId,
+              r.cible_fiche_id AS cibleId, r.nature, r.qualificatif
+         FROM relations r JOIN sections s ON s.id = r.section_id JOIN fiches f ON f.id = s.fiche_id
+        WHERE r.id = ? AND f.univers_id = ?`,
+    )
+    .get(relationId, universId) as RelationLue | undefined;
+  return r ?? null;
+}
+
+/**
+ * The relation the caller reads under both guards (AD-64): its carrying section and its target sheet. What
+ * is not readable by this account is `introuvable`, like an unknown id.
+ */
+export function lireRelationLisible(db: Db, acteur: Acteur, universId: number, relationId: number): RelationLue {
+  const role = exigerRole(db, universId, acteur.compteId);
+  const r = lireRelationParId(db, universId, relationId);
+  if (!r) throw introuvable();
+  const section = chargerSection(db, r.ficheId, r.sectionId);
+  if (!peutLireSection(role, section, acteur) || !peutVoirFiche(db, role, r.cibleId, acteur)) throw introuvable();
+  return r;
+}
+
+/** The fingerprint of a relation as the read gives it (AD-139). */
+export function empreinteDeRelation(db: Db, r: RelationLue): string {
+  return empreinteRelation(
+    { sectionCle: r.sectionCle, cibleId: r.cibleId, nature: r.nature, qualificatif: r.qualificatif },
+    cleDe(db),
+  );
+}
+
+/**
+ * The relation that already holds the fact `relierSection` would add (same section, target, nature and
+ * qualifier; or, for a symmetric nature, the same fact held by the target toward this sheet), or null.
+ */
+export function trouverRelationExistante(
+  db: Db,
+  universId: number,
+  ficheId: number,
+  sectionId: number,
+  cibleId: number,
+  nature: string,
+  qualificatif: string,
+): RelationLue | null {
+  const direct = db
+    .prepare('SELECT id FROM relations WHERE section_id = ? AND cible_fiche_id = ? AND nature = ? AND qualificatif = ?')
+    .get(sectionId, cibleId, nature, qualificatif) as { id: number } | undefined;
+  if (direct) return lireRelationParId(db, universId, direct.id);
+  if (nature === '' || natureDe(nature)?.symetrique !== true) return null;
+  const inverse = db
+    .prepare(
+      `SELECT r.id FROM relations r JOIN sections s ON s.id = r.section_id
+        WHERE s.fiche_id = ? AND r.cible_fiche_id = ? AND r.nature = ? AND r.qualificatif = ?`,
+    )
+    .get(cibleId, ficheId, nature, qualificatif) as { id: number } | undefined;
+  return inverse ? lireRelationParId(db, universId, inverse.id) : null;
+}
+
+/**
+ * The GM changes the nature and/or the qualifier of a relation (B-109); what is not sent stays. The same
+ * refusals as `relierSection` (`nature_incompatible`, `relation_existante`), nothing written on a refusal.
+ * `ecrit` is false when the values sent are the current ones.
+ */
+export function modifierRelation(
+  db: Db,
+  compteId: number,
+  universId: number,
+  relationId: number,
+  changement: { nature?: string | null; qualificatif?: string },
+): { relation: Relation; ecrit: boolean } {
+  exigerMJCache(db, universId, compteId);
+  const courante = lireRelationLisible(db, { compteId }, universId, relationId);
+  if (changement.qualificatif !== undefined && typeof changement.qualificatif !== 'string') {
+    throw invalide('Le qualificatif : 80 caractères au plus.');
+  }
+  const qualificatif = (changement.qualificatif ?? courante.qualificatif).trim();
+  const nature = changement.nature === undefined ? courante.nature : (changement.nature ?? '');
+  if (typeof nature !== 'string') {
+    throw new ErreurService('invalide', 'Cette nature ne relie pas ces deux types de fiches.', 'nature_incompatible');
+  }
+  if (qualificatif.length > 80) throw invalide('Le qualificatif : 80 caractères au plus.');
+  if (nature === '' && qualificatif.length < 1) throw invalide('Le qualificatif est obligatoire sans nature.');
+  const source = chargerFiche(db, universId, courante.ficheId);
+  const cible = chargerFiche(db, universId, courante.cibleId);
+  if (nature !== '' && !(estNature(nature) && natureConvient(nature, source.type, cible.type))) {
+    throw new ErreurService('invalide', 'Cette nature ne relie pas ces deux types de fiches.', 'nature_incompatible');
+  }
+  const vue = (): Relation => ({
+    id: relationId,
+    nature,
+    qualificatif,
+    cible: { id: cible.id, titre: cible.titre, type: cible.type, ...chargeDeCible(cible.type, cible.charge) },
+  });
+  if (nature === courante.nature && qualificatif === courante.qualificatif) return { relation: vue(), ecrit: false };
+  return ecrire(db, compteId, () => {
+    const autre = trouverRelationExistante(
+      db, universId, courante.ficheId, courante.sectionId, courante.cibleId, nature, qualificatif,
+    );
+    if (autre && autre.id !== relationId) {
+      throw new ErreurService('conflit', 'Cette relation existe déjà.', 'relation_existante');
+    }
+    db.prepare('UPDATE relations SET nature = ?, qualificatif = ? WHERE id = ?').run(nature, qualificatif, relationId);
+    return { relation: vue(), ecrit: true };
   });
 }
 

@@ -1109,7 +1109,7 @@ refused (401/403 depending on the import API) and nothing written.
   vessels, « Actives / Détruites / Tous » on factions, « Vivantes / Éteintes / Tous » on families).
   No date, no cause: the text says the rest. *(P-17, P-6)*
 - **B-68** — The **import API** pushes the nature and the qualifier of a relation, the « gone » mark
-  (`disparu`) of a sheet of a type that carries it, and families, with the protection of B-48; the former free `type` of
+  (`disparu`) of a sheet of a type that carries it, and families (the protection of B-48 is withdrawn); the former free `type` of
   a relation is the qualifier. *(P-10)*
 - **B-69** — The graph (E-11) and « Mentionnée dans » (E-9) read the nature where there is one:
   the link of a graph shows the nature's label, the qualifier after it; « Mentionnée dans » keeps

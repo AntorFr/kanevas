@@ -103,7 +103,7 @@ export function poserContenu(db: Db, sectionId: number, contenu: string, now: st
 /**
  * A sheet now carries the origin key `cle` (AD-116): the sections that waited for it get
  * `[[<id>|<texte>]]` in `contenu` and `contenu_public`, and their `liens` rows point at the sheet.
- * Neither `version`, nor `version_importee`, nor `modifie_le` moves: the text is not edited, only resolved.
+ * Neither `version` nor `modifie_le` moves: the text is not edited, only resolved.
  */
 export function resoudreClesEnAttente(db: Db, universId: number, cle: string, ficheId: number): void {
   ecrireSysteme(db, () => resoudreEnAttente(db, universId, cle, ficheId));

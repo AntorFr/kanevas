@@ -35,6 +35,8 @@ export function registerErreurs(app: FastifyInstance) {
       if (erreur.detail === 'limite_pieces') corps.code = erreur.detail;
       // A background over 25 MB (AD-69).
       if (erreur.detail === 'fond_trop_lourd') statut = 413;
+      // A stale fingerprint on an import write (AD-140): 412, where `section_modifiee` stays 409.
+      if (erreur.detail === 'empreinte_perimee') statut = 412;
       return reply.code(statut).send(corps);
     }
     const statut = (erreur as { statusCode?: number }).statusCode;
