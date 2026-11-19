@@ -6,7 +6,7 @@ import { etatAssets } from './battlemap-donnees.js';
 import { roleDe, sqlFicheLisible, vueMJ } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
 import { resoudreOutil } from './outils.js';
-import { effacerTables, redimensionnerTable } from './battlemap-tables.js';
+import { documentJoueurDeTable, effacerTables, redimensionnerTable } from './battlemap-tables.js';
 import type { Acteur, Role } from './types.js';
 
 /**
@@ -131,6 +131,8 @@ export function lireCarte(db: Db, acteur: Acteur, universId: number, id: number)
     throw introuvable();
   }
   if (mj) return vue(l, l.document, true);
+  const jouee = documentJoueurDeTable(db, acteur, role, universId, l);
+  if (jouee !== null) return vue(l, JSON.stringify(jouee), false);
   const doc = JSON.parse(l.document) as Document;
   return vue(l, coeur.filtrerPourJoueur(l.document, contexteFiltre(db, role, acteur, universId, doc)), false);
 }

@@ -96,16 +96,8 @@ function proprietairesDe(db: Db, carteId: number): Record<string, number> {
   return Object.fromEntries(lignes.map((r) => [r.pion_id, r.compte_id]));
 }
 
-/**
- * The table of a map for the caller. A map the caller cannot read, a hidden map for a player or a GM in Player mode and an
- * unknown id are the same `introuvable`; a readable map with no table is `{commencee: false}` (not an error).
- */
-export function lireTable(db: Db, acteur: Acteur, universId: number, carteId: number): TableLue {
-  const { l, role, mj } = carteLue(db, acteur, universId, carteId);
-  const t = tableDe(db, l.id);
-  if (!t) return mj ? { commencee: false, peutEcrire: true } : { commencee: false };
-  const etat = JSON.parse(t.etat) as coeur.EtatTable;
-  if (mj) return { commencee: true, version: t.version, peutEcrire: true, etat, proprietaires: proprietairesDe(db, l.id) };
+/** What a player reads of a played map (the core's `vue_joueur`): hidden layers, elements under the fog and secret assets are gone. */
+function vueJoueurDe(db: Db, acteur: Acteur, role: 'mj' | 'joueur', universId: number, l: Ligne, t: LigneTable, etat: coeur.EtatTable) {
   const doc = JSON.parse(l.document) as Document;
   // The tokens' assets and sheets are filtered like the document's own (a GM-only or removed asset → a plain disc, an unreadable sheet dropped).
   const contexteDoc: Document = {
@@ -121,7 +113,30 @@ export function lireTable(db: Db, acteur: Acteur, universId: number, carteId: nu
     ...base, fiches_lisibles: [...fichesLisibles(db, role, acteur, universId, fiches)],
     empreintes: empreintesTable(db, universId, doc, etat),
   };
-  const v = coeur.vueJoueur(l.document, t.etat, contexte);
+  return coeur.vueJoueur(l.document, t.etat, contexte);
+}
+
+/**
+ * The document of a map as a non-GM reads it when the map is played: the table's filter (hidden layers, fog) on top of the
+ * document's own. `null` when the map has no table (the plain filtered document applies).
+ */
+export function documentJoueurDeTable(db: Db, acteur: Acteur, role: 'mj' | 'joueur', universId: number, l: Ligne): unknown | null {
+  const t = tableDe(db, l.id);
+  if (!t) return null;
+  return vueJoueurDe(db, acteur, role, universId, l, t, JSON.parse(t.etat) as coeur.EtatTable).document;
+}
+
+/**
+ * The table of a map for the caller. A map the caller cannot read, a hidden map for a player or a GM in Player mode and an
+ * unknown id are the same `introuvable`; a readable map with no table is `{commencee: false}` (not an error).
+ */
+export function lireTable(db: Db, acteur: Acteur, universId: number, carteId: number): TableLue {
+  const { l, role, mj } = carteLue(db, acteur, universId, carteId);
+  const t = tableDe(db, l.id);
+  if (!t) return mj ? { commencee: false, peutEcrire: true } : { commencee: false };
+  const etat = JSON.parse(t.etat) as coeur.EtatTable;
+  if (mj) return { commencee: true, version: t.version, peutEcrire: true, etat, proprietaires: proprietairesDe(db, l.id) };
+  const v = vueJoueurDe(db, acteur, role, universId, l, t, etat);
   return { commencee: true, version: t.version, document: v.document, pions: v.pions, brouillard: v.brouillard, vue: v.vue };
 }
 
