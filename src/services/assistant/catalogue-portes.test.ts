@@ -41,11 +41,11 @@ test('porte mcp : un joueur n’a que les cinq outils de lecture, sans écriture
   assert.deepEqual(noms, ['chercher', 'chercher_texte', 'lire_fiche', 'lire_section', 'mentions']);
 });
 
-test('porte mcp : même un MJ n’a ni écriture, ni generer_image, ni proposer_mise_a_jour, ni creer_fiche', () => {
+test('porte mcp : même un MJ n’a ni écriture, ni generer_image, ni proposer_mise_a_jour, ni creer_fiche (lire_historique en plus, AD-mcp-6)', () => {
   const { db, antor, u } = monde();
   const c = catalogueDe(db, antor.id, u.id, { porte: 'mcp', images: IMAGES });
   const noms = c.outils.map((o) => o.nom).sort();
-  assert.deepEqual(noms, ['chercher', 'chercher_texte', 'lire_fiche', 'lire_section', 'mentions']);
+  assert.deepEqual(noms, ['chercher', 'chercher_texte', 'lire_fiche', 'lire_historique', 'lire_section', 'mentions']);
   assert.equal(c.porte, 'mcp');
   assert.equal(c.niveau, 'lecture');
 });
