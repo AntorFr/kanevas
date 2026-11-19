@@ -204,8 +204,8 @@ function Partie({
       cache.current.set(id, im);
     }
     return im.complete && im.naturalWidth > 0 ? im : null;
-  }, [assets, parId, universId]);
-  void images;
+  // `images` is a dependency on purpose: a new identity redraws the canvas when a picture has loaded.
+  }, [assets, parId, universId, images]);
 
   const pions: PionVu[] = useMemo(() => {
     if (!gm) return (table as TableJoueur).pions;
@@ -527,11 +527,11 @@ function Partie({
               <section className="jeu-calques" aria-label="Calques">
                 <ul className="editeur-calques-liste">
                   {doc.calques.map((c) => (
-                    <li key={c.id} className={`editeur-calque${c.mj_seul ? ' mj' : ''}`}>
+                    <li key={c.id} className={`editeur-calque jeu-calque${c.mj_seul ? ' mj' : ''}`}>
                       <span className="editeur-calque-nom" title={c.nom}>{c.nom}</span>
                       {c.mj_seul
                         ? <Pastille sens="mj" icone={Lock}>MJ seul</Pastille>
-                        : <Interrupteur etiquette="Visible des joueurs" coche={!masques.has(c.id)} disabled={perdue}
+                        : <Interrupteur etiquette={`Visible des joueurs : ${c.nom}`} coche={!masques.has(c.id)} disabled={perdue}
                           onChange={(v) => void ecrire([{ type: 'regler_calque_joueurs', calque: c.id, montre: v }])} />}
                     </li>
                   ))}
