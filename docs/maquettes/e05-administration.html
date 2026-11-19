@@ -90,6 +90,16 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;font
 <section class="panel"><h2>Jeton de l'assistant — échec</h2><div class="alert">La connexion n'a pas abouti. Recommencez.</div><p>Aucun jeton posé.</p><span class="btn pri">Connecter l'abonnement</span></section>
 <section class="panel"><h2>Jeton de l'assistant — expirée</h2><div class="alert">La connexion a expiré. Recommencez.</div><p>Jeton posé le 11 octobre 2026.</p><span class="btn">Reconnecter l'abonnement</span></section>
 <section class="panel"><h2>Jeton de l'assistant — erreur de lecture</h2><div class="alert">Impossible de charger l'état du jeton.</div><span class="btn">Réessayer</span></section></div>
+<!-- kanevas-synchro-jetons : panneau « Jetons d'API » (docs/ecrans.md « E-5 Administration — le panneau « Jetons d'API » »), pleine largeur sous « Jeton de l'assistant ». Jamais la valeur d'un jeton. Le formulaire « Modifier les accès » est celui de e23-jetons.html. -->
+<section class="panel" aria-labelledby="ja-api"><div class="hrow"><h2 id="ja-api">Jetons d'API</h2><span class="in" style="width:200px">Propriétaire : tous ▾</span></div>
+<table><tr><th>Nom</th><th>Propriétaire</th><th>Accès</th><th>Expire</th><th>Dernier usage</th><th></th></tr>
+<tr><td>Script Kanka — Mac</td><td>antor</td><td>Tous les univers du compte — lecture + écriture · Brume : —</td><td>10 nov. 2026</td><td>il y a 3 min</td><td><span class="btn sm">Modifier les accès</span> <span class="btn sm dg">Révoquer</span></td></tr>
+<tr><td>Agent de Léa</td><td>lea</td><td>Les Landes grises : lecture</td><td>9 janv. 2027</td><td>jamais</td><td><span class="btn sm">Modifier les accès</span> <span class="btn sm dg">Révoquer</span></td></tr>
+<tr><td>Ancien script</td><td>mira</td><td>Tous les univers du compte — lecture</td><td>—</td><td>3 oct. 2026</td><td><span class="badge">Révoqué</span></td></tr></table>
+<p class="note">Les jetons actifs sont tous listés ; les 20 derniers révoqués ou expirés. La valeur d'un jeton n'est jamais montrée.</p></section>
+<section class="panel"><h2>Jetons d'API — révoquer</h2><p>Révoquer « Agent de Léa » (lea) ? Le script ou l'agent qui l'utilise ne pourra plus rien lire ni écrire. Léa verra « Révoqué par l'admin ».</p><div class="row"><span class="btn dg">Révoquer le jeton</span><span class="btn">Annuler</span></div></section>
+<div class="g2"><section class="panel"><h2>Jetons d'API — vide</h2><p>Aucun jeton sur cette instance.</p></section>
+<section class="panel"><h2>Jetons d'API — erreur</h2><div class="alert">Impossible de charger les jetons.</div><span class="btn">Réessayer</span></section></div>
 <div class="panel"><h2>État vide — aucune sélection</h2><div class="empty">Choisissez un univers pour voir ses membres.</div></div>
 <div class="panel"><h2>État alternatif — Léa (Joueuse) : adresse forcée</h2><p>Page introuvable.</p><a class="btn" href="e01-accueil.html">Mes univers</a></div>
 </main></div></div></div></body></html>

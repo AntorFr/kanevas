@@ -1,3 +1,4 @@
+// ecrans: fiche, recherche
 // Phone width (390 px) of the « MJ seul » pill (B-57): the E-17 result keeps its title readable and the
 // E-9 header row keeps the type pill on one line without pushing the title block. Real server + Chromium.
 import assert from 'node:assert/strict';
@@ -42,6 +43,8 @@ describe('kanevas-fiche-mj-seul-ecran, téléphone', { skip: skipBrowser }, () =
     await api('PATCH', `/api/univers/${U}/fiches/${idReference}/sections/${sec.id}`, { joueursLisent: true });
     for (const id of [idIllustree, idReference]) {
       await api('PATCH', `/api/univers/${U}/fiches/${id}`, { sousType: 'Sous-type assez long' });
+      // kanevas-synchro-cles: the key line sits under the title; two keys of the same length wrap the same, so the two headers stay comparable
+      await api('PATCH', `/api/univers/${U}/fiches/${id}`, { cle: `personnage:veilleur-${id === idIllustree ? 'a' : 'b'}` });
       const r = await antor.request.fetch(`${srv.base}/api/univers/${U}/fiches/${id}/illustration`, {
         method: 'PUT',
         multipart: { fichier: { name: 'portrait.png', mimeType: 'image/png', buffer: PNG } },

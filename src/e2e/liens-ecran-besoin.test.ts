@@ -152,7 +152,6 @@ test('Antor voit trois mentions d’Aldric dont le rapport MJ ; en mode Joueur, 
   await page.screenshot({ path: '/tmp/liens-ecran-antor-mentions.png' });
   await page.getByLabel('Mode Joueur').check();
   await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(500);
   const bloc2 = page.getByRole('region', { name: 'Mentionnée dans' });
   await bloc2.waitFor();
   assert.deepEqual((await bloc2.locator('li .cible').allInnerTexts()).map((t: string) => t.trim()), ['Port-Sel']);
@@ -217,7 +216,7 @@ test('connexion coupée : la liste ne s’ouvre pas', opts, async () => {
   await page.context().setOffline(true);
   await page.evaluate(() => window.dispatchEvent(new Event('offline')));
   await champ.pressSequentially('\n[[ald');
-  await page.waitForTimeout(600);
+  await page.waitForLoadState('networkidle');
   assert.equal(await page.getByRole('listbox', { name: 'Fiches à lier' }).count(), 0);
   assert.equal(await page.getByText('Recherche…').count(), 0);
   await page.screenshot({ path: '/tmp/liens-ecran-horsligne.png' });

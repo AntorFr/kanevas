@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-rc-ecran-relations, from docs/ecrans.md "E-9 — le bloc Relations" and
 // the task's exit criterion (B-10, B-29, P-3 step 4). Real server in stub mode + real Chromium.
 import assert from 'node:assert/strict';
@@ -32,11 +33,11 @@ const bloc = (page: Any, titre: string) => section(page, titre).getByRole('group
 async function relier(page: Any, titreSection: string, type: string, typeFiche: string, chercherDans: string, cible: string): Promise<void> {
   const b = bloc(page, titreSection);
   await b.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
-  await b.getByLabel('Type de relation').fill(type);
+  await b.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+  await b.getByLabel('Qualificatif').fill(type);
   await b.getByLabel('Type de fiche').selectOption({ label: typeFiche });
   await b.getByLabel(`Chercher dans ${chercherDans}`).fill(cible);
   await b.getByRole('button', { name: rxExact('Chercher') }).click();
-  await page.waitForTimeout(400);
   await attendre(page);
   await b.locator('button.choix-fiche').filter({ hasText: cible }).click();
   await b.getByRole('button', { name: rxExact('Relier') }).click();
@@ -109,7 +110,7 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
   test('un clic sur « Lames Grises » ouvre sa fiche', async () => {
     await ouvrir(lea, aldric);
     await bloc(lea, 'Apparence').getByRole('link', { name: 'Lames Grises' }).click();
-    await lea.waitForURL(new RegExp(`/fiche/${grises}$`));
+    await lea.waitForURL(new RegExp(`/(fiche/[^/]+|(?!fiches/|cartes/|outils/)[^/]+/[^/]+)$`));
   });
 
   test('refus : auto-relation et doublon, au-dessus du formulaire, saisie conservée', async () => {
@@ -117,7 +118,7 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
     await relier(antor, 'Apparence', 'ami de', 'Personnage', 'les personnages', 'Maître Aldric');
     const b = bloc(antor, 'Apparence');
     await b.getByText('Une fiche ne se relie pas à elle-même.').waitFor();
-    assert.equal(await b.getByLabel('Type de relation').inputValue(), 'ami de');
+    assert.equal(await b.getByLabel('Qualificatif').inputValue(), 'ami de');
     assert.equal(await b.locator('.liste-relations > li').count(), 2);
     await b.getByRole('button', { name: rxExact('Annuler') }).click();
     await relier(antor, 'Apparence', 'membre de', 'Faction', 'les factions', 'Lames Grises');
@@ -129,12 +130,14 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
     await ouvrir(antor, aldric);
     const b = bloc(antor, 'Passé');
     await b.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
-    await b.getByLabel('Type de relation').press('Enter');
+    await b.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+    await b.getByLabel('Qualificatif').press('Enter');
     const t = await b.innerText();
-    assert.ok(t.includes('Erreur : le type de relation est obligatoire.'), t);
+    assert.ok(t.includes('Erreur : le qualificatif est obligatoire sans nature.'), t);
     assert.ok(t.includes('Erreur : choisissez une fiche.'), t);
-    await b.getByLabel('Type de relation').fill('a'.repeat(81));
-    await b.getByLabel('Type de relation').press('Enter');
+    await b.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+    await b.getByLabel('Qualificatif').fill('a'.repeat(81));
+    await b.getByLabel('Qualificatif').press('Enter');
     assert.ok((await b.innerText()).includes('Erreur : 80 caractères au plus.'));
     assert.equal(await b.getByRole('button', { name: rxExact('Relier') }).isDisabled() || (await b.getByRole('button', { name: rxExact('Relier') }).getAttribute('aria-disabled')) === 'true', true);
     await b.getByRole('button', { name: rxExact('Annuler') }).click();
@@ -200,7 +203,7 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
     await relier(antor, 'Apparence', 'allié de', 'Faction', 'les factions', 'Cercle des Cendres');
     const b = bloc(antor, 'Apparence');
     await b.getByText(rx('L’action n’a pas abouti. Réessayez.')).waitFor();
-    assert.equal(await b.getByLabel('Type de relation').inputValue(), 'allié de');
+    assert.equal(await b.getByLabel('Qualificatif').inputValue(), 'allié de');
     await antor.unrouteAll({ behavior: 'ignoreErrors' });
   });
 

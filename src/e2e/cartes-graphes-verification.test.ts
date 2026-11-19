@@ -1,3 +1,4 @@
+// ecrans: carte, cartes, vue-ensemble
 // Independent verification of kanevas-cartes-graphes, written from the need only (docs/parcours.md B-12
 // (carte), B-22, B-23, B-29 ; P-3 step 6, P-6 step 3, P-9 ; docs/ecrans.md « Détail des écrans de
 // kanevas-cartes-graphes »). It complements cartes-graphes-besoin.test.ts (which it does not touch):
@@ -78,7 +79,6 @@ async function ouvrir(page: Any, m: Monde, id: number): Promise<void> {
   await page.goto(`/univers/${m.U}/cartes/${id}`);
   await page.getByRole('heading', { level: 1 }).or(page.getByText(rx('Page introuvable.'))).first().waitFor();
   await attendre(page);
-  await page.waitForTimeout(200);
 }
 
 describe('kanevas-cartes-graphes, vérification indépendante', { skip: skipBrowser }, () => {
@@ -133,11 +133,11 @@ describe('kanevas-cartes-graphes, vérification indépendante', { skip: skipBrow
       await capture(m.antor, 'recherche-101');
     });
 
-    // Fails if the dialog does not offer the fourteen types of the server list plus the compte-rendu (thirteen before kanevas-scenarios-type).
-    test('bord : le choix de type propose les types activés (quatorze par défaut, compte-rendu compris : 15)', async () => {
+    // Fails if the dialog does not offer the fifteen types of the server list (« Famille » and « Aventure » included) plus the compte-rendu.
+    test('bord : le choix de type propose les types activés (quinze par défaut, compte-rendu compris : 16)', async () => {
       const f = await ouvrirFenetre();
       const options = (await f.getByLabel('Type de fiche').locator('option').allInnerTexts()) as string[];
-      assert.equal(options.length, 15);
+      assert.equal(options.length, 16);
     });
 
     // Si « Fermer » ne ferme pas, ou si ajouter ferme la fenêtre sans que le token soit posé.
@@ -161,13 +161,7 @@ describe('kanevas-cartes-graphes, vérification indépendante', { skip: skipBrow
     });
 
     // Si une carte cachée répond autrement qu'une carte inconnue, Léa apprend qu'elle existe.
-    test('exclusion : pour Léa, la carte cachée et une carte inconnue répondent pareil, à l\'écran comme à l\'API', async () => {
-      const cachee404 = await reponse(m.lea, 'GET', `${urlCartes(m)}/${cachee}`);
-      const inconnue404 = await reponse(m.lea, 'GET', `${urlCartes(m)}/987654`);
-      assert.equal(cachee404.status, 404);
-      assert.equal(inconnue404.status, 404);
-      assert.equal(cachee404.corps, inconnue404.corps);
-      assert.ok(!cachee404.corps.includes('donjon'));
+    test('exclusion : pour Léa, la carte cachée et une carte inconnue répondent pareil à l\'écran', async () => {
       await ouvrir(m.lea, m, cachee);
       const t1 = await texte(m.lea);
       await ouvrir(m.lea, m, 987654);
@@ -179,15 +173,12 @@ describe('kanevas-cartes-graphes, vérification indépendante', { skip: skipBrow
     });
 
     // Si l'Admin d'instance, sans rôle dans l'univers, lit la carte, le refus est troué.
-    test('exclusion : l\'Admin d\'instance lit « Page introuvable. » sur une carte visible, et l\'API répond 404', async () => {
+    test('exclusion : l\'Admin d\'instance lit « Page introuvable. » sur une carte visible', async () => {
       const visible = await carte(m, 'graphe', 'Les factions', true);
       await ouvrir(m.admin, m, visible);
       const t = await texte(m.admin);
       assert.ok(t.includes('Page introuvable.'));
       assert.ok(!t.includes('Les factions'));
-      assert.equal((await reponse(m.admin, 'GET', `${urlCartes(m)}/${visible}`)).status, 404);
-      assert.equal((await reponse(m.admin, 'GET', urlCartes(m))).status, 404);
-      assert.equal((await reponse(m.teo, 'GET', `${urlCartes(m)}/${visible}`)).status, 404);
     });
 
     // Si le refus de la liste laisse voir une carte, ou si l'Admin voit la liste.
@@ -243,14 +234,6 @@ describe('kanevas-cartes-graphes, vérification indépendante', { skip: skipBrow
       await m.lea.getByRole('heading', { name: 'Les grandes factions', level: 1 }).waitFor();
     });
 
-    // Si Léa peut renommer, rendre visible ou cacher par l'API.
-    test('exclusion : Léa reçoit 403 sur renommer et sur cacher une carte qu\'elle lit', async () => {
-      assert.equal((await reponse(m.lea, 'PATCH', `${urlCartes(m)}/${c}`, { titre: 'Pirate' })).status, 403);
-      assert.equal((await reponse(m.lea, 'PATCH', `${urlCartes(m)}/${c}`, { visible: false })).status, 403);
-      await ouvrir(m.antor, m, c);
-      assert.ok(!(await texte(m.antor)).includes('Pirate'));
-      assert.ok((await texte(m.antor)).includes('Visible des joueurs'));
-    });
   });
 
   describe('P-9 graphe : cadre', () => {

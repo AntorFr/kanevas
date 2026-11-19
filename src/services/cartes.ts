@@ -5,13 +5,16 @@ import type { Db } from '../db/db.js';
 import { peutLireSection, peutVoirFiche, roleDe, vueMJ } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { chargerFiche, LIMITE_LISTE, validerTitre } from './fiches.js';
-import { typeParSignature } from './fichiers.js';
+import { curseurApi, PAGE_LECTURE_API, typeParSignature } from './fichiers.js';
+import { empreinteCarte } from './empreintes.js';
+import { libelleRelation } from './natures.js';
 import { lireRelations } from './relations.js';
 import {
   abandonner,
   ecrireFlux,
   lireFichier,
   promouvoir,
+  sha256Stocke,
   supprimerFichier,
 } from './stockage.js';
 import type { Acteur, Role, SectionRow, TypeFiche } from './types.js';
@@ -61,7 +64,11 @@ export interface LienVue {
   /** Sheet the relation comes from, sheet it points to, and the free label. */
   de: number;
   vers: number;
-  type: string;
+  /** Key of the nature, '' for a free relation. */
+  nature: string;
+  qualificatif: string;
+  /** The nature's label with the qualifier after « — », or the qualifier alone when free. */
+  libelle: string;
 }
 
 export interface CarteLue {
@@ -378,10 +385,16 @@ export function lireCarte(db: Db, compteId: number, modeJoueur: boolean, carteId
         if (!peutLireSection(role, s, acteur)) continue;
         for (const rel of lireRelations(db, acteur, c.univers_id, r.fiche_id, s.id)) {
           if (!bouts.has(rel.cible.id)) continue;
-          const cle = `${r.fiche_id}|${rel.cible.id}|${rel.type}`;
+          const cle = `${r.fiche_id}|${rel.cible.id}|${rel.nature}|${rel.qualificatif}`;
           if (vus.has(cle)) continue;
           vus.add(cle);
-          liens.push({ de: r.fiche_id, vers: rel.cible.id, type: rel.type });
+          liens.push({
+            de: r.fiche_id,
+            vers: rel.cible.id,
+            nature: rel.nature,
+            qualificatif: rel.qualificatif,
+            libelle: libelleRelation(rel.nature, rel.qualificatif),
+          });
         }
       }
     }
@@ -486,4 +499,51 @@ export function retirerElement(
       .run(elementId, c.id);
     if (info.changes === 0) throw introuvable();
   })();
+}
+
+export interface CarteApi {
+  id: number;
+  titre: string;
+  forme: FormeCarte;
+  visible: boolean;
+  /** SHA-256 of the background, null when the map has none. */
+  sha256Fond: string | null;
+  empreinte: string;
+}
+
+/**
+ * The maps the caller reads, in id order, a thousand per page (B-90, AD-149): every map for a GM, the
+ * visible ones for anyone else; a hidden map is neither listed nor counted. Metadata only: the elements
+ * and links of a map stay with `lireCarte` (AD-68).
+ */
+export async function listerCartesApi(
+  db: Db,
+  compteId: number,
+  universId: number,
+  apres: unknown,
+): Promise<{ cartes: CarteApi[]; suivant: number | null }> {
+  const role = roleDe(db, universId, compteId);
+  if (!role) throw introuvable();
+  const curseur = curseurApi(apres);
+  const rows = db
+    .prepare(
+      `SELECT * FROM cartes WHERE univers_id = ? AND id > ?${role === 'mj' ? '' : ' AND visible = 1'}
+       ORDER BY id LIMIT ?`,
+    )
+    .all(universId, curseur, PAGE_LECTURE_API + 1) as CarteRow[];
+  const page = rows.slice(0, PAGE_LECTURE_API);
+  const cartes: CarteApi[] = [];
+  for (const c of page) {
+    const sha256Fond = c.fond === null ? null : await sha256Stocke(c.fond);
+    const visible = c.visible === 1;
+    cartes.push({
+      id: c.id,
+      titre: c.titre,
+      forme: c.forme,
+      visible,
+      sha256Fond,
+      empreinte: empreinteCarte({ titre: c.titre, forme: c.forme, visible, sha256Fond }),
+    });
+  }
+  return { cartes, suivant: rows.length > PAGE_LECTURE_API ? page[page.length - 1]!.id : null };
 }

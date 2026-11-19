@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = ["modules/*"]
+
+[workspace.dependencies]
+wasm-bindgen = "=0.2.130"
+
+[profile.release]
+opt-level = "s"
+lto = true

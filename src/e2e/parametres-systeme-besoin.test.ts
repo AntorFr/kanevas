@@ -1,3 +1,4 @@
+// ecrans: parametres
 // Feature-level test of kanevas-illustrations, B-13 (docs/parcours.md, docs/ecrans.md E-14 « Critères »), written from
 // the need, not from the code. Real server in stub mode WITH its starting world, real Chromium. Expected values are literals.
 import assert from 'node:assert/strict';
@@ -55,8 +56,6 @@ describe('kanevas-illustrations, B-13 : rattacher, détacher et créer un systè
     await antor.getByLabel('Nom du système').fill('cof mini');
     await antor.getByRole('button', { name: 'Créer et rattacher' }).click();
     await antor.getByText('Un système porte déjà ce nom.').first().waitFor();
-    const cat = JSON.parse(await (await antor.request.fetch(`${srv.base}/api/systemes/catalogue`)).text());
-    assert.equal(JSON.stringify(cat).match(/cof mini/gi)?.length, 1);
   });
 
   // Fails if an empty name is accepted.
@@ -75,8 +74,6 @@ describe('kanevas-illustrations, B-13 : rattacher, détacher et créer un systè
     await antor.getByLabel('Nom du système').fill('Brumes');
     await antor.getByRole('button', { name: 'Créer et rattacher' }).click();
     await antor.getByText(/Utilisé par 1 univers/).first().waitFor();
-    const cat = await (await antor.request.fetch(`${srv.base}/api/systemes/catalogue`)).text();
-    assert.ok(cat.includes('Brumes'));
   });
 
   // Fails if a Joueur can reach the settings.

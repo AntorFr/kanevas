@@ -1,3 +1,4 @@
+import { sousOrigine } from '../historique.js';
 import { Readable } from 'node:stream';
 import { z } from 'zod';
 import type { Db } from '../../db/db.js';
@@ -6,6 +7,8 @@ import { ErreurService } from '../erreurs.js';
 import { ajouterFichier, MAX_FICHIERS_JOINTS, verifierDepot } from '../fichiers.js';
 import { creerFiche, deplacerFiche, lireFiche, listerFiches } from '../fiches.js';
 import { choisirAdaptateur, type AdaptateurChoisi } from '../images/index.js';
+import { modulesActifs } from '../../outils/registre.js';
+import { accessible } from '../outils.js';
 import { creerProposition } from '../propositions.js';
 import { ecrireContenu, lireSection } from '../sections.js';
 import { TYPES_FICHE } from '../types-fiche.js';
@@ -185,7 +188,7 @@ export function catalogueDe(
         ({ type, titre, sousType, parentId }) => db.transaction(() => {
           // Match the sheet form's default for a character: an NPC (no generic payload parameter).
           const fiche = creerFiche(db, compteId, universId, {
-            type, titre, sousType, charge: type === 'personnage' ? { pj: false } : undefined,
+            type, titre, sousType, charge: type === 'personnage' ? { pj: false } : undefined, via: 'assistant',
           });
           if (parentId !== undefined) deplacerFiche(db, acteur, universId, fiche.id, parentId);
           return {
@@ -232,7 +235,23 @@ export function catalogueDe(
   // The image engine is a GM tool, and absent when no engine exists (AD-45, AD-89).
   if (role === 'mj' && images.nom !== 'aucun') outils.push(outilImage(db, compteId, universId, images));
 
-  return { role, outils };
+  // The tools declared by the modules, without knowing any by name (AD-136): the role is read above, at each request.
+  for (const module of modulesActifs()) {
+    for (const declare of module.outils) {
+      if (!declare.outilsAssistant || !accessible(db, acteur, universId, declare.cle)) continue;
+      outils.push(...declare.outilsAssistant({ db, acteur, universId, role }));
+    }
+  }
+
+  // Every write a tool makes carries the origin `assistant` (AD-147), the async ones included.
+  return {
+    role,
+    outils: outils.map((o) => ({
+      ...o,
+      executer: (args: unknown, contexte?: ContexteDemande) =>
+        sousOrigine({ origine: 'assistant' }, () => o.executer(args, contexte)),
+    })),
+  };
 }
 
 /** `image-<date>-<time>.png`, in UTC. */

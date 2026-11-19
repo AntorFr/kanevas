@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { type ChildProcess, spawn } from 'node:child_process';
 import { createServer } from 'node:net';
 import { test } from 'node:test';
-import { withStartupLock } from './harnais.test.js';
+import { attendreServeurPret, withStartupLock } from './harnais.test.js';
 
 // Black-box tests of B-1 (kanevas-socle): the real server process is started
 // as a user's deployment would (APP_VERSION from the environment), and
@@ -33,16 +33,13 @@ async function startServerSansVerrou(extraEnv: Record<string, string>) {
   Object.assign(env, extraEnv);
   const child: ChildProcess = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
   const base = `http://127.0.0.1:${port}`;
-  for (let i = 0; i < 300; i++) {
-    try {
-      await fetch(`${base}/healthz`);
-      return { base, stop: () => child.kill('SIGKILL') };
-    } catch {
-      await new Promise((r) => setTimeout(r, 100));
-    }
+  try {
+    await attendreServeurPret(child, base, () => '');
+  } catch (e) {
+    child.kill('SIGKILL');
+    throw e;
   }
-  child.kill('SIGKILL');
-  throw new Error('server did not start');
+  return { base, stop: () => child.kill('SIGKILL') };
 }
 
 test('B-1 open /healthz on a deployment tagged 0.1.0 answers "kanevas 0.1.0"', async () => {

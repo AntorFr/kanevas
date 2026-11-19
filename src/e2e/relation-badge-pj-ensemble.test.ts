@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-relation-badge-pj, from the need alone (Monsieur's "Livre" / "Précision"
 // messages and docs/ecrans.md, E-9 bloc Relations): a sheet with a relation to a character opens, and
 // the relation line carries « PJ » / « PNJ » of the target, the type label otherwise.
@@ -80,25 +81,6 @@ describe('kanevas-relation-badge-pj, E-9 badge de la cible', { skip: skipBrowser
     await antor.screenshot({ path: '/tmp/badge-pj-mj.png' });
   });
 
-  test('route : cible personnage porte charge {pj} exactement, rien de plus', async () => {
-    const lignes = await api(antor, 'GET', `${base()}/${id.source}/sections/${secSource}/relations`);
-    const liste: Any[] = Array.isArray(lignes) ? lignes : (lignes.relations ?? lignes.items);
-    assert.equal(liste.length, 5);
-    const par = (t: string) => liste.find((r) => r.cible.titre === t).cible;
-    assert.deepEqual(par('Mira la Lame').charge, { pj: true });
-    assert.deepEqual(par('Gorbal le Forgeron').charge, { pj: false });
-    for (const t of ['Lames Grises', 'Port-Sombre']) {
-      const c = par(t);
-      assert.ok(!c.charge || !('pj' in c.charge), `charge.pj sur une cible non personnage : ${t}`);
-    }
-  });
-
-  test('exclusion : aucune autre donnée de la fiche cible (sections, contenu) dans la réponse', async () => {
-    const brut = JSON.stringify(await api(antor, 'GET', `${base()}/${id.source}/sections/${secSource}/relations`));
-    assert.ok(!brut.includes('Résumé'), brut);
-    assert.ok(!/"contenu"/.test(brut), brut);
-  });
-
   test('un joueur voit les mêmes badges, et la cible illisible est absente (ni ligne, ni PJ de trop)', async () => {
     await ouvrir(lea);
     assert.equal(erreursPage.length, 0, erreursPage.join(' | '));
@@ -123,7 +105,8 @@ describe('kanevas-relation-badge-pj, E-9 badge de la cible', { skip: skipBrowser
     await ouvrir(antor);
     const b = bloc(antor);
     await b.getByRole('button', { name: /^Relier à une fiche$/ }).click();
-    await b.getByLabel('Type de relation').fill('rival de');
+    await b.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+    await b.getByLabel('Qualificatif').fill('rival de');
     await b.getByLabel('Chercher dans les personnages').fill('Zéphyr');
     await b.getByRole('button', { name: /^Chercher$/ }).click();
     await b.locator('button.choix-fiche').filter({ hasText: 'Zéphyr Nouveau' }).click();

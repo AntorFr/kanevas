@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 
 import { useVue } from '../../cadre-contexte';
 import { Pastille } from '../../ui';
-import { badgeFiche, iconeDuType, useTypes } from '../../types-contexte';
+import { badgeFiche, iconeDuType, marqueDe, useTypes } from '../../types-contexte';
+import { MarqueDisparu, classeDisparu } from './marque';
 import type { Fiche } from './types';
 import { StatutAventure } from './statut';
 
@@ -70,6 +71,14 @@ export function useMJSeul(
 function Repli({ fiche }: { fiche: Fiche }) {
   const { types } = useTypes();
   const Icone = iconeDuType(types, fiche.type);
+  const marque = marqueDe(types, fiche);
+  if (marque) {
+    return (
+      <span className="repli">
+        <MarqueDisparu mot={marque.mot} Icone={marque.Icone} seul />
+      </span>
+    );
+  }
   return (
     <span className="repli">
       <span className="puce-type" aria-hidden="true">
@@ -95,9 +104,10 @@ export function CarteFiche({ universId, fiche, gestion = false, onChange }: {
   const [ko, setKo] = useState<string>();
   const mjSeul = useMJSeul(fiche);
   const image = jeton !== undefined && ko !== jeton;
+  const marque = marqueDe(types, fiche);
   const carte = (
     <Link className="carte" to={`/univers/${universId}/fiche/${fiche.id}`}>
-      <span className="vue">
+      <span className={`vue${classeDisparu(marque)}`}>
         {image ? (
           <img
             src={adresseIllustration(universId, ill!.id, jeton)}
@@ -111,6 +121,7 @@ export function CarteFiche({ universId, fiche, gestion = false, onChange }: {
         ) : (
           <Repli fiche={fiche} />
         )}
+        {marque && image && <MarqueDisparu mot={marque.mot} Icone={marque.Icone} />}
       </span>
       <span className="pied-carte">
         <span className="titre" title={fiche.titre}>

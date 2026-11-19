@@ -144,7 +144,7 @@ test('PATCH statut : MJ 200 sans toucher modifie_le ; joueur 403 / 404 ; mode Jo
   const r = await w.req(w.antor, 'PATCH', `${w.base}/fiches/${ouverte.id}`, { statut: 'en_cours' });
   assert.equal(r.statusCode, 200, r.body);
   assert.deepEqual(r.json().charge, { v: 1, statut: 'en_cours' });
-  assert.equal(modif(ouverte.id), avant);
+  assert.notEqual(modif(ouverte.id), avant, 'since AD-147 the status (a payload field) dates the sheet, whatever the title says');
   assert.equal((await w.req(w.antor, 'PATCH', `${w.base}/fiches/${ouverte.id}?mode=joueur`, { statut: 'prete' })).statusCode, 403);
   assert.equal((await w.req(w.lea, 'PATCH', `${w.base}/fiches/${ouverte.id}`, { statut: 'prete' })).statusCode, 403);
   assert.equal((await w.req(w.lea, 'PATCH', `${w.base}/fiches/${fermee.id}`, { statut: 'prete' })).statusCode, 404);

@@ -1,3 +1,4 @@
+// ecrans: fiche, mediatheque
 // Feature-level check of kanevas-import-mediatheque, written from the sheet of the feature and from
 // docs/parcours.md P-16 « Échec » (an interrupted upload: « L'envoi n'a pas abouti. », nothing added,
 // nothing joined), not from the code. Real server in stub mode on the seed, real Chromium.
@@ -79,11 +80,7 @@ test('le réseau revenu, le même geste ajoute et joint le fichier', opts, async
   await description.locator('input[type=file]').first().setInputFiles(PDF('coupe-joint.pdf'));
   await description.getByText('coupe-joint.pdf').first().waitFor();
   // The row shows the name while the POST is still running: wait for the stored file.
-  const fin = Date.now() + 15000;
-  let noms = await nomsDeLaMediatheque();
-  while (!noms.includes('coupe-joint.pdf') && Date.now() < fin) {
-    await new Promise((r) => setTimeout(r, 200));
-    noms = await nomsDeLaMediatheque();
-  }
+  await attendre(antor);
+  const noms = await nomsDeLaMediatheque();
   assert.ok(noms.includes('coupe-joint.pdf'));
 });

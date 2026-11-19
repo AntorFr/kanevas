@@ -22,8 +22,8 @@ async function monter() {
   const clore = (l: number) => app.inject({ method: 'POST', url: `${base}/lots/${l}/clore`, headers: auth });
   const lire = async (l: number) => (await app.inject({ method: 'GET', url: `${base}/lots/${l}`, headers: auth })).json();
   const ligne = (cle: string) =>
-    app.db.prepare('SELECT id, type, charge, parent_id, sous_type, dernier_import FROM fiches WHERE univers_id = ? AND cle_origine = ?').get(u.id, cle) as
-      | { id: number; type: string; charge: string; parent_id: number | null; sous_type: string | null; dernier_import: string }
+    app.db.prepare('SELECT id, type, charge, parent_id, sous_type FROM fiches WHERE univers_id = ? AND cle = ?').get(u.id, cle) as
+      | { id: number; type: string; charge: string; parent_id: number | null; sous_type: string | null }
       | undefined;
   const nb = () => (app.db.prepare('SELECT COUNT(*) n FROM fiches WHERE univers_id = ?').get(u.id) as { n: number }).n;
   return { app, u, auth, base, put, lot, clore, lire, ligne, nb, antor: trouverCompte(app.db, 'antor')!.id };
@@ -79,7 +79,7 @@ test('refus avec ?lot= : compté refusée dans le lot', async () => {
   assert.equal(lt.compteurs.fiches.refusees, 1);
 });
 
-test('rejeu : statut changé par un MJ non écrasé + avertissement ; rejeu sans statut n’y touche pas', async () => {
+test('rejeu : un statut changé dans Kanevas revient à ce que le script porte, sans avertissement ; sans statut, le rejeu n’y touche pas', async () => {
   const m = await monter();
   await m.put('campagne:couronne', CAMP);
   const id = (await m.put('scenario:acte-2', SCEN)).json().id as number;
@@ -87,16 +87,19 @@ test('rejeu : statut changé par un MJ non écrasé + avertissement ; rejeu sans
   const l = await m.lot();
   const r = await m.put('scenario:acte-2', SCEN, l);
   assert.equal(r.statusCode, 200);
-  assert.equal(JSON.parse(m.ligne('scenario:acte-2')!.charge).statut, 'en_cours');
-  assert.match(JSON.stringify(r.json().avertissements), /statut modifié dans Kanevas : non écrasé/);
-  assert.equal((await m.lire(l)).avertissements, 1);
+  assert.equal(r.json().etat, 'mise_a_jour');
+  assert.equal(JSON.parse(m.ligne('scenario:acte-2')!.charge).statut, 'prete');
+  assert.deepEqual(r.json().avertissements, []);
+  assert.doesNotMatch(JSON.stringify(await m.lire(l)), /non écrasé/);
+  changerStatutFiche(m.app.db, { compteId: m.antor }, m.u.id, id, 'terminee');
   const { statut: _s, ...sans } = SCEN;
   const r2 = await m.put('scenario:acte-2', sans);
   assert.deepEqual(r2.json().avertissements, []);
-  assert.equal(JSON.parse(m.ligne('scenario:acte-2')!.charge).statut, 'en_cours');
+  assert.equal(r2.json().etat, 'inchangee');
+  assert.equal(JSON.parse(m.ligne('scenario:acte-2')!.charge).statut, 'terminee');
 });
 
-test('rejeu : statut modifié à la source suivi tant que personne n’y a touché', async () => {
+test('rejeu : statut modifié à la source écrit', async () => {
   const m = await monter();
   await m.put('campagne:couronne', CAMP);
   const r = await m.put('campagne:couronne', { ...CAMP, statut: 'terminee' });
@@ -110,12 +113,10 @@ test('changement de type : vers aventure écrit la charge, depuis aventure la re
   const r = await m.put('k:1', { type: 'aventure', titre: 'Port', statut: 'prete', sections: [] });
   assert.equal(r.statusCode, 200);
   assert.equal(JSON.parse(m.ligne('k:1')!.charge).statut, 'prete');
-  assert.equal(JSON.parse(m.ligne('k:1')!.dernier_import).statut, 'prete');
   const r2 = await m.put('k:1', { type: 'lieu', titre: 'Port', sections: [] });
   assert.equal(r2.statusCode, 200);
   assert.equal(m.ligne('k:1')!.type, 'lieu');
   assert.equal(JSON.parse(m.ligne('k:1')!.charge).statut, undefined);
-  assert.equal(JSON.parse(m.ligne('k:1')!.dernier_import).statut, undefined);
 });
 
 const CR = (campagne: string) => ({ type: 'compte_rendu', titre: 'Mars', campagne, creeLe: '2021-03-03T20:00:00Z',
@@ -160,6 +161,6 @@ test('lot clos : les aventures sont comptées dans fiches, pas de compteur campa
 test('sections d’une aventure née sans statut : fermées aux joueurs si le script le dit', async () => {
   const m = await monter();
   await m.put('campagne:couronne', { ...CAMP, statut: undefined, sections: [{ cle: 's', titre: 'P', contenu: 'x', joueursLisent: false }] });
-  const n = (m.app.db.prepare("SELECT s.joueurs_lisent j FROM sections s JOIN fiches f ON f.id = s.fiche_id WHERE f.cle_origine = 'campagne:couronne'").get() as { j: number });
+  const n = (m.app.db.prepare("SELECT s.joueurs_lisent j FROM sections s JOIN fiches f ON f.id = s.fiche_id WHERE f.cle = 'campagne:couronne'").get() as { j: number });
   assert.equal(n.j, 0);
 });
