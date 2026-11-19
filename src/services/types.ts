@@ -1,3 +1,4 @@
+import type { BlocFiche } from '../outils/declaration.js';
 export type Role = 'mj' | 'joueur';
 
 export { TYPES_FICHE, type TypeFiche } from './types-fiche.js';
@@ -189,6 +190,8 @@ export interface FicheVue extends Fiche {
   mentionsSuite: boolean;
   /** The sources beyond the first page, as this reader sees them. */
   mentionsRestantes: number;
+  /** Blocks the accessible tools add (AD-liens-3, E-9); empty for most sheets, no count of what is hidden. */
+  blocs: BlocFiche[];
   /** Import origin key (B-50): only in the GM view (outside player mode), never in a reader's answer. */
   cleOrigine?: string;
   /** A report only (AD-124 (4)): the adventure it names, for a reader of that adventure; `campagneSupprimee` for a GM when it is gone. */

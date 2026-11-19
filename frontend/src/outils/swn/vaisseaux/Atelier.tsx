@@ -6,7 +6,7 @@ import { appeler, ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { useTitreAriane } from '../../../cadre-contexte';
 import { Bouton, BoiteDialogue, Chargement, ErreurChargement, PageIntrouvable, Pastille } from '../../../ui';
 import { Equipage } from './Equipage';
-import { bornesEquipage, brouillonDe, choixDe, credits, exigeReparation, legende, memeBrouillon, motifDe, requete } from './format';
+import { bornesEquipage, brouillonDe, choixDe, credits, exigeReparation, legende, ligneAjuste, memeBrouillon, motifDe, requete } from './format';
 import { Effets } from './Effets';
 import { Alertes, Chiffres, ErreurCalcul } from './Resultats';
 import { Selecteur } from './Selecteur';
@@ -423,6 +423,9 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                           {chiffresDe(infos[`${l.nature}/${l.cle}`], classe) && <span className="vx-sous">{chiffresDe(infos[`${l.nature}/${l.cle}`], classe)}</span>}
                           {resultat.lignes.find((r) => r.nature === l.nature && r.cle === l.cle)?.cout !== undefined && (
                             <span className="vx-sous">Ligne : {credits(resultat.lignes.find((r) => r.nature === l.nature && r.cle === l.cle)!.cout!)}</span>
+                          )}
+                          {ligneAjuste(resultat.lignes.find((r) => r.nature === l.nature && r.cle === l.cle)?.ajuste) && (
+                            <span className="vx-sous">{ligneAjuste(resultat.lignes.find((r) => r.nature === l.nature && r.cle === l.cle)?.ajuste)}</span>
                           )}
                           {infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition && <span className="vx-sous vx-condition">{infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition}</span>}
                         </div>

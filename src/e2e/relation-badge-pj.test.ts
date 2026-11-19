@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Review of kanevas-relation-badge-pj-cible: E-9 shows the badge of a relation's target
 // (PJ / PNJ / type label) and opens even when the answer carries no `charge`. Real server (stub) + Chromium.
 import assert from 'node:assert/strict';

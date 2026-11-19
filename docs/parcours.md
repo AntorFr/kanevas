@@ -144,6 +144,12 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   réservé au MJ. » for a document) takes its place; a file within a GM block disappears with the block.
   The illustration follows the same double guard (sheet and image). *(P-12, P-16; Monsieur's decisions
   of 2026-10-11)*
+- **B-taille-1** — *(`kanevas-taille-images`)* When a GM, or a player who may write a section, has an image in its text
+  (`![…](fichier:N)`, E-9), they can set its **size** (small, medium, large) and its **placement**
+  (left or right with the text wrapping it, or centred without wrapping) from the editor's « Image » button;
+  in reading, the image shows at that size and placement, on desktop and on a phone where it stays a
+  readable centred block; an image with no setting shows as before. The setting is the image's Markdown
+  title (`"moyen-droite"`), so the import and the export carry it as text. *(P-12)*
 
 ### Import and API access (`kanevas-import`)
 - **B-45** — A GM creates an **API token** for their universe from « Accès par API » (E-18): a name,
@@ -480,6 +486,23 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   skill. An **accommodation's cargo** may be stated **per hull class** (it then replaces the single cargo of that
   accommodation), and the **system engine** states the **percentage by which it reduces its cost** (10 % in the book).
   A catalogue that says none of it keeps working as before. *(P-19, P-20)*
+- **B-86** — When a catalogue states them, the system shall take the system engine's cost reduction on the cost it names, apply the four new game effects and round an exchange per installation. Two gaps (the reduction's base; the effects and the exchange's rounding) the replay of the reference cases on the real data left open (decision of Monsieur,
+  2026-11-11; no gap is accepted, B-79 holds). The **system engine's cost reduction** says what the percentage is taken
+  of: the cost of the accommodation that carries it (as before, and when nothing is said) or the **cost of the hull**.
+  Four more **game effects** join the closed list, all data of the catalogue and never a formula: a modification that
+  **lightens the mass an optimised cargo hold occupies** by a percentage, one that gives **armour per hull class**, one
+  that **changes the emports a weapon takes** (a specialised mounting), and one that **raises the power a weapon draws**
+  by a percentage (an overload). The **exchange between power and mass** may round its mass **down to a whole number per
+  installation**, instead of counting half a unit per point. A catalogue that says none of it keeps working as before.
+  *(P-19, P-20)*
+
+- **B-87** — When a catalogue states them, the system shall apply the four rules of the book that the effects of B-86
+  had only derived from their labels. Four gaps the replay of the reference cases on the real data left open (decision of
+  Monsieur, 2026-11-13; no gap is accepted, B-79 holds). **Optimised holds** reduce the design's free mass by 10 %
+  (rounded up) and double its cargo; **reinforced armour** adds the armour it states and the engineer's repair skill;
+  **specialised mountings** take half, at least 1, of the power and of the mass of the weapon they aim at; **overloading
+  a weapon** may be taken several times and the installations add up. The four effects of B-86 are replaced, not kept.
+  A catalogue that employs none of them keeps working as before. *(P-19, P-20)*
 
 ### Spatial map (`kanevas-carte-spatiale`, Monsieur's decisions of 2026-11-11)
 
@@ -745,11 +768,14 @@ has expired — the row says « Expiré », the script receives 401.
 5. She opens « Maître Aldric » through a link, then returns through the breadcrumb.
 6. She asks her **assistant** (E-12) « que sait-on de Port-Sel ? »: it cites nothing from the GM
    block.
+7. *(kanevas-taille-images, B-taille-1)* Antor, back on « Port-Sel », puts the caret in the port's image,
+   opens « Image » (E-9, « Écrire ») and chooses « Moyen » then « À droite »; he saves. In reading, the text of
+   « Histoire » wraps the image on the right; on Léa's phone the image is a centred, readable block.
 *Highlight*: the same sheet, read by Antor then Léa — the secret is neither shown, findable,
-nor hinted at.
+nor hinted at. (Step 7 is an editing gesture, outside this key moment.)
 *Failure*: an inserted image does not load — « Image indisponible. » in its place; a link to a
 removed sheet — plain text for Léa, « lien cassé » for Antor; a sheet with nothing readable by Léa
-since the last import — absent from the tree, search and « Mentionnée dans ».
+since the last import — absent from the tree, search and « Mentionnée dans ». Image setting (step 7): « Image » is greyed out while the caret is not in an image; if saving fails, the written title stays in the field with the section's save message.
 
 ### P-13 — Choose a system's and universe's types (GM)
 *Antor plays « CoF Mini » in « Lame d'Ébène », except his universe has ships.*
@@ -908,7 +934,7 @@ the density of generated systems never changes based on a territory she cannot s
    **list** of the designs she may read (E-22), then opens « Vent d'Orak »: she chooses an engine, a hold, a laser
    and a test lance; free power and mass, price, HP and AC recalculate with each choice; she adds a second test
    lance, a blocking alert appears (« Puissance insuffisante : −2 »), then disappears when she removes it. When the catalogue states the rules of the hull (`kanevas-outils-format-vaisseaux-fiches`, B-82), she also sets the **crew** (prefilled with the hull's minimum), reads the speed and the armour in the results, and sees that a fitting of too low a class for her hull raises the blocking alert « classe de coque 3 au moins » while a crew of 5 on a hull needing 6 only raises a watch alert and does not stop the save. A test
-   element of mass 0,5 taken three times lowers the free mass by 1,5 (a hull of mass 7 reads « 5,5 »); a half unit too many reads « Masse insuffisante : −0,5 ». When the catalogue carries modifications at a percentage of the hull (`kanevas-outils-format-vaisseaux-effets`, B-83), she chooses a test modification at 10 %, reads « Ligne : 30 000 cr » and the armour change, sets the **points exchanged** between power and mass within the modification's maximum, picks the **target element** of a doubling, enters her **repair skill**, and reads the watch alert « réparation 2 au moins (1 choisie) » that does not stop the save, while a doubling with no target raises a blocking alert. When the catalogue states the gaps of B-85 (`kanevas-outils-format-vaisseaux-ecarts`), a defence with a negative speed bonus lowers the speed she reads by exactly that number, a modification that changes armour and also asks for a repair skill applies its armour and raises the watch alert at the bound, a cargo stated per class reads the cargo of the chosen hull's class, and the system engine reads its 10 % reduction in the line's cost.
+   element of mass 0,5 taken three times lowers the free mass by 1,5 (a hull of mass 7 reads « 5,5 »); a half unit too many reads « Masse insuffisante : −0,5 ». When the catalogue carries modifications at a percentage of the hull (`kanevas-outils-format-vaisseaux-effets`, B-83), she chooses a test modification at 10 %, reads « Ligne : 30 000 cr » and the armour change, sets the **points exchanged** between power and mass within the modification's maximum, picks the **target element** of a doubling, enters her **repair skill**, and reads the watch alert « réparation 2 au moins (1 choisie) » that does not stop the save, while a doubling with no target raises a blocking alert. When the catalogue states the gaps of B-85 (`kanevas-outils-format-vaisseaux-ecarts`), a defence with a negative speed bonus lowers the speed she reads by exactly that number, a modification that changes armour and also asks for a repair skill applies its armour and raises the watch alert at the bound, a cargo stated per class reads the cargo of the chosen hull's class, and the system engine reads its 10 % reduction in the line's cost. When it states the gaps of B-86 (`kanevas-outils-format-vaisseaux-suite`), the system engine's reduction can be read on the hull's cost, an optimised cargo hold lightens by its percentage, a per-class armour reads the chosen hull's class, a specialised mounting and an overload change the emports and the power of the weapon they aim at, and an exchange rounded per installation reads whole units of mass. When it states the gaps of B-87 (`kanevas-outils-format-vaisseaux-regles-livre`), which replace the four effects just named, optimised holds lower the free mass by a tenth (rounded up) and double the cargo she reads, reinforced armour adds its value and her repair skill to the armour, a specialised mounting takes half the power and the mass of its weapon (at least 1 each), and an overload taken several times adds up. If an imported file states one of these fields wrongly (an unknown effect, a percentage out of range, a parameter without its effect), the import report names the field with its refusal text (E-20) and applies the other rows, as in P-20; P-20 step 2 shows the same report.
 3. She saves: the sheet (**E-9**) shows « Caractéristiques » under the « Générée par le concepteur de
    vaisseaux » banner linking to the tool; Léa cannot manually edit the text.
 4. Later, Antor changes the jump range of the universe setting (or imports a catalogue of the universe): the design is
@@ -939,7 +965,9 @@ blocking alerts (a doubling with no target, a second system engine), « Enregist
 2. With an API token scoped to « galaxie » then « vaisseaux » (**E-18**), he pushes batches; **E-18**
    shows created, updated, refused, each refusal with its field.
 3. He replays: no duplicates. Tests on real data (every route and every example ship of the sources) run **in
-   pods**, which read `eneria`; `kanevas` CI remains synthetic (Monsieur's decision, 2026-10-16).
+   pods**, which read `eneria`; `kanevas` CI remains synthetic (Monsieur's decision, 2026-10-16). The two gaps the replay
+   left open (B-86: the reduction's base; the new effects and the rounded exchange; then B-87: the four rules of the book) are closed by
+   the format, not accepted: the replay is green only with none left open (B-79).
 *Failure*: malformed element — refused with its field, the rest goes through; a token lacking the tool's scope —
 refused (401/403 depending on the import API) and nothing written.
 
@@ -1032,17 +1060,18 @@ search, nor in the count.
 ### P-22 — Read and tend a star system (Antor, GM, at a desk; Léa, Player, on a phone)
 
 Antor opens the galaxy (E-21) of Lame d'Ébène on the Éneria seed, taps a star and chooses « Ouvrir le système » (E-23).
+With `kanevas-carte-spatiale-carte` the map is testable as a canvas, and the lists of `-systeme` stay under it as the text alternative: the same system as lists « Corps » and « Zones » (each line: name, type, orbit and hour), read alike by Antor and by Léa, with « Page introuvable. » for a hidden system. Its strong moment: Léa, on her phone, reads the very lines Antor read, anomaly included. Steps 1 to 5 below are those of the map: `-carte` brings the taps and the illustrations (step 1 without the sheet link, and the high-definition image of step 2), `-liens` the link and « Illustrer la fiche », `-edition` the drag and the names, `-elements` the ship. Moment fort of `-carte`: Léa, on her phone, taps a planet and sees its illustration sharpen, the same planet Antor sees.
 1. **E-23** shows the star at the centre, three planets, a belt, a comet, and the exits. He taps the second planet: the panel shows its illustration,
    « Orbite 4 · 7 h », its type, and the link to its sheet when one exists (B-92).
-2. « Voir l'illustration » opens the high-definition image (cached after the first time); « Illustrer la fiche » adds it to the sheet.
+2. « Voir l'illustration » opens the high-definition image (cached after the first time); « Illustrer la fiche » adds it to the linked sheet (offered only on a linked body: for the planet of step 1 it is there because its sheet exists; otherwise he first links it, « Lier à une fiche… », then illustrates). « Délier » takes the link off at once.
 3. He drags the planet to another hour: orbit and hour update, the change is saved (it **anchors** the system if it was only drawn, that is defines it — the dialogue
-   says so first, B-93). He names the planet (a drawn element has no name until he gives one) and links it to the sheet « Vael II ».
+   says so first, B-93; the same dialog opens from the menu « Système › Ancrer ce système », and « Annuler » there leaves the system drawn). He may also enter the place by « Déplacer » in plane or hexagon coordinates, add a body or a zone from the menu « Système », remove a body (the dialog counts its moons) and set the transition radius. He names the planet (a drawn element has no name until he gives one) and links it to the sheet « Vael II ».
 4. He places the ship « Aube-Brisée » on the second planet, orbit and hour following the planet, linked to its sheet (B-96).
 5. **Moment fort:** Léa, on her phone, opens the same system: every body is there with its illustration, the new name and, from the sheet, « Sur la carte spatiale ». The ship is there
    too, unless Antor set it « Réservé au MJ »: then there is no empty slot and no count.
 
-*Failure path:* the core fails to load in the browser → the map is replaced by the list of bodies (text, illustrations by the server) and
-« La carte ne peut pas s'afficher ici. » (E-23 states); a body moved by another GM meanwhile → « Cet astre a changé depuis que vous l'avez ouvert. » + « Recharger ».
+*Failure path:* an illustration that cannot arrive → the blurred version with « Illustration indisponible. » + « Réessayer »; the server does not answer → « Impossible de lire ce système. » + « Réessayer », or the list already read under « Connexion perdue. »; the core fails to load in the browser → the map is replaced by the list of bodies (text, illustrations by the server) and
+« La carte ne peut pas s'afficher ici. » (E-23 states); a body moved by another GM meanwhile → « Cet astre a changé depuis que vous l'avez ouvert. » + « Recharger »; an orbit or hour out of bounds in « Déplacer » → « Orbite invalide. » and nothing saved. A link that fails → « Impossible d'enregistrer. » with « Réessayer »; the sheet deleted while he chose → « Cette fiche n'existe plus. »; an illustration that cannot be added to the sheet → « L'illustration n'a pas pu être ajoutée. » + « Réessayer »; Léa, before a body whose sheet she cannot read, sees the body with no link at all.
 
 ### P-23 — Tune the generator (Antor, GM)
 
@@ -1071,6 +1100,8 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
   (existing rule): the GM creates the ship sheet, the player designs as the section author.
 - **Live play**: no initiative, animated combat or fog of war; the table remains
   physical.
+- *(kanevas-taille-images)* **A free size in pixels, cropping, a caption and a gallery** for the images of a
+  text: three standard sizes and three placements cover the need; reopened if a GM asks for more.
 - *(kanevas-scenarios)* **A calendar of sessions** (dates, who was there) and a **play log per
   scenario** (« joué le 12 octobre avec Léa et Mira ») — the status says where an adventure
   stands, not when; reopened if the GM asks for the history of a campaign.
@@ -1122,7 +1153,7 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
 
 On E-21 Antor selects the drawn system (3, −5), where the Hollow Fleet hides, and turns on « Secret (MJ seul) » (the dialogue says that hiding **defines** the system, B-93). *Moment fort:* Léa reloads the galaxy: the hexagon
 is an empty cell, and the two routes that led to it are gone; the system's address answers « Page introuvable. ». On another, visible system, Antor sets a station « Réservé au MJ » (E-23): Léa still sees all the bodies,
-and not the station. *Failure path:* a write by a non-GM is not offered; an element on a system that no longer exists → « Ce système n'existe plus. ».
+and not the station. Antor can cancel the dialogue (nothing is written), turn the switch off to give the system back, and see what Léa sees in Player mode; the exit that led to the hidden system disappears from the E-23 of its neighbours. *Failure path:* a write by a non-GM is not offered; an element or a hidden system that no longer exists → « Ce système n'existe plus. »; a conflict or a network failure on the switch or the dialogue leaves the system unchanged and says so (E-21, « Dialog states »).
 
 ### Out of scope of `kanevas-carte-spatiale`
 
@@ -1152,7 +1183,7 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 
 | Cross-check | Result |
 |---|---|
-| Each need has a journey | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 · B-80 P-19, P-20 · B-81 P-18, P-20 · B-82 P-19, P-20 · B-83 P-19, P-20 · B-84 P-18, P-20 · B-85 P-19, P-20 — **holds**. |
+| Each need has a journey | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 · B-80 P-19, P-20 · B-81 P-18, P-20 · B-82 P-19, P-20 · B-83 P-19, P-20 · B-84 P-18, P-20 · B-85 P-19, P-20 · B-86 P-19, P-20 · B-87 P-19, P-20 — **holds**. |
 | Each human action in a journey has a screen | P-17: E-15, E-20, E-14 · P-18: E-10, E-21, E-9 (GM document) · P-19: E-8/E-9, E-22 · P-20: the script (outside the product, like Kanka import); its result is read on E-18; real tests are in the private repository · P-21: E-20 — **holds**, with one action without a screen: conversion and replay (Monsieur's decision). |
 | Each screen has its data | E-20: `outils_systeme`, `outils_univers`, owner, catalogues (version, counts) · E-21: `swn_systemes`, `swn_routes`, `swn_zones`, generated blocks (not stored), seed · E-22: `swn_conceptions`, catalogues, `sections.gere_par` · E-9: `gere_par`, `source_version` — **holds**. |
 | Each entity serves a journey | tool setting P-17, P-21 · owner P-17 · managed section P-19 · token scope P-20 · catalogues P-17, P-19 · placed systems, routes, zones P-18 · design P-19 — **holds**. |
