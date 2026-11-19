@@ -247,6 +247,10 @@ describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser 
     assert.ok(((await premier.boundingBox()) as Any).height >= 44, 'cible de 44 px');
     const etiquettes = await antor.locator('.jeu-calques .interrupteur-libelle').evaluateAll((es: Element[]) => es.map((e) => e.getBoundingClientRect().width));
     assert.ok(etiquettes.every((w: number) => w <= 1), 'étiquette lue, non affichée');
+    const nomBox = (await antor.locator('.jeu-calques .editeur-calque-nom').first().boundingBox()) as Any;
+    const swBox = (await premier.boundingBox()) as Any;
+    assert.ok(swBox.x >= nomBox.x + nomBox.width - 1, `interrupteur à droite du nom (nom x=${nomBox.x} l=${nomBox.width}, interrupteur x=${swBox.x})`);
+    assert.ok(Math.abs((swBox.y + swBox.height / 2) - (nomBox.y + nomBox.height / 2)) < 24, 'interrupteur sur la ligne du nom');
     assert.equal(await premier.isChecked(), true);
     await premier.click();
     await jusque(antor, c, 't.etat.calques_masques.length === 1');
