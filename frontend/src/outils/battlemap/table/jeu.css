@@ -12,7 +12,7 @@ main.principal:has(> .jeu), body.asst-present main.principal:has(> .jeu) { max-w
 .jeu-centre { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; }
 .jeu-centre > .canevas-zone { flex: 1; min-height: 0; }
 .jeu-modes { display: flex; flex-wrap: wrap; gap: var(--e-2); padding: var(--e-2) var(--e-3); border-bottom: 1px solid var(--bord); background: var(--surface); }
-.jeu-suivre { position: absolute; right: var(--e-3); bottom: var(--e-3); z-index: 5; padding: var(--e-1) var(--e-3); background: var(--surface); border: 1px solid var(--bord-fort); border-radius: var(--rayon-panneau); }
+.jeu-suivre { position: absolute; right: var(--e-3); bottom: 76px; z-index: 5; padding: var(--e-1) var(--e-3); background: var(--surface); border: 1px solid var(--bord-fort); border-radius: var(--rayon-panneau); }
 .jeu-barre-fiche { position: absolute; left: var(--e-3); bottom: var(--e-3); z-index: 5; }
 .jeu-panneau { padding-bottom: var(--e-3); }
 .jeu-pions { display: flex; flex-direction: column; gap: var(--e-2); }
@@ -41,5 +41,6 @@ main.principal:has(> .jeu), body.asst-present main.principal:has(> .jeu) { max-w
   .jeu .colonne-outils-pied { margin-top: 0; width: auto; flex-direction: row; }
   .jeu .colonne-outils-pied .interrupteur { flex-direction: row; min-height: 44px; }
   .jeu .editeur-panneau { top: auto; left: 0; width: 100%; max-height: 60%; border-top: 1px solid var(--bord-fort); }
-  .jeu-suivre { bottom: var(--e-3); }
+  .jeu-suivre { bottom: 76px; }
 }
+.jeu-haut .outil-md, .jeu-haut .bouton { white-space: nowrap; }

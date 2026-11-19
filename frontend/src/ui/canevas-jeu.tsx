@@ -316,7 +316,7 @@ export function CanevasJeu({
         c.beginPath();
         for (const [x, y] of cache) c.rect(x, y, 1, 1);
         c.clip();
-        c.globalAlpha = 0.5;
+        c.globalAlpha = 0.3;
         c.fillStyle = t.mj;
         c.fillRect(0, 0, doc.largeur, doc.hauteur);
         c.globalAlpha = 1;

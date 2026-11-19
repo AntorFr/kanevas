@@ -445,7 +445,7 @@ function Partie({
               <span className="jeu-point" aria-hidden="true" />{libelleStatut}
             </span>
             <Menu
-              etiquette="Écran joueurs" declencheur="Écran joueurs" icone={ScreenShare} varianteDeclencheur="outil"
+              etiquette="Écran joueurs" declencheur="Écran joueurs" icone={ScreenShare} varianteDeclencheur="fantome-petit"
               entrees={[
                 { libelle: 'Ouvrir l’écran joueurs', icone: ScreenShare, onChoisir: () => window.open(adresseAffichage, '_blank', 'noopener') },
                 { libelle: copie ? 'Adresse copiée' : 'Copier l’adresse', icone: Copy, onChoisir: () => void copierAdresse() },
