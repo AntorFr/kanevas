@@ -246,7 +246,7 @@ function FicheLiee({ universId, e, onLier, onDelier }: { universId: number; e: E
   );
 }
 
-function ChoixFiche({ universId, onFermer, onChoisir }: { universId: number; onFermer: () => void; onChoisir: (f: Fiche) => void }) {
+export function ChoixFiche({ universId, onFermer, onChoisir }: { universId: number; onFermer: () => void; onChoisir: (f: Fiche) => void }) {
   const [q, setQ] = useState('');
   const [liste, setListe] = useState<Fiche[] | null>(null);
   const [echec, setEchec] = useState(false);

@@ -1,5 +1,6 @@
-import { Eraser, Keyboard, MousePointer2, PanelRight, Paintbrush, Redo2, Undo2, DoorOpen, BrickWall, Stamp } from 'lucide-react';
+import { Eraser, Keyboard, MousePointer2, PanelRight, Paintbrush, Redo2, Undo2, DoorOpen, BrickWall, Stamp, Play } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { appeler, lire } from '../../../api';
 import { useTitreAriane } from '../../../cadre-contexte';
@@ -142,6 +143,7 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
   const [raccourcis, setRaccourcis] = useState(false);
   const [taille, setTaille] = useState(false);
   const [rechargement, setRechargement] = useState(false);
+  const naviguer = useNavigate();
   const lecture = useMedia('(max-width: 600px)');
   const etroit = useMedia('(max-width: 768px)');
   const cache = useRef(new Map<string, HTMLImageElement>());
@@ -440,7 +442,8 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
         {etroit && !lecture && (
           <Bouton className="editeur-bouton-panneau" icone={PanelRight} aria-expanded={panneau} onClick={() => setPanneau((v) => !v)}>Panneau</Bouton>
         )}
-        <Bouton variante="principal" disabled title="Disponible avec le jeu à table.">Jouer</Bouton>
+        {/* « Jouer » (E-28 morceau): what is queued leaves first, so the table opens on the saved map; E-29 creates the table at the first visit. */}
+        <Bouton variante="principal" icone={Play} onClick={() => { void enr.vider().finally(() => naviguer(`/univers/${universId}/outils/battlemap/cartes/${base.split('/').pop()}/jeu`)); }}>Jouer</Bouton>
       </header>
 
       {lecture && <Bandeau sorte="lecture">{MESSAGE_TELEPHONE}</Bandeau>}
