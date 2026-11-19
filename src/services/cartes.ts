@@ -32,6 +32,7 @@ export class ErreurFondTropLourd extends ErreurService {
 }
 const MAX_TITRE = 80;
 
+export type { CarteRow };
 export type FormeCarte = 'illustree' | 'graphe';
 type Flux = Readable | AsyncIterable<Buffer | Uint8Array>;
 
@@ -201,18 +202,18 @@ async function* limiter(flux: Flux, limiteMo: number): AsyncGenerator<Buffer | U
 }
 
 /** Writes a background to `tmp/` and checks it is an image; leaves nothing behind on a refusal. */
-async function ecrireFond(
+export async function ecrireFond(
   db: Db,
   flux: Flux,
   racine: string,
-): Promise<{ temporaire: string; type: string }> {
+): Promise<{ temporaire: string; type: string; empreinte: string }> {
   const ecrit = await ecrireFlux(limiter(flux, fondCarteMaxMo(db)), racine);
   const type = ecrit.taille === 0 ? '' : typeParSignature(ecrit.debut);
   if (!type.startsWith('image/')) {
     await abandonner(ecrit.temporaire, racine);
     throw refus('fond_invalide', "Ce fichier n'est pas une image (PNG, JPEG, GIF ou WebP).");
   }
-  return { temporaire: ecrit.temporaire, type };
+  return { temporaire: ecrit.temporaire, type, empreinte: ecrit.empreinte };
 }
 
 /**
@@ -653,6 +654,15 @@ export interface CarteApi {
   /** SHA-256 of the background, null when the map has none. */
   sha256Fond: string | null;
   empreinte: string;
+  /** The text: the GM's source, else its public copy (no `:::mj` block, AD-114). */
+  texte: string;
+  /** The attached sheet when the caller reads it, else null (never a hint of a hidden one). */
+  fiche: { id: number; cle: string; titre: string } | null;
+}
+
+function ficheLue(db: Db, role: Role, compteId: number, ficheId: number | null): CarteApi['fiche'] {
+  if (ficheId === null || !peutVoirFiche(db, role, ficheId, { compteId })) return null;
+  return db.prepare('SELECT id, cle, titre FROM fiches WHERE id = ?').get(ficheId) as CarteApi['fiche'];
 }
 
 /**
@@ -687,6 +697,8 @@ export async function listerCartesApi(
       visible,
       sha256Fond,
       empreinte: empreinteCarte({ titre: c.titre, forme: c.forme, visible, sha256Fond }),
+      texte: role === 'mj' ? c.texte : c.texte_public,
+      fiche: ficheLue(db, role, compteId, c.fiche_id),
     });
   }
   return { cartes, suivant: rows.length > PAGE_LECTURE_API ? page[page.length - 1]!.id : null };
