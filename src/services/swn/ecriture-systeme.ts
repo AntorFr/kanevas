@@ -14,7 +14,7 @@ import { exigerEcritureGalaxie, type LigneGalaxie, type LigneSysteme } from './g
 import { estMasque } from './lisibilite.js';
 import { lireInterieur, lireTire, type AstreVue, type FormationVue, type InterieurVue } from './interieur.js';
 
-interface Coeur {
+export interface Coeur {
   plan_vers_orbite_heure(x: number, y: number): Float64Array;
   galactique_vers_orbite_heure(dq: number, dr: number, rayon: number): Float64Array;
   types_astre(genre: string): string;
@@ -30,15 +30,15 @@ try {
 } catch {
   coeur = undefined;
 }
-function leCoeur(): Coeur {
+export function leCoeur(): Coeur {
   if (!coeur) throw new Error('Wasm module "coeur" is missing or unreadable.');
   return coeur;
 }
 
-const ORBITE_MAX = 1000;
-const NOM_MAX = 80;
-const DESCRIPTION_MAX = 2000;
-const TAILLE_MAX = 100;
+export const ORBITE_MAX = 1000;
+export const NOM_MAX = 80;
+export const DESCRIPTION_MAX = 2000;
+export const TAILLE_MAX = 100;
 const CODE_ORBITE = 'orbite_invalide';
 
 const invalide = (champ: string, message: string, detail?: string) => new ErreurService('invalide', message, detail, champ);
