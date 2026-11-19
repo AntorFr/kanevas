@@ -348,6 +348,10 @@ interface LigneFormationAtlas {
   id: number; cle: string; forme: string; nom: string | null; description: string | null; parametres: string;
   fiche_id: number | null; version: number; version_importee: number | null;
 }
+/** The import's marks (AD-atlas-3), given beside the entry, never inside it: a screen's body cannot carry them. */
+const IMPORTEE = { importee: true };
+const IMPORT_CLE = (cle: string) => ({ cle, importee: true });
+
 interface LigneSystemeAtlas { id: number; q: number; r: number; transition: number | null; version: number; version_importee: number | null }
 
 /** Thrown inside the transaction to undo the whole request once the refusals are collected. */
@@ -433,15 +437,15 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
     ficheId: number | null): boolean => item(nature, chemin, () => {
     const ligne = astre(cle);
     if (!ligne) {
-      const commun = { cle, importee: true, type: voulu.type, nom: voulu.nom, taille: voulu.taille, orbite: voulu.orbite, heure: voulu.heure,
+      const commun = { type: voulu.type, nom: voulu.nom, taille: voulu.taille, orbite: voulu.orbite, heure: voulu.heure,
         ...(voulu.aspect ? { aspect: voulu.aspect } : {}) };
-      if (genre === 'etoile') ajouterEtoile(db, acteur, universId, g.id, q, r, { ...commun, etoile_rang: rang });
+      if (genre === 'etoile') ajouterEtoile(db, acteur, universId, g.id, q, r, { ...commun, etoile_rang: rang }, IMPORT_CLE(cle));
       else {
         ajouterAstre(db, acteur, universId, g.id, q, r, {
           ...commun, genre, description: voulu.description, etoile_rang: rang, ...(parentCle ? { parent_cle: parentCle } : {}),
-        });
+        }, IMPORT_CLE(cle));
       }
-      if (ficheId !== null) lierAstre(db, acteur, universId, g.id, q, r, cle, { ficheId, version: 1, importee: true });
+      if (ficheId !== null) lierAstre(db, acteur, universId, g.id, q, r, cle, { ficheId, version: 1 }, IMPORTEE);
       return 'creees';
     }
     if (ligne.genre !== genre) return { refus: 'Cette clé désigne déjà un autre genre de corps.', champ: 'cle' };
@@ -464,10 +468,10 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
     if (horsSynchro(ligne)) return refusSynchro(Object.keys(champs)[0] ?? 'fiche');
     let version = ligne.version;
     if (Object.keys(champs).length > 0) {
-      modifierAstre(db, acteur, universId, g.id, q, r, cle, { ...champs, version, importee: true });
+      modifierAstre(db, acteur, universId, g.id, q, r, cle, { ...champs, version }, IMPORTEE);
       version = astre(cle)!.version;
     }
-    if (lier) lierAstre(db, acteur, universId, g.id, q, r, cle, { ficheId, version, importee: true });
+    if (lier) lierAstre(db, acteur, universId, g.id, q, r, cle, { ficheId, version }, IMPORTEE);
     return 'mises_a_jour';
   });
 
@@ -476,9 +480,9 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
       const ligne = formation(z.cle);
       if (!ligne) {
         ajouterZone(db, acteur, universId, g.id, q, r, {
-          cle: z.cle, importee: true, forme: z.forme, nom: z.nom, description: z.description, parametres: z.parametres,
-        });
-        if (ficheId !== null) lierZone(db, acteur, universId, g.id, q, r, z.cle, { ficheId, version: 1, importee: true });
+          forme: z.forme, nom: z.nom, description: z.description, parametres: z.parametres,
+        }, IMPORT_CLE(z.cle));
+        if (ficheId !== null) lierZone(db, acteur, universId, g.id, q, r, z.cle, { ficheId, version: 1 }, IMPORTEE);
         return 'creees';
       }
       if (ligne.forme !== z.forme) return { refus: 'La forme ne change pas.', champ: 'forme' };
@@ -491,10 +495,10 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
       if (horsSynchro(ligne)) return refusSynchro(Object.keys(champs)[0] ?? 'fiche');
       let version = ligne.version;
       if (Object.keys(champs).length > 0) {
-        modifierZone(db, acteur, universId, g.id, q, r, z.cle, { ...champs, version, importee: true });
+        modifierZone(db, acteur, universId, g.id, q, r, z.cle, { ...champs, version }, IMPORTEE);
         version = formation(z.cle)!.version;
       }
-      if (lier) lierZone(db, acteur, universId, g.id, q, r, z.cle, { ficheId, version, importee: true });
+      if (lier) lierZone(db, acteur, universId, g.id, q, r, z.cle, { ficheId, version }, IMPORTEE);
       return 'mises_a_jour';
     });
   };
@@ -508,7 +512,7 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
           const s = sys();
           if (s.transition === atlas.transition) return 'inchangees';
           if (horsSynchro(s)) return refusSynchro('transition');
-          poserTransition(db, acteur, universId, g.id, q, r, { transition: atlas.transition, versionSysteme: s.version, importee: true });
+          poserTransition(db, acteur, universId, g.id, q, r, { transition: atlas.transition, versionSysteme: s.version }, IMPORTEE);
           return 'mises_a_jour';
         });
       }

@@ -45,11 +45,7 @@ export function importerAtlasParJeton(db: Db, jeton: Jeton, lotId: number | null
  */
 export function importerGalaxieParJeton(db: Db, jeton: Jeton, lotId: number | null, galaxieId: number, corps: unknown,
   maintenant: Date = new Date()): RapportGalaxie {
-  if (lotId !== null) {
-    const lot = lireLot(db, jeton, lotId, maintenant);
-    if (lot.closLe !== null) throw new ErreurService('conflit', 'Le lot est clos.', 'lot_clos');
-    if (lot.outil?.cle !== OUTIL_GALAXIE) throw new ErreurService('invalide', 'Ce lot ne reçoit pas de galaxie.', undefined, 'lot');
-  }
+  garderLot(db, jeton, lotId, maintenant);
   return db.transaction(() => {
     const rapport = importerGalaxie(db, { compteId: jeton.compteId }, jeton.universId, galaxieId, corps);
     if (lotId !== null) {
