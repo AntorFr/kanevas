@@ -42,6 +42,8 @@ export interface ContexteDemande {
  */
 export interface Outil {
   nom: string;
+  /** The doors that offer the tool (AD-mcp-2); absent = the assistant's alone (the modules' tools). */
+  portes?: readonly Porte[];
   description: string;
   schema: z.ZodObject;
   /** Validates `args` against `schema` then runs; never throws for a service refusal. */
@@ -50,7 +52,13 @@ export interface Outil {
   horsDelai?: boolean;
 }
 
+/** The doors of the catalogue (AD-mcp-2): the in-app assistant and the MCP server. */
+export type Porte = 'assistant' | 'mcp';
+
 export interface Catalogue {
   role: 'mj' | 'joueur';
+  porte: Porte;
+  /** What the door's token writes; the assistant's door is `ecriture` (its own tools check the role). */
+  niveau: 'lecture' | 'ecriture';
   outils: Outil[];
 }
