@@ -18,7 +18,6 @@ type Charge =
   | { k: 'introuvable' }
   | { k: 'ok'; carte: CarteLue; table: TableLue };
 
-const SANS_PION: readonly PionVu[] = [];
 const AUCUN = new Set<string>();
 const SANS_APERCU = {};
 const RELANCE_MS = 3000;
@@ -111,6 +110,8 @@ export function Affichage({ universId, cid }: { universId: number; cid: string }
   const doc = charge.k === 'ok' ? charge.table.document : undefined;
   const brouillard = charge.k === 'ok' ? charge.table.brouillard : undefined;
   const grille = useMemo(() => (doc && brouillard !== undefined ? new Grille(doc.largeur, doc.hauteur, brouillard) : null), [doc, brouillard]);
+  // The server sends a player only the tokens he sees (and no `visible` flag): they are drawn plainly.
+  const pions = useMemo<PionVu[]>(() => (charge.k === 'ok' ? charge.table.pions ?? [] : []).map((p) => ({ ...p, visible: true })), [charge]);
   const sans = () => undefined;
   const sansBas = () => false;
 
@@ -129,7 +130,7 @@ export function Affichage({ universId, cid }: { universId: number; cid: string }
   return (
     <div className={classe}>
       <CanevasJeu
-        doc={doc} tailleCase={carte.tailleCase} empreinte={empreinte} image={image} pions={table.pions ?? SANS_PION} selection={null}
+        doc={doc} tailleCase={carte.tailleCase} empreinte={empreinte} image={image} pions={pions} selection={null}
         grille={grille} mj={false} calquesMasques={AUCUN} apercu={SANS_APERCU} libre={false} suivre={table.vue}
         annonce="" message="" surBas={sansBas} surBouge={sans} surHaut={sans} affichage
       />
