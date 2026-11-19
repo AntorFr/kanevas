@@ -155,7 +155,7 @@ test('lot clos : les aventures sont comptées dans fiches, pas de compteur campa
   const lt = await m.lire(l);
   assert.equal(lt.etat, 'clos');
   assert.equal(lt.compteurs.fiches.creees, 2);
-  assert.deepEqual(Object.keys(lt.compteurs).sort(), ['fiches', 'fichiers', 'relations']);
+  assert.deepEqual(Object.keys(lt.compteurs).sort(), ['cartes', 'fiches', 'fichiers', 'relations']);
 });
 
 test('sections d’une aventure née sans statut : fermées aux joueurs si le script le dit', async () => {
