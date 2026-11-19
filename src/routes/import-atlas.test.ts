@@ -29,6 +29,8 @@ async function monde() {
   const un = (sql: string, ...p: unknown[]) => app.db.prepare(sql).get(...p) as any;
   const E = un('SELECT id FROM univers WHERE nom = ?', "Éneria d'essai").id as number;
   const gal = creerGalaxie(app.db, id('antor'), E, { titre: 'Galaxie du bord' }).id;
+  // The seed is drawn at random at creation: fix it, so that the window of drawn neighbours below is the same every run.
+  app.db.prepare('UPDATE swn_galaxies SET graine = ? WHERE id = ?').run('kanevas-neutre-1', gal);
   const tok = (compte: string, outils?: string[]) => creerJeton(app.db, id(compte), E, { nom: 'T', dureeJours: 30, outils }, app.horloge());
   const req = (valeur: string, method: 'GET' | 'POST' | 'PUT', url: string, payload?: unknown) =>
     app.inject({ method, url: `/api/import/v1/univers/${E}${url}`, headers: { authorization: `Bearer ${valeur}` }, payload: payload as any });
