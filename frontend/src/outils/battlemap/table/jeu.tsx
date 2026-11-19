@@ -459,10 +459,10 @@ function Partie({
       </header>
 
       {perdue && <div className="jeu-bande" role="status">Connexion perdue.</div>}
-      {(echec || pleine || change) && (
+      {(echec || plein || change) && (
         <div className="editeur-alertes">
           {echec && <Alerte>L’action n’a pas abouti.</Alerte>}
-          {pleine && <Alerte sens="avertissement">Cette table est pleine (200 pions). Table pleine</Alerte>}
+          {plein && <Alerte sens="avertissement">Table pleine. Cette table est pleine (200 pions).</Alerte>}
           {change && <Alerte action={<Bouton petit onClick={() => { setChange(false); void recharger(); }}>Recharger</Bouton>}>Cette table a changé</Alerte>}
         </div>
       )}
