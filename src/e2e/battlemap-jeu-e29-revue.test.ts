@@ -227,4 +227,31 @@ describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser 
     await lea.getByText('Page introuvable.').waitFor();
     assert.equal((await lea.request.get(`${api}/cartes/${c}/table`)).status(), 404);
   });
+
+  it('onglet Calques : une ligne par calque sans puce, un interrupteur nommé par calque, le geste persiste', async () => {
+    const c = await nouvelle('Calques du revueur');
+    assert.ok((await antor.request.post(`${api}/cartes/${c}/table`)).status() < 300);
+    await jeu(antor, c);
+    await antor.getByRole('tab', { name: 'Calques' }).click();
+    const lignes = antor.locator('.jeu-calques li');
+    await lignes.first().waitFor();
+    const n = await lignes.count();
+    assert.ok(n >= 2, `un calque par ligne (${n})`);
+    assert.equal(await antor.locator('.jeu-calques ul').evaluate((e: Element) => getComputedStyle(e).listStyleType), 'none');
+    const commutateurs = antor.locator('.jeu-calques').getByRole('switch');
+    const k = await commutateurs.count();
+    assert.equal(k, n - await antor.locator('.jeu-calques li.mj').count(), 'un interrupteur par calque, sauf MJ seul');
+    const premier = commutateurs.first();
+    const nom = (await premier.getAttribute('aria-label')) ?? (await premier.textContent()) ?? '';
+    assert.match(nom, /^Visible des joueurs : .+/);
+    assert.ok(((await premier.boundingBox()) as Any).height >= 44, 'cible de 44 px');
+    const etiquettes = await antor.locator('.jeu-calques .interrupteur-libelle').evaluateAll((es: Element[]) => es.map((e) => e.getBoundingClientRect().width));
+    assert.ok(etiquettes.every((w: number) => w <= 1), 'étiquette lue, non affichée');
+    assert.equal(await premier.isChecked(), true);
+    await premier.click();
+    await jusque(antor, c, 't.etat.calques_masques.length === 1');
+    await antor.reload();
+    await antor.getByRole('tab', { name: 'Calques' }).click();
+    assert.equal(await antor.locator('.jeu-calques').getByRole('switch').first().isChecked(), false);
+  });
 });
