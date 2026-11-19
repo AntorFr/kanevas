@@ -1,8 +1,19 @@
 // Reading of the atlas of a system (AD-atlas-2, AD-atlas-3): a pure function, no database, no write. It checks the
 // shape and the bounds of the JSON body, collects EVERY refusal with its path, and returns the normalised items.
 // What a type, an aspect or a formation may carry is decided by the Rust core (AD-140): nothing of its bounds is
-// copied here. The resolution of `fiche` (a sheet's `cle_origine`) is the application's, not this file's.
-import { DESCRIPTION_MAX, leCoeur, NOM_MAX, ORBITE_MAX, TAILLE_MAX } from './ecriture-systeme.js';
+// copied here. The resolution of `fiche` (a sheet's `cle_origine`) is the application's (`appliquerAtlas`, below), which
+// writes through the functions of `ecriture-systeme.ts` only (AD-edition-1): no `INSERT` / `UPDATE` of the system's tables here.
+import type { Db } from '../../db/db.js';
+import { peutVoirFiche, roleDe } from '../droits.js';
+import { ErreurService } from '../erreurs.js';
+import type { Acteur } from '../types.js';
+import { apresEcriture, sansSignal } from './ecriture-carte.js';
+import {
+  ajouterAstre, ajouterEtoile, ajouterZone, DESCRIPTION_MAX, leCoeur, lierAstre, lierZone, modifierAstre, modifierZone, NOM_MAX,
+  ORBITE_MAX, poserTransition, TAILLE_MAX,
+} from './ecriture-systeme.js';
+import { exigerEcritureGalaxie } from './galaxies.js';
+import { HORS_SYNCHRO } from './import-galaxie.js';
 
 export const MAX_ETOILES = 8, MAX_CORPS = 80, MAX_LUNES = 24, MAX_ZONES_ATLAS = 40, MAX_POINTS = 40;
 /** Refusals kept in the report; the rest is only counted (as the galaxy import's). */
@@ -291,4 +302,242 @@ export function lireAtlas(corps: unknown): LectureAtlas {
   const atlas: Atlas = { etoiles, corps: lesCorps, zones, points };
   if (transition !== undefined) atlas.transition = transition;
   return { ok: true, atlas };
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Application (AD-atlas-3): all or nothing, idempotent, never overwriting.
+
+export type NatureAtlas = 'systemes' | 'etoiles' | 'corps' | 'points' | 'formations';
+export const NATURES_ATLAS: NatureAtlas[] = ['systemes', 'etoiles', 'corps', 'points', 'formations'];
+export interface CompteursAtlas { creees: number; mises_a_jour: number; inchangees: number; refusees: number }
+export interface RefusApplique extends RefusAtlas { nature: NatureAtlas; code?: string }
+export interface RapportAtlas {
+  appliquee: boolean;
+  natures: Record<NatureAtlas, CompteursAtlas>;
+  refus: RefusApplique[];
+  refusTotal: number;
+}
+
+const vide = (): Record<NatureAtlas, CompteursAtlas> => Object.fromEntries(
+  NATURES_ATLAS.map((n) => [n, { creees: 0, mises_a_jour: 0, inchangees: 0, refusees: 0 }])) as Record<NatureAtlas, CompteursAtlas>;
+
+/** The nature a refusal path counts under. */
+function natureDe(chemin: string): NatureAtlas {
+  if (chemin.startsWith('etoiles')) return 'etoiles';
+  if (chemin.startsWith('corps')) return 'corps';
+  if (chemin.startsWith('points')) return 'points';
+  if (chemin.startsWith('zones')) return 'formations';
+  return 'systemes';
+}
+
+function rapportRefuse(refus: RefusAtlas[], total: number, codes: Record<string, string> = {}): RapportAtlas {
+  const natures = vide();
+  const liste: RefusApplique[] = refus.map((r) => ({ ...r, nature: natureDe(r.chemin), ...(codes[r.chemin] ? { code: codes[r.chemin] } : {}) }));
+  for (const r of liste) natures[r.nature].refusees++;
+  // Refusals past the cap are only counted, under the nature of the request as a whole.
+  natures.systemes.refusees += Math.max(0, total - liste.length);
+  return { appliquee: false, natures, refus: liste, refusTotal: total };
+}
+
+interface LigneAstreAtlas {
+  id: number; cle: string; genre: string; parent_id: number | null; etoile_rang: number; type: string; nom: string | null;
+  description: string | null; orbite: number | null; heure: number; taille: number; aspect: string; fiche_id: number | null;
+  version: number; version_importee: number | null;
+}
+interface LigneFormationAtlas {
+  id: number; cle: string; forme: string; nom: string | null; description: string | null; parametres: string;
+  fiche_id: number | null; version: number; version_importee: number | null;
+}
+interface LigneSystemeAtlas { id: number; q: number; r: number; transition: number | null; version: number; version_importee: number | null }
+
+/** Thrown inside the transaction to undo the whole request once the refusals are collected. */
+class Annulation extends Error {}
+
+const json = (v: unknown): string => JSON.stringify(v);
+const memeJson = (stocke: string, v: unknown): boolean => json(JSON.parse(stocke)) === json(v);
+
+/**
+ * Applies the atlas of the system `cleSysteme` of a galaxy, as the token's account, in one transaction: either every
+ * item is written (or recognised unchanged) or nothing is, and the report names every refusal. Unknown galaxy:
+ * `introuvable`; unknown system: refused `systeme_inconnu` in the report (200, `appliquee: false`).
+ */
+export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxieId: number, cleSysteme: string,
+  corps: unknown): RapportAtlas {
+  const g = exigerEcritureGalaxie(db, acteur, universId, galaxieId);
+  const depart = db.prepare('SELECT id FROM swn_systemes WHERE galaxie_id = ? AND cle = ?').get(g.id, cleSysteme) as { id: number } | undefined;
+  if (!depart) {
+    return rapportRefuse([{ chemin: 'systeme', champ: 'systeme', raison: 'Système inconnu.' }], 1, { systeme: 'systeme_inconnu' });
+  }
+  const lecture = lireAtlas(corps);
+  if (!lecture.ok) return rapportRefuse(lecture.refus, lecture.refusTotal);
+  const atlas = lecture.atlas;
+
+  // The sheets: the `cle_origine` of a sheet already imported, readable by the token's account.
+  const role = roleDe(db, universId, acteur.compteId);
+  const fiches = new Map<string, number | null>();
+  const fichesRefus: RefusAtlas[] = [];
+  const resoudre = (cle: string | null, chemin: string): number | null => {
+    if (cle === null) return null;
+    if (!fiches.has(cle)) {
+      const ligne = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?').get(universId, cle) as { id: number } | undefined;
+      fiches.set(cle, ligne && role !== null && peutVoirFiche(db, role, ligne.id, acteur) ? ligne.id : null);
+    }
+    const id = fiches.get(cle)!;
+    if (id === null) fichesRefus.push({ chemin: `${chemin}.fiche`, champ: 'fiche', raison: 'Fiche inconnue.' });
+    return id;
+  };
+
+  interface Element { chemin: string; ficheId: number | null }
+  const ficheDe = (chemin: string, cle: string | null): Element => ({ chemin, ficheId: resoudre(cle, chemin) });
+  const etoiles = atlas.etoiles.map((e, i) => ({ e, ...ficheDe(`etoiles[${i}]`, e.fiche) }));
+  const lesCorps = atlas.corps.map((c, i) => ({
+    c, ...ficheDe(`corps[${i}]`, c.fiche),
+    lunes: c.lunes.map((l, j) => ({ l, ...ficheDe(`corps[${i}].lunes[${j}]`, l.fiche) })),
+  }));
+  const points = atlas.points.map((p, i) => ({ p, ...ficheDe(`points[${i}]`, p.fiche) }));
+  const zones = atlas.zones.map((z, i) => ({ z, ...ficheDe(`zones[${i}]`, z.fiche) }));
+  if (fichesRefus.length > 0) return rapportRefuse(fichesRefus, fichesRefus.length);
+
+  const natures = vide();
+  const refus: RefusApplique[] = [];
+  let refusTotal = 0;
+  const refuser = (nature: NatureAtlas, chemin: string, champ: string, raison: string, code?: string): void => {
+    natures[nature].refusees++;
+    refusTotal++;
+    if (refus.length < MAX_REFUS_ATLAS) refus.push({ nature, chemin, champ, raison, ...(code ? { code } : {}) });
+  };
+  const sys = (): LigneSystemeAtlas => db.prepare('SELECT id, q, r, transition, version, version_importee FROM swn_systemes WHERE id = ?').get(depart.id) as LigneSystemeAtlas;
+  const { q, r } = sys();
+  const astre = (cle: string) => db.prepare('SELECT * FROM swn_astres WHERE systeme_id = ? AND cle = ?').get(depart.id, cle) as LigneAstreAtlas | undefined;
+  const formation = (cle: string) => db.prepare('SELECT * FROM swn_formations WHERE systeme_id = ? AND cle = ?').get(depart.id, cle) as LigneFormationAtlas | undefined;
+  const horsSynchro = (l: { version: number; version_importee: number | null }) => l.version !== l.version_importee;
+
+  /** One item in its own savepoint; a service refusal is a refusal of the request, collected and reported by path. */
+  const item = (nature: NatureAtlas, chemin: string, corpsItem: () => keyof CompteursAtlas | { refus: string; champ: string; code?: string }): boolean => {
+    try {
+      const issue = db.transaction(corpsItem)();
+      if (typeof issue === 'string') { natures[nature][issue]++; return true; }
+      refuser(nature, chemin, issue.champ, issue.refus, issue.code);
+      return false;
+    } catch (e) {
+      if (!(e instanceof ErreurService) || (e.code !== 'invalide' && e.code !== 'conflit' && e.code !== 'introuvable')) throw e;
+      refuser(nature, chemin, e.champ ?? nature, e.message, e.detail);
+      return false;
+    }
+  };
+  const refusSynchro = (champ: string) => ({ refus: HORS_SYNCHRO, champ, code: 'hors_synchro' });
+
+  /** A body (star, planet, moon, comet): creates, leaves alone, updates, or reports. */
+  const poserAstre = (nature: NatureAtlas, chemin: string, genre: string, cle: string, rang: number, parentCle: string | null,
+    voulu: { type: string; nom: string | null; orbite: number; heure: number; taille: number; aspect: Record<string, unknown> | null; description?: string | null },
+    ficheId: number | null): boolean => item(nature, chemin, () => {
+    const ligne = astre(cle);
+    if (!ligne) {
+      const commun = { cle, importee: true, type: voulu.type, nom: voulu.nom, taille: voulu.taille, orbite: voulu.orbite, heure: voulu.heure,
+        ...(voulu.aspect ? { aspect: voulu.aspect } : {}) };
+      if (genre === 'etoile') ajouterEtoile(db, acteur, universId, g.id, q, r, { ...commun, etoile_rang: rang });
+      else {
+        ajouterAstre(db, acteur, universId, g.id, q, r, {
+          ...commun, genre, description: voulu.description, etoile_rang: rang, ...(parentCle ? { parent_cle: parentCle } : {}),
+        });
+      }
+      if (ficheId !== null) lierAstre(db, acteur, universId, g.id, q, r, cle, { ficheId, version: 1, importee: true });
+      return 'creees';
+    }
+    if (ligne.genre !== genre) return { refus: 'Cette clé désigne déjà un autre genre de corps.', champ: 'cle' };
+    if (ligne.etoile_rang !== rang) return { refus: genre === 'etoile' ? 'Le rang ne change pas.' : "L'étoile ne change pas.", champ: genre === 'etoile' ? 'rang' : 'etoile' };
+    if (parentCle !== null) {
+      const parent = db.prepare('SELECT cle FROM swn_astres WHERE id = ?').get(ligne.parent_id) as { cle: string } | undefined;
+      if (parent?.cle !== parentCle) return { refus: 'La planète ne change pas.', champ: 'cle' };
+    }
+    // An absent optional field (null) says nothing: what Kanevas holds stays (nothing is ever cleared by the import).
+    const champs: Record<string, unknown> = {};
+    if (ligne.type !== voulu.type) champs.type = voulu.type;
+    if (voulu.nom !== null && ligne.nom !== voulu.nom) champs.nom = voulu.nom;
+    if (ligne.orbite !== voulu.orbite && !(genre === 'etoile' && ligne.orbite === null && voulu.orbite === 0)) champs.orbite = voulu.orbite;
+    if (ligne.heure !== voulu.heure) champs.heure = voulu.heure;
+    if (ligne.taille !== voulu.taille) champs.taille = voulu.taille;
+    if (voulu.aspect !== null && !memeJson(ligne.aspect, voulu.aspect)) champs.aspect = voulu.aspect;
+    if (genre !== 'etoile' && voulu.description != null && ligne.description !== voulu.description) champs.description = voulu.description;
+    const lier = ficheId !== null && ligne.fiche_id !== ficheId;
+    if (Object.keys(champs).length === 0 && !lier) return 'inchangees';
+    if (horsSynchro(ligne)) return refusSynchro(Object.keys(champs)[0] ?? 'fiche');
+    let version = ligne.version;
+    if (Object.keys(champs).length > 0) {
+      modifierAstre(db, acteur, universId, g.id, q, r, cle, { ...champs, version, importee: true });
+      version = astre(cle)!.version;
+    }
+    if (lier) lierAstre(db, acteur, universId, g.id, q, r, cle, { ficheId, version, importee: true });
+    return 'mises_a_jour';
+  });
+
+  const poserZone = (chemin: string, z: ZoneAtlas, ficheId: number | null): void => {
+    item('formations', chemin, () => {
+      const ligne = formation(z.cle);
+      if (!ligne) {
+        ajouterZone(db, acteur, universId, g.id, q, r, {
+          cle: z.cle, importee: true, forme: z.forme, nom: z.nom, description: z.description, parametres: z.parametres,
+        });
+        if (ficheId !== null) lierZone(db, acteur, universId, g.id, q, r, z.cle, { ficheId, version: 1, importee: true });
+        return 'creees';
+      }
+      if (ligne.forme !== z.forme) return { refus: 'La forme ne change pas.', champ: 'forme' };
+      const champs: Record<string, unknown> = {};
+      if (z.nom !== null && ligne.nom !== z.nom) champs.nom = z.nom;
+      if (z.description !== null && ligne.description !== z.description) champs.description = z.description;
+      if (!memeJson(ligne.parametres, z.parametres)) champs.parametres = z.parametres;
+      const lier = ficheId !== null && ligne.fiche_id !== ficheId;
+      if (Object.keys(champs).length === 0 && !lier) return 'inchangees';
+      if (horsSynchro(ligne)) return refusSynchro(Object.keys(champs)[0] ?? 'fiche');
+      let version = ligne.version;
+      if (Object.keys(champs).length > 0) {
+        modifierZone(db, acteur, universId, g.id, q, r, z.cle, { ...champs, version, importee: true });
+        version = formation(z.cle)!.version;
+      }
+      if (lier) lierZone(db, acteur, universId, g.id, q, r, z.cle, { ficheId, version, importee: true });
+      return 'mises_a_jour';
+    });
+  };
+
+  let modifie = false;
+  try {
+    const { modifie: signal } = sansSignal(() => db.transaction(() => {
+      // The transition (the `systemes` nature counts nothing else).
+      if (atlas.transition !== undefined) {
+        item('systemes', 'transition', () => {
+          const s = sys();
+          if (s.transition === atlas.transition) return 'inchangees';
+          if (horsSynchro(s)) return refusSynchro('transition');
+          poserTransition(db, acteur, universId, g.id, q, r, { transition: atlas.transition, versionSysteme: s.version, importee: true });
+          return 'mises_a_jour';
+        });
+      }
+      for (const { e, chemin, ficheId } of etoiles) {
+        poserAstre('etoiles', chemin, 'etoile', e.cle, e.rang, null, e, ficheId);
+      }
+      const rangDe = (cle: string | null): number => atlas.etoiles.find((e) => e.cle === cle)?.rang ?? 0;
+      for (const { c, chemin, ficheId } of lesCorps) {
+        poserAstre('corps', chemin, 'planete', c.cle, rangDe(c.etoile), null, c, ficheId);
+      }
+      for (const { c, lunes } of lesCorps) {
+        // A moon whose planet was refused is not tried: the planet's refusal already names the request.
+        if (!astre(c.cle)) continue;
+        for (const { l, chemin, ficheId } of lunes) poserAstre('corps', chemin, 'lune', l.cle, rangDe(c.etoile), c.cle, l, ficheId);
+      }
+      for (const { p, chemin, ficheId } of points) poserAstre('points', chemin, 'comete', p.cle, 0, null, p, ficheId);
+      for (const { z, chemin, ficheId } of zones) poserZone(chemin, z, ficheId);
+      if (refusTotal > 0) throw new Annulation();
+    }).immediate());
+    modifie = signal;
+  } catch (e) {
+    if (!(e instanceof Annulation)) throw e;
+    // Nothing was written: only the refusals count.
+    const refusees = Object.fromEntries(NATURES_ATLAS.map((n) => [n, natures[n].refusees]));
+    const rien = vide();
+    for (const n of NATURES_ATLAS) rien[n].refusees = refusees[n]!;
+    return { appliquee: false, natures: rien, refus, refusTotal };
+  }
+  // The document's recalculation proposal, once for the request (T-7, AD-atlas-3).
+  if (modifie) apresEcriture(db, acteur.compteId, universId);
+  return { appliquee: true, natures, refus, refusTotal };
 }
