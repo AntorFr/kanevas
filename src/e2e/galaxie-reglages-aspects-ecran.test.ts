@@ -77,7 +77,7 @@ describe('E-24 réglages, onglet Aspects : vignette en direct, enregistrer, reve
     assert.equal(await page.getByRole('button', { name: 'Revenir au défaut' }).isDisabled(), true);
     const champPalette = champ(page, 'Palette, couleur 1');
     assert.equal((await champPalette.inputValue()).toLowerCase(), String(defaut.palette[0]).toLowerCase(), 'le défaut vient du cœur');
-    await page.waitForTimeout(500);
+    await page.waitForFunction(() => { const c = document.querySelector('.rg-aspect-grand canvas') as HTMLCanvasElement; const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data; return d.some((v) => v !== 0); });
     const avant = await pixels(page);
     await hors(page, '2-tellurique-defaut');
     await champPalette.fill('#ff0000');
