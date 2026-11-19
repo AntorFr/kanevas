@@ -69,6 +69,9 @@ const mediatheque = async (p: Any) => {
 };
 const tuile = (p: Any, nom: string) => p.getByRole('button', { name: nom, exact: false }).filter({ hasText: nom });
 const tuilesNoms = async (p: Any): Promise<string> => (await p.locator('main').innerText()) as string;
+// Texte de `main` sans la mention transitoire « Image indisponible. » (miniature qui tarde), espaces normalisés : pour comparer deux états de la médiathèque.
+const tuilesStables = async (p: Any): Promise<string> =>
+  (await tuilesNoms(p)).replace(/Image indisponible\./g, '').replace(/\s+/g, ' ').trim();
 // Sonde le texte de `main` jusqu'à l'état attendu en entier (voulus présents ET exclus absents) : « détachée » seul est vrai sur une liste vide.
 const tuilesQuand = async (p: Any, presents: RegExp[], absents: RegExp[]): Promise<string> => {
   await p
@@ -424,13 +427,13 @@ test('Documents ne montre que des documents ; Images aucun ; le nom vide et de 2
 });
 
 test('échecs : un fichier vide n’est pas ajouté', opts, async () => {
-  const avant = await tuilesNoms((await mediatheque(antor), antor));
+  const avant = await tuilesStables((await mediatheque(antor), antor));
   await fiche(antor, 'Port-Sel');
   await region(antor, 'Description').locator('input[type=file]').first().setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.alloc(0) });
   await antor.getByText('« notes.txt » est vide.').first().waitFor();
   await mediatheque(antor);
   assert.doesNotMatch(await tuilesNoms(antor), /notes\.txt/);
-  assert.equal(await tuilesNoms(antor), avant);
+  assert.equal(await tuilesStables(antor), avant);
 });
 
 test('illustration : un PDF choisi par l’en-tête dit « « regles.pdf » n’est pas une image. » et rien ne change', opts, async () => {
