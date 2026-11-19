@@ -221,3 +221,124 @@ describe('E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueur
     await table.screenshot({ path: '/tmp/table-e30-reinit.png' });
   });
 });
+
+// Second describe of this file, written from the exit criterion alone: what the first describe does not play at the screen.
+//
+// TEST PLAN (Antor on E-29, Léa, an ordinary member, as the table account on E-30)
+//   zoom   : « Vue partagée » on, Antor zooms in on E-29 (wheel): E-30 follows without reloading, the revealed cells
+//            take more of its canvas
+//   coupure: the stream of E-29 is cut: « Connexion perdue. », the tools are disabled; a token added meanwhile through the
+//            API is listed once the connection is back, and the band is gone (the state is refetched on reconnection)
+describe('E-29 / E-30 Le zoom du MJ suit à l’écran joueurs, et la connexion coupée se dit puis se rétablit', { skip: skipBrowser }, () => {
+  let srv: Server;
+  let browser: Any;
+  let antor: Any;
+  let table: Any;
+  let uid = 0;
+  let api = '';
+  let cid = 0;
+
+  before(async () => {
+    srv = await startServer({ KANEVAS_SANS_SEMIS: '', KANEVAS_SANS_SEMIS_BATTLEMAP: '1' });
+    browser = await launch();
+    antor = (await connecte(browser, srv.base, 'Antor')).page;
+    await antor.setViewportSize({ width: 1400, height: 1100 });
+    table = (await connecte(browser, srv.base, 'Léa')).page;
+    const u = ((await (await antor.request.get('/api/univers')).json()) as Any[]).find((x) => x.nom === "Éneria d'essai");
+    uid = u.id;
+    const sid = u.systemeId ?? u.systeme_id ?? u.systeme?.id;
+    for (const outil of ['assets', 'cartes']) {
+      for (const [c, d] of [['activation', { active: true }], ['visibilite', { mj: true, joueur: true }]] as const) {
+        const r = await antor.request.put(`/api/systemes/${sid}/outils/battlemap/${outil}/${c}`, { data: d });
+        assert.ok(r.status() < 300, `${outil} ${c}: ${r.status()}`);
+      }
+    }
+    api = `/api/univers/${uid}/outils/battlemap`;
+    const c = await antor.request.post(`${api}/cartes`, { data: { titre: 'Station Orak', largeur: 12, hauteur: 8 } });
+    assert.equal(c.status(), 201);
+    cid = ((await c.json()) as Any).id;
+    assert.equal((await antor.request.patch(`${api}/cartes/${cid}`, { data: { version: 1, visible: true } })).status(), 200);
+    assert.ok((await antor.request.post(`${api}/cartes/${cid}/table`)).status() < 300);
+  }, { timeout: 120000 });
+  after(async () => {
+    await browser?.close();
+    srv?.stop();
+  });
+
+  const lire = async (page: Any): Promise<Any> => (await page.request.get(`${api}/cartes/${cid}/table`)).json();
+  const commande = async (commandes: Any[]) => {
+    const r = await antor.request.post(`${api}/cartes/${cid}/table/commandes`, { data: { version: (await lire(antor)).version, commandes } });
+    assert.ok(r.status() < 300, await r.text());
+  };
+  const clairs = (page: Any): Promise<number> => page.evaluate(() => {
+    const c = document.querySelector('canvas') as HTMLCanvasElement;
+    const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+    let n = 0;
+    for (let i = 0; i < d.length; i += 4) if (d[i]! + d[i + 1]! + d[i + 2]! > 30) n++;
+    return n;
+  });
+
+  it('zoom : Antor zoome avec « Vue partagée » ouverte, l’écran joueurs suit sans recharger, la zone révélée y grandit', async () => {
+    await commande([{ type: 'reveler_rect', x: 4, y: 2, l: 4, h: 4 }]);
+    await antor.goto(`/univers/${uid}/outils/battlemap/cartes/${cid}/jeu`);
+    await antor.getByRole('button', { name: rxExact('Ajouter un pion') }).waitFor();
+    await antor.getByRole('switch', { name: 'Vue partagée' }).click();
+    await table.goto(`/univers/${uid}/outils/battlemap/cartes/${cid}/affichage`);
+    await table.getByLabel('Carte', { exact: true }).waitFor({ timeout: 8000 });
+    await table.waitForFunction(() => {
+      const c = document.querySelector('canvas') as HTMLCanvasElement;
+      const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+      for (let i = 0; i < d.length; i += 4) if (d[i]! + d[i + 1]! + d[i + 2]! > 30) return true;
+      return false;
+    }, undefined, { timeout: 6000 });
+    const avant = await clairs(table);
+    assert.ok(avant > 100, `la pièce révélée est visible avant le zoom (${avant})`);
+    const vueAvant = JSON.stringify((await lire(table)).vue);
+    const b = await antor.getByLabel('Carte', { exact: true }).boundingBox();
+    await antor.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+    const reponse = table.waitForResponse((r: Any) => r.url().includes('/table?mode=joueur') && r.request().method() === 'GET', { timeout: 4000 });
+    for (let i = 0; i < 10; i++) await antor.mouse.wheel(0, -200);
+    await reponse;
+    assert.notEqual(JSON.stringify((await lire(table)).vue), vueAvant, 'la vue partagée a changé avec le zoom');
+    await table.waitForFunction((n: number) => {
+      const c = document.querySelector('canvas') as HTMLCanvasElement;
+      const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+      let k = 0;
+      for (let i = 0; i < d.length; i += 4) if (d[i]! + d[i + 1]! + d[i + 2]! > 30) k++;
+      return k > n * 1.5;
+    }, avant, { timeout: 4000 }).catch(async () => {
+      await table.screenshot({ path: '/tmp/table-e30-zoom-echec.png' });
+      assert.fail(`avant ${avant}, après ${await clairs(table)}, vue ${JSON.stringify((await lire(table)).vue)} contre ${vueAvant}`);
+    });
+    await table.screenshot({ path: '/tmp/table-e30-zoom.png' });
+    await antor.screenshot({ path: '/tmp/table-e29-zoom.png' });
+  });
+
+  it('coupure : « Connexion perdue. » sur E-29, outils désactivés ; au retour, l’état est relu et la bande disparaît', async () => {
+    // Chromium's offline mode leaves an open stream alone: the cut is played on the page's own EventSource.
+    await antor.addInitScript(() => {
+      const Natif = window.EventSource;
+      const w = window as unknown as { __flux: EventSource[] };
+      w.__flux = [];
+      window.EventSource = class extends Natif { constructor(u: string | URL, o?: EventSourceInit) { super(u, o); w.__flux.push(this); } } as typeof EventSource;
+    });
+    await antor.goto(`/univers/${uid}/outils/battlemap/cartes/${cid}/jeu`);
+    const ajouter = antor.getByRole('button', { name: rxExact('Ajouter un pion') });
+    await ajouter.waitFor();
+    await antor.waitForFunction(() => (window as unknown as { __flux: unknown[] }).__flux.length > 0);
+    assert.equal(await antor.getByText('Connexion perdue.').count(), 0);
+    assert.equal(await ajouter.isDisabled(), false);
+    await antor.evaluate(() => (window as unknown as { __flux: EventSource[] }).__flux.forEach((e) => e.dispatchEvent(new Event('error'))));
+    await antor.getByText('Connexion perdue.').first().waitFor({ timeout: 3000 });
+    assert.equal(await ajouter.isDisabled(), true, 'les outils sont désactivés pendant la coupure');
+    assert.equal(await antor.getByText('Écran joueurs connecté').count(), 0, 'le statut ne dit plus ce qu’il ne sait pas');
+    await antor.screenshot({ path: '/tmp/table-e29-connexion-perdue.png' });
+    // meanwhile, another window of the GM adds a token
+    await commande([{ type: 'ajouter_pion', id: 'veilleur', nom: 'Veilleur', x: 1, y: 1 }]);
+    assert.equal((await lire(antor)).etat.pions.length, 1);
+    await antor.evaluate(() => (window as unknown as { __flux: EventSource[] }).__flux.forEach((e) => e.dispatchEvent(new MessageEvent('maj', { data: '{}' }))));
+    await antor.getByText('Connexion perdue.').first().waitFor({ state: 'detached', timeout: 4000 });
+    assert.equal(await ajouter.isDisabled(), false);
+    await antor.getByText('Veilleur', { exact: true }).first().waitFor({ timeout: 4000 });
+  });
+});
