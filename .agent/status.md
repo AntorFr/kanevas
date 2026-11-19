@@ -1,5 +1,6 @@
 # Status — kanevas
 
+> MàJ : 2026-11-19 (assemblage de `rouge-kanevas-synchro-1` : le test e2e « B-56 exclusion » de `src/e2e/import-fichiers-besoin.test.ts` attend la réponse du PATCH de visibilité ; sa queue rejeu/E-18 « 1 avertissement » (B-48, retiré sur l’epic) est retirée, inventaire `docs/tests-ecran/lot-acces.md` à jour ; tests seuls, produit inchangé)
 > MàJ : 2026-11-19 (assemblage de `kanevas-synchro-ecriture`, PR vers `epic/kanevas-synchro`)
 > MàJ : 2026-11-18 (assemblage de `kanevas-synchro-lecture`, PR vers `epic/kanevas-synchro`)
 > MàJ : 2026-11-18 (assemblage de `kanevas-synchro-historique`, PR vers `epic/kanevas-synchro`)
