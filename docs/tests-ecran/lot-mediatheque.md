@@ -389,3 +389,23 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > brouillon-pastille : la pastille « Brouillon prêt » est verte` | affichage | — | gardé |
 | `src/e2e/battlemap-generation-bureau-besoin.test.ts` | `E-27 Génération au bureau (1280 px), lot préparé > rangee : nom, catégorie, empreinte et « Retirer » d’une ligne tiennent sur une seule rangée, dans cet ordre` | affichage | — | gardé |
 | `src/e2e/battlemap-generation-bureau-besoin.test.ts` | `E-27 Génération au bureau (1280 px), lot préparé > lancer : « Lancer le lot (2) » est à droite de « Ajouter une ligne » et « Coller des lignes », sur la même rangée` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Jouer » ouvre l’écran de jeu et crée la table` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `avant « Jouer », la joueuse lit « La partie n’a pas commencé. »` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `un disque ajouté est dans la liste, dans la table, et au rechargement ; le masquer le retire à la joueuse` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `joueuse : aucun outil MJ, « Suivre le MJ » actif par défaut et gardé au rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Effacer la vue » rend vue: null` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Réinitialiser la table… » ne vide qu’après confirmation` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `200 pions : « Table pleine », ajout désactivé, le 201e refusé par le serveur` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `P-28 étape 3 : un pion glissé sur la carte change de case et reste là au rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Lier une fiche… » lie le pion à la fiche choisie, « Ouvrir la fiche » l’ouvre ; « Délier » la retire` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `carte cachée aux joueurs : « Page introuvable. » pour la joueuse` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `sans table : « La partie n’a pas commencé. », puis « En attente du MJ » une fois la table créée, sans recharger` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `presence : E-29 lit « Écran joueurs connecté » tant que E-30 est ouvert` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `vue partagée : la carte s’affiche sans contrôle ni cadre, « Effacer la vue » la retire` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `fenêtre : le canevas tient dans la fenêtre, quelle que soit sa taille` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `calque masqué : il sort de la table que l’écran lit ; révélé de nouveau, il revient` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `une révélation arrive en moins de deux secondes sans recharger` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `flux coupé, « Reconnexion… » apparaît puis, au signal suivant, l’écran se remet à jour` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `carte cachée aux joueurs : « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `le MJ qui ouvre l’écran voit la vue joueur : pas de pion masqué, pas de contrôle` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `contraste : --texte-2 sombre sur noir ≥ 4,5:1` | affichage | — | gardé |

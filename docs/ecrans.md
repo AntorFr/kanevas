@@ -4543,6 +4543,7 @@ amber hatched veil over the full map (GM view), so he can see what the players c
 tokens drag-movable, « Suivre le MJ » toggle (default on, kept in the browser, nothing stored server-side); with remote play off (E-20) she sees the tokens move but cannot drag them, a connection badge. States: not started « La partie n'a pas
 commencé. » (map hidden or no table state yet: the table state is created when the GM first opens « Jouer »; every layer not GM-only is shown to the players by default, including a layer created later — the table stores the layers the GM hides, not those shown); connection lost « Connexion perdue. » (map kept, actions disabled); token
 not hers « Ce pion n'est pas à vous. ». Mockup: `docs/maquettes/e29-jeu.html`.
+*Built so far (`kanevas-battlemap-table`):* the player's drag, the « Jeu à distance » setting and « Ce pion n'est pas à vous. » belong to the next slice and do not exist yet; « Calques » is a tab of the right panel, not a menu. The detail section below (« E-29 / E-30 — detail of `kanevas-battlemap-table` ») rules.
 
 ### E-30 — Table display
 Chrome-less, read-only, black ground, the shared view of the GM with the revealed area; no tokens list, no control; a discreet
