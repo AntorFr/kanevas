@@ -62,7 +62,7 @@ export interface ResultatFiche {
   avertissements: string[];
 }
 
-interface SectionEntree {
+export interface SectionEntree {
   cle: string;
   titre: string;
   /** `undefined`: the request says nothing (an existing section keeps it; a new one starts empty). */
@@ -673,7 +673,7 @@ const audienceDe = (s: SectionEntree) => ({
 });
 
 /** Appends an imported section; returns its id. */
-function creerSection(
+export function creerSection(
   db: Db,
   jeton: Jeton,
   ficheId: number,
@@ -693,7 +693,7 @@ function creerSection(
 }
 
 /** Updates one imported section, field by field, against its current row; true when something was written. */
-function majSection(
+export function majSection(
   db: Db,
   jeton: Jeton,
   ficheId: number,

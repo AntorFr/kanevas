@@ -1,4 +1,5 @@
-import { assurerRelations } from '../services/import-relations.js';
+import { assurerRelations, modifierRelationImport, retirerRelationImport } from '../services/import-relations.js';
+import { ecrireSectionImport, retirerSectionImport } from '../services/import-sections.js';
 import { LIMITE_RELATIONS } from '../services/relations.js';
 import multipart from '@fastify/multipart';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
@@ -200,6 +201,34 @@ export async function registerImportRoutes(app: FastifyInstance) {
         const { cle } = request.params as { cle: string };
         const { lot } = request.query as { lot?: unknown };
         return modifierEnTete(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, request.headers, app.horloge());
+      });
+
+      // Targeted write of one section (B-83, AD-ecriture-1): the key is read on the addressed sheet only.
+      scope.put(`${base}/fiches/:cle/sections/:scle`, { config: { portee: 'contenu' } }, async (request) => {
+        const { cle, scle } = request.params as { cle: string; scle: string };
+        const { lot } = request.query as { lot?: unknown };
+        return ecrireSectionImport(app.db, jetonDe(request), lotDeRequete(lot), cle, scle, request.body, request.headers, app.horloge());
+      });
+
+      scope.delete(`${base}/fiches/:cle/sections/:scle`, { config: { portee: 'contenu' } }, async (request, reply) => {
+        const { cle, scle } = request.params as { cle: string; scle: string };
+        const { lot } = request.query as { lot?: unknown };
+        retirerSectionImport(app.db, jetonDe(request), lotDeRequete(lot), cle, scle, request.headers, app.horloge());
+        return reply.code(204).send();
+      });
+
+      // One relation (B-84): nature and qualifier; both guards of AD-64 hold.
+      scope.patch(`${base}/relations/:rid`, { config: { portee: 'contenu' } }, async (request) => {
+        const { rid } = request.params as { rid: string };
+        const { lot } = request.query as { lot?: unknown };
+        return modifierRelationImport(app.db, jetonDe(request), lotDeRequete(lot), rid, request.body, request.headers, app.horloge());
+      });
+
+      scope.delete(`${base}/relations/:rid`, { config: { portee: 'contenu' } }, async (request, reply) => {
+        const { rid } = request.params as { rid: string };
+        const { lot } = request.query as { lot?: unknown };
+        retirerRelationImport(app.db, jetonDe(request), lotDeRequete(lot), rid, request.headers, app.horloge());
+        return reply.code(204).send();
       });
 
       scope.post(`${base}/fiches/:cle/relations`, { config: { portee: 'contenu' } }, async (request) => {
