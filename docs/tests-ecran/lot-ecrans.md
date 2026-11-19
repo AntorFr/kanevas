@@ -525,3 +525,11 @@ The doors written by this lot are in `src/routes/*-lot-ecrans.test.ts` (the shar
 | `src/e2e/composants-clavier.test.ts` | `boîte neutre : un formulaire est un role=dialog, focus sur le champ, badge, action ambre, Échap rend le focus` | affichage | — | gardé |
 | `src/e2e/composants-clavier.test.ts` | `boîte neutre : une confirmation pure est un role=alertdialog, focus sur Annuler` | affichage | — | gardé |
 | `src/e2e/composants-clavier.test.ts` | `boîte neutre : sous 760 px le corps défile et la boîte reste dans l’écran` | affichage | — | gardé |
+| `src/e2e/composants-charte-e24.test.ts` | `onglets : un seul arrêt de tabulation, l’actif ; les autres sont hors de l’ordre de tabulation` | affichage | — | gardé |
+| `src/e2e/composants-charte-e24.test.ts` | `onglets : → et ← sélectionnent l’onglet et y portent le focus, ils bouclent ; Home et End aux extrémités` | affichage | — | gardé |
+| `src/e2e/composants-charte-e24.test.ts` | `curseur : étiquette liée, valeur affichée, flèches de 0,05 bornées à 0 et 1` | affichage | — | gardé |
+| `src/e2e/composants-charte-e24.test.ts` | `curseur : l’erreur est préfixée « Erreur : » et reliée par aria-describedby ; désactivé est inerte` | affichage | — | gardé |
+| `src/e2e/composants-charte-e24.test.ts` | `champ couleur : « Couleur invalide : #rrggbb. » pour une saisie fausse, rien pour vide, pastille pleine seulement si valide` | affichage | — | gardé |
+| `src/e2e/composants-charte-e24.test.ts` | `liste de choix : un seul arrêt (la sélection), ↑ ↓ Home End déplacent le focus, Entrée choisit` | affichage | — | gardé |
+| `src/e2e/composants-charte-e24.test.ts` | `barre d’application : « Rien à appliquer. », action désactivée mais focusable ; un décompte l’arme ; le focus lui revient` | affichage | — | gardé |
+| `src/e2e/composants-charte-e24.test.ts` | `rendu : les cinq composants, clair et sombre, 1280 et 390 px, sans débordement, cibles du curseur ≥ 24 px` | affichage | — | gardé |
