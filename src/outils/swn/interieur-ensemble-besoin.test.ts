@@ -153,7 +153,7 @@ test('exclusion : la lecture d\'un système ne porte ni identifiant de fiche, ni
   w.app.db.prepare("INSERT INTO swn_astres (systeme_id, cle, genre, type, orbite, heure, taille) VALUES (?,?,?,?,?,?,?)").run(sid, 'e', 'etoile', 'jaune', 0, 0, 0.2);
   for (const [q, r] of [[5, 5], [-49, -48]]) {
     const v = (await w.get('lea', q, r)).json();
-    assert.deepEqual(Object.keys(v).sort(), ['astres', 'etat', 'formations', 'nom', 'q', 'r', 'transition', 'version_generateur']);
+    assert.deepEqual(Object.keys(v).sort(), ['astres', 'elements', 'etat', 'formations', 'nom', 'q', 'r', 'transition', 'version_generateur']);
     for (const a of v.astres) assert.ok(!('fiche_id' in a) && !('secret' in a) && !('id' in a));
   }
 });

@@ -217,11 +217,11 @@ test('aucune réponse ne porte fiche_id, secret, id ni compte de caché (tiré, 
     const s = JSON.stringify(sansJetons(v));
     assert.ok(!/fiche_id|secret|cach|masqu|compte|systeme_id|version"/i.test(s), s.slice(0, 200));
     // The GM's reading adds only the tokens of AD-edition-2.
-    assert.deepEqual(Object.keys(v).sort(), ['astres', 'etat', 'formations', 'nom', 'peutEcrire', 'q', 'r', 'transition', 'versionSysteme', 'version_generateur']);
+    assert.deepEqual(Object.keys(v).sort(), ['astres', 'elements', 'etat', 'formations', 'nom', 'peutEcrire', 'q', 'r', 'transition', 'versionSysteme', 'version_generateur']);
     for (const a of v.astres) assert.deepEqual(Object.keys(a).sort(), ['aspect', 'cle', 'etoile_rang', 'fiche', 'genre', 'heure', 'nom', 'orbite', 'parent_cle', 'taille', 'type', 'version']);
     for (const f of v.formations) assert.deepEqual(Object.keys(f).sort(), ['cle', 'etoile_rang', 'fiche', 'forme', 'nom', 'parametres', 'version']);
     const p = sansJetons(v);
-    assert.deepEqual(Object.keys(p).sort(), ['astres', 'etat', 'formations', 'nom', 'q', 'r', 'transition', 'version_generateur']);
+    assert.deepEqual(Object.keys(p).sort(), ['astres', 'elements', 'etat', 'formations', 'nom', 'q', 'r', 'transition', 'version_generateur']);
     for (const a of p.astres) assert.deepEqual(Object.keys(a).sort(), ['aspect', 'cle', 'etoile_rang', 'fiche', 'genre', 'heure', 'nom', 'orbite', 'parent_cle', 'taille', 'type']);
   }
 });
@@ -267,7 +267,7 @@ test('0038 : montée depuis 0037 avec le semis, systèmes inchangés, transition
   const avant = lignes();
   assert.ok(avant.length > 0);
   assert.ok(!('transition' in (avant[0] as object)));
-  assert.deepEqual(migrate(db), [38]);
+  assert.deepEqual(migrate(db), [38, 39]);
   const apres = lignes() as any[];
   assert.equal(apres.length, avant.length);
   for (let i = 0; i < avant.length; i++) assert.deepEqual({ ...apres[i], transition: undefined }, { ...(avant[i] as object), transition: undefined });
