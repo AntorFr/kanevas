@@ -359,6 +359,38 @@ describe('E-5 panneau « Jeton de l\'assistant » (B-51, P-15)', { skip: raisonS
   });
 
   // Fails if a non-admin sees the panel, or the panel routes answer anything but 404 to them.
+  // Fails if the « Limites » panel is missing or above the token, shows another default than 75, lets 0 or 501 through
+  // (or without « Entre 1 et 500 Mo. »), or does not keep a saved value after a reload.
+  test('limites_sous_le_jeton_75_refus_en_ligne_puis_20_enregistre_et_relu', async () => {
+    const s = await demarrer();
+    try {
+      const { page } = await connecter(s, 'admin');
+      await ouvrirAdmin(page);
+      const lim = page.getByRole('region', { name: 'Limites' });
+      await lim.waitFor();
+      const hauts = await page.getByRole('region').evaluateAll((l) => l.map((n) => n.getAttribute('aria-label') ?? n.textContent?.slice(0, 20)));
+      assert.ok(hauts.findIndex((x) => /Limites/.test(x ?? '')) > hauts.findIndex((x) => /Jeton de l/.test(x ?? '')), 'sous le jeton');
+      const champ = lim.getByLabel(/Taille maximale/);
+      assert.equal(await champ.inputValue(), '75');
+      for (const v of ['0', '501', '']) {
+        await champ.fill(v);
+        await lim.getByRole('button', { name: 'Enregistrer' }).click();
+        await lim.getByText('Entre 1 et 500 Mo.').waitFor();
+        assert.equal(await lim.getByText('Limite enregistrée.').count(), 0);
+      }
+      assert.equal((await page.request.fetch(`${s.base}/api/instance/reglages`)).status(), 200);
+      assert.equal(((await (await page.request.fetch(`${s.base}/api/instance/reglages`)).json()) as { fondCarteMaxMo: number }).fondCarteMaxMo, 75, 'refus : rien écrit');
+      await champ.fill('20');
+      await lim.getByRole('button', { name: 'Enregistrer' }).click();
+      await lim.getByText('Limite enregistrée.').waitFor();
+      await capture(page, 'limites');
+      await ouvrirAdmin(page);
+      assert.equal(await page.getByRole('region', { name: 'Limites' }).getByLabel(/Taille maximale/).inputValue(), '20');
+    } finally {
+      s.stop();
+    }
+  });
+
   test('lea_voit_page_introuvable', async () => {
     const s = await demarrer();
     try {
@@ -366,6 +398,7 @@ describe('E-5 panneau « Jeton de l\'assistant » (B-51, P-15)', { skip: raisonS
       await ouvrirAdmin(page);
       await page.getByText('Page introuvable.').waitFor();
       assert.equal(await page.getByText(/Jeton de l.assistant/).count(), 0);
+      assert.equal(await page.getByText('Limites', { exact: true }).count(), 0);
     } finally {
       s.stop();
     }

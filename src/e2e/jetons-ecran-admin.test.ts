@@ -91,7 +91,7 @@ test('parcours_admin_modifie_puis_revoque_et_lea_le_lit', opts, async () => {
 
   await l.getByRole('button', { name: /Modifier les accès/ }).click();
   await ligneUnivers(admin.page, 'Essai Kanka').getByRole('radio', { name: '—' }).click();
-  await admin.page.getByRole('button', { name: 'Enregistrer' }).click();
+  await admin.page.getByRole('dialog').getByRole('button', { name: 'Enregistrer' }).click();
   await admin.page.getByText('Accès enregistrés.').waitFor();
   await attendre(admin.page);
   assert.equal(await api(m.base, valeur, m.essai), 404, 'l’exception s’applique');
@@ -166,7 +166,7 @@ test('filtre_proprietaire_et_jeton_revoque_entre_temps', opts, async () => {
   await admin.page.getByRole('radio', { name: 'Une liste d’univers' }).click();
   await ligneUnivers(admin.page, 'Essai Kanka').getByRole('radio', { name: 'Lecture', exact: true }).click();
   m.app.db.prepare("UPDATE jetons_api SET revoque_le = ?, revoque_par = compte_id WHERE nom = 'Jeton de Léa'").run(new Date().toISOString());
-  await admin.page.getByRole('button', { name: 'Enregistrer' }).click();
+  await admin.page.getByRole('dialog').getByRole('button', { name: 'Enregistrer' }).click();
   await admin.page.getByText('Ce jeton est révoqué.').first().waitFor();
   await admin.page.getByRole('button', { name: 'Fermer' }).click();
   await admin.page.getByText('Révoqué', { exact: true }).waitFor();
