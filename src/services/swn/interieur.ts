@@ -9,7 +9,8 @@ import { chargerModule } from '../../wasm/charger.js';
 import { introuvable } from '../erreurs.js';
 import type { Acteur } from '../types.js';
 import { roleDe, sqlFicheLisible } from '../droits.js';
-import { systemeLisible } from './lisibilite.js';
+import { colonneReserve, estReserve, sqlElementLisible, systemeLisible } from './lisibilite.js';
+import { aspectLu, type AspectElement, type GenreElement } from './elements-aspect.js';
 import { galaxieLisible, zonesLisibles, type LigneGalaxie, type NiveauLecture } from './galaxies.js';
 import { entreesBloc, systemesExclusants, tirerEtoileComplete, VERSION_GENERATEUR } from './tirage-etoiles.js';
 
@@ -48,14 +49,25 @@ export interface FormationVue {
   /** As for a body: the writing GM only. */
   description?: string;
 }
+/**
+ * A non-celestial element (B-96). Its place is read, never stored, when it sits on a body: `sur` is that body's `cle` and
+ * `orbite` / `heure` are the body's, so the element follows it. `reserve` and `version` only for the writing GM.
+ */
+export interface ElementVue {
+  cle: string; genre: GenreElement; nom: string; sur: string | null; orbite: number | null; heure: number;
+  aspect: AspectElement; fiche: FicheLiee | null; description?: string;
+  /** The writing GM only: « Réservé au MJ » (the badge « MJ seul ») and the token of the write. */
+  reserve?: boolean; version?: number;
+}
 export interface InterieurVue {
   q: number; r: number; nom: string | null; etat: 'tire' | 'defini'; transition: number;
-  astres: AstreVue[]; formations: FormationVue[]; version_generateur: number;
+  astres: AstreVue[]; formations: FormationVue[]; elements: ElementVue[]; version_generateur: number;
   /** GM outside Player mode only (AD-edition-2): the writes are open, and the token of the system (defined: its row's
    * `version`; drawn: the galaxy's `version`, which a seed or settings change moves). */
   peutEcrire?: true; versionSysteme?: number;
 }
 
+interface LigneElement extends Omit<ElementVue, 'aspect' | 'fiche' | 'reserve'> { aspect: string; fiche_id: number | null; reserve: number }
 interface LigneAstre extends Omit<AstreVue, 'aspect' | 'fiche'> { aspect: string; fiche_id: number | null }
 interface LigneFormation extends Omit<FormationVue, 'parametres' | 'fiche'> { parametres: string; fiche_id: number | null }
 export interface Tire {
@@ -95,14 +107,14 @@ function ordonnerFormations(formations: FormationVue[]): FormationVue[] {
 
 function composer(
   q: number, r: number, nom: string | null, etat: InterieurVue['etat'], transition: number | null,
-  astres: AstreVue[], formations: FormationVue[],
+  astres: AstreVue[], formations: FormationVue[], elements: ElementVue[] = [],
 ): InterieurVue {
   const triees = ordonner(astres.map((a) => ({ ...a, fiche: a.fiche ?? null })));
   const fs = ordonnerFormations(formations.map((f) => ({ ...f, fiche: f.fiche ?? null })));
   return {
     q, r, nom, etat,
     transition: transition ?? leCoeur().transition_defaut(JSON.stringify(triees), JSON.stringify(fs)),
-    astres: triees, formations: fs, version_generateur: VERSION_GENERATEUR,
+    astres: triees, formations: fs, elements, version_generateur: VERSION_GENERATEUR,
   };
 }
 
@@ -125,12 +137,23 @@ export function lireInterieur(
         WHERE a.systeme_id = ? ORDER BY a.id`).all(ligne.id) as LigneAstre[];
     const lignesFormations = db.prepare(`SELECT cle, forme, nom, parametres, etoile_rang, version, description, fiche_id FROM swn_formations
         WHERE systeme_id = ? ORDER BY id`).all(ligne.id) as LigneFormation[];
-    const fiches = fichesLisibles(db, acteur, universId, [...lignesAstres, ...lignesFormations].map((x) => x.fiche_id));
+    // One predicate for what the reader sees of the elements (`sqlElementLisible`): a reserved one is absent, no hole, no count.
+    const lignesElements = db.prepare(`SELECT e.cle, e.genre, e.nom, e.description, a.cle AS sur,
+        CASE WHEN e.astre_id IS NULL THEN e.orbite ELSE a.orbite END AS orbite,
+        CASE WHEN e.astre_id IS NULL THEN e.heure ELSE a.heure END AS heure,
+        e.aspect, e.version, e.fiche_id, ${colonneReserve('e')}
+        FROM swn_elements e JOIN swn_systemes s ON s.id = e.systeme_id LEFT JOIN swn_astres a ON a.id = e.astre_id
+        WHERE e.systeme_id = ? AND ${sqlElementLisible('e', 's', niveau)} ORDER BY e.id`).all(ligne.id) as LigneElement[];
+    const fiches = fichesLisibles(db, acteur, universId, [...lignesAstres, ...lignesFormations, ...lignesElements].map((x) => x.fiche_id));
     const astres = lignesAstres
       .map(({ description, fiche_id, ...a }) => ({ ...a, fiche: fiches.get(fiche_id ?? -1) ?? null, aspect: JSON.parse(a.aspect) as Record<string, unknown>, ...(description ? { description } : {}) }));
     const formations = lignesFormations
       .map(({ description, fiche_id, ...f }) => ({ ...f, fiche: fiches.get(fiche_id ?? -1) ?? null, parametres: JSON.parse(f.parametres) as Record<string, unknown>, ...(description ? { description } : {}) }));
-    const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, astres, formations);
+    const elements = lignesElements.map(({ description, fiche_id, reserve, aspect, ...el }): ElementVue => ({
+      ...el, aspect: aspectLu(el.genre, aspect), fiche: fiches.get(fiche_id ?? -1) ?? null,
+      ...(description ? { description } : {}), reserve: estReserve({ reserve }),
+    }));
+    const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, astres, formations, elements);
     return niveau === 'mj' ? ouvrirEcriture(vue, ligneVersion(db, ligne.id)) : sansJetons(vue);
   }
   // No row: the star must be the one the block's draw holds at (q, r), with the exclusions of every reader.
@@ -165,6 +188,7 @@ function ouvrirEcriture(vue: InterieurVue, versionSysteme: number): InterieurVue
 }
 function sansJetons(vue: InterieurVue): InterieurVue {
   for (const x of [...vue.astres, ...vue.formations]) { delete x.version; delete x.description; }
+  for (const x of vue.elements) { delete x.version; delete x.reserve; }
   return vue;
 }
 

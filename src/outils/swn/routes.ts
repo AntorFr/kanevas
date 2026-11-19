@@ -14,6 +14,10 @@ import {
   ajouterAstre, ajouterZone, ancrer, delierAstre, delierZone, etatMasque, lierAstre, lierZone, masquerSysteme, modifierAstre, modifierZone as modifierZoneSysteme, poserTransition, retirerAstre, retirerZone as retirerZoneSysteme,
   type ResultatEcriture,
 } from '../../services/swn/ecriture-systeme.js';
+import {
+  ajouterElement, delierElement, deplacerElement, elementsDuCorps, lierElement, modifierElement, reserverElement, retirerElement,
+} from '../../services/swn/ecriture-elements.js';
+import { catalogueElements } from '../../services/swn/elements-aspect.js';
 import { lireInterieur } from '../../services/swn/interieur.js';
 import { lireSorties } from '../../services/swn/sorties.js';
 import { lireBlocs, lireRoute, lireSysteme, lireZone, rechercherSystemes } from '../../services/swn/lecture-carte.js';
@@ -291,6 +295,26 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
   app.put(`${INT}/zones/:cle/fiche`, opts, interieur((request, a, i, q, r) => lierZone(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
   app.delete(`${INT}/astres/:cle/fiche`, opts, interieur((request, a, i, q, r) => delierAstre(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
   app.delete(`${INT}/zones/:cle/fiche`, opts, interieur((request, a, i, q, r) => delierZone(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
+  // The elements (AD-elements-1), thin over `ecriture-elements.ts`; a hidden or unknown system is the same 404 as the read.
+  app.post(`${INT}/elements`, opts, interieur((request, a, i, q, r) => ajouterElement(app.db, a, i.univers, i.galaxie, q, r, corps(request)), 201));
+  app.patch(`${INT}/elements/:cle`, opts, interieur((request, a, i, q, r) => modifierElement(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.put(`${INT}/elements/:cle/place`, opts, interieur((request, a, i, q, r) => deplacerElement(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.put(`${INT}/elements/:cle/secret`, opts, interieur((request, a, i, q, r) => reserverElement(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.put(`${INT}/elements/:cle/fiche`, opts, interieur((request, a, i, q, r) => lierElement(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.delete(`${INT}/elements/:cle/fiche`, opts, interieur((request, a, i, q, r) => delierElement(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
+  app.delete(`${INT}/elements/:cle`, opts, interieur((request, a, i, q, r) => retirerElement(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
+  // What the removal dialog of a body counts besides its moons (GM outside Player mode only).
+  app.get(`${INT}/astres/:cle/elements`, opts, async (request: Req, reply: FastifyReply) => {
+    try {
+      const p = request.params as { q: string; r: string };
+      const i = ids(request);
+      return reply.send({ elements: elementsDuCorps(app.db, acteur(request as never), i.univers, i.galaxie, ent(p.q), ent(p.r), i.cle!) });
+    } catch (e) {
+      if (e instanceof ErreurService && e.code === 'introuvable' && e.detail !== 'astre_inconnu') return reply.callNotFound();
+      throw e;
+    }
+  });
+  app.get(`${BASE}/elements/aspects`, opts, ecrire(() => ({ statut: 200, corps: catalogueElements() })));
   app.put(`${INT}/secret`, opts, interieur((request, a, i, q, r) => masquerSysteme(app.db, a, i.univers, i.galaxie, q, r, corps(request))));
   app.get(`${INT}/secret`, opts, async (request: Req, reply: FastifyReply) => {
     try {
