@@ -69,10 +69,10 @@ describe('tests d’écran hors écran (R25) : les 19 fichiers retirés et la du
   const readme = espaces(lire('README.md'));
   const retires = [...apres.split('## The 19 removed files')[1].split('## Per file')[0].matchAll(/^\| `(src\/e2e\/[^`]+)` \|/gm)].map((m) => m[1]);
 
-  test('19 fichiers retirés : absents de src/e2e, présents dans avant.md, toutes leurs lignes « retiré » ; 268 restent', () => {
+  test('19 fichiers retirés : absents de src/e2e, présents dans avant.md, toutes leurs lignes « retiré » ; 269 restent', () => {
     assert.equal(retires.length, 19);
     const ecrans = readdirSync('src/e2e').filter((f) => f.endsWith('.test.ts'));
-    assert.equal(ecrans.length, 268);
+    assert.equal(ecrans.length, 269);
     for (const f of retires) {
       assert.equal(existsSync(f), false, `${f} existe encore`);
       assert.ok(avant.includes(`\`${f}\``), `${f} absent de avant.md`);

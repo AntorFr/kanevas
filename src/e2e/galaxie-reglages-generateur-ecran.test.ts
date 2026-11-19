@@ -235,4 +235,25 @@ describe('E-24 réglages du générateur : compte avant confirmation, refus, con
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de défilement horizontal');
     await ctx.close();
   });
+
+  for (const [l, h] of [[1280, 900], [390, 844]] as const) {
+    it(`le bouton flottant ne recouvre ni Appliquer ni Annuler les changements (${l} px)`, async () => {
+      const { page, ctx } = await ouvrir('Antor', l, h);
+      await page.getByRole('heading', { name: 'Réglages du générateur' }).waitFor();
+      await champ(page, 'Comètes').first().fill('1');
+      const flottant = page.getByRole('button', { name: /Demander à Kanevas/ });
+      await flottant.waitFor();
+      for (const nom of ['Appliquer', 'Annuler les changements']) {
+        const bouton = page.getByRole('button', { name: nom });
+        await bouton.scrollIntoViewIfNeeded();
+        const a = await bouton.boundingBox();
+        const f = await flottant.boundingBox();
+        assert.ok(a && f, 'les deux boutons sont mesurables');
+        const recouvre = a.x < f.x + f.width && f.x < a.x + a.width && a.y < f.y + f.height && f.y < a.y + a.height;
+        assert.equal(recouvre, false, `« ${nom} » recouvert par le bouton flottant à ${l} px`);
+      }
+      await hors(page, `7-barre-${l}`);
+      await ctx.close();
+    });
+  }
 });
