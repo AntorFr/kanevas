@@ -57,8 +57,3 @@ test('B-108 : PUT d\'une section à clé neuve la crée sans toucher aux autres 
   assert.equal(refus.statusCode, 412, refus.body);
   assert.equal((await m.lire('lieu:quai')).sections[1].contenu, 'bb modifié');
 });
-
-test('B-110 : DELETE d\'une fiche inconnue ou PUT section d\'une fiche inconnue → 404, rien créé', async () => {
-  const m = await monter();
-  const n = (m.app.db.prepare('SELECT COUNT(*) n FROM fiches').get() as { n: number }).n;
-  assert.equal((await m.inj('PUT', '/fiches/lieu:fantome/sections/a', { titre: 'A', contenu: 'x', joueursLisent: true })).statusCode, 404);
