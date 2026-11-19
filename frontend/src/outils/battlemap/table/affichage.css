@@ -1,8 +1,8 @@
 /* E-30 — table display: pure black, chrome-less, dark theme forced (charte § 6, Table display). */
-.affichage { position: fixed; inset: 0; background: #000; color: var(--texte-2); overflow: hidden; }
+.affichage { position: fixed; inset: 0; background: var(--affichage-fond); color: var(--texte-2); overflow: hidden; }
 .affichage.calme, .affichage.calme * { cursor: none; }
-.affichage .canevas-zone { position: absolute; inset: 0; background: #000; }
+.affichage .canevas-zone { position: absolute; inset: 0; background: var(--affichage-fond); }
 .affichage .canevas-carte { cursor: inherit; }
 .affichage-centre { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; margin: 0; padding: var(--e-4); text-align: center; }
 .affichage-attente { margin: 0; font-size: 1.25rem; font-weight: 400; letter-spacing: .04em; color: var(--texte-2); }
-.affichage-badge { position: absolute; right: var(--e-3); bottom: var(--e-3); margin: 0; padding: 3px 9px; border-radius: 99px; font-size: .75rem; color: var(--texte-2); background: rgba(255, 255, 255, .08); }
+.affichage-badge { position: absolute; right: var(--e-3); bottom: var(--e-3); margin: 0; padding: 3px 9px; border-radius: 99px; font-size: .75rem; color: var(--texte-2); background: var(--bord); }
