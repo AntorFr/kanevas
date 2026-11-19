@@ -215,7 +215,7 @@ export function ecrireSectionImport(
             ecrit = true;
             if (etat === 'inchangee') etat = 'mise_a_jour';
           }
-          if (lotId !== null) noterDansLot(db, lotId, 'fiches', ISSUE_MAJ, [], maintenant);
+          if (lotId !== null) noterDansLot(db, lotId, 'fiches', etat === 'inchangee' ? 'inchangees' : ISSUE_MAJ, [], maintenant);
           const e = empreintesDe(db, compteId, universId, ficheId, ligne.id);
           return { id: ligne.id, cle: scle, etat, avertissements, empreinte: e.section, empreinteFiche: e.fiche };
         }),
