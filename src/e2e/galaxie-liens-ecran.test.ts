@@ -39,7 +39,7 @@ describe('E-23 lier un corps à une fiche : dialogue, panneau, bloc de la fiche'
     assert.equal(r.status(), 201);
     return ((await r.json()) as Any).id as number;
   };
-  const remise = () => sql((db) => db.prepare('UPDATE swn_astres SET fiche_id = NULL').run());
+  const remise = () => sql((db) => db.prepare('UPDATE swn_astres SET fiche_id = NULL').run()) && sql((db) => db.prepare('UPDATE swn_formations SET fiche_id = NULL').run());
   const liee = (cle: string) => sql((db) => db.prepare('SELECT fiche_id FROM swn_astres WHERE cle = ?').get(cle)?.fiche_id ?? null);
 
   before(async () => {
@@ -63,6 +63,7 @@ describe('E-23 lier un corps à une fiche : dialogue, panneau, bloc de la fiche'
         ast.run(id, `${pre}-soleil`, 'etoile', null, 0, 'jaune', `Soleil-${pre}`, 0, 0, 0.3);
         ast.run(id, `${pre}-un`, 'planete', null, 0, 'tellurique', `Vael II${pre}`, 4, 7, 0.3);
         ast.run(id, `${pre}-deux`, 'planete', null, 0, 'gazeuse', `Vael III${pre}`, 5, 8, 0.3);
+        db.prepare('INSERT INTO swn_formations (systeme_id, cle, forme, etoile_rang, nom, parametres) VALUES (?,?,?,?,?,?)').run(id, `${pre}-ceinture`, 'anneau', 0, 'Ceinture de Vael', JSON.stringify({ de: 2.6, a: 3.0, rochers: 0.8 }));
       }
     });
   }, { timeout: 180000 });
@@ -339,5 +340,45 @@ describe('E-23 lier un corps à une fiche : dialogue, panneau, bloc de la fiche'
     }
     await hors(page, '10-dialogue-390');
     await ctx.close();
+  });
+  it('zone : Lier, Changer la fiche liée, Délier depuis son panneau (MJ) ; Léa voit la ligne sans aucun geste ; Échap ferme le dialogue sans écrire', async () => {
+    remise();
+    const zone = (page: Any) => page.getByRole('region', { name: 'Zone sélectionnée' });
+    const { page, ctx } = await ouvrir('Antor');
+    const ficheLue = await fiche(page, 'Vael II (colonie)', true); // own sheet: an earlier test deletes the shared one
+    await page.getByRole('list', { name: 'Zones du système' }).getByRole('button', { name: /Ceinture de Vael/ }).click();
+    const z = zone(page);
+    await z.waitFor();
+    assert.equal(await z.getByRole('button', { name: 'Illustrer la fiche' }).count(), 0, 'pas d’illustration pour une zone');
+    assert.equal(await z.getByRole('button', { name: 'Délier' }).count(), 0);
+    await z.getByRole('button', { name: 'Lier à une fiche…' }).click();
+    const d = page.getByRole('dialog');
+    await d.waitFor();
+    await page.keyboard.press('Escape');
+    await d.waitFor({ state: 'detached' });
+    assert.equal(sql((db) => db.prepare("SELECT fiche_id FROM swn_formations WHERE cle = 'd-ceinture'").get().fiche_id), null, 'Échap n’écrit rien');
+    await z.getByRole('button', { name: 'Lier à une fiche…' }).click();
+    await d.getByRole('textbox', { name: 'Rechercher une fiche' }).fill('colonie');
+    await d.getByRole('option', { name: /Vael II \(colonie\)/ }).click();
+    await d.getByRole('button', { name: 'Lier', exact: true }).click();
+    await d.waitFor({ state: 'detached' });
+    await z.getByRole('link', { name: 'Vael II (colonie)' }).waitFor();
+    const fz = () => sql((db) => db.prepare("SELECT fiche_id FROM swn_formations WHERE cle = 'd-ceinture'").get().fiche_id);
+    assert.equal(fz(), ficheLue);
+    await hors(page, '11-zone-liee');
+    await z.getByRole('button', { name: 'Changer la fiche liée…' }).click();
+    await d.getByText('Fiche choisie : Vael II (colonie)').waitFor();
+    await d.getByRole('button', { name: 'Annuler' }).click();
+    await d.waitFor({ state: 'detached' });
+    await z.getByRole('button', { name: 'Délier' }).click();
+    await z.getByText('Fiche :').waitFor({ state: 'detached' });
+    assert.equal(fz(), null);
+    sql((db) => db.prepare("UPDATE swn_formations SET fiche_id = ? WHERE cle = 'd-ceinture'").run(ficheLue));
+    await ctx.close();
+    const l = await ouvrir('Léa');
+    await l.page.getByRole('list', { name: 'Zones du système' }).getByRole('button', { name: /Ceinture de Vael/ }).click();
+    await zone(l.page).getByRole('link', { name: 'Vael II (colonie)' }).waitFor();
+    for (const m of ['Lier', 'Délier', 'Changer']) assert.equal(await zone(l.page).getByRole('button', { name: new RegExp(m) }).count(), 0, m);
+    await l.ctx.close();
   });
 });
