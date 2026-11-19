@@ -1,4 +1,4 @@
-import { sousOrigine } from '../historique.js';
+import { listerHistorique, sousOrigine } from '../historique.js';
 import { Readable } from 'node:stream';
 import { z } from 'zod';
 import type { Db } from '../../db/db.js';
@@ -324,6 +324,25 @@ export function catalogueDe(
         },
       ),
     );
+  }
+
+  // The history is the GM's, on the MCP door only (AD-mcp-6): a player's catalogue has no such name, so a call is « Introuvable. ».
+  if (porte === 'mcp' && role === 'mj') {
+    outils.push({
+      ...outil(
+        'lire_historique',
+        'Lit l\'historique des écritures de l\'univers, de la plus récente à la plus ancienne (100 lignes par page), éventuellement pour une seule fiche (`fiche` : clé, ancienne clé ou id), avec un `curseur` pour la page suivante (`null` à la dernière).',
+        z.strictObject({ fiche: refFiche.optional(), curseur: z.string().regex(/^\d+$/).optional() }),
+        ({ fiche, curseur: c }) => {
+          const page = listerHistorique(db, acteur, universId, {
+            ...(fiche === undefined ? {} : { fiche: String(fiche) }),
+            ...(c === undefined ? {} : { apres: c }),
+          });
+          return { donnees: { lignes: page.lignes, curseur: page.curseur } };
+        },
+      ),
+      portes: ['mcp'] as const,
+    });
   }
 
   // The image engine is a GM tool, and absent when no engine exists (AD-45, AD-89).

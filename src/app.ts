@@ -7,6 +7,7 @@ import { viderTmp } from './services/stockage.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerBouchonRoutes } from './routes/bouchon.js';
 import { registerImportRoutes } from './routes/import.js';
+import { registerMcpRoutes } from './routes/mcp.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerSessionRoutes } from './routes/session.js';
 import { ConnexionClaude } from './services/assistant/connexion-claude.js';
@@ -66,6 +67,7 @@ export async function buildApp() {
   await registerAuthRoutes(app);
   await registerBouchonRoutes(app);
   await registerImportRoutes(app);
+  await registerMcpRoutes(app);
 
   // The history keeps 30 days of values and 90 of lines (B-93): purged at mount, then every 24 hours.
   purgerHistorique(db, app.horloge());
