@@ -37,7 +37,10 @@ describe('ecrans_liste : une seule sélection', () => {
     const src = lire('scripts/niveaux-tests.mjs');
     const specs = [...src.matchAll(/^(?:import|export)\b[^;\n]*?(?:\bfrom\s+|^import\s+)['"]([^'"]+)['"]/gm)].map((m) => m[1]);
     assert.ok(specs.length > 0);
-    assert.doesNotMatch(src, /require\(|^\s*await import\(/m);
+    // The one fallback is typescript, found on the image's NODE_PATH when no node_modules holds it (AD-touches-1).
+    const code = src.split('\n').filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join('\n');
+    assert.deepEqual([...code.matchAll(/\brequire\(([^)]*)\)/g)].map((m) => m[1]).filter((a) => a !== 'candidat' && a !== "'typescript'"), []);
+    assert.doesNotMatch(src, /^\s*await import\(/m);
     for (const s of specs) assert.ok(s.startsWith('node:') || s.startsWith('.'), `import d'un paquet : ${s}`);
   });
 });
