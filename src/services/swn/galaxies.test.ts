@@ -29,7 +29,7 @@ test('0022 crée les quatre tables sans toucher les lignes existantes', () => {
   assert.deepEqual(snap(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const tables = db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'swn_%' AND name NOT LIKE 'swn_catalogue_%' AND name NOT IN ('swn_conceptions', 'swn_fiches_generees') AND type='table' ORDER BY name").all().map((r: any) => r.name);
-  assert.deepEqual(tables, ['swn_astres', 'swn_formations', 'swn_galaxies', 'swn_routes', 'swn_systemes', 'swn_zones']);
+  assert.deepEqual(tables, ['swn_astres', 'swn_elements', 'swn_formations', 'swn_galaxies', 'swn_routes', 'swn_systemes', 'swn_zones']);
 });
 
 function monde() {
