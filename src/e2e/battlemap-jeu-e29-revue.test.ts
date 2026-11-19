@@ -54,6 +54,9 @@ describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser 
     return id;
   };
   const table = async (page: Any, cid: number): Promise<Any> => (await page.request.get(`${api}/cartes/${cid}/table`)).json();
+  // Waits, in the page, until the table read through the API satisfies `expr` (written over `t`): no fixed delay.
+  const jusque = (page: Any, c: number, expr: string) =>
+    page.waitForFunction(async ([url, e]: string[]) => (new Function('t', `return ${e}`) as (t: unknown) => boolean)(await (await fetch(url!)).json()), [`${api}/cartes/${c}/table`, expr], { polling: 100 });
   const jeu = async (page: Any, cid: number) => {
     await page.goto(`/univers/${uid}/outils/battlemap/cartes/${cid}/jeu`);
     await attendre(page);
@@ -129,8 +132,7 @@ describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser 
     assert.deepEqual((await table(antor, cid)).etat.vue, { x: 2, y: 2, l: 5, h: 4 });
     await jeu(antor, cid);
     await antor.getByRole('button', { name: 'Effacer la vue' }).click();
-    await antor.waitForFunction(() => true);
-    for (let i = 0; i < 50 && (await table(antor, cid)).etat.vue !== null; i++) await antor.waitForTimeout(100);
+    await jusque(antor, cid, 't.etat.vue === null');
     assert.equal((await table(antor, cid)).etat.vue, null);
   });
 
@@ -144,7 +146,7 @@ describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser 
     assert.equal((await table(antor, cid)).etat.pions.length, 1);
     await antor.getByRole('button', { name: /Réinitialiser la table/ }).click();
     await antor.getByRole('alertdialog').getByRole('button', { name: /Réinitialiser/ }).click();
-    for (let i = 0; i < 50 && (await table(antor, cid)).etat.pions.length !== 0; i++) await antor.waitForTimeout(100);
+    await jusque(antor, cid, 't.etat.pions.length === 0');
     assert.equal((await table(antor, cid)).etat.pions.length, 0);
   });
 
@@ -186,8 +188,8 @@ describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser 
     await antor.mouse.move(de.x + cote * 1.5, de.y + cote * 1.5, { steps: 6 });
     await antor.mouse.move(de.x + cote * 3, de.y + cote * 2, { steps: 6 });
     await antor.mouse.up();
-    let apres = avant;
-    for (let i = 0; i < 50 && apres.x === avant.x; i++) { await antor.waitForTimeout(100); apres = (await table(antor, c)).etat.pions[0]; }
+    await jusque(antor, c, `t.etat.pions[0].x !== ${avant.x}`);
+    const apres = (await table(antor, c)).etat.pions[0];
     assert.deepEqual([apres.x - avant.x, apres.y - avant.y], [3, 2]);
     await antor.reload();
     await antor.getByText('Mobile', { exact: true }).first().waitFor();
@@ -208,17 +210,14 @@ describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser 
     await premiere.waitFor();
     const titre = ((await premiere.textContent()) ?? '').split(' · ')[0]!.trim();
     await premiere.click();
-    let p = (await table(antor, c)).etat.pions[0];
-    for (let i = 0; i < 50 && p.fiche_id === null; i++) { await antor.waitForTimeout(100); p = (await table(antor, c)).etat.pions[0]; }
-    assert.notEqual(p.fiche_id, null);
+    await jusque(antor, c, 't.etat.pions[0].fiche_id !== null');
     await antor.getByRole('button', { name: 'Actions sur Pion lié' }).click();
     await antor.getByRole('menuitem', { name: /Ouvrir la fiche/ }).click();
     await antor.getByText(titre, { exact: false }).first().waitFor();
     await antor.keyboard.press('Escape');
     await antor.getByRole('button', { name: 'Actions sur Pion lié' }).click();
     await antor.getByRole('menuitem', { name: /Délier/ }).click();
-    for (let i = 0; i < 50 && p.fiche_id !== null; i++) { await antor.waitForTimeout(100); p = (await table(antor, c)).etat.pions[0]; }
-    assert.equal(p.fiche_id, null);
+    await jusque(antor, c, 't.etat.pions[0].fiche_id === null');
   });
 
   it('carte cachée aux joueurs : « Page introuvable. » pour la joueuse', async () => {
