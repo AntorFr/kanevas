@@ -309,7 +309,7 @@ export function supprimerCarte(db: Db, acteur: Acteur, universId: number, id: nu
   annoncer(db, id);
 }
 
-/** The composed maps for E-10: the editor's address for a GM outside Player mode, the play address (E-29) for anyone else, who gets the visible ones. */
+/** The composed maps for E-10: the editor's address only for a GM outside Player mode; a player gets the visible ones. */
 export function cartesComposees(db: Db, acteur: Acteur, universId: number): CarteOutil[] {
   const role = roleDe(db, universId, acteur.compteId);
   if (!role) return [];
@@ -318,7 +318,7 @@ export function cartesComposees(db: Db, acteur: Acteur, universId: number): Cart
     .all(universId) as Pick<Ligne, 'id' | 'titre' | 'visible' | 'largeur' | 'hauteur' | 'version'>[];
   return lignes.filter((l) => mj || l.visible === 1).map((l) => ({
     id: l.id, titre: l.titre, visible: l.visible === 1, version: l.version, largeur: l.largeur, hauteur: l.hauteur,
-    adresse: `/univers/${universId}/outils/battlemap/cartes/${l.id}${mj ? '' : '/jeu'}`,
+    ...(mj ? { adresse: `/univers/${universId}/outils/battlemap/cartes/${l.id}` } : {}),
   }));
 }
 

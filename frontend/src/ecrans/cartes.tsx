@@ -289,7 +289,10 @@ function Cartes() {
             <li key={`outil-${c.outil.module}-${c.outil.outil}-${c.id}`} className="carte-ligne">
               <span className="carte-vignette neutre hexagones" aria-hidden="true" />
               <div className="carte-corps">
-                {c.adresse ? <Link to={c.adresse}>{c.titre}</Link> : <span>{c.titre}</span>}
+                {/* The GM's address is the editor's (the server gives it to the GM only); a player opens the play screen of a composed map (E-29). */}
+                {c.adresse ? <Link to={c.adresse}>{c.titre}</Link>
+                  : c.largeur !== undefined && c.outil.module === 'battlemap' ? <Link to={`/univers/${id}/outils/battlemap/cartes/${c.id}/jeu`}>{c.titre}</Link>
+                  : <span>{c.titre}</span>}
                 {c.largeur !== undefined && c.hauteur !== undefined && <small>{c.largeur} × {c.hauteur} cases</small>}
               </div>
               <div className="carte-etat">
