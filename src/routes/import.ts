@@ -193,7 +193,7 @@ export async function registerImportRoutes(app: FastifyInstance) {
       scope.put(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request) => {
         const { cle } = request.params as { cle: string };
         const { lot } = request.query as { lot?: unknown };
-        return assurerFiche(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
+        return assurerFiche(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge(), request.headers);
       });
 
       // Targeted write of the header (B-82, AD-ecriture-1): only the fields sent move; a former key reaches the sheet (AD-146).
@@ -317,7 +317,7 @@ export async function registerImportRoutes(app: FastifyInstance) {
           nom: champ('nom'),
           visibilite: champ('visibilite'),
           flux: part?.fieldname === 'fichier' ? flux() : null,
-        }, app.horloge());
+        }, app.horloge(), undefined, request.headers);
       });
 
       scope.delete(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request, reply) => {

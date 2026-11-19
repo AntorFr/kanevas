@@ -36,6 +36,9 @@ import {
   retirerIllustration,
 } from './fichiers.js';
 import { preparerContenu } from './liens.js';
+import { resoudreFiche } from './cles.js';
+import { lireFicheApi } from './lecture-api.js';
+import { lirePrecondition, sousPrecondition, type CompteLot, type Precondition } from './precondition.js';
 import { extraireClesFichier } from './markdown.js';
 import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
 import {
@@ -60,6 +63,9 @@ export interface ResultatFiche {
   id: number;
   etat: EtatImport;
   avertissements: string[];
+  /** Fingerprints of the sheet and of its header after the write (AD-139). */
+  empreinte: string;
+  empreinteEnTete: string;
 }
 
 export interface SectionEntree {
@@ -296,6 +302,7 @@ export function assurerFiche(
   cle: string,
   corps: unknown,
   maintenant: Date = new Date(),
+  entetes: Record<string, string | string[] | undefined> = {},
 ): ResultatFiche {
   // The import writes as a GM only (B-46): a player's token never reaches a section, a file join included.
   exigerMJ(db, jeton.universId, jeton.compteId);
@@ -318,7 +325,14 @@ export function assurerFiche(
   };
 
   let entree: FicheEntree;
+  let precondition: Precondition = {};
   try {
+    try {
+      precondition = lirePrecondition(entetes, { creation: true });
+    } catch (e) {
+      if (e instanceof ErreurService) throw new Refus(e.champ ?? 'if_match', 'fiche', e.message);
+      throw e;
+    }
     if (!cleValide(cle)) throw new Refus('cle', 'fiche', "clé d'origine invalide");
     // A key of digits only would read as an id (AD-146): the sheet needs a letter in its key.
     if (!/\p{L}/u.test(cle)) throw new Refus('cle', 'fiche', "clé d'origine invalide : au moins une lettre");
@@ -346,12 +360,11 @@ export function assurerFiche(
   }
 
   // A key that is the key of a managed section of the sheet: refused before the transaction (AD-127).
+  // The sheet is reached by its key or a former one (AD-146): never a second sheet for a renamed key.
+  const atteinte = resoudreFiche(db, jeton.universId, cle);
   const gerees = db
-    .prepare(
-      `SELECT s.cle FROM sections s JOIN fiches f ON f.id = s.fiche_id
-       WHERE f.univers_id = ? AND f.cle = ? AND s.gere_par IS NOT NULL`,
-    )
-    .all(jeton.universId, cle) as { cle: string }[];
+    .prepare('SELECT s.cle FROM sections s WHERE s.fiche_id = ? AND s.gere_par IS NOT NULL')
+    .all(atteinte?.id ?? 0) as { cle: string }[];
   if (gerees.length > 0) {
     const cles = new Set(gerees.map((g) => g.cle));
     const i = entree.sections.findIndex((s) => cles.has(s.cle));
@@ -362,15 +375,32 @@ export function assurerFiche(
     }
   }
 
+  const compte: CompteLot = { lotId, nature: 'fiches', cle, objet: 'fiche', maintenant };
   try {
-    return avecContexte(db, { compteId: jeton.compteId, jetonId: jeton.id, origine: 'import', lotId }, (): ResultatFiche => {
-      const avert: EntreeRapport[] = [];
-      const prevenir = (objet: string, raison: string) =>
-        avert.push({ cle, objet, raison, gravite: 'avertissement' });
-      const resultat = ecrire(db, jeton, cle, entree, prevenir);
-      if (lotId !== null) noterDansLot(db, lotId, 'fiches', ISSUE[resultat.etat], avert, maintenant);
-      return { ...resultat, avertissements: avert.map((a) => a.raison) };
-    });
+    return sousPrecondition(
+      db,
+      precondition,
+      compte,
+      () => {
+        const res = resoudreFiche(db, jeton.universId, cle);
+        return res ? lireFicheApi(db, { compteId: jeton.compteId }, jeton.universId, String(res.id)).empreinte : null;
+      },
+      () =>
+        avecContexte(db, { compteId: jeton.compteId, jetonId: jeton.id, origine: 'import', lotId }, (): ResultatFiche => {
+          const avert: EntreeRapport[] = [];
+          const prevenir = (objet: string, raison: string) =>
+            avert.push({ cle, objet, raison, gravite: 'avertissement' });
+          const resultat = ecrire(db, jeton, cle, entree, prevenir);
+          if (lotId !== null) noterDansLot(db, lotId, 'fiches', ISSUE[resultat.etat], avert, maintenant);
+          const f = lireFicheApi(db, { compteId: jeton.compteId }, jeton.universId, String(resultat.id));
+          return {
+            ...resultat,
+            avertissements: avert.map((a) => a.raison),
+            empreinte: f.empreinte,
+            empreinteEnTete: f.empreinteEntete,
+          };
+        }),
+    );
   } catch (e) {
     // A bare id that points nowhere: the whole request is refused, nothing of it is written.
     if (e instanceof ErreurService && e.detail === 'lien_illisible') {
@@ -389,9 +419,10 @@ function ecrire(
   prevenir: (objet: string, raison: string) => void,
 ): { id: number; etat: EtatImport } {
   const { universId, compteId } = jeton;
-  const existante = db
-    .prepare('SELECT id, type, titre, charge, sous_type, cree_le FROM fiches WHERE univers_id = ? AND cle = ?')
-    .get(universId, cle) as FicheLue | undefined;
+  const res = resoudreFiche(db, universId, cle);
+  const existante = res
+    ? (db.prepare('SELECT id, type, titre, charge, sous_type, cree_le FROM fiches WHERE id = ?').get(res.id) as FicheLue)
+    : undefined;
   const charge = e.type === 'aventure'
     ? CHARGES.aventure.parse({ v: 1, statut: e.statut })
     : e.type === 'personnage' && e.pj !== undefined ? { pj: e.pj } : {};
