@@ -127,9 +127,9 @@ One file per line. Rules, in short: the graph is read by the TypeScript parser (
 | Change (real commit) | Tip | `--liste ecrans` | `--liste fiche` | `ecrans:` run |
 |---|---|---|---|---|
 | The Administration screen (`6c75369e` of `main`: `administration/jeton-assistant.tsx`) | feature | 15 files | 281 of 522 | 220 s (108 tests, 22 TAP lines) |
-| A shared file (`package.json`: a key added) | feature | 256 files: every screen test | 522: the whole suite | 39 min (2 340 s, 1 013 TAP lines), measured on 2026-11-17 on the previous tip, not played again |
+| A shared file (`package.json`: a key added) | feature | 270 files: every screen test | 522: the whole suite | 39 min (2 340 s, 1 013 TAP lines), measured on 2026-11-17 on the previous tip, not played again |
 | The server alone (a line added to `src/services/swn/catalogue-vaisseaux.ts`) | feature | 0 | 266 (no screen test) | none: nothing to play |
-| `frontend/src/Cadre.tsx` (a line added) | feature | 256 files: every screen test | 522: the whole suite | 39 min, the same run as the line above |
+| `frontend/src/Cadre.tsx` (a line added) | feature | 270 files: every screen test | 522: the whole suite | 39 min, the same run as the line above |
 | The battlemap map editor alone (`33ce5498` of `epic/kanevas-battlemap`: `outils/battlemap/cartes/interaction.ts`) | epic | 40 files, chosen by the screens `outil` and `outil-cible` (none declares only `fiche`, `parametres` or `systeme`) | 323 of 550 | 428 s (349 tests, 121 TAP lines, all green) |
 | A Rust module (`6b549142` of `epic/kanevas-battlemap`: `rust/modules/battlemap-core/tests/revue.rs`) | epic | the same 40 files (the module is loaded by `outils/battlemap/cartes/coeur.ts`) | 323 of 550 | 428 s: the same 40 files, so the same run |
 
