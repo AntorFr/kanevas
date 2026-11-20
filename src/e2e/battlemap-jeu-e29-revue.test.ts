@@ -274,7 +274,7 @@ describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser 
     await jeu(lea, c);
     await lea.locator('canvas').first().waitFor();
     // The disc is the only thing of the accent colour: its bounding box gives its centre, which a diagonal bar would cross.
-    const lire = () => lea.evaluate(() => {
+    const lireDisque = () => {
       const cv = document.querySelector('canvas') as HTMLCanvasElement;
       const ctx = cv.getContext('2d') as CanvasRenderingContext2D;
       const el = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
@@ -285,15 +285,13 @@ describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser 
       const egal = (x: number, y: number) => { const k = (y * cv.width + x) * 4; return d.data[k] === r && d.data[k + 1] === g && d.data[k + 2] === b && d.data[k + 3] === 255; };
       let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
       for (let y = 0; y < cv.height; y++) for (let x = 0; x < cv.width; x++) if (egal(x, y)) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
-      if (x1 < 0) return { trouve: false, plein: false };
+      if (x1 < 0) return null;
       const cx = Math.round((x0 + x1) / 2), cy = Math.round((y0 + y1) / 2);
       const q = Math.max(2, Math.round((x1 - x0) / 8));
       const plein = [[0, 0], [q, -q], [-q, q], [2 * q, -2 * q], [-2 * q, 2 * q]].every(([dx, dy]) => egal(cx + dx!, cy + dy!));
-      return { trouve: true, plein };
-    });
-    let v = await lire();
-    for (let i = 0; i < 30 && !v.trouve; i++) { await lea.waitForTimeout(100); v = await lire(); }
-    assert.equal(v.trouve, true, 'le disque est dessiné pour la joueuse');
+      return { plein };
+    };
+    const v = (await (await lea.waitForFunction(lireDisque, undefined, { polling: 100 })).jsonValue()) as { plein: boolean };
     assert.equal(v.plein, true, 'aucune barre diagonale sur un pion visible');
   });
 
