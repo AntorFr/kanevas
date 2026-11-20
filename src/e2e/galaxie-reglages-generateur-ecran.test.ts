@@ -161,6 +161,55 @@ describe('E-24 réglages du générateur : compte avant confirmation, refus, con
     await a.ctx.close();
   });
 
+  it('dialogue d’application : « Les étoiles de la galaxie ne bougent pas. » seulement si la densité par défaut n’est pas modifiée', async () => {
+    const { page, ctx } = await ouvrir('Antor');
+    const phraseEtoiles = /Les étoiles de la galaxie ne bougent pas\./;
+    const v0 = (await lecture(page)).version;
+    const dens = champ(page, /Densité par défaut/).first();
+    await dens.waitFor();
+    const densiteGalaxie = await dens.inputValue();
+    const comete = champ(page, 'Comètes').first();
+    const courant = await comete.inputValue();
+    const autre = courant === '0.5' ? '0.25' : '0.5';
+    const dialogue = async () => {
+      await page.getByText(/systèmes? tirés? chang(e|ent) d'intérieur/).waitFor();
+      await page.getByRole('button', { name: 'Appliquer' }).click();
+      const d = page.getByRole('alertdialog');
+      await d.waitFor();
+      return d;
+    };
+    const fermer = async (d: Any) => { await d.getByRole('button', { name: /Annuler|Rester|Fermer/ }).first().click(); await d.waitFor({ state: 'detached' }); };
+
+    // A frequency alone: the count, then the sentence about the stars.
+    await comete.fill(autre);
+    let d = await dialogue();
+    assert.match(await d.innerText(), /systèmes? tirés? chang(e|ent) d'intérieur/);
+    assert.match(await d.innerText(), phraseEtoiles);
+    await hors(page, '2c-dialogue-frequence-seule');
+    await fermer(d);
+
+    // A changed density moves drawn stars: the count stays, the sentence goes.
+    await dens.fill(String(Number(densiteGalaxie) === 7 ? 9 : 7));
+    d = await dialogue();
+    assert.match(await d.innerText(), /systèmes? tirés? chang(e|ent) d'intérieur/);
+    assert.doesNotMatch(await d.innerText(), phraseEtoiles);
+    await hors(page, '2d-dialogue-densite-modifiee');
+    await fermer(d);
+
+    // The density put back to the galaxy's own value: the sentence is back.
+    await dens.fill(densiteGalaxie);
+    d = await dialogue();
+    assert.match(await d.innerText(), phraseEtoiles);
+    await fermer(d);
+
+    // An invalid density opens no dialogue.
+    await dens.fill('abc');
+    assert.equal(await page.getByRole('button', { name: 'Appliquer' }).isDisabled(), true);
+    assert.equal(await page.getByRole('alertdialog').count(), 0);
+    assert.equal((await lecture(page)).version, v0, 'rien d’écrit : on n’a fait que regarder le dialogue');
+    await ctx.close();
+  });
+
   it('un second onglet qui a appliqué : « Ces réglages ont changé… » et « Recharger » remet à jour', async () => {
     const un = await ouvrir('Antor');
     const deux = await ouvrir('Antor');

@@ -254,17 +254,17 @@ test('creerGalaxie inscrit sa ligne à la version courante du cœur', () => {
   assert.equal(R.reglagesDe(w.db, id).versionGenerateur, l[0].version_generateur);
 });
 
-test('0039 : montée depuis 0038 avec le semis, galaxies inchangées, défauts et version 1, aucune ligne insérée', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'migration-0039-'));
+test('0040 : montée depuis 0039 avec le semis, galaxies inchangées, défauts et version 1, aucune ligne insérée', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'migration-0040-'));
   const db = openDb(':memory:');
   const source = new URL('../../db/migrations/', import.meta.url);
-  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 38) copyFileSync(new URL(f, source), join(dir, f));
+  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 39) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
   assert.equal(semerBouchon(db), true);
   const galaxies = () => db.prepare('SELECT * FROM swn_galaxies ORDER BY id').all();
   const avant = galaxies();
   assert.ok(avant.length > 0);
-  assert.deepEqual(migrate(db), [39]);
+  assert.deepEqual(migrate(db), [40]);
   assert.deepEqual(galaxies(), avant);
   for (const t of ['swn_reglages', 'swn_aspects']) assert.equal((db.prepare(`SELECT count(*) n FROM ${t}`).get() as any).n, 0);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
