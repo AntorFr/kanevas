@@ -65,3 +65,8 @@ main.principal:has(> .jeu), body.asst-present main.principal:has(> .jeu) { max-w
 .jeu-ajout { max-height: calc(100vh - 8rem); overflow-y: auto; }
 .jeu-ajout .editeur-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--e-2); max-height: 30vh; overflow-y: auto; }
 .jeu-ajout .editeur-grille img { max-width: 100%; height: auto; max-height: 96px; object-fit: contain; }
+
+/* The player's side (kanevas-battlemap-distance): the line under the bar, the badge top right, the alert bottom centre. */
+.jeu-ligne { margin: 0; padding: var(--e-2) var(--e-4); color: var(--texte-2); font-size: var(--t-14, 1rem); border-bottom: 1px solid var(--bord); flex: none; }
+.jeu-connexion { position: absolute; right: var(--e-3); top: var(--e-3); z-index: 6; }
+.jeu-alerte-joueur { position: absolute; left: 50%; bottom: var(--e-3); transform: translateX(-50%); z-index: 7; max-width: calc(100% - 2 * var(--e-3)); }

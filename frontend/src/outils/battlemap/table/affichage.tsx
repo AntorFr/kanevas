@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ErreurApi, lire } from '../../../api';
-import { CanevasJeu, PageIntrouvable, type ImageAsset } from '../../../ui';
+import { CanevasJeu, PageIntrouvable, PastilleConnexion, type ImageAsset } from '../../../ui';
 import { appliquerTheme, choixMemorise } from '../../../theme';
 import { urlImage } from '../cartes/bibliotheque';
 import type { Empreintes } from '../cartes/geometrie';
@@ -119,7 +119,7 @@ export function Affichage({ universId, cid }: { universId: number; cid: string }
   if (charge.k === 'chargement') return <div className="affichage" />;
   const { carte, table } = charge;
   const classe = `affichage${calme ? ' calme' : ''}`;
-  const badge = connexion === 'perdue' && <p className="affichage-badge" role="status">Reconnexion…</p>;
+  const badge = connexion === 'perdue' && <PastilleConnexion classe="affichage-badge" icone={false} />;
 
   if (!table.commencee) {
     return <div className={classe}><h1 className="affichage-centre affichage-attente" role="status">La partie n’a pas commencé.</h1>{badge}</div>;

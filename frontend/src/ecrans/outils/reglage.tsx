@@ -2,8 +2,11 @@ import { Check, Pencil, RotateCcw, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { ErreurApi, useConnexionPerdue } from '../../api';
-import { Bouton, Champ } from '../../ui';
+import { Bouton, Champ, Interrupteur } from '../../ui';
 import { afficher, origine, type Niveau, type Reglage, type Resolue, type Valeur } from './types';
+
+/** Settings drawn as a switch (a yes/no that reads as a state of the table); the other booleans stay a choice « Oui / Non ». */
+const EN_INTERRUPTEUR = new Set(['jeu_a_distance']);
 
 /** Keep the opening version, even when another card refreshes: stale edits must be refused. */
 export function LigneReglage({ reglage, valeur, niveau, version, ecriture, occupe, enregistrer, recharger }: {
@@ -52,7 +55,9 @@ export function LigneReglage({ reglage, valeur, niveau, version, ecriture, occup
       }}>{niveau === 'univers' ? 'Remplacer pour l’univers' : 'Remplacer'}</Bouton>}
     </div>
     {ecriture && edition && <form className="outil-edition" noValidate onSubmit={(e) => { e.preventDefault(); void sauver(edition.valeur, edition.version); }}>
-      {forme.type === 'booleen' || forme.type === 'choix' ? <Champ etiquette={reglage.libelle} erreur={invalide ? erreur : undefined} liste disabled={disabled}
+      {forme.type === 'booleen' && EN_INTERRUPTEUR.has(reglage.nom) ? <Interrupteur etiquette={reglage.libelle} disabled={disabled}
+        coche={edition.valeur === true} onChange={(v) => setEdition({ ...edition, valeur: v })} />
+      : forme.type === 'booleen' || forme.type === 'choix' ? <Champ etiquette={reglage.libelle} erreur={invalide ? erreur : undefined} liste disabled={disabled}
         value={String(edition.valeur)} onChange={(e: { target: { value: string } }) => setEdition({ ...edition, valeur: forme.type === 'booleen' ? e.target.value === 'true' : e.target.value })}>
         {forme.type === 'booleen' ? <><option value="true">Oui</option><option value="false">Non</option></>
           : forme.valeurs.map((v) => <option key={v}>{v}</option>)}

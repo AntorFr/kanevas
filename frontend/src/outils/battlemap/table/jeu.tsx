@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 import { appeler, ErreurApi, lire } from '../../../api';
 import { useTitreAriane } from '../../../cadre-contexte';
 import {
-  Alerte, Bouton, BoutonIcone, BoiteDialogue, CanevasJeu, Chargement, ColonneOutils, ErreurChargement, Interrupteur, Menu, Onglets, PageIntrouvable, Pastille, Segments,
+  Alerte, Bouton, BoutonIcone, BoiteDialogue, CanevasJeu, Chargement, ColonneOutils, ErreurChargement, Interrupteur, Menu, Onglets, PageIntrouvable, Pastille, PastilleConnexion, PionTable, Segments,
   type EntreeOutil, type ImageAsset, type PoigneeJeu, type ApercuJeu,
 } from '../../../ui';
 import { ChoixFiche } from '../cartes/proprietes';
@@ -29,9 +29,16 @@ import './jeu.css';
 const PIONS_MAX = 200;
 const CLE_SUIVRE = 'kanevas.battlemap.suivre-le-mj';
 const REGLAGE_VUE_MS = 300;
+const ALERTE_MS = 4000;
+const APPUI_LONG_MS = 250;
+const ZONE_PRISE_PX = 44;
 
 interface TableMJ { commencee: true; version: number; peutEcrire: true; etat: { pions: Pion[]; brouillard: string; vue: Rect | null; calques_masques: string[] }; proprietaires: Record<string, number> }
-interface TableJoueur { commencee: true; version: number; document: Document; pions: PionVu[]; brouillard: string; vue: Rect | null }
+interface TableJoueur {
+  commencee: true; version: number; document: Document; pions: PionVu[]; brouillard: string; vue: Rect | null;
+  /** The tokens she owns and sees, and whether she may drag (the server decides: AD-battlemap-distance-3). */
+  mesPions?: string[]; deplacement?: boolean;
+}
 type Table = TableMJ | TableJoueur | { commencee: false; peutEcrire?: true };
 
 type Outil = 'pions' | 'reveler' | 'masquer';
@@ -146,16 +153,16 @@ export function Jeu({ universId, cid, suffixe }: { universId: number; cid: strin
   return (
     <Partie
       universId={universId} cid={cid} base={base} carte={carte} table={table} assets={assets} membres={membres}
-      connexion={connexion} affichages={affichages} recharger={recharger} versionRef={versionRef}
+      connexion={connexion} affichages={affichages} recharger={recharger} versionRef={versionRef} suffixe={suffixe}
     />
   );
 }
 
 function Partie({
-  universId, cid, base, carte, table, assets, membres, connexion, affichages, recharger, versionRef,
+  universId, cid, base, carte, table, assets, membres, connexion, affichages, recharger, versionRef, suffixe,
 }: {
   universId: number; cid: string; base: string; carte: CarteLue; table: TableMJ | TableJoueur; assets: AssetCarte[] | null; membres: Membre[];
-  connexion: EtatConnexion; affichages: number | null; recharger: () => Promise<void>; versionRef: { current: number };
+  connexion: EtatConnexion; affichages: number | null; recharger: () => Promise<void>; versionRef: { current: number }; suffixe: string;
 }) {
   const gm = 'peutEcrire' in table;
   const perdue = connexion === 'perdue';
@@ -182,7 +189,10 @@ function Partie({
   const [copie, setCopie] = useState(false);
   const [suivre, setSuivre] = useState(suivreEnregistre);
   const [partage, setPartage] = useState(() => gm && (table as TableMJ).etat.vue !== null);
+  const [alerteJoueur, setAlerteJoueur] = useState<string | null>(null);
+  const [clavier, setClavier] = useState<{ id: string; x: number; y: number } | null>(null);
   const poignee = useRef<PoigneeJeu>(null);
+  const minuteurAlerte = useRef<ReturnType<typeof setTimeout>>(undefined);
   const cache = useRef(new Map<string, HTMLImageElement>());
   const minuteurVue = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -220,6 +230,10 @@ function Partie({
   const proprietaires = gm ? (table as TableMJ).proprietaires : {};
   const nomMembre = (id: number | undefined) => (id === undefined ? null : membres.find((m) => m.compteId === id)?.username ?? 'Membre');
   const plein = pions.length >= PIONS_MAX || pleine;
+  // The player's drag: what the server said she may do (`deplacement`), withdrawn while the stream is down. No rule is kept here.
+  const siens = useMemo(() => new Set(gm ? [] : (table as TableJoueur).mesPions ?? []), [gm, table]);
+  const glissable = !gm && (table as TableJoueur).deplacement === true && !perdue;
+  const coupe = !gm && suffixe === '' && (table as TableJoueur).deplacement === false && siens.size > 0;
 
   const dire = useCallback((t: string) => { setMessage(t); setTimeout(() => setMessage(''), 3500); }, []);
 
@@ -254,12 +268,58 @@ function Partie({
   }, [gm, partage, envoyerVue]);
   useEffect(() => () => clearTimeout(minuteurVue.current), []);
 
+  // ---- the player's drop (AD-battlemap-distance-4): nothing changes locally, the token waits dimmed on the dropped cell.
+  const alerter = useCallback((t: string) => {
+    setAlerteJoueur(t);
+    clearTimeout(minuteurAlerte.current);
+    minuteurAlerte.current = setTimeout(() => setAlerteJoueur(null), ALERTE_MS);
+  }, []);
+  useEffect(() => () => clearTimeout(minuteurAlerte.current), []);
+
+  const deposer = useCallback(async (id: string, x: number, y: number) => {
+    setApercu({ pion: { id, x, y, attenue: true } });
+    try {
+      // A stale version is refetched and the same move sent once more; a second one stops without a word.
+      await avecReprise(
+        () => appeler('POST', `${base}/table/commandes${suffixe}`, { version: versionRef.current, commandes: [{ type: 'deplacer_pion', id, x, y }] }),
+        recharger,
+      );
+    } catch (e) {
+      if (e instanceof TableChangee) { /* silent: the refetch below shows the state */ }
+      else if (e instanceof ErreurApi && e.code === 'pion_non_proprietaire') alerter('Ce pion n’est pas à vous.');
+      else if (e instanceof ErreurApi && e.code === 'jeu_a_distance_coupe') { /* no message: the line appears after the refetch */ }
+      else if (e instanceof ErreurApi && e.statut === 404) { /* the refetch answers « Page introuvable. » */ }
+      else alerter('L’action n’a pas abouti.');
+    }
+    await recharger().catch(() => undefined);
+    setApercu({});
+  }, [base, suffixe, versionRef, recharger, alerter]);
+
+  // The stream going down while a token is held releases it: it returns to its cell.
+  useEffect(() => {
+    if (!perdue) return;
+    if (geste.current?.k === 'pion' && geste.current.joueur) { geste.current = null; setApercu({}); }
+    setClavier(null);
+  }, [perdue]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** The token a press takes: hers first, else the last drawn; a zone of at least 44 px on screen at any zoom. */
+  function pionPris(p: Point): PionVu | undefined {
+    const e = poignee.current?.echelle() || 1;
+    const marge = (taille: number) => Math.max(0, (ZONE_PRISE_PX / e - taille) / 2);
+    const dessous = pions.filter((q) => {
+      const mx = marge(q.l);
+      const my = marge(q.h);
+      return p.x >= q.x - mx && p.x < q.x + q.l + mx && p.y >= q.y - my && p.y < q.y + q.h + my;
+    });
+    return [...dessous].reverse().find((q) => siens.has(q.id)) ?? dessous[dessous.length - 1];
+  }
+
   // ---- gestures
   const geste = useRef<
     | { k: 'pinceau'; cellules: Map<string, [number, number]> }
     | { k: 'rect'; depart: { x: number; y: number }; actuel: { x: number; y: number } }
     | { k: 'piece' }
-    | { k: 'pion'; id: string; dx: number; dy: number; x: number; y: number; bouge: boolean }
+    | { k: 'pion'; id: string; dx: number; dy: number; x: number; y: number; bouge: boolean; joueur?: { fx: number; fy: number } }
     | null
   >(null);
   const cellule = (p: Point) => ({ x: Math.floor(p.x), y: Math.floor(p.y) });
@@ -282,6 +342,13 @@ function Partie({
 
   const surBas = (p: Point): boolean => {
     const c = cellule(p);
+    if (!gm) {
+      const pris = glissable ? pionPris(p) : undefined;
+      choisirSous(p);
+      if (!pris) return false;
+      geste.current = { k: 'pion', id: pris.id, dx: 0, dy: 0, x: pris.x, y: pris.y, bouge: false, joueur: { fx: p.x - pris.x, fy: p.y - pris.y } };
+      return true;
+    }
     if (!outilsActifs) { choisirSous(p); return false; }
     if (outil === 'pions') {
       const pion = choisirSous(p);
@@ -316,6 +383,16 @@ function Partie({
     } else if (g.k === 'pion') {
       const pion = pions.find((q) => q.id === g.id);
       if (!pion) return;
+      if (g.joueur) {
+        // Held by a player: it follows the pointer, the dashed outline shows the whole cells it will take (kept inside the map).
+        const px = Math.min(doc.largeur - pion.l, Math.max(0, p.x - g.joueur.fx));
+        const py = Math.min(doc.hauteur - pion.h, Math.max(0, p.y - g.joueur.fy));
+        g.x = Math.min(doc.largeur - pion.l, Math.max(0, Math.round(px)));
+        g.y = Math.min(doc.hauteur - pion.h, Math.max(0, Math.round(py)));
+        g.bouge = g.x !== pion.x || g.y !== pion.y;
+        setApercu({ suivi: { id: g.id, px, py, x: g.x, y: g.y } });
+        return;
+      }
       g.x = Math.min(doc.largeur - pion.l, Math.max(0, c.x - g.dx));
       g.y = Math.min(doc.hauteur - pion.h, Math.max(0, c.y - g.dy));
       g.bouge = g.x !== pion.x || g.y !== pion.y;
@@ -336,7 +413,8 @@ function Partie({
     } else if (g.k === 'piece') {
       if (dedans(c)) void ecrire([commandePiece(reveler, c.x, c.y)]);
     } else if (g.bouge) {
-      void ecrire([{ type: 'deplacer_pion', id: g.id, x: g.x, y: g.y }]);
+      if (g.joueur) void deposer(g.id, g.x, g.y);
+      else void ecrire([{ type: 'deplacer_pion', id: g.id, x: g.x, y: g.y }]);
     }
   };
 
@@ -376,6 +454,31 @@ function Partie({
     } catch {
       return false;
     }
+  }
+
+  // ---- the player's keyboard: Enter grabs, the arrows move by one cell, Enter drops, Esc cancels.
+  const [annonceClavier, setAnnonceClavier] = useState('');
+  function saisirClavier(p: PionVu) {
+    setClavier({ id: p.id, x: p.x, y: p.y });
+    setApercu({ suivi: { id: p.id, px: p.x, py: p.y, x: p.x, y: p.y } });
+    setAnnonceClavier(`${p.nom} saisi, case ${p.x}, ${p.y}`);
+  }
+  function deplacerClavier(p: PionVu, dx: number, dy: number) {
+    const c = clavier;
+    if (!c || c.id !== p.id) return;
+    const x = Math.min(doc.largeur - p.l, Math.max(0, c.x + dx));
+    const y = Math.min(doc.hauteur - p.h, Math.max(0, c.y + dy));
+    setClavier({ id: p.id, x, y });
+    setApercu({ suivi: { id: p.id, px: x, py: y, x, y } });
+    setAnnonceClavier(`Case ${x}, ${y}`);
+  }
+  function annulerClavier() { setClavier(null); setApercu({}); setAnnonceClavier('Déplacement annulé'); }
+  function deposerClavier(p: PionVu) {
+    const c = clavier;
+    setClavier(null);
+    if (!c || (c.x === p.x && c.y === p.y)) { setApercu({}); setAnnonceClavier('Déplacement annulé'); return; }
+    setAnnonceClavier(`${p.nom} déposé, case ${c.x}, ${c.y}`);
+    void deposer(p.id, c.x, c.y);
   }
 
   const pionSelectionne = pions.find((p) => p.id === selection);
@@ -458,7 +561,8 @@ function Partie({
         )}
       </header>
 
-      {perdue && <div className="jeu-bande" role="status">Connexion perdue.</div>}
+      {gm && perdue && <div className="jeu-bande" role="status">Connexion perdue.</div>}
+      {coupe && <p className="jeu-ligne" role="status">Seul le MJ déplace les pions.</p>}
       {(echec || plein || change) && (
         <div className="editeur-alertes">
           {echec && <Alerte>L’action n’a pas abouti.</Alerte>}
@@ -493,10 +597,20 @@ function Partie({
           )}
           <CanevasJeu
             doc={doc} tailleCase={carte.tailleCase} empreinte={empreinte} image={image} pions={pions} selection={selection}
-            grille={grille} mj={gm} calquesMasques={masques} apercu={apercu} libre={!gm || perdue}
-            suivre={enSuivi} annonce={pionSelectionne ? `${pionSelectionne.nom}, case ${pionSelectionne.x}, ${pionSelectionne.y}` : ''} message={message}
+            grille={grille} mj={gm} calquesMasques={masques} apercu={apercu} libre={perdue || (!gm && !glissable)}
+            suivre={enSuivi} annonce={annonceClavier || (pionSelectionne ? `${pionSelectionne.nom}, case ${pionSelectionne.x}, ${pionSelectionne.y}` : '')} message={message}
             surBas={surBas} surBouge={surBouge} surHaut={surHaut} surVue={surVue} poignee={poignee}
+            siens={glissable ? siens : undefined} appuiLongMs={glissable ? APPUI_LONG_MS : undefined}
+            couche={glissable ? (g) => pions.map((p) => (
+              <PionTable
+                key={p.id} pion={p} echelle={g.echelle} ox={g.ox} oy={g.oy} sien={siens.has(p.id)} saisi={clavier?.id === p.id}
+                onSaisir={() => saisirClavier(p)} onDeplacer={(dx, dy) => deplacerClavier(p, dx, dy)}
+                onDeposer={() => deposerClavier(p)} onAnnuler={annulerClavier}
+              />
+            )) : undefined}
           />
+          {!gm && perdue && <div className="jeu-connexion"><PastilleConnexion /></div>}
+          {alerteJoueur !== null && <div className="jeu-alerte-joueur"><Alerte>{alerteJoueur}</Alerte></div>}
           {ficheSelection !== null && (
             <div className="jeu-barre-fiche">
               <Bouton icone={BookOpen} onClick={() => setFiche(ficheSelection)}>Ouvrir la fiche</Bouton>
