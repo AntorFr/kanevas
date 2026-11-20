@@ -384,3 +384,22 @@ describe('niveaux ecrans : rust/ sans aucune page qui charge un module (AD-nivea
     assert.deepEqual(depot.liste({ 'rust/Cargo.toml': '[workspace]\n# 2' }), []);
   });
 });
+
+describe('niveaux ecrans : dossier à tiret, crate à souligné (battlemap-core / battlemap_core)', () => {
+  const arbre = {
+    'frontend/src/wasm/charger.ts': 'export function chargerModule(nom: string) { return nom; }',
+    'frontend/src/ecrans/a.tsx': "import { chargerModule } from '../wasm/charger';\nexport default {};\nexport const x = chargerModule('battlemap_core');",
+    'frontend/src/ecrans/b.tsx': 'export default {};',
+    'rust/modules/battlemap-core/src/lib.rs': '// core',
+    'rust/modules/battlemap-core/tests/revue.rs': '// revue',
+    [T('a')]: test_('a'), [T('b')]: test_('b'),
+  };
+  let depot: ReturnType<typeof depotDEssai>;
+  before(() => { depot = depotDEssai(arbre); });
+  after(() => depot.nettoyer());
+
+  test('un fichier du dossier à tiret touche l’écran qui charge le module par son nom à souligné', () => {
+    assert.deepEqual(depot.liste({ 'rust/modules/battlemap-core/src/lib.rs': '// core2' }), [T('a')]);
+    assert.deepEqual(depot.liste({ 'rust/modules/battlemap-core/tests/revue.rs': '// revue2' }), [T('a')]);
+  });
+});
