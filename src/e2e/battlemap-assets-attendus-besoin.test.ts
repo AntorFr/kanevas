@@ -1,3 +1,4 @@
+// ecrans: outil, parametres, vue-ensemble
 // Tests d'ensemble de `kanevas-battlemap-assets`, écrits depuis le besoin seul (B-96, B-97, B-98, B-110,
 // P-26 étapes 1 et 2, E-25, E-26 de docs/parcours.md et docs/ecrans.md) : vrai serveur en mode bouchon,
 // vrai Chromium, attendus en dur. Les captures vont dans un dossier temporaire, hors de l'arbre suivi.
