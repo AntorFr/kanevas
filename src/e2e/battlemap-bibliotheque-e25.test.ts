@@ -1,3 +1,4 @@
+// ecrans: battlemap-assets, outil
 // Review of kanevas-battlemap-assets-e25 (E-25, the library screen), written from the exit criterion.
 //
 // TEST PLAN

@@ -1,3 +1,4 @@
+// ecrans: battlemap-assets, outil
 // Review of kanevas-battlemap-assets-e26 (E-26, the art direction screen), written from the exit criterion.
 //
 // TEST PLAN

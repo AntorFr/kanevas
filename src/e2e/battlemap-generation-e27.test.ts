@@ -1,3 +1,4 @@
+// ecrans: accueil, battlemap-assets, outil
 // Review of kanevas-battlemap-generation-e27 (E-27, the « Génération » tab of E-25 + the Brouillon cards), written from the exit criterion.
 //
 // TEST PLAN
