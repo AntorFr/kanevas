@@ -16,6 +16,7 @@ import { creerProposition } from '../propositions.js';
 import { ecrireContenu, lireSection } from '../sections.js';
 import { TYPES_FICHE } from '../types-fiche.js';
 import type { Acteur } from '../types.js';
+import { outilsEcritureMcp } from './outils-ecriture-mcp.js';
 import type { Catalogue, ContexteDemande, Evenement, Outil, Porte, Resultat } from './types.js';
 
 /** Most sheets a search returns (AD-74). */
@@ -344,6 +345,9 @@ export function catalogueDe(
       portes: ['mcp'] as const,
     });
   }
+
+  // The write tools of the MCP door, only where the token writes (AD-mcp-2, AD-mcp-5): a `lecture` token lists none.
+  if (porte === 'mcp' && niveau === 'ecriture') outils.push(...outilsEcritureMcp(db, compteId, universId));
 
   // The image engine is a GM tool, and absent when no engine exists (AD-45, AD-89).
   const images = opts.images ?? choisirAdaptateur();

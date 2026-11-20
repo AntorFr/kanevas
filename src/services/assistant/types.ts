@@ -10,7 +10,12 @@ export type TypeEvenement =
   | 'section_modifiee'
   | 'section_completee'
   | 'proposition_creee'
-  | 'image_attachee';
+  | 'image_attachee'
+  | 'fiche_modifiee'
+  | 'section_supprimee'
+  | 'relation_creee'
+  | 'relation_modifiee'
+  | 'relation_retiree';
 
 export interface Evenement {
   type: TypeEvenement;
@@ -24,7 +29,14 @@ export interface Evenement {
  */
 export type Resultat =
   | { ok: true; donnees: unknown; evenement?: Evenement }
-  | { ok: false; erreur: string };
+  | {
+    ok: false;
+    erreur: string;
+    /** The refusal's code, for the MCP door's write tools (`section_modifiee`, `section_geree`, `invalide`…). */
+    code?: string;
+    /** The field an `invalide` refusal is about. */
+    champ?: string;
+  };
 
 /**
  * What one request shares between its tool calls (AD-89): the abort signal of the request and

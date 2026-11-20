@@ -5,6 +5,7 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 
 import { catalogueDe } from '../services/assistant/catalogue.js';
+import { OUTILS_ECRITURE_MCP } from '../services/assistant/outils-ecriture-mcp.js';
 import type { Outil, Resultat } from '../services/assistant/types.js';
 import { resoudreUnivers } from '../services/cles.js';
 import { sousOrigine } from '../services/historique.js';
@@ -34,7 +35,15 @@ declare module 'fastify' {
 
 /** An MCP text result from a tool result: a refusal is a tool error with the interface's words (AD-mcp-5). */
 function versResultatMcp(r: Resultat) {
-  if (!r.ok) return { isError: true, content: [{ type: 'text' as const, text: r.erreur }] };
+  if (!r.ok) {
+    // The code and the field ride with the words, so an agent can act on `section_modifiee` (« relisez »).
+    const code = r.code ? ` [${r.code}${r.champ ? `, champ : ${r.champ}` : ''}]` : '';
+    return {
+      isError: true,
+      content: [{ type: 'text' as const, text: `${r.erreur}${code}` }],
+      ...(r.code ? { structuredContent: { code: r.code, ...(r.champ ? { champ: r.champ } : {}) } } : {}),
+    };
+  }
   const texte = JSON.stringify(r.evenement ? { ...(r.donnees as object), evenement: r.evenement } : r.donnees);
   return { content: [{ type: 'text' as const, text: texte }] };
 }
@@ -81,7 +90,13 @@ function serveurDe(app: FastifyInstance, acces: AccesMcp): Server {
   serveur.setRequestHandler(CallToolRequestSchema, async (requete) => {
     const outil = outils.find((o) => o.nom === requete.params.name);
     // A name the door does not offer (a player's `lire_historique` included) is the same « Introuvable. ».
-    if (!outil) return versResultatMcp({ ok: false, erreur: INTROUVABLE });
+    if (!outil) {
+      // A write tool called by name with a `lecture` token is not listed, and refused as such (AD-mcp-2).
+      if (acces.niveau === 'lecture' && (OUTILS_ECRITURE_MCP as readonly string[]).includes(requete.params.name)) {
+        return versResultatMcp({ ok: false, erreur: 'Ce jeton est en lecture seule.', code: 'lecture_seule' });
+      }
+      return versResultatMcp({ ok: false, erreur: INTROUVABLE });
+    }
     // Every write of the call carries the origin `mcp` and the token (AD-147), set here and never by a tool.
     const r = await sousOrigine(
       { origine: 'mcp', compteId: acces.compteId, jetonId: acces.jetonId },
