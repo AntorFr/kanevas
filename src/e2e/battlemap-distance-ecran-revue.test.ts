@@ -9,7 +9,7 @@
 //   pastille  : the stream refused: « Reconnexion… » shows for her; the stream let through again: it goes away alone
 //   coupe     : Antor switches « Jeu à distance » off (E-20, a switch): Léa's next drag moves nothing and says nothing;
 //               after the refetch the line « Seul le MJ déplace les pions. » shows
-//   interrupteur : the E-20 card draws « Jeu à distance » as a switch, on by default
+//   interrupteur : the E-20 card draws « Jeu à distance » as a switch, on by default, visible at once, saved by the flip (no button), kept after a reload
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import { attendre, connecte, launch, skipBrowser, startServer, type Any, type Server } from './harnais.test.js';
@@ -168,16 +168,33 @@ describe('E-29 joueuse : jouer à distance, E-20 : Jeu à distance', { skip: ski
     return ligne.univers.versionReglages;
   };
 
-  it('E-20 : « Jeu à distance » est un interrupteur, coché par défaut', async () => {
+  it('E-20 : « Jeu à distance » est un interrupteur visible d’emblée, coché par défaut, qui enregistre à la bascule', async () => {
     await antor.goto(`/univers/${uid}/parametres`);
     await attendre(antor);
     await antor.getByRole('tab', { name: 'Outils', exact: true }).click();
     await antor.getByText('Jeu à distance').first().waitFor();
-    const modifier = antor.getByRole('button', { name: /Remplacer/ });
     const sw = antor.getByRole('switch', { name: /Jeu à distance/ });
-    if (await sw.count() === 0) await modifier.last().click();
     await sw.waitFor();
+    assert.equal(await sw.count(), 1, 'one switch, one label');
     assert.equal(await sw.isChecked(), true);
+    // no « Remplacer » step and no Enregistrer button for this setting: the flip itself saves
+    const put = () => antor.waitForResponse((x: Any) => x.request().method() === 'PUT' && /cartes\/reglages/.test(x.url()));
+    let rep = put();
+    await sw.click();
+    assert.ok((await rep).status() < 300);
+    await antor.getByText('Enregistré.').first().waitFor();
+    assert.equal(await sw.isChecked(), false);
+    await antor.reload();
+    await attendre(antor);
+    await antor.getByRole('tab', { name: 'Outils', exact: true }).click();
+    const apres = antor.getByRole('switch', { name: /Jeu à distance/ });
+    await apres.waitFor();
+    assert.equal(await apres.isChecked(), false, 'still off after a reload');
+    rep = put();
+    await apres.click();
+    assert.ok((await rep).status() < 300);
+    await antor.getByText('Enregistré.').first().waitFor();
+    assert.equal(await apres.isChecked(), true);
   });
 
   it('réglage coupé en cours de partie : la tentative suivante de Léa ne bouge rien et ne dit rien, puis la ligne « Seul le MJ déplace les pions. » paraît ; au rechargement, plus de prise', async () => {
