@@ -1,3 +1,4 @@
+// ecrans: membres, administration
 // Tests of E-4 member row, from the arbitrated charte rule (V8, V12b): « Retirer » is revealed on
 // hover/focus (visible on touch), the role is a pastille without a bordered field, the identifier
 // is not framed, and avatar / role / action share one height. Real server (stub) + Chromium.

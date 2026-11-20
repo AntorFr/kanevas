@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Besoin « preuve de test de la chaîne » (feature kanevas-preuve-tests), vu depuis le dépôt :
 // la suite est déclarée dans .sdlc.yaml (tests:), aucun workflow ne la joue sur push de branche
 // ni sur pull_request, l'image ne se construit que sur un tag v* après la vérification de

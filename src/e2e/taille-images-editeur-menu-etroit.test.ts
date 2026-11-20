@@ -1,3 +1,4 @@
+// ecrans: fiche
 // kanevas-taille-images-editeur — E-9 (the narrow screen is a case): the « Image » menu of the editor
 // stays whole inside the window at phone widths, in both themes, and keeps its right alignment on a desktop.
 import assert from 'node:assert/strict';

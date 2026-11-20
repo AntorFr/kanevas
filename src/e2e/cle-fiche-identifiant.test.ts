@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Review tests of kanevas-synchro-cles-champs (E-9 key block, E-14 identifier field, B-99, B-100).
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';

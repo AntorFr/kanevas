@@ -1,3 +1,4 @@
+// ecrans: membres, fiche
 // Black-box test for `kanevas-refonte-visuelle`, from the need only (docs/charte.md « Échap le ferme et rend
 // le focus à la pastille » for the audience dialog). Real stub server + Chromium (harnais.test.ts).
 //

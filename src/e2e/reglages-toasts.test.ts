@@ -1,3 +1,4 @@
+// ecrans: membres, parametres, systeme
 // Black-box tests of kanevas-rv-reglages, from its exit criterion and docs/ecrans.md § « Partout »:
 // every successful action on E-4, E-14, E-15 gives its toast, a refusal gives none, the texts of the
 // doc stay, and nothing overflows at 390 px. Real server in stub mode + Chromium.

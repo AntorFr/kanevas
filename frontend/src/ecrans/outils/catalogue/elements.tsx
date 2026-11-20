@@ -2,7 +2,7 @@ import { Eye, EyeOff, RotateCcw, Undo2, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { appeler, ErreurApi, useConnexionPerdue } from '../../../api';
-import { ligneApresMasquage } from '../../../outils/registre';
+import { ligneApresMasquage } from '../../../outils/lignes';
 import { Bouton, ChargementListe, ErreurChargement, Pastille } from '../../../ui';
 import type { CatalogueSummary, Niveau, Outil } from '../types';
 
