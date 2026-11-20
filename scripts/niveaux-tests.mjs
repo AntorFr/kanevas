@@ -130,6 +130,7 @@ export const HORS_ECRAN = [
   (f) => f.startsWith('.github/'),
   (f) => f.startsWith('scripts/'),
   (f) => f.startsWith('rust/'),
+  (f) => f === 'frontend/src/wasm/charger.ts', // the loader follows the ordinary graph (AD-touches-5): reached by a page it touches that page, else no screen
   (f) => f.startsWith('frontend/src/wasm/essai/'), // the proof page of the Wasm path (AD-rust-7), served by its test only
   (f) => f.endsWith('.test.ts'), // a screen test is handled before this list
   (f) => f.startsWith('src/') && !f.startsWith('src/e2e/'),
