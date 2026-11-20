@@ -39,6 +39,8 @@ export async function semerBattlemap(db: Db, racine: string = attachmentsDir): P
   if (!u || u.systeme_id === null) return;
   const antor = { compteId: assurerCompte(db, 'antor').id };
   poserActivation(db, antor.compteId, { niveau: 'systeme', id: u.systeme_id }, 'battlemap/assets', true);
+  // The assistant's « dix décors » rule prepares a batch through the generation tool: it must be on for E-27 to show it (stub engine, AD-88).
+  poserActivation(db, antor.compteId, { niveau: 'systeme', id: u.systeme_id }, 'battlemap/generation', true);
   const flux = (c: Rvb) => Readable.from([pngPlat(c)]);
   const ids = new Map<string, string>();
   for (const a of ASSETS) {
