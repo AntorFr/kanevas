@@ -103,6 +103,6 @@ function jouer(nomFichier: string) {
 
 test('une commande invalide refuse le lot entier', jouer('refus'));
 test('le lot d’un joueur ne déplace que ses pions visibles, dans la carte', jouer('joueur'));
-test('reveler_piece s’arrête à un mur') et à une porte', jouer('pieces'));
+test('reveler_piece s’arrête à un mur et à une porte', jouer('pieces'));
 test('reveler_piece remplit la carte pour une pièce ouverte', jouer('piece-ouverte'));
 test('redimensionnerEtat étend, rogne, borne la vue et refuse', jouer('redimensionner'));
