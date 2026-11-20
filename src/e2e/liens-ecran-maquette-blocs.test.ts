@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Independent layout checks of the « Mentionnée dans » block and of the open « [[ » list, written from
 // docs/maquettes/e09-fiche-importee.html (rules `.blocs-fiche` / `.bloc-fiche` / `.mentions`) and from E-9, not from the code.
 //

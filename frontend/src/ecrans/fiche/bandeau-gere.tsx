@@ -3,7 +3,7 @@ import { useEffect, useState, type ComponentType } from 'react';
 import { Link } from 'react-router-dom';
 
 import { ErreurApi, appeler, useConnexionPerdue } from '../../api';
-import { composantSection, motsBandeau } from '../../outils/registre';
+import { composantSection, motsBandeau } from '../../outils/sections';
 import type { PropsSection } from '../../outils/types';
 import { Alerte, Bouton, Markdown } from '../../ui';
 import { montrerProposition } from '../assistant/fil';

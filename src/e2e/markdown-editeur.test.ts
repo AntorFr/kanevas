@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-markdown-editeur (exit criterion), real Chromium, real server in stub mode.
 //
 // TEST PLAN

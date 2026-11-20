@@ -12,7 +12,8 @@ import { after, before, describe, test } from 'node:test';
 
 const RACINE = resolve('.');
 // Run inside `node --test`: without this the nested runner reports to its parent.
-const { NODE_TEST_CONTEXT: _ctx, NODE_PATH: _np, ...ENV } = process.env;
+// NODE_PATH stays: the runner image carries typescript there (/opt/sdlc-node, AD-touches-1), the copy has no node_modules.
+const { NODE_TEST_CONTEXT: _ctx, ...ENV } = process.env;
 let copie: string;
 let base: string;
 const git = (...a: string[]) => execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...a], { cwd: copie, encoding: 'utf8' }).trim();
