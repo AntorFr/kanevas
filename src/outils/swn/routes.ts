@@ -14,6 +14,8 @@ import {
   ajouterAstre, ajouterZone, ancrer, delierAstre, delierZone, etatMasque, lierAstre, lierZone, masquerSysteme, modifierAstre, modifierZone as modifierZoneSysteme, poserTransition, retirerAstre, retirerZone as retirerZoneSysteme,
   type ResultatEcriture,
 } from '../../services/swn/ecriture-systeme.js';
+import { apercuReglages, lireReglages, poserReglages } from '../../services/swn/reglages.js';
+import { poserAspect } from '../../services/swn/catalogue-aspects.js';
 import {
   ajouterElement, delierElement, deplacerElement, elementsDuCorps, lierElement, modifierElement, reserverElement, retirerElement,
 } from '../../services/swn/ecriture-elements.js';
@@ -327,6 +329,28 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
     }
   });
   app.put(`${INT}/transition`, opts, interieur((request, a, i, q, r) => poserTransition(app.db, a, i.univers, i.galaxie, q, r, corps(request))));
+
+  // ---- Settings of the generator and catalogue of aspects (AD-reglages-8), thin over `reglages.ts` and `catalogue-aspects.ts`.
+  // The cookie alone opens them; a role other than GM is the 404 of an unknown galaxy; Player mode reads and refuses writes.
+  app.get(`${BASE}/reglages`, opts, ecrire((request, a) => {
+    const i = ids(request);
+    return { statut: 200, corps: lireReglages(app.db, a, i.univers, i.galaxie) };
+  }));
+  app.post(`${BASE}/reglages/apercu`, opts, ecrire((request, a) => {
+    const i = ids(request);
+    return { statut: 200, corps: apercuReglages(app.db, a, i.univers, i.galaxie, corps(request)) };
+  }));
+  app.put(`${BASE}/reglages`, opts, ecrire((request, a) => {
+    const i = ids(request);
+    const b = corps(request);
+    return { statut: 200, corps: poserReglages(app.db, a, i.univers, i.galaxie, { ...b, version: b.version }) };
+  }));
+  app.put(`${BASE}/aspects/:type`, opts, ecrire((request, a) => {
+    const i = ids(request);
+    const b = corps(request);
+    poserAspect(app.db, a, i.univers, i.galaxie, (request.params as { type: string }).type, { version: b.version, parametres: b.parametres });
+    return { statut: 200, corps: lireReglages(app.db, a, i.univers, i.galaxie) };
+  }));
 
   app.get(`${BASE}/document`, opts, ecrire((request, a) => {
     const i = ids(request);

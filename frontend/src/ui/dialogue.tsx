@@ -29,6 +29,7 @@ export function BoiteDialogue({
   variante = 'danger',
   formulaire,
   focusChamp,
+  annulation,
   children,
 }: {
   titre: string;
@@ -54,6 +55,8 @@ export function BoiteDialogue({
   formulaire?: boolean;
   /** The focus enters on the first field rather than on « Annuler » (« Ajouter », « Rayon »; the anchoring keeps « Annuler »). */
   focusChamp?: boolean;
+  /** Label of the neutral button when the default « Annuler » reads wrong (« Rester »). */
+  annulation?: string;
   children?: ReactNode;
 }) {
   const Pastille = icone ?? (variante === 'neutre' ? Anchor : Trash2);
@@ -128,7 +131,7 @@ export function BoiteDialogue({
           {children && (formulaire ? <div className="boite-champs">{children}</div> : children)}
           <div className="boite-actions">
             <button type="button" className="bouton neutre" ref={annuler} onClick={onFermer}>
-              {action ? 'Annuler' : 'Fermer'}
+              {annulation ?? (action ? 'Annuler' : 'Fermer')}
             </button>
             {action && <Bouton
               icone={iconeAction}

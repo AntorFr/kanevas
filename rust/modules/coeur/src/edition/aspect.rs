@@ -4,7 +4,7 @@ use crate::rendu::types;
 use serde_json::Value;
 
 /// Numeric keys with their bounds.
-const NOMBRES: [(&str, f64, f64); 29] = [
+pub(crate) const NOMBRES: [(&str, f64, f64); 29] = [
     ("mer", 0.0, 1.0),
     ("nuages", 0.0, 1.0),
     ("calottes", 0.0, 1.0),
@@ -35,7 +35,7 @@ const NOMBRES: [(&str, f64, f64); 29] = [
     ("bras", 1.0, 12.0),
     ("graine", 0.0, 4_294_967_295.0),
 ];
-const COULEURS: [&str; 7] = ["halo_couleur", "lumiere_couleur", "couleur", "gaz", "poussiere", "brume", "fond"];
+pub(crate) const COULEURS: [&str; 7] = ["halo_couleur", "lumiere_couleur", "couleur", "gaz", "poussiere", "brume", "fond"];
 const AUTRES: [&str; 5] = ["palette", "nature", "sens", "serree", "variantes"];
 
 fn cle_connue(k: &str) -> bool {

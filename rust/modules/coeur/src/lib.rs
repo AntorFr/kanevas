@@ -2,3 +2,4 @@
 pub mod edition;
 pub mod generation;
 pub mod rendu;
+pub mod reglages;

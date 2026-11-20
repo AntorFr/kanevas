@@ -3,6 +3,7 @@
 //! Pure: no file, no clock. The zones' geometry stays in TypeScript (AD-etoiles-2): the caller
 //! gives, per block, the densities and the exclusions of the nine candidate hexagons.
 use serde::{Deserialize, Serialize};
+use crate::reglages::{Reglages, VERSIONS_GENERATEUR};
 use wasm_bindgen::prelude::*;
 
 /// Hexagons per side of a block.
@@ -272,27 +273,67 @@ fn angle_or() -> f64 {
 }
 
 /// Frequencies of the source (`FREQ`).
-const FREQ_COMETE: f64 = 1.0 / 3.0;
 const FREQ_SERREE: f64 = 1.0 / 8.0;
 const FREQ_LARGES: f64 = 1.0 / 10.0;
-const FREQ_ZONE: f64 = 0.5;
-const FREQ_NEBULEUSE: f64 = 0.7;
-/// Bodies on the map, without moons and stars (`TOTAL`).
-const TOTAL: [i32; 2] = [4, 12];
+/// Default frequency of a zone (`FREQ.zone`): the reference of the class-specific zone chances.
+pub(crate) const FREQ_ZONE: f64 = 0.5;
 const PAS_LOCAL: f64 = 0.45;
 const ECHELLE_TAILLE: f64 = 0.035 * 3.0;
 
-/// Ranges of a star class (`PLAGES`).
-struct Plage {
-    planetes: (i32, i32),
+/// Ranges of a star class (`PLAGES`): the constants of the source. The tunable ones (`planetes`, `ceintures`,
+/// the moons and the total) are overridden by the settings (AD-reglages-1), see `PlageEff`.
+pub(crate) struct Plage {
+    pub(crate) planetes: (i32, i32),
     geantes: (i32, i32),
-    ceintures: &'static [(i32, f64)],
+    pub(crate) ceintures: &'static [(i32, f64)],
     habitable: f64,
     depart: f64,
     pas: f64,
     verrouillees: f64,
     sans_lave: bool,
     zone: Option<f64>,
+}
+
+/// A class's ranges as the draw reads them: the source's constants under the settings' overrides.
+struct PlageEff {
+    base: &'static Plage,
+    planetes: (i32, i32),
+    ceintures: Vec<(i32, f64)>,
+    lunes: (i32, i32),
+    total: (i32, i32),
+    zone: f64,
+}
+
+/// Weights of the belt counts in the window `[min, max]`: the source's weight where it has one, else the one
+/// of the nearest listed count below (the last listed one), so the default window gives the source's list.
+fn poids_ceintures(base: &[(i32, f64)], fenetre: (i32, i32)) -> Vec<(i32, f64)> {
+    (fenetre.0..=fenetre.1)
+        .map(|v| {
+            let w = base
+                .iter()
+                .find(|(n, _)| *n == v)
+                .or_else(|| base.iter().filter(|(n, _)| *n < v).last())
+                .map_or(1.0, |(_, w)| *w);
+            (v, w)
+        })
+        .collect()
+}
+
+fn plage_eff(classe: &str, rg: &Reglages) -> PlageEff {
+    let base = plage(classe);
+    let c = rg.par_classe.get(classe).or_else(|| rg.par_classe.get("jaune")).expect("settings hold every class");
+    let zone = match base.zone {
+        Some(z) => (rg.frequences.zone * (z / FREQ_ZONE)).min(1.0),
+        None => rg.frequences.zone,
+    };
+    PlageEff {
+        base,
+        planetes: (c.planetes[0], c.planetes[1]),
+        ceintures: poids_ceintures(base.ceintures, (c.ceintures[0], c.ceintures[1])),
+        lunes: (c.lunes[0], c.lunes[1]),
+        total: (c.total[0], c.total[1]),
+        zone,
+    }
 }
 
 const TEMPEREE: Plage = Plage {
@@ -307,7 +348,7 @@ const TEMPEREE: Plage = Plage {
     zone: None,
 };
 
-fn plage(classe: &str) -> &'static Plage {
+pub(crate) fn plage(classe: &str) -> &'static Plage {
     const NAINE_ROUGE: Plage = Plage {
         planetes: (2, 5),
         geantes: (0, 1),
@@ -545,11 +586,11 @@ struct Effectif {
 }
 
 /// Planets, giants and belts of a star; `moitie` for a far companion (about half the ranges).
-fn effectifs(p: &Plage, r: &mut Rng, moitie: bool) -> Effectif {
+fn effectifs(p: &PlageEff, r: &mut Rng, moitie: bool) -> Effectif {
     let f = if moitie { 0.5 } else { 1.0 };
     let n = r_js(f64::from(entier(r, p.planetes.0, p.planetes.1)) * f) as i32;
-    let g = (n / 2).min(r_js(f64::from(entier(r, p.geantes.0, p.geantes.1)) * f) as i32);
-    let b = r_js(f64::from(pondere(r, p.ceintures)) * f) as i32;
+    let g = (n / 2).min(r_js(f64::from(entier(r, p.base.geantes.0, p.base.geantes.1)) * f) as i32);
+    let b = r_js(f64::from(pondere(r, &p.ceintures)) * f) as i32;
     Effectif { n, g, b }
 }
 
@@ -606,10 +647,11 @@ struct Anneau {
 }
 
 /// The interior of the system of the star at `(q, r)`; `taille` and `lettre` are the star's.
-/// `version` is the generator version (AD-148): only 1 exists.
-pub fn tirer_systeme(q: i32, r: i32, taille: f64, lettre: &str, version: u32) -> Result<Systeme, String> {
+/// `version` is the generator version (AD-148) and `rg` the complete settings object of that version
+/// (AD-reglages-1): the only inputs of the draw beyond the star.
+pub fn tirer_systeme(q: i32, r: i32, taille: f64, lettre: &str, version: u32, rg: &Reglages) -> Result<Systeme, String> {
     use serde_json::json;
-    if version != VERSION_GENERATEUR {
+    if !VERSIONS_GENERATEUR.contains(&version) {
         return Err(format!("unknown generator version {version}"));
     }
     let cle = format!("{q},{r}");
@@ -632,39 +674,38 @@ pub fn tirer_systeme(q: i32, r: i32, taille: f64, lettre: &str, version: u32) ->
 
     // counts, brought back within the bounds of the total (4 to 12 bodies on the map)
     let mut r_p = tirage(&cle, "plages");
-    let comete = r_p.suivant() < FREQ_COMETE;
-    let mut zone = r_p.suivant() < plage(classe0).zone.unwrap_or(FREQ_ZONE);
+    let pe: Vec<PlageEff> = classes.iter().map(|c| plage_eff(c, rg)).collect();
+    let comete = r_p.suivant() < rg.frequences.comete;
+    let mut zone = r_p.suivant() < pe[0].zone;
     let mut eff: Vec<Effectif> = Vec::new();
-    for (k, c) in classes.iter().enumerate() {
+    for (k, _) in classes.iter().enumerate() {
         if k > 0 && serree {
             eff.push(Effectif { n: 0, g: 0, b: 0 });
         } else {
-            eff.push(effectifs(plage(c), &mut r_p, k > 0));
+            eff.push(effectifs(&pe[k], &mut r_p, k > 0));
         }
     }
     let total = |eff: &[Effectif], zone: bool| -> i32 {
         eff.iter().map(|e| e.n + e.b).sum::<i32>() + i32::from(comete) + i32::from(zone)
     };
     for k in 0..eff.len() {
-        if total(&eff, zone) <= TOTAL[1] {
+        if total(&eff, zone) <= pe[0].total.1 {
             break;
         }
-        let p = plage(classes[k]);
-        let min = if k > 0 { 1 } else { p.planetes.0 };
-        while total(&eff, zone) > TOTAL[1] && eff[k].n > min {
+        let min = if k > 0 { 1 } else { pe[k].planetes.0 };
+        while total(&eff, zone) > pe[0].total.1 && eff[k].n > min {
             eff[k].n -= 1;
             eff[k].g = eff[k].g.min(eff[k].n);
         }
     }
-    let p0 = plage(classe0);
-    while total(&eff, zone) < TOTAL[0] && eff[0].n < p0.planetes.1 {
+    while total(&eff, zone) < pe[0].total.0 && eff[0].n < pe[0].planetes.1 {
         eff[0].n += 1;
     }
-    let max_b = p0.ceintures.iter().map(|(v, _)| *v).max().unwrap_or(0);
-    while total(&eff, zone) < TOTAL[0] && eff[0].b < max_b {
+    let max_b = pe[0].ceintures.iter().map(|(v, _)| *v).max().unwrap_or(0);
+    while total(&eff, zone) < pe[0].total.0 && eff[0].b < max_b {
         eff[0].b += 1;
     }
-    if total(&eff, zone) < TOTAL[0] {
+    if total(&eff, zone) < pe[0].total.0 {
         zone = true;
     }
 
@@ -698,7 +739,7 @@ pub fn tirer_systeme(q: i32, r: i32, taille: f64, lettre: &str, version: u32) ->
     let mut anneaux: Vec<Anneau> = Vec::new();
     let (mut n, mut habite) = (0u32, false);
     for k in 0..classes.len() {
-        let p = plage(classes[k]);
+        let p = pe[k].base;
         let Effectif { n: np, g, b } = eff[k];
         let hab = r_t.suivant() < p.habitable && !habite;
         let seq = sequence(p, &mut r_t, np, g, b, hab, &mut r_x);
@@ -767,7 +808,7 @@ pub fn tirer_systeme(q: i32, r: i32, taille: f64, lettre: &str, version: u32) ->
                 aspect: json!({ "nature": nature_de(s) }),
             });
             orbites_planetes[k].push(orbite);
-            let nl = pondere(&mut r_l, lunes_de(type_p));
+            let nl = pondere(&mut r_l, lunes_de(type_p)).max(pe[k].lunes.0).min(pe[k].lunes.1);
             for m in 0..nl {
                 let tl = pondere(&mut r_l, types_de_lune(type_p));
                 let rayon = r3(ECHELLE_TAILLE * 0.5 * entre(&mut r_l, 0.8, 1.1));
@@ -864,7 +905,7 @@ pub fn tirer_systeme(q: i32, r: i32, taille: f64, lettre: &str, version: u32) ->
         .collect();
     let mut bord_nuage: Vec<f64> = Vec::new();
     if zone {
-        let champ = r_z.suivant() >= FREQ_NEBULEUSE;
+        let champ = r_z.suivant() >= rg.frequences.nebuleuse;
         let orbite = r2(if champ { dehors + 0.6 } else { entre(&mut r_z, 1.2, dehors + 0.5) });
         let heure = r2(r_z.suivant() * 12.0);
         let rochers = r2(if champ { entre(&mut r_z, 0.6, 1.0) } else { entre(&mut r_z, 0.0, 0.3) });
@@ -971,8 +1012,9 @@ pub fn transition_defaut(astres: &[Astre], formations: &[Formation]) -> f64 {
 
 /// The interior of a system as JSON (AD-systeme-2).
 #[wasm_bindgen(js_name = tirer_systeme)]
-pub fn tirer_systeme_wasm(q: i32, r: i32, taille: f64, lettre: &str, version: u32) -> Result<String, JsError> {
-    let s = tirer_systeme(q, r, taille, lettre, version).map_err(|m| JsError::new(&m))?;
+pub fn tirer_systeme_wasm(q: i32, r: i32, taille: f64, lettre: &str, version: u32, valeurs: &str) -> Result<String, JsError> {
+    let rg = crate::reglages::reglages_complets(version, valeurs).map_err(|e| JsError::new(&e.message))?;
+    let s = tirer_systeme(q, r, taille, lettre, version, &rg).map_err(|m| JsError::new(&m))?;
     serde_json::to_string(&s).map_err(|_| JsError::new("serialisation failed"))
 }
 

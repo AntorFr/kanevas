@@ -67,6 +67,21 @@ const paires: [string, string, string | null, number][] = [
   ['bord-champ', 'surface-2', null, 3],
   ['bord-champ', 'surface', null, 3],
   ['focus', 'fond', null, 3],
+  // The five shared components of E-24 (onglets, curseur, champ couleur, liste de choix, barre d'application)
+  ['texte', 'fond', null, 4.5], // active and hovered tab, Curseur label, on the page
+  ['texte-2', 'fond', null, 4.5], // the value written beside the Curseur label, on the page
+  ['texte-3', 'surface-3', null, 3], // thumbnail glyph (decorative, non-text) of the selected row of ListeChoix
+  ['texte', 'surface-2', null, 4.5], // hovered and selected row of ListeChoix
+  ['accent', 'fond', null, 3], // active tab rule, Curseur fill and thumb ring, on the page
+  ['accent', 'surface', null, 3], // the same on a panel
+  ['accent', 'surface-2', null, 3], // selected row rule of ListeChoix
+  ['bord-champ', 'fond', null, 3], // Curseur track and colour swatch outline, on the page
+  ['bord-champ', 'surface-3', null, 3], // swatch outline against its hatched empty state
+  ['danger', 'fond', null, 4.5], // « Erreur : » of Curseur and ChampCouleur, on the page
+  ['focus', 'surface', null, 3], // focus ring on the apply bar and the list
+  ['focus', 'surface-2', null, 3], // focus ring on a hovered or selected row
+  ['texte', 'surface', null, 4.5], // « Rien à appliquer. » / count sentence of BarreApplication
+  ['texte-2', 'surface', null, 4.5], // its detail line
 ];
 
 for (const [nom, theme] of [['sombre', sombre], ['clair', clair]] as const) {

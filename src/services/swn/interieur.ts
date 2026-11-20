@@ -12,10 +12,12 @@ import { roleDe, sqlFicheLisible } from '../droits.js';
 import { colonneReserve, estReserve, sqlElementLisible, systemeLisible } from './lisibilite.js';
 import { aspectLu, type AspectElement, type GenreElement } from './elements-aspect.js';
 import { galaxieLisible, zonesLisibles, type LigneGalaxie, type NiveauLecture } from './galaxies.js';
-import { entreesBloc, systemesExclusants, tirerEtoileComplete, VERSION_GENERATEUR } from './tirage-etoiles.js';
+import { entreesBloc, systemesExclusants, tirerEtoileComplete } from './tirage-etoiles.js';
+import { reglagesDe } from './reglages.js';
+import { fusionSurcharges, surchargesDe } from './catalogue-aspects.js';
 
 interface Coeur {
-  tirer_systeme(q: number, r: number, taille: number, lettre: string, version: number): string;
+  tirer_systeme(q: number, r: number, taille: number, lettre: string, version: number, valeurs: string): string;
   transition_defaut(astres: string, formations: string): number;
 }
 
@@ -107,14 +109,14 @@ function ordonnerFormations(formations: FormationVue[]): FormationVue[] {
 
 function composer(
   q: number, r: number, nom: string | null, etat: InterieurVue['etat'], transition: number | null,
-  astres: AstreVue[], formations: FormationVue[], elements: ElementVue[] = [],
+  astres: AstreVue[], formations: FormationVue[], versionGenerateur: number, elements: ElementVue[] = [],
 ): InterieurVue {
   const triees = ordonner(astres.map((a) => ({ ...a, fiche: a.fiche ?? null })));
   const fs = ordonnerFormations(formations.map((f) => ({ ...f, fiche: f.fiche ?? null })));
   return {
     q, r, nom, etat,
     transition: transition ?? leCoeur().transition_defaut(JSON.stringify(triees), JSON.stringify(fs)),
-    astres: triees, formations: fs, elements, version_generateur: VERSION_GENERATEUR,
+    astres: triees, formations: fs, elements, version_generateur: versionGenerateur,
   };
 }
 
@@ -153,14 +155,20 @@ export function lireInterieur(
       ...el, aspect: aspectLu(el.genre, aspect), fiche: fiches.get(fiche_id ?? -1) ?? null,
       ...(description ? { description } : {}), reserve: estReserve({ reserve }),
     }));
-    const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, astres, formations, elements);
+    const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, avecAspectEffectif(db, galaxie.id, astres), formations, reglagesDe(db, galaxie.id).versionGenerateur, elements);
     return niveau === 'mj' ? ouvrirEcriture(vue, ligneVersion(db, ligne.id)) : sansJetons(vue);
   }
   // No row: the star must be the one the block's draw holds at (q, r), with the exclusions of every reader.
   const tire = lireTire(db, galaxie, niveau, q, r);
   if (!tire) throw introuvable();
-  const vue = composer(q, r, null, 'tire', tire.transition, tire.astres, tire.formations);
+  const vue = composer(q, r, null, 'tire', tire.transition, avecAspectEffectif(db, galaxie.id, tire.astres), tire.formations, reglagesDe(db, galaxie.id).versionGenerateur);
   return niveau === 'mj' ? ouvrirEcriture(vue, galaxie.version) : sansJetons(vue);
+}
+
+/** Each body with its effective aspect (AD-reglages-6): the galaxy's override of its type under its own aspect. */
+function avecAspectEffectif(db: Db, galaxieId: number, astres: AstreVue[]): AstreVue[] {
+  const surcharges = surchargesDe(db, galaxieId);
+  return astres.map((a) => ({ ...a, aspect: fusionSurcharges(surcharges, a.type, a.aspect) }));
 }
 
 /**
@@ -192,6 +200,11 @@ function sansJetons(vue: InterieurVue): InterieurVue {
   return vue;
 }
 
+/** The core's draw of the interior of a star, as its JSON: the one call of `tirer_systeme`, with a version and an override. */
+export function tirerInterieur(etoile: { q: number; r: number; taille: number; lettre: string }, version: number, valeurs: string): string {
+  return leCoeur().tirer_systeme(etoile.q, etoile.r, etoile.taille, etoile.lettre, version, valeurs);
+}
+
 /**
  * The system the draw holds at `(q, r)` for this level, with its star, or null: the one place a drawn interior is
  * computed, which the anchoring of `ecriture-systeme.ts` reuses so that what it freezes is what was read.
@@ -204,7 +217,8 @@ export function lireTire(db: Db, galaxie: LigneGalaxie, niveau: NiveauLecture, q
   const entrees = entreesBloc(bx, by, zones, galaxie.densite_defaut, systemesExclusants(db, galaxie.id, { bx, by }, { bx, by }));
   const etoile = tirerEtoileComplete(galaxie.graine, bx, by, entrees);
   if (!etoile || etoile.q !== q || etoile.r !== r) return null;
-  const tire = JSON.parse(leCoeur().tirer_systeme(q, r, etoile.taille, etoile.lettre, VERSION_GENERATEUR)) as
+  const reglages = reglagesDe(db, galaxie.id);
+  const tire = JSON.parse(tirerInterieur(etoile, reglages.versionGenerateur, reglages.valeurs)) as
     { astres: AstreVue[]; formations: FormationVue[]; transition: number };
   return { etoile, ...tire };
 }

@@ -43,6 +43,7 @@ fn tire(e: &Value) -> Systeme {
         e["taille"].as_f64().unwrap(),
         e["lettre"].as_str().unwrap(),
         1,
+        &coeur::reglages::defaut(1).unwrap(),
     )
     .unwrap()
 }
@@ -99,8 +100,8 @@ fn aller_retour_serde_sans_perte() {
 
 #[test]
 fn version_inconnue_refusee() {
-    assert!(tirer_systeme(0, 0, 0.8, "K", 0).is_err());
-    assert!(tirer_systeme(0, 0, 0.8, "K", 2).is_err());
+    assert!(tirer_systeme(0, 0, 0.8, "K", 0, &coeur::reglages::defaut(1).unwrap()).is_err());
+    assert!(tirer_systeme(0, 0, 0.8, "K", 2, &coeur::reglages::defaut(1).unwrap()).is_err());
 }
 
 #[test]
@@ -138,6 +139,7 @@ fn wasm_plat_rend_la_meme_chaine() {
         s["taille"].as_f64().unwrap(),
         s["lettre"].as_str().unwrap(),
         1,
+        "{}",
     );
     assert!(a.is_ok());
     assert_eq!(a.ok().unwrap(), serde_json::to_string(&tire(s)).unwrap());

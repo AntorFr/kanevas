@@ -8,6 +8,7 @@ import { resoudreOutil } from '../outils.js';
 import { env } from '../../config/env.js';
 import type { Acteur } from '../types.js';
 import { densiteParDefaut } from './tirage-etoiles.js';
+import { inscrireReglagesGalaxie } from './reglages.js';
 
 export { OUTIL_GALAXIE, niveauLecture, type NiveauLecture } from './lisibilite.js';
 
@@ -151,6 +152,7 @@ export function creerGalaxie(db: Db, acteur: Acteur | number, universId: number,
   const graine = randomBytes(6).toString('hex');
   const id = Number(db.prepare(`INSERT INTO swn_galaxies (univers_id, titre, visible, graine, densite_defaut, version)
     VALUES (?, ?, 0, ?, ?, 1)`).run(universId, t, graine, densiteParDefaut()).lastInsertRowid);
+  inscrireReglagesGalaxie(db, id);
   return { id };
 }
 

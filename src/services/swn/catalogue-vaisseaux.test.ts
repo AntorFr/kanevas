@@ -72,9 +72,9 @@ test('migration : neuf tables créées, lignes existantes intactes, foreign_key_
   assert.deepEqual(snap(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const tables = swn().filter((t) => !tablesAvant.includes(t));
-  assert.deepEqual(tables, ['swn_astres', 'swn_catalogue_amenagements', 'swn_catalogue_armes', 'swn_catalogue_coques', 'swn_catalogue_defenses',
+  assert.deepEqual(tables, ['swn_aspects', 'swn_astres', 'swn_catalogue_amenagements', 'swn_catalogue_armes', 'swn_catalogue_coques', 'swn_catalogue_defenses',
     'swn_catalogue_exemples', 'swn_catalogue_modifications', 'swn_catalogue_moteurs', 'swn_catalogue_retraits',
-    'swn_conceptions', 'swn_elements', 'swn_fiches_generees', 'swn_formations']);
+    'swn_conceptions', 'swn_elements', 'swn_fiches_generees', 'swn_formations', 'swn_reglages']);
 });
 
 test('migration : CHECK de bornes, masque réservé à l\'univers, unicité par niveau', () => {

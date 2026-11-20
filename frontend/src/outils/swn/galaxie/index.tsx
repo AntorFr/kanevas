@@ -1,4 +1,4 @@
-import { Eye, EyeOff, FileText, KeyRound, MapPinPlus, Pencil, PenLine, Route as IconeRoute, Settings2, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, FileText, KeyRound, SlidersHorizontal, MapPinPlus, Pencil, PenLine, Route as IconeRoute, Settings2, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ import { CarteHex, type ObjetsCarte } from './Carte';
 import { DialogueDocument, DialogueGraine, DialogueRenommer, DialogueSuppression } from './Dialogues';
 import { FormRoute, FormSysteme, FormZone, brouillonSystemeVide, brouillonZoneVide, type BrouillonSysteme, type BrouillonZone } from './Formulaires';
 import { PanneauRoute, PanneauZone, RetraitSysteme } from './PanneauxEcriture';
+import Reglages from './Reglages';
 import Systeme from './Systeme';
 import { PanneauSystemeVue, Recherche, Trajet, type EtatPanneau } from './Panneaux';
 import { CONFLIT, couleurServeur, tailleNom } from './ecriture';
@@ -42,6 +43,8 @@ function useEtroit(): boolean {
 export default function Galaxie(props: PropsOutil) {
   // The address of a system's inside carries its own read (`verifier`): that screen is E-23, not the map.
   if (props.prealable !== null && typeof props.prealable === 'object' && 'astres' in props.prealable) return <Systeme {...props} />;
+  // The settings screen (E-24): its `verifier` read the settings, which carry `densite_defaut`.
+  if (props.prealable !== null && typeof props.prealable === 'object' && 'densite_defaut' in props.prealable) return <Reglages {...props} />;
   return <CarteGalaxie {...props} />;
 }
 
@@ -243,6 +246,7 @@ function CarteGalaxie({ universId, cible, prealable, suffixeMode }: PropsOutil) 
       { libelle: galaxie.visible ? 'Cacher aux joueurs' : 'Rendre visible', icone: galaxie.visible ? EyeOff : Eye, onChoisir: () => void basculerVisible() },
       { libelle: 'Document MJ…', icone: FileText, onChoisir: () => setDialogue('document') },
       { libelle: 'Graine…', icone: KeyRound, onChoisir: () => setDialogue('graine') },
+      { libelle: 'Réglages du générateur…', icone: SlidersHorizontal, onChoisir: () => navigate(`/univers/${universId}/outils/swn/galaxie/${galaxie.id}/reglages`) },
       { separateur: true },
       { libelle: 'Supprimer la galaxie…', icone: Trash2, danger: true, onChoisir: () => setDialogue('supprimer') },
     ];

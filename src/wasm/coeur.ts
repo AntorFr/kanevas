@@ -18,7 +18,14 @@ interface Coeur {
   hex_vers_plan(q: number, r: number): Float64Array;
   plan_vers_hex(x: number, y: number): Int32Array;
   densite_defaut(): number;
-  tirer_systeme(q: number, r: number, taille: number, lettre: string, version: number): string;
+  tirer_systeme(q: number, r: number, taille: number, lettre: string, version: number, valeurs: string): string;
+  reglages_defaut(version: number): string;
+  valider_reglages(version: number, surcharge: string): string;
+  fusionner_reglages(version: number, surcharge: string): string;
+  versions_generateur(): Uint32Array;
+  version_generateur_courante(): number;
+  valider_aspect_type(type: string, json: string): string;
+  types_catalogue(): string;
   transition_defaut(astres: string, formations: string): number;
   orbite_heure_vers_plan(orbite: number, heure: number): Float64Array;
   plan_vers_orbite_heure(x: number, y: number): Float64Array;
@@ -59,9 +66,54 @@ export async function densiteDefaut(): Promise<number> {
   return (await coeur()).densite_defaut();
 }
 
-/** The exact JSON the core returns for the interior of a system (AD-systeme-2); `version` is the generator version. Throws if the core refuses. */
-export async function tirerSysteme(q: number, r: number, taille: number, lettre: string, version: number): Promise<string> {
-  return (await coeur()).tirer_systeme(q, r, taille, lettre, version);
+/**
+ * The exact JSON the core returns for the interior of a system (AD-systeme-2); `version` is the generator version,
+ * `valeurs` the settings object (the complete one, or a subset over the defaults; `{}`: the defaults). Throws if the core refuses.
+ */
+export async function tirerSysteme(
+  q: number,
+  r: number,
+  taille: number,
+  lettre: string,
+  version: number,
+  valeurs = '{}',
+): Promise<string> {
+  return (await coeur()).tirer_systeme(q, r, taille, lettre, version, valeurs);
+}
+
+/** The complete default settings object of a generator version, as JSON. Throws for an unknown version (AD-reglages-1). */
+export async function reglagesDefaut(version: number): Promise<string> {
+  return (await coeur()).reglages_defaut(version);
+}
+
+/** The core's verdict on an override, as JSON: `{ ok: true, canonique }` or `{ ok: false, champ, borne, message }`. */
+export async function validerReglages(version: number, surcharge: string): Promise<string> {
+  return (await coeur()).valider_reglages(version, surcharge);
+}
+
+/** The complete settings object, the override over the defaults, as JSON. Throws with the core's message if the override is refused. */
+export async function fusionnerReglages(version: number, surcharge: string): Promise<string> {
+  return (await coeur()).fusionner_reglages(version, surcharge);
+}
+
+/** The generator versions the core knows, oldest first (AD-148). */
+export async function versionsGenerateur(): Promise<number[]> {
+  return Array.from((await coeur()).versions_generateur());
+}
+
+/** The generator version a galaxy created now draws with. */
+export async function versionGenerateurCourante(): Promise<number> {
+  return (await coeur()).version_generateur_courante();
+}
+
+/** The core's verdict on the partial aspect of a type, as JSON: `{ ok: true, canonique }` or `{ ok: false, champ, borne, message }`. */
+export async function validerAspectType(type: string, json: string): Promise<string> {
+  return (await coeur()).valider_aspect_type(type, json);
+}
+
+/** The default parameters of every type of the catalogue of aspects, as a JSON object `{ <type>: <aspect> }`. */
+export async function typesCatalogue(): Promise<string> {
+  return (await coeur()).types_catalogue();
 }
 
 /** The default `transition` of stored rows, from the JSON arrays of `astres` and `formations`. */
