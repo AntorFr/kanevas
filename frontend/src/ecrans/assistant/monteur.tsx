@@ -27,7 +27,8 @@ export function Assistant() {
 
   useEffect(() => surDemandeOuverture(() => setOuvert(true)), []);
 
-  const present = universId !== null && dispo.k !== 'absent';
+  // E-30, the table display, has no chrome at all: no floating button either.
+  const present = universId !== null && dispo.k !== 'absent' && !/\/affichage\/?$/.test(chemin);
   useEffect(() => {
     document.body.classList.toggle('asst-present', present);
     document.body.classList.toggle('asst-ouvert', present && ouvert);

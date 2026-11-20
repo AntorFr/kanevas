@@ -1,10 +1,12 @@
 import type { Db } from '../db/db.js';
 import type { CarteOutil, LigneDonnees } from '../outils/declaration.js';
 import * as coeur from '../outils/battlemap/coeur.js';
+import { annoncer } from './battlemap-flux.js';
 import { etatAssets } from './battlemap-donnees.js';
 import { roleDe, sqlFicheLisible, vueMJ } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
 import { resoudreOutil } from './outils.js';
+import { documentJoueurDeTable, effacerTables, redimensionnerTable } from './battlemap-tables.js';
 import type { Acteur, Role } from './types.js';
 
 /**
@@ -24,7 +26,7 @@ export const MAX_TITRE_CARTE = 80;
 /** Commands per batch: a request is bounded before the core sees it. */
 export const MAX_COMMANDES = 5000;
 
-interface Ligne {
+export interface Ligne {
   id: number; univers_id: number; titre: string; visible: number; largeur: number; hauteur: number;
   taille_case: number; document: string; version: number; cree_le: string; modifie_le: string;
 }
@@ -43,11 +45,11 @@ export interface CarteVue {
   peutEcrire: boolean;
 }
 
-const invalideChamp = (champ: string, message: string, detail?: string) => new ErreurService('invalide', message, detail ?? champ, champ);
-const PERIMEE = () => new ErreurService('conflit', 'Cette carte a changé depuis que vous l’avez ouverte.', 'version');
-const maintenant = () => new Date().toISOString();
+export const invalideChamp = (champ: string, message: string, detail?: string) => new ErreurService('invalide', message, detail ?? champ, champ);
+export const PERIMEE = () => new ErreurService('conflit', 'Cette carte a changé depuis que vous l’avez ouverte.', 'version');
+export const maintenant = () => new Date().toISOString();
 
-function ligne(db: Db, universId: number, id: number): Ligne | undefined {
+export function ligne(db: Db, universId: number, id: number): Ligne | undefined {
   if (!Number.isSafeInteger(id)) return undefined;
   return db.prepare('SELECT * FROM bm_cartes WHERE id = ? AND univers_id = ?').get(id, universId) as Ligne | undefined;
 }
@@ -56,7 +58,7 @@ function ligne(db: Db, universId: number, id: number): Ligne | undefined {
  * Write rights (AD-battlemap-editeur-2): no role or a player → `introuvable` (the write surface does not exist for her);
  * a GM in Player mode → `refuse`; then the map must exist in this universe.
  */
-function exigerEcriture(db: Db, acteur: Acteur, universId: number, id: number): Ligne {
+export function exigerEcriture(db: Db, acteur: Acteur, universId: number, id: number): Ligne {
   const role = roleDe(db, universId, acteur.compteId);
   if (role !== 'mj') throw introuvable();
   if (acteur.modeJoueur) throw refuse('Passez en mode MJ pour faire cela.');
@@ -66,7 +68,7 @@ function exigerEcriture(db: Db, acteur: Acteur, universId: number, id: number): 
 }
 
 /** The refusals of the core, as the interface's codes (`detail` is the code the route sends). */
-function refusDuCoeur(r: coeur.RefusCoeur): ErreurService {
+export function refusDuCoeur(r: coeur.RefusCoeur): ErreurService {
   if (r.code === 'carte_pleine') return new ErreurService('conflit', 'La carte est pleine.', 'carte_pleine');
   if (r.code === 'limite_depassee') {
     return new ErreurService('invalide', 'Cette taille laisse des éléments hors de la carte, ou dépasse 200 cases.', 'limite_depassee', r.champ ?? 'taille');
@@ -74,16 +76,16 @@ function refusDuCoeur(r: coeur.RefusCoeur): ErreurService {
   return new ErreurService('invalide', 'Commande refusée.', r.code, r.champ);
 }
 
-interface Document {
+export interface Document {
   sols?: { asset_id: string }[]; murs?: { asset_id: string }[]; elements?: { asset_id: string; fiche_id?: string }[];
 }
-const assetsDe = (d: Document): Set<string> =>
+export const assetsDe = (d: Document): Set<string> =>
   new Set([...(d.sols ?? []), ...(d.murs ?? []), ...(d.elements ?? [])].map((x) => x.asset_id));
-const fichesDe = (d: Document): Set<string> =>
+export const fichesDe = (d: Document): Set<string> =>
   new Set((d.elements ?? []).flatMap((e) => (typeof e.fiche_id === 'string' ? [e.fiche_id] : [])));
 
 /** The sheets of `ids` the actor reads in this universe (AD-64): the GM outside Player mode reads every one. */
-function fichesLisibles(db: Db, role: Role, acteur: Acteur, universId: number, ids: Iterable<string>): Set<string> {
+export function fichesLisibles(db: Db, role: Role, acteur: Acteur, universId: number, ids: Iterable<string>): Set<string> {
   const cond = sqlFicheLisible(role, acteur, 'f');
   const lire = db.prepare(`SELECT 1 AS ok FROM fiches f WHERE f.id = ? AND f.univers_id = ?${cond ? ` AND ${cond.sql}` : ''}`);
   const lisibles = new Set<string>();
@@ -94,7 +96,7 @@ function fichesLisibles(db: Db, role: Role, acteur: Acteur, universId: number, i
 }
 
 /** The filter's context, built from the database for the reader (never given by the caller). */
-function contexteFiltre(db: Db, role: Role, acteur: Acteur, universId: number, d: Document): coeur.ContexteFiltre {
+export function contexteFiltre(db: Db, role: Role, acteur: Acteur, universId: number, d: Document): coeur.ContexteFiltre {
   const ids = assetsDe(d);
   const { connus, mjSeul } = etatAssets(db, universId, ids);
   return {
@@ -129,6 +131,8 @@ export function lireCarte(db: Db, acteur: Acteur, universId: number, id: number)
     throw introuvable();
   }
   if (mj) return vue(l, l.document, true);
+  const jouee = documentJoueurDeTable(db, acteur, role, universId, l);
+  if (jouee !== null) return vue(l, JSON.stringify(jouee), false);
   const doc = JSON.parse(l.document) as Document;
   return vue(l, coeur.filtrerPourJoueur(l.document, contexteFiltre(db, role, acteur, universId, doc)), false);
 }
@@ -229,7 +233,7 @@ function verifierReferences(db: Db, acteur: Acteur, universId: number, doc: Docu
  */
 export function appliquerCommandes(db: Db, acteur: Acteur, universId: number, id: number,
   version: unknown, commandes: unknown): { version: number; inverses: unknown[] } {
-  return db.transaction(() => {
+  const res = db.transaction(() => {
     const l = exigerEcriture(db, acteur, universId, id);
     if (!Number.isInteger(version) || (version as number) < 1) throw invalideChamp('version', 'Version invalide.');
     if (!Array.isArray(commandes) || commandes.length === 0 || commandes.length > MAX_COMMANDES) {
@@ -241,6 +245,8 @@ export function appliquerCommandes(db: Db, acteur: Acteur, universId: number, id
     if (!r.ok) throw refusDuCoeur(r);
     return { version: ecrireDocument(db, l, r.document), inverses: r.inverses };
   })();
+  annoncer(db, id);
+  return res;
 }
 
 /** Stores a document the core produced; the size columns follow it. */
@@ -262,7 +268,7 @@ export interface ReglagesCarte {
  */
 export function reglerCarte(db: Db, acteur: Acteur, universId: number, id: number,
   version: unknown, reglages: ReglagesCarte): { version: number } {
-  return db.transaction(() => {
+  const res = db.transaction(() => {
     const l = exigerEcriture(db, acteur, universId, id);
     if (!Number.isInteger(version) || (version as number) < 1) throw invalideChamp('version', 'Version invalide.');
     if (version !== l.version) throw PERIMEE();
@@ -282,22 +288,27 @@ export function reglerCarte(db: Db, acteur: Acteur, universId: number, id: numbe
         const r = coeur.appliquerLot(l.document, [{ type: 'redimensionner', largeur, hauteur }]);
         if (!r.ok) throw refusDuCoeur(r);
         document = r.document;
+        // A played map: the table follows the new size in the same transaction, or refuses the whole change (AD-battlemap-table-7).
+        redimensionnerTable(db, l, largeur, hauteur);
       }
     }
     if (sets.length === 0 && document === l.document) throw invalideChamp('reglages', 'Rien à changer.');
     return { version: ecrireDocument(db, l, document, { sql: sets.map((s) => `, ${s}`).join(''), params }) };
   })();
+  annoncer(db, id);
+  return res;
 }
 
 export const rendreVisibleCarte = (db: Db, acteur: Acteur, universId: number, id: number, visible: boolean, version: number): { version: number } =>
   reglerCarte(db, acteur, universId, id, version, { visible });
 
-/** Deletes a map; the table state of a later slice goes with it by `ON DELETE CASCADE`. */
+/** Deletes a map; its table and the owners of its tokens go with it by `ON DELETE CASCADE`. */
 export function supprimerCarte(db: Db, acteur: Acteur, universId: number, id: number): void {
   db.transaction(() => {
     const l = exigerEcriture(db, acteur, universId, id);
     db.prepare('DELETE FROM bm_cartes WHERE id = ?').run(l.id);
   })();
+  annoncer(db, id);
 }
 
 /** The composed maps for E-10: the editor's address only for a GM outside Player mode; a player gets the visible ones. */
@@ -331,7 +342,10 @@ export function compterCartes(db: Db, universId: number): LigneDonnees[] {
 }
 
 export function effacerCartes(db: Db, universId: number): void {
+  const ids = (db.prepare('SELECT id FROM bm_cartes WHERE univers_id = ?').all(universId) as { id: number }[]).map((r) => r.id);
+  effacerTables(db, universId);
   db.prepare('DELETE FROM bm_cartes WHERE univers_id = ?').run(universId);
+  for (const id of ids) annoncer(db, id);
 }
 
 /** The maps of the universes of a system where the tool is on: they stay when the system's data go (D-2). */

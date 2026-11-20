@@ -96,7 +96,7 @@ describe('E-28 Éditeur de carte : ce que voit Antor', { skip: skipBrowser }, ()
     for (const c of ['Sol', 'Murs', 'Objets']) await antor.getByText(c, { exact: true }).first().waitFor();
     await antor.getByText('30 × 20').first().waitFor();
     const jouer = antor.getByRole('button', { name: 'Jouer' });
-    assert.equal(await jouer.isDisabled(), true);
+    assert.equal(await jouer.isDisabled(), false);
     assert.equal(await antor.getByRole('button', { name: 'Annuler', exact: true }).isDisabled(), true);
   });
 

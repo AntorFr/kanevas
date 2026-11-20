@@ -96,7 +96,8 @@ describe('E-10 Liste des cartes : carte composée', { skip: skipBrowser }, () =>
     await ouvrir(lea);
     const l = ligne(lea, 'Cantine de la station');
     await l.getByText('30 × 20 cases').waitFor();
-    assert.equal(await l.getByRole('link').count(), 0);
+    assert.equal(await l.getByRole('link').count(), 1);
+    assert.match((await l.getByRole('link').getAttribute('href')) ?? '', /\/outils\/battlemap\/cartes\/\d+\/jeu$/);
     assert.equal(await l.getByRole('button').count(), 0);
     assert.equal(await lea.getByRole('button', { name: /Nouvelle carte/ }).count(), 0);
   });
@@ -107,7 +108,7 @@ describe('E-10 Liste des cartes : carte composée', { skip: skipBrowser }, () =>
     await l.getByRole('button', { name: /Autres actions sur « Taverne »/ }).click();
     await antor.getByRole('menuitem', { name: /Supprimer…/ }).click();
     const d = antor.getByRole('alertdialog');
-    await d.getByText('Cette carte sera supprimée avec ses calques et ses éléments.').waitFor();
+    await d.getByText('Cette carte sera supprimée avec ses calques, ses éléments, sa table de jeu et ses pions.').waitFor();
     const ok = d.getByRole('button', { name: rxExact('Supprimer la carte') });
     assert.equal(await ok.isDisabled(), true);
     await d.getByLabel(/Saisissez/).fill('Tavern');

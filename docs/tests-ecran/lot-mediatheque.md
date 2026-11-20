@@ -389,3 +389,36 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > brouillon-pastille : la pastille « Brouillon prêt » est verte` | affichage | — | gardé |
 | `src/e2e/battlemap-generation-bureau-besoin.test.ts` | `E-27 Génération au bureau (1280 px), lot préparé > rangee : nom, catégorie, empreinte et « Retirer » d’une ligne tiennent sur une seule rangée, dans cet ordre` | affichage | — | gardé |
 | `src/e2e/battlemap-generation-bureau-besoin.test.ts` | `E-27 Génération au bureau (1280 px), lot préparé > lancer : « Lancer le lot (2) » est à droite de « Ajouter une ligne » et « Coller des lignes », sur la même rangée` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Jouer » ouvre l’écran de jeu et crée la table` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `avant « Jouer », la joueuse lit « La partie n’a pas commencé. »` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `un disque ajouté est dans la liste, dans la table, et au rechargement ; le masquer le retire à la joueuse` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `joueuse : aucun outil MJ, « Suivre le MJ » actif par défaut et gardé au rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Effacer la vue » rend vue: null` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Réinitialiser la table… » ne vide qu’après confirmation` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `200 pions : « Table pleine », ajout désactivé, le 201e refusé par le serveur` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `P-28 étape 3 : un pion glissé sur la carte change de case et reste là au rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Lier une fiche… » lie le pion à la fiche choisie, « Ouvrir la fiche » l’ouvre ; « Délier » la retire` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `carte cachée aux joueurs : « Page introuvable. » pour la joueuse` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `onglet Calques : une ligne par calque sans puce, un interrupteur nommé par calque, le geste persiste` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `joueuse : un pion reçu est dessiné plein, sans barre ni estompage` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `joueuse à 390 px : « Suivre le MJ » et le zoom ne se recouvrent pas et restent atteignables` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Ajouter un pion » ▸ Asset : la fenêtre tient dans l’écran et « Ajouter » se clique à la souris` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `sans table : « La partie n’a pas commencé. », puis « En attente du MJ » une fois la table créée, sans recharger` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `presence : E-29 lit « Écran joueurs connecté » tant que E-30 est ouvert` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `vue partagée : la carte s’affiche sans contrôle ni cadre, « Effacer la vue » la retire` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `fenêtre : le canevas tient dans la fenêtre, quelle que soit sa taille` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `calque masqué : il sort de la table que l’écran lit ; révélé de nouveau, il revient` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `une révélation arrive en moins de deux secondes sans recharger` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `flux coupé, « Reconnexion… » apparaît puis, au signal suivant, l’écran se remet à jour` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `carte cachée aux joueurs : « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `le MJ qui ouvre l’écran voit la vue joueur : pas de pion masqué, pas de contrôle` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `contraste : --texte-2 sombre sur noir ≥ 4,5:1` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > jouer : « Jouer » ouvre E-29 ; le compte de table ouvre E-30 qui dit « En attente du MJ »` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > vue partagée : E-30 montre la carte, noire tant que rien n’est révélé` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > trois pions : une fiche, un asset, un disque ; deux ont un propriétaire` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > pièce : « Révéler ▸ Pièce », un clic dans la salle, et le sol apparaît sur E-30 en moins de deux secondes, sans recharger` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > images : le sol et le pion d’asset sont dessinés avec leurs images sur E-30, sans recharger` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > reprise : Antor ferme et rouvre E-29, les trois pions y sont ; l’écran joueurs garde la pièce` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > réinitialiser : la boîte dit ce qui part, puis « Aucun pion. » et l’écran joueurs redevient noir` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 Le zoom du MJ suit à l’écran joueurs, et la connexion coupée se dit puis se rétablit > zoom : Antor zoome avec « Vue partagée » ouverte, l’écran joueurs suit sans recharger, la zone révélée y grandit` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 Le zoom du MJ suit à l’écran joueurs, et la connexion coupée se dit puis se rétablit > coupure : « Connexion perdue. » sur E-29, outils désactivés ; au retour, l’état est relu et la bande disparaît` | affichage | — | gardé |

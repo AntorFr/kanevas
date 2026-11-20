@@ -290,8 +290,8 @@ test('outil cartes : liste (adresse au MJ seul), création avec taille, suppress
   assert.equal(lj.length, 1);
   assert.equal(lj[0]!.adresse, undefined);
   assert.equal(err(() => listerCartesOutils(m.db, m.zoe, m.u)).code, 'introuvable');
-  assert.deepEqual(battlemapCartes.donnees!.compter(m.db, { niveau: 'univers', universId: m.u }).map((x) => x.nombre), [1]);
-  assert.deepEqual(battlemapCartes.donnees!.compter(m.db, { niveau: 'univers', universId: m.v }).map((x) => x.nombre), [1]);
+  assert.deepEqual(battlemapCartes.donnees!.compter(m.db, { niveau: 'univers', universId: m.u }).map((x) => x.nombre), [1, 0, 0]);
+  assert.deepEqual(battlemapCartes.donnees!.compter(m.db, { niveau: 'univers', universId: m.v }).map((x) => x.nombre), [1, 0, 0]);
   battlemapCartes.donnees!.effacer(m.db, { niveau: 'univers', universId: m.u });
   assert.equal(rows(m.db), 1, 'l’autre univers reste');
   const k = C.creerCarte(m.db, m.mj, m.u, { titre: 'Z' }).id;
@@ -311,7 +311,7 @@ test('montée de la migration 0038 depuis 0037 : table créée, contraintes tenu
   migrate(db, dir);
   assert.equal(db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'bm_cartes'").get(), undefined);
   db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', '2026-11-01T00:00:00.000Z')").run();
-  assert.deepEqual(migrate(db), [38, 39]);
+  assert.deepEqual(migrate(db), [38, 39, 40]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const ins = (titre: string, l: unknown, h: unknown, doc: string) => db.prepare(
     "INSERT INTO bm_cartes (univers_id, titre, largeur, hauteur, document, cree_le, modifie_le) VALUES (1, ?, ?, ?, ?, 'a', 'a')").run(titre, l, h, doc);

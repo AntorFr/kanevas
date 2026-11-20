@@ -120,7 +120,7 @@ export function SupprimerCarteComposee({ universId, carte, onFermer, onSupprimee
   return (
     <BoiteDialogue
       titre={`Supprimer « ${carte.titre} »`}
-      texte="Cette carte sera supprimée avec ses calques et ses éléments."
+      texte="Cette carte sera supprimée avec ses calques, ses éléments, sa table de jeu et ses pions."
       action="Supprimer la carte"
       desactive={saisie.trim() !== carte.titre}
       enCours={enCours}

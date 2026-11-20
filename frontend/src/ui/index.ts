@@ -21,3 +21,4 @@ export * from './panneau-lateral';
 export * from './vignette-reference';
 export * from './colonne-outils';
 export * from './canevas-carte';
+export * from './canevas-jeu';
