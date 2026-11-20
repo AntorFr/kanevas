@@ -12,6 +12,8 @@
 //   reinit     : « Réinitialiser la table… » empties the tokens only after the confirmation
 //   glisser    : a token dragged 3 cells right and 2 down moves by exactly that and stays after a reload
 //   lien       : « Lier une fiche… » sets fiche_id, « Ouvrir la fiche » shows the sheet, « Délier » clears it
+//   plein      : the player's received token is drawn full (no diagonal bar)
+//   390 px     : « Suivre le MJ » and the zoom do not overlap on a phone
 //   pleine     : with 200 tokens « Table pleine » shows and the 201st command is refused
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
@@ -257,5 +259,70 @@ describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser 
     await antor.reload();
     await antor.getByRole('tab', { name: 'Calques' }).click();
     assert.equal(await antor.locator('.jeu-calques').getByRole('switch').first().isChecked(), false);
+  });
+  it('joueuse : un pion reçu est dessiné plein, sans barre ni estompage', async () => {
+    const c = await nouvelle('Pion plein du revueur');
+    assert.ok((await antor.request.post(`${api}/cartes/${c}/table`)).status() < 300);
+    await jeu(antor, c);
+    await ajouterDisque('Ogre');
+    await jusque(antor, c, 't.etat.pions.length === 1');
+    // Under the fog the player sees black: reveal the whole map (30 × 20) so the disc is drawn.
+    const rev = await antor.request.post(`${api}/cartes/${c}/table/commandes`, {
+      data: { version: (await table(antor, c)).version, commandes: [{ type: 'reveler_rect', x: 0, y: 0, l: 30, h: 20 }] },
+    });
+    assert.equal(rev.status(), 200);
+    await jeu(lea, c);
+    await lea.locator('canvas').first().waitFor();
+    // The disc is the only thing of the accent colour: its bounding box gives its centre, which a diagonal bar would cross.
+    const lire = () => lea.evaluate(() => {
+      const cv = document.querySelector('canvas') as HTMLCanvasElement;
+      const ctx = cv.getContext('2d') as CanvasRenderingContext2D;
+      const el = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
+      el.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+      el.fillRect(0, 0, 1, 1);
+      const [r, g, b] = el.getImageData(0, 0, 1, 1).data;
+      const d = ctx.getImageData(0, 0, cv.width, cv.height);
+      const egal = (x: number, y: number) => { const k = (y * cv.width + x) * 4; return d.data[k] === r && d.data[k + 1] === g && d.data[k + 2] === b && d.data[k + 3] === 255; };
+      let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
+      for (let y = 0; y < cv.height; y++) for (let x = 0; x < cv.width; x++) if (egal(x, y)) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+      if (x1 < 0) return { trouve: false, plein: false };
+      const cx = Math.round((x0 + x1) / 2), cy = Math.round((y0 + y1) / 2);
+      const q = Math.max(2, Math.round((x1 - x0) / 8));
+      const plein = [[0, 0], [q, -q], [-q, q], [2 * q, -2 * q], [-2 * q, 2 * q]].every(([dx, dy]) => egal(cx + dx!, cy + dy!));
+      return { trouve: true, plein };
+    });
+    let v = await lire();
+    for (let i = 0; i < 30 && !v.trouve; i++) { await lea.waitForTimeout(100); v = await lire(); }
+    assert.equal(v.trouve, true, 'le disque est dessiné pour la joueuse');
+    assert.equal(v.plein, true, 'aucune barre diagonale sur un pion visible');
+  });
+
+  it('joueuse à 390 px : « Suivre le MJ » et le zoom ne se recouvrent pas et restent atteignables', async () => {
+    const c = await nouvelle('Téléphone du revueur');
+    assert.ok((await antor.request.post(`${api}/cartes/${c}/table`)).status() < 300);
+    await lea.setViewportSize({ width: 390, height: 800 });
+    try {
+      await jeu(lea, c);
+      const suivre = lea.getByRole('switch', { name: 'Suivre le MJ' });
+      await suivre.waitFor();
+      const zoom = lea.locator('.jeu .canevas-zoom');
+      await zoom.waitFor();
+      const a = (await lea.locator('.jeu-suivre').boundingBox()) as Any;
+      const z = (await zoom.boundingBox()) as Any;
+      const separes = a.y + a.height <= z.y + 1 || z.y + z.height <= a.y + 1 || a.x + a.width <= z.x + 1 || z.x + z.width <= a.x + 1;
+      assert.ok(separes, `recouvrement : suivre ${JSON.stringify(a)}, zoom ${JSON.stringify(z)}`);
+      const libre = async (loc: Any, nom: string) => {
+        const bb = (await loc.boundingBox()) as Any;
+        assert.ok(bb, `${nom} visible`);
+        const ok = await loc.evaluate((e: Element, p: number[]) => e.contains(document.elementFromPoint(p[0]!, p[1]!)), [bb.x + bb.width / 2, bb.y + bb.height / 2]);
+        assert.equal(ok, true, `rien ne couvre ${nom}`);
+      };
+      await libre(zoom.getByRole('button', { name: 'Zoom arrière' }), 'Zoom arrière');
+      await libre(zoom.getByRole('button', { name: 'Zoom avant' }), 'Zoom avant');
+      await libre(zoom.locator('.canevas-zoom-valeur'), 'le pourcentage');
+      await libre(suivre, 'Suivre le MJ');
+    } finally {
+      await lea.setViewportSize({ width: 1280, height: 720 });
+    }
   });
 });
