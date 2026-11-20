@@ -47,8 +47,6 @@ const ASSISTANT: readonly Porte[] = ['assistant'];
 export interface OptionsCatalogue {
   porte?: Porte;
   niveau?: 'lecture' | 'ecriture';
-  /** The token of the MCP door; closed over, never a tool parameter. */
-  jeton?: { id: number };
   images?: AdaptateurChoisi;
 }
 

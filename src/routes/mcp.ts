@@ -77,7 +77,7 @@ function serveurDe(app: FastifyInstance, acces: AccesMcp): Server {
   const outils: Outil[] = acces.universId === undefined
     ? [outilListerUnivers(app, acces)]
     : catalogueDe(app.db, acces.compteId, acces.universId, {
-      porte: 'mcp', niveau: acces.niveau, jeton: { id: acces.jetonId },
+      porte: 'mcp', niveau: acces.niveau,
     }).outils;
   const serveur = new Server({ name: 'kanevas', version: '1' }, { capabilities: { tools: {} } });
   serveur.setRequestHandler(ListToolsRequestSchema, async () => ({
