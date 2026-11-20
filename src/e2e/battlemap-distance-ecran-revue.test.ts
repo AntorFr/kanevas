@@ -168,7 +168,7 @@ describe('E-29 joueuse : jouer à distance, E-20 : Jeu à distance', { skip: ski
     return ligne.univers.versionReglages;
   };
 
-  it('E-20 : « Jeu à distance » est un interrupteur visible d’emblée, coché par défaut, qui enregistre à la bascule', async () => {
+  it('E-20 : « Jeu à distance » est un interrupteur, coché par défaut', async () => {
     await antor.goto(`/univers/${uid}/parametres`);
     await attendre(antor);
     await antor.getByRole('tab', { name: 'Outils', exact: true }).click();
