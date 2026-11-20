@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Guard of AD-harnais-3: no fixed delay in the screen tests. A test waits for the visible result of its action
 // (`attendre`, `attendreVisible`, `attendreAbsent`, `attendreTexte`, `attendreTransitions`), never for a duration.
 import assert from 'node:assert/strict';

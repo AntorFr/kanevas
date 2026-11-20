@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of `kanevas-tests-attestes-pod`, written from the need only (the suite says why it fails in a pod:
 // the harness waits 30 s for the server and shows its error output when it does not start). The server is the real built one (dist/server.js); only what it does before listening is
 // chosen by the test, through a preloaded script (src/e2e/fixtures/demarrage/).

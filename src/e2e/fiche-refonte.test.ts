@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-rv-fiche: the E-9 fiche redone (docs/ecrans.md § Détail de
 // `kanevas-refonte-visuelle`: the audience badge and its dialog, the rule and the amber hatching, the
 // « ⋯ » menu, « Modifier » on hover/focus, edit shortcuts, toasts, the role matrix). Expected values
