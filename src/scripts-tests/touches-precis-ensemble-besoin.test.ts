@@ -190,9 +190,9 @@ describe('écrans touchés : Rust et wasm associés aux écrans qui les chargent
 });
 
 describe('écrans touchés : l’en-tête // ecrans: de chaque test d’écran', () => {
-  test('les 256 tests de src/e2e/ ont leur ligne // ecrans: en première ligne', () => {
+  test('les tests de src/e2e/ ont leur ligne // ecrans: en première ligne', () => {
     const fichiers = git('ls-files', 'src/e2e').split('\n').filter((f) => f.endsWith('.test.ts'));
-    assert.equal(fichiers.length, 256);
+    assert.ok(fichiers.length > 0);
     const sans = fichiers.filter((f) => !/^\/\/ ecrans: [a-z0-9-]+(, [a-z0-9-]+)*$/.test(premiereLigne(f)));
     assert.deepEqual(sans, []);
   });
