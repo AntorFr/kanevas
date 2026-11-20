@@ -10,6 +10,8 @@ use std::collections::{HashMap, HashSet, VecDeque};
 pub const PIONS_MAX: usize = 200;
 /// AD-battlemap-table-3: commands per batch.
 pub const LOT_MAX: usize = 500;
+/// AD-battlemap-distance-1: moves per player batch.
+pub const LOT_JOUEUR_MAX: usize = 10;
 pub const PION_ID_MAX: usize = 20;
 pub const PION_NOM_MAX: usize = 40;
 pub const SCHEMA_TABLE: u32 = 1;
@@ -63,9 +65,12 @@ fn schema() -> u32 {
 pub struct ContexteTable {
     #[serde(default)]
     pub empreintes: HashMap<String, [u32; 2]>,
-    /// `"mj"` (default) or `"joueur"`: a player's command is always refused in this slice.
+    /// `"mj"` (default) or `"joueur"` (AD-battlemap-distance-1); any other value is refused.
     #[serde(default)]
     pub acteur: Option<String>,
+    /// Ids of the tokens the caller owns (read by the service from `bm_pions_proprietaires`); read for a player only.
+    #[serde(default)]
+    pub proprietaires: Vec<String>,
 }
 
 /// The player view context: the filter of AD-156 plus the footprints.
@@ -439,15 +444,41 @@ fn appliquer(doc: &Document, ctx: &ContexteTable, etat: &mut Etat, g: &mut Grill
     Ok(())
 }
 
+/// A player's batch (AD-battlemap-distance-1): 1 to `LOT_JOUEUR_MAX` `deplacer_pion` and nothing else, each on a
+/// token she owns and sees. Every other case is the same `pion_non_proprietaire` (a hidden token, a token under
+/// the fog and an unknown id are indistinguishable); the fog does not limit the destination, the map does.
+fn verifier_lot_joueur(doc: &Document, etat: &Etat, lot: &[CommandeTable], ctx: &ContexteTable) -> R<()> {
+    let refus = || Erreur::new("pion_non_proprietaire");
+    if lot.is_empty() || lot.len() > LOT_JOUEUR_MAX {
+        return Err(refus());
+    }
+    let g = Grille::decoder(&etat.brouillard, doc.largeur, doc.hauteur)?;
+    for c in lot {
+        let CommandeTable::DeplacerPion { id, .. } = c else { return Err(refus()) };
+        let p = etat.pions.iter().find(|p| &p.id == id).ok_or_else(refus)?;
+        let (l, h) = empreinte(&ctx.empreintes, p.asset_id.as_deref());
+        let revele = (p.y..p.y + h).any(|y| (p.x..p.x + l).any(|x| g.get(x, y)));
+        if !p.visible || !revele || !ctx.proprietaires.contains(id) {
+            return Err(refus());
+        }
+    }
+    Ok(())
+}
+
 /// Applies a batch whole or refuses it whole (the refusal carries the index of the command).
 pub fn appliquer_lot(doc: &Document, etat: &Etat, lot: &[CommandeTable], ctx: &ContexteTable) -> R<Etat> {
-    if ctx.acteur.as_deref().is_some_and(|a| a != "mj") {
-        return err("refuse");
-    }
+    let joueur = match ctx.acteur.as_deref() {
+        None | Some("mj") => false,
+        Some("joueur") => true,
+        Some(_) => return err("refuse"),
+    };
     if lot.len() > LOT_MAX {
         return err("lot_trop_grand");
     }
     etat.valider(doc, &ctx.empreintes)?;
+    if joueur {
+        verifier_lot_joueur(doc, etat, lot, ctx)?;
+    }
     let mut courant = etat.clone();
     let mut grille = Grille::decoder(&etat.brouillard, doc.largeur, doc.hauteur)?;
     for (i, c) in lot.iter().enumerate() {
