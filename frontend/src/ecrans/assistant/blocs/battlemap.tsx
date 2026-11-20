@@ -49,6 +49,6 @@ export function BlocLot({ evenement, universId, surOuverture }: PropsBloc) {
 /** E-28: the composed map. */
 export function BlocCarte({ evenement, universId, surOuverture }: PropsBloc) {
   const titre = String(evenement.cible.titre ?? '');
-  return <Bloc libelle={`Carte « ${titre} » composée`} href={`${racine(universId)}/cartes/${evenement.cible.carteId}`} surOuverture={surOuverture} />;
+  return <Bloc libelle={`Carte « ${titre} » composée`} href={`${racine(universId)}/outils/battlemap/cartes/${evenement.cible.carteId}`} surOuverture={surOuverture} />;
 }
 
