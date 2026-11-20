@@ -57,5 +57,5 @@ main.principal:has(> .jeu), body.asst-present main.principal:has(> .jeu) { max-w
   /* The tool bar is at the bottom: the page leaves a strip under the screen for the assistant button. */
   body.asst-present .jeu { height: calc(100dvh - 52px - var(--h-bouchon, 0px) - 72px); }
   .jeu .canevas-zoom { bottom: var(--e-3); }
-  .jeu-suivre { bottom: var(--e-3); }
+  .jeu-suivre { bottom: calc(var(--e-3) + 56px); }
 }

@@ -208,7 +208,7 @@ function Partie({
   }, [assets, parId, universId, images]);
 
   const pions: PionVu[] = useMemo(() => {
-    if (!gm) return (table as TableJoueur).pions;
+    if (!gm) return (table as TableJoueur).pions.map((p) => ({ ...p, visible: true }));
     return (table as TableMJ).etat.pions.map((p) => {
       const e = p.asset_id !== null ? empreinte(p.asset_id) : { largeur: 1, hauteur: 1 };
       return { ...p, l: e.largeur, h: e.hauteur };
