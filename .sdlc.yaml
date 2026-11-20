@@ -15,7 +15,7 @@ tests:
   commande: npm ci && npm run tests:attestes
   local: npm ci && npm run tests:local
   ecrans: npm run tests:ecrans -- {base} --installe
-  ecrans_liste: node scripts/niveaux-tests.mjs --liste ecrans {base}
+  ecrans_liste: npm ci --ignore-scripts && node scripts/niveaux-tests.mjs --liste ecrans {base}
   fiche: npm ci && npm run tests:fiche -- {base}
   rejouer: node scripts/rejouer-tests.mjs {tests} --installe
   rapport: resultats.tap
