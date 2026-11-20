@@ -2,6 +2,7 @@ import { compterAssets, compterDirection, compterLots, effacerDonneesBattlemap, 
 import { cartesComposees, compterCartes, creerCarte, effacerCartes, rendreVisibleCarte, supprimerCarte, utilisationsCartes } from '../../services/battlemap-cartes.js';
 import { lignesTables } from '../../services/battlemap-tables.js';
 import { choisirAdaptateur } from '../../services/images/index.js';
+import { outilsAssets, outilsCartes, outilsGeneration } from './assistant.js';
 import type { DeclarationAide, DeclarationCarte, DeclarationGenerateur, DeclarationModule, LigneDonnees } from '../declaration.js';
 
 const ligne = (cle: string, singulier: string, pluriel: string, nombre: number): LigneDonnees => ({ cle, singulier, pluriel, nombre });
@@ -16,6 +17,7 @@ export const battlemapGeneration: DeclarationGenerateur = {
   visibiliteParDefaut: { mj: true, joueur: false }, usages: [{ nom: 'concevoir', mjSeul: true }], reglages: {},
   ecran: { libelle: 'Génération', icone: 'Sparkles' },
   disponible: () => choisirAdaptateur().nom !== 'aucun',
+  outilsAssistant: outilsGeneration,
   donnees: {
     compter(db, portee) {
       if (portee.niveau !== 'univers') return [];
@@ -37,6 +39,7 @@ export const battlemapAssets: DeclarationAide = {
   type: 'aide', portee: 'tous', dependances: [],
   visibiliteParDefaut: { mj: true, joueur: true }, usages: [], reglages: {},
   ecran: { libelle: 'Bibliothèque', icone: 'Images' },
+  outilsAssistant: outilsAssets,
   donnees: {
     compter(db, portee) {
       if (portee.niveau !== 'univers') return [];
@@ -67,6 +70,7 @@ export const battlemapCartes: DeclarationCarte = {
   },
   ecran: { libelle: 'Cartes', icone: 'Map' },
   cartes: (db, acteur, universId) => cartesComposees(db, acteur, universId),
+  outilsAssistant: outilsCartes,
   creation: {
     libelle: 'Carte composée',
     creer: (db, acteur, universId, titre, taille) => creerCarte(db, acteur, universId, { titre, ...taille }),
