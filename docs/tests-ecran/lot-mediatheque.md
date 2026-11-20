@@ -402,6 +402,7 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/battlemap-jeu-e29-revue.test.ts` | `onglet Calques : une ligne par calque sans puce, un interrupteur nommé par calque, le geste persiste` | affichage | — | gardé |
 | `src/e2e/battlemap-jeu-e29-revue.test.ts` | `joueuse : un pion reçu est dessiné plein, sans barre ni estompage` | affichage | — | gardé |
 | `src/e2e/battlemap-jeu-e29-revue.test.ts` | `joueuse à 390 px : « Suivre le MJ » et le zoom ne se recouvrent pas et restent atteignables` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Ajouter un pion » ▸ Asset : la fenêtre tient dans l’écran et « Ajouter » se clique à la souris` | affichage | — | gardé |
 | `src/e2e/battlemap-affichage-e30-revue.test.ts` | `sans table : « La partie n’a pas commencé. », puis « En attente du MJ » une fois la table créée, sans recharger` | affichage | — | gardé |
 | `src/e2e/battlemap-affichage-e30-revue.test.ts` | `presence : E-29 lit « Écran joueurs connecté » tant que E-30 est ouvert` | affichage | — | gardé |
 | `src/e2e/battlemap-affichage-e30-revue.test.ts` | `vue partagée : la carte s’affiche sans contrôle ni cadre, « Effacer la vue » la retire` | affichage | — | gardé |

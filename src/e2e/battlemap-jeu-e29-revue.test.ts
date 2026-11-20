@@ -14,9 +14,11 @@
 //   lien       : « Lier une fiche… » sets fiche_id, « Ouvrir la fiche » shows the sheet, « Délier » clears it
 //   plein      : the player's received token is drawn full (no diagonal bar)
 //   390 px     : « Suivre le MJ » and the zoom do not overlap on a phone
+//   asset      : « Ajouter un pion » ▸ Asset with a full library: the window fits the screen and « Ajouter » is clickable with the mouse (1280x800)
 //   pleine     : with 200 tokens « Table pleine » shows and the 201st command is refused
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
+import { pngPlat } from '../bouchon/png-plat.js';
 import { attendre, connecte, launch, rxExact, skipBrowser, startServer, type Any, type Server } from './harnais.test.js';
 
 describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser }, () => {
@@ -322,5 +324,29 @@ describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser 
     } finally {
       await lea.setViewportSize({ width: 1280, height: 720 });
     }
+  });
+  it('« Ajouter un pion » ▸ Asset : la fenêtre tient dans l’écran et « Ajouter » se clique à la souris', async () => {
+    for (let i = 0; i < 14; i++) {
+      const r = await antor.request.post(`${api}/assets`, { multipart: { categorie: 'objet', fichier: { name: `pion-${i}.png`, mimeType: 'image/png', buffer: pngPlat([40, 140, 60], 16) } } });
+      assert.equal(r.status(), 201, await r.text());
+    }
+    const c = await nouvelle('Pion asset du revueur');
+    await antor.setViewportSize({ width: 1280, height: 800 });
+    await jeu(antor, c);
+    await antor.getByRole('button', { name: rxExact('Ajouter un pion') }).click();
+    const d = antor.getByRole('dialog');
+    await d.getByRole('radio', { name: /Asset/ }).click();
+    await d.locator('.editeur-grille img').first().waitFor();
+    await d.locator('.editeur-grille img').first().click();
+    const bouton = d.getByRole('button', { name: rxExact('Ajouter') });
+    const fen = (await d.boundingBox()) as Any;
+    assert.ok(fen.y >= 0 && fen.y + fen.height <= 800 + 1, `fenêtre bornée à l’écran : ${JSON.stringify(fen)}`);
+    await bouton.scrollIntoViewIfNeeded();
+    const bb = (await bouton.boundingBox()) as Any;
+    assert.ok(bb.y >= 0 && bb.y + bb.height <= 800, `Ajouter atteignable par défilement interne : y=${bb.y}`);
+    await bouton.click();
+    await d.waitFor({ state: 'detached' });
+    await jusque(antor, c, 't.etat.pions.length === 1');
+    assert.equal((await table(antor, c)).etat.pions.length, 1);
   });
 });
