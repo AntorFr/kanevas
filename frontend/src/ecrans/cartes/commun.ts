@@ -16,7 +16,11 @@ export interface CarteOutil {
   titre: string;
   module: string;
   outil: { module: string; outil: string };
-  adresse: string;
+  /** Where the map opens; absent for a composed map the caller cannot edit (listed without a link). */
+  adresse?: string;
+  /** Size in cells, for a composed map. */
+  largeur?: number;
+  hauteur?: number;
   visible?: boolean;
   /** Token of the map's own row, to change its visibility (GM only). */
   version?: number;

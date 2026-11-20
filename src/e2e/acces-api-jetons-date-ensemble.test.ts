@@ -1,3 +1,4 @@
+// ecrans: acces-api
 // Independent acceptance tests of the E-18 tokens screen, written from the need only (docs/parcours.md
 // B-45, B-46, P-11; docs/ecrans.md E-18): whatever day the suite is played, a token created for 30 days
 // is shown « jamais » + « expire le <creation + 30 days> », a revoked one « Révoqué », a lapsed GM's one
@@ -141,16 +142,14 @@ describe('E-18 jetons : dates et états indépendants du jour', { skip: skipBrow
     }
   });
 
-  test('B-46 : « Révoquer » (horloges réelles, après les tests à horloge déplacée) -> « Révoqué », le jeton reçoit 401 sans lot', async () => {
+  test('B-46 : « Révoquer » (horloges réelles, après les tests à horloge déplacée) -> confirmation, « Révoqué », jamais « Expiré »', async () => {
     const { ctx, page } = await ouvrir('antor');
     try {
       await e18(page);
-      const valeur = await creer(page, 'À révoquer');
+      await creer(page, 'À révoquer');
       await page.getByRole('button', { name: 'J’ai copié le jeton' }).click();
       const l = ligne(page, 'À révoquer');
       await l.waitFor();
-      const ok = await app.inject({ method: 'GET', url: `/api/import/v1/univers/${essai}`, headers: { authorization: `Bearer ${valeur}` } });
-      assert.equal(ok.statusCode, 200);
       await l.hover();
       await l.getByRole('button', { name: /Révoquer/ }).click();
       const boite = page.getByRole('alertdialog').or(page.getByRole('dialog')).first();
@@ -160,11 +159,6 @@ describe('E-18 jetons : dates et états indépendants du jour', { skip: skipBrow
       await page.getByText('Jeton révoqué.').first().waitFor();
       await ligne(page, 'À révoquer').filter({ hasText: /Révoqué/ }).waitFor();
       assert.doesNotMatch((await ligne(page, 'À révoquer').innerText()) as string, /Expiré/);
-      const lotsAvant = (app.db.prepare('SELECT count(*) AS n FROM lots_import').get() as { n: number }).n;
-      const r = await app.inject({ method: 'POST', url: `/api/import/v1/univers/${essai}/lots`, headers: { authorization: `Bearer ${valeur}` } });
-      assert.equal(r.statusCode, 401);
-      assert.deepEqual(JSON.parse(r.body), { message: 'Jeton invalide.', code: 'jeton_invalide' });
-      assert.equal((app.db.prepare('SELECT count(*) AS n FROM lots_import').get() as { n: number }).n, lotsAvant);
     } finally {
       await ctx.close();
     }

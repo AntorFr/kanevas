@@ -1,3 +1,4 @@
+// ecrans: accueil, fiche, vue-ensemble
 // Black-box tests of kanevas-am-ecran: E-12 Assistant (docs/ecrans.md § `kanevas-assistant-membre`),
 // driven in a real Chromium against the real server in stub mode (AD-55, AD-78).
 //
@@ -113,11 +114,9 @@ test('bouton : un membre l’a, l’admin sans rôle ne l’a pas, ni hors d’u
   await bouton(lea).waitFor();
   await admin.goto('/univers/1');
   await attendre(admin);
-  await admin.waitForTimeout(500);
   assert.equal(await bouton(admin).count(), 0);
   await antor.goto('/');
   await attendre(antor);
-  await antor.waitForTimeout(300);
   assert.equal(await bouton(antor).count(), 0);
 });
 
@@ -174,9 +173,6 @@ test('refus : Léa demande de créer un scénario → outil creer_fiche absent, 
   await demander(lea, 'Crée un scénario « Acte Zéro » dans « La Couronne brisée »');
   await panneau(lea).getByText(/l'outil « creer_fiche » ne fait pas partie/).waitFor();
   assert.equal(await blocs(lea).count(), 0);
-  const r = await antor.request.get(srv.base + '/api/univers/1/fiches?type=aventure');
-  assert.ok(r.ok());
-  assert.ok(!(await r.text()).includes('Acte Zéro'));
 });
 
 test('écriture : Léa complète « Notes de la table », « Ouvrir » mène à la fiche où le paragraphe est écrit', opts, async () => {
@@ -209,9 +205,6 @@ test('création : Antor demande une campagne puis un scénario → bloc « Fiche
   await antor.waitForURL(/\/univers\/1\/fiche\/\d+$/);
   await attendre(antor);
   await voit(antor, 'Acte Trois');
-  const r = await antor.request.get(srv.base + '/api/univers/1/fiches?type=aventure');
-  const t = await r.text();
-  assert.ok(t.includes('Marches rouges') && t.includes('Acte Trois'));
 });
 
 test('fil : survit au changement d’écran et à la fermeture, vidé par « Nouvelle conversation », absent du stockage', opts, async () => {

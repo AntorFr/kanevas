@@ -7,7 +7,7 @@ import { generateurBouchon } from './bouchon.js';
 import { generateurCodex } from './codex.js';
 import type { GenerateurImage, NomAdaptateur } from './types.js';
 
-export { ErreurGeneration } from './types.js';
+export { ErreurGeneration, ErreurMoteurAbsent } from './types.js';
 export type { GenerateurImage, NomAdaptateur } from './types.js';
 
 /** What the choice depends on, passed in so tests need no `process.env`. */

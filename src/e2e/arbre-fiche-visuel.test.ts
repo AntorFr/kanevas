@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Review tests of kanevas-arbre-fiche, second pass: the « Déplacer sous… » dot (mock-up e09 draws a dot, not the
 // browser's radio) and the trail at 390 px (an ancestor ellipsizes, the current title stays readable).
 import assert from 'node:assert/strict';

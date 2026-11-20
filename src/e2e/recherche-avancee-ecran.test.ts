@@ -1,3 +1,4 @@
+// ecrans: recherche
 // Black-box tests of kanevas-fiches-liees-recherche-ecran, written from the exit criterion (B-65, P-17,
 // E-17 "advanced search"): « Lié à » + « Par » + « sous-lieux compris » through the real screen.
 // Real server in stub mode, real Chromium. Waits are on what the user sees (a row appearing or going

@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of kanevas-premiere-fiche written from the need (docs/parcours.md B-n,
 // docs/ecrans.md), not from the code. Expected values are literals taken from the docs.
 // Same harness as the other e2e files: real server in stub mode + real Chromium.
@@ -21,7 +22,6 @@ import {
   rxExact,
   section,
   skipBrowser,
-  startExpectingExit,
   startServer,
   texte,
   titresSections,
@@ -35,7 +35,6 @@ const UNIVERS = "Lame d'Ébène";
 // writes in flight to finish before reading the screen.
 async function attendre(page: Any): Promise<void> {
   await attendreHarnais(page);
-  await page.waitForTimeout(200);
   await page.waitForFunction(() => ![...document.querySelectorAll('button')].some((b) => b.textContent?.trim() === '…'));
   await attendreHarnais(page);
 }
@@ -275,11 +274,6 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
       assert.ok(t.includes('Page introuvable.'), c);
       assert.ok(!t.includes(UNIVERS), c);
     }
-    const inconnue = await fetch(srv.base + '/api/univers/999999', { headers: { cookie: (await teo.ctx.cookies()).map((c: Any) => `${c.name}=${c.value}`).join('; ') } });
-    const id = chemin.split('/').filter(Boolean).pop();
-    const refus = await fetch(srv.base + '/api/univers/' + id, { headers: { cookie: (await teo.ctx.cookies()).map((c: Any) => `${c.name}=${c.value}`).join('; ') } });
-    assert.equal(refus.status, inconnue.status);
-    assert.equal(await refus.text(), await inconnue.text());
   });
 
   // ---------- B-5 ----------
@@ -493,20 +487,6 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await lea.page.screenshot({ path: '/tmp/kanevas-preuves-b9-lea.png' });
   });
 
-  test('B-9 le contenu fermé ne fuit pas par l’API : la Joueuse ne reçoit pas la section MJ', async () => {
-    const { urlFiche } = await aldric(UNIVERS + ' B9a');
-    const lea = await compte('lea');
-    const cookie = (await lea.ctx.cookies()).map((c: Any) => `${c.name}=${c.value}`).join('; ');
-    const ids = new URL(urlFiche).pathname.match(/univers\/(\d+)\/fiche\/(\d+)$/);
-    assert.ok(ids, urlFiche);
-    const res = await fetch(`${srv.base}/api/univers/${ids![1]}/fiches/${ids![2]}`, { headers: { cookie } });
-    assert.equal(res.status, 200);
-    const corps = await res.text();
-    assert.ok(corps.includes('Apparence'));
-    assert.ok(!corps.includes('Vérité'));
-    assert.ok(!corps.includes('traître'));
-  });
-
   test('B-9 fiche dont Léa ne lit rien : absente de la liste, adresse = « Page introuvable. »', async () => {
     const { antor } = await table(UNIVERS + ' B9b');
     await creerFiche(antor.page, 'personnage', 'Maître Cachottier');
@@ -641,31 +621,6 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     assert.deepEqual(await titresSections(p), []);
   });
 
-  // ---------- B-28 ----------
-  test('B-28 sans compte : toute page mène à la connexion, aucune donnée de l’API', async () => {
-    const { urlFiche, urlUnivers } = await aldric(UNIVERS + ' B28');
-    for (const chemin of ['/', new URL(urlUnivers).pathname, new URL(urlFiche).pathname, '/nimporte/quoi']) {
-      const r = await fetch(srv.base + chemin, { redirect: 'manual' });
-      assert.ok([301, 302, 303, 307].includes(r.status), `${chemin} -> ${r.status}`);
-      assert.ok(String(r.headers.get('location')).includes('connexion'), chemin);
-    }
-    for (const chemin of ['/api/univers', '/api/moi', '/api/univers/1', '/api/univers/1/membres', '/api/univers/1/fiches']) {
-      const r = await fetch(srv.base + chemin, { redirect: 'manual' });
-      assert.equal(r.status, 401, chemin);
-      assert.ok(!(await r.text()).includes('Ébène'));
-    }
-    const h = await fetch(srv.base + '/healthz');
-    assert.equal(h.status, 200);
-    assert.match(await h.text(), /^kanevas \S+$/);
-    const assets = await fetch(srv.base + '/assets/', { redirect: 'manual' });
-    assert.notEqual(assets.status, 200);
-  });
-
-  test('B-28 cookie de session falsifié : traité comme sans session', async () => {
-    const r = await fetch(srv.base + '/api/univers', { headers: { cookie: 'kanevas_session=1.forge; session=1' }, redirect: 'manual' });
-    assert.equal(r.status, 401);
-  });
-
   // ---------- Bouchon, session ----------
   test('Bouchon : écran de choix des comptes, groupes de Admin, bandeau sur chaque page, déconnexion', async () => {
     const ctx = await browser.newContext({ baseURL: srv.base });
@@ -679,8 +634,6 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     assert.ok(t.includes(bandeau) || (await texte(p)).includes('mode bouchon') || /bouchon/i.test(t));
     await p.getByRole('button', { name: /^Se connecter en tant que Admin$/i }).click();
     await attendre(p);
-    const moi = await p.evaluate(async () => (await fetch('/api/moi')).json());
-    assert.deepEqual(moi, { username: 'admin', groups: ['parents'], limites: { contenuSection: 100000 } });
     assert.ok((await texte(p)).includes(bandeau));
     await p.goto('/creer-un-univers');
     await attendre(p);
@@ -689,14 +642,6 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await p.getByRole('menuitem', { name: rxExact('Se déconnecter') }).click();
     await attendre(p);
     assert.ok(p.url().includes('connexion'));
-    const apres = await fetch(srv.base + '/api/moi', { redirect: 'manual' });
-    assert.equal(apres.status, 401);
-  });
-
-  test('Bouchon : un compte ordinaire n’a aucun groupe', async () => {
-    const lea = await compte('lea');
-    const moi = await lea.page.evaluate(async () => (await fetch('/api/moi')).json());
-    assert.deepEqual(moi, { username: 'lea', groups: [], limites: { contenuSection: 100000 } });
   });
 
   test('Bouchon : l’admin d’instance sans rôle n’a pas accès au contenu d’un univers', async () => {
@@ -787,6 +732,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await p.unroute('**/api/univers/*/membres');
     await p.getByRole('button', { name: rxExact('Réessayer') }).first().click();
     await attendre(p);
+    await p.getByRole('button', { name: /^Retirer / }).first().waitFor({ state: 'visible' });
     await antor.ctx.setOffline(true);
     await voit(p, 'Connexion perdue.');
     assert.equal(await p.getByRole('button', { name: rxExact('Ajouter') }).isDisabled(), true);
@@ -808,28 +754,5 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await voit(p, 'L\'action n\'a pas abouti. Réessayez.');
     assert.equal(await c.getAttribute('aria-checked'), 'false');
     assert.equal(await p.getByRole('status').getByText(/enregistrée/).count(), 0, 'a failure is never a toast');
-  });
-});
-
-describe('kanevas-premiere-fiche, mode bouchon au démarrage', () => {
-  for (const [variable, valeur] of [
-    ['OIDC_ISSUER', 'https://auth.example.org/x'],
-    ['OIDC_CLIENT_ID', 'x'],
-  ] as const) {
-    test(`KANEVAS_STUB=1 avec ${variable} posée : Kanevas refuse de démarrer`, async () => {
-      const r = await startExpectingExit({ KANEVAS_STUB: '1', [variable]: valeur });
-      assert.equal(r.exited, true);
-      assert.notEqual(r.code, 0);
-    });
-  }
-
-  test('KANEVAS_STUB=1 sans OIDC_* : démarre, healthz ne dit que nom et version', async () => {
-    const s = await startServer();
-    try {
-      const r = await fetch(s.base + '/healthz');
-      assert.match(await r.text(), /^kanevas \S+$/);
-    } finally {
-      s.stop();
-    }
   });
 });

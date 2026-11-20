@@ -1,3 +1,4 @@
+// ecrans: fiche
 /**
  * E-9, MJ, téléphone (390 px) : la tuile d'illustration en attente occupe une ligne
  * d'en-tête entière, la clé tient sur une ligne (ellipse si extrême) et le point final

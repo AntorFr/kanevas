@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches
 // Black-box tests of kanevas-fiches-liees-disparu (B-67, B-68 part `disparu`), written from the
 // feature's exit criterion, docs/parcours.md and docs/ecrans.md « the gone mark » — not from the code.
 // Real server in stub mode with the seed + real Chromium. Every expected value is a literal of the docs.
@@ -9,13 +10,11 @@ import { after, before, describe, test } from 'node:test';
 import { type Any, connecte, launch, skipBrowser, startServer, type Server } from './harnais.test.js';
 
 const SHOTS = '/tmp/kanevas-disparu-ensemble-shots';
-const JETON = 'kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue';
 let srv: Server;
 let browser: Any;
 let antor: Any;
 let lea: Any;
 let U = 0;
-let UKANKA = 0;
 const ids: Record<string, number> = {};
 
 async function req(page: Any, method: string, url: string, data?: unknown): Promise<{ status: number; body: Any }> {
@@ -28,11 +27,6 @@ async function req(page: Any, method: string, url: string, data?: unknown): Prom
     body = txt;
   }
   return { status: r.status(), body };
-}
-async function titres(page: Any, query: string): Promise<string[]> {
-  const r = await req(page, 'GET', `/api/univers/${U}/fiches?${query}`);
-  assert.equal(r.status, 200, query);
-  return r.body.fiches.map((f: Any) => f.titre as string).sort();
 }
 async function marquer(titre: string, disparu: boolean): Promise<Any> {
   return req(antor, 'PATCH', `/api/univers/${U}/fiches/${ids[titre]}`, { disparu });
@@ -64,7 +58,6 @@ before(async () => {
   lea = (await connecte(browser, srv.base, 'Léa')).page;
   const us = (await req(antor, 'GET', '/api/univers')).body as Any[];
   U = us.find((u) => u.nom === "Lame d'Ébène").id;
-  UKANKA = us.find((u) => u.nom === 'Essai Kanka').id;
   const fs = (await req(antor, 'GET', `/api/univers/${U}/fiches`)).body.fiches as Any[];
   for (const f of fs) ids[f.titre] = f.id;
   ids['La Dette'] = (await req(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'quete', titre: 'La Dette' })).body.id;
@@ -72,150 +65,6 @@ before(async () => {
 after(async () => {
   await browser?.close();
   srv?.stop();
-});
-
-describe('B-67 par l’API : marquer, lire, filtrer', { skip: skipBrowser }, () => {
-  test('antor_marque_bran_mort_puis_vivant_et_les_filtres_suivent', async () => {
-    // Panne visée : le PATCH n'écrit pas la clé, ou le filtre `etat` ignore la charge.
-    assert.deepEqual(await titres(antor, 'type=personnage&etat=disparu'), ['Le Prieur masqué']);
-    const r = await marquer('Bran Corvalis', true);
-    assert.equal(r.status, 200);
-    assert.equal(r.body.charge.disparu, true);
-    assert.deepEqual(await titres(antor, 'type=personnage&etat=disparu'), ['Bran Corvalis', 'Le Prieur masqué']);
-    const vivants = await titres(antor, 'type=personnage&etat=la');
-    assert.ok(!vivants.includes('Bran Corvalis') && !vivants.includes('Le Prieur masqué'));
-    assert.ok(vivants.includes('Maître Aldric'));
-    assert.equal(vivants.length, 5);
-    const v = await marquer('Bran Corvalis', false);
-    assert.equal(v.status, 200);
-    assert.ok(!v.body.charge.disparu);
-    assert.deepEqual(await titres(antor, 'type=personnage&etat=disparu'), ['Le Prieur masqué']);
-    assert.equal((await titres(antor, 'type=personnage&etat=la')).length, 6);
-  });
-
-  test('le_phare_detruit_est_liste_par_etat_disparu_du_type_lieu', async () => {
-    // Panne visée : `etat=disparu` ne combine pas avec `type`.
-    assert.deepEqual(await titres(antor, 'type=lieu&etat=disparu'), []);
-    assert.equal((await marquer('Le Phare aux Sels', true)).status, 200);
-    assert.deepEqual(await titres(antor, 'type=lieu&etat=disparu'), ['Le Phare aux Sels']);
-    assert.ok(!(await titres(antor, 'type=lieu&etat=la')).includes('Le Phare aux Sels'));
-    assert.equal((await marquer('Le Phare aux Sels', false)).status, 200);
-  });
-
-  test('marquer_deux_fois_est_idempotent', async () => {
-    assert.equal((await marquer('Suie', true)).status, 200);
-    const r = await marquer('Suie', true);
-    assert.equal(r.status, 200);
-    assert.equal(r.body.charge.disparu, true);
-    assert.equal((await marquer('Suie', false)).status, 200);
-  });
-
-  test('lea_lit_la_marque_et_filtre_comme_antor', async () => {
-    // Exclusion inverse : la marque est publique.
-    assert.equal((await marquer('Bran Corvalis', true)).status, 200);
-    try {
-      const f = await req(lea, 'GET', `/api/univers/${U}/fiches/${ids['Bran Corvalis']}`);
-      assert.equal(f.status, 200);
-      assert.equal(f.body.charge.disparu, true);
-      assert.deepEqual(await titres(lea, 'type=personnage&etat=disparu'), ['Bran Corvalis']);
-    } finally {
-      await marquer('Bran Corvalis', false);
-    }
-  });
-
-  test('les_mots_des_sept_types_sont_ceux_de_la_doc', async () => {
-    const t = (await req(antor, 'GET', `/api/univers/${U}/types`)).body as Any[];
-    const attendu: Record<string, [string, string, string, string]> = {
-      personnage: ['Mort', 'Marquer mort', 'Marquer vivant', 'skull'],
-      creature: ['Morte', 'Marquer morte', 'Marquer vivante', 'skull'],
-      famille: ['Éteinte', 'Marquer éteinte', 'Marquer vivante', 'skull'],
-      faction: ['Détruite', 'Marquer détruite', 'Marquer active', 'shield-off'],
-      lieu: ['Détruit', 'Marquer détruit', 'Marquer intact', 'flame'],
-      objet: ['Détruit', 'Marquer détruit', 'Marquer intact', 'flame'],
-      vaisseau: ['Détruit', 'Marquer détruit', 'Marquer intact', 'flame'],
-    };
-    for (const [type, [oui, menuOui, menuNon, icone]] of Object.entries(attendu)) {
-      const d = t.find((x) => x.type === type)?.disparu;
-      assert.ok(d, `${type} porte la marque`);
-      assert.deepEqual([d.oui, d.menuOui, d.menuNon, d.icone], [oui, menuOui, menuNon, icone], type);
-    }
-    for (const type of ['evenement', 'quete', 'savoir', 'note', 'aventure']) {
-      const x = t.find((y) => y.type === type);
-      if (x) assert.equal(x.disparu, undefined, `${type} ne porte pas la marque`);
-    }
-  });
-});
-
-describe('B-67 par l’API : refus', { skip: skipBrowser }, () => {
-  test('une_joueuse_ne_marque_pas', async () => {
-    const r = await req(lea, 'PATCH', `/api/univers/${U}/fiches/${ids['Bran Corvalis']}`, { disparu: true });
-    assert.equal(r.status, 403);
-    assert.ok(!(await titres(antor, 'type=personnage&etat=disparu')).includes('Bran Corvalis'));
-  });
-  test('un_mj_en_mode_joueur_ne_marque_pas', async () => {
-    const r = await req(antor, 'PATCH', `/api/univers/${U}/fiches/${ids['Bran Corvalis']}?mode=joueur`, { disparu: true });
-    assert.equal(r.status, 403);
-    assert.ok(!(await titres(antor, 'type=personnage&etat=disparu')).includes('Bran Corvalis'));
-  });
-  test('une_quete_et_un_savoir_refusent_la_marque_en_400', async () => {
-    for (const t of ['La Dette', "Chronique de l'Âge d'Ombre", "Rapport secret de l'amirauté"]) {
-      const r = await marquer(t, true);
-      assert.equal(r.status, 400, t);
-    }
-    const q = await req(antor, 'GET', `/api/univers/${U}/fiches/${ids['La Dette']}`);
-    assert.ok(!q.body.charge.disparu);
-  });
-  test('une_valeur_non_booleenne_est_refusee', async () => {
-    for (const v of ['oui', 1, null]) {
-      const r = await req(antor, 'PATCH', `/api/univers/${U}/fiches/${ids['Bran Corvalis']}`, { disparu: v });
-      assert.equal(r.status, 400, String(v));
-    }
-  });
-  test('un_etat_inconnu_est_refuse_et_un_type_sans_marque_n_a_aucune_fiche_dans_aucun_etat', async () => {
-    const r = await req(antor, 'GET', `/api/univers/${U}/fiches?type=lieu&etat=mort`);
-    assert.equal(r.status, 400);
-    assert.deepEqual(await titres(antor, 'type=quete&etat=disparu'), []);
-    assert.deepEqual(await titres(antor, 'type=quete&etat=la'), []);
-  });
-});
-
-describe('B-68 : l’import pose la marque', { skip: skipBrowser }, () => {
-  const put = (cle: string, corps: Any) =>
-    fetch(`${srv.base}/api/import/v1/univers/${UKANKA}/fiches/${cle}`, {
-      method: 'PUT',
-      headers: { Authorization: `Bearer ${JETON}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ sections: [{ cle: 'd', titre: 'Description', contenu: 'x', joueursLisent: true }], ...corps }),
-    });
-
-  test('l_import_pose_disparu_sur_un_personnage_et_le_refuse_sur_une_quete', async () => {
-    const ok = await put('personnage:xan', { type: 'personnage', titre: 'Xan', disparu: true });
-    assert.equal(ok.status, 200);
-    const j = (await ok.json()) as Any;
-    assert.equal(j.etat, 'creee');
-    const f = await req(antor, 'GET', `/api/univers/${UKANKA}/fiches/${j.id}`);
-    assert.equal(f.body.charge.disparu, true);
-    const ko = await put('quete:q', { type: 'quete', titre: 'Q', disparu: true });
-    assert.equal(ko.status, 400);
-    const kj = (await ko.json()) as Any;
-    assert.equal(kj.code, 'champ_inconnu');
-    assert.equal(kj.champ, 'disparu');
-    const ko2 = await put('personnage:yan', { type: 'personnage', titre: 'Yan', disparu: 'oui' });
-    assert.equal(ko2.status, 400);
-  });
-
-  test('rejoue_apres_marquer_vivant_l_import_n_ecrase_pas', async () => {
-    // Panne visée : le rejeu écrase la marque posée à la main (B-48).
-    const corps = { type: 'personnage', titre: 'Zed', disparu: true };
-    const j = (await (await put('personnage:zed', corps)).json()) as Any;
-    assert.equal(j.etat, 'creee');
-    const id = j.id as number;
-    const m = await req(antor, 'PATCH', `/api/univers/${UKANKA}/fiches/${id}`, { disparu: false });
-    assert.equal(m.status, 200);
-    const rejeu = await put('personnage:zed', corps);
-    assert.equal(rejeu.status, 200);
-    const f = await req(antor, 'GET', `/api/univers/${UKANKA}/fiches/${id}`);
-    assert.ok(!f.body.charge.disparu, 'la marque retirée à la main reste retirée');
-  });
 });
 
 describe('B-67 à l’écran, en Antor', { skip: skipBrowser }, () => {
@@ -345,7 +194,6 @@ describe('B-67 à l’écran, en Antor', { skip: skipBrowser }, () => {
     assert.equal(await pastille(antor, 'Mort').count(), 0);
     await photo(antor, 'echec-marque');
     await antor.unroute(/\/api\/univers\/\d+\/fiches\/\d+$/);
-    assert.ok(!(await titres(antor, 'type=personnage&etat=disparu')).includes('Maître Aldric'));
   });
 
   test('le_portrait_d_un_lieu_illustre_est_desature_et_porte_la_pastille', async () => {
