@@ -1,3 +1,4 @@
+// ecrans: outil
 // Browser test of kanevas-outils-format-zones-ecran, written from the exit criterion (B-84, E-21, Z-6), not from the code.
 // Stub world with the seed (« Éneria d'essai »). Screenshots go to /tmp/cap-galaxie-zone-hexagones (never into the workspace).
 import assert from 'node:assert/strict';
