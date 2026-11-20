@@ -1,4 +1,4 @@
-// ecrans: fiche
+// ecrans: fiche, accueil
 // Review tests of kanevas-synchro-cles-adresses (B-101, P-22): the sheet screen opens at readable addresses and
 // brings numeric and former addresses back to them without a history entry; a player's address stays as typed.
 import assert from 'node:assert/strict';
