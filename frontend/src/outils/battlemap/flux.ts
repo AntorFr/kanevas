@@ -148,7 +148,7 @@ export class TableChangee extends Error {
 
 /**
  * A GM's write: the commands are absolute (set a position, reveal a rect), so on `conflit` the state is refetched and the batch
- * sent once more at the new version; a second `conflit` is `TableChangee`. `envoyer` gets the version to write at.
+ * sent once more at the new version; a second `conflit` is `TableChangee`. `envoyer` reads the current version itself (the caller keeps it in a ref).
  */
 export async function avecReprise<T>(envoyer: () => Promise<T>, recharger: () => Promise<unknown>): Promise<T> {
   const conflit = (e: unknown) => typeof e === 'object' && e !== null && (e as { statut?: unknown }).statut === 409;
