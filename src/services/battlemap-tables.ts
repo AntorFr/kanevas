@@ -7,6 +7,7 @@ import {
 } from './battlemap-cartes.js';
 import { annoncer } from './battlemap-flux.js';
 import { roleDe, vueMJ } from './droits.js';
+import { resoudreOutil } from './outils.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
 import type { Acteur } from './types.js';
 
@@ -26,6 +27,10 @@ export interface TableMJ {
 /** What anyone else reads (a player, or a GM in Player mode): the view of the core, no owner, no `peutEcrire`. */
 export interface TableJoueur {
   commencee: true; version: number; document: unknown; pions: unknown[]; brouillard: string; vue: unknown;
+  /** Ids of the tokens the reader owns and sees (AD-battlemap-distance-3); never the owners of the others. */
+  mesPions: string[];
+  /** Remote play is on, the table has started, the reader is a real player owning a token she sees. */
+  deplacement: boolean;
 }
 export type TableLue = TableMJ | TableJoueur | { commencee: false; peutEcrire?: true };
 
@@ -78,6 +83,7 @@ function refusTable(r: coeur.RefusCoeur): ErreurService {
     case 'table_pleine': return TABLE_PLEINE();
     case 'id_existant': return new ErreurService('conflit', 'Ce pion existe déjà.', 'id_existant');
     case 'refuse': return refuse('Seul le MJ peut faire cela.');
+    case 'pion_non_proprietaire': return new ErreurService('refuse', 'Ce pion n’est pas à vous.', 'pion_non_proprietaire');
     case 'position_invalide': case 'limite_depassee':
       return new ErreurService('invalide', 'Cela sort de la carte.', 'limite_depassee', r.champ);
     default: return new ErreurService('invalide', 'Commande refusée.', r.code, r.champ);
@@ -137,7 +143,26 @@ export function lireTable(db: Db, acteur: Acteur, universId: number, carteId: nu
   const etat = JSON.parse(t.etat) as coeur.EtatTable;
   if (mj) return { commencee: true, version: t.version, peutEcrire: true, etat, proprietaires: proprietairesDe(db, l.id) };
   const v = vueJoueurDe(db, acteur, role, universId, l, t, etat);
-  return { commencee: true, version: t.version, document: v.document, pions: v.pions, brouillard: v.brouillard, vue: v.vue };
+  const siens = new Set(mesPropres(db, l.id, acteur.compteId));
+  const mesPions = (v.pions as { id: string }[]).filter((p) => siens.has(p.id)).map((p) => p.id);
+  const deplacement = role === 'joueur' && !acteur.modeJoueur && mesPions.length > 0 && jeuADistance(db, universId);
+  return { commencee: true, version: t.version, document: v.document, pions: v.pions, brouillard: v.brouillard, vue: v.vue, mesPions, deplacement };
+}
+
+/** The « Jeu à distance » setting of the maps tool, read at each call (AD-battlemap-distance-2), never cached. */
+function jeuADistance(db: Db, universId: number): boolean {
+  try {
+    return resoudreOutil(db, universId, 'battlemap/cartes').reglages.jeu_a_distance?.valeur !== false;
+  } catch (e) {
+    // A universe the tool does not apply to (no game system) has no setting to read: the declared default holds.
+    if (e instanceof ErreurService && e.code === 'introuvable') return true;
+    throw e;
+  }
+}
+
+function mesPropres(db: Db, carteId: number, compteId: number): string[] {
+  return (db.prepare('SELECT pion_id FROM bm_pions_proprietaires WHERE carte_id = ? AND compte_id = ?')
+    .all(carteId, compteId) as { pion_id: string }[]).map((r) => r.pion_id);
 }
 
 /** « Jouer » on a map: creates its table, hidden everywhere, once. GM outside Player mode; a second call changes nothing. */
@@ -184,14 +209,18 @@ function verifierReferences(db: Db, acteur: Acteur, universId: number, commandes
 }
 
 /**
- * A batch of the core's table commands, applied whole or refused whole, at the version the writer read. GM outside Player mode;
- * a player who reads the map is `refuse`. A stale version is `conflit` (`version`); `table_pleine` is `conflit`;
+ * A batch of the core's table commands, applied whole or refused whole, at the version the writer read. A GM outside Player mode
+ * (the setting « Jeu à distance » is ignored), or a real player who moves her own tokens (AD-battlemap-distance-1/2: setting off →
+ * `jeu_a_distance_coupe`, 403, nothing written; the core refuses anything else with `pion_non_proprietaire`). A GM in Player
+ * mode is `refuse` / `mode_joueur`. A stale version is `conflit` (`version`); `table_pleine` is `conflit`;
  * `limite_depassee` is `invalide`. The owners of tokens that are gone (`retirer_pion`, `reinitialiser`) go in the same transaction.
  */
 export function appliquerCommandesTable(db: Db, acteur: Acteur, universId: number, carteId: number,
   version: unknown, commandes: unknown): { version: number } {
   const r = db.transaction(() => {
-    const l = carteEcrite(db, acteur, universId, carteId);
+    const { l, role, mj } = carteLue(db, acteur, universId, carteId);
+    if (!mj && role === 'mj') throw new ErreurService('refuse', 'Seul le MJ peut faire cela.', 'mode_joueur');
+    if (!mj && !jeuADistance(db, universId)) throw new ErreurService('refuse', 'Le jeu à distance est coupé.', 'jeu_a_distance_coupe');
     if (!Number.isInteger(version) || (version as number) < 1) throw invalideChamp('version', 'Version invalide.');
     if (!Array.isArray(commandes) || commandes.length === 0 || commandes.length > MAX_COMMANDES_TABLE) {
       throw invalideChamp('commandes', `Un lot compte de 1 à ${MAX_COMMANDES_TABLE} commandes.`);
@@ -199,7 +228,7 @@ export function appliquerCommandesTable(db: Db, acteur: Acteur, universId: numbe
     const t = tableDe(db, l.id);
     if (!t) throw new ErreurService('introuvable', 'Page introuvable.', 'table_absente');
     if (version !== t.version) throw PERIMEE();
-    verifierReferences(db, acteur, universId, commandes);
+    if (mj) verifierReferences(db, acteur, universId, commandes);
     const avant = JSON.parse(t.etat) as coeur.EtatTable;
     // Footprints of the tokens already there and of those the batch adds.
     const nouveaux = commandes.flatMap((c) => {
@@ -207,7 +236,9 @@ export function appliquerCommandesTable(db: Db, acteur: Acteur, universId: numbe
       return typeof a === 'string' || typeof a === 'number' ? [String(a)] : [];
     });
     const empreintes = empreintesDe(db, universId, [...assetsDesPions(avant), ...nouveaux]);
-    const r = coeur.appliquerTable(l.document, t.etat, commandes, { empreintes, acteur: 'mj' });
+    const r = coeur.appliquerTable(l.document, t.etat, commandes, mj
+      ? { empreintes, acteur: 'mj' }
+      : { empreintes, acteur: 'joueur', proprietaires: mesPropres(db, l.id, acteur.compteId) });
     if (!r.ok) throw refusTable(r);
     const apres = JSON.parse(r.etat) as coeur.EtatTable;
     const restants = new Set(apres.pions.map((p) => p.id));

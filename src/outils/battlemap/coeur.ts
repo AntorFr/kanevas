@@ -74,7 +74,7 @@ export function detourerFondUni(octets: Uint8Array): Uint8Array {
   }
 }
 
-export interface ContexteTable { empreintes: Record<string, [number, number]>; acteur?: 'mj' | 'joueur' }
+export interface ContexteTable { empreintes: Record<string, [number, number]>; acteur?: 'mj' | 'joueur'; proprietaires?: string[] }
 export interface ContexteVue extends ContexteFiltre { empreintes: Record<string, [number, number]> }
 export interface EtatTable {
   schema: number;
