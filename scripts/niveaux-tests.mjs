@@ -238,13 +238,6 @@ export function analyser(source, fichier = 'x.ts') {
   return out;
 }
 
-/** Relative specifiers of a source that are edges (type-only imports excluded): CSS, side effects, `import()`, re-exports. */
-export function specifieurs(source, fichier = 'x.ts') {
-  const a = analyser(source, fichier);
-  const specs = [...a.imports.map((i) => i.spec), ...a.reexports.filter((r) => !r.type).map((r) => r.spec)];
-  return [...new Set(specs.filter((s) => s.startsWith('.')))];
-}
-
 function normaliser(chemin) {
   const sortie = [];
   for (const p of chemin.split('/')) {
