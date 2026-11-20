@@ -4420,7 +4420,7 @@ The slices draw them; nothing here invents a component.
   fiche… » replaces it in one gesture. An attached sheet the
   reader cannot read is not named (AD-38): the line is absent for him.
 - Under the frame, the block **« Texte »**: rendered Markdown with its GM blocks (the shared renderer,
-  AD-96); GM: « Modifier » opens the section editor without the `[[` list — preview and GM block
+  AD-96); GM: « Modifier » and « Vider » (small neutral buttons with an icon) sit at the right of the block's title; « Modifier » opens the section editor without the `[[` list — preview and GM block
   only (links are not active in a map's text, AD-142) —, 5,000 characters at most (« 5 000 caractères
   au plus. »); « Vider » asks no confirmation and can be undone by « Modifier »; empty: GM « Ajouter
   un texte », player nothing. Two GMs saving the same version: the second sees « Le texte a changé

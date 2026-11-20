@@ -454,7 +454,7 @@ A write carries `?lot=<id>` to be counted; without a batch it succeeds but nothi
 | `PUT`, `DELETE /fiches/:cle/sections/:scle` *(kanevas-synchro)* | create or rewrite one section (`{titre, contenu, joueursLisent, joueursEcrivent, fichiers?, position?}`), or delete it (B-108) |
 | `PATCH`, `DELETE /relations/:rid` *(kanevas-synchro)* | modify (`{nature, qualificatif}`) or remove one relation (B-109) |
 | `GET /fichiers` *(kanevas-synchro)* | `?apres=<id>` : the media library's files with their fingerprint (B-90) |
-| `GET /cartes`, `PUT /cartes/:cle` *(kanevas-synchro)* | the universe's maps with their fingerprint; assure one illustrated map (B-112, AD-142; only `GET /cartes` is built, the `PUT` belongs to the maps slice) |
+| `GET /cartes`, `PUT /cartes/:cle` *(kanevas-synchro)* | the universe's maps with their fingerprint; assure one illustrated map (B-112, AD-142; both built: the `PUT` is `services/import-cartes.ts`, multipart, idempotent, the background kept when the upload carries none) |
 | `DELETE /fiches/:cle` | delete the sheet (AD-105, AD-119 (4)); 204, even if the key is unknown; carries `?lot=` like any write |
 
 Suggested script order, not required: batch; files (media library); sheets, parents first (campaigns and scenarios are `aventure` sheets); relations; close. Replaying everything is safe (B-47).
