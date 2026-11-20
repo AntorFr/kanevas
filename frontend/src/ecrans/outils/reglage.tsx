@@ -46,6 +46,20 @@ export function LigneReglage({ reglage, valeur, niveau, version, ecriture, occup
     } finally { setAttente(false); }
   }
 
+  if (forme.type === 'booleen' && EN_INTERRUPTEUR.has(reglage.nom)) {
+    // A switch is the setting itself: always visible, it saves on the flip (no « Remplacer » step, no second label).
+    return <div className="outil-reglage">
+      <Interrupteur etiquette={reglage.libelle} ecrit coche={valeur.valeur === true}
+        disabled={!ecriture || reglage.protege || disabled}
+        onChange={(v) => void sauver(v, version)} />
+      {reglage.aide && <p>{reglage.aide}</p>}
+      {attente && <p role="status">Enregistrement…</p>}
+      {erreur && <div className="echec" role="alert">{erreur} {perime && <Bouton petit icone={RotateCcw} onClick={async () => {
+        await recharger(); setErreur(undefined); setPerime(false);
+      }}>Recharger</Bouton>}{reprise && <Bouton petit ecrit disabled={disabled} onClick={reprise}>Réessayer</Bouton>}</div>}
+    </div>;
+  }
+
   return <div className="outil-reglage">
     <div className="outil-valeur">
       <div><strong>{reglage.libelle}</strong>{reglage.aide && <p>{reglage.aide}</p>}</div>
@@ -55,9 +69,7 @@ export function LigneReglage({ reglage, valeur, niveau, version, ecriture, occup
       }}>{niveau === 'univers' ? 'Remplacer pour l’univers' : 'Remplacer'}</Bouton>}
     </div>
     {ecriture && edition && <form className="outil-edition" noValidate onSubmit={(e) => { e.preventDefault(); void sauver(edition.valeur, edition.version); }}>
-      {forme.type === 'booleen' && EN_INTERRUPTEUR.has(reglage.nom) ? <Interrupteur etiquette={reglage.libelle} disabled={disabled}
-        coche={edition.valeur === true} onChange={(v) => setEdition({ ...edition, valeur: v })} />
-      : forme.type === 'booleen' || forme.type === 'choix' ? <Champ etiquette={reglage.libelle} erreur={invalide ? erreur : undefined} liste disabled={disabled}
+      {forme.type === 'booleen' || forme.type === 'choix' ? <Champ etiquette={reglage.libelle} erreur={invalide ? erreur : undefined} liste disabled={disabled}
         value={String(edition.valeur)} onChange={(e: { target: { value: string } }) => setEdition({ ...edition, valeur: forme.type === 'booleen' ? e.target.value === 'true' : e.target.value })}>
         {forme.type === 'booleen' ? <><option value="true">Oui</option><option value="false">Non</option></>
           : forme.valeurs.map((v) => <option key={v}>{v}</option>)}
