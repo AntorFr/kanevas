@@ -1,3 +1,4 @@
+// ecrans: battlemap-assets, outil, vue-ensemble
 // Ensemble tests of kanevas-battlemap-assets (B-96, B-97, B-98, B-110; P-26 steps 1, 2 and 5; E-25, E-26), written from the
 // feature's exit criterion and the product docs only. Real server in stub mode, real Chromium, real API.
 //

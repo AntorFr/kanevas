@@ -1,3 +1,4 @@
+// ecrans: outil-cible
 // Review of kanevas-battlemap-editeur-objets (E-28), written from the exit criterion.
 //
 // TEST PLAN

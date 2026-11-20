@@ -1,3 +1,4 @@
+// ecrans: battlemap-assets, outil
 // E-27 « Génération » at desktop width (1280 px), lot préparé: layout of the list pane, written from docs/ecrans.md
 // « E-27 — detail » and the mockup docs/maquettes/e27-generation.html (frame « lot préparé »): each input line is ONE row
 // (name, category, footprint, « Retirer »), the hint under it; « Ajouter une ligne », « Coller des lignes » on the left of the
