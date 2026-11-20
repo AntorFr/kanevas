@@ -137,6 +137,7 @@ Tests of the harness itself (`harnais-*`, `demarrage-suite-besoin`, `diagnostic-
 | `src/e2e/jeton-assistant-panneau.test.ts` | `E-5 panneau « Jeton de l'assistant » (B-51, P-15) > temps_restant_descend_et_a_zero_la_phrase_dexpiration_remplace_le_champ` | affichage | — | gardé |
 | `src/e2e/jeton-assistant-panneau.test.ts` | `E-5 panneau « Jeton de l'assistant » (B-51, P-15) > changer_dunivers_selectionne_ne_ferme_pas_la_connexion` | affichage | — | gardé |
 | `src/e2e/jeton-assistant-panneau.test.ts` | `E-5 panneau « Jeton de l'assistant » (B-51, P-15) > reseau_coupe_desactive_connecter_valider_annuler_et_les_reactive_au_retour` | affichage | — | gardé |
+| `src/e2e/jeton-assistant-panneau.test.ts` | `E-5 panneau « Jeton de l'assistant » (B-51, P-15) > limites_sous_le_jeton_75_refus_en_ligne_puis_20_enregistre_et_relu` | affichage | — | gardé |
 | `src/e2e/jeton-assistant-panneau.test.ts` | `E-5 panneau « Jeton de l'assistant » (B-51, P-15) > lea_voit_page_introuvable` | les deux | `src/routes/jeton-assistant-lot-acces.test.ts` : `AD-86 player > Léa (outside the parents group) gets 404 on every route of the panel and poses nothing; the admin still sees no token` | allégé |
 | `src/e2e/jeton-assistant-panneau.test.ts` | `E-5 panneau « Jeton de l'assistant » (B-51, P-15) > états simulés > chargement_de_letat` | affichage | — | gardé |
 | `src/e2e/jeton-assistant-panneau.test.ts` | `E-5 panneau « Jeton de l'assistant » (B-51, P-15) > états simulés > erreur_de_lecture_puis_reessayer` | affichage | — | gardé |
