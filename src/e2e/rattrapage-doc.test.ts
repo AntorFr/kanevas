@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Tests of the merged tree of kanevas-fiches-liees-rattrapage, from the task's exit criterion and notes:
 // "no conflict marker in the tree"; "ADs in order, no duplicate number"; `main`'s AD-128 keeps its
 // number and its text, the epic's are shifted by one (130 search, 131 "Fiches liées", 132 "gone",

@@ -1,3 +1,4 @@
+// ecrans: membres
 // Revérification kanevas-refonte-visuelle, E-4 Membres : la pastille de rôle est ajustée à son texte
 // (maquette e04 mesurée à 1440 px : « MJ » 58 px, « Joueur » 80 px), pas étirée à ~76 px pour « MJ ».
 // Panne visée : une règle de E-12 / du champ-liste force la largeur ou le padding de la pastille ; ou le

@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-import-secrets at the level of the assembled feature (B-34, AD-98, AD-114), written from the
 // need alone (the fiche's « Livre » and exit criterion, docs/parcours.md B-34, docs/ecrans.md « Le bloc MJ »), against the
 // real server in stub mode (seeded world, « Port-Sel ») driven by a real Chromium. Expected values are literals.

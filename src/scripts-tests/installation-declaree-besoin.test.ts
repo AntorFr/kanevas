@@ -33,11 +33,17 @@ describe('declaration de l\'installation dans .sdlc.yaml', () => {
   test('outillage: nomme package.json et scripts/', () => {
     assert.equal(ligne('outillage').trim(), 'outillage: [package.json, scripts/]');
   });
-  test('ecrans:, ecrans_liste: et rejouer: ne lancent plus npm ci', () => {
-    for (const cle of ['ecrans', 'ecrans_liste', 'rejouer']) {
+  test('ecrans: et rejouer: ne lancent plus npm ci', () => {
+    for (const cle of ['ecrans', 'rejouer']) {
       assert.ok(ligne(cle) !== '', `${cle}: absent`);
       assert.doesNotMatch(ligne(cle), /npm ci/, `${cle} installe encore`);
     }
+  });
+  test('ecrans_liste: installe sans scripts (le graphe est lu par typescript, AD-touches-1)', () => {
+    assert.equal(
+      ligne('ecrans_liste').trim(),
+      'ecrans_liste: npm ci --ignore-scripts --loglevel=error >/dev/null && node scripts/niveaux-tests.mjs --liste ecrans {base}',
+    );
   });
   test('ecrans: et rejouer: passent --installe, apres leur argument', () => {
     assert.equal(ligne('ecrans').trim(), 'ecrans: npm run tests:ecrans -- {base} --installe');

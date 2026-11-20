@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Startup guarantees of the e2e harness (feature kanevas-outils-suite-demarrage), written from
 // the need: « server startups of the attested suite hold under load » — one startup at a time,
 // a lock that never hangs nor leaks, readiness meaning /healthz answered 200.
