@@ -582,7 +582,7 @@
       ],
       "attendu": {
         "ok": false,
-        "code": "refuse"
+        "code": "pion_non_proprietaire"
       },
       "acteur": "joueur"
     },

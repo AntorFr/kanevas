@@ -161,12 +161,12 @@ fn un_mur_horizontal_separe_les_lignes_et_une_case_hors_carte_est_refusee() {
 }
 
 #[test]
-fn la_commande_d_un_joueur_est_refusee_meme_valide_ou_vide() {
+fn la_commande_d_un_joueur_hors_regle_est_refusee_et_un_autre_acteur_reste_refuse() {
     let d = doc(10, 6);
-    for acteur in ["joueur", "autre"] {
+    for (acteur, code) in [("joueur", "pion_non_proprietaire"), ("autre", "refuse")] {
         for cmds in [json!([]), json!([{"type": "reveler_rect", "x": 0, "y": 0, "l": 1, "h": 1}])] {
             let r = lot(&d, &etat(10, 6), cmds, json!({"acteur": acteur}));
-            assert_eq!((&r["ok"], &r["code"]), (&json!(false), &json!("refuse")), "{r}");
+            assert_eq!((&r["ok"], &r["code"]), (&json!(false), &json!(code)), "{r}");
         }
     }
     assert_eq!(lot(&d, &etat(10, 6), json!([]), json!({"acteur": "mj"}))["ok"], true);
@@ -290,4 +290,80 @@ fn redimensionner_refuse_si_l_emprise_d_un_pion_sortirait_et_ne_rogne_pas_une_vu
     // Same pion with the footprint unknown (1 x 1): fits in 7 x 6.
     assert_eq!(parse(&redimensionner_etat_json(&e.to_string(), 10, 6, 7, 6, "{}"))["ok"], true);
     assert_eq!(parse(&redimensionner_etat_json(&e.to_string(), 10, 6, 7, 5, &ctx.to_string()))["code"], "limite_depassee");
+}
+
+// ---- player's batch (AD-battlemap-distance-1): edges the fixtures do not pin ----
+
+fn table_joueur() -> (Value, Value) {
+    let d = doc(10, 6);
+    let r = lot(&d, &etat(10, 6), json!([
+        {"type": "reveler_rect", "x": 0, "y": 0, "l": 3, "h": 2},
+        {"type": "ajouter_pion", "id": "mien", "nom": "M", "x": 0, "y": 0},
+        {"type": "ajouter_pion", "id": "grand", "nom": "G", "asset_id": "geant", "x": 2, "y": 1},
+        {"type": "ajouter_pion", "id": "autrui", "nom": "A", "x": 1, "y": 0},
+        {"type": "ajouter_pion", "id": "cache", "nom": "C", "x": 1, "y": 1, "visible": false},
+        {"type": "ajouter_pion", "id": "dessous", "nom": "D", "x": 8, "y": 5},
+    ]), json!({"empreintes": {"geant": [2, 2]}}));
+    assert_eq!(r["ok"], true, "{r}");
+    (d, r["etat"].clone())
+}
+
+fn ctx_joueur() -> Value {
+    json!({"acteur": "joueur", "empreintes": {"geant": [2, 2]}, "proprietaires": ["mien", "grand", "cache", "dessous"]})
+}
+
+#[test]
+fn les_refus_d_un_joueur_sont_identiques_sans_index_ni_indice() {
+    let (d, e) = table_joueur();
+    let mv = |id: &str| json!([{"type": "deplacer_pion", "id": id, "x": 5, "y": 5}]);
+    let attendu = json!({"ok": false, "code": "pion_non_proprietaire"});
+    for id in ["autrui", "cache", "dessous", "inconnu"] {
+        assert_eq!(lot(&d, &e, mv(id), ctx_joueur()), attendu, "{id}");
+    }
+    // a valid move first, the refused one second: still the same body, no index
+    let r = lot(&d, &e, json!([{"type": "deplacer_pion", "id": "mien", "x": 5, "y": 5}, {"type": "deplacer_pion", "id": "autrui", "x": 5, "y": 5}]), ctx_joueur());
+    assert_eq!(r, attendu);
+}
+
+#[test]
+fn un_pion_de_deux_cases_dont_une_case_est_revelee_se_deplace_et_son_emprise_reste_dans_la_carte() {
+    let (d, e) = table_joueur();
+    // "grand" sits at (2,1) 2x2: only (2,0..1) is revealed, so cell (2,1) shows it
+    let r = lot(&d, &e, json!([{"type": "deplacer_pion", "id": "grand", "x": 8, "y": 4}]), ctx_joueur());
+    assert_eq!(r["ok"], true, "{r}");
+    // the fog does not limit the destination: it is now under the fog and gone from the player view, kept for the GM
+    let p = r["etat"]["pions"].as_array().unwrap().iter().find(|p| p["id"] == "grand").unwrap().clone();
+    assert_eq!((&p["x"], &p["y"]), (&json!(8), &json!(4)));
+    assert!(!vue(&d, &r["etat"], json!({"empreintes": {"geant": [2, 2]}}))["pions"].as_array().unwrap().iter().any(|p| p["id"] == "grand"));
+    // 2 wide at x = 9 spills out of a 10-wide map; 4 + 2 = 6 rows at y = 5 too
+    for (x, y) in [(9, 0), (0, 5), (-1, 0)] {
+        let r = lot(&d, &e, json!([{"type": "deplacer_pion", "id": "grand", "x": x, "y": y}]), ctx_joueur());
+        assert_eq!((&r["ok"], &r["code"]), (&json!(false), &json!("position_invalide")), "{x},{y}: {r}");
+    }
+    // the last legal footprint is accepted
+    assert_eq!(lot(&d, &e, json!([{"type": "deplacer_pion", "id": "grand", "x": 8, "y": 4}]), ctx_joueur())["ok"], true);
+}
+
+#[test]
+fn le_lot_d_un_joueur_est_tout_ou_rien_et_dix_passent_onze_non() {
+    let (d, e) = table_joueur();
+    let dix: Vec<Value> = (0..10).map(|i| json!({"type": "deplacer_pion", "id": "mien", "x": i % 10, "y": 3})).collect();
+    let r = lot(&d, &e, json!(dix), ctx_joueur());
+    assert_eq!(r["ok"], true, "{r}");
+    let onze: Vec<Value> = (0..11).map(|_| json!({"type": "deplacer_pion", "id": "mien", "x": 4, "y": 3})).collect();
+    assert_eq!(lot(&d, &e, json!(onze), ctx_joueur())["code"], "pion_non_proprietaire");
+    // a legal move followed by an out-of-map one: refused whole, no etat
+    let r = lot(&d, &e, json!([{"type": "deplacer_pion", "id": "mien", "x": 4, "y": 3}, {"type": "deplacer_pion", "id": "mien", "x": 99, "y": 3}]), ctx_joueur());
+    assert_eq!((&r["ok"], &r["code"]), (&json!(false), &json!("position_invalide")), "{r}");
+    assert!(r.get("etat").is_none());
+}
+
+#[test]
+fn sans_la_liste_des_proprietaires_un_joueur_ne_deplace_rien_et_le_mj_ignore_la_liste() {
+    let (d, e) = table_joueur();
+    let mv = json!([{"type": "deplacer_pion", "id": "mien", "x": 5, "y": 5}]);
+    assert_eq!(lot(&d, &e, mv.clone(), json!({"acteur": "joueur"}))["code"], "pion_non_proprietaire");
+    assert_eq!(lot(&d, &e, json!([{"type": "deplacer_pion", "id": "autrui", "x": 5, "y": 5}]), json!({"acteur": "mj"}))["ok"], true);
+    // the player's own rule never lets a hidden-token revealing command through even for an owned id
+    assert_eq!(lot(&d, &e, json!([{"type": "retirer_pion", "id": "mien"}]), ctx_joueur())["code"], "pion_non_proprietaire");
 }
