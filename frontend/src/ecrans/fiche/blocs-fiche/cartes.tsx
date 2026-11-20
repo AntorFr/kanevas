@@ -18,8 +18,7 @@ function Cartes({ universId, fiche, suffixeMode }: PropsBlocFiche) {
   if (etat.k === 'chargement') return <Chargement texte="Chargement des cartes…" />;
   if (etat.k === 'erreur') return <ErreurChargement texte="Impossible de charger les cartes." onReessayer={recharger} />;
   return (
-    <div className="blocs-cartes">
-      <BlocUi libelle="Cartes" icone={IconeCarte}>
+    <BlocUi libelle="Cartes" icone={IconeCarte}>
         <ul className="liste-cartes-fiche">
           {etat.valeur.cartes.map((c) => (
             <li key={c.id}>
@@ -35,8 +34,7 @@ function Cartes({ universId, fiche, suffixeMode }: PropsBlocFiche) {
             </li>
           ))}
         </ul>
-      </BlocUi>
-    </div>
+    </BlocUi>
   );
 }
 

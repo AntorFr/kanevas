@@ -189,8 +189,9 @@ a { color: var(--accent-texte); }
 .relation-nature > .actions-revelees { align-self: flex-start; }
 .relation-texte .relation-lien { padding-top: 0; }
 /* « target then type » variant: the title keeps a useful width, the type and the actions drop to the next line when short of room. */
-.relation-sans-fleche { flex-wrap: wrap; align-items: center; }
-.relation-sans-fleche > .relation-texte { flex: 1 1 12rem; }
+.relation-sans-fleche { flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-2); }
+.relation-sans-fleche > .relation-texte { flex: 0 1 auto; max-width: 100%; }
+.relation-sans-fleche > .relation-type::before { content: "· "; }
 .relation-sans-fleche > .relation-type { padding-top: 0; align-self: center; }
 .relation-fleche { color: var(--texte-3); flex: none; margin-top: 7px; }
 .relation > .jeton { flex: 0 1 auto; }
