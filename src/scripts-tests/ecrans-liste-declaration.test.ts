@@ -17,8 +17,8 @@ for (const l of lignes.slice(lignes.findIndex((x) => x === 'tests:') + 1)) { if 
 const cle = (nom: string) => bloc.find((l) => l.startsWith(`  ${nom}:`))?.slice(nom.length + 3).trim();
 
 describe('ecrans_liste : déclaration', () => {
-  test('est déclarée, sans npm ci ni build, et rend la liste de ecrans', () => {
-    assert.equal(cle('ecrans_liste'), 'node scripts/niveaux-tests.mjs --liste ecrans {base}');
+  test('est déclarée, avec npm ci --ignore-scripts mais sans build, et rend la liste de ecrans', () => {
+    assert.equal(cle('ecrans_liste'), 'npm ci --ignore-scripts --loglevel=error >/dev/null && node scripts/niveaux-tests.mjs --liste ecrans {base}');
   });
   test('ecrans, fiche et local ne bougent pas', () => {
     assert.equal(cle('ecrans'), 'npm run tests:ecrans -- {base} --installe');
