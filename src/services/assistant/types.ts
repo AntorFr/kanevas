@@ -10,7 +10,12 @@ export type TypeEvenement =
   | 'section_modifiee'
   | 'section_completee'
   | 'proposition_creee'
-  | 'image_attachee';
+  | 'image_attachee'
+  | 'fiche_modifiee'
+  | 'section_supprimee'
+  | 'relation_creee'
+  | 'relation_modifiee'
+  | 'relation_retiree';
 
 export interface Evenement {
   type: TypeEvenement;
@@ -24,7 +29,14 @@ export interface Evenement {
  */
 export type Resultat =
   | { ok: true; donnees: unknown; evenement?: Evenement }
-  | { ok: false; erreur: string };
+  | {
+    ok: false;
+    erreur: string;
+    /** The refusal's code, for the MCP door's write tools (`section_modifiee`, `section_geree`, `invalide`…). */
+    code?: string;
+    /** The field an `invalide` refusal is about. */
+    champ?: string;
+  };
 
 /**
  * What one request shares between its tool calls (AD-89): the abort signal of the request and
@@ -42,6 +54,8 @@ export interface ContexteDemande {
  */
 export interface Outil {
   nom: string;
+  /** The doors that offer the tool (AD-mcp-2); absent = the assistant's alone (the modules' tools). */
+  portes?: readonly Porte[];
   description: string;
   schema: z.ZodObject;
   /** Validates `args` against `schema` then runs; never throws for a service refusal. */
@@ -50,7 +64,13 @@ export interface Outil {
   horsDelai?: boolean;
 }
 
+/** The doors of the catalogue (AD-mcp-2): the in-app assistant and the MCP server. */
+export type Porte = 'assistant' | 'mcp';
+
 export interface Catalogue {
   role: 'mj' | 'joueur';
+  porte: Porte;
+  /** What the door's token writes; the assistant's door is `ecriture` (its own tools check the role). */
+  niveau: 'lecture' | 'ecriture';
   outils: Outil[];
 }

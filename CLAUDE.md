@@ -101,7 +101,7 @@
   (conflit). The route answers `fond_trop_lourd` with 413. A background goes through `stockage.ts` only and `ouvrirFond` takes no mode.
 
 - Assistant tools (`kanevas-assistant-membre`, `src/services/assistant/`): `catalogueDe(db, compteId,
-  universId)` is the only door — the server picks the catalogue from the role read in `membres` (no role →
+  universId, {porte, niveau, images})` is the only door — for the assistant and for the MCP door (`routes/mcp.ts`, `outils-ecriture-mcp.ts`, `docs/mcp.md`) — the server picks the catalogue from the role read in `membres` (no role →
   `introuvable`, AD-26); a tool is `{nom, description, schema (zod strictObject), executer}`, neutral of any
   transport. Account, universe and role are closed over, **never a tool parameter**; the actor is
   `{compteId}` with no player mode. Tools only compose service functions (AD-27, no SQL): refusals come

@@ -95,14 +95,14 @@ test('assistant : la même écriture porte assistant, avec le compte de l’acte
   const { db, antor, u, aldric, sec, apres } = monde();
   const outil = catalogueDe(db, antor, u).outils.find((o) => o.nom === 'modifier_section')!;
   const l = apres(() => {
-    const r: any = outil.executer({ ficheId: aldric, sectionId: sec, contenu: 'par IA', version: 1 });
+    const r: any = outil.executer({ fiche: aldric, sectionId: sec, contenu: 'par IA', version: 1 });
     assert.equal(r.ok, true, JSON.stringify(r));
   });
   propres(l, antor, 'assistant');
   // Hors de l'outil, l'origine revient à ecran (le contexte ambiant ne fuit pas).
   propres(apres(() => ecrireContenu(db, antor, u, aldric, sec, 'x', 2)), antor, 'ecran');
   const ajout = catalogueDe(db, antor, u).outils.find((o) => o.nom === 'ajouter_a_section')!;
-  propres(apres(() => (ajout.executer({ ficheId: aldric, sectionId: sec, texte: 'plus', version: 3 }) as any)), antor, 'assistant');
+  propres(apres(() => (ajout.executer({ fiche: aldric, sectionId: sec, texte: 'plus', version: 3 }) as any)), antor, 'assistant');
 });
 
 test('import : assurerFiche et supprimerFicheImport portent import, le lot, le compte et le jeton', () => {
