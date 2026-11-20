@@ -59,3 +59,9 @@ main.principal:has(> .jeu), body.asst-present main.principal:has(> .jeu) { max-w
   .jeu .canevas-zoom { bottom: var(--e-3); }
   .jeu-suivre { bottom: calc(var(--e-3) + 56px); }
 }
+
+/* « Ajouter un pion » ▸ Asset : editeur.css is not loaded here, so the library grid is laid out by this screen.
+   The window stays within the viewport; the grid scrolls inside it and « Ajouter » is always reachable. */
+.jeu-ajout { max-height: calc(100vh - 8rem); overflow-y: auto; }
+.jeu-ajout .editeur-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--e-2); max-height: 30vh; overflow-y: auto; }
+.jeu-ajout .editeur-grille img { max-width: 100%; height: auto; max-height: 96px; object-fit: contain; }
