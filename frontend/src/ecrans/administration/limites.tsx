@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { appeler, ErreurApi, lire } from '../../api';
-import { Bouton, Champ, Chargement, ErreurChargement, Panneau } from '../../ui';
+import { CircleAlert } from 'lucide-react';
+
+import { Bouton, Chargement, ErreurChargement } from '../../ui';
 
 const BASE = '/api/instance/reglages';
 const HORS_BORNES = 'Entre 1 et 500 Mo.';
@@ -48,6 +50,7 @@ export function Limites() {
     }
   };
 
+  const message = erreur ?? (echec ? 'L’action n’a pas abouti. Réessayez.' : undefined);
   let corps;
   if (lecture === 'chargement') corps = <Chargement texte="Chargement…" />;
   else if (lecture === 'erreur') corps = <ErreurChargement texte="Impossible de charger les limites." onReessayer={charger} />;
@@ -61,29 +64,49 @@ export function Limites() {
           void enregistrer();
         }}
       >
-        <Champ
-          className="limites-champ"
-          etiquette="Taille maximale d’un fond de carte (Mo)"
-          type="number"
-          inputMode="numeric"
-          min={1}
-          max={500}
-          value={saisie}
-          erreur={erreur ?? (echec ? 'L’action n’a pas abouti. Réessayez.' : undefined)}
-          onChange={(e: { target: { value: string } }) => {
-            setSaisie(e.target.value);
-            setEnregistre(false);
-          }}
-        />
-        <p className="note-admin">S’applique aux prochains envois ; les fonds déjà posés restent.</p>
-        <div className="limites-actions">
-          <Bouton variante="principal" ecrit enCours={enCours} onClick={() => void enregistrer()}>
-            Enregistrer
-          </Bouton>
-          {enregistre && <span role="status">Limite enregistrée.</span>}
+        <div className="champ">
+          <label className="lib-champ" htmlFor="limites-fond">
+            Taille maximale d’un fond de carte
+          </label>
+          <div className="limites-ligne">
+            <input
+              id="limites-fond"
+              className="limites-champ"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={500}
+              value={saisie}
+              aria-invalid={message ? true : undefined}
+              aria-describedby={message ? 'limites-erreur' : undefined}
+              onChange={(e) => {
+                setSaisie(e.target.value);
+                setEnregistre(false);
+              }}
+            />
+            <span>Mo</span>
+            <Bouton variante="principal" ecrit enCours={enCours} onClick={() => void enregistrer()}>
+              Enregistrer
+            </Bouton>
+            {enregistre && <span role="status">Limite enregistrée.</span>}
+          </div>
+          {message && (
+            <div className="pied-champ">
+              <div className="erreur" id="limites-erreur">
+                <CircleAlert size={12} strokeWidth={2} aria-hidden="true" />
+                <span>Erreur : {message}</span>
+              </div>
+            </div>
+          )}
         </div>
+        <p className="note-admin">S’applique aux prochains envois ; les fonds déjà posés restent.</p>
       </form>
     );
   }
-  return <Panneau titre="Limites">{corps}</Panneau>;
+  return (
+    <section className="panneau limites" aria-labelledby="limites-titre">
+      <h2 id="limites-titre">Limites</h2>
+      {corps}
+    </section>
+  );
 }

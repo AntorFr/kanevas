@@ -49,5 +49,7 @@
 .jeton-assistant .jeton-code { flex: 1 1 14rem; min-width: 0; font: inherit; padding: var(--e-2) var(--e-3); border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); background: var(--surface); color: var(--texte); }
 .jeton-assistant .jeton-copiee { font-size: var(--t-12); color: var(--texte-3); }
 .jeton-assistant a.bouton { text-decoration: none; }
-.limites-formulaire .limites-champ { max-width: 12rem; }
-.limites-formulaire .limites-actions { display: flex; align-items: center; gap: var(--e-2); margin-top: var(--e-2); }
+.limites-formulaire .limites-ligne { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-2); }
+.limites-formulaire .limites-champ { width: 110px; }
+.limites { margin-top: var(--e-4); }
+.limites > h2 { font-size: var(--t-12); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--texte-3); margin-bottom: var(--e-2); }
