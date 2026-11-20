@@ -1,8 +1,25 @@
 // Pure logic shared by `tests-attestes.mjs` (levels of the suite) and `rejouer-tests.mjs`
 // (replay of named tests). Plain .mjs: `node scripts/rejouer-tests.mjs` runs without tsx.
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
+
+// Found by walking up from this file, then required by absolute path: a bare `require('typescript')` reads the
+// nearest package.json, and one under edit (even broken) must not stop the choice.
+function chargerTypeScript() {
+  const require = createRequire(import.meta.url);
+  let dir = dirname(fileURLToPath(import.meta.url));
+  for (;;) {
+    const candidat = join(dir, 'node_modules', 'typescript', 'lib', 'typescript.js');
+    if (existsSync(candidat)) return createRequire(candidat)(candidat); // parent = typescript itself, not this repository
+    const haut = dirname(dir);
+    if (haut === dir) return require('typescript');
+    dir = haut;
+  }
+}
+const ts = chargerTypeScript();
 
 const SEP = ' > ';
 
@@ -103,7 +120,8 @@ const HARNAIS = /^src\/e2e\/(harnais[^/]*\.ts|fixtures\/.*)$/;
 
 /**
  * AD-niveau-3: paths no page reaches that touch no screen. Matched by path, after the import graph
- * (a server module a page imports is reached, hence not here). `rust/` is deliberately absent.
+ * (a server module a page imports is reached, hence not here). `rust/` is here for what no `wasm:*` node links
+ * (AD-touches-5): a module no page loads, the Cargo files when no page loads any; the graph decides first.
  */
 export const HORS_ECRAN = [
   (f) => f.startsWith('docs/'),
@@ -111,6 +129,9 @@ export const HORS_ECRAN = [
   (f) => f.startsWith('.agent/'),
   (f) => f.startsWith('.github/'),
   (f) => f.startsWith('scripts/'),
+  (f) => f.startsWith('rust/'),
+  (f) => f === 'frontend/src/wasm/charger.ts', // the loader follows the ordinary graph (AD-touches-5): reached by a page it touches that page, else no screen
+  (f) => f.startsWith('frontend/src/wasm/essai/'), // the proof page of the Wasm path (AD-rust-7), served by its test only
   (f) => f.endsWith('.test.ts'), // a screen test is handled before this list
   (f) => f.startsWith('src/') && !f.startsWith('src/e2e/'),
 ];
@@ -127,16 +148,94 @@ export function estTestEcran(f) { return TEST_ECRAN.test(f); }
 
 const EXTENSIONS = ['', '.ts', '.tsx', '.css', '/index.ts', '/index.tsx'];
 
-/** Relative specifiers of a source: `import … from`, `import '…'`, `export … from`, `import('…')`. */
-export function specifieurs(source) {
-  const res = [
-    /\b(?:import|export)\s+(?:type\s+)?[^'"`;]*?\bfrom\s*(['"])([^'"\n]+)\1/g,
-    /\bimport\s*(['"])([^'"\n]+)\1/g,
-    /\bimport\s*\(\s*(['"])([^'"\n]+)\1\s*\)/g,
-  ];
-  const out = new Set();
-  for (const re of res) for (const m of source.matchAll(re)) if (m[2].startsWith('.')) out.add(m[2]);
-  return [...out];
+const SOURCE_JS = /\.(mjs|js)$/;
+const SOURCE = /\.(tsx?|mjs|js)$/;
+
+function nomDe(n) { return n.text ?? n.escapedText; }
+
+function nomsLies(nom, sortie) {
+  if (nom.kind === ts.SyntaxKind.Identifier) { sortie.add(nom.text); return; }
+  for (const e of nom.elements) if (e.name) nomsLies(e.name, sortie);
+}
+
+/**
+ * AD-touches-1: what a source declares, read with the TypeScript parser (a comment, a string or a template
+ * that looks like an import is not one).
+ * - `imports`: edges `{ spec, noms }`, `noms` = the named symbols taken, or `true` for « all » (side effect,
+ *   default, namespace, `import()`, `import x = require()`); type-only imports are not edges (AD-touches-3).
+ * - `reexports`: `{ spec, type, star }`, `{ spec, type, paires: [[original, exported]] }` or `{ spec, type, ns }`.
+ * - `exportes`: names this file declares; `doute`: a form the parser cannot enumerate (`export =`).
+ * - `modules`: literal names of `chargerModule('<m>')` calls; `modulesTous`: a call whose name is not literal (AD-touches-5).
+ * - `globs`: `import.meta.glob` calls, `{ motifs }` (strings) or `{ motifs: null }` when not literal (AD-touches-4).
+ */
+export function analyser(source, fichier = 'x.ts') {
+  const genre = /\.tsx$/.test(fichier) ? ts.ScriptKind.TSX : SOURCE_JS.test(fichier) ? ts.ScriptKind.JS : ts.ScriptKind.TS;
+  const sf = ts.createSourceFile(fichier, source, ts.ScriptTarget.Latest, false, genre);
+  const out = { imports: [], reexports: [], exportes: new Set(), doute: false, globs: [], types: [], modules: [], modulesTous: false };
+  const K = ts.SyntaxKind;
+  const exporte = (n) => (ts.canHaveModifiers(n) ? ts.getModifiers(n) ?? [] : []).some((m) => m.kind === K.ExportKeyword);
+  const defaut = (n) => (ts.canHaveModifiers(n) ? ts.getModifiers(n) ?? [] : []).some((m) => m.kind === K.DefaultKeyword);
+  for (const s of sf.statements) {
+    if (s.kind === K.ImportDeclaration && ts.isStringLiteralLike(s.moduleSpecifier)) {
+      const spec = s.moduleSpecifier.text;
+      const c = s.importClause;
+      if (!c) { out.imports.push({ spec, noms: true }); continue; }
+      if (c.isTypeOnly) { out.types.push(spec); continue; }
+      if (c.name || (c.namedBindings && c.namedBindings.kind === K.NamespaceImport)) { out.imports.push({ spec, noms: true }); continue; }
+      const elements = c.namedBindings ? c.namedBindings.elements : [];
+      const valeurs = elements.filter((e) => !e.isTypeOnly);
+      if (elements.length && !valeurs.length) { out.types.push(spec); continue; } // every specifier typed: erased by the build
+      out.imports.push({ spec, noms: new Set(valeurs.map((e) => nomDe(e.propertyName ?? e.name))) });
+    } else if (s.kind === K.ImportEqualsDeclaration) {
+      const r = s.moduleReference;
+      if (r.kind === K.ExternalModuleReference && ts.isStringLiteralLike(r.expression)) out.imports.push({ spec: r.expression.text, noms: true });
+      if (exporte(s)) out.exportes.add(s.name.text);
+    } else if (s.kind === K.ExportDeclaration) {
+      const c = s.exportClause;
+      if (s.moduleSpecifier && ts.isStringLiteralLike(s.moduleSpecifier)) {
+        const spec = s.moduleSpecifier.text;
+        const type = !!s.isTypeOnly;
+        if (type) out.types.push(spec);
+        if (!c) out.reexports.push({ spec, type, star: true });
+        else if (c.kind === K.NamespaceExport) { out.reexports.push({ spec, type, ns: nomDe(c.name) }); out.exportes.add(nomDe(c.name)); }
+        else {
+          const paires = c.elements.map((e) => [nomDe(e.propertyName ?? e.name), nomDe(e.name), type || e.isTypeOnly]);
+          for (const p of paires) out.exportes.add(p[1]);
+          out.reexports.push({ spec, type, paires });
+        }
+      } else if (c && c.kind === K.NamedExports) {
+        for (const e of c.elements) out.exportes.add(nomDe(e.name));
+      }
+    } else if (s.kind === K.ExportAssignment) {
+      if (s.isExportEquals) out.doute = true; else out.exportes.add('default');
+    } else if (exporte(s)) {
+      if (defaut(s)) out.exportes.add('default');
+      else if (s.kind === K.VariableStatement) for (const d of s.declarationList.declarations) nomsLies(d.name, out.exportes);
+      else if (s.name) out.exportes.add(nomDe(s.name));
+    }
+  }
+  const visiter = (n) => {
+    if (n.kind === K.CallExpression) {
+      const e = n.expression;
+      if (e.kind === K.ImportKeyword) {
+        const a = n.arguments[0];
+        if (a && ts.isStringLiteralLike(a)) out.imports.push({ spec: a.text, noms: true });
+      } else if (e.kind === K.Identifier && e.text === 'chargerModule') {
+        const a = n.arguments[0];
+        if (a && ts.isStringLiteralLike(a)) out.modules.push(a.text); else out.modulesTous = true;
+      } else if (ts.isPropertyAccessExpression(e) && e.name.text === 'glob' && ts.isMetaProperty(e.expression)
+        && e.expression.keywordToken === K.ImportKeyword) {
+        const a = n.arguments[0];
+        let motifs = null;
+        if (a && ts.isStringLiteralLike(a)) motifs = [a.text];
+        else if (a && ts.isArrayLiteralExpression(a) && a.elements.every((x) => ts.isStringLiteralLike(x))) motifs = a.elements.map((x) => x.text);
+        out.globs.push({ motifs });
+      }
+    }
+    ts.forEachChild(n, visiter);
+  };
+  visiter(sf);
+  return out;
 }
 
 function normaliser(chemin) {
@@ -158,27 +257,156 @@ export function resoudreImport(spec, depuis, existants) {
   return null;
 }
 
-/** AD-niveau-2: screen name → set of files its page reaches (itself included), read from the sources. */
+/** A glob (`*`, `**`, `?`, `{a,b}`) as an anchored regex over a normalised path. */
+export function globVersRegex(motif) {
+  let re = '';
+  let accolades = 0;
+  for (let i = 0; i < motif.length; i++) {
+    const c = motif[i];
+    if (c === '*') {
+      if (motif[i + 1] === '*') {
+        i++;
+        if (motif[i + 1] === '/') { i++; re += '(?:.*/)?'; } else re += '.*';
+      } else re += '[^/]*';
+    } else if (c === '?') re += '[^/]';
+    else if (c === '{') { accolades++; re += '(?:'; }
+    else if (c === '}' && accolades) { accolades--; re += ')'; }
+    else if (c === ',' && accolades) re += '|';
+    else re += c.replace(/[.+^$()|[\]\\]/g, '\\$&');
+  }
+  return new RegExp(`^${re}$`);
+}
+
+/** Files a glob call loads (AD-touches-4): its patterns resolved from `depuis`, `!` subtracting; not literal = the whole folder. */
+export function fichiersDuGlob(motifs, depuis, fichiers) {
+  const dossier = depuis.split('/').slice(0, -1).join('/');
+  if (!motifs) return fichiers.filter((f) => f !== depuis && (dossier === '' || f.startsWith(dossier + '/')));
+  const resolu = (m) => (m.startsWith('.') ? normaliser(dossier + '/' + m) : null);
+  const garder = [];
+  const retirer = [];
+  for (const m of motifs) {
+    const neg = m.startsWith('!');
+    const r = resolu(neg ? m.slice(1) : m);
+    if (r === null) return fichiersDuGlob(null, depuis, fichiers); // not resolvable from here: in doubt, the folder
+    (neg ? retirer : garder).push(globVersRegex(r));
+  }
+  return fichiers.filter((f) => garder.some((re) => re.test(f)) && !retirer.some((re) => re.test(f)));
+}
+
+const CHARGEUR = 'frontend/src/wasm/charger.ts';
+const MODULE_RUST = /^rust\/modules\/([^/]+)\//;
+/** The directory `rust/modules/battlemap-core` holds the crate `battlemap_core`: the loader and the glue name it with underscores (`chargerModule` only accepts `[a-z0-9_]`). */
+const nomDeModule = (dossier) => dossier.replace(/-/g, '_');
+const GLUE_RUST = /^rust\/pkg\/([^/]+)\//;
+const CARGO = ['rust/Cargo.toml', 'rust/Cargo.lock', 'rust/rust-toolchain.toml'];
+
+/** AD-touches-5: the `wasm:<m>` nodes a file is linked to (its literal `chargerModule` calls, its imports of the glue); the loader names every module in one table and links to none. */
+function noeudsWasm(f, a, modulesConnus) {
+  if (f === CHARGEUR) return [];
+  const noms = new Set(a.modules);
+  if (a.modulesTous) modulesConnus.forEach((m) => noms.add(m));
+  const dossier = f.split('/').slice(0, -1).join('/');
+  for (const spec of [...a.imports.map((i) => i.spec), ...a.reexports.filter((r) => !r.type).map((r) => r.spec)]) {
+    if (!spec.startsWith('.')) continue;
+    const m = GLUE_RUST.exec(normaliser(dossier + '/' + spec) ?? '');
+    if (m) noms.add(m[1]);
+  }
+  return [...noms].map((m) => `wasm:${m}`);
+}
+
+/** AD-niveau-2 and AD-touches-1 to 5: screen name → set of files its page reaches (itself included), read from the sources. */
 export function grapheDesPages(fichiers, lire = (f) => readFileSync(f, 'utf8')) {
+  return lireGraphe(fichiers, lire).graphe;
+}
+
+/**
+ * The graph and the `ecartes`: files a page sees only through a link the build erases or a symbol it does not
+ * import (type-only import, unused member of a barrel). They touch no screen, instead of the « unknown path » default.
+ */
+export function lireGraphe(fichiers, lire) {
   const existants = new Set(fichiers);
-  const suivants = new Map();
-  const voisins = (f) => {
-    if (!suivants.has(f)) {
-      const cibles = /\.(tsx?|mjs|js)$/.test(f)
-        ? specifieurs(lire(f)).map((s) => resoudreImport(s, f, existants)).filter(Boolean)
-        : [];
-      suivants.set(f, cibles);
-    }
-    return suivants.get(f);
+  const analyses = new Map();
+  const analyse = (f) => {
+    if (!analyses.has(f)) analyses.set(f, SOURCE.test(f) ? analyser(lire(f), f) : null);
+    return analyses.get(f);
   };
+  const cible = (spec, f) => (spec.startsWith('.') ? resoudreImport(spec, f, existants) : null);
+  const exports_ = new Map();
+  /** Names a module exports, following its re-exports; `doute` when a link cannot be enumerated. */
+  const exportsDe = (f) => {
+    if (exports_.has(f)) return exports_.get(f);
+    const res = { noms: new Set(), doute: false };
+    exports_.set(f, res); // a cycle sees the partial answer
+    const a = analyse(f);
+    if (!a) return res;
+    a.exportes.forEach((n) => res.noms.add(n));
+    if (a.doute) res.doute = true;
+    for (const r of a.reexports) {
+      if (!r.star) continue;
+      const t = cible(r.spec, f);
+      if (!t || !analyse(t)) { res.doute = true; continue; }
+      const e = exportsDe(t);
+      e.noms.forEach((n) => { if (n !== 'default') res.noms.add(n); });
+      if (e.doute) res.doute = true;
+    }
+    return res;
+  };
+  const modulesConnus = new Set(fichiers.map((f) => MODULE_RUST.exec(f)?.[1]).filter(Boolean).map(nomDeModule));
   const graphe = new Map();
   for (const [nom, page] of ecransDe(fichiers)) {
-    const vus = new Set([page]);
-    const pile = [page];
-    while (pile.length) for (const g of voisins(pile.pop())) if (!vus.has(g)) { vus.add(g); pile.push(g); }
-    graphe.set(nom, vus);
+    const demande = new Map(); // file → Set of names demanded, or true (all)
+    const demander = (f, noms) => {
+      const cur = demande.get(f);
+      let delta;
+      if (cur === true) return;
+      if (!cur) { demande.set(f, noms === true ? true : new Set(noms)); delta = noms; }
+      else if (noms === true) { demande.set(f, true); delta = true; }
+      else { delta = new Set([...noms].filter((n) => !cur.has(n))); if (!delta.size) return; delta.forEach((n) => cur.add(n)); }
+      const a = analyse(f);
+      if (!a) return;
+      if (!cur) {
+        for (const i of a.imports) { const t = cible(i.spec, f); if (t) demander(t, i.noms); }
+        for (const g of a.globs) for (const t of fichiersDuGlob(g.motifs, f, fichiers)) demander(t, true);
+        for (const w of noeudsWasm(f, a, modulesConnus)) demander(w, true);
+      }
+      const tous = delta === true;
+      const dispo = tous ? null : exportsDe(f);
+      // A symbol no module of the chain declares: in doubt, every re-export is followed.
+      const doute = !tous && [...delta].some((n) => !dispo.noms.has(n));
+      for (const r of a.reexports) {
+        if (r.type) continue;
+        const t = cible(r.spec, f);
+        if (!t) continue;
+        if (r.star) {
+          if (tous || doute || dispo.doute || [...delta].some((n) => exportsDe(t).noms.has(n) || exportsDe(t).doute)) demander(t, delta);
+        } else if (r.ns !== undefined) {
+          if (tous || doute || delta.has(r.ns)) demander(t, true);
+        } else {
+          const pris = r.paires.filter(([, exp, type]) => !type && (tous || doute || delta.has(exp)));
+          if (pris.length) demander(t, new Set(pris.map(([orig]) => orig)));
+        }
+      }
+    };
+    demander(page, true);
+    graphe.set(nom, new Set(demande.keys()));
   }
-  return graphe;
+  // Everything the pages see with no filter: every import, type-only ones and every re-export included.
+  const vusTous = new Set();
+  const pile = [...ecransDe(fichiers).values()];
+  while (pile.length) {
+    const f = pile.pop();
+    if (vusTous.has(f)) continue;
+    vusTous.add(f);
+    const a = analyse(f);
+    if (!a) continue;
+    const specs = [...a.imports.map((i) => i.spec), ...a.reexports.map((r) => r.spec), ...a.types];
+    for (const spec of specs) { const t = cible(spec, f); if (t) pile.push(t); }
+    for (const g of a.globs) pile.push(...fichiersDuGlob(g.motifs, f, fichiers));
+  }
+  const utiles = new Set();
+  for (const v of graphe.values()) v.forEach((f) => utiles.add(f));
+  const ecartes = new Set([...vusTous].filter((f) => !utiles.has(f)));
+  return { graphe, ecartes };
 }
 
 /** AD-niveau-4: the screens a screen test names in its leading `// ecrans: a, b` line; null when it has none. */
@@ -201,16 +429,19 @@ export function ecransDeclares(source, ecransConnus, fichier = '') {
 /** The screens touched by the changed files `touches` (AD-niveau-2 and 3): a Set of screen names. */
 export function ecransTouches(touches, fichiers, lire) {
   const ecrans = ecransDe(fichiers);
-  const graphe = grapheDesPages(fichiers, lire);
+  const { graphe, ecartes } = lireGraphe(fichiers, lire);
   const touchesTous = new Set(ecrans.keys());
   const atteints = new Set();
   for (const f of touches) {
     if (HARNAIS.test(f)) { touchesTous.forEach((n) => atteints.add(n)); continue; }
     if (TEST_ECRAN.test(f)) continue; // selected itself, touches no screen
-    const lies = [...graphe].filter(([, vus]) => vus.has(f)).map(([n]) => n);
+    const noeud = MODULE_RUST.exec(f);
+    const atteint = (vus) => (noeud ? vus.has(`wasm:${nomDeModule(noeud[1])}`) : CARGO.includes(f) ? [...vus].some((v) => v.startsWith('wasm:')) : vus.has(f));
+    const lies = [...graphe].filter(([, vus]) => atteint(vus)).map(([n]) => n);
     if (lies.length) { lies.forEach((n) => atteints.add(n)); continue; }
     const m = PAGE.exec(f);
     if (m) { atteints.add(m[1]); continue; } // a deleted page
+    if (ecartes.has(f)) continue; // seen by a page only through an erased type link or a symbol it does not import
     if (HORS_ECRAN.some((regle) => regle(f))) continue;
     touchesTous.forEach((n) => atteints.add(n)); // unknown path: when in doubt, we play
   }
@@ -227,9 +458,10 @@ export function choisirTestsEcran(touches, fichiers, lire = (f) => readFileSync(
     .filter((f) => TEST_ECRAN.test(f))
     .filter((f) => {
       const declares = ecransDeclares(lire(f), connus, f); // an unknown name is an error, chosen or not
+      if (declares === null) throw new Error(`${f}: a screen test with no « // ecrans: » line (AD-touches-6); run scripts/proposer-ecrans.mjs and keep its line.`);
       if (modifies.has(f)) return true;
       if (!atteints.size) return false;
-      return declares === null || declares.some((n) => atteints.has(n));
+      return declares.some((n) => atteints.has(n));
     })
     .sort();
 }

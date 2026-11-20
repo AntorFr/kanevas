@@ -37,10 +37,10 @@ function choisir(niveau: 'ecrans' | 'fiche', fichier: string): string[] {
 }
 
 describe('niveaux ecrans et fiche : le choix sur une base réelle', () => {
-  test('l’écran Administration touché : ses tests et ceux sans déclaration, pas ceux d’un autre écran', () => {
+  test('l’écran Administration touché : ses tests, pas ceux d’un autre écran', () => {
     const l = choisir('ecrans', 'frontend/src/ecrans/administration.tsx');
     assert.ok(l.includes('src/e2e/administration-badge-entete.test.ts'), 'un test qui déclare administration');
-    assert.ok(l.includes('src/e2e/cartes-formulaire.test.ts'), 'un test sans ligne « // ecrans: » joue pour tout écran touché');
+    assert.ok(!l.includes('src/e2e/cartes-formulaire.test.ts'), 'un test qui ne déclare que cartes ne joue plus pour Administration');
     assert.ok(!l.includes('src/e2e/recherche-avancee-ecran.test.ts'), 'un test qui ne déclare que recherche');
     assert.ok(l.every((f) => /^src\/e2e\/[^/]+\.test\.ts$/.test(f)), 'ecrans: ne liste que des tests d’écran');
   });
@@ -48,7 +48,7 @@ describe('niveaux ecrans et fiche : le choix sur une base réelle', () => {
   test('l’écran Administration touché : fiche = la suite moins les tests d’écran non touchés', () => {
     const l = choisir('fiche', 'frontend/src/ecrans/administration.tsx');
     assert.ok(l.includes('src/e2e/administration-badge-entete.test.ts'));
-    assert.ok(l.includes('src/e2e/cartes-formulaire.test.ts'));
+    assert.ok(!l.includes('src/e2e/cartes-formulaire.test.ts'));
     assert.ok(!l.includes('src/e2e/recherche-avancee-ecran.test.ts'));
     assert.ok(l.includes('src/scripts-tests/niveaux-tests.test.ts'), 'les tests hors écran restent');
   });

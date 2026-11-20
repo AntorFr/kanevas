@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of the Pièces jointes block of E-9 (kanevas-fj-ecran-pieces), written from the
 // task's exit criterion and docs/ecrans.md « le bloc Pièces jointes », not from the code. Real
 // server in stub mode (AD-55), real Chromium; Antor is the GM, Léa and Teo players.

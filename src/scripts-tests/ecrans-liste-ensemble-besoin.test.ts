@@ -12,7 +12,8 @@ import { after, before, describe, test } from 'node:test';
 
 const RACINE = resolve('.');
 // Run inside `node --test`: without this the nested runner reports to its parent.
-const { NODE_TEST_CONTEXT: _ctx, NODE_PATH: _np, ...ENV } = process.env;
+// NODE_PATH stays: the runner image carries typescript there (/opt/sdlc-node, AD-touches-1), the copy has no node_modules.
+const { NODE_TEST_CONTEXT: _ctx, ...ENV } = process.env;
 let copie: string;
 let base: string;
 const git = (...a: string[]) => execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...a], { cwd: copie, encoding: 'utf8' }).trim();
@@ -85,7 +86,7 @@ describe('ecrans_liste : le besoin, commande déclarée jouée sans node_modules
     assert.ok(l.includes('src/e2e/reglages-membres-reessayer.test.ts'));
     assert.ok(!l.includes('src/e2e/accueil-cartes-largeur.test.ts'));
     assert.ok(!l.includes('src/e2e/recherche-avancee-ecran.test.ts'));
-    assert.ok(l.length > 0 && l.length < 256, 'a part of the screen tests, not all');
+    assert.ok(l.length > 0 && l.length < 270, 'a part of the screen tests, not all');
   });
 
   test('docs/ ajouté à un changement de page ne change pas la liste', () => {

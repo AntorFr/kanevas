@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-rv-lore-suivi, from its exit criterion and docs/ecrans.md § « Partout »:
 // every successful action on E-8 gives its toast (E-6 and E-7 are retired, AD-127) (gabarit « « <objet> » <participe> »),
 // a failure gives none, and the toast never takes the focus. Real server in stub mode + Chromium.
