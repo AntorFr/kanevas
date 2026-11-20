@@ -32,6 +32,8 @@ async function monde(activer = true) {
   const S = one(app, 'SELECT id FROM systemes_jeu WHERE nom = ?', "Système d'essai").id as number;
   const antor = one(app, "SELECT id FROM comptes WHERE username = 'antor'").id as number;
   // the seed already switches the tool on for the system of « Éneria d'essai »
+  // the seed also switches generation on, which depends on the library: off before it, on after it
+  if (!activer) poserActivation(app.db, antor, { niveau: 'systeme', id: S }, 'battlemap/generation', false);
   poserActivation(app.db, antor, { niveau: 'systeme', id: S }, 'battlemap/assets', activer);
   const R = `/api/univers/${E}/outils/battlemap`;
   const req = (method: M, who: string | null, url: string, payload?: any, headers: Record<string, string> = {}) =>
