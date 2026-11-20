@@ -1,13 +1,12 @@
 # The MCP door (`/mcp`)
 
 An external agent reads and writes a universe through a [Model Context Protocol](https://modelcontextprotocol.io)
-server, with an API token (E-23). Decisions: AD-145 and `AD-mcp-1` to `AD-mcp-6` in `ARCHITECTURE.md`; stories B-82 to
-B-85, B-96, B-97.
+server, with an API token (E-23). Decisions: AD-145 and `AD-mcp-1` to `AD-mcp-6` in `ARCHITECTURE.md`; stories B-96 to B-98 and B-107 to B-111.
 
 ## Address, transport, guard
 
-- `POST /mcp` and `POST /mcp/:univers` (`:univers` is the universe **key**). Streamable HTTP, stateless, JSON
-  answers; `GET` and `DELETE` answer 405. A request with an `Origin` header is refused 403; the body is capped at 1 MiB.
+- `POST /mcp` and `POST /mcp/:univers` (`:univers` is the universe **key**; its numeric id is accepted too, as everywhere). Streamable HTTP, stateless, JSON
+  answers; `GET` and `DELETE` answer 405 (after the guard: 401 without a valid token). A client sends `Accept: application/json, text/event-stream`, else the SDK answers « Not Acceptable ». A request with an `Origin` header is refused 403; the body is capped at 1 MiB.
 - `Authorization: Bearer kvs_…`. Unknown, revoked or expired token (or a tool-scoped token): 401 `jeton_invalide`.
   A universe the token does not reach, or where the account has no role: 404, like an unknown one. The session cookie
   is ignored.
@@ -25,6 +24,8 @@ an optional `curseur` and return `curseur` (`null` on the last page).
 |---|---|
 | `lecture` and `ecriture` | `chercher`, `chercher_texte`, `lire_fiche`, `lire_section`, `mentions`; `lire_historique` for a GM account |
 | `ecriture` only | `creer_fiche`, `modifier_entete`, `ecrire_section`, `supprimer_section`, `relier`, `modifier_relation`, `retirer_relation` |
+
+Read parameters (`tools/list` gives them all): `chercher` and `chercher_texte` take `mots` and optionally `type`, `curseur`; `lire_fiche` and `mentions` take `fiche` (`mentions` also `curseur`); `lire_section` takes `fiche`, `sectionId`; `lire_historique` takes `fiche` (optional) and `curseur`.
 
 A `lecture` token does not list the write tools; calling one by name answers `lecture_seule`.
 Not offered on this door: `generer_image`, `proposer_mise_a_jour`, `modifier_section`, `ajouter_a_section`.
@@ -71,3 +72,17 @@ A successful write also returns an `evenement` (`type`, `libelle`, `cible`), as 
 
 Every write of the door is recorded in the history (E-24) with origin `mcp`, the account, and the **token** (its id and
 name), set by the door around the call — a tool never sets it. `lire_historique` (GM account, any level) reads it.
+
+## Try it in stub mode
+
+On a fresh database (`KANEVAS_STUB=1 npm start`, see the README), the stub token `kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue`
+(`JETON_BOUCHON`) reaches « Essai Kanka »; `PORT` is the one you started on (3001 by default):
+
+```bash
+curl -s -X POST http://localhost:3001/mcp \
+  -H 'Authorization: Bearer kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue' \
+  -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"lister_univers","arguments":{}}}'
+```
+
+It answers each universe with its `adresse` (`/mcp/<key>`); post `tools/list` there for the tools and their parameters.
