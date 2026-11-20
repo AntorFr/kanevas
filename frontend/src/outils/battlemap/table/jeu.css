@@ -1,0 +1,67 @@
+/* E-29 — play. Tokens only (docs/charte.md). */
+main.principal:has(> .jeu), body.asst-present main.principal:has(> .jeu) { max-width: none; padding: 0; }
+.jeu { display: flex; flex-direction: column; height: calc(100dvh - 52px - var(--h-bouchon, 0px)); min-height: 420px; background: var(--fond); position: relative; }
+.jeu-haut { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-3); min-height: 52px; padding: var(--e-2) var(--e-4); border-bottom: 1px solid var(--bord); flex: none; }
+.jeu-titre { font-family: var(--police-titre); font-size: var(--t-18); margin: 0; flex: 1 1 160px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jeu-statut { display: inline-flex; align-items: center; gap: var(--e-2); font-size: var(--t-13); color: var(--texte-2); }
+.jeu-point { width: 8px; height: 8px; border-radius: 50%; background: var(--texte-3); }
+.jeu-statut.connecte .jeu-point { background: var(--table); }
+.jeu-statut.perdue { color: var(--texte); }
+.jeu-bande { padding: var(--e-2) var(--e-4); background: var(--surface-2); border-bottom: 1px solid var(--bord); font-size: var(--t-13); flex: none; }
+.jeu-corps { display: flex; flex: 1; min-height: 0; position: relative; }
+.jeu-centre { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; }
+.jeu-centre > .canevas-zone { flex: 1; min-height: 0; }
+.jeu-modes { display: flex; flex-wrap: wrap; gap: var(--e-2); padding: var(--e-2) var(--e-3); border-bottom: 1px solid var(--bord); background: var(--surface); }
+.jeu-suivre { position: absolute; right: var(--e-3); bottom: 76px; z-index: 5; padding: var(--e-1) var(--e-3); background: var(--surface); border: 1px solid var(--bord-fort); border-radius: var(--rayon-panneau); }
+.jeu-barre-fiche { position: absolute; left: var(--e-3); bottom: var(--e-3); z-index: 5; }
+.jeu-panneau { padding-bottom: var(--e-3); }
+.jeu-pions { display: flex; flex-direction: column; gap: var(--e-2); }
+.jeu-pions-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.jeu-pion { display: flex; align-items: center; gap: var(--e-1); min-height: 44px; border-bottom: 1px solid var(--bord); }
+.jeu-pion.choisi { background: var(--accent-fond); }
+.jeu-pion.cache .jeu-pion-nom { color: var(--texte-3); }
+.jeu-pion-corps { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; background: transparent; border: 0; color: var(--texte); font: inherit; text-align: left; padding: var(--e-1) var(--e-2); cursor: pointer; }
+.jeu-pion-nom { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-13); }
+.jeu-pion-corps small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texte-3); font-size: var(--t-12); }
+.jeu-ajout { display: flex; flex-direction: column; gap: var(--e-3); min-width: min(420px, 80vw); }
+.jeu-ajout-choix { display: flex; flex-direction: column; gap: var(--e-2); }
+.jeu-fiche { width: min(360px, 100%); flex: none; overflow-y: auto; border-left: 1px solid var(--bord); background: var(--surface); }
+.jeu-fiche-corps { padding: var(--e-3); display: flex; flex-direction: column; gap: var(--e-3); }
+@media (max-width: 768px) {
+  .jeu-fiche { position: absolute; z-index: 36; top: 0; right: 0; bottom: 0; box-shadow: var(--ombre-flottant); }
+  .jeu .editeur-panneau { position: absolute; z-index: 35; top: 0; right: 0; bottom: 0; width: min(320px, 92%); box-shadow: var(--ombre-flottant); }
+  .jeu .editeur-panneau[hidden] { display: none; }
+}
+/* 390 px: the tool column is a horizontal bar of 44 px targets at the bottom; the panel a bottom sheet. */
+@media (max-width: 600px) {
+  .jeu-haut { padding: var(--e-2) var(--e-3); gap: var(--e-2); }
+  .jeu-corps { flex-direction: column-reverse; }
+  .jeu .colonne-outils { width: 100%; flex-direction: row; justify-content: space-around; border-right: 0; border-top: 1px solid var(--bord); padding: var(--e-1); }
+  .jeu .colonne-outils .outil-cellule { width: 44px; height: 44px; }
+  .jeu .colonne-outils-pied { margin-top: 0; width: auto; flex-direction: row; }
+  .jeu .colonne-outils-pied .interrupteur { flex-direction: row; min-height: 44px; }
+  .jeu .editeur-panneau { top: auto; left: 0; width: 100%; max-height: 60%; border-top: 1px solid var(--bord-fort); }
+}
+.jeu-haut .outil-md, .jeu-haut .bouton { white-space: nowrap; }
+/* Calques tab: one row per layer, the switch at the right of the name (its label is read, not shown). */
+.jeu-calques .editeur-calques-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-1); }
+.jeu-calque { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); padding: 0 var(--e-2); }
+.jeu-calque .editeur-calque-nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jeu-calque .interrupteur { width: 64px; min-height: 44px; flex: none; justify-content: center; padding: 0; }
+.jeu-calque .interrupteur-libelle { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* The floating assistant button sits bottom right: the zoom and the follow switch stack above it. */
+.jeu .canevas-zoom { bottom: 76px; }
+.jeu .canevas-zoom-bouton { width: 44px; height: 44px; }
+.jeu-suivre { bottom: 132px; }
+@media (max-width: 600px) {
+  /* The tool bar is at the bottom: the page leaves a strip under the screen for the assistant button. */
+  body.asst-present .jeu { height: calc(100dvh - 52px - var(--h-bouchon, 0px) - 72px); }
+  .jeu .canevas-zoom { bottom: var(--e-3); }
+  .jeu-suivre { bottom: calc(var(--e-3) + 56px); }
+}
+
+/* « Ajouter un pion » ▸ Asset : editeur.css is not loaded here, so the library grid is laid out by this screen.
+   The window stays within the viewport; the grid scrolls inside it and « Ajouter » is always reachable. */
+.jeu-ajout { max-height: calc(100vh - 8rem); overflow-y: auto; }
+.jeu-ajout .editeur-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--e-2); max-height: 30vh; overflow-y: auto; }
+.jeu-ajout .editeur-grille img { max-width: 100%; height: auto; max-height: 96px; object-fit: contain; }

@@ -1,3 +1,4 @@
+// ecrans: vue-ensemble
 // Black-box test of kanevas-refonte-visuelle, from docs/ecrans.md « États des composants du cadre »:
 //   menu du compte / connexion perdue -> « il s'ouvre ; le thème change (il est local) ; « Se déconnecter » reste actif ».
 // Named failure: the menu (or its theme choices, or its sign-out) is disabled/hidden while the connection is lost.

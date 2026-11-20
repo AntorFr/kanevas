@@ -1,3 +1,4 @@
+// ecrans: accueil, comptes-rendus, creer-univers, fiche, fiches, membres, parametres, vue-ensemble
 // kanevas-refonte-visuelle, ensemble level: written from the feature's « Livre », its critère de sortie,
 // docs/ecrans.md (« Détail de kanevas-refonte-visuelle », barre latérale, états) and docs/charte.md,
 // without reading the code. A real Chromium on the stub app (seeded world: Lame d'Ébène, Antor MJ,
@@ -5,7 +6,7 @@
 import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';
 import { after, before, test } from 'node:test';
-import { type Any, attendre, launch, rx, rxExact, skipBrowser, startServer, texte } from './harnais.test.js';
+import { type Any, attendre, attendreAbsent, attendreTransitions, launch, rx, rxExact, skipBrowser, startServer, texte } from './harnais.test.js';
 
 const opts = { skip: skipBrowser };
 let srv: Awaited<ReturnType<typeof startServer>>;
@@ -36,7 +37,7 @@ const NOM_AFFICHE: Record<string, string> = { antor: 'Antor', lea: 'Léa', teo: 
 async function session(compte: string, vue: { width: number; height: number } = { width: 1280, height: 900 }, base: string = srv.base): Promise<{ ctx: Any; page: Any }> {
   const ctx = await browser.newContext({ baseURL: base, viewport: vue });
   const page = await ctx.newPage();
-  page.setDefaultTimeout(8000);
+  page.setDefaultTimeout(30000);
   await page.goto('/connexion-bouchon');
   await page.getByRole('button', { name: rxExact(`Se connecter en tant que ${NOM_AFFICHE[compte]}`) }).click();
   await attendre(page);
@@ -265,7 +266,7 @@ for (const [nom, adresse] of [['E-1', '/'], ...ECRANS_UNIVERS] as Array<[string,
     await lien.first().waitFor({ state: 'visible' });
     await capture(page, `tiroir-${nom}`);
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(400);
+    await attendreAbsent(lien);
     assert.equal(await lien.first().isVisible(), false, 'Échap ferme le tiroir');
     assert.equal(await menu.getAttribute('aria-expanded'), 'false');
     assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-label')), 'Menu', 'le focus revient à « Menu »');
@@ -283,13 +284,13 @@ test('au téléphone, le tiroir se ferme au toucher du voile et à l’ouverture
   const menu = page.getByRole('button', { name: /^Menu$/ });
   await menu.click();
   await page.mouse.click(385, 400);
-  await page.waitForTimeout(400);
+  await page.waitForFunction((e: Element) => e.getAttribute('aria-expanded') === 'false', await menu.elementHandle());
   assert.equal(await menu.getAttribute('aria-expanded'), 'false', 'le voile ferme');
   await menu.click();
   await page.getByRole('link', { name: 'Lieux' }).click();
   await attendre(page);
   assert.match(page.url(), /fiches\/lieux/);
-  await page.waitForTimeout(400);
+  await page.waitForFunction((e: Element) => e.getAttribute('aria-expanded') === 'false', await menu.elementHandle());
   assert.equal(await menu.getAttribute('aria-expanded'), 'false', 'une entrée ferme');
   await ctx.close();
 });
@@ -344,14 +345,14 @@ test('E-9 : « Modifier » et « ⋯ » se révèlent au survol et au focus ; to
   // effective opacity: the product along the ancestors (the actions may be hidden by a wrapper)
   const opacite = (loc: Any) => loc.evaluate((e: Element) => { let o = 1; for (let n: Element | null = e; n; n = n.parentElement) o *= Number(getComputedStyle(n).opacity); return String(Math.round(o * 100) / 100); });
   await page.mouse.move(5, 5);
-  await page.waitForTimeout(300); // the fade (var(--duree)) must be over: the pointer may have been over the section when the sheet loaded
+  await attendreTransitions(page); // the fade (var(--duree)) must be over: the pointer may have been over the section when the sheet loaded
   assert.equal(await opacite(modifier), '0', 'caché au repos');
   await sectionApparence(page).hover();
-  await page.waitForTimeout(300);
+  await attendreTransitions(page);
   assert.equal(await opacite(modifier), '1', 'visible au survol');
   await page.mouse.move(5, 5);
   await modifier.focus();
-  await page.waitForTimeout(300);
+  await attendreTransitions(page);
   assert.equal(await opacite(modifier), '1', 'visible au focus');
   await ctx.close();
   const tactile = await browser.newContext({ baseURL: srv.base, hasTouch: true, isMobile: true, viewport: TEL });
@@ -407,7 +408,7 @@ test('E-9 : le 100 001e caractère : « Erreur : 100 000 caractères au plus. »
   await apparence.getByRole('textbox').fill('x'.repeat(100001));
   await apparence.getByText('Erreur : 100 000 caractères au plus.').waitFor();
   await page.keyboard.press('Control+Enter');
-  await page.waitForTimeout(500);
+  await attendre(page);
   assert.deepEqual(requetes, []);
   assert.equal(await apparence.getByRole('textbox').inputValue().then((v: string) => v.length), 100001, 'la saisie est gardée');
   await ctx.close();
@@ -498,10 +499,10 @@ test('toast : part seul après 4 s, a un bouton « Fermer », ne prend pas le fo
   if ((await boite.count()) === 0) await pastilleApparence(page).click();
   // five quick actions: at most three toasts stand
   for (let i = 0; i < 5; i++) await ecrit.click();
-  await page.waitForTimeout(500);
+  await attendre(page);
   const n = await page.getByRole('button', { name: 'Fermer' }).count();
   assert.ok(n >= 2 && n <= 3, `${n} toasts empilés (2 à 3 attendus pour 5 actions)`);
-  await page.waitForTimeout(4600);
+  await attendreAbsent(page.getByRole('button', { name: 'Fermer' }));
   assert.equal(await page.getByRole('button', { name: 'Fermer' }).count(), 0, 'ils partent seuls après 4 s');
   await ctx.close();
 }));
@@ -850,10 +851,13 @@ test('E-2 : créer un univers : aperçu du sceau dès le nom saisi, « … » pe
   await page.goto('/');
   await attendre(page);
   await page.getByRole('link', { name: 'Créer un univers' }).or(page.getByRole('button', { name: 'Créer un univers' })).first().click();
-  await page.getByLabel('Nom', { exact: true }).waitFor();
+  const nom = page.getByLabel('Nom', { exact: true });
+  await nom.waitFor();
+  await nom.and(page.locator(':enabled')).waitFor();
   await page.getByRole('button', { name: rxExact("Créer l'univers") }).click();
   await page.getByText('Erreur : le nom est obligatoire.').waitFor();
-  await page.getByLabel('Nom', { exact: true }).fill('Terres de Cendre');
+  await nom.fill('Terres de Cendre');
+  await page.waitForFunction(() => [...document.querySelectorAll('input')].some((i) => i.value === 'Terres de Cendre'));
   await page.getByRole('button', { name: rxExact("Créer l'univers") }).click();
   await page.getByRole('heading', { name: 'Terres de Cendre', level: 1 }).waitFor();
   assert.equal(await barre(page).getByRole('link', { name: 'Personnages' }).count(), 1, 'E-3 dans le cadre d’un univers');

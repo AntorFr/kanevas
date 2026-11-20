@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches, recherche
 // Black-box tests of kanevas-fiches-liees-disparu-ecran, written from the task's exit criterion and
 // docs/ecrans.md « the gone mark ». Real server in stub mode (with the seed) + real Chromium; the words
 // expected are literals from the doc's table. Waits are on what the screen shows, never networkidle.

@@ -26,3 +26,7 @@
 @media (max-width: 760px) { .cartes { grid-template-columns: minmax(0, 1fr); } }
 /* Neutral hex-grid tile of a galaxy (no image, E-10). */
 .carte-vignette.hexagones { background-image: radial-gradient(circle at 50% 50%, var(--bord-fort) 0 2px, transparent 2px), radial-gradient(circle at 0 0, var(--bord-fort) 0 2px, transparent 2px); background-size: 16px 14px, 16px 14px; background-position: 0 0, 8px 7px; }
+.carte-creations { display: flex; gap: var(--e-2); flex-wrap: wrap; align-items: center; }
+.carte-composee { display: flex; flex-direction: column; gap: var(--e-3); }
+.carte-composee-taille { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
+.carte-composee .actions { display: flex; gap: var(--e-2); flex-wrap: wrap; }

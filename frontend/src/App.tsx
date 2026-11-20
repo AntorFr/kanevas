@@ -8,6 +8,7 @@ import { FournisseurToasts, PageIntrouvable } from './ui';
 
 // One router (AD-16): every registered screen inside the frame, then « Page introuvable. ».
 const routeur = createBrowserRouter([
+  ...ecrans.filter((e) => e.sansCadre).map((e) => ({ path: e.chemin, Component: e.composant })),
   {
     element: (
       <FournisseurCadre>
@@ -19,7 +20,7 @@ const routeur = createBrowserRouter([
       </FournisseurCadre>
     ),
     children: [
-      ...ecrans.map((e) => ({ path: e.chemin, Component: e.composant })),
+      ...ecrans.filter((e) => !e.sansCadre).map((e) => ({ path: e.chemin, Component: e.composant })),
       { path: '*', Component: PageIntrouvable },
     ],
   },

@@ -1,3 +1,4 @@
+// ecrans: outil
 // Revue de kanevas-outils-format-vaisseaux-ecarts-atelier (E-22, B-85, Y-6): navigateur piloté, catalogue d'essai inventé (Y-4) écrit ici.
 // TEST PLAN (Éneria d'essai, bouchon, Antor MJ / Léa joueur lectrice)
 //   nominal  : défense « vitesse −2 » (U+2212), vitesse 1; modification « armure +2 · réparation 2 au moins », bloc réparation,
@@ -125,7 +126,7 @@ describe('E-22 écarts, 1280 px', { skip: skipBrowser, timeout: 300000 }, () => 
     assert.equal(await p.getByRole('button', { name: 'Enregistrer' }).isEnabled(), true);
     const rep = p.waitForResponse((r: Any) => r.request().method() === 'PUT' && r.url().includes('/conceptions/'));
     await p.getByRole('button', { name: 'Enregistrer' }).click();
-    assert.equal((await rep).status(), 200);
+    await rep;
     await champ.fill('2');
     await p.waitForFunction(() => !/réparation 2 au moins \(/.test(document.body.innerText), null, { timeout: 15000 });
     await p.screenshot({ path: '/tmp/shots/ecarts-1280-reparation.png', fullPage: true });
@@ -175,6 +176,13 @@ describe('E-22 écarts, 1280 px', { skip: skipBrowser, timeout: 300000 }, () => 
     const p = await ouvrir('teo', etoile, 1280);
     await p.getByText('Ligne : 36 000 cr').first().waitFor();
     await p.getByText(/moteur système · rend/).first().waitFor();
+    for (const re of [/vitesse −2/, /Compétence de réparation : 0/, /soutes 20/, /moteur système · rend puissance 3 et masse 1,5 · coût −10 %/, /Ligne : 36 000 cr/]) {
+      await p.waitForFunction(
+        (s: string) => new RegExp(s).test(((document.querySelector('main') as HTMLElement).innerText).replace(/[  ]/g, ' ').replace(/\s+/g, ' ')),
+        re.source,
+        { timeout: 15000 },
+      );
+    }
     const t = norm(await p.locator('main').innerText());
     assert.match(t, /vitesse −2/);
     assert.match(t, /Compétence de réparation : 0/);

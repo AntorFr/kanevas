@@ -1,4 +1,4 @@
-import { Eye, EyeOff, ImagePlus, Plus, ChevronDown, X } from 'lucide-react';
+import { Ellipsis, Eye, EyeOff, ImagePlus, Plus, ChevronDown, Trash2, X } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -6,9 +6,10 @@ import { ErreurApi, appeler, lire, useConnexionPerdue } from '../api';
 import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { Bouton, Champ, Chargement, ErreurChargement, Pastille, PageIntrouvable } from '../ui';
+import { Bouton, Champ, Chargement, ErreurChargement, Menu, Pastille, PageIntrouvable } from '../ui';
 import './ecrans.css';
 import './cartes/cartes.css';
+import { NouvelleCarteComposee, SupprimerCarteComposee } from './cartes/carte-composee';
 import { Vignette } from './cartes/vignette';
 import { adresseCarte, estCarteOutil, FORMES, type Carte, type CarteOutil, type PageCartes } from './cartes/commun';
 
@@ -32,6 +33,8 @@ function Cartes() {
   const [echec, setEchec] = useState(false);
 
   const [ouvert, setOuvert] = useState(false);
+  const [composee, setComposee] = useState(false);
+  const [aSupprimer, setASupprimer] = useState<CarteOutil | null>(null);
   const [titre, setTitre] = useState('');
   const [forme, setForme] = useState<string>('illustree');
   const [fond, setFond] = useState<File | null>(null);
@@ -62,6 +65,9 @@ function Cartes() {
     return <ErreurChargement onReessayer={recharger} />;
   }
   const mj = univers.valeur.role === 'mj';
+  // The composed map has its own window (E-10, AD-155): it is not a choice of the inline form.
+  const estComposee = (f: { module: string; outil: string }) => f.module === 'battlemap' && f.outil === 'cartes';
+  const formeComposee = formes.some(estComposee);
 
   async function chargerSuite() {
     if (suiteEnCours || suivant === null) return;
@@ -191,9 +197,33 @@ function Cartes() {
         </div>
       )}
       {mj && !ouvert && (
-        <Bouton variante="principal" icone={Plus} ecrit onClick={() => setOuvert(true)}>
-          Nouvelle carte
-        </Bouton>
+        <div className="carte-creations">
+          {formeComposee ? (
+            // One entry « Nouvelle carte ▸ … » (E-10): the composed map opens its window, the others the inline form.
+            <Menu
+              etiquette="Nouvelle carte"
+              declencheur={<><Plus size={16} aria-hidden="true" /> Nouvelle carte <ChevronDown size={16} aria-hidden="true" /></>}
+              aligne="debut"
+              desactive={perdue}
+              entrees={[
+                { libelle: 'Carte composée', onChoisir: () => setComposee(true) },
+                { libelle: 'Carte illustrée, graphe…', onChoisir: () => setOuvert(true) },
+              ]}
+            />
+          ) : (
+            <Bouton variante="principal" icone={Plus} ecrit onClick={() => setOuvert(true)}>
+              Nouvelle carte
+            </Bouton>
+          )}
+        </div>
+      )}
+      {composee && (
+        <NouvelleCarteComposee universId={id!} onFermer={() => setComposee(false)}
+          onCreee={(adresse) => { setComposee(false); navigate(adresse); }} />
+      )}
+      {aSupprimer && (
+        <SupprimerCarteComposee universId={id!} carte={aSupprimer} onFermer={() => setASupprimer(null)}
+          onSupprimee={() => { setASupprimer(null); recharger(); }} />
       )}
       {mj && ouvert && (
         <form className="carte-formulaire" onSubmit={creer} noValidate aria-label="Nouvelle carte">
@@ -216,7 +246,7 @@ function Cartes() {
           >
             <option value="illustree">Carte illustrée</option>
             <option value="graphe">Graphe</option>
-            {formes.map((f) => <option key={`${f.module}/${f.outil}`} value={`${f.module}/${f.outil}`}>{f.libelle}</option>)}
+            {formes.filter((f) => !estComposee(f)).map((f) => <option key={`${f.module}/${f.outil}`} value={`${f.module}/${f.outil}`}>{f.libelle}</option>)}
           </Champ>
           {forme === 'illustree' && (
             <div>
@@ -259,15 +289,23 @@ function Cartes() {
             <li key={`outil-${c.outil.module}-${c.outil.outil}-${c.id}`} className="carte-ligne">
               <span className="carte-vignette neutre hexagones" aria-hidden="true" />
               <div className="carte-corps">
-                <Link to={c.adresse}>{c.titre}</Link>
+                {/* The GM's address is the editor's (the server gives it to the GM only); a player opens the play screen of a composed map (E-29). */}
+                {c.adresse ? <Link to={c.adresse}>{c.titre}</Link>
+                  : c.largeur !== undefined && c.outil.module === 'battlemap' ? <Link to={`/univers/${id}/outils/battlemap/cartes/${c.id}/jeu`}>{c.titre}</Link>
+                  : <span>{c.titre}</span>}
+                {c.largeur !== undefined && c.hauteur !== undefined && <small>{c.largeur} × {c.hauteur} cases</small>}
               </div>
               <div className="carte-etat">
-                <Pastille sens="neutre">Galaxie</Pastille>
+                <Pastille sens="neutre">{c.largeur !== undefined ? 'Carte composée' : 'Galaxie'}</Pastille>
                 {mj && c.visible === false && <Pastille sens="mj">MJ seul</Pastille>}
                 {mj && c.visible !== undefined && c.version !== undefined && (
                   <Bouton petit icone={c.visible ? EyeOff : Eye} ecrit enCours={enCoursVisible === c.id} onClick={() => void basculerOutil(c)}>
                     {c.visible ? 'Cacher aux joueurs' : 'Rendre visible'}
                   </Bouton>
+                )}
+                {mj && c.largeur !== undefined && c.outil.module === 'battlemap' && (
+                  <Menu etiquette={`Autres actions sur « ${c.titre} »`} icone={Ellipsis}
+                    entrees={[{ libelle: 'Supprimer…', icone: Trash2, danger: true, onChoisir: () => setASupprimer(c) }]} />
                 )}
                 {messageOutil?.id === c.id && (
                   <span className="echec" role="alert">{messageOutil.texte}{' '}

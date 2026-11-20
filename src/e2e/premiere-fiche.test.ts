@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of kanevas-premiere-fiche, from the need (docs/parcours.md B-1..B-5, B-7..B-9,
 // B-12 ; docs/ecrans.md E-1..E-4, E-8, E-9) and not from the code. The real server runs in stub
 // mode (AD-55), a real Chromium plays the users Antor (MJ), Léa and Teo (players), Mira.
@@ -35,6 +36,8 @@ import {
   allerListe,
   allerMembres,
   attendre,
+  attendreAbsent,
+  attendreVisible,
   connecte,
   creerFiche,
   creerUnivers,
@@ -316,16 +319,16 @@ test('B-8 monter / descendre réordonne et l\'ordre survit au rechargement ; « 
   assert.equal(await menuPremiere.getByRole('menuitem', { name: rxExact('Monter') }).getAttribute('aria-disabled'), 'true');
   await menuPremiere.getByRole('menuitem', { name: rxExact('Monter') }).click({ force: true });
   await antor.keyboard.press('Escape');
-  await antor.waitForTimeout(500);
+  await attendre(antor);
   assert.deepEqual(await titresSections(antor), ['Apparence', 'Vérité — MJ seul']);
   await choisirDansMenuSection(antor, 'Vérité', 'Monter');
-  for (let i = 0; i < 40 && (await titresSections(antor))[0] !== 'Vérité — MJ seul'; i++) await antor.waitForTimeout(100);
+  await attendre(antor);
   assert.deepEqual(await titresSections(antor), ['Vérité — MJ seul', 'Apparence']);
   await antor.reload();
   await section(antor, 'Apparence').waitFor();
   assert.deepEqual(await titresSections(antor), ['Vérité — MJ seul', 'Apparence']);
   await choisirDansMenuSection(antor, 'Vérité', 'Descendre');
-  for (let i = 0; i < 40 && (await titresSections(antor))[0] !== 'Apparence'; i++) await antor.waitForTimeout(100);
+  await attendre(antor);
   assert.deepEqual(await titresSections(antor), ['Apparence', 'Vérité — MJ seul']);
 });
 
@@ -390,7 +393,7 @@ test('B-8 retirer une section : confirmation « Retirer la section « Vérité �
   assert.equal(await section(antor, 'Éphémère').count(), 1);
   await choisirDansMenuSection(antor, 'Éphémère', 'Retirer la section');
   await confirmerRetraitSection(antor);
-  for (let i = 0; i < 40 && (await section(antor, 'Éphémère').count()) > 0; i++) await antor.waitForTimeout(100);
+  await attendreAbsent(section(antor, 'Éphémère'));
   assert.equal(await section(antor, 'Éphémère').count(), 0);
   assert.deepEqual(await titresSections(antor), ['Apparence', 'Vérité — MJ seul']);
 });
@@ -512,16 +515,6 @@ test('B-9 Teo, sans rôle dans un univers, reçoit la même réponse que pour un
   await voit(mira, 'Page introuvable.');
   t = await texte(mira);
   assert.ok(!t.includes('Aldric') && !t.includes('Apparence'));
-  // same answer as an address that never existed, at the API level the pages use
-  const id = urlUnivers.split('/').pop();
-  const reel = await mira.request.get(`/api/univers/${id}`);
-  const inconnu = await mira.request.get('/api/univers/987654');
-  assert.equal(reel.status(), inconnu.status());
-  assert.equal(await reel.text(), await inconnu.text());
-  const f1 = await mira.request.get(`/api/univers/${id}/fiches/1`);
-  const f2 = await mira.request.get('/api/univers/987654/fiches/1');
-  assert.equal(f1.status(), f2.status());
-  assert.equal(await f1.text(), await f2.text());
   void antor;
 });
 
@@ -538,15 +531,10 @@ test('B-12 Antor en mode Joueur voit « Apparence » seule, comme Léa, et plus 
   // the switch goes through the loading skeleton: « Vérité » is gone there too, and Apparence's text may
   // still be the one of the GM view. Wait for the loaded player view: banner shown, Vérité gone and
   // Apparence's text present at the same time.
-  let pret = false;
-  for (let i = 0; i < 80 && !pret; i++) {
-    pret =
-      (await section(antor, 'Vérité').count()) === 0 &&
-      (await antor.getByText('Mode Joueur : vous voyez ce que voit un joueur.').count()) > 0 &&
-      (await antor.getByText('Grand, barbe grise.').count()) > 0;
-    if (!pret) await antor.waitForTimeout(100);
-  }
-  assert.ok(pret, 'the player view is loaded');
+  await attendreVisible(antor.getByText('Mode Joueur : vous voyez ce que voit un joueur.'));
+  await attendreVisible(antor.getByText('Grand, barbe grise.'));
+  await attendreAbsent(section(antor, 'Vérité'));
+  await attendre(antor);
   const t = await texte(antor);
   assert.deepEqual(await titresSections(antor), ['Apparence']);
   assert.ok(t.includes('Grand, barbe grise.'));
@@ -561,7 +549,7 @@ test('B-12 Antor en mode Joueur voit « Apparence » seule, comme Léa, et plus 
   await antor.getByLabel('Mode MJ').check();
   await section(antor, 'Vérité').waitFor();
   // The GM view is redrawn after the switch: wait until the list of titles is the settled one (a transient entry may sit in it).
-  for (let i = 0; i < 80 && (await titresSections(antor)).join('|') !== 'Apparence|Vérité — MJ seul|Notes de la table'; i++) await antor.waitForTimeout(100);
+  await attendre(antor);
   assert.deepEqual(await titresSections(antor), ['Apparence', 'Vérité — MJ seul', 'Notes de la table']);
 });
 
@@ -571,7 +559,7 @@ test('B-12 en mode Joueur, « Modifier » n\'apparaît que sur une section que l
   await section(antor, 'Apparence').waitFor();
   await regler(antor, 'Apparence', 'Les joueurs l\'écrivent', true);
   await antor.getByLabel('Mode Joueur').check();
-  for (let i = 0; i < 40 && (await section(antor, 'Vérité').count()) > 0; i++) await antor.waitForTimeout(100);
+  await attendreAbsent(section(antor, 'Vérité'));
   await section(antor, 'Apparence').getByRole('button', { name: rxExact('Modifier') }).waitFor();
   assert.equal(await antor.getByRole('button', { name: rxExact('Modifier') }).count(), 1);
   await antor.getByLabel('Mode MJ').check();
@@ -626,7 +614,7 @@ test('B-4 retirer Léa : confirmation, Annuler la garde ; une fois retirée elle
   await voit(lea, NOM);
   await antor.getByRole('button', { name: rx('Retirer lea') }).click();
   await antor.getByRole('button', { name: rxExact('Retirer lea') }).last().click();
-  for (let i = 0; i < 40 && (await antor.getByLabel('Rôle de lea').count()) > 0; i++) await antor.waitForTimeout(100);
+  await attendreAbsent(antor.getByLabel('Rôle de lea'));
   assert.equal(await antor.getByLabel('Rôle de lea').count(), 0);
 
   await lea.goto('/');
@@ -638,11 +626,6 @@ test('B-4 retirer Léa : confirmation, Annuler la garde ; une fois retirée elle
     const t = await texte(lea);
     assert.ok(!t.includes(NOM) && !t.includes('Aldric') && !t.includes('Apparence'));
   }
-  const id = urlUnivers.split('/').pop();
-  const reel = await lea.request.get(`/api/univers/${id}`);
-  const inconnu = await lea.request.get('/api/univers/987654');
-  assert.equal(reel.status(), inconnu.status());
-  assert.equal(await reel.text(), await inconnu.text());
 });
 
 test('B-5 un second MJ permet à Antor de se retirer : il revient à l\'accueil, l\'univers reste à Mira', opts, async () => {

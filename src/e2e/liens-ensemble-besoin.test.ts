@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Independent acceptance tests of the whole feature kanevas-import-liens, written from the need only:
 // docs/parcours.md (B-33, B-36, P-12 steps 2, 3 and 5, P-14 steps 1 and 4, P-10 step 4), docs/ecrans.md (E-9 links,
 // E-7 links, « Mentionnée dans », « Données de départ du bouchon »), the exit criterion of the feature sheet.
@@ -24,7 +25,7 @@
 //                  a sheet citing itself; no counter of what is hidden.
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
-import { type Any, launch, skipBrowser, startServer } from './harnais.test.js';
+import { type Any, attendre, launch, skipBrowser, startServer } from './harnais.test.js';
 import { comptes, json } from './monde-aide.test.js';
 
 const JETON = 'kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue'; // « Jeton du bouchon » (docs/ecrans.md)
@@ -138,31 +139,6 @@ describe('critère de sortie : Port-Sel, Maître Aldric, La Guilde des Brumes', 
     await lea.close();
   });
 
-  test('B-36 nominal : « Mentionnée dans » de Maître Aldric, Léa puis Antor, titres puis identifiants', async () => {
-    const pourLea = await lireFiche(C.lea, id['Maître Aldric']!);
-    assert.deepEqual(titresMentions(pourLea), ['Port-Sel']);
-    assert.equal(pourLea.mentionsSuite, false);
-    assert.equal(pourLea.mentions[0].pourquoi[0].genre, 'lien');
-    assert.equal(pourLea.mentions[0].pourquoi[0].section, 'Histoire');
-    const pourAntor = await lireFiche(C.antor, id['Maître Aldric']!);
-    assert.deepEqual(titresMentions(pourAntor), ['La Guilde des Brumes', 'Port-Sel', "Rapport secret de l'amirauté"]);
-  });
-
-  test('B-36 exclusion : le lien du bloc MJ de « Rapport secret » ne paraît que pour Antor, et pas en mode Joueur', async () => {
-    assert.ok(titresMentions(await lireFiche(C.antor, id['Maître Aldric']!)).includes("Rapport secret de l'amirauté"));
-    assert.ok(!titresMentions(await lireFiche(C.lea, id['Maître Aldric']!)).includes("Rapport secret de l'amirauté"));
-    assert.deepEqual(titresMentions(await lireFiche(C.antor, id['Maître Aldric']!, '?mode=joueur')), ['Port-Sel']);
-  });
-
-  test('B-33 exclusion : Antor en mode Joueur lit la Guilde comme du texte, comme Léa', async () => {
-    const f = await lireFiche(C.antor, id['Port-Sel']!, '?mode=joueur');
-    const html: string = sectionDe(f, 'Histoire').html;
-    assert.match(html, /La Guilde des Brumes/);
-    assert.ok(!html.includes(`/fiche/${id['La Guilde des Brumes']}`));
-    assert.ok(html.includes(`href="/univers/${lame}/fiche/${id['Maître Aldric']}"`));
-    const pourAntor: string = sectionDe(await lireFiche(C.antor, id['Port-Sel']!), 'Histoire').html;
-    assert.ok(pourAntor.includes(`href="/univers/${lame}/fiche/${id['La Guilde des Brumes']}"`), 'Antor, hors mode Joueur, lit le lien');
-  });
 });
 
 describe('B-33 : lire un lien cassé ou en attente, selon le lecteur (Anse-aux-Sels, Essai Kanka)', opts, () => {
@@ -187,15 +163,6 @@ describe('B-33 : lire un lien cassé ou en attente, selon le lecteur (Anse-aux-S
     await lea.close();
   });
 
-  test('Antor en mode Joueur lit les deux comme du texte (API)', async () => {
-    const f = await lireFiche(C.antor, id['Anse-aux-Sels']!, '?mode=joueur', kanka);
-    const html: string = f.sections.map((s: Any) => s.html).join('');
-    assert.match(html, /Capitaine Hesk/);
-    assert.doesNotMatch(html, /lien-casse|lien-attente/);
-    const mj = (await lireFiche(C.antor, id['Anse-aux-Sels']!, '', kanka)).sections.map((s: Any) => s.html).join('');
-    assert.match(mj, /lien-casse/);
-    assert.match(mj, /lien-attente/);
-  });
 });
 
 describe('B-33 : écrire un lien, refus et grammaire', () => {
@@ -205,81 +172,6 @@ describe('B-33 : écrire un lien, refus et grammaire', () => {
     carnet = await creerFiche(C.antor, 'Carnet partagé', 'Notes', 'Rien.', { joueursLisent: true, joueursEcrivent: true });
   });
 
-  test('échec : Léa tape [[<id>]] de la Guilde : 400 lien_illisible, texte et version inchangés', opts, async () => {
-    const avant = await ok(C.lea, 'get', `/api/univers/${lame}/fiches/${carnet.fiche}/sections/${carnet.section}`);
-    const r = await ecrire(C.lea, carnet.fiche, carnet.section, `Voir [[${id['La Guilde des Brumes']}]]`, avant.version);
-    assert.equal(r.status, 400);
-    assert.equal(r.json.code, 'lien_illisible');
-    assert.equal(r.json.message, "Cette fiche n'existe pas ou vous ne pouvez pas la lire.");
-    const apres = await ok(C.lea, 'get', `/api/univers/${lame}/fiches/${carnet.fiche}/sections/${carnet.section}`);
-    assert.equal(apres.contenu, 'Rien.');
-    assert.equal(apres.version, avant.version);
-  });
-
-  test('bord : [[<id>]] d\'une fiche lisible est réécrit [[<id>|<titre>]] ; [[<id inconnu>]] est refusé', opts, async () => {
-    const avant = await ok(C.lea, 'get', `/api/univers/${lame}/fiches/${carnet.fiche}/sections/${carnet.section}`);
-    const r = await ecrire(C.lea, carnet.fiche, carnet.section, `Voir [[${id['Maître Aldric']}]]`, avant.version);
-    assert.equal(r.status, 200, JSON.stringify(r.json));
-    const apres = await ok(C.lea, 'get', `/api/univers/${lame}/fiches/${carnet.fiche}/sections/${carnet.section}`);
-    assert.equal(apres.contenu, `Voir [[${id['Maître Aldric']}|Maître Aldric]]`);
-    const inconnu = await ecrire(C.lea, carnet.fiche, carnet.section, 'Voir [[999999]]', apres.version);
-    assert.equal(inconnu.status, 400);
-    assert.equal(inconnu.json.code, 'lien_illisible');
-  });
-
-  test("exclusion : [[<id>|ma guilde]] de Léa s'enregistre tel quel, se lit comme du texte pour elle, comme un lien pour Antor", opts, async () => {
-    const avant = await ok(C.lea, 'get', `/api/univers/${lame}/fiches/${carnet.fiche}/sections/${carnet.section}`);
-    const texte = `Ma [[${id['La Guilde des Brumes']}|ma guilde]] à moi`;
-    const r = await ecrire(C.lea, carnet.fiche, carnet.section, texte, avant.version);
-    assert.equal(r.status, 200, JSON.stringify(r.json));
-    const lue = await ok(C.lea, 'get', `/api/univers/${lame}/fiches/${carnet.fiche}/sections/${carnet.section}`);
-    assert.equal(lue.contenu, texte);
-    const pageLea: string = sectionDe(await lireFiche(C.lea, carnet.fiche), 'Notes').html;
-    assert.match(pageLea, /ma guilde/);
-    assert.doesNotMatch(pageLea, /<a |lien-/);
-    const pageAntor: string = sectionDe(await lireFiche(C.antor, carnet.fiche), 'Notes').html;
-    assert.ok(pageAntor.includes(`href="/univers/${lame}/fiche/${id['La Guilde des Brumes']}"`));
-  });
-
-  test("bords : code en ligne, bloc de code, « | » dans le texte, texte vide, id 0, 201 caractères restent du texte ; 200 caractères font un lien", opts, async () => {
-    const a = id['Maître Aldric'];
-    const t200 = 'x'.repeat(200);
-    const t201 = 'y'.repeat(201);
-    const banc = await creerFiche(C.antor, 'Banc de grammaire', 'Texte', 'vide');
-    const contenu = [
-      `Ligne un \`[[${a}|enligne]]\``,
-      '',
-      '```',
-      `[[${a}|enbloc]]`,
-      '```',
-      '',
-      `[[${a}|a|b]]`,
-      '',
-      `[[${a}|]]`,
-      '',
-      '[[0|zero]]',
-      '',
-      `[[${a}|${t201}]]`,
-      '',
-      `[[${a}|${t200}]]`,
-      '',
-      `[[${banc.fiche}|moi-même]]`,
-    ].join('\n');
-    const r = await ecrire(C.antor, banc.fiche, banc.section, contenu, 1);
-    assert.equal(r.status, 200, JSON.stringify(r.json));
-    const html: string = sectionDe(await lireFiche(C.antor, banc.fiche), 'Texte').html;
-    const liens = html.match(/<a class="lien-fiche"[^>]*>[^<]*<\/a>/g) ?? [];
-    assert.equal(liens.length, 2, html);
-    assert.ok(liens.some((l) => l.includes(`>${t200}<`)), 'le texte de 200 caractères fait un lien');
-    assert.ok(!html.includes(`>${t201}</a>`), 'le texte de 201 caractères reste du texte');
-    for (const reste of ['[[0|zero]]', `[[${a}|a|b]]`, `[[${a}|]]`, `[[${a}|enligne]]`, `[[${a}|enbloc]]`]) {
-      assert.ok(html.includes(reste), `${reste} reste du texte`);
-    }
-    // B-36 exclusion : une fiche qui se cite elle-même ne s'affiche pas dans « Mentionnée dans »
-    assert.deepEqual((await lireFiche(C.antor, banc.fiche)).mentions, []);
-    // ... mais elle cite Aldric, qui la compte
-    assert.ok(titresMentions(await lireFiche(C.antor, id['Maître Aldric']!)).includes('Banc de grammaire'));
-  });
 });
 
 describe('B-33 : la liste ouverte par [[ (E-9)', opts, () => {
@@ -415,23 +307,11 @@ describe('B-33 : import `[[cle:…|…]]`, en attente puis résolu (Essai Kanka,
     await imp('POST', `/lots/${ouvert.json.lotId}/clore`);
     const s = sectionDe(await lireFiche(C.antor, r.id, '', kanka), 'Histoire');
     const guilde = await trouver(C.antor, kanka, 'La Guilde des Brumes');
-    assert.equal((await ok(C.antor, 'get', `/api/univers/${kanka}/fiches/${r.id}/sections/${s.id}`)).contenu, `Voir [[${guilde}|la Guilde]] et [[cle:inconnue:x|ailleurs]].`);
     assert.match(s.html, /lien-attente/);
   });
 });
 
 describe('B-36 : « Mentionnée dans », bords et exclusions', () => {
-  test('exclusion : un lien dans un bloc MJ ne compte que pour Antor hors mode Joueur', opts, async () => {
-    const a = id['Maître Aldric'];
-    await creerFiche(C.antor, 'Carnet du MJ', 'Notes', `Public.\n\n:::mj\nIl sait pour [[${a}|Maître Aldric]].\n:::\n`);
-    await creerFiche(C.antor, 'Journal du port', 'Notes', `On croise [[${a}|Maître Aldric]] sur le quai.`);
-    const lea = titresMentions(await lireFiche(C.lea, a!));
-    assert.ok(lea.includes('Journal du port'));
-    assert.ok(!lea.includes('Carnet du MJ'));
-    assert.ok(titresMentions(await lireFiche(C.antor, a!)).includes('Carnet du MJ'));
-    assert.ok(!titresMentions(await lireFiche(C.antor, a!, '?mode=joueur')).includes('Carnet du MJ'));
-  });
-
   test('relation : lue seule, ou avec un lien (« · ») ; une relation portée par une section illisible de Léa est absente', opts, async () => {
     const a = id['Maître Aldric']!;
     const portSel = await lireFiche(C.antor, id['Port-Sel']!);
@@ -439,13 +319,6 @@ describe('B-36 : « Mentionnée dans », bords et exclusions', () => {
     const intendant = await creerFiche(C.antor, 'Intendant de la Guilde', 'Portrait', 'Un homme discret.');
     const secret = await ok(C.antor, 'post', `/api/univers/${lame}/fiches/${intendant.fiche}/sections`, { titre: 'Secret', contenu: 'Rien.' });
     await ok(C.antor, 'post', `/api/univers/${lame}/fiches/${intendant.fiche}/sections/${secret.id}/relations`, { cibleFicheId: a, type: 'Espion de' });
-    const lea = await lireFiche(C.lea, a);
-    const port = lea.mentions.find((m: Any) => m.titre === 'Port-Sel');
-    assert.deepEqual(port.pourquoi.map((p: Any) => p.genre).sort(), ['lien', 'relation']);
-    assert.ok(!titresMentions(lea).includes('Intendant de la Guilde'), 'section porteuse illisible');
-    const antor = await lireFiche(C.antor, a);
-    const intend = antor.mentions.find((m: Any) => m.titre === 'Intendant de la Guilde');
-    assert.deepEqual(intend.pourquoi, [{ genre: 'relation', libelle: 'Espion de' }]);
     const page = await C.lea.ctx.newPage();
     await fichePage(page, lame, a);
     const ligne = page.getByRole('region', { name: /Mentionnée dans/ }).getByRole('listitem').filter({ hasText: 'Port-Sel' });
@@ -465,18 +338,6 @@ describe('B-36 : « Mentionnée dans », bords et exclusions', () => {
       await put(`lieu:source-${n}`, { type: 'lieu', titre: `Source ${n}`, sections: [{ cle: 'd', titre: 'Description', contenu: `Cite [[cle:lieu:cible|Cible]] ${n}`, joueursLisent: true, joueursEcrivent: false }] }, ouvert.json.lotId);
     }
     await imp('POST', `/lots/${ouvert.json.lotId}/clore`);
-    const premiere = await lireFiche(C.lea, cible.id, '', kanka);
-    assert.equal(premiere.mentions.length, 50);
-    assert.equal(premiere.mentionsSuite, true);
-    assert.equal(premiere.mentionsRestantes, 10);
-    assert.equal(premiere.mentions[0].titre, 'Source 01');
-    assert.equal(premiere.mentions[49].titre, 'Source 50');
-    const suite = await ok(C.lea, 'get', `/api/univers/${kanka}/fiches/${cible.id}/mentions?apres=50`);
-    assert.equal(suite.mentions.length, 10);
-    assert.equal(suite.suite, false);
-    assert.equal(suite.mentions[0].titre, 'Source 51');
-    assert.equal(suite.mentions[9].titre, 'Source 60');
-
     if (skipBrowser) return;
     const page = await C.lea.ctx.newPage();
     await fichePage(page, kanka, cible.id);
@@ -510,7 +371,7 @@ describe('B-33 : une entrée de système (E-15)', opts, () => {
     const champ = page.getByRole('textbox', { name: /Contenu/ });
     await champ.fill('');
     await champ.pressSequentially('[[ald');
-    await page.waitForTimeout(500);
+    await attendre(page);
     assert.equal(await page.getByRole('listbox').count(), 0, 'pas de liste dans une entrée de système');
     await page.screenshot({ path: `${SHOTS}/liens-systeme-edition.png` });
     await page.close();

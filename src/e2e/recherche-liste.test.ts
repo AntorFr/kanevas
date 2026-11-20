@@ -1,3 +1,4 @@
+// ecrans: fiches
 // Black-box tests of kanevas-rc-ecran-recherche, written from docs/ecrans.md "E-8 — la recherche
 // dans un type" and the task's exit criterion (B-11, B-29, P-6 step 2). Real server in stub mode
 // (AD-55) + real Chromium; expected values are literals from the doc. Screenshots go to /tmp.
@@ -30,9 +31,8 @@ async function chercher(page: Any, dans: string, saisie: string): Promise<void> 
   await page.getByRole('button', { name: rxExact('Chercher') }).click();
   await fini(page);
 }
-/** The search is drawn: give React a tick to start it, then wait for the loading text to go. */
+/** The search is drawn: wait for the loading text to go. */
 async function fini(page: Any): Promise<void> {
-  await page.waitForTimeout(300);
   await page.waitForFunction(() => !/Recherche…|Chargement des fiches…/.test(document.body.innerText));
   await attendre(page);
 }

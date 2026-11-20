@@ -9,6 +9,8 @@ export interface Ecran {
   /** react-router pattern, e.g. `/`, `/univers/:id`, `/univers/:id/membres`. */
   chemin: string;
   composant: ComponentType;
+  /** Outside the frame (no sidebar, no top bar): the table display (E-30). */
+  sansCadre?: boolean;
 }
 
 const modules = import.meta.glob<{ default: Ecran }>('./ecrans/*.tsx', { eager: true });

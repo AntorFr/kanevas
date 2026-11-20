@@ -1,7 +1,7 @@
-import { BookOpen, Map as Carte, Rocket, WandSparkles, type LucideIcon } from 'lucide-react';
+import { BookOpen, Images, Map as Carte, Rocket, WandSparkles, type LucideIcon } from 'lucide-react';
 import type { ComponentType } from 'react';
 
-import { lire } from '../api';
+import { ErreurApi, lire } from '../api';
 import type { PropsOutil, PropsSection } from './types';
 
 /**
@@ -40,6 +40,24 @@ export const OUTILS_CLIENT: Record<string, OutilClient> = {
       return lire(`/api/univers/${universId}/outils/swn/vaisseaux/conceptions/${encodeURIComponent(fiche)}${suffixe}`);
     },
     charger: () => import('./swn/vaisseaux'),
+  },
+  // The screen answers its own address (`ecrans/battlemap-assets.tsx`); this entry makes « Bibliothèque » show in the bar.
+  'battlemap/assets': { icone: Images, charger: () => import('./battlemap/assets') },
+  // The editor of a composed map (E-28). The map is read before the code is requested: a player, a GM in Player mode, an unknown or
+  // hidden map all end on « Page introuvable. » (the 403 of Player mode included).
+  'battlemap/cartes': {
+    icone: Carte,
+    horsBarre: true,
+    verifier: async (universId, cible, suffixe) => {
+      try {
+        const carte = await lire<{ peutEcrire: boolean }>(`/api/univers/${universId}/outils/battlemap/cartes/${encodeURIComponent(cible ?? '')}${suffixe}`);
+        if (!carte.peutEcrire || suffixe) throw new ErreurApi(404, 'Introuvable.');
+        return carte;
+      } catch (e) {
+        throw e instanceof ErreurApi && e.statut === 403 ? new ErreurApi(404, 'Introuvable.') : e;
+      }
+    },
+    charger: () => import('./battlemap/cartes'),
   },
   'essai/g': { icone: WandSparkles, charger: () => import('./essai/g') },
 };

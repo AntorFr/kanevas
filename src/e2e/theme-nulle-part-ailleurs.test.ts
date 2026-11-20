@@ -1,3 +1,4 @@
+// ecrans: cartes, comptes-rendus, fiche, fiches, membres, parametres, systemes, vue-ensemble
 // Black-box test of the exit criterion of `kanevas-refonte-visuelle`: « Le thème se règle depuis le menu
 // de l'avatar et nulle part ailleurs » (docs/ecrans.md « Détail de kanevas-refonte-visuelle », criteria).
 //
