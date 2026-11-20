@@ -59,7 +59,7 @@ const ecransDe = (f: string) => premiereLigne(f).replace(/^\/\/ ecrans:\s*/, '')
 const E2E = 'src/e2e/';
 
 describe('écrans touchés : le barrel de frontend/src/ui/index.ts (E-ecrans, Livre : barrel)', () => {
-  test('Segments, que seule la galaxie importe : seuls les tests des écrans outil et outil-cible, pas les 270', () => {
+  test('Segments, que seule la galaxie importe : seuls les tests des écrans outil et outil-cible, pas les 271', () => {
     const l = choisir('frontend/src/ui/segments.tsx');
     assert.ok(l.includes(`${E2E}vaisseaux-atelier-livre-review.test.ts`), 'un test de l’écran outil');
     for (const exclu of ['administration-badge-entete', 'membres-pastille-largeur', 'accueil-refonte', 'alias-etiquettes-e9', 'recherche-avancee-ecran']) {
@@ -103,9 +103,9 @@ describe('écrans touchés : l’éditeur d’un outil seul (équivalent de l’
 });
 
 describe('écrans touchés : Cadre.tsx touche tous les écrans', () => {
-  test('Cadre.tsx : les 270 tests d’écran', () => {
+  test('Cadre.tsx : les 271 tests d’écran', () => {
     const tous = git('ls-files', 'src/e2e').split('\n').filter((f) => f.endsWith('.test.ts')).sort();
-    assert.equal(tous.length, 270);
+    assert.equal(tous.length, 271);
     assert.deepEqual([...choisir('frontend/src/Cadre.tsx')].sort(), tous);
   });
 });
@@ -176,7 +176,7 @@ describe('écrans touchés : Rust et wasm associés aux écrans qui les chargent
   test('frontend/src/wasm/charger.ts, que nul écran ne charge : pas tous les écrans', () => {
     const l = choisir('frontend/src/wasm/charger.ts');
     // The battlemap editor core (outils/battlemap/cartes/coeur.ts) loads it, and the tool screens load the editor.
-    assert.ok(l.length < 270, `${l.length} fichiers choisis`);
+    assert.ok(l.length < 271, `${l.length} fichiers choisis`);
     for (const f of l) assert.ok(ecransDe(f).some((e) => e === 'outil' || e === 'outil-cible' || e === 'battlemap-assets'), `${f} déclare ${ecransDe(f)}`);
     assert.ok(!l.includes(`${E2E}membres-pastille-largeur.test.ts`));
   });
@@ -192,9 +192,9 @@ describe('écrans touchés : Rust et wasm associés aux écrans qui les chargent
 });
 
 describe('écrans touchés : l’en-tête // ecrans: de chaque test d’écran', () => {
-  test('les 270 tests de src/e2e/ ont leur ligne // ecrans: en première ligne', () => {
+  test('les 271 tests de src/e2e/ ont leur ligne // ecrans: en première ligne', () => {
     const fichiers = git('ls-files', 'src/e2e').split('\n').filter((f) => f.endsWith('.test.ts'));
-    assert.equal(fichiers.length, 270);
+    assert.equal(fichiers.length, 271);
     const sans = fichiers.filter((f) => !/^\/\/ ecrans: [a-z0-9-]+(, [a-z0-9-]+)*$/.test(premiereLigne(f)));
     assert.deepEqual(sans, []);
   });
@@ -222,9 +222,9 @@ describe('écrans touchés : le README dit le nombre de tests choisis et la dur�
   const readme = () => readFileSync(join(RACINE, 'README.md'), 'utf8');
   const ligne = (motif: RegExp) => readme().split('\n').find((l) => l.startsWith('|') && motif.test(l)) ?? '';
 
-  test('la ligne Cadre.tsx : 270 fichiers et 39 min', () => {
+  test('la ligne Cadre.tsx : 271 fichiers et 39 min', () => {
     const l = ligne(/Cadre\.tsx/);
-    assert.match(l, /270 files/);
+    assert.match(l, /271 files/);
     assert.match(l, /39 min/);
   });
 
