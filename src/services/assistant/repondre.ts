@@ -111,7 +111,7 @@ export async function repondre(
   }
   const transport = deps.transport ?? transportDe(config);
 
-  const catalogue = catalogueDe(db, compteId, universId, deps.images);
+  const catalogue = catalogueDe(db, compteId, universId, { porte: 'assistant', images: deps.images });
   const evenements: Evenement[] = [];
   const abort = new AbortController();
   const echeance = new Echeance(deps.delaiMs ?? DELAI_MS, () => abort.abort());

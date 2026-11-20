@@ -33,6 +33,7 @@ import {
   type FicheVue,
   type IllustrationVue,
   type PageMentions,
+  type Passage,
   type SectionRow,
   type TypeFiche,
 } from './types.js';
@@ -830,6 +831,8 @@ export function listerFiches(
     parent?: 'racine' | number;
     /** Leaves out this sheet and all its descendants (AD-129); needs `recherche`, GM outside player mode. */
     horsDe?: number;
+    /** With `recherche`: each sheet carries the passages of its readable sections that match (AD-145). */
+    extraits?: boolean;
   } = {},
 ): PageFiches {
   const role = exigerRole(db, universId, acteur.compteId);
@@ -999,6 +1002,9 @@ export function listerFiches(
       ? Buffer.from(JSON.stringify({ t: dernier.titre, i: dernier.id })).toString('base64url')
       : null;
   const mots = options.recherche === undefined ? null : motsDe(options.recherche);
+  const passages = options.extraits === true && options.recherche !== undefined
+    ? passagesDe(db, role, acteur, page.map((r) => r.id), options.recherche)
+    : null;
   const enrichie = (r: FicheRow): Fiche => {
     const e = etiquetageDe(db, r.id);
     const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur)), ...visibiliteVue(r), alias: e.alias, etiquettes: e.etiquettes };
@@ -1016,10 +1022,55 @@ export function listerFiches(
       const trouve = mots.length > 0 && !repond(r.titre, mots) ? e.alias.find((a) => repond(a, mots)) : undefined;
       if (trouve !== undefined) f.aliasTrouve = trouve;
     }
+    if (passages !== null) f.passages = passages.get(r.id) ?? [];
     return f;
   };
   if (options.parent === undefined) return { fiches: page.map(enrichie), suivant };
   return { fiches: page.map((r) => versArbre(db, role, acteur, r, enrichie(r))), suivant };
+}
+
+/**
+ * The passages of the matching sections the caller reads, per sheet (AD-145, AD-mcp-4): `snippet` of the
+ * FTS5 index over the one text column the caller already reads (`contenu_public`, or `contenu` for the GM
+ * outside player mode) — never the other, so a `:::mj` block never reaches a player. Same two guards as
+ * the search itself; the index is only read.
+ */
+function passagesDe(
+  db: Db,
+  role: Role,
+  acteur: Acteur,
+  ficheIds: number[],
+  recherche: string,
+): Map<number, Passage[]> {
+  const sortie = new Map<number, Passage[]>();
+  const match = motsRecherche(recherche);
+  if (match === null || ficheIds.length === 0) return sortie;
+  const mj = role === 'mj' && !acteur.modeJoueur;
+  const colonne = mj ? 'contenu' : 'contenu_public';
+  const indice = mj ? 2 : 1;
+  const lue = sqlSectionLisible(role, acteur, 's');
+  const coupe = (c: number) => `snippet(recherche_sections, ${c}, '**', '**', '…', 24)`;
+  const rows = db
+    .prepare(
+      `SELECT s.fiche_id AS fiche, s.id AS section, s.titre AS titre,
+              ${coupe(indice)} AS extrait, ${coupe(0)} AS extraitTitre
+         FROM recherche_sections JOIN sections s ON s.id = recherche_sections.rowid
+        WHERE recherche_sections MATCH ? AND s.fiche_id IN (SELECT value FROM json_each(?))
+          ${lue ? `AND ${lue.sql}` : ''}
+        ORDER BY s.fiche_id, s.ordre`,
+    )
+    .all(`{titre ${colonne}} : (${match})`, JSON.stringify(ficheIds), ...(lue?.params ?? [])) as {
+    fiche: number; section: number; titre: string; extrait: string; extraitTitre: string;
+  }[];
+  const plat = (t: string) => t.replace(/\s+/g, ' ').trim();
+  for (const r of rows) {
+    // The match may sit in the section title only: then the excerpt is the title, marked.
+    const extrait = r.extrait.includes('**') || !r.extraitTitre.includes('**') ? r.extrait : r.extraitTitre;
+    const liste = sortie.get(r.fiche) ?? [];
+    liste.push({ section: r.section, titre: r.titre, extrait: plat(extrait) });
+    sortie.set(r.fiche, liste);
+  }
+  return sortie;
 }
 
 /** A row of the tree: `aDesEnfants` and `dans` are computed under the caller's own reading (AD-115 (3)). */

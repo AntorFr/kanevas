@@ -254,14 +254,14 @@ test('assistant : Léa lit « Histoire » avec [Maître Aldric](fiche:id) et la 
   const port = fiche('Port-Sel');
   const ald = fiche('Maître Aldric');
   const guilde = fiche('La Guilde des Brumes');
-  const args = { ficheId: port, sectionId: section(port, 'Histoire') };
+  const args = { fiche: port, sectionId: section(port, 'Histoire') };
   const run = async (compte: string, nom: string, a: object) => {
     const cat = catalogueDe(app.db, idDe(compte), lame.id);
     const o = (cat.outils ?? cat).find((x: { nom: string }) => x.nom === nom);
     return JSON.stringify(await o.executer(a));
   };
   for (const nom of ['lire_section', 'lire_fiche']) {
-    const l = await run('lea', nom, nom === 'lire_fiche' ? { ficheId: port } : args);
+    const l = await run('lea', nom, nom === 'lire_fiche' ? { fiche: port } : args);
     assert.ok(l.includes(`[Maître Aldric](fiche:${ald})`), l);
     assert.ok(l.includes('La Guilde des Brumes'), l);
     assert.ok(!l.includes(`fiche:${guilde}`), l);

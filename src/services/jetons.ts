@@ -559,6 +559,32 @@ export function universChoisissables(db: Db, compteId: number): UniversChoisissa
     .all(compteId) as UniversChoisissable[];
 }
 
+/** Universes per page of the MCP door's `lister_univers` (AD-mcp-3). */
+export const UNIVERS_PAR_PAGE = 20;
+
+/**
+ * The universes a token reaches right now, for `lister_univers` (AD-mcp-1): its access not `aucun` and its account still a
+ * member (the level is the lesser of the two). Ordered by key; `apres` is the last key of the previous page, `suivant` the cursor.
+ */
+export function universDuJeton(
+  db: Db,
+  jeton: { id: number; compteId: number },
+  apres?: string,
+): { univers: { cle: string; nom: string; niveau: NiveauPose; role: Role }[]; suivant: string | null } {
+  const lignes = db
+    .prepare(
+      `SELECT u.id, u.cle, u.nom FROM membres m JOIN univers u ON u.id = m.univers_id
+        WHERE m.compte_id = ? AND u.cle > ? ORDER BY u.cle`,
+    )
+    .all(jeton.compteId, apres ?? '') as { id: number; cle: string; nom: string }[];
+  const atteints = lignes.flatMap((u) => {
+    const { niveau, role } = niveauEffectif(db, jeton, u.id);
+    return niveau === 'aucun' || role === null ? [] : [{ cle: u.cle, nom: u.nom, niveau, role }];
+  });
+  const page = atteints.slice(0, UNIVERS_PAR_PAGE);
+  return { univers: page, suivant: atteints.length > UNIVERS_PAR_PAGE ? page[page.length - 1]!.cle : null };
+}
+
 // ---------------------------------------------------------------------------------------------------
 // Use
 
