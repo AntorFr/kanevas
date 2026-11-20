@@ -66,7 +66,7 @@ export function LigneRelation({
   );
   if (sansFleche) {
     return (
-      <div className="relation relation-nature">
+      <div className="relation relation-nature relation-sans-fleche">
         <span className="relation-texte">
           {vers ? (
             <Link className="jeton" to={vers}>

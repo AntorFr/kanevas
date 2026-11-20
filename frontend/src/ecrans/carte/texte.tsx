@@ -1,3 +1,4 @@
+import { Eraser, Pencil, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { ErreurApi, appeler, useConnexionPerdue } from '../../api';
@@ -53,9 +54,26 @@ export function TexteCarte({ universId, base, carte, gerer, onCarte, relire }: {
   }
 
   if (!gerer && vide) return null;
+  const ajout = vide && (carte.texte ?? '') === '';
   const trop = (brouillon ?? '').length > MAX;
   return (
-    <Panneau titre="Texte">
+    <Panneau
+      titre="Texte"
+      actions={
+        gerer && !edition ? (
+          <>
+            <Bouton petit ecrit icone={ajout ? Plus : Pencil} onClick={() => setBrouillon(carte.texte ?? '')}>
+              {ajout ? 'Ajouter un texte' : 'Modifier'}
+            </Bouton>
+            {(carte.texte ?? '') !== '' && (
+              <Bouton petit ecrit icone={Eraser} enCours={enCours} onClick={() => void ecrire('', false)}>
+                Vider
+              </Bouton>
+            )}
+          </>
+        ) : undefined
+      }
+    >
       {edition ? (
         <>
           <EditeurMarkdown
@@ -104,18 +122,6 @@ export function TexteCarte({ universId, base, carte, gerer, onCarte, relire }: {
       ) : (
         <>
           {!vide && <Markdown className="texte" html={html} />}
-          {gerer && (
-            <div className="actions">
-              <Bouton petit ecrit onClick={() => setBrouillon(carte.texte ?? '')}>
-                {vide && (carte.texte ?? '') === '' ? 'Ajouter un texte' : 'Modifier'}
-              </Bouton>
-              {(carte.texte ?? '') !== '' && (
-                <Bouton petit ecrit variante="danger" enCours={enCours} onClick={() => void ecrire('', false)}>
-                  Vider
-                </Bouton>
-              )}
-            </div>
-          )}
           {issue === 'conflit' && (
             <div className="echec" role="alert">
               {CHANGE}{' '}

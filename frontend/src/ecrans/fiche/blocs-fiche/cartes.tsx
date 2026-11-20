@@ -1,8 +1,7 @@
 import { Lock, Map as IconeCarte } from 'lucide-react';
 
-import { LigneRelation, Pastille } from '../../../ui';
+import { BlocSection as BlocUi, Chargement, ErreurChargement, LigneRelation, Pastille } from '../../../ui';
 import { adresseCarte, FORMES, type Carte } from '../../cartes/commun';
-import { CadreBlocFiche } from '../bloc-fiche';
 import type { BlocFiche, PropsBlocFiche } from '../registre-blocs-fiche';
 import { useBlocFiche } from './charge';
 
@@ -16,10 +15,11 @@ const TYPES = [
 function Cartes({ universId, fiche, suffixeMode }: PropsBlocFiche) {
   const [etat, , recharger] = useBlocFiche<{ cartes: Carte[] }>(`/api/univers/${universId}/fiches/${fiche.id}/cartes${suffixeMode}`);
   if (etat.k === 'ok' && etat.valeur.cartes.length === 0) return null;
+  if (etat.k === 'chargement') return <Chargement texte="Chargement des cartes…" />;
+  if (etat.k === 'erreur') return <ErreurChargement texte="Impossible de charger les cartes." onReessayer={recharger} />;
   return (
-    <CadreBlocFiche titre="Cartes" icone={IconeCarte} chargement={etat.k === 'chargement'} erreur={etat.k === 'erreur'} recharger={recharger}
-      erreurTexte="Impossible de charger les cartes.">
-      {etat.k === 'ok' && (
+    <div className="blocs-cartes">
+      <BlocUi libelle="Cartes" icone={IconeCarte}>
         <ul className="liste-cartes-fiche">
           {etat.valeur.cartes.map((c) => (
             <li key={c.id}>
@@ -35,8 +35,8 @@ function Cartes({ universId, fiche, suffixeMode }: PropsBlocFiche) {
             </li>
           ))}
         </ul>
-      )}
-    </CadreBlocFiche>
+      </BlocUi>
+    </div>
   );
 }
 

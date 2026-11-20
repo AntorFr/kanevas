@@ -34,3 +34,5 @@
 
 /* Block « Cartes » (E-9): one line per attached map. */
 .liste-cartes-fiche { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-1); }
+.blocs-cartes { padding: 0 var(--e-4); border: 1px solid var(--bord); border-radius: var(--rayon-panneau); background: var(--surface); }
+.blocs-cartes .bloc-section { border-top: 0; }
