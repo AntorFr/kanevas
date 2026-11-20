@@ -95,6 +95,7 @@ async function demander(universId: number, message: string, historique: MessageA
       etat: 'repos',
       messages: [...etat.messages, { role: 'assistant', content: r.reponse, evenements: r.evenements ?? [] }],
     });
+    if (r.evenements?.some((ev) => ev.type === 'direction_ecrite')) directionsEcrites.forEach((f) => f());
   } catch (e) {
     if (mine !== generation) return;
     const occupe = e instanceof ErreurApi && e.statut === 429;
@@ -124,6 +125,19 @@ const demandesOuverture = new Set<() => void>();
 export function surDemandeOuverture(f: () => void): () => void {
   demandesOuverture.add(f);
   return () => demandesOuverture.delete(f);
+}
+
+/** Opens the panel (the request of a screen, or a proposal to show). */
+export function demanderOuverture() {
+  demandesOuverture.forEach((f) => f());
+}
+
+const directionsEcrites = new Set<() => void>();
+
+/** E-26 reloads its text when an answer carries `direction_ecrite` (the banner survives from the server's `source`). */
+export function surDirectionEcrite(f: () => void): () => void {
+  directionsEcrites.add(f);
+  return () => directionsEcrites.delete(f);
 }
 
 /** Shows a proposal in the thread (once) and asks the panel to open on it. */

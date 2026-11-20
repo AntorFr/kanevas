@@ -22,3 +22,4 @@ export * from './vignette-reference';
 export * from './colonne-outils';
 export * from './canevas-carte';
 export * from './canevas-jeu';
+export * from './bandeau-annulable';
