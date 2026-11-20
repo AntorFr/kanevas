@@ -65,7 +65,7 @@ test('E-27 : « Lot préparé : N assets » + « À lancer par vous. » + « Ouv
 test('E-28 : « Carte « X » composée » + « Ouvrir » vers la carte ; le titre est échappé', () => {
   const html = renderToStaticMarkup(createElement(BlocCarte, { evenement: ev('carte_composee', 'x', { type: 'carte', carteId: 42, titre: 'Cantine <b>&' }), universId: 7, surOuverture: () => {} }));
   assert.match(html, /Carte « Cantine &lt;b&gt;&amp; » composée/);
-  assert.match(html, /href="\/univers\/7\/cartes\/42"/);
+  assert.match(html, /href="\/univers\/7\/outils\/battlemap\/cartes\/42"/);
   assert.doesNotMatch(html, /<b>/);
 });
 
@@ -73,7 +73,7 @@ test('le clic passe par adresse.ts : ferme le panneau puis ajoute une entrée d�
   for (const [Bloc, cible, attendu] of [
     [BlocDirection, { type: 'direction', versionPrecedente: 1 }, '/univers/9/outils/battlemap/assets?onglet=direction'],
     [BlocLot, { type: 'lot', lignes: 3 }, '/univers/9/outils/battlemap/assets?onglet=generation'],
-    [BlocCarte, { type: 'carte', carteId: 5, titre: 'T' }, '/univers/9/cartes/5'],
+    [BlocCarte, { type: 'carte', carteId: 5, titre: 'T' }, '/univers/9/outils/battlemap/cartes/5'],
   ] as const) {
     entrees.length = 0;
     evenements.length = 0;
