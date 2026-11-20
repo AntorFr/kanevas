@@ -435,3 +435,5 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/carte-rattache-texte-ecran.test.ts` | `E-11 : « Changer de fiche… » puis « Détacher » ; la fiche ne liste plus la carte` | affichage | — | gardé |
 | `src/e2e/carte-rattache-texte-ecran.test.ts` | `E-9 : une carte cachée apparaît au MJ avec « Cachée aux joueurs », jamais à la joueuse (ni fiche, ni liste)` | affichage | — | gardé |
 | `src/e2e/carte-rattache-texte-ecran.test.ts` | `E-9 : une fiche sans carte n’a pas de bloc « Cartes »` | affichage | — | gardé |
+| `src/e2e/carte-rattache-texte-ecran.test.ts` | `E-11 : « Modifier » et « Vider » sont dans l’en-tête du bloc Texte, à droite du titre, avec leur icône` | affichage | — | gardé |
+| `src/e2e/carte-rattache-texte-ecran.test.ts` | `E-9 : le bloc « Cartes » est un libellé avec icône ; à 360 px le titre d’une carte reste lisible, le type et la pastille passent à la ligne` | affichage | — | gardé |
