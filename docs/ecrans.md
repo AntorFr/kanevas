@@ -4586,7 +4586,7 @@ Mockup: `docs/maquettes/e29-joueur.html` (one frame per state of the player's E-
 | Player owning none (the **table account** included: an ordinary member with no token — nothing else makes it read only) | read only, no ring, no hint | read only; the line |
 | GM in Player mode | as the player he plays (his own tokens: none unless assigned), line shown when off | same |
 | GM outside Player mode | unchanged: moves any token, sets the owners, no line | unchanged |
-- **E-20 (morceau).** The card of `battlemap/cartes` shows the switch « Jeu à distance » (on by default), with the helper « Les joueurs déplacent eux-mêmes leurs pions sur la table. », at the universe level only (no system value, unlike « Taille de case par défaut »); nothing else is built for E-20.
+- **E-20 (morceau).** The card of `battlemap/cartes` shows the switch « Jeu à distance » (on by default), with the helper « Les joueurs déplacent eux-mêmes leurs pions sur la table. », at the universe level only (no system value, unlike « Taille de case par défaut »), always visible and saved on the flip (no « Remplacer » step); nothing else is built for E-20.
 - **Phone / tablet.** The ring is a 44 px target at 390 px (the grab zone is 44 px at any zoom); the line « Seul le MJ déplace les pions. » wraps under the bar.
 
 ### Closure
