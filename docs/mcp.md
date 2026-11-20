@@ -18,7 +18,7 @@ server, with an API token (E-23). Decisions: AD-145 and `AD-mcp-1` to `AD-mcp-6`
 ## Tools
 
 A sheet is cited by `fiche`: its key (`lieu:tenebria`, a former key too) or its numeric id. Lists and searches take
-an optional `curseur` and return `curseur` (`null` on the last page).
+an optional `curseur` and return `curseur` (`null` on the last page); the list sits under the tool's own key: `univers` (`lister_univers`), `fiches` (`chercher`), `passages` (`chercher_texte`), `lignes` (`lire_historique`).
 
 | Level | Tools |
 |---|---|
@@ -75,7 +75,7 @@ name), set by the door around the call — a tool never sets it. `lire_historiqu
 
 ## Try it in stub mode
 
-On a fresh database (`KANEVAS_STUB=1 npm start`, see the README), the stub token `kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue`
+On a fresh database (`npm ci && npm run build:wasm && npm run build`, then `KANEVAS_STUB=1 npm start`; the Docker block of the README serves no `/mcp` without that build), the stub token `kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue`
 (`JETON_BOUCHON`) reaches « Essai Kanka »; `PORT` is the one you started on (3001 by default):
 
 ```bash
