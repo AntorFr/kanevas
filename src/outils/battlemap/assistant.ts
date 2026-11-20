@@ -4,10 +4,7 @@ import { readFileSync } from 'node:fs';
 import { z } from 'zod';
 
 import { ErreurService } from '../../services/erreurs.js';
-import { listerAssets } from '../../services/battlemap-assets.js';
 import { appliquerCommandes, creerCarte, lireCarte } from '../../services/battlemap-cartes.js';
-import { ecrireDirection, lireDirection } from '../../services/battlemap-direction.js';
-import { enregistrerLot, lireLot } from '../../services/battlemap-lots.js';
 import { accessible } from '../../services/outils.js';
 import { choisirAdaptateur } from '../../services/images/index.js';
 import type { Evenement, Outil, Resultat } from '../../services/assistant/types.js';
@@ -16,6 +13,11 @@ import type { ContexteOutil } from '../declaration.js';
 export const MAX_COMMANDES_PAQUET = 200;
 export const MAX_ASSETS_LISTES = 100;
 const OUTIL_ASSETS = 'battlemap/assets';
+
+// These three services reach the sheets; a static import would close a cycle with the registry (as `swn` does): loaded at the call.
+const assetsSvc = () => import('../../services/battlemap-assets.js');
+const directionSvc = () => import('../../services/battlemap-direction.js');
+const lotsSvc = () => import('../../services/battlemap-lots.js');
 
 // ---- Skills (AD-battlemap-assistant-5) ------------------------------------------------------------------------------------
 export const COMPETENCES = ['direction-artistique', 'lot-d-assets', 'composition-de-carte'] as const;
@@ -93,7 +95,8 @@ const schemaDirection = z.strictObject({ texte: z.string().max(100_000), version
 const schemaCompetence = z.strictObject({ nom: z.string().max(100) });
 
 /** The assets a map or a batch may use: valid ones the caller reads (a draft is never usable). */
-function assetsUtilisables(ctx: ContexteOutil, filtres: { categorie?: string; q?: string } = {}) {
+async function assetsUtilisables(ctx: ContexteOutil, filtres: { categorie?: string; q?: string } = {}) {
+  const { listerAssets } = await assetsSvc();
   return listerAssets(ctx.db, ctx.acteur, ctx.universId, filtres).assets.filter((a) => a.etat === 'valide');
 }
 
@@ -102,11 +105,11 @@ function outilListerAssets(ctx: ContexteOutil): Outil {
     nom: 'bm_lister_assets',
     description: "Liste les assets de la bibliothèque de la battle map (100 au plus) : id, nom, catégorie (objet, vaisseau, decor, sol, mur), empreinte en cases, vue de dessus, étiquettes. L'id est ce que prennent les autres outils. Filtres facultatifs : catégorie, recherche dans le nom ou les étiquettes. N'écrit rien.",
     schema: schemaListe,
-    executer(args): Resultat {
+    async executer(args): Promise<Resultat> {
       const p = schemaListe.safeParse(args ?? {});
       if (!p.success) return PARAMETRES;
       try {
-        const tous = assetsUtilisables(ctx, { categorie: p.data.categorie, q: p.data.recherche });
+        const tous = await assetsUtilisables(ctx, { categorie: p.data.categorie, q: p.data.recherche });
         const assets = tous.slice(0, MAX_ASSETS_LISTES).map((a) => ({
           id: String(a.id), nom: a.nom, categorie: a.categorie, largeur: a.largeur, hauteur: a.hauteur, vue_dessus: a.vueDessus, tags: a.tags,
         }));
@@ -123,9 +126,10 @@ function outilLireDirection(ctx: ContexteOutil): Outil {
     nom: 'bm_lire_direction',
     description: "Lit la direction artistique de l'univers : son texte, sa version (à redonner à bm_ecrire_direction) et la légende de ses images de référence. N'écrit rien.",
     schema: schemaVide,
-    executer(args): Resultat {
+    async executer(args): Promise<Resultat> {
       if (!schemaVide.safeParse(args ?? {}).success) return PARAMETRES;
       try {
+        const { lireDirection } = await directionSvc();
         const d = lireDirection(ctx.db, ctx.acteur, ctx.universId);
         return { ok: true, donnees: { texte: d.texte, version: d.version, references: d.images.map((i) => i.legende) } };
       } catch (e) {
@@ -140,10 +144,11 @@ function outilEcrireDirection(ctx: ContexteOutil): Outil {
     nom: 'bm_ecrire_direction',
     description: "Écrit la direction artistique de l'univers (5 000 caractères au plus) ; le MJ peut annuler d'un pas. `version` est celle lue par bm_lire_direction. Chargez la compétence direction-artistique (bm_competence) avant d'écrire.",
     schema: schemaDirection,
-    executer(args): Resultat {
+    async executer(args): Promise<Resultat> {
       const p = schemaDirection.safeParse(args ?? {});
       if (!p.success) return PARAMETRES;
       try {
+        const { ecrireDirection } = await directionSvc();
         const d = ecrireDirection(ctx.db, ctx.acteur, ctx.universId, p.data.texte, p.data.version, 'assistant');
         return {
           ok: true, donnees: { version: d.version },
@@ -164,7 +169,7 @@ function outilCompetence(): Outil {
     nom: 'bm_competence',
     description: `Rend une compétence de la battle map, en Markdown : ${COMPETENCES.join(', ')}. Chargez la compétence avant d'écrire une direction, de préparer un lot ou de composer une carte.`,
     schema: schemaCompetence,
-    executer(args): Resultat {
+    async executer(args): Promise<Resultat> {
       const p = schemaCompetence.safeParse(args ?? {});
       if (!p.success) return PARAMETRES;
       const t = texteCompetence(p.data.nom);
@@ -198,10 +203,11 @@ export function outilsGeneration(ctx: ContexteOutil): Outil[] {
     nom: 'bm_lancer_lot',
     description: "Prépare un lot d'assets à générer (1 à 20 lignes : nom, catégorie, empreinte en cases, indication) : l'assistant PRÉPARE, le MJ LANCE depuis la génération ; rien n'est généré par cet outil. Refusé si un lot est déjà préparé ou en cours. Chargez la compétence lot-d-assets (bm_competence) avant d'écrire.",
     schema: schemaLot,
-    executer(args): Resultat {
+    async executer(args): Promise<Resultat> {
       const p = schemaLot.safeParse(args ?? {});
       if (!p.success) return PARAMETRES;
       try {
+        const { enregistrerLot, lireLot } = await lotsSvc();
         if (lireLot(ctx.db, ctx.acteur, ctx.universId) !== null) {
           return refus('Un lot est déjà préparé ou en cours. Ouvrez-le dans la génération.');
         }
@@ -277,7 +283,7 @@ function outilCreerCarte(ctx: ContexteOutil): Outil {
     nom: 'bm_creer_carte',
     description: "Crée une carte de battle map vide (titre, largeur et hauteur en cases, 200 au plus) avec ses trois calques Sol, Murs, Objets ; elle est CACHÉE aux joueurs, le MJ la montre lui-même. Rend l'id de la carte, sa version et les identifiants des calques, que bm_appliquer_commandes demande. Chargez la compétence composition-de-carte (bm_competence) avant de composer.",
     schema: schemaCreer,
-    executer(args): Resultat {
+    async executer(args): Promise<Resultat> {
       const p = schemaCreer.safeParse(args ?? {});
       if (!p.success) return PARAMETRES;
       try {
@@ -301,14 +307,14 @@ function outilAppliquerCommandes(ctx: ContexteOutil): Outil {
     nom: 'bm_appliquer_commandes',
     description: `Applique un paquet de commandes (${MAX_COMMANDES_PAQUET} au plus) à une carte, en bloc : tout est appliqué ou rien. \`version\` est celle de la carte lue ou rendue par le dernier appel. Les commandes viennent de la compétence composition-de-carte ; les asset_id sont ceux de bm_lister_assets, jamais inventés. Rend la nouvelle version.`,
     schema: schemaAppliquer,
-    executer(args): Resultat {
+    async executer(args): Promise<Resultat> {
       const p = schemaAppliquer.safeParse(args ?? {});
       if (!p.success) return PARAMETRES;
       const { carte_id: carteId, version, commandes } = p.data;
       if (commandes.length > MAX_COMMANDES_PAQUET) return refus(`Envoyez les commandes par paquets de ${MAX_COMMANDES_PAQUET} au plus.`);
       try {
         // Before the core: an asset that is not in the library is named, so that the assistant can say what is missing.
-        const connus = new Set(assetsUtilisables(ctx).map((a) => String(a.id)));
+        const connus = new Set((await assetsUtilisables(ctx)).map((a) => String(a.id)));
         for (const c of commandes) {
           if (!['peindre_sol', 'tracer_mur', 'poser_element'].includes(String(c.type)) || c.asset_id === undefined) continue;
           if (typeof c.asset_id !== 'string' || !connus.has(c.asset_id)) {
@@ -345,13 +351,13 @@ function outilLireCarte(ctx: ContexteOutil): Outil {
     nom: 'bm_lire_carte',
     description: "Décrit une carte de façon compacte : taille, version, calques, puis une ligne par sol, par tronçon de mur et par élément, avec le NOM de l'asset. À lire après chaque paquet pour vérifier le résultat. N'écrit rien.",
     schema: schemaLireCarte,
-    executer(args): Resultat {
+    async executer(args): Promise<Resultat> {
       const p = schemaLireCarte.safeParse(args ?? {});
       if (!p.success) return PARAMETRES;
       try {
         const c = lireCarte(ctx.db, ctx.acteur, ctx.universId, p.data.carte_id);
         const doc = c.document as DocCarte;
-        const noms = new Map(assetsUtilisables(ctx).map((a) => [String(a.id), a.nom]));
+        const noms = new Map((await assetsUtilisables(ctx)).map((a) => [String(a.id), a.nom]));
         return {
           ok: true,
           donnees: {
