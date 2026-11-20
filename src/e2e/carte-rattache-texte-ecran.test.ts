@@ -252,3 +252,38 @@ test('E-9 : une fiche sans carte n’a pas de bloc « Cartes »', opts, async ()
   await ouvrirFiche(antor, secrete);
   assert.equal(await antor.getByRole('heading', { name: rxExact('Cartes') }).count(), 0);
 });
+
+test('E-11 : « Modifier » et « Vider » sont dans l’en-tête du bloc Texte, à droite du titre, avec leur icône', opts, async () => {
+  const v = (await api(antor, 'GET', base())).body.carte.version;
+  assert.equal((await api(antor, 'PUT', `${base()}/texte`, { texte: 'Un texte à gérer.', version: v })).status, 200);
+  await ouvrir(antor);
+  const titre = await antor.getByRole('heading', { name: rxExact('Texte') }).boundingBox();
+  for (const nom of ['Modifier', 'Vider']) {
+    const b = antor.getByRole('button', { name: rxExact(nom) });
+    const r = await b.boundingBox();
+    assert.ok(r && titre, nom);
+    assert.ok(r.y < titre.y + titre.height + 4, `${nom} est dans l’en-tête (pas sous le texte)`);
+    assert.ok(r.x > titre.x + titre.width, `${nom} est à droite du titre`);
+    assert.equal(await b.locator('svg').count(), 1, `${nom} porte une icône`);
+  }
+});
+
+test('E-9 : le bloc « Cartes » est un libellé avec icône ; à 360 px le titre d’une carte reste lisible, le type et la pastille passent à la ligne', opts, async () => {
+  const longue = (await api(antor, 'POST', `/api/univers/${uid}/cartes`, { titre: 'Carte des quartiers marchands de Brume', forme: 'illustree' })).body.id;
+  assert.equal((await api(antor, 'PUT', `${base(longue)}/fiche`, { ficheId: aldric })).status, 200);
+  assert.equal((await api(antor, 'PATCH', base(longue), { visible: false })).status, 200);
+  await antor.setViewportSize({ width: 360, height: 800 });
+  try {
+    await ouvrirFiche(antor, aldric);
+    const lien = antor.getByRole('link', { name: rx('Carte des quartiers marchands') }).first();
+    await lien.waitFor();
+    const l = await lien.boundingBox();
+    assert.ok(l && l.width >= 120, `titre lisible à 360 px (largeur ${l?.width})`);
+    const pastille = await antor.getByText('Cachée aux joueurs').last().boundingBox();
+    assert.ok(pastille && pastille.y >= l.y + l.height - 2, 'la pastille passe sous le titre');
+    assert.equal(await antor.getByRole('heading', { name: rxExact('Cartes') }).count(), 0, 'pas de cadre à titre serif');
+    await antor.screenshot({ path: '/tmp/e9-360.png', fullPage: true });
+  } finally {
+    await antor.setViewportSize({ width: 1280, height: 800 });
+  }
+});
