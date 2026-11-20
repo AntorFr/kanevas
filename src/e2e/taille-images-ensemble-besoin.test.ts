@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Feature-level black-box tests of kanevas-taille-images (B-taille-1), written from the need alone
 // (docs/parcours.md B-taille-1 and P-12 step 7, docs/ecrans.md « Image size and placement in a text »,
 // docs/donnees.md rule), against the real server in stub mode driven by a real Chromium. Literal expectations.

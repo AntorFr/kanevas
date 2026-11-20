@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Feature kanevas-socle-rust, revérification : le texte neuf de la doc est en anglais (CLAUDE.md : « new text is
 // English »). Les quatre lignes de la table « Structure » du README ajoutées pour le socle Rust (Dockerfile, rust/,
 // src/wasm/, scripts/rust-wasm.sh) étaient en français. Panne attrapée : ces lignes redeviennent françaises.

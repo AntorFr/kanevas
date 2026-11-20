@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Feature kanevas-socle-rust, tests d'ensemble écrits depuis le besoin (« Livre — » de la discussion) :
 // un module Rust d'exemple rend la même valeur appelé depuis le serveur et depuis une page du frontend ;
 // ses tests Rust et JS passent dans la suite ; ajouter un module ne touche aucun script ; le serveur

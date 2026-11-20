@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Independent check of P5 (list opened by « [[ » at 390 px), written from the need: Antor writing in « Histoire »
 // of « Port-Sel » must see « Enregistrer » and the rows of the open list on the screen at the same time.
 //

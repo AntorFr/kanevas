@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Test of the harness itself (AD-harnais-4, AD-harnais-5): no Playwright means a failure, a stale dist/ is rebuilt.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';

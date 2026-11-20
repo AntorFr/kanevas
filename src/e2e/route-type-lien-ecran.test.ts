@@ -1,3 +1,4 @@
+// ecrans: outil
 // Browser test of kanevas-outils-format-evolue-routes (B-81, E-21), written from the exit criterion — not from the code.
 // Stub world with the seed. Screenshots go to /tmp/cap-route-type-lien (never into the workspace).
 // Waits are on what the user sees (or on the answer to the gesture), never on `networkidle` nor on a delay.
