@@ -23,6 +23,7 @@ import {
   Grille, celluleLibre, commandePiece, commandeRect, cellulesPinceau, nouvelIdPion, pionSous, rectEntre, rectPartage, rectsDeCellules,
   type GestePinceau, type PionVu, type Rect, type Pion,
 } from './logique';
+import { ZONE_MIN_PX } from '../../../ui/pion-table';
 import './jeu.css';
 
 /** AD-163: the tokens a table holds. The server refuses the 201st (`table_pleine`); this only lets the alert show before the try. */
@@ -31,7 +32,7 @@ const CLE_SUIVRE = 'kanevas.battlemap.suivre-le-mj';
 const REGLAGE_VUE_MS = 300;
 const ALERTE_MS = 4000;
 const APPUI_LONG_MS = 250;
-const ZONE_PRISE_PX = 44;
+const ZONE_PRISE_PX = ZONE_MIN_PX;
 
 interface TableMJ { commencee: true; version: number; peutEcrire: true; etat: { pions: Pion[]; brouillard: string; vue: Rect | null; calques_masques: string[] }; proprietaires: Record<string, number> }
 interface TableJoueur {
