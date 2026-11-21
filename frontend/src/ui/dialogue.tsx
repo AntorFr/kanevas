@@ -49,8 +49,12 @@ export function BoiteDialogue({
   icone?: LucideIcon;
   /** Optional glyph before the confirmation label. */
   iconeAction?: LucideIcon;
-  /** `danger` (red bin, danger button) or `mj` (GM amber badge, primary button): a reversible GM closing. */
-  variante?: 'danger' | 'mj' | 'neutre';
+  /**
+   * `danger` (red bin, danger button) or `mj` (GM amber badge, primary button): a reversible GM closing; `neutre`
+   * (anchor, neutral badge, GM-amber button): a placement or an addition; `restauration` (accent badge, primary button):
+   * a restoration (E-24).
+   */
+  variante?: 'danger' | 'mj' | 'neutre' | 'restauration';
   /** The dialog carries fields: `role="dialog"` (a pure confirmation stays `alertdialog`). */
   formulaire?: boolean;
   /** The focus enters on the first field rather than on « Annuler » (« Ajouter », « Rayon »; the anchoring keeps « Annuler »). */
@@ -135,7 +139,7 @@ export function BoiteDialogue({
             </button>
             {action && <Bouton
               icone={iconeAction}
-              variante={variante === 'neutre' ? 'mj' : variante === 'mj' ? 'principal' : 'danger'}
+              variante={variante === 'neutre' ? 'mj' : variante === 'mj' || variante === 'restauration' ? 'principal' : 'danger'}
               enCours={libelleEnCours ? undefined : enCours}
               disabled={desactive || (libelleEnCours ? enCours : undefined)}
               ecrit

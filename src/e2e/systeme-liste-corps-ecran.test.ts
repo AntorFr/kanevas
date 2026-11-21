@@ -1,3 +1,4 @@
+// ecrans: outil-interieur
 // Browser test of kanevas-carte-spatiale-systeme-ecran (E-23, text version), written from the exit criterion — not from the code.
 // Stub world with the seed. Screenshots go to /tmp/cap-systeme-liste (never into the workspace).
 import assert from 'node:assert/strict';

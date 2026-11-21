@@ -6,12 +6,13 @@ import { Bouton, Pastille } from '../../ui';
 import './blocs-fiche.css';
 
 /** Independent loading and failure, keeping the sheet and its other blocks readable. */
-export function CadreBlocFiche({ titre, icone: Icone, mj, chargement, erreur, recharger, action, children }: {
+export function CadreBlocFiche({ titre, icone: Icone, mj, chargement, erreur, erreurTexte = 'Impossible de charger ce bloc.', recharger, action, children }: {
   titre: string;
   icone: LucideIcon;
   mj?: boolean;
   chargement: boolean;
   erreur: boolean;
+  erreurTexte?: string;
   recharger: () => void;
   action?: ReactNode;
   children: ReactNode;
@@ -32,7 +33,7 @@ export function CadreBlocFiche({ titre, icone: Icone, mj, chargement, erreur, re
         </div>
       ) : erreur ? (
         <div className="echec" role="alert">
-          Impossible de charger ce bloc.{' '}
+          {erreurTexte}{' '}
           <Bouton petit icone={RotateCcw} disabled={perdue} onClick={recharger}>Réessayer</Bouton>
         </div>
       ) : children}

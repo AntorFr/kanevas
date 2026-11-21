@@ -7,7 +7,8 @@
  *  - refuse      : 403 — the caller can see the thing but may not do this
  *  - invalide    : 400/422 — bad input or a rule broken by the request
  *  - indisponible : 503 — a derived result could not be produced (an illustration render), fixed message, never the cause
- *  - conflit     : 409 — stale version (`section_modifiee`, AD-59), `relation_existante`, `limite_relations`, `fiche_deja_placee`, `carte_pleine`
+ *  - conflit     : 409 (`section_modifiee` AD-59, `relation_existante`, `limite_relations`,
+ *                  `fiche_deja_placee`, `carte_pleine`), except `empreinte_perimee` (AD-140): 412
  */
 export type CodeErreur = 'introuvable' | 'refuse' | 'invalide' | 'conflit' | 'indisponible';
 

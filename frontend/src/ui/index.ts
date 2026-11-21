@@ -1,5 +1,7 @@
 import './tokens.css';
 import './ui.css';
+import './jetons.css';
+import './historique.css';
 
 export * from './composants';
 export * from './etats';
@@ -17,3 +19,9 @@ export * from './curseur';
 export * from './champ-couleur';
 export * from './liste-choix';
 export * from './barre-application';
+export * from './choix-segmente';
+export * from './liste-acces';
+export * from './ligne-jeton';
+export * from './valeur-copiable';
+export * from './ligne-historique';
+export * from './comparaison';

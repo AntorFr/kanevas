@@ -138,7 +138,7 @@ function FenetreImage({ titre, libelle, flou, hd, onFermer, onReessayer }: {
   const [zoom, setZoom] = useState(1);
   const pas = (f: number) => setZoom((z) => Math.min(4, Math.max(1, z * f)));
   return (
-    <Fenetre titre={titre} onFermer={onFermer} large>
+    <Fenetre titre={titre} onFermer={onFermer} image>
       {hd.k === 'introuvable' ? (
         <>
           <p role="alert">Page introuvable.</p>

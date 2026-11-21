@@ -24,10 +24,10 @@ async function monter() {
   // The import of adventures belongs to a later slice: the sheet is made directly, with its origin key.
   const putC = async (cle: string, p: { nom: string }, universId: number = u.id) => {
     const info = app.db
-      .prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, sous_type) VALUES (?, 'aventure', ?, '{\"v\":1,\"statut\":\"en_cours\"}', '2020-01-01', '2020-01-01', ?, 'Campagne')")
+      .prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle, creee_via, sous_type) VALUES (?, 'aventure', ?, '{\"v\":1,\"statut\":\"en_cours\"}', '2020-01-01', '2020-01-01', ?, 'import', 'Campagne')")
       .run(universId, p.nom, cle);
     app.db
-      .prepare("INSERT INTO sections (fiche_id, titre, ordre, contenu, contenu_public, modifie_le, joueurs_lisent) VALUES (?, 'Présentation', 1, '', '', '2020-01-01', 1)")
+      .prepare("INSERT INTO sections (fiche_id, titre, cle, ordre, contenu, contenu_public, modifie_le, joueurs_lisent) VALUES (?, 'Présentation', 'presentation', 1, '', '', '2020-01-01', 1)")
       .run(info.lastInsertRowid);
     return Number(info.lastInsertRowid);
   };
@@ -42,7 +42,7 @@ async function monter() {
   return { app, u, putC, put, rel, lot, clore, lire, antor, lea, liste };
 }
 const n = (app: { db: any }, sql: string, ...a: unknown[]) => (app.db.prepare(sql).get(...a) as { n: number }).n;
-const NR = "SELECT COUNT(*) n FROM relations r JOIN sections s ON s.id = r.section_id JOIN fiches f ON f.id = s.fiche_id WHERE f.cle_origine = 'lieu:a'";
+const NR = "SELECT COUNT(*) n FROM relations r JOIN sections s ON s.id = r.section_id JOIN fiches f ON f.id = s.fiche_id WHERE f.cle = 'lieu:a'";
 const cr = (titre: string, creeLe: string, extra: object = {}) => ({
   type: 'compte_rendu', titre, campagne: 'c:brumes', creeLe,
   sections: [{ cle: 's1', titre: 'Peu importe', contenu: 'Récit.', joueursLisent: true }, { cle: 's2', titre: 'Notes', contenu: 'x', joueursLisent: true }],
@@ -66,7 +66,7 @@ test('critère : mars, février, avril poussés → E-13 liste avril, mars, fév
   assert.ok(lignes.every((x) => x.auteur === null && x.campagneNom === 'Les Brumes'));
   assert.equal(morceauxLot(await m.lire(l))[0], 'Fiches : 3 créées');
   // the first section is the « Compte-rendu » section, the next one is ordinary
-  const fiche = (m.app.db.prepare("SELECT id FROM fiches WHERE cle_origine='cr:mars'").get() as { id: number }).id;
+  const fiche = (m.app.db.prepare("SELECT id FROM fiches WHERE cle='cr:mars'").get() as { id: number }).id;
   const titres = (m.app.db.prepare('SELECT titre FROM sections WHERE fiche_id=? ORDER BY ordre').all(fiche) as { titre: string }[]).map((x) => x.titre);
   assert.deepEqual(titres, ['Compte-rendu', 'Notes']);
 });
@@ -82,7 +82,7 @@ test('échec : campagne absente ou inconnue → 400 champ campagne, rien d’éc
   const sans = await m.put('cr:y', { type: 'compte_rendu', titre: 'Y', sections: [] }, l);
   assert.equal(sans.statusCode, 400);
   assert.equal(sans.json().champ, 'campagne');
-  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu' AND cle_origine IS NOT NULL"), 0);
+  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu' AND creee_via = 'import'"), 0);
   const lt = await m.lire(l);
   assert.equal(lt.compteurs.fiches.refusees, 2);
   assert.equal(lt.rapport[0].cle, 'cr:x');
@@ -91,12 +91,12 @@ test('échec : campagne absente ou inconnue → 400 champ campagne, rien d’éc
 
 test('exclusion : une campagne d’un autre univers n’est pas résolue', async () => {
   const m = await monter();
-  const autre = (m.app.db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('Autre', '2020-01-01')").run().lastInsertRowid) as number;
+  const autre = (m.app.db.prepare("INSERT INTO univers (cle, nom, cree_le) VALUES ('u-' || lower(hex(randomblob(6))), 'Autre', '2020-01-01')").run().lastInsertRowid) as number;
   await m.putC('c:etr', { nom: 'Etrangère' }, autre);
   const r = await m.put('cr:z', cr('Z', '2021-03-03T20:00:00Z', { campagne: 'c:etr' }));
   assert.equal(r.statusCode, 400);
   assert.equal(r.json().champ, 'campagne');
-  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu' AND cle_origine IS NOT NULL"), 0);
+  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu' AND creee_via = 'import'"), 0);
 });
 
 test('bords : creeLe dans le futur → 400 ; sans creeLe, la date est celle de la création', async () => {
@@ -105,10 +105,10 @@ test('bords : creeLe dans le futur → 400 ; sans creeLe, la date est celle de l
   const f = await m.put('cr:f', cr('Futur', '2999-01-01T00:00:00Z'));
   assert.equal(f.statusCode, 400);
   assert.equal(f.json().champ, 'creeLe');
-  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu' AND cle_origine IS NOT NULL"), 0);
+  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu' AND creee_via = 'import'"), 0);
   const ok = await m.put('cr:nd', { type: 'compte_rendu', titre: 'Sans date', campagne: 'c:brumes', sections: [] });
   assert.equal(ok.statusCode, 200, ok.body);
-  const d = (m.app.db.prepare("SELECT cree_le FROM fiches WHERE cle_origine='cr:nd'").get() as { cree_le: string }).cree_le;
+  const d = (m.app.db.prepare("SELECT cree_le FROM fiches WHERE cle='cr:nd'").get() as { cree_le: string }).cree_le;
   assert.ok(Date.now() - new Date(d).getTime() < 60_000);
 });
 
@@ -133,15 +133,15 @@ test('rejeu : 3 inchangées, ordre et dates intacts ; autre campagne ou autre da
   assert.ok(r3.json().avertissements.length >= 1);
   assert.deepEqual(m.liste(m.antor), avant);
   assert.deepEqual(m.app.db.prepare('SELECT id, version, modifie_le FROM sections ORDER BY id').all(), sections);
-  const camp = m.app.db.prepare("SELECT json_extract(charge,'$.campagne_id') c FROM fiches WHERE cle_origine='cr:mars'").get() as { c: number };
-  assert.equal(camp.c, (m.app.db.prepare("SELECT id FROM fiches WHERE type='aventure' AND cle_origine='c:brumes'").get() as { id: number }).id);
+  const camp = m.app.db.prepare("SELECT json_extract(charge,'$.campagne_id') c FROM fiches WHERE cle='cr:mars'").get() as { c: number };
+  assert.equal(camp.c, (m.app.db.prepare("SELECT id FROM fiches WHERE type='aventure' AND cle='c:brumes'").get() as { id: number }).id);
 });
 
 test('exclusion : le MJ ferme aux joueurs la section d’un des trois → Léa ne voit que deux lignes (total 2), Antor trois', async () => {
   const m = await monter();
   await troisCR(m);
   assert.equal(m.liste(m.lea).length, 3);
-  const row = m.app.db.prepare("SELECT f.id fid, s.id sid FROM fiches f JOIN sections s ON s.fiche_id=f.id WHERE f.cle_origine='cr:mars'").all() as { fid: number; sid: number }[];
+  const row = m.app.db.prepare("SELECT f.id fid, s.id sid FROM fiches f JOIN sections s ON s.fiche_id=f.id WHERE f.cle='cr:mars'").all() as { fid: number; sid: number }[];
   for (const r of row) changerAudience(m.app.db, m.antor, m.u.id, r.fid, r.sid, { joueursLisent: false, joueursEcrivent: false });
   assert.deepEqual(m.liste(m.lea).map((x) => x.titre), ['Avril', 'Février']);
   assert.equal(listerComptesRendus(m.app.db, { compteId: m.lea }, m.u.id).total, 2);

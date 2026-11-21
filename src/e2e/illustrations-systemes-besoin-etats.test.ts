@@ -324,7 +324,7 @@ describe('kanevas-illustrations (A) : illustrations, états et écrans en lectur
     assert.ok(!/Sans système de jeu/.test(noms.join(' ')));
     const box = await cartes.first().boundingBox();
     await antor.mouse.click(box.x + box.width / 2, box.y + box.height - 6);
-    await antor.waitForURL(new RegExp(`/univers/${m.U}(/|$)`));
+    await antor.waitForURL(new RegExp(`/univers/[^/]+(/|$)`));
   });
 
   test('B-14 : Antor ajoute « Garde du sceau » à CoF Mini ; Mira la voit avec « Utilisé par 2 univers » et la seule puce « Les Landes grises », Léa la lit sans « Ajouter » ni « Modifier »', opts, async () => {

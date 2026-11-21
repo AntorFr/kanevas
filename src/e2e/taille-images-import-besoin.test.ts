@@ -1,3 +1,4 @@
+// ecrans: accueil
 // kanevas-taille-images — B-taille-1 : « the import and the export carry the setting as text » (docs/parcours.md).
 // Black-box, in stub mode, against the real import API (`PUT /fichiers/:cle`, `PUT /fiches/:cle`) : a script pushes a
 // sheet whose image reference keeps its `fichier:cle:` address and carries a setting title; once the key is resolved

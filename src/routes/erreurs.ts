@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 
 import { ErreurCatalogue } from '../services/catalogues.js';
+import { ErreurFondTropLourd } from '../services/cartes.js';
 import { ErreurService, type CodeErreur } from '../services/erreurs.js';
 
 const STATUT: Record<CodeErreur, number> = {
@@ -18,7 +19,7 @@ const STATUT: Record<CodeErreur, number> = {
 export function registerErreurs(app: FastifyInstance) {
   app.setErrorHandler((erreur, request, reply) => {
     if (erreur instanceof ErreurService) {
-      const corps: { message: string; code?: string; champ?: string; cause?: string; attendu?: string; recu?: unknown } =
+      const corps: { message: string; code?: string; champ?: string; cause?: string; attendu?: string; recu?: unknown; limiteMo?: number } =
         { message: erreur.message };
       if (erreur instanceof ErreurCatalogue) {
         corps.cause = erreur.cause;
@@ -34,8 +35,13 @@ export function registerErreurs(app: FastifyInstance) {
       if (erreur.detail === 'fichier_vide') corps.code = erreur.detail;
       // The 101st joined file keeps its code; the status is the error's own (409 for the GM, 403 for a player).
       if (erreur.detail === 'limite_pieces') corps.code = erreur.detail;
-      // A background over 25 MB (AD-69).
-      if (erreur.detail === 'fond_trop_lourd') statut = 413;
+      // A background over the instance ceiling (AD-69, AD-143): 413, carrying the limit in MB.
+      if (erreur.detail === 'fond_trop_lourd') {
+        statut = 413;
+        if (erreur instanceof ErreurFondTropLourd) corps.limiteMo = erreur.limiteMo;
+      }
+      // A stale fingerprint on an import write (AD-140): 412, where `section_modifiee` stays 409.
+      if (erreur.detail === 'empreinte_perimee') statut = 412;
       return reply.code(statut).send(corps);
     }
     const statut = (erreur as { statusCode?: number }).statusCode;

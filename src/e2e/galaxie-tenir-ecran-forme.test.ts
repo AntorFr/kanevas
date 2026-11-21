@@ -1,3 +1,4 @@
+// ecrans: outil
 // Browser test of the E-21 form fidelity reopened by verify (docs/ecrans.md E-21, maquette e21-ecriture.html):
 // Taille as three segmented buttons, « Déplacer » on every system form, one-line colour swatches,
 // bordered menu triggers, the chosen option of « Document MJ… » in accent. Screenshots in /tmp.

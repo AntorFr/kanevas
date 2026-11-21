@@ -55,6 +55,8 @@ export interface SectionVue {
 
 export interface Fiche {
   id: number;
+  /** Readable key `type:name` (B-99): only in the body of a GM outside player mode (AD-146). */
+  cle?: string;
   universId: number;
   type: string;
   titre: string;

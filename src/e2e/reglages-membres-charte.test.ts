@@ -1,3 +1,4 @@
+// ecrans: membres, administration
 // Tests of E-4 member row, from the arbitrated charte rule (V8, V12b): « Retirer » is revealed on
 // hover/focus (visible on touch), the role is a pastille without a bordered field, the identifier
 // is not framed, and avatar / role / action share one height. Real server (stub) + Chromium.
@@ -118,8 +119,10 @@ test('E-4 : le chevron de la pastille de rôle est visible au repos', opts, asyn
 });
 
 test('E-12 : le chevron du rôle reste caché au repos et apparaît au survol (non-régression)', opts, async () => {
-  const id = /\/univers\/([^/]+)/.exec(p.url())?.[1];
-  assert.ok(id, 'identifiant d\'univers dans l\'adresse');
+  const ref = /\/univers\/([^/]+)/.exec(p.url())?.[1];
+  assert.ok(ref, 'référence d\'univers dans l\'adresse');
+  // B-101: the address carries the key; the administration address takes the numeric id
+  const id = String((await (await p.request.get('/api/univers')).json()).find((u: { id: number; cle: string }) => String(u.id) === ref || u.cle === ref).id);
   const admin = (await connecte(browser, srv.base, 'admin')).page;
   try {
     await admin.goto(`${srv.base}/administration/univers/${id}`);

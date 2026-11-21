@@ -64,6 +64,8 @@ const paires: [string, string, string | null, number][] = [
   ['table', 'table-fond', 'surface', 4.5],
   ['danger', 'surface', null, 4.5],
   ['danger', 'danger-fond', 'surface', 4.5],
+  ['danger', 'danger-fond', 'surface-2', 4.5],
+  ['accent-texte', 'accent-fond', 'surface-2', 4.5],
   ['bord-champ', 'surface-2', null, 3],
   ['bord-champ', 'surface', null, 3],
   ['focus', 'fond', null, 3],

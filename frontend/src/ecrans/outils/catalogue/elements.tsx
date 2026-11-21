@@ -2,7 +2,7 @@ import { Eye, EyeOff, RotateCcw, Undo2, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { appeler, ErreurApi, useConnexionPerdue } from '../../../api';
-import { ligneApresMasquage } from '../../../outils/registre';
+import { ligneApresMasquage } from '../../../outils/lignes';
 import { Bouton, ChargementListe, ErreurChargement, Pastille } from '../../../ui';
 import type { CatalogueSummary, Niveau, Outil } from '../types';
 
@@ -68,8 +68,8 @@ export function ElementsCatalogue({ base, niveau, outil, catalogue, ecriture }: 
       await charger(true, true);
       // A line the tool itself adds (read from its route; a failure says nothing).
       const ligneDe = ligneApresMasquage(outil.cle);
-      const univers = /\/api\/univers\/(\d+)\//.exec(base)?.[1];
-      if (ligneDe && univers) setLigneOutil(await ligneDe(Number(univers)).catch(() => null));
+      const univers = /\/api\/univers\/([^/]+)\//.exec(base)?.[1];
+      if (ligneDe && univers) setLigneOutil(await ligneDe(univers).catch(() => null));
     } catch (e) {
       if (e instanceof ErreurApi && e.statut === 409) setMessage({ texte: 'Cet élément a changé depuis que vous l’avez ouvert.', recharger: true });
       else if (e instanceof ErreurApi && (e.statut === 403 || e.statut === 404)) {

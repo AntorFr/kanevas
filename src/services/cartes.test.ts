@@ -21,6 +21,7 @@ import { assurerCompte } from './comptes.js';
 import { ErreurService } from './erreurs.js';
 import { creerFiche } from './fiches.js';
 import { ajouterMembre } from './membres.js';
+import { poserReglage } from './reglages.js';
 import { relierSection } from './relations.js';
 import { ajouterSection, changerAudience } from './sections.js';
 import { creerUnivers } from './univers.js';
@@ -105,6 +106,7 @@ test('creerCarte : carte non visible, fond PNG écrit ; refus sans rien écrire'
   assert.equal(o.type, 'image/png');
   assert.equal(o.taille, PNG.length);
   o.flux.destroy();
+  poserReglage(m.db, 'fond_carte_max_mo', '25', null);
   const avant = nb(m.db, 'cartes');
   for (const [b, code] of [[PDF, 'fond_invalide'], [Buffer.alloc(0), 'fond_invalide'], [Buffer.concat([PNG, Buffer.alloc(25 * 1024 * 1024)]), 'fond_trop_lourd']] as const) {
     const e = await err(() => creerCarte(m.db, m.antor.id, false, m.u.id, { titre: 'X', forme: 'illustree', fond: flux(b) }, m.racine));
@@ -116,8 +118,19 @@ test('creerCarte : carte non visible, fond PNG écrit ; refus sans rien écrire'
   assert.equal((await err(() => creerCarte(m.db, m.antor.id, false, m.u.id, { titre: 'G', forme: 'graphe', fond: flux(PNG) }, m.racine)))?.detail, 'fond_invalide');
 });
 
-test('fond : exactement 25 Mo accepté', async () => {
+test('fond : exactement le réglage (25 Mo) accepté, 30 Mo passe au défaut (75), 20 Mo refuse avec la limite', async () => {
   const m = monde();
+  const trente = Buffer.concat([PNG, Buffer.alloc(30 * 1024 * 1024)]);
+  const defaut = await creerCarte(m.db, m.antor.id, false, m.u.id, { titre: 'Trente', forme: 'illustree', fond: flux(trente) }, m.racine);
+  assert.equal(defaut.fond, true);
+  poserReglage(m.db, 'fond_carte_max_mo', '20', null);
+  const e = await err(() => creerCarte(m.db, m.antor.id, false, m.u.id, { titre: 'T2', forme: 'illustree', fond: flux(trente) }, m.racine));
+  assert.equal(e?.detail, 'fond_trop_lourd');
+  assert.equal((e as unknown as { limiteMo: number }).limiteMo, 20);
+  assert.equal(e?.message, 'Image trop lourde : 20 Mo au plus.');
+  const r = await err(() => remplacerFond(m.db, m.antor.id, false, defaut.id, flux(trente), m.racine));
+  assert.equal(r?.detail, 'fond_trop_lourd');
+  poserReglage(m.db, 'fond_carte_max_mo', '25', null);
   const b = Buffer.concat([PNG, Buffer.alloc(25 * 1024 * 1024 - PNG.length)]);
   const c = await creerCarte(m.db, m.antor.id, false, m.u.id, { titre: 'Gros', forme: 'illustree', fond: flux(b) }, m.racine);
   assert.equal(c.fond, true);

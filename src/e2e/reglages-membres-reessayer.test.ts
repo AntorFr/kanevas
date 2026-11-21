@@ -42,6 +42,7 @@ test('E-4 · erreur : panne de /api, puis « Réessayer » relance membres ET un
   await page.getByLabel('Rôle de antor').waitFor();
   await attendre(page);
   assert.equal(await page.getByText('Impossible de charger les membres.').count(), 0);
-  assert.ok(appels.includes(`/api/univers/${id}`), `univers relancé : ${appels.join(', ')}`);
-  assert.ok(appels.includes(`/api/univers/${id}/membres`), `membres relancé : ${appels.join(', ')}`);
+  // B-101: the screen asks with the reference of its address (id or key): either reload counts
+  assert.ok(appels.some((a) => /^\/api\/univers\/[^/]+$/.test(a)), `univers relancé : ${appels.join(', ')}`);
+  assert.ok(appels.some((a) => /^\/api\/univers\/[^/]+\/membres$/.test(a)), `membres relancé : ${appels.join(', ')}`);
 });

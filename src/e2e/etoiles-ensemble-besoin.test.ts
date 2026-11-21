@@ -1,3 +1,4 @@
+// ecrans: outil-cible
 // Black-box tests of the feature kanevas-carte-spatiale-etoiles (the stars of the galaxy drawn by the Rust core),
 // written from its sheet (« Livre », exit criterion as amended), docs/parcours.md (B-86, B-87) and docs/ecrans.md (E-21)
 // — not from the code. The expected values are the committed fixtures drawn by Éneria's own generator on the neutral
