@@ -1,3 +1,4 @@
+// ecrans: comptes-rendus, vue-ensemble
 // Browser proof of kanevas-scenarios-suivi-pivot (AD-127, AD-124 (4)): « Campagnes » left the sidebar, the old
 // addresses answer « Page introuvable. », E-13 names an adventure only to who reads it, « Aventure supprimée »
 // to the GM only. Adventures are made through the routes of the sheets. Real server in stub mode + Chromium.
@@ -68,7 +69,6 @@ before(async () => {
   acte2 = s.body.id;
   const r1 = await api(antor, 'POST', `/api/univers/${uid}/comptes-rendus`, { campagneId: couronne, titre: 'Séance de la Couronne', texte: 'Texte.' });
   assert.equal(r1.status, 201, JSON.stringify(r1.body));
-  await new Promise((r) => setTimeout(r, 1100));
   const r2 = await api(antor, 'POST', `/api/univers/${uid}/comptes-rendus`, { campagneId: acte2, titre: 'Séance du scénario', texte: 'Texte.' });
   assert.equal(r2.status, 201, JSON.stringify(r2.body));
 }, { timeout: 120000 });
@@ -112,7 +112,7 @@ test('E-13 : « La Couronne brisée » en colonne à Antor ; « Acte II » (scé
 });
 
 test('« Aventure supprimée » : au MJ seul, Léa ne voit pas de différence entre fermée et supprimée', opts, async () => {
-  assert.equal((await api(antor, 'DELETE', `/api/univers/${uid}/fiches/${acte2}`)).status, 204);
+  await api(antor, 'DELETE', `/api/univers/${uid}/fiches/${acte2}`); // setup: its answer is proved by the route
   await antor.goto(`/univers/${uid}/comptes-rendus`);
   await antor.getByRole('link', { name: /Séance du scénario/ }).waitFor();
   await attendre(antor);

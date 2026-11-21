@@ -28,11 +28,11 @@ test('catalogues : montée depuis 0020 peuplée, lots et jetons restent lisibles
   const jeton = db.prepare('SELECT * FROM jetons_api').all();
   const lot = db.prepare('SELECT * FROM lots_import').all();
 
-  assert.deepEqual(migrate(db), depuis(21));
+  assert.deepEqual(migrate(db, dossierJusqua(37)), depuis(21).filter((n) => n <= 37)); // 0038 reshapes `jetons_api` (own test)
   assert.deepEqual(db.prepare('SELECT * FROM jetons_api').all(), jeton);
   assert.deepEqual(db.prepare('SELECT * FROM lots_import').all(), lot.map((l) => ({ ...(l as object), outil: null })));
   assert.deepEqual(db.pragma('foreign_key_check'), []);
-  assert.deepEqual(migrate(db), []);
+  assert.deepEqual(migrate(db, dossierJusqua(37)), []);
 
   // les tables du module d'essai existent, vides, avec leurs contraintes
   for (const t of ['jetons_outils', 'essai_catalogue_elements', 'essai_catalogue_retraits']) {

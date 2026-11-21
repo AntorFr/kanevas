@@ -1,3 +1,4 @@
+// ecrans: outil
 // Feature-level browser tests of kanevas-outils-format-vaisseaux-ecarts (B-85, E-22), real server in stub mode, real Chromium.
 // Written from the feature sheet (exit criterion), docs/parcours.md (B-85, P-19 step 2) and docs/ecrans.md (« What
 // kanevas-outils-format-vaisseaux-ecarts changes of E-22 »: captions only). Selectors are roles and visible texts; each gesture waits for
@@ -121,7 +122,7 @@ describe('B-85 · E-22 : légendes du bonus de vitesse, de la réparation, de la
     assert.match(await resultats(q), /Vitesse\s*1/);
     await m.poser(m.etoile, { coque: 'fregate-r', choix: [l('defenses', 'rotors-tres-lourds')] });
     const r = await ouvrir(m, 'Léa', m.etoile);
-    assert.match(await resultats(r), /Vitesse\s*0\b/);
+    assert.match(await resultats(r), /Vitesse\s*−2/);
   });
 
   it('réparation à part de l’effet : « armure +2 · réparation 2 au moins », Armure 7, bloc de compétence présent, 1 → alerte à surveiller et Enregistrer reste possible, 2 → plus d’alerte', async () => {

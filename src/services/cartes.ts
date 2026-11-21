@@ -3,9 +3,12 @@ import type { Readable } from 'node:stream';
 import { attachmentsDir } from '../config/env.js';
 import type { Db } from '../db/db.js';
 import { peutLireSection, peutVoirFiche, roleDe, vueMJ } from './droits.js';
+import { rendreMarkdown, contenuPublic } from './markdown.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { chargerFiche, LIMITE_LISTE, validerTitre } from './fiches.js';
-import { typeParSignature } from './fichiers.js';
+import { curseurApi, PAGE_LECTURE_API, typeParSignature } from './fichiers.js';
+import { empreinteCarte } from './empreintes.js';
+import { fondCarteMaxMo } from './reglages.js';
 import { libelleRelation } from './natures.js';
 import { lireRelations } from './relations.js';
 import {
@@ -13,16 +16,23 @@ import {
   ecrireFlux,
   lireFichier,
   promouvoir,
+  sha256Stocke,
   supprimerFichier,
 } from './stockage.js';
 import type { Acteur, Role, SectionRow, TypeFiche } from './types.js';
 
 /** At most this many elements per map (AD-72). */
 export const MAX_ELEMENTS_PAR_CARTE = 100;
-/** A background is at most 25 MB (AD-69). */
-export const MAX_FOND = 25 * 1024 * 1024;
+/** A background over the instance ceiling (AD-143): the limit rides with the refusal, in MB. */
+export class ErreurFondTropLourd extends ErreurService {
+  constructor(readonly limiteMo: number) {
+    super('invalide', `Image trop lourde : ${limiteMo} Mo au plus.`, 'fond_trop_lourd');
+    this.name = 'ErreurFondTropLourd';
+  }
+}
 const MAX_TITRE = 80;
 
+export type { CarteRow };
 export type FormeCarte = 'illustree' | 'graphe';
 type Flux = Readable | AsyncIterable<Buffer | Uint8Array>;
 
@@ -35,6 +45,11 @@ interface CarteRow {
   fond: string | null;
   fond_type: string | null;
   cree_le: string;
+  cle_origine: string | null;
+  fiche_id: number | null;
+  texte: string;
+  texte_public: string;
+  version: number;
 }
 
 export interface CarteVue {
@@ -46,6 +61,16 @@ export interface CarteVue {
   visible?: boolean;
   /** Whether a background exists; the file name on disk is never exposed (AD-35). */
   fond: boolean;
+  /** HTML of the text for this reader: the full text for the GM outside player mode, else its public copy (AD-114, AD-142). */
+  html: string;
+  /** The source, GM blocks included: the GM outside player mode only (never shipped to a reader). */
+  texte?: string;
+  /** Version of the text, to send back with a write (AD-59's rule): the GM outside player mode only. */
+  version?: number;
+  /** Origin key given by the import: the GM outside player mode only (B-50). */
+  cleOrigine?: string | null;
+  /** The attached sheet: `null` for the GM when there is none; absent for a reader who does not read it (AD-38). */
+  fiche?: { id: number; titre: string; type: TypeFiche } | null;
 }
 
 export interface ElementVue {
@@ -83,6 +108,9 @@ export interface PageCartes {
   suivant: string | null;
 }
 
+/** At most this many characters in a map's text (AD-142). */
+export const MAX_TEXTE_CARTE = 5000;
+
 const refus = (code: string, message: string, kind: 'invalide' | 'conflit' = 'invalide') =>
   new ErreurService(kind, message, code);
 
@@ -90,17 +118,39 @@ function charger(db: Db, carteId: number): CarteRow | undefined {
   return db.prepare('SELECT * FROM cartes WHERE id = ?').get(carteId) as CarteRow | undefined;
 }
 
-function vueCarte(c: CarteRow, avecVisible: boolean): CarteVue {
+/**
+ * The map as this reader sees it: the text rendered by the shared renderer without any active link (AD-142),
+ * the source and the version for the GM outside player mode only, the attached sheet only when readable (AD-38).
+ */
+function vueCarte(db: Db, c: CarteRow, role: Role, acteur: Acteur): CarteVue {
+  const mj = vueMJ(role, acteur);
   const v: CarteVue = {
     id: c.id,
     universId: c.univers_id,
     titre: c.titre,
     forme: c.forme,
     fond: c.fond !== null,
+    html: rendreMarkdown(mj ? c.texte : c.texte_public, { nature: 'section', reglagesImage: false }),
   };
-  if (avecVisible) v.visible = c.visible === 1;
+  if (mj) {
+    v.visible = c.visible === 1;
+    v.texte = c.texte;
+    v.version = c.version;
+    v.cleOrigine = c.cle_origine;
+  }
+  if (c.fiche_id === null) {
+    if (mj) v.fiche = null;
+  } else if (mj || peutVoirFiche(db, role, c.fiche_id, acteur)) {
+    const f = db.prepare('SELECT id, titre, type FROM fiches WHERE id = ?').get(c.fiche_id) as
+      { id: number; titre: string; type: TypeFiche } | undefined;
+    if (f) v.fiche = f;
+  }
   return v;
 }
+
+const MJ_SORTI: Acteur = Object.freeze({ compteId: 0, modeJoueur: false }) as Acteur;
+/** The view returned by a GM's own write: the GM outside player mode, which the write gates guarantee. */
+const vueDuMJ = (db: Db, c: CarteRow) => vueCarte(db, c, 'mj', MJ_SORTI);
 
 /**
  * Read gate (AD-68): the GM outside player mode reads every map of their
@@ -142,29 +192,28 @@ function porteEcriture(db: Db, compteId: number, modeJoueur: boolean, carteId: n
 }
 
 /** Limits a stream to the background size, failing as soon as it is exceeded. */
-async function* limiter(flux: Flux): AsyncGenerator<Buffer | Uint8Array> {
+async function* limiter(flux: Flux, limiteMo: number): AsyncGenerator<Buffer | Uint8Array> {
   let n = 0;
   for await (const morceau of flux) {
     n += morceau.length;
-    if (n > MAX_FOND) {
-      throw refus('fond_trop_lourd', "L'image dépasse 25 Mo.");
-    }
+    if (n > limiteMo * 1024 * 1024) throw new ErreurFondTropLourd(limiteMo);
     yield morceau;
   }
 }
 
 /** Writes a background to `tmp/` and checks it is an image; leaves nothing behind on a refusal. */
-async function ecrireFond(
+export async function ecrireFond(
+  db: Db,
   flux: Flux,
   racine: string,
-): Promise<{ temporaire: string; type: string }> {
-  const ecrit = await ecrireFlux(limiter(flux), racine);
+): Promise<{ temporaire: string; type: string; empreinte: string }> {
+  const ecrit = await ecrireFlux(limiter(flux, fondCarteMaxMo(db)), racine);
   const type = ecrit.taille === 0 ? '' : typeParSignature(ecrit.debut);
   if (!type.startsWith('image/')) {
     await abandonner(ecrit.temporaire, racine);
     throw refus('fond_invalide', "Ce fichier n'est pas une image (PNG, JPEG, GIF ou WebP).");
   }
-  return { temporaire: ecrit.temporaire, type };
+  return { temporaire: ecrit.temporaire, type, empreinte: ecrit.empreinte };
 }
 
 /**
@@ -193,7 +242,7 @@ export async function creerCarte(
   if (entree.fond !== undefined && entree.forme === 'graphe') {
     throw refus('fond_invalide', "Un graphe n'a pas de fond.");
   }
-  const ecrit = entree.fond === undefined ? null : await ecrireFond(entree.fond, racine);
+  const ecrit = entree.fond === undefined ? null : await ecrireFond(db, entree.fond, racine);
   let fichier: string | null = null;
   try {
     const id = db.transaction(() => {
@@ -207,7 +256,7 @@ export async function creerCarte(
         .run(universId, titre, entree.forme, fichier, ecrit?.type ?? null, new Date().toISOString());
       return Number(info.lastInsertRowid);
     })();
-    return vueCarte(charger(db, id)!, true);
+    return vueDuMJ(db, charger(db, id)!);
   } catch (e) {
     if (ecrit) await abandonner(ecrit.temporaire, racine);
     if (fichier) supprimerFichier(fichier, racine);
@@ -229,7 +278,7 @@ export function reglerCarte(
       reglage.titre === undefined ? c.titre : validerTitre(String(reglage.titre), MAX_TITRE, 'Le titre');
     const visible = reglage.visible === undefined ? c.visible : reglage.visible ? 1 : 0;
     db.prepare('UPDATE cartes SET titre = ?, visible = ? WHERE id = ?').run(titre, visible, c.id);
-    return vueCarte(charger(db, c.id)!, true);
+    return vueDuMJ(db, charger(db, c.id)!);
   })();
 }
 
@@ -247,7 +296,7 @@ export async function remplacerFond(
 ): Promise<CarteVue> {
   const avant = porteEcriture(db, compteId, modeJoueur, carteId);
   if (avant.forme === 'graphe') throw refus('fond_invalide', "Un graphe n'a pas de fond.");
-  const ecrit = await ecrireFond(flux, racine);
+  const ecrit = await ecrireFond(db, flux, racine);
   let fichier: string | null = null;
   let ancien: string | null = null;
   try {
@@ -267,7 +316,7 @@ export async function remplacerFond(
     throw e;
   }
   if (ancien) supprimerFichier(ancien, racine);
-  return vueCarte(charger(db, carteId)!, true);
+  return vueDuMJ(db, charger(db, carteId)!);
 }
 
 /**
@@ -301,7 +350,8 @@ export function listerCartes(
 ): PageCartes {
   const role = roleDe(db, universId, compteId);
   if (!role) throw introuvable();
-  const mj = role === 'mj' && !modeJoueur;
+  const acteur: Acteur = { compteId, modeJoueur };
+  const mj = vueMJ(role, acteur);
   const limite = Math.min(Math.max(Math.trunc(page.limite ?? LIMITE_LISTE), 1), LIMITE_LISTE);
   const where = ['univers_id = ?'];
   const params: (string | number)[] = [universId];
@@ -329,7 +379,7 @@ export function listerCartes(
     rows.length > limite && dernier
       ? Buffer.from(JSON.stringify({ t: dernier.titre, i: dernier.id })).toString('base64url')
       : null;
-  return { cartes: lot.map((c) => vueCarte(c, mj)), suivant };
+  return { cartes: lot.map((c) => vueCarte(db, c, role, acteur)), suivant };
 }
 
 interface ElementRow {
@@ -369,7 +419,7 @@ export function lireCarte(db: Db, compteId: number, modeJoueur: boolean, carteId
     .all(c.id) as ElementRow[];
   const rendus = mj ? rows : rows.filter((r) => peutVoirFiche(db, role, r.fiche_id, acteur));
   const lue: CarteLue = {
-    carte: vueCarte(c, mj),
+    carte: vueCarte(db, c, role, acteur),
     peutEcrire: mj,
     elements: rendus.map(vueElement),
   };
@@ -497,4 +547,159 @@ export function retirerElement(
       .run(elementId, c.id);
     if (info.changes === 0) throw introuvable();
   })();
+}
+
+/**
+ * Write gate of the attachment and the text (AD-142): only a GM of the map's universe, outside player
+ * mode. Anyone else — a player, no role, an unknown id — gets "not found"; a GM in player mode is refused.
+ */
+function porteMJ(db: Db, compteId: number, modeJoueur: boolean, carteId: number): CarteRow {
+  const c = charger(db, carteId);
+  if (!c) throw introuvable();
+  if (roleDe(db, c.univers_id, compteId) !== 'mj') throw introuvable();
+  if (modeJoueur) throw refuse('Seul le MJ peut modifier une carte.');
+  return c;
+}
+
+/** The GM attaches the map to a sheet of its universe that they read; a map has one sheet at most (AD-142). */
+export function rattacherCarte(
+  db: Db,
+  compteId: number,
+  modeJoueur: boolean,
+  carteId: number,
+  ficheId: number,
+): CarteVue {
+  return db.transaction(() => {
+    const c = porteMJ(db, compteId, modeJoueur, carteId);
+    const inconnue = () => new ErreurService('invalide', 'Cette fiche est introuvable dans cet univers.', undefined, 'fiche');
+    if (!Number.isInteger(ficheId)) throw inconnue();
+    try {
+      chargerFiche(db, c.univers_id, ficheId);
+    } catch {
+      throw inconnue();
+    }
+    if (!peutVoirFiche(db, 'mj', ficheId, { compteId, modeJoueur })) throw inconnue();
+    db.prepare('UPDATE cartes SET fiche_id = ? WHERE id = ?').run(ficheId, c.id);
+    return vueDuMJ(db, charger(db, c.id)!);
+  })();
+}
+
+/** The GM detaches the map from its sheet; a map already free stays so. */
+export function detacherCarte(db: Db, compteId: number, modeJoueur: boolean, carteId: number): CarteVue {
+  return db.transaction(() => {
+    const c = porteMJ(db, compteId, modeJoueur, carteId);
+    db.prepare('UPDATE cartes SET fiche_id = NULL WHERE id = ?').run(c.id);
+    return vueDuMJ(db, charger(db, c.id)!);
+  })();
+}
+
+/**
+ * The GM writes the text of a map: `texte_public` goes with `texte` and `version` moves (AD-114, AD-142).
+ * `versionLue` is what the screen read: stale → 409 `carte_modifiee`; absent (the import, which does not
+ * see the version) → no check. No `[[…]]` link of the text is stored.
+ */
+export function ecrireTexteCarte(
+  db: Db,
+  compteId: number,
+  modeJoueur: boolean,
+  carteId: number,
+  texte: string,
+  versionLue?: number,
+): CarteVue {
+  if (typeof texte !== 'string') {
+    throw new ErreurService('invalide', 'Le texte doit être une chaîne.', undefined, 'texte');
+  }
+  if (texte.length > MAX_TEXTE_CARTE) {
+    throw new ErreurService('invalide', 'Le texte : 5 000 caractères au plus.', undefined, 'texte');
+  }
+  return db.transaction(() => {
+    const c = porteMJ(db, compteId, modeJoueur, carteId);
+    if (versionLue !== undefined && versionLue !== c.version) {
+      throw new ErreurService('conflit', 'Le texte a changé depuis votre lecture.', 'carte_modifiee');
+    }
+    db.prepare('UPDATE cartes SET texte = ?, texte_public = ?, version = version + 1 WHERE id = ?').run(
+      texte,
+      contenuPublic(texte),
+      c.id,
+    );
+    return vueDuMJ(db, charger(db, c.id)!);
+  })();
+}
+
+/**
+ * The maps attached to a sheet that this reader reads (block « Cartes » of E-9): every one for the GM
+ * outside player mode, the visible ones for anyone else; none is counted when hidden. The sheet must
+ * be readable by the reader, else "not found".
+ */
+export function cartesDeFiche(db: Db, acteur: Acteur, universId: number, ficheId: number): CarteVue[] {
+  const role = roleDe(db, universId, acteur.compteId);
+  if (!role) throw introuvable();
+  chargerFiche(db, universId, ficheId);
+  if (!peutVoirFiche(db, role, ficheId, acteur)) throw introuvable();
+  const mj = vueMJ(role, acteur);
+  const rows = db
+    .prepare(
+      `SELECT * FROM cartes WHERE univers_id = ? AND fiche_id = ?${mj ? '' : ' AND visible = 1'}
+       ORDER BY titre COLLATE NOCASE, id`,
+    )
+    .all(universId, ficheId) as CarteRow[];
+  return rows.map((c) => vueCarte(db, c, role, acteur));
+}
+
+export interface CarteApi {
+  id: number;
+  titre: string;
+  forme: FormeCarte;
+  visible: boolean;
+  /** SHA-256 of the background, null when the map has none. */
+  sha256Fond: string | null;
+  empreinte: string;
+  /** The text: the GM's source, else its public copy (no `:::mj` block, AD-114). */
+  texte: string;
+  /** The attached sheet when the caller reads it, else null (never a hint of a hidden one). */
+  fiche: { id: number; cle: string; titre: string } | null;
+}
+
+function ficheLue(db: Db, role: Role, compteId: number, ficheId: number | null): CarteApi['fiche'] {
+  if (ficheId === null || !peutVoirFiche(db, role, ficheId, { compteId })) return null;
+  return db.prepare('SELECT id, cle, titre FROM fiches WHERE id = ?').get(ficheId) as CarteApi['fiche'];
+}
+
+/**
+ * The maps the caller reads, in id order, a thousand per page (B-90, AD-149): every map for a GM, the
+ * visible ones for anyone else; a hidden map is neither listed nor counted. Metadata only: the elements
+ * and links of a map stay with `lireCarte` (AD-68).
+ */
+export async function listerCartesApi(
+  db: Db,
+  compteId: number,
+  universId: number,
+  apres: unknown,
+): Promise<{ cartes: CarteApi[]; suivant: number | null }> {
+  const role = roleDe(db, universId, compteId);
+  if (!role) throw introuvable();
+  const curseur = curseurApi(apres);
+  const rows = db
+    .prepare(
+      `SELECT * FROM cartes WHERE univers_id = ? AND id > ?${role === 'mj' ? '' : ' AND visible = 1'}
+       ORDER BY id LIMIT ?`,
+    )
+    .all(universId, curseur, PAGE_LECTURE_API + 1) as CarteRow[];
+  const page = rows.slice(0, PAGE_LECTURE_API);
+  const cartes: CarteApi[] = [];
+  for (const c of page) {
+    const sha256Fond = c.fond === null ? null : await sha256Stocke(c.fond);
+    const visible = c.visible === 1;
+    cartes.push({
+      id: c.id,
+      titre: c.titre,
+      forme: c.forme,
+      visible,
+      sha256Fond,
+      empreinte: empreinteCarte({ titre: c.titre, forme: c.forme, visible, sha256Fond }),
+      texte: role === 'mj' ? c.texte : c.texte_public,
+      fiche: ficheLue(db, role, compteId, c.fiche_id),
+    });
+  }
+  return { cartes, suivant: rows.length > PAGE_LECTURE_API ? page[page.length - 1]!.id : null };
 }

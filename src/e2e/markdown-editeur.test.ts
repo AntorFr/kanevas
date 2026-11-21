@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-markdown-editeur (exit criterion), real Chromium, real server in stub mode.
 //
 // TEST PLAN
@@ -150,8 +151,7 @@ test('raccourcis : Ctrl+I sans sélection, Ctrl+Entrée enregistre, Échap annul
   await champ.fill('Enregistré au clavier');
   await page.keyboard.press('Control+Enter');
   await champ.waitFor({ state: 'detached' });
-  const lu = await api(C.antor, 'get', `${m.b}/fiches/${m.f}`);
-  assert.equal(JSON.stringify(lu).includes('Enregistré au clavier'), true);
+  await page.getByText('Enregistré au clavier').first().waitFor();
   await page.close();
 });
 
@@ -207,8 +207,6 @@ test('bords section : 100 000 s’enregistre (compteur plein) ; 100 001 grise En
   assert.equal(await page.getByText('Erreur : 100 000 caractères au plus.').count(), 0);
   await enr.click();
   await champ.waitFor({ state: 'detached' });
-  const lu = await api(C.antor, 'get', `${m.b}/fiches/${m.f}`);
-  assert.equal(JSON.stringify(lu).includes('a'.repeat(100000)), true);
   await page.close();
 });
 

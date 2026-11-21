@@ -1,9 +1,9 @@
 import { Bouton } from '../../../ui';
-import { AIDES, credits, entretien, jours, masse, nombre } from './format';
+import { AIDES, vitesseLue, credits, entretien, jours, masse, nombre } from './format';
 import type { Alerte, Resultat } from './types';
 
 /** The figures of a result, with the labels of the text version (V-6). */
-export function Chiffres({ r }: { r: Resultat }) {
+export function Chiffres({ r, station = false }: { r: Resultat; station?: boolean }) {
   const lignes: [string, string][] = [
     ['Prix', credits(r.prix)],
     ['Chantier', jours(r.chantierJours)],
@@ -11,7 +11,7 @@ export function Chiffres({ r }: { r: Resultat }) {
     ['PV', nombre(r.pv)],
     ['CA', nombre(r.ca)],
     ['Portée de saut', r.porteeSaut === null ? '—' : `${r.porteeSaut} cases`],
-    ...(r.vitesse != null ? [['Vitesse', String(r.vitesse)] as [string, string]] : []),
+    ...(station ? [['Vitesse', 'N/A'] as [string, string]] : r.vitesse != null ? [['Vitesse', vitesseLue(r.vitesse)] as [string, string]] : []),
     ...(r.armure != null ? [['Armure', String(r.armure)] as [string, string]] : []),
     ...(r.equipage != null ? [['Équipage', String(r.equipage.choisi)] as [string, string]] : []),
     ...(r.soutes != null ? [['Soutes', nombre(r.soutes)] as [string, string]] : []),

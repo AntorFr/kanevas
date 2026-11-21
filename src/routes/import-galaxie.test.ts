@@ -7,7 +7,7 @@ delete process.env.DB_PATH;
 
 const { buildApp } = await import('../app.js');
 const { semerBouchon } = await import('../bouchon/depart.js');
-const { creerJeton, revoquerJeton } = await import('../services/jetons.js');
+const { creerJeton, revoquerJeton, listerOutilsProposables } = await import('../services/jetons.js');
 const { trouverCompte } = await import('../services/comptes.js');
 const { creerGalaxie } = await import('../services/swn/galaxies.js');
 const { modifierSysteme } = await import('../services/swn/ecriture-carte.js');
@@ -178,7 +178,11 @@ test('portées : contenu, autre outil, révoqué, expiré, plus MJ → 401 sans 
   (w.app as any).horloge = ancienne;
   const mira = w.tok('mira', [G]).valeur;
   w.app.db.prepare("UPDATE membres SET role = 'joueur' WHERE compte_id = ? AND univers_id = ?").run(w.id('mira'), w.E);
-  await non(mira);
+  // B-46 revised: a lost role is no longer a 401, the token falls to what a player may (import writes need a GM).
+  const ecrit = await w.put(mira, fichier());
+  assert.ok([403, 404].includes(ecrit.statusCode), `write ${ecrit.statusCode}`);
+  const lot = await w.req(mira, 'POST', `/lots?outil=${G}`);
+  assert.ok([403, 404].includes(lot.statusCode), `a player opens no batch: ${lot.statusCode}`);
   assert.equal(w.nb('lots_import'), lots0);
   const t = w.tok('antor', [G]).valeur;
   const autre = await w.req(t, 'PUT', `/outils/swn/galaxie/galaxies/${w.gal}`, fichier(), w.K);
@@ -195,13 +199,7 @@ test('liste GET …/galaxies : {id, titre} ; GET jetons/outils propose swn/galax
   assert.equal(l.statusCode, 200);
   assert.ok(l.json().some((g: any) => g.id === w.gal && g.titre === 'Galaxie du bord'));
   for (const g of l.json()) assert.deepEqual(Object.keys(g).sort(), ['id', 'titre']);
-  const c = await (async () => {
-    const res = await w.app.inject({ method: 'POST', url: '/connexion-bouchon',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' }, payload: 'compte=antor' });
-    return `kanevas_session=${res.cookies.find((x) => x.name === 'kanevas_session')!.value}`;
-  })();
-  const p = await w.app.inject({ method: 'GET', url: `/api/univers/${w.E}/jetons/outils`, headers: { cookie: c } });
-  assert.ok(p.json().some((o: any) => o.cle === G));
+  assert.ok(listerOutilsProposables(w.app.db, w.id('antor'), w.E).some((o: any) => o.cle === G), 'the tool is offered (service: no session route any more)');
 });
 
 test('galaxie d\'un autre univers : 404 ; corps non objet : 400', async () => {

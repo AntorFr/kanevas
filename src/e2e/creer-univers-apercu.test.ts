@@ -1,3 +1,4 @@
+// ecrans: accueil, creer-univers
 // Black-box test of kanevas-rv-accueil, E-2: the seal preview does not exist while the name is empty
 // (no empty dashed tile), and shows up with the first initial.
 //

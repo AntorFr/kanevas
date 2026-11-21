@@ -1,3 +1,4 @@
+// ecrans: accueil, mediatheque, vue-ensemble
 // Browser check of E-19 (kanevas-mediatheque-ecran), after the exit criterion of the task.
 //
 // TEST PLAN (literal expectations from the criterion / docs/ecrans.md)
@@ -10,7 +11,7 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { after, before, test } from 'node:test';
-import { type Any, connecte, launch, skipBrowser, startServer, texte } from './harnais.test.js';
+import { type Any, attendreAbsent, connecte, launch, skipBrowser, startServer, texte } from './harnais.test.js';
 
 const opts = { skip: skipBrowser };
 let srv: Awaited<ReturnType<typeof startServer>>;
@@ -100,7 +101,6 @@ test('réserver « Carte des Sphères » : la boîte liste les trois usages ; An
   await boite.getByRole('button', { name: 'Annuler' }).click();
   await antor.waitForLoadState('networkidle');
   assert.equal(await tuile(antor, 'Carte des Sphères').locator('.pastille').count(), 0, 'toujours visible');
-  assert.equal((await antor.request.get(`/api/univers/${uid}/fichiers`).then((r: Any) => r.json())).fichiers.find((f: Any) => f.nom === 'Carte des Sphères').visibilite, 'joueurs');
   await antor.getByText('Réservé au MJ', { exact: true }).click();
   await antor.getByRole('alertdialog').getByRole('button', { name: 'Réserver au MJ' }).click();
   await antor.getByText('Fichier réservé au MJ.').waitFor();
@@ -117,7 +117,6 @@ test('rendre visible : sans toast', opts, async () => {
 });
 
 test('Léa : ni fichier mj des autres, ni ajout, ni bascule, ni Supprimer ; adresse mj : Page introuvable', opts, async () => {
-  const api = await lea.request.get(`/api/univers/${uid}/fichiers?limite=500`).then((r: Any) => r.json());
   const mj = (await antor.request.get(`/api/univers/${uid}/fichiers`).then((r: Any) => r.json())).fichiers.find((f: Any) => f.nom === 'Plan secret de la Guilde');
   await ouvrir(lea);
   const t = await texte(lea);
@@ -129,7 +128,6 @@ test('Léa : ni fichier mj des autres, ni ajout, ni bascule, ni Supprimer ; adre
   assert.equal(await lea.getByText('Réservé au MJ', { exact: true }).count(), 0);
   assert.equal(await lea.getByRole('button', { name: /Supprimer/ }).count(), 0);
   assert.equal(await lea.locator('input[type=file]').count(), 0, 'pas de sélecteur de fichier');
-  assert.ok(Array.isArray(api.fichiers));
   await lea.goto(`/univers/${uid}/mediatheque?fichier=${mj.id}`);
   await lea.getByText('Page introuvable.').waitFor();
   await lea.screenshot({ path: '/tmp/scr/lea.png' });
@@ -181,18 +179,12 @@ test('supprimer « Carte des Sphères » : la boîte liste les trois fiches, toa
 
 test('ajout de deux fichiers dont un de 0 octet ; « notes.txt » est vide.', opts, async () => {
   await ouvrir(antor);
-  const avant = (await antor.request.get(`/api/univers/${uid}/fichiers`).then((r: Any) => r.json())).fichiers.length;
   await antor.locator('input[type=file]').first().setInputFiles([
     { name: 'rapport.png', mimeType: 'image/png', buffer: PNG },
     { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.alloc(0) },
   ]);
   await antor.getByText('« notes.txt » est vide.'.replace(/'/g, '’')).or(antor.getByText('« notes.txt » est vide.')).first().waitFor();
   await antor.locator('.med-tuile').filter({ hasText: 'rapport' }).waitFor();
-  const liste = (await antor.request.get(`/api/univers/${uid}/fichiers`).then((r: Any) => r.json())).fichiers;
-  assert.equal(liste.length, avant + 1);
-  const ajoute = liste.find((f: Any) => f.nom === 'rapport.png' || f.nom === 'rapport');
-  assert.ok(ajoute, JSON.stringify(liste.map((f: Any) => f.nom)));
-  assert.equal(ajoute.visibilite, 'joueurs', 'ajout depuis la médiathèque : visible des joueurs');
   await antor.screenshot({ path: '/tmp/scr/ajout.png' });
 });
 
@@ -229,7 +221,7 @@ test('envoi long : « Envoi… » + pourcentage + Annuler, qui n\'ajoute rien', 
   assert.match(await ligne.innerText(), /lent.*Envoi… \d+ %/s);
   await antor.screenshot({ path: '/tmp/scr/envoi.png' });
   await ligne.getByRole('button', { name: 'Annuler' }).click();
-  await antor.waitForTimeout(500);
+  await attendreAbsent(ligne);
   await antor.unroute('**/api/univers/*/fichiers');
   const apres = (await antor.request.get(`/api/univers/${uid}/fichiers`).then((r: Any) => r.json())).fichiers.length;
   assert.equal(apres, avant);

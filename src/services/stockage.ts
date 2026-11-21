@@ -100,6 +100,25 @@ export async function lireFichier(
   }
 }
 
+const sha256Connus = new Map<string, string>();
+
+/**
+ * SHA-256 of a stored file (hexadecimal), null if it is missing. A stored name is never rewritten
+ * (a replacement gets a new name), so the digest is remembered by name.
+ */
+export async function sha256Stocke(fichier: string, racine: string = attachmentsDir): Promise<string | null> {
+  const cle = `${racine}\0${fichier}`;
+  const connu = sha256Connus.get(cle);
+  if (connu !== undefined) return connu;
+  const o = await lireFichier(fichier, racine);
+  if (!o) return null;
+  const hash = createHash('sha256');
+  for await (const morceau of o.flux) hash.update(morceau as Buffer);
+  const hex = hash.digest('hex');
+  sha256Connus.set(cle, hex);
+  return hex;
+}
+
 /** Empties `tmp/` (startup: any upload still there was cut short, AD-65). */
 export async function viderTmp(racine: string = attachmentsDir): Promise<void> {
   const tmp = join(racine, 'tmp');

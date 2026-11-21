@@ -28,6 +28,8 @@ export interface CoqueResolue {
   armure?: number
   equipage_min?: number
   equipage_max?: number
+  /** H-2: 0 for a station (no Spike drive, no speed); absent = 1, a hull stored before the slice (B-94). */
+  moteur_spike?: number
 }
 
 export interface ElementResolu {
@@ -40,6 +42,8 @@ export interface ElementResolu {
   pv: number
   ca: number
   limite: number
+  /** H-3: the count is capped by the total quantity of the design's weapon lines (`armes` only); absent = no such cap. */
+  limite_par?: string
   /** Engines only. */
   niveau?: number
   /** Weapons only. */
@@ -145,7 +149,23 @@ function moins(n: number): string {
   return n < 0 ? `−${-n}` : String(n)
 }
 
+/** H-1: an element with a diesis weighs `⌈base × factor⌉` for ONE installation (the quantity multiplies afterwards); without it the value stays exact. */
+function parInstallation(base: number, diese: boolean, facteur: number): number {
+  return diese ? Math.ceil(base * facteur - 1e-9) : base
+}
 
+/*
+ * Order of `calculer` (H-10 (1)):
+ *   1. per line: cost, per-installation power and mass (diesis rounded before the quantity, H-1), hit points, armour class,
+ *      munitions and magazines, engines;
+ *   2. [slot: effects of modifications on elements — next slices];
+ *   3. system engine returns, then the exchange of points;
+ *   4. targeted adjustments, then the optimised holds (last mass step);
+ *   5. [slot: capacities and crew costs — next slices];
+ *   6. alerts: blocking (power, mass, emports, limits, engine, class incl. weapons' `classe_min`, targets), then watch
+ *      (reserves, crew, repair, negative speed);
+ *   7. speed (simple sum, may be negative, H-6; `null` without a hull speed) and armour (floored at 0).
+ */
 export function calculer(
   coque: CoqueResolue,
   lignes: LigneResolue[],
@@ -169,8 +189,8 @@ export function calculer(
   const coutsLigne = new Map<number, number>()
   const echanges = new Map<number, { puissance: number; masse: number }>()
   const cibleDe = (l: LigneResolue) => l.vise === undefined ? undefined : lignes.find((m) => m.nature === l.vise!.nature && m.cle === l.vise!.cle)
-  const masseDeLigne = (l: LigneResolue) => l.element.masse * (l.element.x_masse ? coque.facteur_masse : 1) * l.quantite
-  const puissanceDeLigne = (l: LigneResolue) => l.element.puissance * (l.element.x_puissance ? coque.facteur_puissance : 1) * l.quantite
+  const masseDeLigne = (l: LigneResolue) => parInstallation(l.element.masse, l.element.x_masse, coque.facteur_masse) * l.quantite
+  const puissanceDeLigne = (l: LigneResolue) => parInstallation(l.element.puissance, l.element.x_puissance, coque.facteur_puissance) * l.quantite
   // X-2: a doubling aims at one line of the design, named by its pair.
   const visee = (cible: LigneResolue | undefined, nature: NatureVaisseau, effet: string) =>
     cible !== undefined && cible.nature === nature && lignes.some((m) => m.element.effet === effet && m.vise?.nature === cible.nature && m.vise.cle === cible.cle)
@@ -195,8 +215,8 @@ export function calculer(
     if (exig !== null) reparationMin = Math.max(reparationMin ?? 0, exig)
     const soute = souteDe(e, coque.classe)
     if (soute !== null) soutes = (soutes ?? 0) + soute * q * (visee(l, 'amenagements', 'soutes_doublees') ? 2 : 1)
-    puissanceUsee += e.puissance * (e.x_puissance ? coque.facteur_puissance : 1) * q
-    masseUsee += e.masse * (e.x_masse ? coque.facteur_masse : 1) * q
+    puissanceUsee += puissanceDeLigne(l)
+    masseUsee += masseDeLigne(l)
     pv += e.pv * q
     ca += e.ca * q
     if (l.nature === 'defenses') bonusVitesse += (e.bonus_vitesse ?? 0) * q
@@ -296,12 +316,29 @@ export function calculer(
       bloquantes.push({ niveau: 'bloquante', code: 'limite_depassee', texte: `« ${l.nom} » : ${l.element.limite} au plus.`, ligne: i })
     }
   })
+  const station = coque.moteur_spike === 0
+  const armesTotal = lignes.reduce((n, l) => n + (l.nature === 'armes' ? l.quantite : 0), 0)
+  lignes.forEach((l, i) => {
+    if (l.element.limite_par === 'armes' && l.quantite > armesTotal) {
+      bloquantes.push({ niveau: 'bloquante', code: 'limite_depassee',
+        texte: `Limite dépassée : ${l.quantite} système(s) d'auto-ciblage pour ${armesTotal} arme(s)`, ligne: i })
+    }
+    if (station && l.quantite > 0 && (l.nature === 'moteurs' || l.element.effet === 'moteurs' || l.element.effet === 'moteur_systeme')) {
+      bloquantes.push({ niveau: 'bloquante', code: 'moteur_sur_station',
+        texte: `« ${l.nom} » : une station n'a pas de moteur de saut ni de moteur système.`, ligne: i })
+    }
+  })
   if (uniteMoteur > 1) {
     bloquantes.push({ niveau: 'bloquante', code: 'moteur_multiple', texte: 'Un seul moteur par vaisseau.' })
   }
   lignes.forEach((l, i) => {
-    if (l.nature === 'armes') return
     const { classe_min: mini, classe_max: maxi } = l.element
+    if (l.nature === 'armes') {
+      if (mini !== undefined && coque.classe < mini) {
+        bloquantes.push({ niveau: 'bloquante', code: 'classe_inadaptee', texte: `« ${l.nom} » : classe de coque ${mini} au moins.`, ligne: i })
+      }
+      return
+    }
     let borne: string | null = null
     if (mini !== undefined && maxi !== undefined && mini === maxi && coque.classe !== mini) borne = `${mini} seulement`
     else if (mini !== undefined && coque.classe < mini) borne = `${mini} au moins`
@@ -325,7 +362,7 @@ export function calculer(
     } else return
     bloquantes.push({ niveau: 'bloquante', code: 'cible_invalide', texte: `« ${l.nom} » : ${raison}`, ligne: i })
   })
-  if (uniteMoteur === 0) {
+  if (uniteMoteur === 0 && !station) {
     surveiller.push({ niveau: 'a_surveiller', code: 'moteur_absent', texte: 'Aucun moteur de saut : ce vaisseau ne peut pas voyager.' })
   }
   if (puissanceLibre === 0) {
@@ -333,6 +370,10 @@ export function calculer(
   }
   if (masseLibre === 0) {
     surveiller.push({ niveau: 'a_surveiller', code: 'reserve_nulle', texte: 'Plus aucune réserve de masse.' })
+  }
+  const vitesseSimple = coque.vitesse === undefined ? null : coque.vitesse + bonusVitesse + effetVitesse
+  if (vitesseSimple !== null && vitesseSimple < 0) {
+    surveiller.push({ niveau: 'a_surveiller', code: 'vitesse_negative', texte: 'Vitesse négative : malus aux jets de Pilotage' })
   }
   const min = coque.equipage_min ?? null
   const max = coque.equipage_max ?? null
@@ -349,7 +390,7 @@ export function calculer(
     }
   })
 
-  const vitesseBase = coque.vitesse === undefined ? null : Math.max(0, coque.vitesse + bonusVitesse + effetVitesse)
+  const vitesseBase = vitesseSimple
   const armureBase = coque.armure === undefined ? null : Math.max(0, coque.armure + effetArmure) + blindage
 
   return {
@@ -369,7 +410,7 @@ export function calculer(
     emports,
     chantierJours: Math.ceil(prix / CADENCE_CHANTIER),
     entretien: Math.floor(prix * TAUX_ENTRETIEN + 0.5 + 1e-9),
-    porteeSaut: niveauMoteur === null ? null : reglages.porteeSaut * (niveauMoteur + 1),
+    porteeSaut: station || niveauMoteur === null ? null : reglages.porteeSaut * (niveauMoteur + 1),
     vitesse: vitesseBase,
     armure: armureBase,
     equipage: equipage === null ? null : { choisi: equipage, min, max },

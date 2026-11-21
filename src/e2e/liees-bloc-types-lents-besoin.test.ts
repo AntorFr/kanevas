@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Whole-feature tests of rouge-kanevas-5 on B-64 (docs/ecrans.md, E-9 « Fiches liées »): the group titles read
 // « Personnages (n) » (the type's plural label), never the raw type « personnage (n) », even when the list of types
 // reaches the browser after the block's own data. Real server on the stub with the seed + real Chromium.
@@ -19,7 +20,7 @@ let browser: Any;
 let U = 0;
 let portSel = 0;
 
-const ROUTE_TYPES = /\/api\/univers\/\d+\/types(\?.*)?$/;
+const ROUTE_TYPES = /\/api\/univers\/[^/]+\/types(\?.*)?$/;
 const bloc = (page: Any) => page.getByRole('region', { name: /^Fiches liées$/ });
 const norm = (s: string): string => s.replace(/\s+/g, ' ').replace(/’/g, "'").trim();
 
@@ -74,12 +75,14 @@ describe('rouge-kanevas-5, « Fiches liées » et la liste des types lente (B-64
       await retenue;
       await route.continue();
     });
+    const donnees = page.waitForResponse((r: Any) => /\/fiches\/[^/]+\/liees(\?|$)/.test(r.url()));
     await ouvrirPortSel(page);
     const b = bloc(page);
     await b.waitFor();
     await b.getByText('Chargement…').waitFor();
-    // let the block's own data arrive well before the types: it must still be loading
-    await page.waitForTimeout(1500);
+    // the block's own data has arrived (and been rendered) before the types: it must still be loading
+    await donnees;
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
     assert.equal(await b.getByText('Chargement…').count(), 1, 'toujours « Chargement… » tant que les types ne sont pas lus');
     assert.equal(await b.getByRole('heading', { level: 3 }).count(), 0, 'aucun groupe avant les types');
     liberer();

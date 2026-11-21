@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box tests of `kanevas-refonte-visuelle`, second pass from the need only (fiche « Livre »,
 // docs/ecrans.md « Détail de `kanevas-refonte-visuelle` », docs/charte.md). Complements
 // refonte-besoin.test.ts with what it leaves out: the audience margin line, the badge's accessible

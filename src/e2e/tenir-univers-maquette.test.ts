@@ -1,3 +1,4 @@
+// ecrans: parametres
 // E-14 « Supprimer l'univers » box against the mock-up (#etat-supprimer-univers): title typography and the bin before the label.
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';

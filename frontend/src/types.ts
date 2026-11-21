@@ -2,6 +2,8 @@ export type Role = 'mj' | 'joueur';
 
 export interface UniversListe {
   id: number;
+  /** Readable identifier (B-100): the address of the universe; absent from older answers. */
+  cle?: string;
   nom: string;
   description: string;
   role: Role;

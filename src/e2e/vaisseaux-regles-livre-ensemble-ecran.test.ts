@@ -1,3 +1,4 @@
+// ecrans: outil
 // Feature-level browser tests of kanevas-outils-format-vaisseaux-regles-livre (B-87, E-22), real server in stub mode, real Chromium.
 // Written from the feature sheet (exit criterion), docs/parcours.md (B-87, P-19 step 2) and docs/ecrans.md (« What
 // kanevas-outils-format-vaisseaux-regles-livre changes of E-22 »: captions, consequence lines, repair-skill block, target select).

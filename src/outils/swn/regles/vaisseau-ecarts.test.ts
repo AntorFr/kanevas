@@ -15,9 +15,9 @@ const L = (nature: NatureVaisseau, nom: string, e: Partial<ElementResolu>, extra
 const R = { porteeSaut: 5 }
 const rotors = (v: number) => L('modifications', 'rotors', { effet: 'vitesse', valeur: v })
 
-test('Y-3 : vitesse signée, plancher 0 sur le total', () => {
+test('Y-3 : vitesse signée, sans plancher (H-6), somme simple', () => {
   assert.equal(calculer(C2, [rotors(-2)], R).vitesse, 1)
-  assert.equal(calculer(C2, [rotors(-5)], R).vitesse, 0)
+  assert.equal(calculer(C2, [rotors(-5)], R).vitesse, -2)
   assert.equal(calculer(C2, [rotors(2)], R).vitesse, 5)
   // one floor on the total: −5 then +4 is 2, not 4
   assert.equal(calculer(C2, [rotors(-5), L('modifications', 'r2', { effet: 'vitesse', valeur: 4 })], R).vitesse, 2)

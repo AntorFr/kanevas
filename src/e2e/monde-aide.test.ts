@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Shared world of the black-box tests of kanevas-monde (no test of its own; named *.test.ts because tsc excludes tests and must not compile it):
 // Antor GM and Léa player of « Lame d'Ébène », the sheet « Maître Aldric » whose « Vérité » says « Il sert la Couronne. »,
 // report « Séance 3 » written by Léa. Everything goes through the real HTTP API of the real server.

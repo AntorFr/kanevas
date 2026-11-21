@@ -145,7 +145,7 @@ test('B-57 : visibilite se combine avec etiquette', async () => {
 test('B-57 : le filtre tient à travers les pages (curseur, 100+1 fiches fermées + 1 ouverte)', async () => {
   const w = await monde();
   for (let i = 0; i < 101; i++) {
-    w.app.db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', ?, '{}', '2026-01-01', '2026-01-01')").run(w.u, `Zp${String(i).padStart(3, "0")}`);
+    w.app.db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', ?, '{}', '2026-01-01', '2026-01-01')").run(w.u, `Zp${String(i).padStart(3, "0")}`);
   }
   await w.fiche('Zp-ouvert', [true]);
   const p1 = (await w.req('antor', 'GET', `${w.base}?visibilite=mj&q=Zp`)).json;

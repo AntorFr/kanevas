@@ -76,6 +76,7 @@ a { color: var(--accent-texte); }
 .pastille.mj { background: var(--mj-fond); color: var(--mj); }
 .pastille.table { background: var(--table-fond); color: var(--table); }
 .pastille.neutre { background: var(--surface-2); color: var(--texte-2); }
+.pastille.accent { background: var(--accent-fond); color: var(--accent-texte); }
 .pastille.danger { background: var(--danger-fond); color: var(--danger); }
 .pastille.secrete { background: var(--surface); color: var(--mj); box-shadow: inset 0 0 0 1px var(--mj-bord); }
 .pastille.cliquable { cursor: pointer; transition: box-shadow var(--duree); }
@@ -134,6 +135,9 @@ a { color: var(--accent-texte); }
 .panneau { background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-panneau);
   padding: var(--e-3) var(--e-4); margin-bottom: var(--e-3); }
 .panneau.reserve-mj { border-left: 3px solid var(--mj); }
+.panneau-tete { display: flex; align-items: center; gap: var(--e-2); margin-bottom: var(--e-2); }
+.panneau-tete > h2 { flex: 1; min-width: 0; margin: 0; font-size: var(--t-14); font-weight: 600; }
+.panneau-actions { display: flex; gap: var(--e-2); flex: none; }
 .panneau > h2 { font-size: var(--t-14); font-weight: 600; margin-bottom: var(--e-2); }
 
 .bandeau { display: flex; align-items: center; gap: var(--e-2); padding: var(--e-2) var(--e-4); font-size: var(--t-13); position: sticky; top: 0; z-index: 30;
@@ -154,10 +158,13 @@ a { color: var(--accent-texte); }
   width: min(32rem, 92vw); box-shadow: var(--ombre-flottant); }
 .fenetre .ic-fenetre { width: 36px; height: 36px; margin-bottom: var(--e-3); border-radius: 10px; display: grid; place-items: center;
   background: var(--surface-2); color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.fenetre.large { width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow-y: auto; overscroll-behavior: contain; }
+.fenetre.large h2 { margin-bottom: var(--e-3); }
 .boite { display: flex; gap: var(--e-3); background: var(--surface); color: var(--texte); border-radius: var(--rayon-panneau); padding: var(--e-5);
   width: min(440px, calc(100vw - 48px)); box-shadow: var(--ombre-flottant); animation: apparition var(--duree) var(--courbe); }
 .boite-icone { display: grid; place-content: center; width: 36px; height: 36px; flex: none; border-radius: 50%; background: var(--danger-fond); color: var(--danger); }
 .boite-icone.mj { background: var(--mj-fond); color: var(--mj); }
+.boite-icone.neutre { background: var(--accent-fond); color: var(--accent); }
 .boite h2 { font-size: var(--t-16); font-weight: 600; }
 .boite p { margin: var(--e-1) 0 0; color: var(--texte-2); font-size: var(--t-14); }
 .boite-actions { display: flex; justify-content: flex-end; gap: var(--e-2); margin-top: var(--e-5); }
@@ -181,6 +188,11 @@ a { color: var(--accent-texte); }
 .relation-nature > .relation-type { flex: none; white-space: nowrap; align-self: flex-start; }
 .relation-nature > .actions-revelees { align-self: flex-start; }
 .relation-texte .relation-lien { padding-top: 0; }
+/* « target then type » variant: the title keeps a useful width, the type and the actions drop to the next line when short of room. */
+.relation-sans-fleche { flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-2); }
+.relation-sans-fleche > .relation-texte { flex: 0 1 auto; max-width: 100%; }
+.relation-sans-fleche > .relation-type::before { content: "· "; }
+.relation-sans-fleche > .relation-type { padding-top: 0; align-self: center; }
 .relation-fleche { color: var(--texte-3); flex: none; margin-top: 7px; }
 .relation > .jeton { flex: 0 1 auto; }
 .relation > .actions-revelees { flex: none; }

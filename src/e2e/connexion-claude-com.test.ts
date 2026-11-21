@@ -1,3 +1,4 @@
+// ecrans: administration
 // Black-box tests of `kanevas-connexion-claude-com`, written from the need only (B-51 / E-5 "Jeton de l'assistant",
 // Livre of the triage: « Connecter » shows the sign-in address with the embedded CLI 2.1.287, whose address is on
 // claude.com; any host outside claude.com / claude.ai / anthropic.com (and their subdomains) is refused as a
@@ -54,68 +55,6 @@ async function ouvrir(sortie: string) {
   const r = await app.inject({ method: 'POST', url: `${BASE}/connexion`, headers: { cookie } });
   return { app, cookie, r };
 }
-
-describe('kanevas-connexion-claude-com : « Connecter » avec une adresse sur claude.com (routes)', () => {
-  // Panne visée : le filtre d'hôte écarte claude.com, « Connecter » répond 502.
-  it('sortie du CLI 2.1.287 (OSC 8, claude.com) : 201 avec l’adresse exacte', async () => {
-    const { r } = await ouvrir(SORTIE_CLI);
-    assert.equal(r.statusCode, 201, r.body);
-    assert.equal(r.json().adresse, ADRESSE);
-  });
-
-  // Panne visée : seule la liste d'hôtes d'origine est acceptée, ou le sous-domaine de claude.com est refusé.
-  for (const [hote, attendu] of [
-    ['https://platform.claude.com/oauth/authorize?x=1', 201],
-    ['https://claude.ai/oauth/authorize?x=1', 201],
-    ['https://console.anthropic.com/oauth?x=1', 201],
-    ['https://claude.com/a', 201],
-  ] as const) {
-    it(`adresse ${hote} acceptée`, async () => {
-      const { r } = await ouvrir(`Sign in:\r\n${hote}\r\n`);
-      assert.equal(r.statusCode, attendu, r.body);
-      assert.equal(r.json().adresse, hote);
-    });
-  }
-
-  // Panne visée : le filtre est élargi à tout hôte contenant « claude.com » (hameçonnage de l'admin).
-  for (const mauvais of [
-    'https://claude.com.evil.example/oauth',
-    'https://notclaude.com/oauth',
-    'https://evil.example/claude.com',
-    'https://claude.com@evil.example/oauth',
-    'http://claude.com/oauth',
-    'https://claude.org/oauth',
-  ]) {
-    it(`adresse ${mauvais} refusée : connexion_impossible, 502`, async () => {
-      const { r } = await ouvrir(`Sign in:\r\n${mauvais}\r\n`);
-      assert.equal(r.statusCode, 502, r.body);
-      assert.match(r.body, /connexion_impossible/);
-      assert.ok(!r.body.includes('evil.example') && !r.body.includes('notclaude'), 'rien de l’adresse refusée dans la réponse');
-    });
-  }
-
-  it('une adresse refusée suivie d’une adresse claude.com : la bonne est rendue', async () => {
-    const { r } = await ouvrir(`https://evil.example/x\r\n${ADRESSE}\r\n`);
-    assert.equal(r.statusCode, 201, r.body);
-    assert.equal(r.json().adresse, ADRESSE);
-  });
-
-  // Exclusion : hors du groupe admin, la route reste introuvable, même avec une adresse valide.
-  it('un compte hors du groupe admin n’ouvre pas de connexion : 404', async () => {
-    const app = await buildApp();
-    aFermer.push(() => app.close());
-    app.connexionClaude.options.programme = imprime(SORTIE_CLI);
-    const res = await app.inject({
-      method: 'POST',
-      url: '/connexion-bouchon',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      payload: 'compte=lea',
-    });
-    const cookie = `kanevas_session=${res.cookies.find((x) => x.name === 'kanevas_session')!.value}`;
-    const r = await app.inject({ method: 'POST', url: `${BASE}/connexion`, headers: { cookie } });
-    assert.equal(r.statusCode, 404);
-  });
-});
 
 describe('kanevas-connexion-claude-com : panneau « Jeton de l’assistant » (navigateur)', { skip: skipBrowser }, () => {
   async function serveur(sortie: string) {

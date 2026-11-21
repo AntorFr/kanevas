@@ -98,6 +98,8 @@ export interface ElementCatalogue {
 
 export interface Donnees {
   classe_min?: number; classe_max?: number; condition?: string; bonus_vitesse?: number;
+  /** H-2: 0 for a station (no Spike drive nor system drive); the browser only filters its lists with it. */
+  moteur_spike?: number;
   vitesse?: number; armure?: number; equipage_min?: number; equipage_max?: number;
   degats?: string; perforation?: number; qualites?: string; niveau_tech?: number;
   /** B-83 (X-1): stated by the catalogue only when the element has them. */

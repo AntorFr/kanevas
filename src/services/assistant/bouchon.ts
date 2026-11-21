@@ -53,13 +53,13 @@ async function lireSection(a: Appel, section: string): Promise<string> {
   if (!cherche.ok) return cherche.erreur;
   const mot = section.toLowerCase();
   for (const f of (cherche.donnees as Donnees).fiches) {
-    const fiche = await a.faire('lire_fiche', { ficheId: f.id });
+    const fiche = await a.faire('lire_fiche', { fiche: f.id });
     if (!fiche.ok) continue;
     const s = (fiche.donnees as Donnees).sections.find((x: Donnees) =>
       x.titre.toLowerCase().includes(mot),
     );
     if (!s) continue;
-    const r = await a.faire('lire_section', { ficheId: f.id, sectionId: s.id });
+    const r = await a.faire('lire_section', { fiche: f.id, sectionId: s.id });
     return r.ok ? `${s.titre} : ${(r.donnees as Donnees).contenu}` : r.erreur;
   }
   return INTROUVABLE;
@@ -78,13 +78,13 @@ async function proposer(a: Appel, section: string, fiche: string, cr: string): P
   const mot = section.toLowerCase();
   for (const f of (cherche.donnees as Donnees).fiches) {
     if (f.titre.toLowerCase() !== fiche.toLowerCase() || f.id === source.id) continue;
-    const lue = await a.faire('lire_fiche', { ficheId: f.id });
+    const lue = await a.faire('lire_fiche', { fiche: f.id });
     if (!lue.ok) continue;
     const s = (lue.donnees as Donnees).sections.find((x: Donnees) =>
       x.titre.toLowerCase().includes(mot),
     );
     if (!s) continue;
-    const l = await a.faire('lire_section', { ficheId: f.id, sectionId: s.id });
+    const l = await a.faire('lire_section', { fiche: f.id, sectionId: s.id });
     if (!l.ok) return l.erreur;
     const d = l.donnees as Donnees;
     const ajout = `Mise à jour d'après « ${cr} ».`;
@@ -104,14 +104,14 @@ async function ajouter(a: Appel, texte: string, section: string): Promise<string
   if (!cherche.ok) return cherche.erreur;
   const mot = section.toLowerCase();
   for (const f of (cherche.donnees as Donnees).fiches) {
-    const fiche = await a.faire('lire_fiche', { ficheId: f.id });
+    const fiche = await a.faire('lire_fiche', { fiche: f.id });
     if (!fiche.ok) continue;
     const s = (fiche.donnees as Donnees).sections.find((x: Donnees) =>
       x.titre.toLowerCase().includes(mot),
     );
     if (!s) continue;
     const r = await a.faire('ajouter_a_section', {
-      ficheId: f.id,
+      fiche: f.id,
       sectionId: s.id,
       texte,
       version: s.version,
@@ -126,7 +126,7 @@ async function queSaitOn(a: Appel, sujet: string): Promise<string> {
   if (!cherche.ok) return cherche.erreur;
   const lignes: string[] = [];
   for (const f of (cherche.donnees as Donnees).fiches.slice(0, 3)) {
-    const fiche = await a.faire('lire_fiche', { ficheId: f.id });
+    const fiche = await a.faire('lire_fiche', { fiche: f.id });
     if (!fiche.ok) continue;
     const d = fiche.donnees as Donnees;
     lignes.push(
@@ -144,7 +144,7 @@ async function portrait(a: Appel, section: string, fiche: string, message: strin
   const mot = section.toLowerCase();
   for (const f of (cherche.donnees as Donnees).fiches) {
     if (f.titre.toLowerCase() !== fiche.toLowerCase()) continue;
-    const lue = await a.faire('lire_fiche', { ficheId: f.id });
+    const lue = await a.faire('lire_fiche', { fiche: f.id });
     if (!lue.ok) continue;
     const s = (lue.donnees as Donnees).sections.find((x: Donnees) => x.titre.toLowerCase().includes(mot));
     if (!s) continue;

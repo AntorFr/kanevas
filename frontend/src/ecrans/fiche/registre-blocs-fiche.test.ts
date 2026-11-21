@@ -13,24 +13,38 @@ test.after(() => vite.close());
 const ids = (type: string, role: 'mj' | 'joueur') => blocsFicheVisibles(type, role).map((b) => b.id);
 
 test('aventure, MJ : Préparation puis Comptes-rendus', () => {
-  assert.deepEqual(ids('aventure', 'mj'), ['preparation', 'comptes-rendus']);
+  assert.deepEqual(ids('aventure', 'mj'), ['preparation', 'comptes-rendus', 'cartes']);
 });
 
-test('aventure, joueur (ou MJ en mode Joueur) : Comptes-rendus seul, jamais Préparation', () => {
-  assert.deepEqual(ids('aventure', 'joueur'), ['comptes-rendus']);
+test('aventure, joueur (ou MJ en mode Joueur) : Comptes-rendus puis Cartes, jamais Préparation', () => {
+  assert.deepEqual(ids('aventure', 'joueur'), ['comptes-rendus', 'cartes']);
 });
 
 test('« Fiches liées » : les six types cibles d\'une nature, tous rôles, jamais les autres', () => {
   for (const type of ['lieu', 'faction', 'famille', 'personnage', 'objet', 'vaisseau']) {
-    assert.deepEqual(ids(type, 'mj'), ['liees'], type);
-    assert.deepEqual(ids(type, 'joueur'), ['liees'], type);
+    assert.deepEqual(ids(type, 'mj'), ['cartes', 'liees'], type);
+    assert.deepEqual(ids(type, 'joueur'), ['cartes', 'liees'], type);
   }
 });
 
-test('les autres types ne reçoivent aucun bloc de fiche', () => {
+test('« Cartes » : les seize types de fiche, tous rôles, en place basse ; un type inconnu n\'en reçoit aucun', () => {
+  const types = ['personnage', 'lieu', 'faction', 'famille', 'objet', 'evenement', 'quete', 'creature', 'race', 'vaisseau',
+    'savoir', 'recit', 'regle', 'note', 'aventure', 'compte_rendu'];
+  for (const type of types) {
+    for (const role of ['mj', 'joueur'] as const) {
+      const c = blocsFicheVisibles(type, role).find((b) => b.id === 'cartes');
+      assert.ok(c, `${type} ${role}`);
+      assert.equal(c.place, 'bas');
+    }
+  }
+  for (const type of ['scenario', 'inconnu', 'toString']) assert.deepEqual(ids(type, 'mj'), [], type);
+});
+
+test('les types sans « Fiches liées » ni préparation ne reçoivent que « Cartes »', () => {
   for (const type of ['quete', 'compte_rendu', 'scenario', 'inconnu', 'toString']) {
-    assert.deepEqual(ids(type, 'mj'), [], type);
-    assert.deepEqual(ids(type, 'joueur'), [], type);
+    const attendu = type === 'quete' || type === 'compte_rendu' ? ['cartes'] : [];
+    assert.deepEqual(ids(type, 'mj'), attendu, type);
+    assert.deepEqual(ids(type, 'joueur'), attendu, type);
   }
 });
 
