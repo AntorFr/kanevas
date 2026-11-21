@@ -81,7 +81,7 @@ fn depart(f: &Value, cas: &Value) -> (Value, Value, u32, u32) {
     (doc, etat, l, h)
 }
 
-fn verifier(cas: &Value, r: &Value, l: u32, h: u32) {
+fn verifier(cas: &Value, r: &Value, l: u32, h: u32, doc: &Value, ctx: &Value) {
     let a = &cas["attendu"];
     assert_eq!(r["ok"], a["ok"], "{}: {r}", cas["nom"]);
     if a["ok"] == false {
@@ -112,6 +112,20 @@ fn verifier(cas: &Value, r: &Value, l: u32, h: u32) {
     if let Some(v) = a.get("vue") {
         assert_eq!(&etat["vue"], v, "{}", cas["nom"]);
     }
+    // Expected positions, written by hand in the fixture: [{id, x, y}].
+    for p in a.get("pions").and_then(|p| p.as_array()).into_iter().flatten() {
+        let trouve = etat["pions"].as_array().unwrap().iter().find(|q| q["id"] == p["id"]).unwrap_or_else(|| panic!("{}: pion absent", cas["nom"]));
+        assert_eq!((&trouve["x"], &trouve["y"]), (&p["x"], &p["y"]), "{}", cas["nom"]);
+    }
+    if a.get("vue_joueur_sans").is_some() || a.get("mj_garde").is_some() {
+        let vue = parse(&vue_joueur_json(&doc.to_string(), &etat.to_string(), &ctx.to_string()).unwrap());
+        for id in a["vue_joueur_sans"].as_array().into_iter().flatten() {
+            assert!(!vue["pions"].as_array().unwrap().iter().any(|q| q["id"] == *id), "{}: {id} in the player view", cas["nom"]);
+        }
+        for id in a["mj_garde"].as_array().into_iter().flatten() {
+            assert!(etat["pions"].as_array().unwrap().iter().any(|q| q["id"] == *id), "{}: {id} lost by the GM", cas["nom"]);
+        }
+    }
 }
 
 fn jouer_cas(nom_fichier: &str) {
@@ -129,13 +143,18 @@ fn jouer_cas(nom_fichier: &str) {
             }
             (lot(&doc, &etat, &cas["lot"], &ctx), l, h)
         };
-        verifier(cas, &r, l, h);
+        verifier(cas, &r, l, h, &doc, &f["contexte"]);
     }
 }
 
 #[test]
 fn une_commande_invalide_refuse_le_lot_entier() {
     jouer_cas("refus");
+}
+
+#[test]
+fn le_lot_d_un_joueur_ne_deplace_que_ses_pions_visibles_dans_la_carte() {
+    jouer_cas("joueur");
 }
 
 #[test]

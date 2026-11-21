@@ -13,10 +13,19 @@ const bornes = (z: number) => Math.min(ZOOM_GRAND, Math.max(ZOOM_PETIT, z));
 const jeton = (el: Element, nom: string) => getComputedStyle(el).getPropertyValue(nom).trim() || 'currentColor';
 
 /** What the canvas draws over the map while a gesture lasts. */
-export interface ApercuJeu { rects?: Rect[]; reveler?: boolean; pion?: { id: string; x: number; y: number } }
+export interface ApercuJeu {
+  rects?: Rect[]; reveler?: boolean;
+  /** A token drawn at this cell instead of its own (`attenue`: waiting for the server's answer, 60 %). */
+  pion?: { id: string; x: number; y: number; attenue?: boolean };
+  /** A token held by a player: drawn at the pointer (`px`, `py`, in cells) with the dashed outline of the cell it will take. */
+  suivi?: { id: string; px: number; py: number; x: number; y: number };
+}
+
+/** What the screen needs to place elements over the canvas: the scale (pixels per cell) and the offset of the map. */
+export interface GeometrieJeu { echelle: number; ox: number; oy: number }
 
 /** The handle the screen keeps: where the centre of what is shown is, in cells (a new token lands near it). */
-export interface PoigneeJeu { centre(): Point; rect(): Rect }
+export interface PoigneeJeu { centre(): Point; rect(): Rect; echelle(): number }
 
 /**
  * The canvas of a played map (charte, variants of « Canevas de carte » for E-29): the same drawing as the editor's, plus the fog
@@ -26,7 +35,7 @@ export interface PoigneeJeu { centre(): Point; rect(): Rect }
  */
 export function CanevasJeu({
   doc, tailleCase, empreinte, image, pions, selection, grille, mj, calquesMasques, apercu, libre, suivre, annonce, message,
-  surBas, surBouge, surHaut, surVue, poignee, affichage = false,
+  surBas, surBouge, surHaut, surVue, poignee, affichage = false, siens, couche, appuiLongMs,
 }: {
   doc: Document;
   tailleCase: number;
@@ -45,7 +54,7 @@ export function CanevasJeu({
   suivre: Rect | null;
   annonce: string;
   message: string;
-  surBas: (p: Point, ev: { shiftKey: boolean }) => boolean;
+  surBas: (p: Point, ev: { shiftKey: boolean; pointerType?: string }) => boolean;
   surBouge: (p: Point) => void;
   surHaut: (p: Point) => void;
   /** The user moved or zoomed the view (not a followed one): its rectangle in cells. */
@@ -53,6 +62,12 @@ export function CanevasJeu({
   poignee?: Ref<PoigneeJeu>;
   /** E-30: nothing answers the user — no pan, zoom, key or control; the view is only the followed rectangle. */
   affichage?: boolean;
+  /** The player's own tokens (ids): drawn with a ring in the accent colour. */
+  siens?: ReadonlySet<string>;
+  /** Elements placed over the canvas (the keyboard handles of the tokens), given the scale and the offset. */
+  couche?: (g: GeometrieJeu) => React.ReactNode;
+  /** A touch press that stays still this long (ms) reaches `surBas`; a shorter move pans, as before. */
+  appuiLongMs?: number;
 }) {
   const zone = useRef<HTMLDivElement>(null);
   const toile = useRef<HTMLCanvasElement>(null);
@@ -87,6 +102,7 @@ export function CanevasJeu({
   useImperativeHandle(poignee, () => ({
     centre: () => ({ x: (taille.w / 2 - vue.ox) / echelle, y: (taille.h / 2 - vue.oy) / echelle }),
     rect: () => ({ x: -vue.ox / echelle, y: -vue.oy / echelle, l: taille.w / echelle, h: taille.h / echelle }),
+    echelle: () => echelle,
   }), [taille, vue, echelle]);
 
   useLayoutEffect(() => {
@@ -151,6 +167,8 @@ export function CanevasJeu({
     return { x: (ev.clientX - r.left - vue.ox) / echelle, y: (ev.clientY - r.top - vue.oy) / echelle };
   };
   const geste = useRef(false);
+  const appui = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const finAppui = () => { if (appui.current !== null) { clearTimeout(appui.current); appui.current = null; } };
 
   function bas(ev: React.PointerEvent<HTMLCanvasElement>) {
     toile.current!.setPointerCapture?.(ev.pointerId);
@@ -172,6 +190,21 @@ export function CanevasJeu({
       return;
     }
     if (ev.button !== 0) return;
+    if (appuiLongMs !== undefined && ev.pointerType === 'touch') {
+      // A finger: the press pans unless it stays still long enough to grab what is under it.
+      actif.current = true;
+      deplacement.current = { x: ev.clientX - r.left, y: ev.clientY - r.top, ox: vue.ox, oy: vue.oy };
+      const point = pointDe(ev);
+      finAppui();
+      appui.current = setTimeout(() => {
+        appui.current = null;
+        if (deplacement.current && surBas(point, { shiftKey: false, pointerType: 'touch' })) {
+          deplacement.current = null;
+          geste.current = true;
+        }
+      }, appuiLongMs);
+      return;
+    }
     geste.current = surBas(pointDe(ev), ev);
     // A press the tool does not take (nothing under it) pans, as with no tool.
     if (!geste.current) {
@@ -194,13 +227,14 @@ export function CanevasJeu({
     if (d) {
       const dx = ev.clientX - r.left - d.x;
       const dy = ev.clientY - r.top - d.y;
-      if (Math.hypot(dx, dy) > 4) geste.current = false;
+      if (Math.hypot(dx, dy) > 4) { geste.current = false; finAppui(); }
       setVue((v) => ({ ...v, ox: d.ox + dx, oy: d.oy + dy }));
       return;
     }
     if (geste.current) surBouge(pointDe(ev));
   }
   function haut(ev: React.PointerEvent<HTMLCanvasElement>) {
+    finAppui();
     pointeurs.current.delete(ev.pointerId);
     if (pointeurs.current.size < 2) pincement.current = null;
     const g = geste.current;
@@ -214,6 +248,7 @@ export function CanevasJeu({
     if (g) surHaut(pointDe(ev));
   }
   function annuler() {
+    finAppui();
     pointeurs.current.clear();
     geste.current = false;
     deplacement.current = null;
@@ -337,10 +372,12 @@ export function CanevasJeu({
     c.textBaseline = 'top';
     c.font = `${12 * px}px sans-serif`;
     for (const p of pions) {
-      const pos = apercu.pion?.id === p.id ? apercu.pion : p;
+      const tenu = apercu.suivi?.id === p.id ? apercu.suivi : undefined;
+      const pos = tenu ? { x: tenu.px, y: tenu.py } : apercu.pion?.id === p.id ? apercu.pion : p;
       const [x, y] = [pos.x, pos.y];
+      const attenue = apercu.pion?.id === p.id && apercu.pion.attenue === true;
       const im = p.asset_id !== null ? image(p.asset_id) : null;
-      c.globalAlpha = p.visible ? 1 : 0.45;
+      c.globalAlpha = !p.visible ? 0.45 : attenue ? 0.6 : tenu ? 0.9 : 1;
       if (im && im !== 'retire') c.drawImage(im, x, y, p.l, p.h);
       else {
         c.fillStyle = t.accent;
@@ -354,6 +391,19 @@ export function CanevasJeu({
         c.beginPath();
         c.moveTo(x + 0.15, y + p.h - 0.15);
         c.lineTo(x + p.l - 0.15, y + 0.15);
+        c.stroke();
+      }
+      if (siens?.has(p.id)) {
+        c.globalAlpha = 1;
+        c.strokeStyle = t.fond;
+        c.lineWidth = px;
+        c.beginPath();
+        c.ellipse(x + p.l / 2, y + p.h / 2, p.l / 2, p.h / 2, 0, 0, Math.PI * 2);
+        c.stroke();
+        c.strokeStyle = t.accent;
+        c.lineWidth = 3 * px;
+        c.beginPath();
+        c.ellipse(x + p.l / 2, y + p.h / 2, p.l / 2 + 1.5 * px, p.h / 2 + 1.5 * px, 0, 0, Math.PI * 2);
         c.stroke();
       }
       if (selection === p.id) {
@@ -372,13 +422,25 @@ export function CanevasJeu({
       c.globalAlpha = 1;
     }
 
+    if (apercu.suivi) {
+      const s = apercu.suivi;
+      const p = pions.find((q) => q.id === s.id);
+      if (p) {
+        c.strokeStyle = t.accent;
+        c.lineWidth = 2 * px;
+        c.setLineDash([5 * px, 3 * px]);
+        c.strokeRect(s.x + px, s.y + px, p.l - 2 * px, p.h - 2 * px);
+        c.setLineDash([]);
+      }
+    }
+
     if (apercu.rects?.length) {
       c.globalAlpha = 0.45;
       c.fillStyle = t.accent;
       for (const r of apercu.rects) c.fillRect(r.x, r.y, r.l, r.h);
       c.globalAlpha = 1;
     }
-  }, [doc, vue, taille, pions, selection, grille, mj, calquesMasques, apercu, empreinte, image, echelle]);
+  }, [doc, vue, taille, pions, selection, grille, mj, calquesMasques, apercu, empreinte, image, echelle, siens]);
 
   return (
     <div className="canevas-zone" ref={zone}>
@@ -390,6 +452,7 @@ export function CanevasJeu({
         aria-label="Carte"
         {...(affichage ? {} : { onPointerDown: bas, onPointerMove: bouge, onPointerUp: haut, onPointerCancel: annuler })}
       />
+      {couche?.({ echelle, ox: vue.ox, oy: vue.oy })}
       <div className="sr-carte" role="status" aria-live="polite">{annonce}</div>
       {message !== '' && <div className="canevas-message" role="status">{message}</div>}
       {!affichage && <div className="canevas-zoom" role="group" aria-label="Zoom">
