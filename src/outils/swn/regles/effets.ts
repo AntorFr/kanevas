@@ -3,7 +3,7 @@
 // is a code change with its test, never a data change.
 // Pure: no database. No formula or code ever travels in the data.
 
-export type CodeEffet = 'vitesse' | 'armure' | 'echange' | 'soutes_doublees' | 'magasins_doubles' | 'reparation_min' | 'moteur_systeme'
+export type CodeEffet = 'vitesse' | 'armure' | 'echange' | 'soutes_doublees' | 'magasins_doubles' | 'reparation_min' | 'moteur_systeme' | 'support_automatisation'
   | 'soutes_optimisees_livre' | 'blindage_renforce' | 'montages_specialises' | 'surcharge_cumulable'
 export type ParametreEffet =
   | 'valeur' | 'points_max' | 'sens' | 'echange_puissance' | 'echange_masse' | 'rend_puissance' | 'rend_masse'
@@ -37,6 +37,7 @@ export const EFFETS: Readonly<Record<CodeEffet, DeclarationEffet>> = {
   blindage_renforce: { nature: 'modifications', libelle: 'Blindage renforcé', parametres: ['valeur'], limiteUne: true },
   montages_specialises: { nature: 'modifications', libelle: 'Montages spécialisés', parametres: [], limiteUne: true, cible: true },
   surcharge_cumulable: { nature: 'modifications', libelle: "Surcharge d'arme", parametres: ['effet_pct'], cible: true },
+  support_automatisation: { nature: 'amenagements', libelle: "Système d'automatisation", parametres: [], limiteUne: true },
   moteur_systeme: { nature: 'amenagements', libelle: 'Moteur système', parametres: ['rend_puissance', 'rend_masse'] },
 }
 
