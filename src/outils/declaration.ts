@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { FastifyInstance, preHandlerHookHandler } from 'fastify';
 import type { Db } from '../db/db.js';
 import type { Acteur, Role } from '../services/types.js';
-import type { Outil } from '../services/assistant/types.js';
+import type { Outil, Porte } from '../services/assistant/types.js';
 
 export type ValeurReglage = boolean | number | string;
 export type Forme =
@@ -24,6 +24,9 @@ export interface ContexteOutil {
   acteur: Acteur;
   universId: number;
   role: Role;
+  /** The door asking and, on the MCP door, the token's level: a tool offers its writes only where the token writes (AD-mcp-2). */
+  porte?: Porte;
+  niveau?: 'lecture' | 'ecriture';
 }
 export type CibleCatalogue = { systemeId: number } | { universId: number };
 export interface LigneCatalogue {
