@@ -77,12 +77,13 @@ test('X-3 : blindage 10 % sur la coque à 300 000 : +30 000 au total et à la li
   assert.equal(c.prix, 390000); assert.equal(c.lignes[0].cout, 90000); assert.equal(c.armure, 11);
 });
 
-test('X-3 : arrondi au demi supérieur au crédit (333 335 à 10 % → 33 334) et vitesse plancher 0', async () => {
+test('X-3 : arrondi au demi supérieur au crédit (333 335 à 10 % → 33 334) et vitesse négative gardée (H-6)', async () => {
   const w = await monde();
   const r = (await w.ok({ coque: 'rond', choix: [L('modifications', 'blindage')] })).resultat;
   assert.equal(r.prix, 333335 + 33334); assert.equal(r.lignes[0].cout, 33334);
-  const v = (await w.ok({ coque: 'fregate-r', choix: [L('modifications', 'vif')] })).resultat;
-  assert.equal(v.vitesse, 0);
+  const vr = await w.ok({ coque: 'fregate-r', choix: [L('modifications', 'vif')] });
+  assert.equal(vr.resultat.vitesse, -6);
+  assert.ok(codes(vr).includes('vitesse_negative'));
 });
 
 test('X-3 : cale visant soute-r rend des soutes 20 au lieu de 10 ; sans modification 10, sans soute null', async () => {
