@@ -243,6 +243,7 @@ test('0031 : montée depuis 0030 avec le semis, conceptions gardées, equipage N
   db.exec('ALTER TABLE swn_conceptions ADD COLUMN equipage INTEGER');
   // 0032: the seed writes the optional columns of the catalogue too (stubs for the duration of the seed).
   const c32 = { modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse', 'reparation_min', 'effet_pct', 'echange_arrondi'], amenagements: ['effet', 'rend_puissance', 'rend_masse', 'soute', 'soute_par_classe', 'reduction_cout_pct', 'reduction_base'] };
+  db.exec('ALTER TABLE swn_catalogue_coques ADD COLUMN moteur_spike INTEGER'); // 0042: the seed writes it (stub for the seed only)
   for (const [t, cs] of Object.entries(c32)) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} ADD COLUMN ${c} INTEGER`);
   // The seed draws keys (0037): stand-in columns and tables for the seed only.
   db.exec('ALTER TABLE univers ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN creee_via TEXT; ALTER TABLE sections ADD COLUMN cle TEXT');
@@ -252,11 +253,12 @@ test('0031 : montée depuis 0030 avec le semis, conceptions gardées, equipage N
   apresSemis(db);
   db.exec('DROP TABLE cles_anciennes; DROP TABLE univers_cles_anciennes; ALTER TABLE univers DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN creee_via; ALTER TABLE sections DROP COLUMN cle');
   for (const [t, cs] of Object.entries(c32)) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} DROP COLUMN ${c}`);
+  db.exec('ALTER TABLE swn_catalogue_coques DROP COLUMN moteur_spike');
   db.exec('ALTER TABLE swn_conceptions DROP COLUMN equipage');
   const n = () => (db.prepare('SELECT COUNT(*) n FROM swn_conceptions').get() as any).n as number;
   const avant = db.prepare('SELECT fiche_id, coque_cle, choix, resultat, version FROM swn_conceptions ORDER BY fiche_id').all();
   assert.ok(n() >= 2);
-  assert.deepEqual(migrate(db), [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]);
+  assert.deepEqual(migrate(db), [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42]);
   assert.deepEqual(db.prepare('SELECT fiche_id, coque_cle, choix, resultat, version FROM swn_conceptions ORDER BY fiche_id').all(), avant);
   assert.equal((db.prepare('SELECT COUNT(*) n FROM swn_conceptions WHERE equipage IS NOT NULL').get() as any).n, 0);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
