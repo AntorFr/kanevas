@@ -31,6 +31,8 @@ export interface TableJoueur {
   mesPions: string[];
   /** Remote play is on, the table has started, the reader is a real player owning a token she sees. */
   deplacement: boolean;
+  /** The setting « Jeu à distance » itself, for the line « Seul le MJ déplace les pions. » of a reader who owns no token. */
+  jeuADistance: boolean;
 }
 export type TableLue = TableMJ | TableJoueur | { commencee: false; peutEcrire?: true };
 
@@ -145,8 +147,9 @@ export function lireTable(db: Db, acteur: Acteur, universId: number, carteId: nu
   const v = vueJoueurDe(db, acteur, role, universId, l, t, etat);
   const siens = new Set(mesPropres(db, l.id, acteur.compteId));
   const mesPions = (v.pions as { id: string }[]).filter((p) => siens.has(p.id)).map((p) => p.id);
-  const deplacement = role === 'joueur' && !acteur.modeJoueur && mesPions.length > 0 && jeuADistance(db, universId);
-  return { commencee: true, version: t.version, document: v.document, pions: v.pions, brouillard: v.brouillard, vue: v.vue, mesPions, deplacement };
+  const reglage = jeuADistance(db, universId);
+  const deplacement = role === 'joueur' && !acteur.modeJoueur && mesPions.length > 0 && reglage;
+  return { commencee: true, version: t.version, document: v.document, pions: v.pions, brouillard: v.brouillard, vue: v.vue, mesPions, deplacement, jeuADistance: reglage };
 }
 
 /** The « Jeu à distance » setting of the maps tool, read at each call (AD-battlemap-distance-2), never cached. */

@@ -38,7 +38,7 @@ interface TableMJ { commencee: true; version: number; peutEcrire: true; etat: { 
 interface TableJoueur {
   commencee: true; version: number; document: Document; pions: PionVu[]; brouillard: string; vue: Rect | null;
   /** The tokens she owns and sees, and whether she may drag (the server decides: AD-battlemap-distance-3). */
-  mesPions?: string[]; deplacement?: boolean;
+  mesPions?: string[]; deplacement?: boolean; jeuADistance?: boolean;
 }
 type Table = TableMJ | TableJoueur | { commencee: false; peutEcrire?: true };
 
@@ -234,7 +234,7 @@ function Partie({
   // The player's drag: what the server said she may do (`deplacement`), withdrawn while the stream is down. No rule is kept here.
   const siens = useMemo(() => new Set(gm ? [] : (table as TableJoueur).mesPions ?? []), [gm, table]);
   const glissable = !gm && (table as TableJoueur).deplacement === true && !perdue;
-  const coupe = !gm && suffixe === '' && (table as TableJoueur).deplacement === false && siens.size > 0;
+  const coupe = !gm && suffixe === '' && (table as TableJoueur).jeuADistance === false;
 
   const dire = useCallback((t: string) => { setMessage(t); setTimeout(() => setMessage(''), 3500); }, []);
 
