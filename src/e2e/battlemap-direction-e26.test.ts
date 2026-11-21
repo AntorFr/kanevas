@@ -79,7 +79,7 @@ describe('E-26 Direction artistique au navigateur', { skip: skipBrowser }, () =>
     const champ = panneau.getByRole('textbox', { name: 'Demander à Kanevas' });
     await champ.waitFor();
     assert.equal(await champ.inputValue(), 'Propose une direction artistique pour cet univers.');
-    assert.equal(await panneau.getByText('Propose une direction artistique pour cet univers.', { exact: true }).count(), 0, 'non envoyée : aucun message dans le fil');
+    await panneau.getByText(/^Demandez-moi de chercher/).waitFor(); // non envoyée : le fil n’a que son invitation
   });
 
   it('nominal : texte + image choisie dans la médiathèque (devenue MJ seul), enregistré, retrouvé au rechargement', async () => {
