@@ -15,7 +15,7 @@
 //   etats       : error → « Impossible de charger la direction artistique. » + « Réessayer »; loading text
 //   captures    : both themes, 1440 / 768 / 390 px, under $E26_CAPTURES (default: the temp dir)
 import assert from 'node:assert/strict';
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
@@ -82,7 +82,10 @@ describe('E-26 Direction artistique au navigateur', { skip: skipBrowser }, () =>
     await panneau.getByText(/^Demandez-moi de chercher/).waitFor(); // non envoyée : le fil n’a que son invitation
   });
 
-  it('assistant : demande envoyée → bannière (survit au rechargement) → Annuler ; sauvegarde à la main ; texte écrit ; hors connexion', async () => {
+  // The stub's art-direction answer reads `competences/*.md` from the build. A build made with a `package.json` that does not
+  // copy them yet (the chain takes it from `main`, which lacks it until the epic is integrated) answers « Je n’ai pas pu répondre ».
+  const sansCompetences = existsSync('dist/outils/battlemap/competences/direction-artistique.md') ? false : 'le build n’embarque pas outils/battlemap/competences (package.json de main)';
+  it('assistant : demande envoyée → bannière (survit au rechargement) → Annuler ; sauvegarde à la main ; texte écrit ; hors connexion', { skip: sansCompetences }, async () => {
     const panneau = antor.getByRole('complementary', { name: /Kanevas — assistant/ });
     const champ = panneau.getByRole('textbox', { name: 'Demander à Kanevas' });
     const bandeau = antor.getByRole('status').filter({ hasText: 'Texte modifié par l’assistant' });
