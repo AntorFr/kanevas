@@ -28,13 +28,6 @@ an optional `curseur` and return `curseur` (`null` on the last page); the list s
 Read parameters (`tools/list` gives them all): `chercher` and `chercher_texte` take `mots` and optionally `type`, `curseur`; `lire_fiche` and `mentions` take `fiche` (`mentions` also `curseur`); `lire_section` takes `fiche`, `sectionId`; `lire_historique` takes `fiche` (optional) and `curseur`.
 
 A `lecture` token does not list the write tools; calling one by name answers `lecture_seule`.
-The tools of a game-system module ride the same door (AD-outils-5): where the module is active and the universe's
-system has it, `swn_lire_systeme` (read) and, with an `ecriture` token of a GM, the nine write tools of the system map
-(`swn_placer_astre`, `swn_deplacer_astre`, `swn_completer_astre`, `swn_tracer_formation`, `swn_ancrer_systeme`,
-`swn_placer_element`, `swn_completer_element`, `swn_masquer_systeme`, `swn_retirer`) — the same objects as the assistant's,
-fed by `catalogueDe`; a player's token reads only (`swn_lire_systeme`). `swn_galaxie_trajet` stays the assistant's. Today the
-module is active only under `KANEVAS_STUB=1` / `NODE_ENV=test`.
-
 Not offered on this door: `generer_image`, `proposer_mise_a_jour`, `modifier_section`, `ajouter_a_section`.
 
 ## Fingerprints (precondition of a write)
@@ -93,22 +86,3 @@ curl -s -X POST http://localhost:3001/mcp \
 ```
 
 It answers each universe with its `adresse` (`/mcp/<key>`); post `tools/list` there for the tools and their parameters.
-
-### The map tools, by hand (stub server)
-
-`JETON_BOUCHON` reaches « Essai Kanka » only, which has no game system: its `/mcp/essai-kanka` lists no `swn_*` tool. The universe
-that has them is « Éneria d'essai » (`/mcp/eneria-d-essai`), so mint a token for it with the stub session (account `antor`, GM):
-
-```bash
-curl -s -c jar -o /dev/null -X POST http://localhost:3001/connexion-bouchon -d compte=antor
-TOKEN=$(curl -s -b jar -X POST http://localhost:3001/api/compte/jetons -H 'Content-Type: application/json' \
-  -d '{"nom":"Agent","dureeJours":30,"acces":{"tous":true,"niveauTous":"ecriture"}}' | jq -r .valeur)
-mcp() { curl -s -X POST http://localhost:3001/mcp/eneria-d-essai -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' -d "$1"; }
-mcp '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
-mcp '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"swn_lire_systeme","arguments":{"q":0,"r":0}}}'
-```
-
-The first lists the ten `swn_*` tools. Read a drawn system (`etat: "tire"`) with `swn_lire_systeme`, then complete a body with
-`swn_completer_astre` (`cle`, `version_lue`, `version_systeme` as read, `nom`, `aspect`, `lien`): the first write anchors the system;
-reload E-23 as the GM to see the body named, linked and « Défini ». The automated proof is `src/routes/mcp-swn.test.ts`.
