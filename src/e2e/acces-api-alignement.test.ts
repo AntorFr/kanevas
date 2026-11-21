@@ -1,3 +1,4 @@
+// ecrans: acces-api, fiche
 // Browser checks of the E-18 / E-9 alignment on the mock-ups (docs/maquettes/e18-acces-api.html, e09-fiche-importee.html).
 //
 // TEST PLAN

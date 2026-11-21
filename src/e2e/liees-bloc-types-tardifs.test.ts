@@ -1,3 +1,4 @@
+// ecrans: fiche
 // The « Fiches liées » block shows no group before the types of the universe are known (B-64, AD-120):
 // the plural label must never fall back to the raw type (« personnage (2) ») while the list loads.
 import assert from 'node:assert/strict';
@@ -39,7 +40,7 @@ describe('kanevas-fiches-liees-bloc, types lus tardivement (B-64)', { skip: skip
     const fin = Date.now() + 1200;
     while (Date.now() < fin) {
       vus.push(await b.innerText());
-      await new Promise((r) => setTimeout(r, 50));
+      await antor.evaluate(() => new Promise((r) => requestAnimationFrame(() => r(null)))); // one frame, then sample again
     }
     assert.ok(vus.every((t) => !/personnage \(2\)/.test(t)), 'le type brut a été affiché');
     assert.ok(vus.every((t) => !/Personnages \(2\)/.test(t)), 'un groupe a été affiché avant les types');

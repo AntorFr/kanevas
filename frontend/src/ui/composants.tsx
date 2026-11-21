@@ -11,8 +11,8 @@ function useInactif(disabled?: boolean, enCours?: boolean, ecrit?: boolean): boo
 }
 
 type PropsBouton = ButtonHTMLAttributes<HTMLButtonElement> & {
-  /** Visual role: neutral by default; `fantome` has no background. */
-  variante?: 'neutre' | 'principal' | 'danger' | 'fantome';
+  /** Visual role: neutral by default; `fantome` has no background; `mj` is the GM's amber (a writing gesture of the GM). */
+  variante?: 'neutre' | 'principal' | 'danger' | 'fantome' | 'mj';
   petit?: boolean;
   /** Request in flight: label becomes « … », a second trigger is ignored. */
   enCours?: boolean;
@@ -353,8 +353,8 @@ export function BasculeMjJoueur({ mode, onChange }: { mode: 'mj' | 'joueur'; onC
   );
 }
 
-/** Modal dialog: focus enters and stays, Escape closes, focus returns to the opener. */
-export function Fenetre({ titre, onFermer, icone: Icone, children }: { titre: string; onFermer: () => void; icone?: LucideIcon; children: ReactNode }) {
+/** Modal dialog: focus enters and stays, Escape closes, focus returns to the opener. `large`: the image variant (sized to its picture, charte « Body illustration »). */
+export function Fenetre({ titre, onFermer, icone: Icone, large, children }: { titre: string; onFermer: () => void; icone?: LucideIcon; large?: boolean; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const id = useId();
   useEffect(() => {
@@ -387,7 +387,7 @@ export function Fenetre({ titre, onFermer, icone: Icone, children }: { titre: st
   }, [onFermer]);
   return (
     <div className="voile">
-      <div className="fenetre" role="dialog" aria-modal="true" aria-labelledby={id} ref={ref} tabIndex={-1}>
+      <div className={`fenetre${large ? ' image-large' : ''}`} role="dialog" aria-modal="true" aria-labelledby={id} ref={ref} tabIndex={-1}>
         {Icone && (
           <div className="ic-fenetre">
             <Icone size={18} strokeWidth={1.75} aria-hidden="true" />
@@ -443,5 +443,17 @@ export function Case({
       <input type="checkbox" {...reste} />
       {etiquette}
     </label>
+  );
+}
+
+/**
+ * Conversion line of the GM's movement form (charte, « Conversion line »): « = Orbite 4 · 7 h » in a polite live region.
+ * The field it explains points to it by `aria-describedby={id}`.
+ */
+export function LigneConversion({ id, texte }: { id: string; texte: string }) {
+  return (
+    <p id={id} className="ligne-conversion" aria-live="polite">
+      {texte}
+    </p>
   );
 }

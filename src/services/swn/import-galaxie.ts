@@ -18,6 +18,12 @@ export const NATURES_GALAXIE = [
   { nom: 'systemes', libelle: 'système', libellePluriel: 'systèmes' },
   { nom: 'zones', libelle: 'territoire', libellePluriel: 'territoires' },
   { nom: 'routes', libelle: 'route', libellePluriel: 'routes' },
+  // The atlas of a system (AD-atlas-3): `systemes` above also counts the change of a `transition`.
+  { nom: 'etoiles', libelle: 'étoile', libellePluriel: 'étoiles' },
+  { nom: 'corps', libelle: 'corps', libellePluriel: 'corps' },
+  { nom: 'points', libelle: 'point', libellePluriel: 'points' },
+  { nom: 'formations', libelle: 'zone', libellePluriel: 'zones' },
+  { nom: 'elements', libelle: 'élément', libellePluriel: 'éléments' },
 ];
 
 export const MAX_SYSTEMES = 2000, MAX_ZONES = 500, MAX_ROUTES = 4000;

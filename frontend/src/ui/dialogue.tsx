@@ -1,4 +1,4 @@
-import { Trash2, type LucideIcon } from 'lucide-react';
+import { Anchor, Trash2, type LucideIcon } from 'lucide-react';
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 
 import { Bouton } from './composants';
@@ -24,9 +24,12 @@ export function BoiteDialogue({
   desactive,
   libelleEnCours,
   reperage,
-  icone: Icone = Trash2,
+  icone,
   iconeAction,
   variante = 'danger',
+  formulaire,
+  focusChamp,
+  annulation,
   children,
 }: {
   titre: string;
@@ -47,9 +50,16 @@ export function BoiteDialogue({
   /** Optional glyph before the confirmation label. */
   iconeAction?: LucideIcon;
   /** `danger` (red bin, danger button) or `mj` (GM amber badge, primary button): a reversible GM closing. */
-  variante?: 'danger' | 'mj';
+  variante?: 'danger' | 'mj' | 'neutre';
+  /** The dialog carries fields: `role="dialog"` (a pure confirmation stays `alertdialog`). */
+  formulaire?: boolean;
+  /** The focus enters on the first field rather than on « Annuler » (« Ajouter », « Rayon »; the anchoring keeps « Annuler »). */
+  focusChamp?: boolean;
+  /** Label of the neutral button when the default « Annuler » reads wrong (« Rester »). */
+  annulation?: string;
   children?: ReactNode;
 }) {
+  const Pastille = icone ?? (variante === 'neutre' ? Anchor : Trash2);
   const ref = useRef<HTMLDivElement>(null);
   const annuler = useRef<HTMLButtonElement>(null);
   const idTitre = useId();
@@ -61,7 +71,8 @@ export function BoiteDialogue({
 
   useEffect(() => {
     const ouvrant = document.activeElement as HTMLElement | null;
-    annuler.current?.focus();
+    const champ = focusChamp ? ref.current?.querySelector<HTMLElement>('input,textarea,select,[role="radio"][tabindex="0"]') : null;
+    (champ ?? annuler.current)?.focus();
     const touche = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -105,26 +116,26 @@ export function BoiteDialogue({
     >
       <div
         className="boite"
-        role="alertdialog"
+        role={formulaire ? 'dialog' : 'alertdialog'}
         aria-modal="true"
         aria-labelledby={idTitre}
         aria-describedby={idTexte}
         ref={ref}
       >
-        <span className={`boite-icone${variante === 'mj' ? ' mj' : ''}`} aria-hidden="true">
-          <Icone size={16} strokeWidth={1.75} />
+        <span className={`boite-icone${variante === 'danger' ? '' : ` ${variante}`}`} aria-hidden="true">
+          <Pastille size={16} strokeWidth={1.75} />
         </span>
         <div className="boite-corps">
           <h2 id={idTitre}>{titre}</h2>
           <p id={idTexte}>{texte}</p>
-          {children}
+          {children && (formulaire ? <div className="boite-champs">{children}</div> : children)}
           <div className="boite-actions">
             <button type="button" className="bouton neutre" ref={annuler} onClick={onFermer}>
-              {action ? 'Annuler' : 'Fermer'}
+              {annulation ?? (action ? 'Annuler' : 'Fermer')}
             </button>
             {action && <Bouton
               icone={iconeAction}
-              variante={variante === 'mj' ? 'principal' : 'danger'}
+              variante={variante === 'neutre' ? 'mj' : variante === 'mj' ? 'principal' : 'danger'}
               enCours={libelleEnCours ? undefined : enCours}
               disabled={desactive || (libelleEnCours ? enCours : undefined)}
               ecrit

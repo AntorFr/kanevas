@@ -12,3 +12,8 @@ export * from './blocs';
 export * from './markdown';
 export * from './editeur';
 export * from './ligne-fiche-liee';
+export * from './onglets';
+export * from './curseur';
+export * from './champ-couleur';
+export * from './liste-choix';
+export * from './barre-application';

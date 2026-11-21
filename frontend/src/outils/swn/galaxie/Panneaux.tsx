@@ -1,8 +1,10 @@
 import { Calculator, ChevronDown, Link2, MapPin, Pencil, Route as IconeRoute, Search, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { Bouton } from '../../../ui';
+import { CommutateurMasque } from './Masquer';
 import { cases, distanceHex } from './geo';
 import type { PanneauSysteme, Reference, Resultat, VueTrajet } from './types';
 
@@ -95,12 +97,18 @@ export type EtatPanneau =
   | { k: 'ok'; s: PanneauSysteme };
 
 /** The selected system's panel, or « Système non défini » for a generated hexagon. */
-export interface GestesSysteme { onModifier: () => void; onRetirer: () => void; onPromouvoir: (q: number, r: number) => void }
+export interface GestesSysteme {
+  onModifier: () => void; onRetirer: () => void; onPromouvoir: (q: number, r: number) => void;
+  /** The « Secret (MJ seul) » switch: where it writes, the galaxy's token for a drawn hexagon, and what follows a write. */
+  masque: { universId: number; galaxieId: number; versionGalaxie: number; onFait: () => void; onRecharger: () => void; onIntrouvable: () => void };
+}
 
-export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, onVers, onReessayer, gestes }: {
+export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, onVers, onReessayer, adresseInterieur, gestes }: {
   selection: { k: 'systeme'; cle: string } | { k: 'genere'; q: number; r: number };
   etat: EtatPanneau; secret?: boolean; mesure: Reference | null;
   onDepuis: (r: Resultat) => void; onVers: (r: Resultat) => void; onReessayer: () => void;
+  /** The address of E-23 for a hexagon: « Ouvrir le système » (a link, for everyone who reads the panel). */
+  adresseInterieur: (q: number, r: number) => string;
   /** The GM's gestures (absent in Player mode and for a player: the buttons are not rendered). */
   gestes?: GestesSysteme;
 }) {
@@ -117,7 +125,13 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
         <h2>Système non défini</h2>
         <dl className="gx-kv"><dt>Coordonnées</dt><dd>{selection.q}, {selection.r}</dd>
           {d !== null && <><dt>Distance</dt><dd>{cases(d)}{mesure ? ` depuis ${mesure.nom}` : ''}</dd></>}</dl>
+        <div className="gx-actions"><Link className="bouton neutre" to={adresseInterieur(selection.q, selection.r)}>Ouvrir le système</Link></div>
         {gestes && <div className="gx-actions"><Bouton icone={Pencil} ecrit onClick={() => gestes.onPromouvoir(selection.q, selection.r)}>Promouvoir ce système</Bouton></div>}
+        {gestes && (
+          <CommutateurMasque place={{ universId: gestes.masque.universId, galaxieId: gestes.masque.galaxieId, q: selection.q, r: selection.r }}
+            secret={false} tire jeton={gestes.masque.versionGalaxie} onFait={gestes.masque.onFait}
+            onRecharger={gestes.masque.onRecharger} onIntrouvable={gestes.masque.onIntrouvable} />
+        )}
       </section>
     );
   }
@@ -126,6 +140,7 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
     <section className="gx-bloc gx-panneau"><p className="echec" role="alert">Impossible de charger le système. <Bouton petit onClick={onReessayer}>Réessayer</Bouton></p></section>
   );
   const s = etat.s;
+  const estSecret = s.secret ?? secret ?? false;
   const ici: Resultat = { cle: selection.cle, nom: s.nom, q: s.q, r: s.r };
   const adresse = new URL(s.lien, window.location.origin).toString();
   const d = mesure && mesure.cle !== selection.cle ? distanceHex(s, mesure) : null;
@@ -140,17 +155,23 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
   }
   return (
     <section className="gx-bloc gx-panneau" aria-label="Système sélectionné">
-      <div className="gx-tete"><h2>{s.nom}</h2>{secret && <span className="pastille mj">MJ seul</span>}</div>
+      <div className="gx-tete"><h2>{s.nom}</h2>{estSecret && <span className="pastille mj">MJ seul</span>}</div>
       <dl className="gx-kv">
         <dt>Taille</dt><dd>{TAILLES[s.taille] ?? `Taille ${s.taille}`}</dd>
         {s.notes !== '' && <><dt>Notes</dt><dd className="gx-notes">{s.notes}</dd></>}
         {d !== null && mesure && <><dt>Distance</dt><dd>{cases(d)} depuis {mesure.nom}</dd></>}
         {s.routes.length > 0 && <><dt>Routes</dt><dd><ul className="gx-routes">{s.routes.map((r) => <li key={r.avec.cle}>{r.avec.nom} · {cases(r.longueur)}</li>)}</ul></dd></>}
       </dl>
+      {gestes && (
+        <CommutateurMasque place={{ universId: gestes.masque.universId, galaxieId: gestes.masque.galaxieId, q: s.q, r: s.r }}
+          secret={estSecret} tire={false} jeton={s.version} onFait={gestes.masque.onFait}
+          onRecharger={gestes.masque.onRecharger} onIntrouvable={gestes.masque.onIntrouvable} />
+      )}
       <div className="gx-actions">
         <Bouton icone={IconeRoute} onClick={() => onDepuis(ici)}>Trajet depuis ici</Bouton>
         <Bouton icone={MapPin} onClick={() => onVers(ici)}>Trajet vers ici</Bouton>
         <Bouton icone={Link2} onClick={() => void copier()}>Copier le lien</Bouton>
+        <Link className="bouton neutre" to={adresseInterieur(s.q, s.r)}>Ouvrir le système</Link>
         {copie && <span role="status" className="gx-note">Lien copié</span>}
       </div>
       {gestes && (

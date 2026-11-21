@@ -5,19 +5,28 @@ import type { Ecran } from '../registre';
 import {
   Avatar,
   Bandeau,
+  BarreApplication,
   BlocSection,
   BoiteDialogue,
   Bouton,
   BoutonIcone,
   Case,
   Champ,
+  ChampCouleur,
+  Curseur,
   Interrupteur,
+  LigneConversion,
   LigneFichier,
   LigneRelation,
+  ListeChoix,
   Menu,
+  Onglets,
+  idPanneau,
+  idOnglet,
   PageIntrouvable,
   PastilleAudience,
   PastilleRole,
+  Segments,
   SqueletteFiche,
   useToasts,
   Vignette,
@@ -55,6 +64,16 @@ function Demo() {
   const [envoi, setEnvoi] = useState(false);
   const [secrete, setSecrete] = useState(true);
   const [sur, setSur] = useState(false);
+  const [neutre, setNeutre] = useState<'aucun' | 'formulaire' | 'confirmation'>('aucun');
+  const [mode, setMode] = useState<'orbite' | 'heure'>('orbite');
+  const [onglet, setOnglet] = useState<'generateur' | 'aspects' | 'carte'>('generateur');
+  const [curseur, setCurseur] = useState(0.5);
+  const [couleur, setCouleur] = useState('#3a4cc0');
+  const [choix, setChoix] = useState<string | null>('b');
+  const [decompte, setDecompte] = useState<string | undefined>(undefined);
+  const [erreurCurseur, setErreurCurseur] = useState(false);
+  const [secteur, setSecteur] = useState('#12abcd');
+  const [applique, setApplique] = useState(0);
 
   return (
     <div className="demo">
@@ -265,12 +284,119 @@ function Demo() {
         </Etat>
       </Groupe>
 
+      <Groupe id="d-mj" titre="Écriture du MJ">
+        <Etat titre="Bouton mj, segment coché ambre, ligne de conversion">
+          <div className="demo-ligne">
+            <Bouton variante="mj">Système</Bouton>
+            <Bouton variante="mj" icone={Plus}>Ajouter</Bouton>
+            <Bouton variante="mj" disabled>Désactivé</Bouton>
+          </div>
+          <Segments
+            legende="Unité"
+            variante="mj"
+            options={[{ valeur: 'orbite', libelle: 'Orbite' }, { valeur: 'heure', libelle: 'Heure' }]}
+            valeur={mode}
+            onChange={setMode}
+          />
+          <input aria-label="Orbite" aria-describedby="demo-conv" defaultValue="4" />
+          <LigneConversion id="demo-conv" texte="= Orbite 4 · 7 h" />
+        </Etat>
+        <Etat titre="Boîte neutre : formulaire (dialog), confirmation (alertdialog)">
+          <div className="demo-ligne">
+            <Bouton onClick={() => setNeutre('formulaire')}>Ouvrir le formulaire</Bouton>
+            <Bouton onClick={() => setNeutre('confirmation')}>Ouvrir la confirmation</Bouton>
+          </div>
+        </Etat>
+      </Groupe>
+
+      <Groupe id="d-onglets" titre="Onglets">
+        <Etat titre="Trois onglets, un seul arrêt de tabulation">
+          <Onglets
+            etiquette="Réglages de la galaxie"
+            prefixe="demo"
+            actif={onglet}
+            onChange={setOnglet}
+            onglets={[{ id: 'generateur', libelle: 'Générateur' }, { id: 'aspects', libelle: 'Aspects' }, { id: 'carte', libelle: 'Carte' }]}
+          />
+          <div role="tabpanel" id={idPanneau('demo', onglet)} aria-labelledby={idOnglet('demo', onglet)}>Panneau : {onglet}</div>
+        </Etat>
+      </Groupe>
+
+      <Groupe id="d-curseur" titre="Curseur">
+        <Etat titre="Valeur, erreur, désactivé">
+          <Curseur etiquette="Densité des étoiles" valeur={curseur} min={0} max={1} onChange={setCurseur} />
+          <Bouton onClick={() => setErreurCurseur(!erreurCurseur)}>Montrer l’erreur du curseur</Bouton>
+          <Curseur etiquette="Rayon" valeur={2} min={0} max={4} pas={1} onChange={() => {}} erreur={erreurCurseur ? 'Hors des bornes.' : undefined} />
+          <Curseur etiquette="Bruit" valeur={0.25} min={0} max={1} onChange={() => {}} disabled />
+        </Etat>
+      </Groupe>
+
+      <Groupe id="d-champ-couleur" titre="Saisie de couleur">
+        <Etat titre="Valide, invalide, vide">
+          <ChampCouleur etiquette="Couleur de la faction" valeur={couleur} onChange={setCouleur} />
+          <ChampCouleur etiquette="Couleur du secteur" valeur={secteur} onChange={setSecteur} />
+          <ChampCouleur etiquette="Couleur libre" valeur="" onChange={() => {}} />
+        </Etat>
+      </Groupe>
+
+      <Groupe id="d-liste-choix" titre="Liste de choix">
+        <Etat titre="Deux groupes, une pastille">
+          <ListeChoix
+            etiquette="Catalogue d’aspects"
+            selection={choix}
+            onChoisir={setChoix}
+            groupes={[
+              { titre: 'Système', options: [{ id: 'a', libelle: 'Géante rouge', vignette: <Flag size={20} aria-hidden="true" /> }, { id: 'b', libelle: 'Naine blanche', vignette: <Flag size={20} aria-hidden="true" />, pastille: { sens: 'mj', texte: 'modifié' } }] },
+              { titre: 'Personnel', options: [{ id: 'c', libelle: 'Nébuleuse', vignette: <Flag size={20} aria-hidden="true" /> }] },
+            ]}
+          />
+        </Etat>
+      </Groupe>
+
+      <Groupe id="d-barre" titre="Barre d’application">
+        <Etat titre="Rien, puis un décompte">
+          <div className="demo-ligne">
+            <Bouton onClick={() => setDecompte(decompte ? undefined : '12 systèmes déplacés')}>Basculer le décompte</Bouton>
+            <span>Appliqué : {applique}</span>
+          </div>
+          <BarreApplication decompte={decompte} detail={decompte ? 'dont 2 ancrés' : undefined} onAppliquer={() => setApplique((n) => n + 1)} />
+        </Etat>
+      </Groupe>
+
       <Groupe id="d-chargement" titre="Chargement">
         <Etat titre="Squelette de fiche">
           <SqueletteFiche />
         </Etat>
       </Groupe>
 
+      {neutre === 'formulaire' && (
+        <BoiteDialogue
+          variante="neutre"
+          formulaire
+          focusChamp
+          titre="Ancrer le système"
+          texte="Le système tiré sera posé sur la carte."
+          action="Ancrer"
+          onFermer={() => setNeutre('aucun')}
+          onConfirmer={() => setNeutre('aucun')}
+        >
+          <label>
+            Rayon
+            <input defaultValue="4" aria-describedby="demo-conv-d" />
+          </label>
+          <LigneConversion id="demo-conv-d" texte="= Orbite 4 · 7 h" />
+        </BoiteDialogue>
+      )}
+      {neutre === 'confirmation' && (
+        <BoiteDialogue
+          variante="neutre"
+          titre="Ancrer ici ?"
+          texte="Aucun champ à remplir."
+          action="Ancrer"
+          onFermer={() => setNeutre('aucun')}
+          onConfirmer={() => setNeutre('aucun')}
+        />
+      )}
       {dialogue && (
         <BoiteDialogue
           titre="Retirer la section « Apparence » ?"

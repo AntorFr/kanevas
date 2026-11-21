@@ -116,7 +116,7 @@ test('zones : secrète écrite, contour croisé / court refusés', () => {
   assert.equal(w.q('SELECT version FROM swn_zones WHERE cle=?', 'triangle')[0].version, 1);
 });
 
-test('Léa ne voit rien du secret : vue, panneau, trajet, recherche, bloc recoupé identique', () => {
+test('Léa ne voit rien du secret : vue, panneau, trajet, recherche ; la case masquée est vide (B-97), le reste du bloc identique', () => {
   const w = monde();
   const lea = w.a('lea');
   const { genere } = positions(w);
@@ -125,7 +125,11 @@ test('Léa ne voit rien du secret : vue, panneau, trajet, recherche, bloc recoup
   e.placerSysteme(w.db, w.a('antor'), w.univers, w.g, { nom: 'Port Noir', q: genere[0], r: genere[1], secret: true });
   e.tracerRoute(w.db, w.a('antor'), w.univers, w.g, { depuis: 'port-noir', vers: 'vael', publique: false });
   e.dessinerZone(w.db, w.a('antor'), w.univers, w.g, { nom: 'Triangle', contour: [[2, 2], [6, 2], [4, 6]], secret: true });
-  assert.equal(JSON.stringify(lireBlocs(w.db, lea, w.univers, w.g, R0, R1)), avant);
+  // B-97: a hidden system is an empty hexagon, its drawn star included; every other hexagon reads as before.
+  const attendu = JSON.parse(avant);
+  for (const b of attendu.blocs) b.generes = b.generes.filter(([q, r]: number[]) => !(q === genere[0] && r === genere[1]));
+  assert.ok(JSON.stringify(JSON.parse(avant).blocs).includes(`[${genere[0]},${genere[1]}]`), 'l\'étoile tirée était visible avant');
+  assert.equal(JSON.stringify(lireBlocs(w.db, lea, w.univers, w.g, R0, R1)), JSON.stringify(attendu));
   assert.equal(JSON.stringify(lireBlocsGeneres(w.db, lea, w.univers, w.g, R0, R1)), blocsAvant);
   assert.equal(e.COULEURS.length > 0, true);
   const code = (f: () => unknown) => { try { f(); } catch (x: any) { return x.code; } return 'aucune'; };

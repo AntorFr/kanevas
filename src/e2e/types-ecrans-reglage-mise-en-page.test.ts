@@ -1,3 +1,4 @@
+// ecrans: parametres, systeme
 // Layout of the « Types de fiche » panels (E-14, E-15): no bullets, aligned with the panel, tab label on one line at 390 px.
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';

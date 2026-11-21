@@ -1,3 +1,4 @@
+// ecrans: fiche, vue-ensemble
 // Feature-level complements for kanevas-import-arbre (B-35, P-12, P-10; E-8 tree, E-9 trail and « Contient »; AD-99, AD-104),
 // written from docs/parcours.md and docs/ecrans.md only (section « Ce que `kanevas-import-arbre` construit »).
 // Cases that arbre-ensemble-besoin.test.ts leaves open: an unreadable ancestor in the middle of the trail,

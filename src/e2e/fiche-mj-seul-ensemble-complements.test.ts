@@ -1,3 +1,4 @@
+// ecrans: fiches, recherche
 // Complements of the independent black-box tests of `kanevas-fiche-mj-seul` (B-57), written from the need only
 // (docs/parcours.md B-57, docs/ecrans.md E-8/E-9/E-17 « Visibility »): the badge where a sheet line is drawn outside
 // the grid (E-17 search, « Relier » selector), its absence for a player and in player mode, the filter kept

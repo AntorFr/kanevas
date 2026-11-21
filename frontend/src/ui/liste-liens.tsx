@@ -80,10 +80,12 @@ interface Props {
   onCourant: (i: number) => void;
   onChoisir: (f: FicheLien) => void;
   onReessayer: () => void;
+  /** Text of the empty state; default « Aucune fiche. ». */
+  vide?: string;
 }
 
 /** The list of sheets under the field: loading, empty, error and 50+ states of docs/ecrans.md. */
-export function ListeLiens({ id, recherche, courant, onCourant, onChoisir, onReessayer }: Props) {
+export function ListeLiens({ id, recherche, courant, onCourant, onChoisir, onReessayer, vide = 'Aucune fiche.' }: Props) {
   const { types } = useTypes();
   // Keeps the focus in the field: a click on the list must not take it.
   const garder = (e: { preventDefault: () => void }) => e.preventDefault();
@@ -109,7 +111,7 @@ export function ListeLiens({ id, recherche, courant, onCourant, onChoisir, onRee
   if (recherche.fiches.length === 0) {
     return (
       <div className="liste-liens" id={id} role="status">
-        <div className="option etat">Aucune fiche.</div>
+        <div className="option etat">{vide}</div>
       </div>
     );
   }
