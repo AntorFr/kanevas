@@ -78,14 +78,23 @@ const token = (page: Any, titre: string) => page.getByRole('button', { name: rxE
 async function elements(): Promise<Any[]> {
   return (await api(antor, 'GET', base())).body.elements;
 }
-/** Re-reads the first element through the API until `ok` holds (10 s deadline); the failure message carries the last value read. */
-async function elementAttendu(ok: (el: Any) => boolean, attendu: string): Promise<Any> {
-  const echeance = Date.now() + 10000;
-  let dernier: Any;
-  for (;;) {
-    dernier = (await elements())[0];
-    if (dernier && ok(dernier)) return dernier;
-    if (Date.now() >= echeance) assert.fail(`${attendu}, dernière lecture (${dernier?.x}, ${dernier?.y})`);
+/** Bound on an element coordinate, serialisable so it can run in the page. */
+type Borne = { champ: 'x' | 'y'; cible: number; tolerance: number };
+/** Waits in the page (no fixed sleep) until the first element read through the API holds every bound (10 s deadline); the failure message carries the last value read. */
+async function elementAttendu(page: Any, bornes: Borne[], attendu: string): Promise<Any> {
+  try {
+    const poignee = await page.waitForFunction(async ({ url, bornes }: { url: string; bornes: Borne[] }) => {
+      const w = window as Any;
+      const r = await fetch(url, { credentials: 'same-origin' });
+      if (!r.ok) return false;
+      const el = ((await r.json()).elements ?? [])[0];
+      w.__kvDernier = el ? `(${el.x}, ${el.y})` : '(aucun, aucun)';
+      return el && bornes.every((b) => Math.abs(el[b.champ] - b.cible) < b.tolerance) ? el : false;
+    }, { url: base(), bornes }, { timeout: 10000, polling: 100 });
+    return await poignee.jsonValue();
+  } catch (e) {
+    const dernier = await page.evaluate(() => (window as Any).__kvDernier).catch(() => undefined);
+    assert.fail(`${attendu}, dernière lecture ${dernier ?? '(aucune)'}`);
   }
 }
 /** Waits until the layout is laid out: background loaded (no `en-attente`) and the token box identical on two successive frames. */
@@ -218,7 +227,7 @@ test('token : zone ≥ 44 px, glisser puis recharger, clavier 1 % puis 5 %', opt
   await antor.mouse.move(cx + c.width * 0.2, cy + c.height * 0.1, { steps: 8 });
   await antor.mouse.up();
   await attendre(antor);
-  const e = await elementAttendu((el) => Math.abs(el.x - 70) < 3 && Math.abs(el.y - 60) < 3, 'attendu ≈ (70, 60)');
+  const e = await elementAttendu(antor, [{ champ: 'x', cible: 70, tolerance: 3 }, { champ: 'y', cible: 60, tolerance: 3 }], 'attendu ≈ (70, 60)');
   await antor.reload();
   await attendre(antor);
   const apres = await pos(antor, 'Maître Aldric');
@@ -230,10 +239,10 @@ test('token : zone ≥ 44 px, glisser puis recharger, clavier 1 % puis 5 %', opt
   await token(antor, 'Maître Aldric').focus();
   await antor.keyboard.press('ArrowRight');
   await attendre(antor);
-  await elementAttendu((el) => Math.abs(el.x - (x0 + 1)) < 0.01, 'flèche : +1 % attendu');
+  await elementAttendu(antor, [{ champ: 'x', cible: x0 + 1, tolerance: 0.01 }], 'flèche : +1 % attendu');
   await antor.keyboard.press('Shift+ArrowRight');
   await attendre(antor);
-  await elementAttendu((el) => Math.abs(el.x - (x0 + 6)) < 0.01, 'Maj+flèche : +5 % attendu');
+  await elementAttendu(antor, [{ champ: 'x', cible: x0 + 6, tolerance: 0.01 }], 'Maj+flèche : +5 % attendu');
   assert.ok((await texte(antor)).includes('Flèches : déplacer de 1 % (Maj : 5 %)'));
 });
 
