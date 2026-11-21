@@ -50,7 +50,7 @@ async function monde() {
   const astres = () => app.db.prepare('SELECT cle, genre, version, version_importee, fiche_id FROM swn_astres ORDER BY id').all() as any[];
   const fiche = (cle: string) => {
     const f = creerFiche(app.db, id('antor'), E, { type: 'lieu', titre: `Fiche ${cle}` });
-    app.db.prepare('UPDATE fiches SET cle_origine = ? WHERE id = ?').run(cle, f.id);
+    app.db.prepare('UPDATE fiches SET cle = ? WHERE id = ?').run(cle, f.id);
     return f.id as number;
   };
   return { app, id, E, gal, tok, req, put, ouvrir, un, t, interieur, dump, astres, fiche };
@@ -235,7 +235,7 @@ test('lot : comptes par nature, refus compris y compris pour une requête annul�
   assert.equal(clos.json().code, 'lot_clos');
 });
 
-test('jetons : contenu, autre outil, créateur plus MJ → 401 jeton_invalide, aucun lot, rien écrit', async () => {
+test('jetons : contenu, autre outil → 401 jeton_invalide ; créateur plus MJ → 403 ou 404 ; aucun lot, rien écrit', async () => {
   const w = await monde();
   w.fiche('fiche-essai');
   const lots0 = w.un('SELECT COUNT(*) n FROM lots_import').n;
@@ -250,7 +250,9 @@ test('jetons : contenu, autre outil, créateur plus MJ → 401 jeton_invalide, a
   await non(w.tok('antor', ['essai/g']).valeur);
   const mira = w.tok('mira', [G]).valeur;
   w.app.db.prepare("UPDATE membres SET role = 'joueur' WHERE compte_id = ? AND univers_id = ?").run(w.id('mira'), w.E);
-  await non(mira);
+  // B-46 revised (main): a lost role is no longer a 401, the token falls to what a player may; an import write needs a GM.
+  const ecrit = await w.put(atlas(), 'vael', undefined, mira);
+  assert.ok([403, 404].includes(ecrit.statusCode), `write ${ecrit.statusCode}`);
   assert.equal(w.un('SELECT COUNT(*) n FROM lots_import').n, lots0);
   assert.equal(w.dump(), base);
 });

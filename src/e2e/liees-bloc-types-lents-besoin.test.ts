@@ -20,7 +20,7 @@ let browser: Any;
 let U = 0;
 let portSel = 0;
 
-const ROUTE_TYPES = /\/api\/univers\/\d+\/types(\?.*)?$/;
+const ROUTE_TYPES = /\/api\/univers\/[^/]+\/types(\?.*)?$/;
 const bloc = (page: Any) => page.getByRole('region', { name: /^Fiches liées$/ });
 const norm = (s: string): string => s.replace(/\s+/g, ' ').replace(/’/g, "'").trim();
 
@@ -75,7 +75,7 @@ describe('rouge-kanevas-5, « Fiches liées » et la liste des types lente (B-64
       await retenue;
       await route.continue();
     });
-    const donnees = page.waitForResponse((r: Any) => /\/fiches\/\d+\/liees(\?|$)/.test(r.url()));
+    const donnees = page.waitForResponse((r: Any) => /\/fiches\/[^/]+\/liees(\?|$)/.test(r.url()));
     await ouvrirPortSel(page);
     const b = bloc(page);
     await b.waitFor();

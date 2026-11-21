@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 // Climb test of kanevas-carte-spatiale-reglages: the migration of the settings and aspects tables is played on an example base at the
-// previous schema (every migration before 0039), a galaxy of the neutral seed with its zones. Written from the exit criterion
+// previous schema (every migration before 0045), a galaxy of the neutral seed with its zones. Written from the exit criterion
 // (« Le test de montée joue la migration sur une base d'exemple au schéma précédent ») and docs/donnees.md, not from the code:
 // the galaxy, its defined systems, routes and zones are the same rows after the climb, and the galaxy reads and draws as before
 // (Éneria's fixtures: the neutral seed's star at (-49, -48) is orange, its first planet is a lava one at orbit 1.03, hour 0.6).
@@ -21,7 +21,7 @@ const GALAXIE = JSON.parse(readFileSync(fileURLToPath(new URL('../../../rust/mod
 
 const source = new URL('../../db/migrations/', import.meta.url);
 const ancien = mkdtempSync(join(tmpdir(), 'kanevas-migrations-avant-'));
-for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) < 39) copyFileSync(new URL(f, source), join(ancien, f));
+for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) < 45) copyFileSync(new URL(f, source), join(ancien, f));
 
 const tables = ['swn_galaxies', 'swn_systemes', 'swn_routes', 'swn_zones', 'swn_astres', 'swn_formations'];
 const instantane = (db: any) => Object.fromEntries(tables.map((t) => [t, db.prepare(`SELECT * FROM ${t} ORDER BY id`).all()]));

@@ -95,7 +95,7 @@ test('B-61 bounds > an identical replay is inchangee, an omitted status is en_pr
   assert.equal(parTitre(liste, 'Acte IV'), undefined);
 });
 
-test('B-48 adventures > a status set in Kanevas is not rewritten by the replay and the warning says « statut modifié dans Kanevas »', async () => {
+test('B-47 replay > a status set in Kanevas goes back to the script’s, with no warning', async () => {
   const m = await monde();
   const l0 = await m.lot();
   await m.put('campagne:couronne', CAMPAGNE, l0);
@@ -107,30 +107,40 @@ test('B-48 adventures > a status set in Kanevas is not rewritten by the replay a
   const l = await m.lot();
   const r = await m.put('scenario:acte-2', SCENARIO, l);
   assert.equal(r.statusCode, 200);
-  assert.match(JSON.stringify(r.json().avertissements), /statut modifié dans Kanevas/);
-  assert.match(JSON.stringify((await m.clore(l)).rapport), /statut modifié dans Kanevas/);
-  assert.equal(parTitre(await m.aventures(m.antor, m.kanka), 'Acte II').charge.statut, 'en_cours');
+  assert.equal(r.json().etat, 'mise_a_jour');
+  assert.deepEqual(r.json().avertissements, []);
+  assert.doesNotMatch(JSON.stringify((await m.clore(l)).rapport), /modifié dans Kanevas/);
+  assert.equal(parTitre(await m.aventures(m.antor, m.kanka), 'Acte II').charge.statut, SCENARIO.statut);
 });
 
-test('B-48 adventures > a sub-type and a parent changed in Kanevas are not overwritten by the replay', async () => {
+test('B-47 replay > a sub-type and a parent changed in Kanevas go back to what the script carries; a sub-type or parent not sent stays', async () => {
   const m = await monde();
   const l0 = await m.lot();
   await m.put('campagne:couronne', CAMPAGNE, l0);
-  await m.put('scenario:acte-3', { type: 'aventure', sousType: 'Scénario', titre: 'Acte III', parent: 'campagne:couronne', sections: [] }, l0);
+  const corps = { type: 'aventure', sousType: 'Scénario', titre: 'Acte III', parent: 'campagne:couronne', sections: [] };
+  await m.put('scenario:acte-3', corps, l0);
   await m.clore(l0);
   const a3 = parTitre(await m.aventures(m.antor, m.kanka), 'Acte III');
   assert.equal((await m.rest(m.antor, 'PATCH', `/api/univers/${m.kanka}/fiches/${a3.id}`, { sousType: 'One-shot' })).statusCode, 200);
   assert.equal((await m.rest(m.antor, 'PATCH', `/api/univers/${m.kanka}/fiches/${a3.id}`, { parent: null })).statusCode, 200);
-  const l = await m.lot();
-  const r = await m.put('scenario:acte-3', { type: 'aventure', sousType: 'Scénario', titre: 'Acte III', parent: 'campagne:couronne', sections: [] }, l);
-  assert.equal(r.statusCode, 200);
-  const avert = JSON.stringify(r.json().avertissements);
-  assert.match(avert, /sous-type modifié dans Kanevas/);
-  assert.match(avert, /parent modifié dans Kanevas/);
-  await m.clore(l);
-  const apres = (await m.rest(m.antor, 'GET', `/api/univers/${m.kanka}/fiches/${a3.id}`)).json();
+  // not sent: left as Antor put them
+  const { sousType: _s, parent: _p, ...sans } = corps;
+  const l1 = await m.lot();
+  const r1 = await m.put('scenario:acte-3', sans, l1);
+  assert.equal(r1.json().etat, 'inchangee');
+  let apres = (await m.rest(m.antor, 'GET', `/api/univers/${m.kanka}/fiches/${a3.id}`)).json();
   assert.equal(apres.sousType, 'One-shot');
   assert.deepEqual(apres.ancetres, []);
+  // sent: written
+  const l = await m.lot();
+  const r = await m.put('scenario:acte-3', corps, l);
+  assert.equal(r.statusCode, 200);
+  assert.equal(r.json().etat, 'mise_a_jour');
+  assert.deepEqual(r.json().avertissements, []);
+  await m.clore(l);
+  apres = (await m.rest(m.antor, 'GET', `/api/univers/${m.kanka}/fiches/${a3.id}`)).json();
+  assert.equal(apres.sousType, 'Scénario');
+  assert.equal(apres.ancetres.length, 1);
 });
 
 test('B-61 report > a report imported with campagne:campagne:couronne names its adventure; an unknown adventure key is refused 400 (champ campagne)', async () => {

@@ -182,7 +182,7 @@ function dossierJusqua(max: number): string {
   return dir;
 }
 
-test('0037 : montée depuis 0036, la galaxie à 0.2 passe à 0.68, une autre valeur et les zones restent', () => {
+test('0042 : montée depuis 0036, la galaxie à 0.2 passe à 0.68, une autre valeur et les zones restent', () => {
   const db = openDb(':memory:');
   assert.deepEqual(migrate(db, dossierJusqua(36)).at(-1), 36);
   const d = '2026-10-01T00:00:00.000Z';
@@ -196,7 +196,7 @@ test('0037 : montée depuis 0036, la galaxie à 0.2 passe à 0.68, une autre val
   const avantZones = zones();
   const avantGal = db.prepare('SELECT * FROM swn_galaxies ORDER BY id').all() as any[];
 
-  assert.deepEqual(migrate(db), [37, 38, 39, 40]);
+  assert.deepEqual(migrate(db), [37, 38, 39, 40, 41, 42, 43, 44, 45]);
 
   const apresGal = db.prepare('SELECT * FROM swn_galaxies ORDER BY id').all() as any[];
   assert.deepEqual(apresGal.map((g) => g.densite_defaut), [0.68, 0.5, 0.21, 0, 0.68]);

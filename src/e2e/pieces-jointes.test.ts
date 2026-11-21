@@ -87,8 +87,10 @@ before(async () => {
   await regler(antor, 'Notes de la table', 'L’auteur la lit', true);
   await regler(antor, 'Notes de la table', 'L’auteur l’écrit', true);
   urlFiche = new URL(antor.url()).pathname;
-  const id = urlFiche.match(/univers\/(\d+)\/fiche\/(\d+)/) ?? urlFiche.match(/(\d+)\D+(\d+)$/);
-  apiFiche = `/api/univers/${id![1]}/fiches/${id![2]}`;
+  // B-101: `/univers/<key>/<type>/<name>` (sheet key `<type>:<name>`) or `/univers/<ref>/fiche/<ref>`: both are API references
+  const id = urlFiche.match(/univers\/([^/]+)\/(?:fiche\/([^/]+)|([^/]+)\/([^/]+))$/);
+  const refFiche = id![2] ?? `${id![3]}:${id![4]}`;
+  apiFiche = `/api/univers/${id![1]}/fiches/${encodeURIComponent(refFiche)}`;
   apiUnivers = `/api/univers/${id![1]}`;
 }, { timeout: 180000 });
 
@@ -103,7 +105,7 @@ test('envoi annulé : la ligne « Envoi… » (role=status) porte « Annuler » 
   await ouvrir(antor);
   let bloque!: () => void;
   const tenu = new Promise<void>((r) => (bloque = r));
-  await antor.route(/\/api\/univers\/\d+\/fichiers$/, async (route: Any) => {
+  await antor.route(/\/api\/univers\/[^/]+\/fichiers$/, async (route: Any) => {
     if (route.request().method() !== 'POST') return route.continue();
     await tenu;
     await route.abort();
@@ -118,18 +120,18 @@ test('envoi annulé : la ligne « Envoi… » (role=status) porte « Annuler » 
   await attendre(antor);
   assert.equal(await bloc(antor, 'Apparence').getByText(/annule\.png/).count(), 0);
   bloque();
-  await antor.unroute(/\/api\/univers\/\d+\/fichiers$/, { behavior: 'ignoreErrors' });
+  await antor.unroute(/\/api\/univers\/[^/]+\/fichiers$/, { behavior: 'ignoreErrors' });
 });
 
 test('échec d’envoi (réseau) : « l’envoi n’a pas abouti. » avec « Réessayer » et « Ignorer »', opts, async () => {
   const antor = await compte('antor');
   await ouvrir(antor);
-  await antor.route(/\/api\/univers\/\d+\/fichiers$/, (route: Any) => (route.request().method() === 'POST' ? route.abort() : route.continue()));
+  await antor.route(/\/api\/univers\/[^/]+\/fichiers$/, (route: Any) => (route.request().method() === 'POST' ? route.abort() : route.continue()));
   await choisir(antor, 'Apparence', png('panne.png'));
   const b = bloc(antor, 'Apparence');
   await b.getByText(/« panne\.png » : l.envoi n.a pas abouti\./).waitFor();
   await b.getByRole('button', { name: rxExact('Réessayer') }).waitFor();
-  await antor.unroute(/\/api\/univers\/\d+\/fichiers$/);
+  await antor.unroute(/\/api\/univers\/[^/]+\/fichiers$/);
   await b.getByRole('button', { name: rxExact('Réessayer') }).click();
   await b.locator('img[alt="panne.png"]').waitFor();
   assert.equal(await b.getByText(/l.envoi n.a pas abouti/).count(), 0);
@@ -176,12 +178,12 @@ test('vignette qui ne se charge pas : « Image indisponible. » avec « Téléch
   await ouvrir(antor);
   await choisir(antor, 'Notes de la table', png('portrait.png'));
   await bloc(antor, 'Notes de la table').getByText('portrait.png').first().waitFor();
-  await antor.route(/\/api\/univers\/\d+\/fichiers\/\d+/, (r: Any) => r.abort());
+  await antor.route(/\/api\/univers\/[^/]+\/fichiers\/\d+/, (r: Any) => r.abort());
   await ouvrir(antor);
   const b = bloc(antor, 'Notes de la table');
   await b.getByText('Image indisponible.').first().waitFor();
   assert.ok((await b.getByRole('link', { name: rxExact('Télécharger') }).count()) >= 1);
-  await antor.unroute(/\/api\/univers\/\d+\/fichiers\/\d+/);
+  await antor.unroute(/\/api\/univers\/[^/]+\/fichiers\/\d+/);
 });
 
 test('connexion perdue : « Ajouter un fichier », « Retirer » désactivés', opts, async () => {

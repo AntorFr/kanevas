@@ -95,9 +95,9 @@ test('nominal : portrait → libellé, vignette <= 240 px, « Ouvrir la section 
   await img.waitFor({ state: 'visible' });
   assert.ok((await img.boundingBox()).width <= 240);
   assert.equal(await img.getAttribute('alt'), DEMANDE);
-  assert.match(await img.getAttribute('src'), /^\/api\/univers\/1\/fichiers\/\d+/);
+  assert.match(await img.getAttribute('src'), /^\/api\/univers\/[^/]+\/fichiers\/\d+/);
   await b.getByRole('link', { name: /Ouvrir la section/ }).click();
-  await antor.waitForURL(/\/univers\/1\/fiche\/1(#.*)?$/);
+  await antor.waitForURL(/\/univers\/[^/]+\/fiche\/1(#.*)?$/);
   await attendre(antor);
   const s = antor.getByRole('region', { name: rx('Apparence') });
   await s.waitFor();

@@ -62,15 +62,15 @@ test('lier une planète d\'un système tiré l\'ancre dans la même transaction 
 test('fiche_inconnue : id inconnu, d\'un autre univers, supprimée, non entier — rien écrit, pas même l\'ancrage', () => {
   const w = monde();
   const p = planete(w.lire(w.mj));
-  const autre = w.db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('Autre', 1)").run().lastInsertRowid as number;
-  const fa = w.db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', 'Etrangère', '{}', 1, 1)").run(autre).lastInsertRowid as number;
+  const autre = w.db.prepare("INSERT INTO univers (cle, nom, cree_le) VALUES ('autre', 'Autre', 1)").run().lastInsertRowid as number;
+  const fa = w.db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', 'Etrangère', '{}', 1, 1)").run(autre).lastInsertRowid as number;
   for (const ficheId of [999999, fa, 0, -1, 1.5, '1', null, undefined, NaN]) {
     const e = erreur(() => E.lierAstre(...w.AS, p.cle, { ficheId, version: 1, versionSysteme: w.ver() }));
     assert.deepEqual([e.code, e.champ, e.detail], ['invalide', 'ficheId', 'fiche_inconnue'], String(ficheId));
   }
   assert.equal(nbSystemes(w), 0);
   // deleted meanwhile
-  const f = w.db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', 'Éphémère', '{}', 1, 1)").run(w.univers).lastInsertRowid as number;
+  const f = w.db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', 'Éphémère', '{}', 1, 1)").run(w.univers).lastInsertRowid as number;
   supprimerFiche(w.db, w.mj, w.univers, f);
   assert.equal(erreur(() => E.lierAstre(...w.AS, p.cle, { ficheId: f, version: 1, versionSysteme: w.ver() })).detail, 'fiche_inconnue');
   // same for a zone
@@ -163,7 +163,7 @@ test('Léa : fiche non lisible = JSON d\'un corps non lié ; lisible = {id, titr
 test('supprimer la fiche liée laisse le corps, fiche: null, sans erreur', () => {
   const w = monde();
   const p = planete(w.lire(w.mj));
-  const f = w.db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', 'Éphémère', '{}', 1, 1)").run(w.univers).lastInsertRowid as number;
+  const f = w.db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', 'Éphémère', '{}', 1, 1)").run(w.univers).lastInsertRowid as number;
   E.lierAstre(...w.AS, p.cle, { ficheId: f, version: 1, versionSysteme: w.ver() });
   const z = E.ajouterZone(...w.AS, { forme: 'nuage' });
   E.lierZone(...w.AS, z.cle!, { ficheId: f, version: 1 });

@@ -149,7 +149,7 @@ describe('B-68 : l’import pose la marque', () => {
     assert.equal(ko2.status, 400);
   });
 
-  test('rejoue_apres_marquer_vivant_l_import_n_ecrase_pas', async () => {
+  test('rejoue_apres_marquer_vivant_l_import_remet_la_marque', async () => {
     const corps = { type: 'personnage', titre: 'Zed', disparu: true };
     const j = await put('personnage:zed', corps);
     assert.equal(j.json.etat, 'creee');
@@ -159,6 +159,8 @@ describe('B-68 : l’import pose la marque', () => {
     const rejeu = await put('personnage:zed', corps);
     assert.equal(rejeu.status, 200);
     const f = await dire(antor, 'GET', `/api/univers/${UKANKA}/fiches/${id}`);
-    assert.ok(!f.corps.charge.disparu, 'la marque retirée à la main reste retirée');
+    assert.equal(rejeu.json.etat, 'mise_a_jour');
+    assert.deepEqual(rejeu.json.avertissements, []);
+    assert.equal(f.corps.charge.disparu, true, 'le script porte disparu : la marque est reposée');
   });
 });

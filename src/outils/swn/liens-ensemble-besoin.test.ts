@@ -34,8 +34,8 @@ async function monde() {
     app.db.prepare("INSERT INTO swn_astres (systeme_id, cle, genre, type, nom, orbite, heure, taille) VALUES (?,?,?,'rocheux',?,?,?,0.1)").run(sid, cle, genre, nom, orbite, heure);
   // A sheet Léa reads (one section the players read) or one she does not (a GM-only section).
   const fiche = (titre: string, lue: boolean) => {
-    const f = app.db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', ?, '{}', 1, 1)").run(E, titre).lastInsertRowid as number;
-    app.db.prepare("INSERT INTO sections (fiche_id, titre, ordre, contenu, modifie_le, joueurs_lisent) VALUES (?, 'Texte', 1, 'x', '2026-01-01', ?)").run(f, lue ? 1 : 0);
+    const f = app.db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', ?, '{}', 1, 1)").run(E, titre).lastInsertRowid as number;
+    app.db.prepare("INSERT INTO sections (cle, fiche_id, titre, ordre, contenu, modifie_le, joueurs_lisent) VALUES ('texte', ?, 'Texte', 1, 'x', '2026-01-01', ?)").run(f, lue ? 1 : 0);
     return f;
   };
   const api = `/api/univers/${E}`;
@@ -195,7 +195,7 @@ test('B-92 · échecs du lien : fiche d\'un autre univers ou inconnue → fiche_
   const w = await monde();
   w.astre(w.sys('vael', 'Vael', 62, 63), 'p2', 'Vael II', 4, 7);
   const autre = one(w.app, 'SELECT id FROM univers WHERE id != ? LIMIT 1', w.E).id as number;
-  const etrangere = w.app.db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', 'Ailleurs', '{}', 1, 1)").run(autre).lastInsertRowid;
+  const etrangere = w.app.db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', 'Ailleurs', '{}', 1, 1)").run(autre).lastInsertRowid;
   const f = w.fiche('Vael II (colonie)', true);
   for (const id of [etrangere, 999999]) {
     const r = await w.lier('antor', 62, 63, 'astres', 'p2', id);

@@ -1,6 +1,6 @@
 import type { Db } from '../../db/db.js';
 import { ErreurService } from '../erreurs.js';
-import type { Jeton } from '../jetons.js';
+import type { JetonRequete as Jeton } from '../jetons.js';
 import { lireLot, noterDansLot, type EntreeRapport, type Issue } from '../lots.js';
 import { OUTIL_GALAXIE } from './galaxies.js';
 import { appliquerAtlas, NATURES_ATLAS, type RapportAtlas } from './atlas.js';

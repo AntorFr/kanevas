@@ -35,7 +35,7 @@ function preparerLiens(db: Db, universId: number, compteId: number, contenu: str
   const role = roleDe(db, universId, compteId);
   const lisible = (ficheId: number) => role !== null && peutVoirFiche(db, role, ficheId, { compteId });
   const parId = db.prepare('SELECT id, titre FROM fiches WHERE id = ? AND univers_id = ?');
-  const parCle = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?');
+  const parCle = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle = ?');
   return reecrireLiens(contenu, liens, (l) => {
     if (l.cle !== null) {
       const f = parCle.get(universId, l.cle) as { id: number } | undefined;
@@ -58,7 +58,7 @@ export function remplacerLiens(db: Db, sectionId: number, contenu: string): void
     .prepare('SELECT f.univers_id FROM sections s JOIN fiches f ON f.id = s.fiche_id WHERE s.id = ?')
     .get(sectionId) as { univers_id: number };
   const parId = db.prepare('SELECT id FROM fiches WHERE id = ? AND univers_id = ?');
-  const parCle = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?');
+  const parCle = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle = ?');
   const inserer = db.prepare(
     `INSERT INTO liens (section_id, cible_fiche_id, cible_cle, texte, dans_bloc_mj) VALUES (?, ?, ?, ?, ?)`,
   );

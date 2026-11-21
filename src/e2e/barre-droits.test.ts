@@ -95,7 +95,7 @@ describe('kanevas-premiere-fiche, barre latérale et droits', { skip: skipBrowse
     await sIdentifier('Léa');
     const antor = await compte('Antor');
     await creerUnivers(antor.page, 'Barre Joueur');
-    await antor.page.waitForURL(/\/univers\/\d+$/);
+    await antor.page.waitForURL(/\/univers\/[^/]+$/);
     const chemin = new URL(antor.page.url()).pathname;
     await allerMembres(antor.page);
     await ajouter(antor.page, 'lea');

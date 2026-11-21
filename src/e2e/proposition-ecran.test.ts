@@ -64,9 +64,11 @@ after(async () => {
 const panneau = (p: Any) => p.getByRole('complementary', { name: /Kanevas — assistant/ });
 const bloc = (p: Any) => panneau(p).locator('.asst-prop').last();
 
-async function demander(p: Any, avant?: (p: Any) => Promise<void>): Promise<void> {
+// `adresse`: a player who cannot read the sheet gets the server's bare « Page introuvable. » at its numeric address (B-101),
+// without the assistant: the universe page carries the panel instead.
+async function demander(p: Any, avant?: (p: Any) => Promise<void>, adresse = `/univers/${U}/fiche/${fiche}`): Promise<void> {
   if (avant) await avant(p);
-  await p.goto(`/univers/${U}/fiche/${fiche}`);
+  await p.goto(adresse);
   await attendre(p);
   await p.getByRole('button', { name: 'Demander à Kanevas' }).click();
   await panneau(p).getByRole('textbox', { name: 'Demander à Kanevas' }).fill(DEMANDE);
@@ -124,7 +126,7 @@ test('périmée : la modification de la section est découverte au clic, rien n�
 
 test('exclusion : Léa fait la même demande et n’obtient aucun bloc', opts, async () => {
   await poser('Il sert la Couronne');
-  await demander(lea);
+  await demander(lea, undefined, `/univers/${U}`);
   await panneau(lea).getByText(/ne fait pas partie de ceux dont vous disposez/).waitFor();
   assert.equal(await lea.locator('.asst-prop').count(), 0);
   assert.equal(await lea.getByText('Mise à jour proposée').count(), 0);

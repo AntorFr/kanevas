@@ -33,7 +33,7 @@ async function monde() {
   const astre = (cle: string, genre: string, type: string, orbite: number, heure: number) =>
     app.db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, type, orbite, heure, taille) VALUES (?,?,?,?,?,?,?)').run(ouvert, cle, genre, type, orbite, heure, 1);
   astre('etoile', 'etoile', 'naine_jaune', 0, 0); astre('ano', 'planete', 'anomalie', 2, 4);
-  const fiche = (titre: string, univers = E) => app.db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', ?, '{}', 1, 1)").run(univers, titre).lastInsertRowid as number;
+  const fiche = (titre: string, univers = E) => app.db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', ?, '{}', 1, 1)").run(univers, titre).lastInsertRowid as number;
   const base = `/api/univers/${E}/outils/swn/galaxie/galaxies/${g}/interieur`;
   const ecrire = (who: string, method: 'PUT' | 'DELETE' | 'POST', path: string, payload?: unknown, extra: Record<string, string> = {}) =>
     app.inject({ method, url: `${base}/${path}`, headers: { ...(h[who] ?? {}), ...extra }, ...(payload === undefined ? {} : { payload: payload as object }) });

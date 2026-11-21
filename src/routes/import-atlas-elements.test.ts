@@ -44,7 +44,7 @@ async function monde() {
   const els = () => app.db.prepare('SELECT * FROM swn_elements ORDER BY id').all() as any[];
   const fiche = (cle: string) => {
     const f = creerFiche(app.db, id('antor'), E, { type: 'lieu', titre: `Fiche ${cle}` });
-    app.db.prepare('UPDATE fiches SET cle_origine = ? WHERE id = ?').run(cle, f.id);
+    app.db.prepare('UPDATE fiches SET cle = ? WHERE id = ?').run(cle, f.id);
     return f.id as number;
   };
   fiche('fiche-essai');

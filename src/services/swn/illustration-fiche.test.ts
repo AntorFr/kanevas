@@ -36,8 +36,8 @@ function monde() {
   const astre = (cle: string, nom: string | null, fiche: number | null) =>
     db.prepare("INSERT INTO swn_astres (systeme_id, cle, genre, type, orbite, heure, taille, aspect, nom, fiche_id) VALUES (?,?,'planete','rocheux',1,3,0.1,'{}',?,?)").run(sid, cle, nom, fiche);
   const fiche = (titre: string, joueursLisent: boolean) => {
-    const id = db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', ?, '{}', 1, 1)").run(univers, titre).lastInsertRowid as number;
-    db.prepare("INSERT INTO sections (fiche_id, titre, ordre, contenu, modifie_le, joueurs_lisent) VALUES (?, 'Texte', 1, '', '2026-01-01', ?)").run(id, joueursLisent ? 1 : 0);
+    const id = db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', ?, '{}', 1, 1)").run(univers, titre).lastInsertRowid as number;
+    db.prepare("INSERT INTO sections (cle, fiche_id, titre, ordre, contenu, modifie_le, joueurs_lisent) VALUES ('texte', ?, 'Texte', 1, '', '2026-01-01', ?)").run(id, joueursLisent ? 1 : 0);
     return id;
   };
   const illu = (id: number) => q('SELECT f.* FROM fiches x JOIN fichiers f ON f.id = x.illustration_fichier_id WHERE x.id = ?', id)[0];

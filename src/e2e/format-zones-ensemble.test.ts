@@ -72,7 +72,7 @@ async function monde(): Promise<Monde> {
   const G = `/api/univers/${E}/outils/swn/galaxie/galaxies/${gid}`;
   const imp = async (jeton: string, methode: string, chemin: string, corps?: unknown): Promise<Rep> =>
     lire(await fetch(`${srv.base}/api/import/v1/univers/${E}${chemin}`, { method: methode, headers: { authorization: `Bearer ${jeton}`, ...(corps === undefined ? {} : { 'content-type': 'application/json' }) }, body: corps === undefined ? undefined : JSON.stringify(corps) }));
-  const jeton = (await api('antor', 'POST', `/api/univers/${E}/jetons`, { nom: 'Script zones', dureeJours: 30, outils: ['swn/galaxie'] })).json.valeur as string;
+  const jeton = await srv.jetonOutils('antor', E, 'Script zones', ['swn/galaxie']);
   const put = (zones: unknown[]) => imp(jeton, 'PUT', `/outils/swn/galaxie/galaxies/${gid}`, { zones });
   return { base: srv.base, E, G, gid, api, imp, jeton, put };
 }

@@ -231,7 +231,7 @@ test('cascade : supprimer le système efface ses astres et formations ; supprime
   const sid = definir(w);
   const n = (t: string) => (w.q(`SELECT COUNT(*) n FROM ${t} WHERE systeme_id = ?`, sid)[0].n as number);
   assert.deepEqual([n('swn_astres'), n('swn_formations')], [6, 1]);
-  const fid = w.db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', 'Lien', '{}', 'x', 'x')").run(w.univers).lastInsertRowid;
+  const fid = w.db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', 'Lien', '{}', 'x', 'x')").run(w.univers).lastInsertRowid;
   w.db.prepare("UPDATE swn_astres SET fiche_id = ? WHERE systeme_id = ? AND cle = 'c'").run(fid, sid);
   w.db.pragma('foreign_keys = ON');
   w.db.prepare('DELETE FROM fiches WHERE id = ?').run(fid);
@@ -256,18 +256,18 @@ test('contraintes de la migration : lune sans parent, heure 12, orbite négative
   assert.throws(() => w.db.prepare('UPDATE swn_systemes SET transition = -1 WHERE id = ?').run(sid));
 });
 
-test('0038 : montée depuis 0037 avec le semis, systèmes inchangés, transition nulle, tables vides, foreign_key_check vide', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'migration-0038-'));
+test('0043 : montée depuis 0042 avec le semis, systèmes inchangés, transition nulle, tables vides, foreign_key_check vide', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'migration-0043-'));
   const db = openDb(':memory:');
   const source = new URL('../../db/migrations/', import.meta.url);
-  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 37) copyFileSync(new URL(f, source), join(dir, f));
+  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 42) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
   assert.equal(semerBouchon(db), true);
   const lignes = () => db.prepare('SELECT * FROM swn_systemes ORDER BY id').all();
   const avant = lignes();
   assert.ok(avant.length > 0);
   assert.ok(!('transition' in (avant[0] as object)));
-  assert.deepEqual(migrate(db), [38, 39, 40]);
+  assert.deepEqual(migrate(db), [43, 44, 45]);
   const apres = lignes() as any[];
   assert.equal(apres.length, avant.length);
   for (let i = 0; i < avant.length; i++) assert.deepEqual({ ...apres[i], transition: undefined }, { ...(avant[i] as object), transition: undefined });

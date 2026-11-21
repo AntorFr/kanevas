@@ -87,7 +87,7 @@ test('B-95 exclusion : un PATCH d\'écran portant importee:true et une autre cle
 test('B-95 exclusion : un lien de fiche posé par l\'écran avec importee:true ne ré-estampe pas la ligne importée', async () => {
   const w = await monde();
   assert.equal((await w.put(atlas())).json().appliquee, true);
-  const fiche = w.un("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', 'Port', '{}', 1, 1) RETURNING id", w.E).id as number;
+  const fiche = w.un("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', 'Port', '{}', 1, 1) RETURNING id", w.E).id as number;
   const p = (await w.ecran(0, 0)).json().astres.find((a: any) => a.cle === 'monde-a');
   const l = await w.app.inject({ method: 'PUT', url: `${ECRAN(w)}/astres/monde-a/fiche`, headers: w.cookie,
     payload: { ficheId: fiche, version: p.version, versionSysteme: await jeton(w), importee: true } });

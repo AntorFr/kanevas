@@ -26,3 +26,15 @@ test('a change to one declared page plays fewer screen tests than the whole of s
   assert.ok(choisis.length > 0);
   assert.ok(choisis.length < e2e.length, `${choisis.length} of ${e2e.length}`);
 });
+
+test('no screen test of the repository lacks its « // ecrans: » line (AD-touches-6)', () => {
+  const connus = ecransDe(tracked);
+  const sans = e2e.filter((f) => ecransDeclares(lire(f), connus, f) === null);
+  assert.deepEqual(sans, [], 'add the line: scripts/proposer-ecrans.mjs proposes it');
+  assert.doesNotThrow(() => choisirTestsEcran([], tracked, lire));
+});
+
+test('choisirTestsEcran refuses a screen test with no declaration, even when nothing is touched', () => {
+  const arbre = ['frontend/src/registre.ts', 'frontend/src/ecrans/a.tsx', 'src/e2e/x.test.ts'];
+  assert.throws(() => choisirTestsEcran([], arbre, () => "test('x', () => {})"), /src\/e2e\/x\.test\.ts.*proposer-ecrans\.mjs/);
+});

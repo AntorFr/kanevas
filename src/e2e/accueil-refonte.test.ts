@@ -186,7 +186,10 @@ test('E-1 liste : par nom, rôle MJ ou Joueur, un clic mène à E-3', opts, asyn
   assert.match(await ligne.innerText(), /MJ/);
   await ligne.click();
   await mj.getByRole('heading', { name: 'Lame d’Ébène', level: 1 }).waitFor();
-  assert.equal(new URL(mj.url()).pathname, `/univers/${idUnivers}`);
+  // B-101: the list leads to the readable address (the universe's key), not to its id.
+  // The creation address may still be the id at the instant it is read: find the universe by id or key.
+  const cleUnivers = (await (await mj.request.get('/api/univers')).json()).find((u: { id: number; cle: string }) => String(u.id) === idUnivers || u.cle === idUnivers).cle;
+  assert.equal(new URL(mj.url()).pathname, `/univers/${cleUnivers}`);
   await mj.close();
 
   await lea.goto('/');

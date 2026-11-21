@@ -224,7 +224,7 @@ describe('E-23 lier un corps à une fiche : dialogue, panneau, bloc de la fiche'
     await t.waitFor({ timeout: 60000 });
     await hors(page, '6-toast-illustration');
     await page.getByRole('status').getByRole('link', { name: 'Ouvrir la fiche' }).click();
-    await page.waitForURL(`**/univers/${univers}/fiche/${id}`);
+    await page.waitForURL((u) => u.pathname.endsWith(`/fiche/${id}`) || u.pathname.endsWith("/vael-iv-etape")); // readable address (keys, kanevas-synchro-cles)
     const f = (await (await page.request.get(`/api/univers/${univers}/fiches/${id}`)).json()) as Any;
     assert.ok(JSON.stringify(f).match(/illustration|image|fichier/i), 'la fiche porte une illustration');
     await hors(page, '7-fiche-illustree');
