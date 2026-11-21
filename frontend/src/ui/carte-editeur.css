@@ -28,3 +28,13 @@
 .colonne-outils-pied { width: 100%; }
 .colonne-outils-pied .interrupteur { flex-direction: column; justify-content: center; gap: var(--e-1); min-height: 64px; padding: var(--e-1); font-size: 11px; line-height: 1.2; text-align: center; }
 .colonne-outils-pied .interrupteur-libelle { white-space: normal; }
+
+/* PionTable: the keyboard handle laid over a token of a played map (the canvas draws the token). */
+.pion-table { position: absolute; z-index: 2; pointer-events: none; margin: 0; padding: 0; background: transparent; border: 0; border-radius: var(--rayon-item); cursor: grab; }
+.pion-table:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pion-table.saisi { outline: 2px dashed var(--accent); outline-offset: 2px; }
+
+/* PastilleConnexion: a floating pill at the top right of the canvas, in the shared `reconnexion` fade. */
+.pastille-connexion { display: inline-flex; align-items: center; gap: var(--e-1); margin: 0; padding: 3px 9px; border-radius: var(--rayon-pastille); border: 1px solid var(--bord); background: var(--surface); color: var(--texte-2); font-size: .75rem; pointer-events: none; animation: pastille-entree var(--duree) ease-out; }
+@keyframes pastille-entree { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .pastille-connexion { animation: none; } }

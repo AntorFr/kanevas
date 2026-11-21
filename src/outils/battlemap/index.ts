@@ -64,6 +64,10 @@ export const battlemapCartes: DeclarationCarte = {
       libelle: 'Taille de case par défaut', aide: 'En pixels, de 20 à 300 ; appliquée aux cartes créées ensuite.',
       niveau: 'systeme+univers', forme: { type: 'nombre', min: 20, max: 300, entier: true }, defaut: 70,
     },
+    jeu_a_distance: {
+      libelle: 'Jeu à distance', aide: 'Les joueurs déplacent eux-mêmes leurs pions sur la table.',
+      niveau: 'univers', forme: { type: 'booleen' }, defaut: true,
+    },
   },
   ecran: { libelle: 'Cartes', icone: 'Map' },
   cartes: (db, acteur, universId) => cartesComposees(db, acteur, universId),
