@@ -294,7 +294,7 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · une image de la médiathèque choisie comme référence devient MJ seul` | affichage | — | gardé |
 | `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · la neuvième image de référence est refusée : « 8 images au plus. »` | affichage | — | gardé |
 | `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · deux fenêtres : la seconde à enregistrer lit « Ce texte a changé depuis que vous l’avez ouvert. » et « Recharger »` | affichage | — | gardé |
-| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `E-26 · « Demander à l’assistant » est actif et préremplit une demande non envoyée` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `E-26 · « Demander à l’assistant » reste désactivé` | affichage | — | gardé |
 | `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · par l’API, Léa qui écrit un asset ou la direction reçoit « introuvable » (404) et rien ne change` | affichage | — | gardé |
 | `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Antor en mode Joueur lit comme une joueuse : pas d’onglet, E-26 « Page introuvable. », écriture refusée` | affichage | — | gardé |
 | `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-110 · outil éteint : ni entrée « Bibliothèque » dans la barre, ni écran, ni API` | affichage | — | gardé |
@@ -335,8 +335,7 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/battlemap-bibliotheque-e25.test.ts` | `chargement : le texte s’affiche tant que la liste n’a pas répondu` | affichage | — | gardé |
 | `src/e2e/battlemap-bibliotheque-e25.test.ts` | `refus d’un tiers : un compte hors univers voit « Page introuvable. »` | affichage | — | gardé |
 | `src/e2e/battlemap-bibliotheque-e25.test.ts` | `captures : MJ et joueuse, deux thèmes, 1440 / 768 / 390` | affichage | — | gardé |
-| `src/e2e/battlemap-direction-e26.test.ts` | `vide : états vides ; « Demander à l’assistant » actif, il ouvre le panneau avec la demande préremplie, non envoyée` | affichage | — | gardé |
-| `src/e2e/battlemap-direction-e26.test.ts` | `assistant : demande envoyée → bannière (survit au rechargement) → Annuler ; sauvegarde à la main ; texte écrit ; hors connexion` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `vide : états vides et « Demander à l’assistant » désactivé` | affichage | — | gardé |
 | `src/e2e/battlemap-direction-e26.test.ts` | `nominal : texte + image choisie dans la médiathèque (devenue MJ seul), enregistré, retrouvé au rechargement` | affichage | — | gardé |
 | `src/e2e/battlemap-direction-e26.test.ts` | `légende : modifiée, elle se retrouve après rechargement` | affichage | — | gardé |
 | `src/e2e/battlemap-direction-e26.test.ts` | `périmé : une modification faite dans un second onglet donne « Ce texte a changé… » + Recharger` | affichage | — | gardé |
