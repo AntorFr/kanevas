@@ -338,7 +338,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
           </h2>
           <div className="vx-defile">
           <div className={estompe ? 'vx-estompe' : undefined} data-estompe={estompe || undefined}>
-            <Chiffres r={resultat} />
+            <Chiffres r={resultat} station={donneesCoque?.moteur_spike === 0} />
           </div>
           {etatCalcul === 'erreur' && <ErreurCalcul onReessayer={() => setEssaiCalcul((n) => n + 1)} />}
           <div className="vx-alertes-zone"><Alertes alertes={alertes} /></div>
@@ -454,7 +454,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                   </ul>
                 )}
                 {ouvert?.nature === n.nature && (
-                  <Selecteur universId={universId} suffixe={suffixe} nature={n.nature} titre={ouvert.titre} classeCoque={resultat.coque.classe} onChoisir={choisir} onFermer={() => setOuvert(null)} />
+                  <Selecteur universId={universId} suffixe={suffixe} nature={n.nature} titre={ouvert.titre} classeCoque={resultat.coque.classe} sansMoteur={donneesCoque?.moteur_spike === 0} onChoisir={choisir} onFermer={() => setOuvert(null)} />
                 )}
               </div>
             );

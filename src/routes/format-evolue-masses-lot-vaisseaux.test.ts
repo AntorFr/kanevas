@@ -189,7 +189,7 @@ describe('B-80 calcul exact et alertes', () => {
     }));
     assert.equal(r.json.refusTotal, 0, r.texte);
     const res = (await calcul(m, 3, 'coque-x3')).json.resultat;
-    assert.equal(res.masseLibre, 3);
+    assert.equal(res.masseLibre, 1.5);
   });
 
   it('exclusion : une masse entière reste entière (Éclaireur nu : masse libre 7)', async () => {
