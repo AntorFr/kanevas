@@ -231,7 +231,7 @@ test('cascade : supprimer le système efface ses astres et formations ; supprime
   const sid = definir(w);
   const n = (t: string) => (w.q(`SELECT COUNT(*) n FROM ${t} WHERE systeme_id = ?`, sid)[0].n as number);
   assert.deepEqual([n('swn_astres'), n('swn_formations')], [6, 1]);
-  const fid = w.db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', 'Lien', '{}', 'x', 'x')").run(w.univers).lastInsertRowid;
+  const fid = w.db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', 'Lien', '{}', 'x', 'x')").run(w.univers).lastInsertRowid;
   w.db.prepare("UPDATE swn_astres SET fiche_id = ? WHERE systeme_id = ? AND cle = 'c'").run(fid, sid);
   w.db.pragma('foreign_keys = ON');
   w.db.prepare('DELETE FROM fiches WHERE id = ?').run(fid);

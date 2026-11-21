@@ -166,11 +166,11 @@ describe('E-21 masquer un système : « Secret (MJ seul) » du panneau, case vid
     assert.equal(await page.locator('circle[data-genere="3,-4"]').count(), 0);
     assert.equal(await page.getByRole('switch', { name: 'Secret (MJ seul)' }).count(), 0, 'pas de commutateur en Mode Joueur');
     await hors(page, '07-mode-joueur');
-    // The mode lives in the page (a reload leaves it): the address is reached by the router, the mode kept.
-    await page.evaluate((a: string) => { history.pushState({}, '', a); dispatchEvent(new PopStateEvent('popstate')); }, adresseInterieur);
+    // The mode lives in the page (a reload leaves it): the address is reached by the router, the mode kept (with the universe named as the page names it now, its key: another reference reloads the universe and the mode with it).
+    await page.evaluate((a: string) => { history.pushState({}, '', a.replace(/^\/univers\/[^/]+/, '/univers/' + location.pathname.split('/')[2])); dispatchEvent(new PopStateEvent('popstate')); }, adresseInterieur);
     await page.getByText('Page introuvable.').waitFor();
     await hors(page, '07b-mode-joueur-adresse');
-    await page.evaluate((a: string) => { history.pushState({}, '', a); dispatchEvent(new PopStateEvent('popstate')); }, adresse);
+    await page.evaluate((a: string) => { history.pushState({}, '', a.replace(/^\/univers\/[^/]+/, '/univers/' + location.pathname.split('/')[2])); dispatchEvent(new PopStateEvent('popstate')); }, adresse);
     await systeme(page, 'Aube').waitFor();
     await page.getByRole('radio', { name: /^Mode MJ$|MJ$/ }).first().click();
     await page.waitForFunction(() => document.querySelectorAll('g.gx-systeme').length === 3);

@@ -231,6 +231,6 @@ test('B-47 : plus aucune lecture ni écriture de dernier_import / version_import
     .filter((p) => /dernier_import|version_importee|dernierImport|MarqueFiche|MarqueSection/.test(readFileSync(p, 'utf8')))
     .map((p) => p.slice(racine.length + 1));
   // tests that build a legacy schema on purpose (migration tests, systems' own import mark) are out of the rule
-  const attendus = trouves.filter((p) => !/migration|types-migration|import-galaxie|systemes|services\/historique.test/.test(p));
+  const attendus = trouves.filter((p) => !/migration|types-migration|import-galaxie|import-atlas|systemes|services\/historique.test/.test(p));
   assert.deepEqual(attendus, []);
 });
