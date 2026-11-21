@@ -35,7 +35,7 @@ function entier(valeur: unknown, message: string): number {
 }
 
 /** Content-Disposition for a download: ASCII fallback plus the RFC 5987 UTF-8 name. */
-function dispositionAttachement(nom: string): string {
+export function dispositionAttachement(nom: string): string {
   const ascii = nom.replace(/[^\x20-\x7e]|["\\%;]/g, '_');
   return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(nom).replace(/['()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)}`;
 }

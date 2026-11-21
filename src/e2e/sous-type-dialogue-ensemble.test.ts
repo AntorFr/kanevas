@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Feature-level black-box tests of kanevas-sous-type-dialogue, written from the need only (Monsieur's
 // « Livre » of 2026-10-29; docs/parcours.md B-52 and the P-14 step added by the feature; docs/ecrans.md E-9
 // « Changer le type… » and « Le sous-type montre qu'il s'édite »). Real server in stub mode WITH the
@@ -291,7 +292,7 @@ describe('kanevas-sous-type-dialogue : ensemble depuis le besoin', { skip: skipB
       await bouton(boite).click();
       await boite.getByText(rx('Erreur : 60 caractères au plus.')).waitFor();
       assert.equal((await boite.innerText()).split('Erreur :').length - 1, 1, 'un seul « Erreur : »');
-      await p.waitForTimeout(300);
+      await attendre(p);
       p.removeAllListeners('request');
       assert.deepEqual(patchs, []);
       assert.equal(await p.getByRole('dialog').count(), 1);
@@ -310,7 +311,7 @@ describe('kanevas-sous-type-dialogue : ensemble depuis le besoin', { skip: skipB
       await ouvrirFiche(p, f);
       const boite = await ouvrirBoite(p, f);
       await typesLus(boite);
-      await p.route(`**/api/univers/${UNIVERS}/fiches/${f.id}`, (r: Any) =>
+      await p.route(`**/api/univers/*/fiches/${f.id}`, (r: Any) =>
         r.request().method() === 'PATCH' ? r.fulfill({ status: 500, contentType: 'application/json', body: '{}' }) : r.continue(),
       );
       await champ(boite).fill('Amiral');
@@ -320,7 +321,7 @@ describe('kanevas-sous-type-dialogue : ensemble depuis le besoin', { skip: skipB
       assert.equal(await p.getByRole('dialog').count(), 1);
       assert.match(await badgeTexte(p), /^PNJ · Capitaine$/);
       await capture(p, 'echec-500');
-      await p.unroute(`**/api/univers/${UNIVERS}/fiches/${f.id}`);
+      await p.unroute(`**/api/univers/*/fiches/${f.id}`);
       assert.equal((await lire(f.id)).sousType, 'Capitaine');
     } finally {
       await ctx.close();
@@ -335,14 +336,14 @@ describe('kanevas-sous-type-dialogue : ensemble depuis le besoin', { skip: skipB
       await ouvrirFiche(p, f);
       const boite = await ouvrirBoite(p, f);
       await typesLus(boite);
-      await p.route(`**/api/univers/${UNIVERS}/fiches/${f.id}`, (r: Any) =>
+      await p.route(`**/api/univers/*/fiches/${f.id}`, (r: Any) =>
         r.request().method() === 'PATCH' ? r.fulfill({ status: 403, contentType: 'application/json', body: '{"message":"x"}' }) : r.continue(),
       );
       await champ(boite).fill('Amiral');
       await bouton(boite).click();
       await p.getByText(rx('Vous ne pouvez plus modifier cette fiche.')).waitFor();
       await p.getByRole('dialog').waitFor({ state: 'detached' });
-      await p.unroute(`**/api/univers/${UNIVERS}/fiches/${f.id}`);
+      await p.unroute(`**/api/univers/*/fiches/${f.id}`);
     } finally {
       await ctx.close();
     }
@@ -356,14 +357,14 @@ describe('kanevas-sous-type-dialogue : ensemble depuis le besoin', { skip: skipB
       await ouvrirFiche(p, f);
       const boite = await ouvrirBoite(p, f);
       await typesLus(boite);
-      await p.route(`**/api/univers/${UNIVERS}/fiches/${f.id}`, (r: Any) =>
+      await p.route(`**/api/univers/*/fiches/${f.id}`, (r: Any) =>
         r.request().method() === 'PATCH' ? r.fulfill({ status: 404, contentType: 'application/json', body: '{"message":"x"}' }) : r.continue(),
       );
       await champ(boite).fill('Amiral');
       await bouton(boite).click();
       await boite.getByText('Introuvable.').waitFor();
       assert.equal(await p.getByRole('dialog').count(), 1);
-      await p.unroute(`**/api/univers/${UNIVERS}/fiches/${f.id}`);
+      await p.unroute(`**/api/univers/*/fiches/${f.id}`);
     } finally {
       await ctx.close();
     }
@@ -377,7 +378,7 @@ describe('kanevas-sous-type-dialogue : ensemble depuis le besoin', { skip: skipB
       let liberer: () => void = () => {};
       const bloque = new Promise<void>((ok) => (liberer = ok));
       // The list of types is read when the universe's screen opens: hold it before the page loads.
-      await p.route(`**/api/univers/${UNIVERS}/types`, async (r: Any) => {
+      await p.route(`**/api/univers/*/types`, async (r: Any) => {
         await bloque;
         await r.continue();
       });
@@ -402,7 +403,7 @@ describe('kanevas-sous-type-dialogue : ensemble depuis le besoin', { skip: skipB
       const f = await pnj('Capitaine');
       let liberer: () => void = () => {};
       const bloque = new Promise<void>((ok) => (liberer = ok));
-      await p.route(`**/api/univers/${UNIVERS}/types`, async (r: Any) => {
+      await p.route(`**/api/univers/*/types`, async (r: Any) => {
         await bloque;
         await r.continue();
       });
@@ -425,12 +426,12 @@ describe('kanevas-sous-type-dialogue : ensemble depuis le besoin', { skip: skipB
     try {
       // Panne visée : l'échec de lecture des types laisse enregistrer.
       const f = await pnj('Capitaine');
-      await p.route(`**/api/univers/${UNIVERS}/types`, (r: Any) => r.fulfill({ status: 500, contentType: 'application/json', body: '{}' }));
+      await p.route(`**/api/univers/*/types`, (r: Any) => r.fulfill({ status: 500, contentType: 'application/json', body: '{}' }));
       await ouvrirFiche(p, f);
       const boite = await ouvrirBoite(p, f);
       await boite.getByText('Impossible de charger les types.').waitFor();
       assert.equal(await bouton(boite).isDisabled(), true);
-      await p.unroute(`**/api/univers/${UNIVERS}/types`);
+      await p.unroute(`**/api/univers/*/types`);
     } finally {
       await ctx.close();
     }

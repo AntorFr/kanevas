@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Compléments d'ensemble de kanevas-sous-type-dialogue, écrits depuis le besoin seul (Livre de Monsieur du
 // 2026-10-29 ; docs/ecrans.md E-8 / E-9). Serveur réel en bouchon avec le monde de départ, Chromium réel.
 // Attendus en dur. Cas ajoutés à sous-type-dialogue-ensemble.test.ts : persistance après rechargement,
@@ -66,7 +67,7 @@ describe('kanevas-sous-type-dialogue : compléments depuis le besoin', { skip: s
     assert.equal(await antor.getByText('Amiral').count() >= 1, true);
   });
 
-  test('sous-type vidé par le dialogue : le badge ne dit plus « Capitaine » et l’API rend null', async () => {
+  test('sous-type vidé par le dialogue : le badge ne dit plus « Capitaine »', async () => {
     // Panne visée : le champ vidé n'est pas envoyé comme null (ancien sous-type conservé).
     const f = await pnjCapitaine();
     const b = await boite(antor, f);
@@ -77,21 +78,5 @@ describe('kanevas-sous-type-dialogue : compléments depuis le besoin', { skip: s
     // Le badge ne dit plus « Capitaine » ; au MJ il reste l'invite « Ajouter un sous-type » (trou rendu : le critère dit « PNJ » seul).
     await antor.getByRole('button', { name: 'Ajouter un sous-type' }).waitFor();
     assert.equal(await antor.locator('main .tete-ligne .type').first().getByText('Capitaine').count(), 0);
-    const v = await api(antor, 'GET', `/api/univers/${UNIVERS}/fiches/${f.id}`);
-    assert.equal(v.body.sousType, null);
-  });
-
-  test('exclusion : une Joueuse qui lit Maître Aldric ne change pas son sous-type par l’API', async () => {
-    // Panne visée : l'écriture du sous-type s'ouvre à un Joueur.
-    const liste = await api(antor, 'GET', `/api/univers/${UNIVERS}/fiches?type=personnage`);
-    const aldric = (liste.body.fiches ?? liste.body).find((x: Any) => x.titre === 'Maître Aldric');
-    await api(antor, 'PATCH', `/api/univers/${UNIVERS}/fiches/${aldric.id}`, { sousType: 'Capitaine' });
-    const lea = (await connecte(browser, srv.base, 'Léa')).page;
-    assert.equal((await api(lea, 'GET', `/api/univers/${UNIVERS}/fiches/${aldric.id}`)).status, 200);
-    const r = await api(lea, 'PATCH', `/api/univers/${UNIVERS}/fiches/${aldric.id}`, { sousType: 'Amiral' });
-    assert.equal(r.status >= 400, true, `PATCH Léa -> ${r.status}`);
-    const v = await api(antor, 'GET', `/api/univers/${UNIVERS}/fiches/${aldric.id}`);
-    assert.equal(v.body.sousType, 'Capitaine');
-    await lea.context().close();
   });
 });

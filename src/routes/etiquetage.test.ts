@@ -12,6 +12,7 @@ delete process.env.DB_PATH;
 
 const { buildApp } = await import('../app.js');
 const { semerBouchon } = await import('../bouchon/depart.js');
+const { avantSemis, apresSemis } = await import('../db/jetons-pour-semis.js');
 const { migrate, openDb } = await import('../db/db.js');
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
@@ -175,6 +176,9 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
   db.exec('CREATE TABLE fichiers_sections (fichier_id, section_id, joint, dans_texte, dans_bloc_mj, PRIMARY KEY (fichier_id, section_id))');
   db.exec('CREATE TABLE fichiers_attente (id INTEGER PRIMARY KEY, univers_id, cle, section_id, fiche_id, maniere)');
   db.exec('ALTER TABLE fiches ADD COLUMN illustration_fichier_id INTEGER');
+  // Same for the keys (0037): the seed draws them, the columns and tables come only with 0037.
+  db.exec('ALTER TABLE univers ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN creee_via TEXT; ALTER TABLE sections ADD COLUMN cle TEXT');
+  db.exec('CREATE TABLE cles_anciennes (univers_id, cle, fiche_id); CREATE TABLE univers_cles_anciennes (cle, univers_id)');
   // Same for the owner of a system (0019), which the current services write.
   db.exec('ALTER TABLE systemes_jeu ADD COLUMN responsable_id INTEGER');
   // Likewise `relations` (0018): the seed writes `nature` / `qualificatif`, absent from this schema (`type`).
@@ -198,16 +202,19 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
     // 0032: the seed writes the optional columns of modifications and fittings too.
     modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse', 'reparation_min', 'effet_pct', 'echange_arrondi'] })) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} ADD COLUMN ${c} INTEGER`);
   const ajoutees = (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as Any[]).map((r) => r.name as string).filter((n) => !avantScratch.has(n) && !n.startsWith('sqlite_'));
+  avantSemis(db);
   semerBouchon(db);
+  apresSemis(db);
   db.exec('PRAGMA foreign_keys = OFF');
   for (const t of ajoutees) db.exec(`DROP TABLE ${t}`);
   db.exec('PRAGMA foreign_keys = ON; ALTER TABLE sections DROP COLUMN gere_par; ALTER TABLE sections DROP COLUMN source_version; ALTER TABLE propositions DROP COLUMN source_version; ALTER TABLE lots_import DROP COLUMN outil');
+  db.exec('DROP TABLE cles_anciennes; DROP TABLE univers_cles_anciennes; ALTER TABLE univers DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN creee_via; ALTER TABLE sections DROP COLUMN cle');
   db.exec('ALTER TABLE relations DROP COLUMN nature');
   db.exec('ALTER TABLE relations RENAME COLUMN qualificatif TO type');
   db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers; ALTER TABLE fiches DROP COLUMN illustration_fichier_id; ALTER TABLE systemes_jeu DROP COLUMN responsable_id');
   const avant = db.prepare('SELECT id, titre FROM fiches ORDER BY id').all() as { id: number; titre: string }[];
   assert.ok(avant.length >= 5);
-  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]);
+  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]);
   for (const f of avant) {
     const mot = f.titre.split(/[^\p{L}\p{N}]+/u)[0]!;
     const ids = (db.prepare('SELECT rowid FROM recherche_fiches WHERE recherche_fiches MATCH ?').all(`titre:${mot}*`) as Any[]).map((r) => r.rowid);

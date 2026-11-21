@@ -1,6 +1,6 @@
 import type { Db } from '../db/db.js';
 import { introuvable } from './erreurs.js';
-import type { Jeton } from './jetons.js';
+import type { JetonRequete as Jeton } from './jetons.js';
 
 /** An origin key: 1 to 200 characters, no `|`, `]` nor line break (import API contract). */
 export function cleValide(cle: string): boolean {

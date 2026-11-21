@@ -76,7 +76,7 @@ test('import : clé inconnue en attente, puis résolue à la création sans touc
   assert.equal(r1.json().etat, 'creee', r1.body);
   await clore(l1);
   assert.equal((await lire(l1)).en_attente ?? (await lire(l1)).enAttente, 2); // + the seeded « Anse-aux-Sels » key
-  const sid = (app.db.prepare("SELECT id FROM sections WHERE cle_origine = 'desc' AND fiche_id = ?").get(r1.json().id) as { id: number }).id;
+  const sid = (app.db.prepare("SELECT id FROM sections WHERE cle = 'desc' AND fiche_id = ?").get(r1.json().id) as { id: number }).id;
   assert.deepEqual(app.db.prepare('SELECT cible_fiche_id c, cible_cle k, texte t FROM liens WHERE section_id = ?').all(sid), [{ c: null, k: 'faction:guilde', t: 'la Guilde' }]);
   const avant = app.db.prepare('SELECT version, modifie_le, contenu FROM sections WHERE id = ?').get(sid) as { version: number; modifie_le: string; contenu: string };
   assert.equal(avant.contenu, 'Voir [[cle:faction:guilde|la Guilde]].');
@@ -89,7 +89,6 @@ test('import : clé inconnue en attente, puis résolue à la création sans touc
   assert.equal(apres.version, avant.version);
   assert.equal(apres.modifie_le, avant.modifie_le);
   assert.deepEqual(app.db.prepare('SELECT cible_fiche_id c, cible_cle k FROM liens WHERE section_id = ?').all(sid), [{ c: g.json().id, k: null }]);
-  assert.equal((app.db.prepare('SELECT version_importee v FROM sections WHERE id = ?').get(sid) as { v: unknown }).v, (app.db.prepare('SELECT version_importee v FROM sections WHERE id = ?').get(sid) as { v: unknown }).v);
 
   assert.equal((await put('lieu:port-sel', PORT)).json().etat, 'inchangee');
   assert.equal((await put('faction:guilde', GUILDE)).json().etat, 'inchangee');
@@ -153,7 +152,7 @@ test('session : Léa, [[id]] nu vers une fiche cachée -> 400 lien_illisible, se
   assert.equal(sec(port, 'Description').contenu, `Voir [[${guilde}|son texte]].`);
   assert.deepEqual(liens(d.id), [{ c: guilde, k: null, t: 'son texte', m: 0 }]);
   // a key known but unreadable is not resolved for her (no existence leak)
-  app.db.prepare('UPDATE fiches SET cle_origine = ? WHERE id = ?').run('faction:g', guilde);
+  app.db.prepare('UPDATE fiches SET cle = ? WHERE id = ?').run('faction:g', guilde);
   const cle = await ecrire(lea, port, 'Description', 'Voir [[cle:faction:g|la G]].');
   assert.equal(cle.statusCode, 200, cle.body);
   assert.equal(sec(port, 'Description').contenu, 'Voir [[cle:faction:g|la G]].');
@@ -186,7 +185,7 @@ test('import : [[id]] nu inexistant refuse la fiche et ne laisse pas de ligne', 
   const { app, put } = await monter();
   const r = await put('lieu:x', { type: 'lieu', titre: 'X', sections: [{ cle: 'd', titre: 'D', contenu: 'voir [[424242]]' }] });
   assert.notEqual(r.statusCode, 200);
-  assert.equal((app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE cle_origine = 'lieu:x'").get() as { n: number }).n, 0);
+  assert.equal((app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE cle = 'lieu:x'").get() as { n: number }).n, 0);
 });
 
 test('seul services/liens.ts écrit la table liens', () => {

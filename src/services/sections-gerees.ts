@@ -1,3 +1,4 @@
+import { ecrire } from './historique.js';
 import type { Db } from '../db/db.js';
 import { declarationSection, etatGere, type EtatGere, type Geree } from './sections-gerees-etat.js';
 export { declarationSection, etatGere, type EtatGere, type Geree };
@@ -64,7 +65,7 @@ export function poserSectionGeree(
   if (e.sectionId !== undefined) {
     if (!Number.isInteger(e.version)) throw invalide('La version lue est requise.');
     const sectionId = e.sectionId;
-    return db.transaction(() => {
+    return ecrire(db, compteId, () => {
       const vue = ecrireContenu(db, compteId, universId, e.ficheId, sectionId, e.contenu, e.version!, {
         outil: e.outil,
         sourceVersion: e.sourceVersion,
@@ -74,7 +75,7 @@ export function poserSectionGeree(
         { contenu: e.contenu, sourceVersion: e.sourceVersion, charge: e.charge },
       );
       return vue;
-    })();
+    });
   }
 
   // Creation: a GM gesture like `ajouterSection`.
@@ -88,7 +89,7 @@ export function poserSectionGeree(
   validerContenu(e.contenu);
   exigerSansBloc(role, e.contenu);
   const now = new Date().toISOString();
-  const id = db.transaction(() => {
+  const id = ecrire(db, compteId, () => {
     const contenu = preparerContenu(db, universId, compteId, e.contenu);
     validerContenu(contenu);
     const { n } = db
@@ -115,7 +116,7 @@ export function poserSectionGeree(
       { contenu: e.contenu, sourceVersion: e.sourceVersion, charge: e.charge },
     );
     return sid;
-  })();
+  });
   const s = db.prepare('SELECT * FROM sections WHERE id = ?').get(id) as SectionRow;
   return vueSection(db, universId, role, s, acteur);
 }
@@ -153,7 +154,7 @@ export function recalculerSection(
 ): SectionVue {
   const role = exigerRole(db, universId, compteId);
   const acteur: Acteur = { compteId };
-  return db.transaction(() => {
+  return ecrire(db, compteId, () => {
     const s = sectionGeree(db, universId, ficheId, sectionId);
     if (!peutLireSection(role, s, acteur) || !estGeree(s)) throw introuvable();
     const { cle, decl } = declareeDe(s);
@@ -169,7 +170,7 @@ export function recalculerSection(
     return poserSectionGeree(db, compteId, universId, {
       ficheId, outil: cle, type: decl.type, sectionId, contenu: p.contenu, sourceVersion: p.sourceVersion, version, charge: p.charge,
     });
-  })();
+  });
 }
 
 /** Files (or replaces) the requester's pending recalculation proposal for a stale section. */
@@ -186,7 +187,7 @@ export function proposerRecalcul(db: Db, compteId: number, universId: number, se
   const role = exigerRole(db, universId, compteId);
   if (role !== 'mj') throw introuvable();
   const acteur: Acteur = { compteId };
-  const id = db.transaction(() => {
+  const id = ecrire(db, compteId, () => {
     const s = sectionGeree(db, universId, ficheId, sectionId);
     if (!estGeree(s)) throw introuvable();
     const { cle, decl } = declareeDe(s);
@@ -198,7 +199,7 @@ export function proposerRecalcul(db: Db, compteId: number, universId: number, se
     const ctx: ContexteSection = { db, acteur, universId, ficheId: s.fiche_id, sectionId };
     if (decl.versionSource(ctx) === s.source_version) throw new ErreurService('conflit', 'La section est à jour.', 'a_jour');
     return proposer(db, compteId, universId, s, decl, cle);
-  })();
+  });
   return lireProposition(db, compteId, universId, id);
 }
 
@@ -269,7 +270,7 @@ export function libererSections(db: Db, universId: number, outilCle: string): nu
   ).all(universId, prefixeOutil(outilCle)) as { id: number }[]).map((r) => r.id);
   for (const id of ids) {
     db.prepare('DELETE FROM propositions WHERE section_id = ? AND source_version IS NOT NULL AND appliquee_le IS NULL').run(id);
-    db.prepare('UPDATE sections SET gere_par = NULL, source_version = NULL WHERE id = ?').run(id);
+    ecrire(db, null, () => db.prepare('UPDATE sections SET gere_par = NULL, source_version = NULL WHERE id = ?').run(id));
   }
   return ids.length;
 }

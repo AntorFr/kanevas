@@ -1,15 +1,15 @@
 import type { Db } from '../db/db.js';
-import { exigerMJ } from './droits.js';
+import { exigerMJ, roleDe } from './droits.js';
 import { introuvable } from './erreurs.js';
 import { compterFichiersEnAttente } from './fichiers.js';
 import { compterEnAttente } from './liens.js';
-import type { Jeton } from './jetons.js';
+import type { JetonRequete as Jeton } from './jetons.js';
 import { declarationOutil } from './outils.js';
 
 /** Entries kept in a batch report (AD-104); further ones are counted but not listed. */
 export const MAX_RAPPORT = 1000;
 
-export const NATURES = ['fiches', 'fichiers', 'relations'] as const;
+export const NATURES = ['fiches', 'fichiers', 'relations', 'cartes'] as const;
 export type Nature = (typeof NATURES)[number];
 export type Issue = 'creees' | 'mises_a_jour' | 'inchangees' | 'refusees';
 
@@ -129,6 +129,8 @@ export function ouvrirLot(
 ): { lot: Lot; repris: boolean } {
   // The scope decides (K-6): a tool token opens a batch of one of its tools, a content token a content batch.
   if (outil === null ? jeton.outils.length > 0 : !jeton.outils.includes(outil)) throw introuvable();
+  // The role is read now (B-46): a token of an account that is no longer a GM opens no batch.
+  exigerMJ(db, jeton.universId, jeton.compteId);
   return db.transaction(() => {
     const ouvert = db
       .prepare('SELECT * FROM lots_import WHERE jeton_id = ? AND outil IS ? AND clos_le IS NULL ORDER BY id DESC LIMIT 1')
@@ -142,28 +144,13 @@ export function ouvrirLot(
   })();
 }
 
-/** A batch of the token's universe; any other id is unknown. */
+/** A batch of the token's universe, read by its own token or by a GM of it; any other id is unknown. */
 export function lireLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date = new Date()): Lot {
   const row = ligne(db, lotId);
   if (!row || row.univers_id !== jeton.universId) throw introuvable();
+  // A player's token reads no one else's batch (its report names sheets): the same silence as an unknown id.
+  if (row.jeton_id !== jeton.id && roleDe(db, jeton.universId, jeton.compteId) !== 'mj') throw introuvable();
   return versLot(row, maintenant);
-}
-
-/**
- * Sheets whose wanted parent is not the one written (absent target, cycle), still where the import
- * left them: a hand-moved sheet is not waiting (AD-115 (4)).
- */
-function compterParentsEnAttente(db: Db, universId: number): number {
-  const { n } = db
-    .prepare(
-      `SELECT COUNT(*) AS n FROM fiches f
-        WHERE f.univers_id = ? AND json_extract(f.dernier_import, '$.parent.demande') IS NOT NULL
-          AND f.parent_id IS json_extract(f.dernier_import, '$.parent.ecrit')
-          AND NOT EXISTS (SELECT 1 FROM fiches p WHERE p.id = f.parent_id
-                            AND p.cle_origine = json_extract(f.dernier_import, '$.parent.demande'))`,
-    )
-    .get(universId) as { n: number };
-  return n;
 }
 
 /** Closes a batch (idempotent: a closed one keeps its date) and returns its report. */
@@ -172,7 +159,7 @@ export function cloreLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date =
   // « En attente » is counted once, at the closing (E-18): links still waiting for an origin key.
   db.prepare('UPDATE lots_import SET clos_le = ?, en_attente = ? WHERE id = ? AND clos_le IS NULL').run(
     maintenant.toISOString(),
-    compterEnAttente(db, jeton.universId) + compterFichiersEnAttente(db, jeton.universId) + compterParentsEnAttente(db, jeton.universId),
+    compterEnAttente(db, jeton.universId) + compterFichiersEnAttente(db, jeton.universId),
     lotId,
   );
   return lireLot(db, jeton, lotId, maintenant);

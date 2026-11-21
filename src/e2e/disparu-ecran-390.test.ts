@@ -1,3 +1,4 @@
+// ecrans: fiche, recherche
 // Layout checks of the gone mark (B-67, docs/ecrans.md « the gone mark »): the chip of E-17 is whole,
 // the type badge keeps its word on one line, the chip and the image gestures do not overlap at 390 px.
 // Real Chromium + stub server with the seed. Waits are on what the screen shows, never networkidle.

@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-recherche-e9 (E-9 header "Aussi appelée…", label pills and the box
 // « Alias et étiquettes… »), written from the task's exit criterion and docs/ecrans.md.
 // Real server in stub mode + real Chromium; expected values are literals from the doc.
@@ -104,7 +105,6 @@ describe('kanevas-recherche-e9, E-9 alias et étiquettes', { skip: skipBrowser }
     await lea.getByRole('link', { name: 'Côte des Brumes' }).click();
     await lea.waitForURL(/recherche\?etiquette=C%C3%B4te%20des%20Brumes/);
     await lea.getByRole('heading', { level: 1, name: 'Recherche' }).waitFor();
-    await lea.waitForTimeout(800);
     await attendre(lea);
     await lea.screenshot({ path: `${SHOTS}/lea-e17.png` });
     const res = await lea.locator('main').innerText();

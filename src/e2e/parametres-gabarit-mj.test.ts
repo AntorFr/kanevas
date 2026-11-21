@@ -1,3 +1,4 @@
+// ecrans: parametres
 // Tests of E-14 Paramètres template: the three GM panels are the closed hatched block of E-6/E-9 (arbitrated
 // 13/10, replaces the open tint + 2 px rule), the column is ~688 px, fields run full width, textareas use the
 // interface font. E-6 (campaign) keeps its hatching.

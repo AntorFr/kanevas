@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Browser tests of kanevas-sous-type-dialogue-badge, from its exit criterion (B-52, E-9): the GM's sub-type in the
 // type badge shows on hover and focus that it edits in place (--surface-3 background, 12 px pencil, focus ring),
 // without moving the badge; a player / player mode sees plain text; a lost connection disables it.

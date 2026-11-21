@@ -1,3 +1,4 @@
+// ecrans: accueil
 import assert from 'node:assert/strict';
 import { type ChildProcess, spawn } from 'node:child_process';
 import { createServer } from 'node:net';

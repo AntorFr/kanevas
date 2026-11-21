@@ -1,3 +1,4 @@
+// ecrans: acces-api
 // Black-box test of kanevas-outils-galaxie-tenir, import of a galaxy by the API, seen on screen: the batch report
 // (E-18, « Accès API ») counts the elements created by nature after the first push (4 systems, 1 zone, 3 routes, no refusal) and
 // as unchanged after the replay, and a route between two systems absent from the batch is counted refused. The literal
@@ -45,9 +46,7 @@ async function preparer(): Promise<{ page: Any; E: number; bord: number; valeur:
   const us = (await (await page.request.get('/api/univers')).json()) as Any[];
   const E = us.find((u) => u.nom === "Éneria d'essai").id as number;
   const bord = ((await (await page.request.post(`/api/univers/${E}/outils/swn/galaxie/cartes`, { data: { titre: 'Galaxie du bord' } })).json()) as Any).id as number;
-  const j = await page.request.post(`/api/univers/${E}/jetons`, { data: { nom: 'Script galaxie', dureeJours: 30, outils: ['swn/galaxie'] } });
-  assert.equal(j.status(), 201);
-  const valeur = ((await j.json()) as Any).valeur as string;
+  const valeur = await srv.jetonOutils('antor', E, 'Script galaxie', ['swn/galaxie']);
   return { page, E, bord, valeur, base: srv.base };
 }
 async function pousser(page: Any, E: number, bord: number, valeur: string, lotId: number, corps: unknown): Promise<Any> {

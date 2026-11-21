@@ -1,0 +1,32 @@
+/* E-5 panel « Jetons d'API »: full width under « Jeton de l'assistant »; the grid follows .table-membres. */
+.jetons-admin { margin-top: var(--e-4); }
+.jetons-admin-tete { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: var(--e-3); margin-bottom: var(--e-2); }
+.jetons-admin-tete > h2 { font-size: var(--t-12); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--texte-3); margin: 0; }
+.jetons-admin-tete .champ { margin: 0; min-width: 14rem; }
+.table-jetons { display: grid; grid-template-columns: minmax(8rem, 1.2fr) minmax(6rem, .8fr) minmax(10rem, 2fr) 7rem 8rem auto; column-gap: 12px; }
+.table-jetons > * { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; }
+.entetes-jetons { padding: 6px 0; font-size: var(--t-12); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--texte-3); }
+.entetes-jetons .vers-lecteurs { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.ligne-table-jeton { padding: 8px 0; border-top: 1px solid var(--bord); font-size: var(--t-13); color: var(--texte-2); }
+.ligne-table-jeton > span { min-width: 0; overflow-wrap: anywhere; }
+.ligne-table-jeton .cel-nom { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-1) var(--e-2); }
+.ligne-table-jeton .cel-nom > :not(b) { flex: none; }
+.ligne-table-jeton .cel-nom b { min-width: 0; overflow-wrap: anywhere; font-size: var(--t-14); font-weight: 500; color: var(--texte); }
+.ligne-table-jeton.inactif .cel-nom b { color: var(--texte-2); }
+.ligne-table-jeton .cel-prop { color: var(--texte); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ligne-table-jeton .cel-acces strong { color: var(--texte); font-weight: 500; }
+.ligne-table-jeton .cel-acces > span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.ligne-table-jeton .cel-actions .bouton { white-space: nowrap; }
+.ligne-table-jeton .cel-actions { display: flex; gap: var(--e-1); justify-content: flex-end; }
+.ligne-table-jeton.hors { opacity: .45; }
+.etiquette-bloc { display: none; font-style: normal; font-size: var(--t-12); color: var(--texte-3); }
+@media (max-width: 760px) {
+  .table-jetons { display: block; }
+  .entetes-jetons { display: none; }
+  .ligne-table-jeton { display: flex; flex-direction: column; align-items: stretch; gap: var(--e-1); padding: var(--e-3) 0; }
+  .ligne-table-jeton .cel-prop::before { content: "Propriétaire : "; color: var(--texte-3); }
+  .ligne-table-jeton .etiquette-bloc { display: inline; margin-right: var(--e-1); }
+  .ligne-table-jeton .etiquette-bloc::after { content: " :"; }
+  .ligne-table-jeton .cel-actions { flex-direction: column; margin-top: var(--e-2); }
+  .ligne-table-jeton .cel-actions .bouton { width: 100%; justify-content: center; min-height: 36px; }
+}

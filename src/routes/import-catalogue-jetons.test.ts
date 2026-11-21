@@ -8,7 +8,7 @@ delete process.env.DB_PATH;
 
 const { buildApp } = await import('../app.js');
 const { semerBouchon, JETON_BOUCHON } = await import('../bouchon/depart.js');
-const { creerJeton, revoquerJeton } = await import('../services/jetons.js');
+const { creerJeton, revoquerJeton, listerJetons, listerOutilsProposables } = await import('../services/jetons.js');
 const { trouverCompte } = await import('../services/comptes.js');
 const { changerRoleNoyau } = await import('../services/membres.js');
 
@@ -112,9 +112,18 @@ test('niveau système : responsable écrit, MJ non responsable 403 refuse, respo
   assert.equal(lignes(), 11);
   const mp = await w.req(tm, 'POST', `${CAT}/apercu?niveau=systeme`, EXEMPLE);
   assert.equal(mp.statusCode, 403);
+  // B-46 revised: a lost role no longer refuses the token, it lowers it to what the account may. Antor is a Player
+  // here but still GM of « Univers voisin », attached to the same system: he stays its responsible, the service allows it.
   changerRoleNoyau(w.app.db, w.E, w.id('antor'), 'joueur');
-  const j = await w.req(ta, 'PUT', `${CAT}?niveau=systeme`, fautif());
-  assert.equal(j.statusCode, 401);
+  const j = await w.req(ta, 'PUT', `${CAT}?niveau=systeme`, { ...fautif(), version: 'apres-retrogradation' });
+  assert.equal(j.statusCode, 200, j.body);
+  // Once a Player of every universe attached to the system, he is no one for it: the service refuses, never a 401.
+  const voisin = w.un('SELECT id FROM univers WHERE nom = ?', 'Univers voisin').id as number;
+  w.app.db.prepare("UPDATE membres SET role = 'joueur' WHERE univers_id = ? AND compte_id = ?").run(voisin, w.id('antor'));
+  const k = await w.req(ta, 'PUT', `${CAT}?niveau=systeme`, { ...fautif(), version: 'tout-joueur' });
+  assert.ok([403, 404].includes(k.statusCode), String(k.statusCode));
+  assert.notEqual(k.json().code, 'jeton_invalide');
+  assert.equal(lignes(), 11, 'nothing written');
 });
 
 test('niveau invalide : 400 ; système sans système : introuvable', async () => {
@@ -185,7 +194,7 @@ test('panne injectée à l\'application : rien d\'écrit, rien de compté', asyn
 test('toute route du scope d\'import déclare une portée', async () => {
   const w = await monde();
   const src = readFileSync(new URL('./import.ts', import.meta.url), 'utf8');
-  const decl = src.match(/scope\.(get|post|put|delete)\(/g) ?? [];
+  const decl = src.match(/scope\.(get|post|put|patch|delete)\(/g) ?? [];
   const configs = src.match(/config: \{ portee: '(contenu|outil|ouverture|lot)'/g) ?? [];
   assert.ok(decl.length >= 10);
   assert.equal(configs.length, decl.length);
@@ -205,29 +214,20 @@ test('creerJeton : outil sans catalogue, inconnu ou non applicable, ou sans syst
   assert.equal(w.nb('jetons_outils'), 0);
 });
 
-test('routes de session : POST/GET jetons avec outils, jetons/outils, lots avec outil et natures, suppression', async () => {
+test('jetons avec outils (service ; les routes par univers d’E-18 sont retirées) : création, liste étiquetée, outils proposés, lots avec outil et natures, suppression', async () => {
   const w = await monde();
   const h = w.antor;
-  const c = await w.app.inject({ method: 'POST', url: `/api/univers/${w.E}/jetons`, headers: h,
-    payload: { nom: 'Outil', dureeJours: 30, outils: [G] } });
-  assert.equal(c.statusCode, 201, c.body);
-  const l = await w.app.inject({ method: 'GET', url: `/api/univers/${w.E}/jetons`, headers: h });
-  assert.deepEqual(l.json().jetons?.[0]?.outils ?? l.json()[0]?.outils, [{ cle: G, libelle: 'Essai G' }]);
-  const bad = await w.app.inject({ method: 'POST', url: `/api/univers/${w.E}/jetons`, headers: h,
-    payload: { nom: 'Mauvais', dureeJours: 30, outils: ['essai/h'] } });
-  assert.equal(bad.statusCode, 400);
-  assert.equal(bad.json().champ, 'outils');
-  const p = await w.app.inject({ method: 'GET', url: `/api/univers/${w.E}/jetons/outils`, headers: h });
-  assert.equal(p.statusCode, 200);
-  assert.deepEqual(p.json().map((o: any) => ({ cle: o.cle, libelle: o.libelle })), [{ cle: G, libelle: 'Essai G' }, { cle: 'swn/galaxie', libelle: 'Galaxie' }, { cle: 'swn/vaisseaux', libelle: 'Concepteur de vaisseaux' }]);
-  assert.equal(typeof p.json()[0].module, 'string');
-  const pk = await w.app.inject({ method: 'GET', url: `/api/univers/${w.K}/jetons/outils`, headers: h });
-  assert.deepEqual(pk.json(), []);
+  const c = { valeur: creerJeton(w.app.db, w.id('antor'), w.E, { nom: 'Outil', dureeJours: 30, outils: [G] }).valeur };
+  assert.deepEqual(listerJetons(w.app.db, w.id('antor'), w.E)[0]!.outils, [{ cle: G, libelle: 'Essai G' }]);
+  assert.throws(() => creerJeton(w.app.db, w.id('antor'), w.E, { nom: 'Mauvais', dureeJours: 30, outils: ['essai/h'] }), (e: any) => e.champ === 'outils');
+  const p = listerOutilsProposables(w.app.db, w.id('antor'), w.E);
+  assert.deepEqual(p.map((o: any) => ({ cle: o.cle, libelle: o.libelle })), [{ cle: G, libelle: 'Essai G' }, { cle: 'swn/galaxie', libelle: 'Galaxie' }, { cle: 'swn/vaisseaux', libelle: 'Concepteur de vaisseaux' }]);
+  assert.equal(typeof p[0]!.module, 'string');
+  assert.deepEqual(listerOutilsProposables(w.app.db, w.id('antor'), w.K), []);
   // Joueur : refusé.
-  const lea = await connecter(w.app, 'lea');
-  assert.notEqual((await w.app.inject({ method: 'GET', url: `/api/univers/${w.E}/jetons/outils`, headers: lea })).statusCode, 200);
+  assert.throws(() => listerOutilsProposables(w.app.db, w.id('lea'), w.E));
 
-  const valeur = c.json().valeur;
+  const valeur = c.valeur;
   const lot = await w.req(valeur, 'POST', `/lots?outil=${G}`);
   assert.equal(lot.statusCode, 201);
   const ls = await w.app.inject({ method: 'GET', url: `/api/univers/${w.E}/lots`, headers: h });
@@ -236,8 +236,7 @@ test('routes de session : POST/GET jetons avec outils, jetons/outils, lots avec 
   assert.deepEqual(premier.outil, { cle: G, libelle: 'Essai G' });
   assert.deepEqual(premier.natures, [{ nom: 'coques', libelle: 'Coques' }, { nom: 'armes', libelle: 'Armes' }]);
 
-  const idJ = (await w.app.inject({ method: 'POST', url: `/api/univers/${w.E}/jetons`, headers: h,
-    payload: { nom: 'À supprimer', dureeJours: 30, outils: [G] } })).json().jeton.id;
+  const idJ = creerJeton(w.app.db, w.id('antor'), w.E, { nom: 'À supprimer', dureeJours: 30, outils: [G] }).jeton.id;
   assert.equal(w.un('SELECT COUNT(*) n FROM jetons_outils WHERE jeton_id = ?', idJ).n, 1);
   // Supprimer un jeton supprime ses lignes de jetons_outils (cascade de la base).
   w.app.db.prepare('DELETE FROM jetons_api WHERE id = ?').run(idJ);
@@ -254,9 +253,8 @@ test('niveau système, MJ non responsable : le corps porte le code refuse (comme
 
 test('jetons/outils : rôle (type) et libellé du module de chaque outil proposé', async () => {
   const w = await monde();
-  const p = await w.app.inject({ method: 'GET', url: `/api/univers/${w.E}/jetons/outils`, headers: w.antor });
-  assert.equal(p.statusCode, 200);
-  assert.deepEqual(p.json(), [
+  const p = listerOutilsProposables(w.app.db, w.id('antor'), w.E);
+  assert.deepEqual(p, [
     { cle: G, libelle: 'Essai G', module: 'essai', libelleModule: "Module d'essai", type: 'generateur' },
     { cle: 'swn/galaxie', libelle: 'Galaxie', module: 'swn', libelleModule: 'Stars Without Number', type: 'carte' },
     { cle: 'swn/vaisseaux', libelle: 'Concepteur de vaisseaux', module: 'swn', libelleModule: 'Stars Without Number', type: 'generateur' },
