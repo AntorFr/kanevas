@@ -200,7 +200,7 @@ test('assistant : lire_section rend le Markdown source (jamais du HTML), même p
   ecrireContenu(db, antor.id, u.id, f.id, sec.id, '## T\n\n**g**', sec.version);
   for (const c of [antor, lea]) {
     const o = catalogueDe(db, c.id, u.id).outils.find((x) => x.nom === 'lire_section')!;
-    const r = o.executer({ ficheId: f.id, sectionId: sec.id }) as { ok: boolean; donnees?: { contenu: string } };
+    const r = o.executer({ fiche: f.id, sectionId: sec.id }) as { ok: boolean; donnees?: { contenu: string } };
     if (c === antor) {
       assert.equal(r.ok, true);
       assert.equal(r.donnees!.contenu, '## T\n\n**g**');
@@ -224,7 +224,7 @@ test('assistant : un lecteur reçoit la vue rendue sans la source, un écrivain 
   changerAudience(db, antor.id, u.id, f.id, sec.id, { joueursLisent: true });
   const lire = (id: number) => {
     const o = catalogueDe(db, id, u.id).outils.find((x) => x.nom === 'lire_section')!;
-    return o.executer({ ficheId: f.id, sectionId: sec.id }) as { ok: boolean; donnees?: { contenu: string } };
+    return o.executer({ fiche: f.id, sectionId: sec.id }) as { ok: boolean; donnees?: { contenu: string } };
   };
   const rl = lire(lea.id);
   assert.equal(rl.ok, true);

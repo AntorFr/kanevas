@@ -1,3 +1,4 @@
+// ecrans: fiche, parametres, systeme, vue-ensemble
 // Browser tests of kanevas-types-ecrans-reglage, from its exit criterion: the E-15 « Types de fiche » tab
 // and the E-14 « Types de fiche » panel (AD-120). Real server in stub mode WITH the starting world, real Chromium.
 import assert from 'node:assert/strict';

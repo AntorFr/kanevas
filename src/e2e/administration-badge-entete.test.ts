@@ -1,3 +1,4 @@
+// ecrans: administration
 // Independent black-box tests of the re-check of `kanevas-recours-admin` (E-5), written from the need only
 // (docs/ecrans.md E-5, docs/charte.md, docs/maquettes/e05-administration.html). Real server in stub mode,
 // real Chromium. Expected colours are the charte's literals, not read back from the product.
@@ -22,6 +23,8 @@ async function monde() {
   await connecte(browser, s.base, 'Léa');
   await connecte(browser, s.base, 'Mira');
   const admin = await connecte(browser, s.base, 'Admin');
+  // Under load the page takes longer than the harness default (30 s) to show its titles.
+  admin.page.setDefaultTimeout(60000);
   const ids: Record<string, number> = {};
   for (const nom of ['Brume', "Lame d'Ébène", 'Solo']) {
     const r = await antor.ctx.request.post('/api/univers', { data: { nom, description: 'd' } });

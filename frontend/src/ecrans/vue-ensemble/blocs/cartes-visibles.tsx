@@ -7,7 +7,7 @@ import type { Role } from '../../../types';
 import { Alerte, Bouton } from '../../../ui';
 import { BlocVue, VideBloc } from '../../suivi/blocs-commun';
 import { Vignette } from '../../cartes/vignette';
-import { adresseCarte, FORMES, type Carte, type PageCartes } from '../../cartes/commun';
+import { adresseCarte, estCarteOutil, FORMES, type Carte, type PageCartes } from '../../cartes/commun';
 import '../../cartes/cartes.css';
 import type { Bloc } from '../registre';
 
@@ -21,7 +21,7 @@ async function chargerVisibles(universId: number): Promise<Carte[]> {
     const q: string = curseur === null ? '' : `?curseur=${encodeURIComponent(curseur)}`;
     const p: PageCartes = await lire<PageCartes>(`/api/univers/${universId}/cartes${q}`);
     // The list gives the GM `visible`; for a player it is absent and every map listed is visible.
-    visibles.push(...p.cartes.filter((c) => c.visible !== false));
+    visibles.push(...p.cartes.filter((c): c is Carte => !estCarteOutil(c) && c.visible !== false));
     curseur = p.suivant;
   } while (visibles.length < AFFICHEES && curseur !== null);
   return visibles.slice(0, AFFICHEES);

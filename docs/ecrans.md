@@ -1,339 +1,359 @@
-# Kanevas — écrans
+# Kanevas — screens
 
 > **E-6 Campagne and E-7 Scénario no longer exist** (`kanevas-scenarios-suivi`): remaining references in the dated sections below describe an adventure's sheet (E-9) and its block; the screen table below is authoritative.
 >
-> Doc du produit (voir `docs/parcours.md`). Au cadrage, à grosses mailles : chaque écran, d'où on
-> y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
-> finie se détaillent dans la tranche qui le construit.
+> Product documentation (see `docs/parcours.md`). At scoping time, a broad outline: each screen, how
+> it is reached, what it is for, what each role does there. Each screen's states and finished
+> mockup are detailed in the slice that builds it.
 
-> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, ongoing campaigns, derniers comptes-rendus, préparation pour le MJ, cartes visibles), E-4, E-5 (Administration), E-13, E-8 (avec la
-> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes, l'illustration en tête, le titre en place et « Supprimer la fiche… »), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres, avec « Supprimer l'univers »), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), E-17 (Recherche), E-18 (Accès par API), E-19 (Médiathèque), la ligne « Campagne » de E-9, la session
-> et la barre latérale.
+> **Built so far**: E-1, E-2, E-3 (name, navigation and blocks: game system, ongoing campaigns, latest session reports, preparation for the GM, visible maps), E-4, E-5 (Administration), E-13, E-8 (with
+> search within a type, in a grid of illustrated cards), E-9 (with the « Relations » and « Pièces jointes » blocks, the header illustration, inline title and « Supprimer la fiche… »), E-10 and E-11 (maps and graphs), E-12 (Assistant), E-14 (Settings, with « Supprimer l'univers »), E-15 (Game system, at `/systemes/:sid`), E-16 (Game systems), E-17 (Search), E-18 (API access), E-19 (Media library), the « Campagne » line of E-9, the session
+> and sidebar.
 
 ## Format
 
-Web. Ordinateur d'abord pour écrire (souris, clavier, glisser des tokens) ; téléphone pour lire
-(tactile, une colonne). Thème sombre et clair.
+Web. Desktop first for writing (mouse, keyboard, dragging tokens); phone for reading
+(touch, one column). Dark and light themes.
 
 ## Navigation
 
-Une barre latérale unique, sur tous les écrans d'un univers :
+A single sidebar on every screen within a universe:
 
-- en tête, le **sélecteur d'univers** (les univers du compte, son rôle en badge) ;
-- **Vue d'ensemble** · **Campagnes** · **Comptes-rendus** · **Cartes** · depuis `kanevas-import`, **Médiathèque** (E-19) ;
-- **Lore** : Personnages, Lieux, Factions, Objets, Événements, Quêtes — depuis `kanevas-import`,
-  les **types activés pour l'univers** (B-42), dans l'ordre de la liste du produit : Personnages,
-  Lieux, Factions, Objets, Événements, Quêtes, Créatures, Races, Vaisseaux, Savoirs, Récits, Règles,
-  Notes ;
-- depuis `kanevas-import`, en tête de la barre sous le sélecteur d'univers : **Rechercher** (E-17 ;
-  raccourci `/` hors d'un champ) ;
-- pour un MJ : **Univers** ▸ Membres, Paramètres, et depuis `kanevas-import` **Accès par API** (E-18) ; *(kanevas-synchro)* **Historique** (E-24) ; for every account, in the account menu : **Mes jetons d'API** (E-23) ;
-- pour un admin d'instance : **Administration** ;
-- en pied, le **compte** : l'avatar et l'identifiant, qui ouvrent un menu — l'identifiant, le
-  **thème** (bascule à trois icônes : Clair, Sombre, Système) et « Se déconnecter ». Le thème et
-  la déconnexion ne sont pas étalés dans la barre.
+- at the top, the **universe selector** (the account's universes, with its role as a badge);
+- **« Vue d'ensemble »** · **« Comptes-rendus »** · **« Cartes »** · since `kanevas-import`, **« Médiathèque »** (E-19);
+- **« Lore »**: « Personnages », « Lieux », « Factions », « Objets », « Événements », « Quêtes » — since `kanevas-import`,
+  the **types enabled for the universe** (B-42), in the order of the product's list: « Personnages »,
+  « Lieux », « Factions », « Objets », « Événements », « Quêtes », « Créatures », « Races », « Vaisseaux », « Savoirs », « Récits », « Règles »,
+  « Notes »;
+- since `kanevas-import`, at the top of the sidebar below the universe selector: **« Rechercher »** (E-17;
+  shortcut `/` outside a field);
+- for a GM: **« Univers »** ▸ « Membres », « Paramètres », and since `kanevas-import` **« Accès par API »** (E-18); *(kanevas-synchro)* **« Historique »** (E-24); for every account, in the account menu: **« Mes jetons d'API »** (E-23);
+- for an instance admin: **« Administration »**;
+- at the bottom, the **account**: the avatar and username, opening a menu — the username, the
+  **theme** (three-icon toggle: « Clair », « Sombre », « Système ») and « Se déconnecter ». Theme and
+  sign-out controls are not spread across the sidebar.
 
-Chaque item porte son icône (`docs/charte.md`, « Icônes ») ; l'item courant est marqué. Sur
-téléphone (moins de 760 px), la barre est un tiroir sous un bouton « Menu », en tête de la barre
-haute.
+Each item has its icon (`docs/charte.md`, “Icons”); the current item is marked. On
+phones (below 760 px), the sidebar is a drawer under a « Menu » button at the start of the
+top bar.
 
-Au-dessus de chaque écran d'un univers, une **barre haute** : le fil d'Ariane (univers › type ›
-fiche ; depuis `kanevas-import`, univers › type › ancêtres lisibles › fiche, B-35 ; au téléphone (≤ 760 px), le sceau de l'univers et le libellé du type disparaissent, et à 480 px et moins les ancêtres se replient (menu « … » dès deux ancêtres) : voir E-9) et, sur les écrans où elle existe, la
-bascule mode MJ / mode Joueur.
+Above each screen within a universe, a **top bar**: the breadcrumb trail (universe › type ›
+sheet; since `kanevas-import`, universe › type › readable ancestors › sheet, B-35; on phones (≤ 760 px), the universe seal and type label disappear, and at 480 px and below ancestors collapse (a « … » menu from two ancestors): see E-9) and, on screens that have it, the
+GM mode / Player mode toggle.
 
-Hors d'un univers (E-1, E-2, E-5, E-15, E-16), une barre réduite : **Mes univers**, **Systèmes de
-jeu**, **Administration** pour un admin d'instance, et le compte en pied. Depuis un univers, le menu
-du sélecteur d'univers mène à **Mes univers** et à **Systèmes de jeu** ; le lien du système de E-3 et
-de E-14 mène à sa page (E-15), hors de l'univers (décision du 2026-10-06, AD-94). Un admin qui est aussi membre d'un univers garde le lien
-**Administration** dans la barre de l'univers, sous une section « Instance ».
+Outside a universe (E-1, E-2, E-5, E-15, E-16), a reduced sidebar: **« Mes univers »**, **« Systèmes de
+jeu »**, **« Administration »** for an instance admin, and the account at the bottom. From a universe, the
+universe selector menu leads to **« Mes univers »** and **« Systèmes de jeu »**; the system link on E-3 and
+E-14 leads to its page (E-15), outside the universe (decision of 2026-10-06, AD-94). An admin who is also a member of a universe keeps the
+**« Administration »** link in the universe sidebar, under an « Instance » section.
 
-L'**assistant** est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
-hors de la barre ; il n'existe pas hors d'un univers. Un MJ voit la bascule **« Mode MJ » / « Mode Joueur »** dans la barre haute des écrans où la
-bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
+The **assistant** is a floating « Demander à Kanevas » button on every screen within a universe,
+outside the sidebar; it does not exist outside a universe. A GM sees the **« Mode MJ » / « Mode Joueur »** toggle in the top bar of screens that
+have it (sheet, map and, since `kanevas-import`, search E-17).
 
-## Inventaire
+## Inventory
 
-| Écran | Atteint depuis | Sert à | Parcours |
+| Screen | Reached from | Purpose | Journeys |
 |---|---|---|---|
-| **E-1 Accueil** | connexion (page d'Authelia, sans marque) ; marque Kanevas (icône Marge) de la barre | voir ses univers et son rôle dans chacun ; en créer un ; voir son identifiant | P-1, P-6 |
-| **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
-| **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives (*`kanevas-scenarios`* : « Campagnes en cours », the adventures), les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
-| **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
-| **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu ; poser le jeton de l'assistant (B-51) | P-2, P-15 |
+| **E-1 Home** | sign-in (Authelia's page, no brand); Kanevas brand (Marge icon) of the bar | see the account's universes and role in each; create one; see its username | P-1, P-6 |
+| **E-2 Create a universe** | E-1 | name, description; the creator becomes GM | P-1 |
+| **E-3 Universe overview** | E-1; universe selector; E-5 (admin who has become a member) | active campaigns (*`kanevas-scenarios`*: « Campagnes en cours », the adventures), latest reports, preparation (GM), visible maps | P-2, P-3, P-4, P-6 |
+| **E-4 Members** | « Univers » navigation (GM) | list, add by username, change role, remove | P-2 |
+| **E-5 Administration** | navigation (instance admin) | list the instance's universes, manage their members — never their content; set the assistant token (B-51) *(`kanevas-synchro`: see all API tokens, change their accesses, revoke them, B-95)* | P-2, P-15, P-25 |
 | **E-6 Campagne**, **E-7 Scénario** | *retired (`kanevas-scenarios-suivi`)* — an adventure is a sheet: its list is E-8 of the « Aventure » type, its page E-9, with the blocks « Préparation » and « Comptes-rendus » | — | — |
-| **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire, en grille de cartes illustrées ; chercher dans ce type ; créer (MJ) ; *(kanevas-scenarios)* « Aventure » type: status badge and filter, status menu (MJ), « Nouvelle aventure » with sub-type | P-3, P-6 |
-| **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; joindre un fichier (les deux chemins d'ajout, AD-111), réserver un fichier au MJ (MJ), retirer une référence ; régler le sous-type (MJ) ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. ; *(kanevas-scenarios)* on an adventure: the status line and its menu (MJ) | P-3 à P-7 |
-| **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
-| **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
-| **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'assistant a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**) | P-3, P-5, P-6, P-7 |
-| **E-13 Comptes-rendus** | nav Comptes-rendus ; E-3 | tous les CR lisibles de l'univers, du plus récent, avec leur campagne (*`kanevas-scenarios`*: the adventure it names, campaign or scenario) | P-4, P-5 |
-| **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
-| **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
-| **E-16 Systèmes de jeu** | barre réduite ; menu du sélecteur d'univers | les systèmes rattachés aux univers du compte, chacun avec ceux de ses univers qui l'utilisent | P-8 |
-| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type et par étiquette ; *(kanevas-scenarios)* the status badge of an adventure result | P-12, P-10 |
-| **E-19 Médiathèque** *(kanevas-import)* | nav Médiathèque ; « Choisir dans la médiathèque » de l'éditeur et de l'illustration (E-9) | voir les fichiers (images, documents) ouverts au compte et où ils servent ; MJ : ajouter, renommer, régler la visibilité, supprimer | P-16, P-10 |
-| **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus *(`kanevas-synchro` : les lots seulement ; les jetons passent à E-23 et E-5)* | P-10, P-11 |
+| **E-8 Sheet list** | « Lore » navigation | sheets of one type that the account can read, in a grid of illustrated cards; search within that type; create (GM); *(kanevas-scenarios)* « Aventure » type: status badge and filter, status menu (GM), « Nouvelle aventure » with sub-type | P-3, P-6 |
+| **E-9 Sheet** | E-8; a token; a link; E-13 | read and write permitted sections; add, reorder, remove a section, set its audience, relate (GM); attach a file (both addition paths, AD-111), restrict a file to the GM (GM), remove a reference; set the subtype (GM); set, replace, remove the illustration (GM); Player mode toggle (GM). A session report opens here. ; *(kanevas-scenarios)* on an adventure: the status line and its menu (GM) | P-3 to P-7 |
+| **E-10 Maps** | « Cartes » navigation | readable maps; create an illustrated map (with its background image) or a graph (GM) | P-3, P-9 |
+| **E-11 Map** | E-10; E-3 | illustrated map: background, tokens; graph: nodes and links. GM: upload or change the background, place elements, make visible, Player mode. Player: open a token's sheet. | P-3, P-6, P-9 |
+| **E-12 Assistant** | floating button, on every universe screen | converse; see what the assistant has written, with a link; GM: update proposals (current/proposed, **« Appliquer »**, **« Abandonner »**) | P-3, P-5, P-6, P-7 |
+| **E-13 Session reports** | « Comptes-rendus » navigation; E-3 | all readable session reports in the universe, newest first, with their campaign (*`kanevas-scenarios`*: the adventure it names, campaign or scenario) | P-4, P-5 |
+| **E-14 Universe settings** | « Univers » navigation (GM) | name, description, game system (choose from the catalogue, create one) | P-8 |
+| **E-15 Game system** | E-16; link from E-3 and E-14 | shared reference: rules, creatures, items; add, edit (GM of an attached universe); outside a universe's frame | P-8 |
+| **E-16 Game systems** | reduced sidebar; universe selector menu | systems attached to the account's universes, each with those of its universes using it | P-8 |
+| **E-17 Search** *(kanevas-import)* | « Rechercher » in the sidebar; `/`; a label tapped on E-9 ; *(kanevas-fiches-liees)* « Chercher parmi » of a « Fiches liées » block | search all types, titles, aliases and readable sections; filter by type; *(kanevas-fiches-liees)* advanced search: linked to a sheet, by nature, sub-places included, alive / dead and by label; *(kanevas-scenarios)* the status badge of an adventure result | P-12, P-10, P-17 |
+| **E-19 Media library** *(kanevas-import)* | « Médiathèque » navigation; « Choisir dans la médiathèque » in the editor and illustration (E-9) | see files (images, documents) accessible to the account and where they are used; GM: add, rename, set visibility, delete | P-16, P-10 |
+| **E-18 API access** *(kanevas-import)* | « Univers » ▸ « Accès par API » navigation (GM) | create, list, revoke the universe's API tokens; see import batches and their refusals *(`kanevas-synchro`: batches only; tokens move to E-23 and E-5)* | P-10 *(P-11 replaced by P-25)* |
+| **E-23 My API tokens** *(kanevas-synchro)* | account menu (every account) | create, change the accesses of, revoke one's API tokens; the value shown once (B-94) | P-25 |
+| **E-20 Tools** *(kanevas-outils)* | « Outils » tab of E-15 (system) and E-14 (universe) | enable a tool, set its visibility per role and its settings (system value, universe value), import a catalogue (preview then confirmation), see dependencies, disable, delete data; the system's responsible | P-17, P-21 |
+| **E-21 Galaxy map** *(kanevas-outils)* | E-10 (a tool map); E-3; a shareable link | explore the grid, measure, calculate a route; GM: place, promote, plot, draw, Player mode, GM document | P-18, P-20 |
+| **E-22 Ship designer** *(kanevas-outils)* | « Outils » sidebar; a ship sheet's managed section (E-9); a shareable link | readable designs list and a design's workshop: choices, budgets, warnings, save, recalculate | P-19 |
 
-Écrans **modifiés** par `kanevas-import` : **E-8** (types activés, vue en arbre, sous-type sur la
-carte, filtre « Sous-type », champ « Sous-type » de la création, illustration sous double garde),
-**E-9** (Markdown, liens, blocs MJ, fil d'ancêtres, blocs « Contient » et « Mentionnée dans », alias et
-étiquettes, sous-type éditable, fichiers de la médiathèque — les deux chemins d'ajout, le bloc Pièces
-jointes de références, l'illustration, les mentions « réservé au MJ » —, menu de la fiche : renommer,
-changer le type, déplacer, supprimer, clé d'origine), **E-7** et **E-15**
-(contenu en Markdown), **E-14** (« Types de fiche », « Supprimer l'univers »), **E-15** (« Types de
-fiche » du système), **E-13** (ordre par date d'origine), la barre latérale ; **E-5** (« Jeton de l'assistant », B-51).
+Screens **modified** by `kanevas-outils`: **E-9** (managed section: « Générée par … » banner, rendering
+by its component or its text version, « Outil désactivé »; no editor on a managed section),
+**E-10** (maps from an enabled, visible tool join the list, with their visibility; « Nouvelle carte » ▸ « Carte de la galaxie » if the tool is enabled, GM), **E-14** and **E-15** (the « Outils » tab, and the system's responsible on E-15), **E-18**
+(a token's scope per tool; tool batches), **E-12** (assistant tools), the sidebar
+(an « Outils » section, below).
 
-Les pages de connexion du serveur (« Connexion refusée », « Connexion indisponible », atteintes
-depuis P-1) et le bandeau du mode bouchon sont décrits sous « Session et connexion ».
+Screens **modified** by `kanevas-import`: **E-8** (enabled types, tree view, subtype on the
+card, « Sous-type » filter, « Sous-type » creation field, illustration under both guards),
+**E-9** (Markdown, links, GM blocks, ancestor trail, « Contient » and « Mentionnée dans » blocks, aliases and
+labels, editable subtype, media library files — both addition paths, the « Pièces
+jointes » reference block, illustration, « réservé au MJ » notices —, sheet menu: rename,
+change type, move, delete, source key), **E-7** and **E-15**
+(Markdown content), **E-14** (« Types de fiche », « Supprimer l'univers »), **E-15** (system's « Types de
+fiche »), **E-13** (ordered by original date), the sidebar; **E-5** (« Jeton de l'assistant », B-51).
 
-Hors produit : en mode bouchon seulement (AD-55), l'écran de choix d'un compte de test et le bandeau « mode
-bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
+The server's sign-in pages (« Connexion refusée », « Connexion indisponible », reached
+from P-1) and the stub mode banner are described under “Session and sign-in”.
 
-## Rôles × écrans × actions
+Outside the product: in stub mode only (AD-55), the test account selection screen and the « mode
+bouchon » banner — without `E-n` or six states, they do not exist in production.
 
-« — » : l'écran n'est pas proposé (absent de la navigation ; si on force l'adresse, l'écran affiche « Page introuvable. » et l'API répond 404). E-15 et
-E-16 vivent hors des univers : leurs cases disent le rôle dans un univers rattaché au système.
+## Roles × screens × actions
 
-| Écran | MJ | Joueur | Admin d'instance (sans rôle dans l'univers) |
+« — »: the screen is not offered (absent from navigation; forcing the address displays « Page introuvable. » and the API returns 404). E-15 and
+E-16 live outside universes: their cells describe the role in a universe attached to the system.
+
+| Screen | GM | Player | Instance admin (no role in the universe) |
 |---|---|---|---|
-| E-1 | ses univers, créer | ses univers, créer | ses univers, créer |
-| E-2 | créer | créer | créer |
-| E-3 | tout | sans préparation ni scénarios ; *(kanevas-scenarios)* « Campagnes en cours »: those he reads, with their status | — |
-| E-4 | tout | — | — (passe par E-5) |
-| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement ; *(kanevas-synchro)* régler la taille maximale d'un fond de carte (B-89) ; voir tous les jetons, en changer les accès, les révoquer (B-95) |
+| E-1 | own universes, create | own universes, create | own universes, create |
+| E-2 | create | create | create |
+| E-3 | everything | no preparation or scenarios ; *(kanevas-scenarios)* « Campagnes en cours »: those he reads, with their status | — |
+| E-4 | everything | — | — (through E-5) |
+| E-5 | — | — | list universes and their members; add, change a role, remove a member; see assistant token status, connect or reconnect the subscription; *(kanevas-synchro)* set the maximum size of a map background (B-89); see all tokens, change their accesses, revoke them (B-95) |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
-| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**caché**) | — |
-| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge in the header (GM mode) ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**hidden**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge in the header (**caché**) ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
-| E-10 | tout | cartes visibles | — |
-| E-11 | tout ; mode Joueur ; *(kanevas-synchro)* écrire le texte, rattacher ou détacher une fiche | lire une carte visible, ouvrir une fiche ; *(kanevas-synchro)* lire le texte sans ses blocs MJ, ouvrir la fiche rattachée | — |
-| E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
-| E-13 | tous les CR ; *(kanevas-scenarios)* the adventure of each, « Aventure supprimée » when it is gone | les CR lisibles ; the adventure column only for an adventure he reads (**hidden** otherwise, deleted or closed alike) | — |
-| E-14 | tout ; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
-| E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
-| E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
-| E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » ; *(kanevas-scenarios)* an adventure result carries its status badge (the player's too) | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
-| E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
-| E-18 *(kanevas-import)* | *(kanevas-synchro: les lots seulement ; les jetons passent à E-23, et à E-5 pour l'admin)* créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
-| E-23 *(kanevas-synchro)* | ses jetons : créer, modifier les accès, révoquer | ses jetons : créer, modifier les accès, révoquer | ses jetons |
-| E-24 *(kanevas-synchro)* | lire l'historique de l'univers, filtrer, restaurer une valeur de moins de 30 jours | — | — |
+| E-8 | read, search, create; each sheet's thumbnail (its illustration, or the drawn fallback) ; *(kanevas-fiches-liees)* the mark on the thumbnail (Mort, Morte, Détruit, Détruite, Éteinte depending on the type), the type's filter (Vivants / Morts, Intacts / Détruits…) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | read, search; thumbnails of visible sheets ; *(kanevas-fiches-liees)* the « gone » mark and its filter, the same as the GM sees them (the « Marquer … » entry is on E-9 only, hidden from a player) ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**hidden**) | — |
+| E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-synchro)* the « Cartes » block: all the attached maps, « Cachée aux joueurs »; in Player mode, as a player ; *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) ; *(kanevas-taille-images)* the « Image » button (size, placement) in « Écrire », outside player mode — **hidden** in player mode | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-synchro)* the « Cartes » block: the visible attached maps ; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) ; *(kanevas-taille-images)* the « Image » button in the sections he may write — **hidden** elsewhere | — |
+| E-10 | everything, tool maps (the galaxy) included, with « MJ seul » on those not visible; « Nouvelle carte » ▸ « Carte de la galaxie », « Rendre visible » / « Cacher aux joueurs » | visible maps, tool maps included when visible and the tool is visible to their role (otherwise absent); « Nouvelle carte », « Carte de la galaxie » and « Rendre visible » / « Cacher aux joueurs » **hidden** | — |
+| E-11 | everything; Player mode; *(kanevas-synchro)* write the text, attach or detach a sheet (outside player mode; **hidden** in player mode) | read a visible map, open a sheet; *(kanevas-synchro)* read the text without its GM blocks, open the attached sheet; never write the text nor attach (**hidden**) | — |
+| E-12 | GM catalogue (including image generation, if an image engine is available); proposals: only the requesting GM sees, applies, abandons them | Player catalogue (no image: the tool is absent, the assistant answers that it cannot); proposals: **hidden** (neither tool nor block; what is checked is the absence of a proposal and block, not the assistant's free text) | — |
+| E-13 | all session reports ; *(kanevas-scenarios)* the adventure of each, « Aventure supprimée » when it is gone | readable session reports ; the adventure column only for an adventure he reads (**hidden** otherwise, deleted or closed alike) | — |
+| E-14 | everything; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
+| E-15 (outside a universe; columns describe the role in a universe **attached to the system**) | read; « Ajouter … », « Modifier » | read (« Lecture seule »); neither « Ajouter » nor « Modifier » | « Page introuvable. », unless also a member of an attached universe: then the column for that role applies (an admin who is GM of an attached universe reads and edits) |
+| E-16 (outside a universe) | own systems, with own universes and role | own systems, « Lecture seule » | list of own systems (as GM or Player if a member of an attached universe); otherwise empty — the screen is offered to every account |
+| E-17 *(kanevas-import)* | search all sheets in the universe, including GM blocks; in **Player mode**, as a player (no GM blocks or sheets unreadable by a player); filters: enabled types; sheets of disabled types remain results under « Tous » | search readable content, excluding GM blocks; type and label filters from visible sheets only; mode toggle: absent (hidden); GM blocks: excluded from search (never read); « Alias et étiquettes… » on E-9: hidden | — |
+| E-19 *(kanevas-import)* | everything: add, rename, visibility, delete; complete « Utilisé dans » | files visible to players and files they added; « Utilisé dans » restricted to readable sheets; no adding from E-19 (**hidden**; they add a file through a section they write, E-9), no settings or deletion (**hidden**) | — |
+| E-18 *(kanevas-import)* | *(kanevas-synchro: batches only; tokens move to E-23, and to E-5 for the admin)* create a token; see and revoke all the universe's tokens (including another GM's); see batches | — (**hidden**: absent from the sidebar, « Page introuvable. » by address) | — |
+| E-23 *(kanevas-synchro)* | its tokens: create, change accesses, revoke | its tokens: create, change accesses, revoke | its tokens |
+| E-24 *(kanevas-synchro)* | read the universe's history, filter, restore a value under 30 days old | — | — |
 
 What `kanevas-scenarios` adds to the lines above: **E-17** — the status badge on the result card of an adventure, for every role that reads the sheet; **E-12** — the GM creates sheets through `creer_fiche` (AD-126), with a « Fiche « X » créée » writing block and « Ouvrir » leading to E-9; the player has no creation tool; **E-18** — no « Campagnes » or « Scénarios » counter in a lot: adventures count among « Fiches ».
+| E-20 *(kanevas-outils)* | **on the universe**: enable, override, disable; visibility per role; settings; import the universe catalogue; delete universe data. **on the system**: read only (**hidden**: « Activer », « Importer », « Supprimer les données ») except the **responsible**, who also acts on the system | — (**hidden**: « Page introuvable. ») | — |
+| E-21 *(kanevas-outils)* | everything: « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone », « Modifier », « Retirer », and in « Galaxie ▾ » « Renommer », « Rendre visible » / « Cacher aux joueurs », « Document MJ… », « Graine… », « Supprimer la galaxie… »; in Player mode all of them **hidden** (the page is the player's), the toggle stays; GM document | explore, measure, route, link; only readable systems, routes and zones; no write actions (**hidden**) | — |
+| E-22 *(kanevas-outils)* | all the universe's designs; create, edit, recalculate; set the section's author | designs whose sheet and section they read. **Author** (of the « Caractéristiques » section): edit and recalculate her own design. **Another reader**, and a GM in Player mode on a design he does not author: read-only, « Enregistrer » and « Annuler » **absent** (hidden, not refused; the server refuses a forced write). « Nouvelle conception » is **absent for every player**, the author included (and for a GM in Player mode) | — |
 
-Ce que `kanevas-import` ajoute aux lignes existantes : **barre latérale** — tous : la section « Lore »
-ne montre que les types activés ; **E-8** — MJ : la vue en arbre, la création dans les seuls types activés,
-avec son champ « Sous-type », le filtre « Sous-type » ; Joueur : l'arbre des fiches qu'il voit, le filtre
-« Sous-type » sur ce qu'il voit ; la création et son champ « Sous-type » sont **absents** (non offerts). **E-9** — MJ : écrire le
-Markdown, insérer liens et blocs MJ, renommer, changer le type, déplacer, alias et étiquettes,
-supprimer (menu « ⋯ » de l'en-tête, hors mode Joueur), voir la clé d'origine ; Joueur : titre en texte, ni menu « ⋯ » ni suppression (**caché**), clé d'origine cachée ; un admin d'instance sans rôle : « Page introuvable. » ; lire le
-Markdown, suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
-lit ; écrire une section permise **sauf si elle contient un bloc MJ** (« Modifier » **caché**) ; alias
-et étiquettes visibles, jamais modifiables (**caché**). **E-14** — MJ : « Types de fiche »,
-« Supprimer l'univers ». **E-15** — MJ d'un univers rattaché : « Types de fiche » (bascules) ;
-Joueur : la liste en lecture seule.
+What `kanevas-outils` adds: **sidebar** — an **« Outils »** section, after « Cartes » and before « Lore »,
+listing entry points for tools **enabled and visible to the role** (« Concepteur de vaisseaux »); the
+galaxy is reached through « Cartes »; a disabled or invisible tool has neither an entry nor an address (« Page
+introuvable. »). **E-9** — everyone: a managed section is read like any other, without an editor; GM (outside Player mode) and author, when the tool is open to them:
+« Ouvrir dans l'outil ». **E-10** — GM: « Nouvelle carte » ▸ « Carte de la galaxie »; Player: the
+tool map, if it is visible and the tool is visible to their role.
 
-Un admin d'instance qui est aussi membre d'un univers, MJ ou Joueur, a dans cet univers la colonne de son rôle et garde E-5 par la section « Instance » de la barre, et y a la colonne Admin (panneau « Jeton de l'assistant » compris : E-5 ne dépend pas de l'univers sélectionné) ; hors de cet univers, la colonne Admin.
+What `kanevas-import` adds to existing rows: **sidebar** — everyone: the « Lore » section
+shows only enabled types; **E-8** — GM: tree view, creation only in enabled types,
+with its « Sous-type » field, the « Sous-type » filter; Player: tree of visible sheets, the
+« Sous-type » filter on visible content; creation and its « Sous-type » field are **absent** (not offered). **E-9** — GM: write
+Markdown, insert links and GM blocks, rename, change type, move, aliases and labels,
+delete (header « ⋯ » menu, outside Player mode), see the source key; Player: plain text title, no « ⋯ » menu or deletion (**hidden**), source key hidden; an instance admin without a role: « Page introuvable. »; read
+Markdown, follow links to visible content, « Contient » and « Mentionnée dans » restricted to readable
+content; write a permitted section **unless it contains a GM block** (« Modifier » **hidden**); aliases
+and labels visible, never editable (**hidden**). **E-14** — GM: « Types de fiche »,
+« Supprimer l'univers ». **E-15** — GM of an attached universe: « Types de fiche » (toggles);
+Player: read-only list.
 
-Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
-MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
-fenêtre (type déjà choisi, titre) qui mène à la fiche ; créer une carte se fait en ligne sur
-E-10. « Rendre visible » une carte se trouve sur la carte (E-11) et dans la liste (E-10). Le fond d'une carte illustrée se dépose à sa création (E-10) et se change sur la carte (E-11) ;
-une carte sans fond montre ses tokens sur un fond neutre. Une
-tâche de préparation s'ajoute avec sa catégorie, se coche, se décoche ; elle ne se supprime pas.
-Sur E-15, règles, créatures et objets ont le même traitement. Sur E-3, le bloc « Système de jeu » n'existe que si l'univers est rattaché à un système (MJ et Joueur).
+An instance admin who is also a universe member, GM or Player, has that role's column within the universe and keeps E-5 through the sidebar's « Instance » section, with the Admin column there (including the « Jeton de l'assistant » panel: E-5 does not depend on the selected universe); outside that universe, the Admin column.
 
-Un compte **sans rôle** dans l'univers et qui n'est pas admin d'instance (Teo avant son ajout) a, dans
-cet univers, la colonne « Admin » de cette matrice pour les écrans **de cet univers** (E-3, E-4,
-E-6 à E-14, E-17 à E-19) : « — », « Page introuvable. » si l'adresse est forcée. Hors des univers, il garde E-1,
-E-2 et E-16 (vide s'il n'est membre d'aucun univers rattaché), et E-15 pour les systèmes de ses
-propres univers.
+Matrix details: creating a campaign, changing its status and creating a scenario are
+GM-only. A section's audience is set inline on the sheet (GM). Creating a sheet opens a
+dialog (type already chosen, title) leading to the sheet; creating a map is done inline on
+E-10. « Rendre visible » for a map is available on the map (E-11) and in the list (E-10). An illustrated map's background is uploaded at creation (E-10) and changed on the map (E-11);
+a map without a background shows its tokens on a neutral background. A
+preparation task is added with its category, checked, unchecked; it cannot be deleted.
+On E-15, rules, creatures and items receive the same treatment. On E-3, the « Système de jeu » block exists only if the universe is attached to a system (GM and Player).
 
-Un refus ne dit jamais qu'une chose existe : une fiche, une section, une carte qu'on ne peut pas
-lire sont absentes, et leur adresse répond comme une adresse inconnue.
+An account **without a role** in the universe that is not an instance admin (Teo before being added) has, within
+that universe, the « Admin » column of this matrix for **that universe's** screens (E-3, E-4,
+E-6 to E-14, E-17 to E-19): « — », « Page introuvable. » if the address is forced. Outside universes it keeps E-1,
+E-2 and E-16 (empty if it is not a member of any attached universe), and E-15 for its
+own universes' systems.
 
-## États
+A refusal never reveals that something exists: an unreadable sheet, section or map
+is absent, and its address responds like an unknown address.
 
-Chaque écran structurant a les six états de la skill `ux` (vide, chargement, erreur, hors-ligne —
-la connexion est perdue et l'écran le dit, sans mode hors-ligne —, refus, contenu long) : ils se décrivent avec sa maquette finie, dans la tranche qui le construit.
-Deux sont posés dès le cadrage parce qu'ils traversent tout :
+## States
 
-- **vide** d'un compte neuf (E-1) : dit quoi faire — créer un univers, ou donner son identifiant,
-  affiché, à son MJ ;
-- **refus** d'une ressource illisible : toujours comme une ressource inconnue.
+Each structural screen has the six states of the `ux` skill (empty, loading, error, offline —
+the connection is lost and the screen says so, without an offline mode —, refusal, long content): they are described with its finished mockup in the slice that builds it.
+Two are set at scoping time because they apply everywhere:
 
-## Détail des écrans de `kanevas-premiere-fiche`
+- **empty** for a new account (E-1): says what to do — create a universe, or give its displayed
+  username to its GM;
+- **refusal** for an unreadable resource: always like an unknown resource.
 
-> E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
-> de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
-> long**. « Sans objet » dit sa raison. Les maquettes qui font foi pour la forme sont listées sous « Maquettes » (fin du document) ; `e02` est d'avant la charte (thème sombre, gris tertiaire de la charte).
+## Screen details for `kanevas-premiere-fiche`
 
-**Textes communs.**
+> E-1, E-2, E-3, E-4, E-8, E-9, the sidebar and session. The six states use
+> B-29's vocabulary: **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
+> long**. “Not applicable” includes its reason. The mockups authoritative for appearance are listed under “Mockups” (end of document); `e02` predates the style guide (dark theme, the guide's tertiary grey).
 
-- *Chargement* : « Chargement… » (`role="status"`).
-- *Erreur de chargement* : « Impossible de charger cette page. » et le bouton « Réessayer ».
-- *Connexion perdue* : bandeau « Connexion perdue. Ce que vous voyez peut être dépassé ; rien
-  n'est enregistré tant qu'elle ne revient pas. » ; les boutons qui écrivent sont désactivés ; il
-  disparaît seul au retour de la connexion.
-- *Écriture en cours* (tout envoi : ajouter, changer un rôle, retirer, créer, enregistrer, régler,
-  monter, descendre, charger la suite) : le bouton qui a déclenché affiche « … » (partout, E-2 compris) et est désactivé
-  jusqu'à la réponse (un double clic ne part qu'une fois) ; le reste de l'écran reste lisible.
-- *Échec d'une écriture* : « L'action n'a pas abouti. Réessayez. » au-dessus de la liste ou du panneau
-  concerné ; la valeur affichée revient à celle d'avant (réglage d'audience, rôle, ordre) ; une
-  saisie en cours est conservée. Échec de « Charger la suite » : « Impossible de charger la suite. »
-  et le bouton reste.
-- *Titre vide ou trop long* (fiche, section) : « Erreur : le titre est obligatoire. » ou « Erreur : 120
-  caractères au plus. » (80 pour une section), sous le champ.
-- *Session expirée pendant une saisie* : la personne est menée à la connexion ; le texte en cours
-  d'une section (E-9) est gardé dans le navigateur (`sessionStorage`) et rendu au retour sur cette
-  section, tant qu'il n'est pas enregistré ou annulé. Les formulaires E-2, E-4 et E-8 ne sont pas gardés.
-- *Refus* : toujours « Page introuvable. » et un lien « Mes univers » — pour un univers inconnu,
-  un univers sans rôle, une fiche illisible, une adresse inconnue. Jamais « accès refusé ».
-- *Session expirée ou absente* : la page n'est pas montrée ; la personne est menée à la connexion
-  (Authelia, ou le choix du compte de test en bouchon).
-- *Bandeau du mode bouchon* (seulement avec `KANEVAS_STUB=1`, sur chaque page, non fermable) :
+**Shared text.**
+
+- *Loading*: « Chargement… » (`role="status"`).
+- *Loading error*: « Impossible de charger cette page. » and the « Réessayer » button.
+- *Connection lost*: banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien
+  n'est enregistré tant qu'elle ne revient pas. »; write buttons are disabled; it
+  disappears automatically when the connection returns.
+- *Write in progress* (any submission: add, change a role, remove, create, save, set,
+  move up, move down, load more): the triggering button displays « … » (everywhere, including E-2) and is disabled
+  until the response (a double click sends only once); the rest of the screen remains readable.
+- *Write failure*: « L'action n'a pas abouti. Réessayez. » above the affected list or panel;
+  the displayed value reverts to its previous value (audience setting, role, order); input
+  in progress is kept. Failure of « Charger la suite »: « Impossible de charger la suite. »
+  and the button remains.
+- *Empty or overlong title* (sheet, section): « Erreur : le titre est obligatoire. » or « Erreur : 120
+  caractères au plus. » (80 for a section), below the field.
+- *Session expired during input*: the person is taken to sign-in; a section's text in progress
+  (E-9) is kept in the browser (`sessionStorage`) and restored on returning to that
+  section, until saved or cancelled. E-2, E-4 and E-8 forms are not kept.
+- *Refusal*: always « Page introuvable. » and a « Mes univers » link — for an unknown universe,
+  a universe without a role, an unreadable sheet, an unknown address. Never « accès refusé ».
+- *Expired or missing session*: the page is not shown; the person is taken to sign-in
+  (Authelia, or test account selection in stub mode).
+- *Stub mode banner* (only with `KANEVAS_STUB=1`, on every page, cannot be dismissed):
   « Mode bouchon — les comptes sont fictifs. Ne jamais l'ouvrir en production. »
 
-### Session et connexion
+### Session and sign-in
 
-- **Écran de choix du compte de test** (bouchon seulement, `/connexion-bouchon`, rendu par le
-  serveur) : une ligne par compte — Antor, Léa, Teo, Mira, Admin — avec ses groupes (Admin :
-  « groupes : parents ») et un bouton « Se connecter en tant que … ». Sans `KANEVAS_STUB`, cette
-  adresse répond « Page introuvable. ».
-- **« Connexion refusée »** (Authelia a refusé ou le retour est invalide) : « La connexion a été
-  refusée. » et un lien « Réessayer » qui relance la connexion (même adresse). Aucun autre contenu.
-- **« Connexion indisponible »** (Authelia injoignable) : « Authelia ne répond pas pour
-  l'instant. Réessayez dans un moment. » et un lien « Réessayer » qui relance la connexion (retour à l'adresse de connexion)
-- La session expire au bout de 7 jours (AD-56). **Se déconnecter** (menu du compte, en pied de la barre latérale)
-  efface la session et mène à la connexion ; en bouchon, c'est ainsi qu'on change de compte.
-- `GET /api/moi` rend `{username, groups, limites}` du compte connecté : c'est ce que la barre latérale
-  affiche (l'identifiant) et ce que les tests lisent pour constater les groupes. `limites.contenuSection`
-  (100 000) est la borne d'une section, lue par l'écran de fiche (AD-91).
+- **Test account selection screen** (stub only, `/connexion-bouchon`, rendered by the
+  server): one row per account — Antor, Léa, Teo, Mira, Admin — with its groups (Admin:
+  « groupes : parents ») and a « Se connecter en tant que … » button. Without `KANEVAS_STUB`, this
+  address responds « Page introuvable. ».
+- **« Connexion refusée »** (Authelia refused or the callback is invalid): « La connexion a été
+  refusée. » and a « Réessayer » link restarting sign-in (same address). No other content.
+- **« Connexion indisponible »** (Authelia unreachable): « Authelia ne répond pas pour
+  l'instant. Réessayez dans un moment. » and a « Réessayer » link restarting sign-in (return to the sign-in address)
+- The session expires after 7 days (AD-56). **« Se déconnecter »** (account menu, sidebar bottom)
+  clears the session and leads to sign-in; in stub mode, this is how accounts are switched.
+- `GET /api/moi` returns `{username, groups, limites}` for the signed-in account: this is what the sidebar
+  displays (the username) and what tests read to check groups. `limites.contenuSection`
+  (100,000) is a section's limit, read by the sheet screen (AD-91).
 
-### Barre latérale
+### Sidebar
 
-Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
-des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied de liste) ; **Vue d'ensemble** ; **Comptes-rendus** et **Cartes** ; **Lore** :
-les types activés de l'univers (« Aventures » — a type that can be deactivated like any other —, Personnages, Lieux, Factions, Objets, Événements, Quêtes par défaut ; liste complète en haut de ce document) ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
-pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
-(Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
-E-2, E-5, E-15, E-16) : the **brand** at the top (the 30 px Marge icon, then « Kanevas »; a link to « Mes univers », charter § 3); « Mes univers », « Systèmes de jeu », « Administration » pour un compte du groupe `parents` (E-5, plus bas) et le compte en pied. **Un item dont l'écran n'est
-pas construit n'est pas affiché** (« Comptes-rendus » and « Cartes » are shown). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
-bouton « Menu ».
+On every screen within a universe: at the top, the **universe selector** (name, role badge, list
+of the account's universes, then « Mes univers » and « Systèmes de jeu » at the bottom of the list); **« Vue d'ensemble »**; **« Comptes-rendus »** and **« Cartes »**; **« Lore »**:
+the universe's enabled types (« Aventures » — a type that can be deactivated like any other —, « Personnages », « Lieux », « Factions », « Objets », « Événements », « Quêtes » by default; full list at the top of this document); for a GM, **« Univers ▸ Membres »** and **« Paramètres »**; at the
+bottom, the account (avatar and username), opening the account menu: username, theme
+(« Clair », « Sombre », « Système », as three icons) and « Se déconnecter ». Outside a universe (E-1,
+E-2, E-5, E-15, E-16): the **brand** at the top (the 30 px Marge icon, then « Kanevas »; a link to « Mes univers », charter § 3); « Mes univers », « Systèmes de jeu », « Administration » for an account in the `parents` group (E-5, below) and the account at the bottom. **An item whose screen is not
+built is not displayed** (« Comptes-rendus » and « Cartes » are shown). « Paramètres » (E-14) is displayed only for the GM. On phones (below 760 px), the sidebar is a drawer under a
+« Menu » button.
 
-| État | Ce qu'on voit |
+| State | What is shown |
 |---|---|
-| vide | sans objet pour le sélecteur : l'univers courant y est toujours ; la section « Lore » peut être vide si tous ses types sont désactivés (texte plus bas, « Barre latérale ») ; hors univers, « Mes univers » et « Systèmes de jeu » |
-| chargement | le sélecteur affiche « … » ; les items fixes sont déjà là |
-| erreur | le sélecteur affiche « Univers », sans liste (le nom n'est connu que de la liste qui n'a pas chargé) ; « Impossible de charger vos univers. » dans la liste dépliée, avec « Réessayer » |
-| connexion perdue | le bandeau ; navigation inchangée |
-| refus | sur « Page introuvable. » la barre est celle d'un écran hors univers : **pas de sélecteur**, aucun nom d'univers, seulement « Mes univers », « Systèmes de jeu » et le compte en pied ; dans un univers, le sélecteur ne liste que les univers du compte |
-| contenu long | 100 univers : la liste du sélecteur défile ; un nom de 80 caractères est tronqué par « … » avec infobulle |
+| vide | not applicable to the selector: the current universe is always there; the « Lore » section can be empty if all its types are disabled (text below, “Sidebar”); outside a universe, « Mes univers » and « Systèmes de jeu » |
+| chargement | the selector displays « … »; fixed items are already present |
+| erreur | the selector displays « Univers », without a list (the name is known only from the list that failed to load); « Impossible de charger vos univers. » in the expanded list, with « Réessayer » |
+| connexion perdue | the banner; navigation unchanged |
+| refus | on « Page introuvable. », the sidebar is that of a screen outside a universe: **no selector**, no universe name, only « Mes univers », « Systèmes de jeu » and the account at the bottom; within a universe, the selector lists only the account's universes |
+| contenu long | 100 universes: the selector list scrolls; an 80-character name is truncated with « … » and a tooltip |
 
-### E-1 Accueil
+### E-1 Home
 
-Liste des univers du compte : nom, début de la description, badge du rôle (MJ, Joueur) ; un clic
-mène à E-3. *Depuis `kanevas-illustrations` (décision de Monsieur du 2026-10-06), une **grille de
-cartes**, comme E-8 et E-16 (« E-1 en cartes », plus bas).* Bouton « Créer un univers » (→ E-2). L'identifiant du compte est affiché en tête :
-« Connecté en tant que lea ». Ordre : par nom.
+List of the account's universes: name, start of the description, role badge (« MJ », « Joueur »); a click
+leads to E-3. *Since `kanevas-illustrations` (Monsieur's decision of 2026-10-06), a **card
+grid**, like E-8 and E-16 (“E-1 as cards”, below).* « Créer un univers » button (→ E-2). The account's username is displayed at the top:
+« Connecté en tant que lea ». Order: by name.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | « Aucun univers pour l'instant. » ; « Vous menez une partie ? Créez un univers. » ; « Vous êtes joueur ? Donnez votre identifiant à votre MJ : **lea** » | « Créer un univers » |
+| vide | « Aucun univers pour l'instant. »; « Vous menez une partie ? Créez un univers. »; « Vous êtes joueur ? Donnez votre identifiant à votre MJ : **lea** » | « Créer un univers » |
 | chargement | « Chargement de vos univers… » | — |
 | erreur | « Impossible de charger vos univers. » | « Réessayer » |
-| connexion perdue | le bandeau ; la liste déjà chargée reste affichée | ouvrir un univers déjà listé ; « Créer un univers » désactivé |
-| refus | sans objet : la page ne montre que les univers du compte | — |
-| contenu long | 100 univers : la liste défile ; un nom de 80 caractères est tronqué par « … » avec le nom complet en infobulle ; la description tient sur deux lignes | idem |
+| connexion perdue | the banner; the already loaded list stays visible | open an already listed universe; « Créer un univers » disabled |
+| refus | not applicable: the page shows only the account's universes | — |
+| contenu long | 100 universes: the list scrolls; an 80-character name is truncated with « … », with the full name in a tooltip; the description fits on two lines | same |
 
-*Critère.* Étant donné un compte neuf (Teo, jamais ajouté), quand il ouvre l'accueil, alors il voit
-« Aucun univers pour l'instant. » et son identifiant « teo » affiché, et aucun nom d'univers.
+*Criterion.* Given a new account (Teo, never added), when it opens home, it sees
+« Aucun univers pour l'instant. » and its username « teo » displayed, and no universe name.
 
-### E-2 Créer un univers
+### E-2 Create a universe
 
-Un formulaire : « Nom » (obligatoire, 80 caractères au plus), « Description » (facultative, 500
-au plus), « Créer l'univers » et « Annuler » (→ E-1). Créer mène à E-3 de l'univers, le créateur
-en MJ (B-2). Dès que le nom est saisi, le sceau de l'univers (son initiale) s'affiche en aperçu au-dessus du titre ; tant que le nom est vide, rien.
+A form: « Nom » (required, at most 80 characters), « Description » (optional, at most 500),
+« Créer l'univers » and « Annuler » (→ E-1). Creating leads to the universe's E-3, with the creator
+as GM (B-2). As soon as a name is entered, the universe seal (its initial) appears as a preview above the title; while the name is empty, nothing appears.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | le formulaire vierge, sans aperçu | remplir |
-| chargement (écriture en cours) | le bouton affiche « … », désactivé | — |
-| erreur | « Erreur : le nom est obligatoire. » sous le champ ; ou, si la création échoue, « L'action n'a pas abouti. Réessayez. » au-dessus du formulaire, saisie conservée | corriger, réessayer |
-| connexion perdue | le bandeau ; « Créer l'univers » désactivé, saisie conservée | attendre |
-| refus | sans objet : tout compte peut créer un univers (B-2) | — |
-| contenu long | « Erreur : 80 caractères au plus. » dès le 81e (même texte pour la description avec 500) | corriger |
+| vide | blank form, no preview | fill in |
+| chargement (écriture en cours) | the button displays « … », disabled | — |
+| erreur | « Erreur : le nom est obligatoire. » below the field; or, if creation fails, « L'action n'a pas abouti. Réessayez. » above the form, input kept | correct, retry |
+| connexion perdue | the banner; « Créer l'univers » disabled, input kept | wait |
+| refus | not applicable: every account can create a universe (B-2) | — |
+| contenu long | « Erreur : 80 caractères au plus. » from the 81st character (same text for the description with 500) | correct |
 
-### E-3 Vue d'ensemble de l'univers
+### E-3 Universe overview
 
-Le nom de l'univers (titre), sa description, le badge du rôle, puis une **région de blocs**. Quand
-aucun bloc ne rend rien, la région montre « Rien à afficher pour l'instant. Les
-campagnes, les comptes-rendus et les cartes s'afficheront ici. » ; ni compteur ni lien mort.
-**Les blocs sont indépendants** : chaque tranche ajoute le sien en déposant un fichier dans
-`frontend/src/ecrans/vue-ensemble/blocs/` dont l'export par défaut est un `Bloc` (identifiant,
-rôles qui le voient, rang, composant) ; le registre `frontend/src/ecrans/vue-ensemble/registre.ts`
-le trouve seul (un seul fichier, comme pour les écrans) ; elle ne modifie aucun bloc existant.
+The universe's name (title), its description, the role badge, then a **block region**. When
+no block renders anything, the region shows « Rien à afficher pour l'instant. Les
+campagnes, les comptes-rendus et les cartes s'afficheront ici. »; no counter or dead link.
+**Blocks are independent**: each slice adds its own by placing a file in
+`frontend/src/ecrans/vue-ensemble/blocs/` whose default export is a `Bloc` (identifier,
+roles that see it, rank, component); the registry `frontend/src/ecrans/vue-ensemble/registre.ts`
+finds it automatically (a single file, as for screens); it modifies no existing block.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | le message de la région de blocs (ci-dessus) | naviguer par la barre |
-| chargement | le nom absent, « Chargement… » | — |
+| vide | the block region's message (above) | navigate through the sidebar |
+| chargement | no name, « Chargement… » | — |
 | erreur | « Impossible de charger cette page. » | « Réessayer » |
-| connexion perdue | le bandeau, le contenu déjà chargé | naviguer |
-| refus | univers inconnu ou sans rôle du compte : « Page introuvable. » | « Mes univers » |
-| contenu long | une description de 500 caractères passe à la ligne ; un nom de 80 caractères passe à la ligne en titre | — |
+| connexion perdue | the banner, already loaded content | navigate |
+| refus | unknown universe or no role for the account: « Page introuvable. » | « Mes univers » |
+| contenu long | a 500-character description wraps; an 80-character name wraps in the title | — |
 
-*Critère.* Étant donné Teo, sans rôle dans Lame d'Ébène, quand il ouvre l'adresse de l'univers,
-alors il voit « Page introuvable. », sans le nom de l'univers.
+*Criterion.* Given Teo, without a role in Lame d'Ébène, when he opens the universe's address,
+he sees « Page introuvable. », without the universe's name.
 
-### E-4 Membres (MJ)
+### E-4 Members (GM)
 
-Une liste : identifiant, rôle (liste MJ / Joueur), « Retirer ». En haut, un champ « Identifiant du
-compte », le rôle (Joueur par défaut) et « Ajouter ». **Retirer** demande une confirmation sur
-place : « Retirer lea de Lame d'Ébène ? Elle ne verra plus l'univers. » avec « Retirer lea » et
-« Annuler ». Un MJ qui se retire lui-même alors qu'un autre MJ reste revient à E-1.
+A list: username, role (« MJ » / « Joueur » list), « Retirer ». At the top, an « Identifiant du
+compte » field, the role (Player by default) and « Ajouter ». **« Retirer »** asks for inline
+confirmation: « Retirer lea de Lame d'Ébène ? Elle ne verra plus l'univers. » with « Retirer lea » and
+« Annuler ». A GM who removes themselves while another GM remains returns to E-1.
 
-Refus de la tranche, textes exacts : « Ce compte ne s'est jamais connecté. » ; « Ce compte est déjà
-membre. » ; « Impossible : l'univers doit garder au moins un MJ. » (retirer ou rétrograder le seul
-MJ).
+Slice refusals, exact wording: « Ce compte ne s'est jamais connecté. »; « Ce compte est déjà
+membre. »; « Impossible : l'univers doit garder au moins un MJ. » (removing or demoting the only
+GM).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | sans objet : il y a toujours au moins un MJ | — |
+| vide | not applicable: there is always at least one GM | — |
 | chargement | « Chargement des membres… » | — |
-| erreur | « Impossible de charger les membres. » ; une erreur d'écriture s'écrit au-dessus de la liste, la liste reste | « Réessayer » |
-| connexion perdue | le bandeau ; « Ajouter », changer, « Retirer » désactivés | — |
-| refus | pour un Joueur : l'item « Membres » est absent et son adresse montre « Page introuvable. » | « Mes univers » |
-| contenu long | 200 membres : la liste défile ; l'identifiant est tronqué par « … » avec l'infobulle | idem |
+| erreur | « Impossible de charger les membres. »; a write error appears above the list, which remains | « Réessayer » |
+| connexion perdue | the banner; « Ajouter », role change, « Retirer » disabled | — |
+| refus | for a Player: the « Membres » item is absent and its address shows « Page introuvable. » | « Mes univers » |
+| contenu long | 200 members: the list scrolls; the username is truncated with « … » and a tooltip | same |
 
-*Critère.* Étant donné Antor, seul MJ de Lame d'Ébène, quand il tente de retirer Antor, alors il
-voit « Impossible : l'univers doit garder au moins un MJ. » et la liste est inchangée.
+*Criterion.* Given Antor, sole GM of Lame d'Ébène, when he tries to remove Antor, he
+sees « Impossible : l'univers doit garder au moins un MJ. » and the list is unchanged.
 
-### E-8 Liste de fiches
+### E-8 Sheet list
 
-Pour un type de la barre (Personnages, Lieux…) : les fiches **que le compte peut lire**, par
-titre (ordre alphabétique sans casse), chacune avec son badge (pour un personnage : PJ ou PNJ).
-Cent fiches à la fois, puis « Charger la suite ». Pour un MJ, « Nouveau personnage » (« Nouveau
-lieu »…) ouvre une fenêtre : « Titre » (1 à 120 caractères) et, pour un personnage, « PJ » ou
-« PNJ » (PNJ par défaut) ; « Créer la fiche » mène à E-9 de la fiche, sans section. Textes par type : « Aucun personnage », « Aucun lieu », « Aucune faction », « Aucun objet », « Aucun
-événement », « Aucune quête », suivis de « pour l'instant. » (MJ) ou « à voir pour l'instant. »
-(Joueur) ; bouton « Nouveau personnage », « Nouveau lieu », « Nouvelle faction », « Nouvel objet »,
-« Nouvel événement », « Nouvelle quête ». La recherche dans le type s'ajoute au-dessus de la liste (voir « Détail des écrans de `kanevas-relier-chercher` »). Le type compte-rendu n'a pas d'entrée ici (E-13).
+For a type in the sidebar (« Personnages », « Lieux »…): sheets **the account can read**, by
+title (case-insensitive alphabetical order), each with its badge (for a character: « PJ » or « PNJ »).
+One hundred sheets at a time, then « Charger la suite ». For a GM, « Nouveau personnage » (« Nouveau
+lieu »…) opens a dialog: « Titre » (1 to 120 characters) and, for a character, « PJ » or
+« PNJ » (« PNJ » by default); « Créer la fiche » leads to the sheet's E-9, with no section. Text per type: « Aucun personnage », « Aucun lieu », « Aucune faction », « Aucun objet », « Aucun
+événement », « Aucune quête », followed by « pour l'instant. » (GM) or « à voir pour l'instant. »
+(Player); button « Nouveau personnage », « Nouveau lieu », « Nouvelle faction », « Nouvel objet »,
+« Nouvel événement », « Nouvelle quête ». Search within the type is added above the list (see “Screen details for `kanevas-relier-chercher`”). The session report type has no entry here (E-13).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ : « Aucun personnage pour l'instant. » et « Nouveau personnage » ; Joueur : « Aucun personnage à voir pour l'instant. » (autres types : voir ci-dessus) | MJ : créer |
+| vide | GM: « Aucun personnage pour l'instant. » and « Nouveau personnage »; Player: « Aucun personnage à voir pour l'instant. » (other types: see above) | GM: create |
 | chargement | « Chargement des fiches… » | — |
-| erreur | « Impossible de charger les fiches. » ; création échouée : « L'action n'a pas abouti. Réessayez. », titre conservé | « Réessayer » |
-| connexion perdue | le bandeau ; « Nouveau … » et « Créer la fiche » désactivés | ouvrir une fiche listée |
-| refus | un type inconnu : « Page introuvable. » ; une fiche illisible est absente de la liste ; *(kanevas-fiche-mj-seul)* `?visibilite=` posed by a player or in player mode: 400 « Requête invalide. » from the API, the screen never sends it and ignores it in the address | — |
-| contenu long | plus de 100 fiches : « Charger la suite » ; titre trop long tronqué par « … » avec infobulle | idem |
+| erreur | « Impossible de charger les fiches. »; creation failed: « L'action n'a pas abouti. Réessayez. », title kept | « Réessayer » |
+| connexion perdue | the banner; « Nouveau … » and « Créer la fiche » disabled | open a listed sheet |
+| refus | unknown type: « Page introuvable. »; an unreadable sheet is absent from the list ; *(kanevas-fiche-mj-seul)* `?visibilite=` posed by a player or in player mode: 400 « Requête invalide. » from the API, the screen never sends it and ignores it in the address | — |
+| contenu long | more than 100 sheets: « Charger la suite »; overlong title truncated with « … » and a tooltip | same |
 
-*Critère.* Étant donné la fiche « Maître Aldric », dont Léa ne lit aucune section, quand Léa ouvre la
-liste des personnages, alors elle n'y voit pas « Maître Aldric ».
+*Criterion.* Given the « Maître Aldric » sheet, none of whose sections Léa can read, when Léa opens the
+character list, she does not see « Maître Aldric ».
 
-### E-9 Fiche
+### E-9 Sheet
 
-Le titre, le badge du type — *(kanevas-fiche-mj-seul, B-57)* and, for a GM in GM mode, the amber
+The title, the type badge — *(kanevas-fiche-mj-seul, B-57)* and, for a GM in GM mode, the amber
 « MJ seul » badge (`lock`) when no section is readable by the players (a sheet without any
 section carries it too), with the tooltip « Aucune
 section n'est visible des joueurs. » (the badge is focusable; on focus or touch the sentence is
@@ -341,396 +361,396 @@ written under the header line, as E-18 does — the line keeps its (empty) place
 authoritative); it follows the saved state only — it appears or
 disappears as soon as an audience setting is saved, without reloading, and does not move on
 « L'action n'a pas abouti. Réessayez. » —; with a 120-character title it wraps to the next line
-with the type badge, the title is never truncated for it; absent in player mode and for a player —, puis les **sections** dans leur ordre, chacune un panneau : titre,
-contenu en Markdown rendu (AD-95), et un emplacement de **blocs de section** (relations, pièces
-jointes : les tranches suivantes y inscrivent le leur, comme pour E-3, dans
-`frontend/src/ecrans/fiche/blocs/` et `registre.ts`).
+with the type badge, the title is never truncated for it; absent in player mode and for a player —, then the **sections** in their order, each a panel: title,
+rendered Markdown content (AD-95), and a slot for **section blocks** (relations, attachments:
+subsequent slices register their own, as for E-3, in
+`frontend/src/ecrans/fiche/blocs/` and `registre.ts`).
 
-*Le MJ* voit toutes les sections. Sur chacune : « Modifier » ; l'**audience**, cinq réglages —
-« Les joueurs la lisent », « Les joueurs l'écrivent », « Auteur » (liste des Joueurs de l'univers,
-ou « aucun »), « L'auteur la lit », « L'auteur l'écrit » — enregistrés au changement ; « Monter »,
-« Descendre » ; « Retirer la section ». En pied : « Ajouter une section » (titre, 1 à 80
-caractères ; la section naît vide et fermée aux joueurs). Une section réservée au MJ porte le
-mot « MJ seul » (pastille ambre). Le **mode Joueur** (bascule en tête) montre la fiche telle que la
-voit un Joueur qui n'est l'auteur d'aucune section : plus de réglages, plus de section fermée, et
-« Modifier » seulement sur celles que les joueurs écrivent (AD-39).
+*The GM* sees every section. On each: « Modifier »; the **audience**, five settings —
+« Les joueurs la lisent », « Les joueurs l'écrivent », « Auteur » (list of the universe's Players,
+or « aucun »), « L'auteur la lit », « L'auteur l'écrit » — saved on change; « Monter »,
+« Descendre »; « Retirer la section ». At the bottom: « Ajouter une section » (title, 1 to 80
+characters; the section starts empty and closed to players). A GM-only section bears the
+words « MJ seul » (amber badge). **Player mode** (toggle at the top) shows the sheet as seen
+by a Player who authors no section: no settings, no closed section, and
+« Modifier » only on those players can write (AD-39).
 
-*Un Joueur* voit les sections qu'il lit (joueurs, ou auteur si c'est lui), sans titre ni trace des
-autres ; « Modifier » sur celles qu'il peut écrire ; ni audience, ni ordre, ni ajout, ni retrait.
-Pour **modifier** : un champ de texte (100 000 caractères au plus, valeur lue dans `limites.contenuSection` de `/api/moi` ; le serveur la refuse aussi, AD-91, AD-106 ; 20 000 avant `kanevas-import`), « Enregistrer », « Annuler ».
-Enregistrer envoie la version lue (AD-59).
+*A Player* sees readable sections (players, or author if it is them), without the titles or any trace of
+the others; « Modifier » on writable ones; no audience, order, addition or removal.
+To **edit**: a text field (at most 100,000 characters, value read from `limites.contenuSection` in `/api/moi`; the server also enforces it, AD-91, AD-106; 20,000 before `kanevas-import`), « Enregistrer », « Annuler ».
+Saving sends the version read (AD-59).
 
-Textes : section sans contenu : « Rien d'écrit pour l'instant. » ; fiche sans section (MJ) : « Cette
-fiche n'a pas encore de section. » ; écriture périmée : « La section a changé depuis que vous
-l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous. » avec
-« Recharger la section » ; droit retiré entre-temps : « Vous ne pouvez plus modifier cette section. » ;
+Text: section without content: « Rien d'écrit pour l'instant. »; sheet without a section (GM): « Cette
+fiche n'a pas encore de section. »; stale write: « La section a changé depuis que vous
+l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous. » with
+« Recharger la section »; permission removed in the meantime: « Vous ne pouvez plus modifier cette section. »;
 Removal confirmation: « Retirer la section « Vérité — MJ seul » ? Son contenu sera perdu. »
 (with attached files: « … Son contenu et ses 3 fichiers joints seront retirés. »), with
 « Retirer la section » and « Annuler ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ : « Cette fiche n'a pas encore de section. » et « Ajouter une section » ; section vide : « Rien d'écrit pour l'instant. » | MJ : ajouter ; qui écrit : « Modifier » |
-| chargement | le titre absent, « Chargement de la fiche… » | — |
-| erreur | « Impossible de charger cette fiche. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
-| connexion perdue | le bandeau ; « Enregistrer », audience, ordre, retrait, ajout désactivés ; le texte en cours reste | lire |
-| refus | fiche inconnue ou dont rien n'est lisible : « Page introuvable. » ; section non lisible : absente. Un MJ en mode Joueur sur une fiche dont aucune section n'est lisible des joueurs voit « Aucune section n'est visible des joueurs. » (ce que verrait un joueur : « Page introuvable. ») | passer en mode MJ |
-| contenu long | une section de 100 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà, dès le 100 001e caractère saisi : « Erreur : 100 000 caractères au plus. » (sous le champ ; « Enregistrer » ne part pas ; le texte saisi est gardé, y compris quand c'est le serveur qui refuse, 400, avec le même texte — pas « L'action n'a pas abouti » ; tant que `/api/moi` n'a pas rendu la limite, ou s'il a échoué, l'écran ne contrôle rien et laisse le serveur répondre) ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
+| vide | GM: « Cette fiche n'a pas encore de section. » and « Ajouter une section »; empty section: « Rien d'écrit pour l'instant. » | GM: add; anyone with write permission: « Modifier » |
+| chargement | no title, « Chargement de la fiche… » | — |
+| erreur | « Impossible de charger cette fiche. »; write failure: « L'action n'a pas abouti. Réessayez. », text kept | « Réessayer » |
+| connexion perdue | the banner; « Enregistrer », audience, order, removal, addition disabled; text in progress remains | read |
+| refus | unknown sheet or nothing readable: « Page introuvable. »; unreadable section: absent. A GM in Player mode on a sheet with no section readable by players sees « Aucune section n'est visible des joueurs. » (what a player would see: « Page introuvable. ») | switch to GM mode |
+| contenu long | a 100,000-character section wraps and is displayed in full; beyond that, from the 100,001st character entered: « Erreur : 100 000 caractères au plus. » (below the field; « Enregistrer » does not submit; input is kept, including when the server refuses, 400, with the same text — not « L'action n'a pas abouti »; until `/api/moi` has returned the limit, or if it failed, the screen performs no check and lets the server respond); sheet title (120 characters) and section title (80): wrap | same |
 
-*Critères.*
-- Étant donné Léa, Joueuse, quand elle ouvre « Maître Aldric » (« Apparence » lue des joueurs,
-  « Vérité — MJ seul » fermée), alors elle voit « Apparence » et rien d'autre : ni le titre
-  « Vérité — MJ seul », ni un compteur, ni un bouton de réglage.
-- Étant donné Antor, MJ, quand il passe en mode Joueur sur la même fiche, alors il voit la même
-  chose que Léa et plus aucun réglage.
-- Étant donné Antor qui a confié « Notes de la table » à Léa en auteur avec écriture, quand Léa
-  modifie le texte et enregistre, alors la section montre son texte ; Teo, ajouté en Joueur, ne la
-  voit pas tant que « Les joueurs la lisent » est faux.
-- Étant donné deux onglets sur la même section, quand le second enregistre après le premier,
-  alors il voit « La section a changé depuis que vous l'avez ouverte… » et son texte reste.
-- Étant donné Antor qui modifie une section, quand il saisit un 100 001e caractère, alors « Erreur :
-  100 000 caractères au plus. » apparaît sous le champ, rien n'est envoyé et son texte reste ;
-  quand le serveur refuse malgré tout (400), il voit le même texte et son texte reste.
+*Criteria.*
+- Given Léa, a Player, when she opens « Maître Aldric » (« Apparence » readable by players,
+  « Vérité — MJ seul » closed), she sees « Apparence » and nothing else: neither the title
+  « Vérité — MJ seul », a counter, nor a settings button.
+- Given Antor, a GM, when he switches to Player mode on the same sheet, he sees the same
+  thing as Léa and no settings.
+- Given Antor, who assigned « Notes de la table » to Léa as author with write permission, when Léa
+  edits the text and saves, the section shows her text; Teo, added as a Player, does not
+  see it while « Les joueurs la lisent » is false.
+- Given two tabs on the same section, when the second saves after the first,
+  it sees « La section a changé depuis que vous l'avez ouverte… » and its text remains.
+- Given Antor editing a section, when he enters a 100,001st character, « Erreur :
+  100 000 caractères au plus. » appears below the field, nothing is sent and his text remains;
+  when the server refuses anyway (400), he sees the same text and his text remains.
 
-### Clôture de la tranche
+### Slice completion
 
-Chaque besoin livré par la tranche (fiche de la feature, `## Livre`, hors de ce dépôt) a son écran : B-2 → E-2 ; B-3 à B-5 → E-4 ; B-7 → E-8 ; B-8 et B-9 →
-E-9 ; B-1 et B-28 → session ; B-29 → six états de chaque écran ci-dessus. Chaque écran est atteint
-par P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 étape 4 et P-6 (E-8, E-9), P-7 (E-9). Les trois rôles ont
-leur colonne dans la matrice du cadrage ; l'admin d'instance n'avait, avant `kanevas-recours-admin`, que E-1 et
-E-2 ; E-5 lui vient avec cette tranche (plus bas).
+Each requirement delivered by the slice (feature card, `## Livre`, outside this repository) has its screen: B-2 → E-2; B-3 to B-5 → E-4; B-7 → E-8; B-8 and B-9 →
+E-9; B-1 and B-28 → session; B-29 → six states of each screen above. Each screen is reached
+through P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 step 4 and P-6 (E-8, E-9), P-7 (E-9). The three roles have
+their column in the scoping matrix; before `kanevas-recours-admin`, the instance admin had only E-1 and
+E-2; E-5 comes with that slice (below).
 
-## Détail des écrans de `kanevas-recours-admin`
+## Screen details for `kanevas-recours-admin`
 
-> E-5 et l'entrée « Administration » de la barre latérale. Les textes communs (chargement, erreur de
-> chargement, connexion perdue, écriture en cours, échec d'une écriture, refus) et les refus de
-> membres (« Ce compte ne s'est jamais connecté. », « Ce compte est déjà membre. », « Impossible :
-> l'univers doit garder au moins un MJ. ») sont ceux de « Détail des écrans de
-> `kanevas-premiere-fiche` ». Maquette `docs/maquettes/e05-administration.html` (d'avant la charte : contenu et vocabulaire seulement).
+> E-5 and the sidebar's « Administration » entry. Shared text (loading, loading error,
+> connection lost, write in progress, write failure, refusal) and membership
+> refusals (« Ce compte ne s'est jamais connecté. », « Ce compte est déjà membre. », « Impossible :
+> l'univers doit garder au moins un MJ. ») are those of “Screen details for
+> `kanevas-premiere-fiche`”. Mockup `docs/maquettes/e05-administration.html` (predates the style guide: content and vocabulary only).
 
-**Qui est admin d'instance.** Le compte dont la session porte le groupe Authelia `parents` (AD-56,
-lu à la connexion ; en bouchon, Admin). Le droit est celui de la session en cours : un compte retiré
-du groupe le garde jusqu'à l'expiration de sa session (7 jours) — risque accepté (AD-86).
-**Ce que l'admin voit** : le nom de chaque univers, le nombre de ses membres, et ses membres
-(identifiant, rôle). **Ce qu'il ne voit jamais** : la description, une fiche, une section, un
-compte-rendu, une carte, une pièce jointe, un système de jeu — pour tout cela, il est un compte sans
-rôle (« Page introuvable. »), tant qu'il ne s'est pas ajouté lui-même comme membre.
+**Who is an instance admin.** The account whose session carries the Authelia `parents` group (AD-56,
+read at sign-in; in stub mode, Admin). Permission comes from the current session: an account removed
+from the group keeps it until its session expires (7 days) — accepted risk (AD-86).
+**What the admin sees**: each universe's name, member count and members
+(username, role). **What they never see**: the description, a sheet, a section, a
+session report, a map, an attachment, a game system — for all of this, they are an account without a
+role (« Page introuvable. »), until they add themselves as a member.
 
-### Barre latérale : l'entrée « Administration »
+### Sidebar: the « Administration » entry
 
-Pour un admin d'instance seulement : hors d'un univers, **Administration** sous « Mes univers » ; dans un
-univers dont il est membre, **Administration** sous une section « Instance », en pied de la barre.
-Pour tout autre compte, l'entrée n'existe pas.
+For an instance admin only: outside a universe, **« Administration »** below « Mes univers »; within a
+universe they belong to, **« Administration »** under an « Instance » section at the bottom of the sidebar.
+For any other account, the entry does not exist.
 
 ### E-5 Administration
 
-La barre haute porte le fil « Instance / Administration » ; sous le titre et le sous-titre « Les membres se gèrent ici ; le
-contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones, puis le panneau « Jeton de l'assistant » (plus bas). À gauche, **Univers de
-l'instance** : tous les univers, par nom (sans casse), chacun avec « N membres » (« 1 membre » au
-singulier), l'univers choisi portant le badge « Sélectionné » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
-un clic sur l'univers), **Membres — <nom de l'univers>** : la liste (identifiant, rôle MJ / Joueur,
-« Retirer <identifiant> » sur chaque ligne, révélé au survol et au focus au bureau, toujours visible sans survol), puis, sous la liste, un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
-geste, les mêmes refus et la même confirmation de retrait qu'E-4. Ajouter son propre identifiant, en
-MJ, est le moyen de lire le contenu : l'ajout apparaît dans la liste des membres que voit le MJ de
-l'univers ; une note sous le champ le dit : « Pour lire le contenu, l'admin s'ajoute lui-même comme
-membre : l'ajout apparaît dans la liste des membres que voit le MJ de l'univers. » Un admin membre
-qui se retire lui-même reste sur E-5 ; l'univers reste sélectionné, sa liste se met à jour sans lui, et il disparaît de l'accueil (E-1) de l'admin ; le lien « Ouvrir » disparaît avec son rôle. Rien d'autre n'est montré de l'univers : pas de lien vers sa vue d'ensemble tant que
-l'admin n'en est pas membre ; une fois membre, un lien « Ouvrir » à côté du nom mène à E-3 (un clic sur le
-nom sélectionne seulement l'univers). Aucune action sur l'univers lui-même
-(nom, description) : elles sont au MJ.
+The top bar carries the « Instance / Administration » breadcrumb; below the title and subtitle « Les membres se gèrent ici ; le
+contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », two areas, then the « Jeton de l'assistant » panel (below). On the left, **« Univers de
+l'instance »**: all universes, by name (case-insensitive), each with « N membres » (« 1 membre » in the
+singular), the selected universe bearing the « Sélectionné » badge; one hundred at a time, then « Charger la suite ». On the right (below the list on phones, after
+clicking the universe), **« Membres — <nom de l'univers> »**: the list (username, « MJ » / « Joueur » role,
+« Retirer <identifiant> » on each row, revealed on hover and focus on desktop, always visible without hover), then, below the list, an « Identifiant du compte » field, role (Player by default) and « Ajouter »: the same
+action, refusals and removal confirmation as E-4. Adding their own username as
+GM is how the admin reads content: the addition appears in the member list seen by the universe's
+GM; a note below the field says so: « Pour lire le contenu, l'admin s'ajoute lui-même comme
+membre : l'ajout apparaît dans la liste des membres que voit le MJ de l'univers. » An admin member
+who removes themselves stays on E-5; the universe remains selected, its list updates without them, and it disappears from the admin's home (E-1); the « Ouvrir » link disappears with their role. Nothing else about the universe is shown: no link to its overview until
+the admin is a member; once a member, an « Ouvrir » link beside the name leads to E-3 (clicking the
+name only selects the universe). No action on the universe itself
+(name, description): those belong to the GM.
 
-Adresses : `/administration` (aucune sélection : « Choisissez un univers pour voir ses membres. »)
-et `/administration/univers/:id`.
+Addresses: `/administration` (no selection: « Choisissez un univers pour voir ses membres. »)
+and `/administration/univers/:id`.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | liste des membres : sans objet, un univers a toujours un MJ (B-5) ; aucun univers dans l'instance : « Aucun univers sur l'instance pour l'instant. » ; aucune sélection : « Choisissez un univers pour voir ses membres. » | — |
-| chargement | « Chargement des univers… » ; pour les membres : « Chargement des membres… » | — |
-| erreur | « Impossible de charger les univers. » ou « Impossible de charger les membres. », avec « Réessayer » ; une écriture échouée : « L'action n'a pas abouti. Réessayez. » au-dessus de la liste des membres | « Réessayer » |
-| connexion perdue | le bandeau ; « Ajouter », le changement de rôle et « Retirer » désactivés ; les listes chargées restent | lire |
-| refus | tout compte hors du groupe : « Page introuvable. » (l'entrée n'existe pas dans sa barre) ; un univers qui n'existe pas : « Page introuvable. » ; groupe retiré à l'expiration de la session : « Page introuvable. » | « Mes univers » |
-| contenu long | 300 univers : « Charger la suite » ; 200 membres : la liste défile ; un nom de 80 caractères et un identifiant long sont tronqués par « … » avec infobulle | idem |
+| vide | member list: not applicable, a universe always has a GM (B-5); no universe in the instance: « Aucun univers sur l'instance pour l'instant. »; no selection: « Choisissez un univers pour voir ses membres. » | — |
+| chargement | « Chargement des univers… »; for members: « Chargement des membres… » | — |
+| erreur | « Impossible de charger les univers. » or « Impossible de charger les membres. », with « Réessayer »; failed write: « L'action n'a pas abouti. Réessayez. » above the member list | « Réessayer » |
+| connexion perdue | the banner; « Ajouter », role change and « Retirer » disabled; loaded lists remain | read |
+| refus | any account outside the group: « Page introuvable. » (the entry does not exist in its sidebar); a nonexistent universe: « Page introuvable. »; group removed when the session expires: « Page introuvable. » | « Mes univers » |
+| contenu long | 300 universes: « Charger la suite »; 200 members: the list scrolls; an 80-character name and a long username are truncated with « … » and a tooltip | same |
 
-*Critères.*
-- Étant donné « Admin » (groupe `parents`), sans rôle dans « Lame d'Ébène », quand il ouvre
-  l'administration et choisit « Lame d'Ébène », alors il voit « 2 membres », la liste antor (MJ) et lea (Joueur), et ni la description, ni aucune fiche.
-- Étant donné le même Admin, quand il ajoute « mira » en MJ (elle apparaît dans la liste) puis ouvre l'adresse de la vue d'ensemble
-  de « Lame d'Ébène », alors il voit « Page introuvable. » ; quand il s'ajoute lui-même en MJ, alors
-  la vue d'ensemble s'ouvre et Antor, sur E-4, voit « admin » dans la liste des membres.
-- Étant donné Léa, Joueuse, quand elle ouvre `/administration`, alors elle voit « Page introuvable. » et
-  n'a pas d'entrée « Administration » dans sa barre.
-- Étant donné Admin et l'univers « Les Landes grises », dont « mira » est la seule MJ, quand Admin tente de
-  la retirer, alors il voit « Impossible : l'univers doit garder au moins un MJ. » et la liste est inchangée.
-- Étant donné Admin, membre MJ de « Brume » (univers que le test crée ; le monde semé du bouchon n'a pas « Brume » : y jouer « Les Cendres de Vaëlis », où Admin est MJ), quand il ouvre l'administration, alors « Brume » porte un lien « Ouvrir » qui mène à sa vue d'ensemble, et « Lame d'Ébène » n'en porte pas ; s'il se retire de « Brume » (seul membre : refusé avec la raison du dernier MJ), le lien reste.
-- Étant donné Admin et un compte « nadia » qui ne s'est jamais connecté, quand il tente de
-  l'ajouter, alors il voit « Ce compte ne s'est jamais connecté. ».
+*Criteria.*
+- Given « Admin » (`parents` group), without a role in « Lame d'Ébène », when they open
+  administration and select « Lame d'Ébène », they see « 2 membres », the antor (GM) and lea (Player) list, and neither the description nor any sheet.
+- Given the same Admin, when they add « mira » as GM (she appears in the list) then open the overview address
+  of « Lame d'Ébène », they see « Page introuvable. »; when they add themselves as GM,
+  the overview opens and Antor, on E-4, sees « admin » in the member list.
+- Given Léa, a Player, when she opens `/administration`, she sees « Page introuvable. » and
+  has no « Administration » entry in her sidebar.
+- Given Admin and the « Les Landes grises » universe, whose sole GM is « mira », when Admin tries to
+  remove her, they see « Impossible : l'univers doit garder au moins un MJ. » and the list is unchanged.
+- Given Admin, a GM member of « Brume » (a universe the test creates; the seeded stub world has no « Brume »: use « Les Cendres de Vaëlis » there, where Admin is GM), when they open administration, « Brume » has an « Ouvrir » link leading to its overview, and « Lame d'Ébène » has none; if they remove themselves from « Brume » (sole member: refused for the last-GM reason), the link remains.
+- Given Admin and an account « nadia » that has never signed in, when they try to
+  add it, they see « Ce compte ne s'est jamais connecté. ».
 
-### Clôture de `kanevas-recours-admin`
+### Completion of `kanevas-recours-admin`
 
-B-6 → E-5 (voir les univers et leurs membres, les gérer) ; P-2 étape 3 → E-5 ; B-29 → les six états
-d'E-5 ; la lecture du groupe `parents` est posée par la première fiche (session, AD-56) et consommée
-ici. E-5 est atteint par P-2 (étape 3) et par la barre (admin). Les trois rôles ont leur colonne : le
-MJ et le Joueur n'ont pas E-5 ; l'admin n'a, hors des univers dont il est membre, que E-1, E-2 et E-5.
-Écart au cadrage : aucun.
+B-6 → E-5 (see universes and their members, manage them); P-2 step 3 → E-5; B-29 → the six states
+of E-5; reading the `parents` group is established by the first sheet (session, AD-56) and consumed
+here. E-5 is reached through P-2 (step 3) and the sidebar (admin). The three roles have their column:
+GM and Player have no E-5; outside universes they belong to, the admin has only E-1, E-2 and E-5.
+Deviation from scoping: none.
 
-## Détail des écrans de `kanevas-systemes`
+## Screen details for `kanevas-systemes`
 
-> E-14, E-15, le lien de E-3 vers le système, l'item « Paramètres » de la barre latérale. Les
-> textes communs (chargement, erreur, connexion perdue, écriture en cours, échec d'une écriture,
-> refus) sont ceux de « Détail des écrans de `kanevas-premiere-fiche` ». Maquettes finies :
+> E-14, E-15, the link from E-3 to the system, the sidebar's « Paramètres » item. Shared
+> text (loading, error, connection lost, write in progress, write failure,
+> refusal) is that of “Screen details for `kanevas-premiere-fiche`”. Finished mockups:
 > `docs/maquettes/e14-parametres.html`, `e15-systeme-de-jeu.html`.
 
-**Ce que voit chacun du catalogue.** Le catalogue ne porte que des **noms** de systèmes, lus par tout
-compte qui est MJ d'au moins un univers (c'est ce qui permet à Mira de trouver « CoF Mini »). Le contenu
-d'un système (E-15) n'est lu que par les membres d'un univers qui lui est rattaché. **Aucun écran ne
-nomme un autre univers** : un système dit seulement « utilisé par N univers » (N compte l'univers
-courant), jamais lesquels. Depuis `kanevas-illustrations`, E-16 et E-15 nomment **les seuls univers
-du compte** qui utilisent le système (« Dans vos univers », avec son rôle) ; un univers dont le compte
-n'est pas membre n'est jamais nommé, sur aucun écran ni dans aucune réponse (AD-84, AD-94). Un système « n'est pas vu » d'un univers qui n'y est pas rattaché : pas
-de bloc sur E-3, et l'adresse de E-15 répond « Page introuvable. ».
+**What each person sees of the catalogue.** The catalogue carries only system **names**, readable by any
+account that is GM of at least one universe (this lets Mira find « CoF Mini »). A system's
+content (E-15) is readable only by members of a universe attached to it. **No screen
+names another universe**: a system says only « utilisé par N univers » (N counts the current
+universe), never which ones. Since `kanevas-illustrations`, E-16 and E-15 name **only the account's
+universes** that use the system (« Dans vos univers », with its role); a universe the account
+does not belong to is never named, on any screen or in any response (AD-84, AD-94). A system “is not seen” from a universe not attached to it: no
+block on E-3, and the E-15 address responds « Page introuvable. ».
 
-### E-14 Paramètres de l'univers (MJ)
+### E-14 Universe settings (GM)
 
-Trois panneaux, dans cet ordre, chacun portant la pastille « MJ seul » (cadenas) de la charte ; au téléphone (sous 760 px) leur débord est de 12 px, non 28.
+Three panels, in this order, each bearing the style guide's « MJ seul » badge (padlock); on phones (below 760 px) their bleed is 12 px, not 28.
 
-1. **Identité** : « Nom » (obligatoire, 80 caractères au plus), « Description » (500 au plus),
-   « Enregistrer ». Après l'enregistrement : toast « Enregistré. ».
-2. **Système de jeu** : une liste « Système du catalogue » (les noms, par ordre alphabétique sans
-   casse, et en tête « Aucun système »), « Rattacher » ; si l'univers a un système : son nom, « Utilisé
-   par N univers » et « Ouvrir le système » (→ E-15). Choisir « Aucun système » puis « Rattacher »
-   **détache** l'univers (rien n'est supprimé : le système et son contenu restent, les autres
-   univers le gardent). Toasts : « « X » rattaché », « « X » détaché » (« Aucun système rattaché » s'il n'y en avait pas).
-3. **Créer un système** : « Nom du système » (obligatoire, 80 caractères au plus), « Créer et
-   rattacher » : le système naît au catalogue et l'univers y est rattaché en un seul geste (si l'un
-   échoue, aucun n'a lieu). Un nom déjà pris (sans tenir compte de la casse) : « Un système porte déjà
-   ce nom. » sous le champ. Réussite : toast « « X » créé et rattaché ».
+1. **« Identité »**: « Nom » (required, at most 80 characters), « Description » (at most 500),
+   « Enregistrer ». After saving: toast « Enregistré. ».
+2. **« Système de jeu »**: a « Système du catalogue » list (names in case-insensitive alphabetical
+   order, with « Aucun système » first), « Rattacher »; if the universe has a system: its name, « Utilisé
+   par N univers » and « Ouvrir le système » (→ E-15). Choosing « Aucun système » then « Rattacher »
+   **detaches** the universe (nothing is deleted: the system and its content remain, other
+   universes keep it). Toasts: « « X » rattaché », « « X » détaché » (« Aucun système rattaché » if there was none).
+3. **« Créer un système »**: « Nom du système » (required, at most 80 characters), « Créer et
+   rattacher »: the system enters the catalogue and the universe is attached to it in one action (if either
+   fails, neither happens). A name already taken (case-insensitive): « Un système porte déjà
+   ce nom. » below the field. Success: toast « « X » créé et rattaché ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | catalogue sans système : la liste ne propose que « Aucun système » et le panneau dit « Le catalogue est vide. Créez le premier système ci-dessous. » ; univers sans système : « Cet univers n'est rattaché à aucun système de jeu. » | créer un système |
+| vide | catalogue without a system: the list offers only « Aucun système » and the panel says « Le catalogue est vide. Créez le premier système ci-dessous. »; universe without a system: « Cet univers n'est rattaché à aucun système de jeu. » | create a system |
 | chargement | « Chargement des paramètres… » | — |
-| erreur | « Impossible de charger cette page. » ; nom vide (univers ou système) : « Erreur : le nom est obligatoire. » sous le champ ; une écriture qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau concerné, saisie conservée | « Réessayer » |
-| connexion perdue | le bandeau ; « Enregistrer », « Rattacher », « Créer et rattacher » désactivés, saisie conservée | lire |
-| refus | Joueur : l'item « Paramètres » est absent et l'adresse montre « Page introuvable. » ; compte sans rôle, admin d'instance sans rôle dans l'univers : de même ; rôle retiré pendant que la page est ouverte : « Vous ne pouvez plus modifier ces paramètres. » à l'écriture suivante | « Mes univers » |
-| contenu long | 200 systèmes au catalogue : la liste défile ; un nom de 80 caractères est tronqué par « … » avec infobulle ; « Erreur : 80 caractères au plus. » dès le 81e (500 pour la description) | corriger |
+| erreur | « Impossible de charger cette page. »; empty name (universe or system): « Erreur : le nom est obligatoire. » below the field; failed write: « L'action n'a pas abouti. Réessayez. » above the affected panel, input kept | « Réessayer » |
+| connexion perdue | the banner; « Enregistrer », « Rattacher », « Créer et rattacher » disabled, input kept | read |
+| refus | Player: the « Paramètres » item is absent and the address shows « Page introuvable. »; account without a role, instance admin without a role in the universe: likewise; role removed while the page is open: « Vous ne pouvez plus modifier ces paramètres. » on the next write | « Mes univers » |
+| contenu long | 200 systems in the catalogue: the list scrolls; an 80-character name is truncated with « … » and a tooltip; « Erreur : 80 caractères au plus. » from the 81st character (500 for the description) | correct |
 
-*Critères.*
-- Étant donné Antor, MJ de Lame d'Ébène, et un catalogue qui contient « CoF Mini », quand il choisit
-  « CoF Mini » et « Rattacher », alors le panneau montre « CoF Mini », « Utilisé par 1 univers » et
+*Criteria.*
+- Given Antor, GM of Lame d'Ébène, and a catalogue containing « CoF Mini », when he chooses
+  « CoF Mini » and « Rattacher », the panel shows « CoF Mini », « Utilisé par 1 univers » and
   « Ouvrir le système ».
-- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre l'adresse des paramètres, alors elle
-  voit « Page introuvable. » et l'item « Paramètres » n'est pas dans sa barre.
-- Étant donné un système « CoF Mini » existant, quand Antor en crée un autre nommé « cof mini »,
-  alors il voit « Un système porte déjà ce nom. » et rien n'est créé.
-- Étant donné Antor, univers rattaché à « CoF Mini », quand il choisit « Aucun système » et
-  « Rattacher », alors le panneau dit « Cet univers n'est rattaché à aucun système de jeu. », le bloc
-  « Système de jeu » a disparu de E-3, et « CoF Mini » est toujours dans la liste du catalogue.
+- Given Léa, a Player in Lame d'Ébène, when she opens the settings address, she
+  sees « Page introuvable. » and the « Paramètres » item is not in her sidebar.
+- Given an existing « CoF Mini » system, when Antor creates another named « cof mini »,
+  he sees « Un système porte déjà ce nom. » and nothing is created.
+- Given Antor, with the universe attached to « CoF Mini », when he chooses « Aucun système » and
+  « Rattacher », the panel says « Cet univers n'est rattaché à aucun système de jeu. », the
+  « Système de jeu » block has disappeared from E-3, and « CoF Mini » is still in the catalogue list.
 
-### E-15 Système de jeu
+### E-15 Game system
 
-> Depuis `kanevas-illustrations`, E-15 vit **hors du cadre d'un univers**, à l'adresse
-> `/systemes/:sid` (voir « Systèmes de jeu, hors des univers » plus bas, AD-94) ; ce qui suit vaut
-> toujours pour son contenu, ses gestes et ses textes.
+> Since `kanevas-illustrations`, E-15 lives **outside a universe's frame**, at
+> `/systemes/:sid` (see “Game systems, outside universes” below, AD-94); what follows still applies
+> to its content, actions and text.
 
-Atteint depuis E-14 (« Ouvrir le système ») et depuis E-3 (bloc « Système de jeu », ci-dessous) —
-et depuis E-16 ; son adresse est désormais `/systemes/:sid` (*remplacé par le § de
-`kanevas-illustrations`*). Le nom du système en titre, « Référentiel commun · utilisé par N
-univers » ; quatre onglets, **Règles**, **Créatures**, **Objets** (Créatures par défaut) et **Types de fiche** (kanevas-import-types, décrit plus bas) ; sous
-l'onglet, la liste des entrées du type par nom (ordre alphabétique sans casse), cent à la fois, puis
-« Charger la suite ». Chaque ligne (une **entrée** : une règle, une créature ou un objet ; `gabarit` dans les données) : le nom et la première ligne du contenu (tronquée). Un clic ouvre
-l'entrée **sur place** (le nom, le contenu en Markdown, AD-95).
+Reached from E-14 (« Ouvrir le système ») and E-3 (« Système de jeu » block, below) —
+and from E-16; its address is now `/systemes/:sid` (*superseded by the
+`kanevas-illustrations` section*). The system's name as title, « Référentiel commun · utilisé par N
+univers »; four tabs, **« Règles »**, **« Créatures »**, **« Objets »** (« Créatures » by default) and **« Types de fiche »** (kanevas-import-types, described below); under
+the tab, the list of entries of that type by name (case-insensitive alphabetical order), one hundred at a time, then
+« Charger la suite ». Each row (an **entry**: a rule, creature or item; `gabarit` in the data): the name and first line of content (truncated). A click opens
+the entry **inline** (name, Markdown content, AD-95).
 
-*Le MJ d'un univers rattaché* : « Ajouter une règle » / « Ajouter une créature » / « Ajouter un
-objet » ouvre un formulaire sur place : « Nom » (1 à 120 caractères), « Contenu » (20 000 au plus ; 100 000 depuis `kanevas-import`, AD-106 ;
-facultatif), « Ajouter » et « Annuler » ; sur une entrée ouverte, « Modifier » (nom et contenu),
-« Enregistrer », « Annuler ». Le type d'une entrée ne change jamais ; rien ne se supprime. Enregistrer
-envoie la version lue (AD-85).
-*Un Joueur d'un univers rattaché* : la même page, lecture seule, sans bouton d'ajout ni de
-modification.
+*The GM of an attached universe*: « Ajouter une règle » / « Ajouter une créature » / « Ajouter un
+objet » opens an inline form: « Nom » (1 to 120 characters), « Contenu » (at most 20,000; 100,000 since `kanevas-import`, AD-106;
+optional), « Ajouter » and « Annuler »; on an open entry, « Modifier » (name and content),
+« Enregistrer », « Annuler ». An entry's type never changes; nothing can be deleted. Saving
+sends the version read (AD-85).
+*A Player of an attached universe*: the same page, read-only, with no add or
+edit button.
 
-Textes : onglet vide, MJ : « Aucune créature pour l'instant. » (« Aucune règle », « Aucun objet ») et
-le bouton d'ajout ; Joueur : « Aucune créature à voir pour l'instant. » ; écriture périmée : « Cette
+Text: empty tab, GM: « Aucune créature pour l'instant. » (« Aucune règle », « Aucun objet ») and
+the add button; Player: « Aucune créature à voir pour l'instant. »; stale write: « Cette
 entrée a changé depuis que vous l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte
-reste ci-dessous. » avec « Recharger » (une entrée : une règle, une créature ou un objet) ; nom vide : « Erreur : le nom est obligatoire. » sous le champ ; nom déjà pris dans le même type : « Une créature porte déjà ce
-nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (rôle changé, univers détaché) :
+reste ci-dessous. » with « Recharger » (an entry: a rule, creature or item); empty name: « Erreur : le nom est obligatoire. » below the field; name already taken within the same type: « Une créature porte déjà ce
+nom. » (« Une règle… », « Un objet… »); permission removed in the meantime (role changed, universe detached):
 « Vous ne pouvez plus modifier ce système. ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | l'onglet sans entrée : texte ci-dessus | MJ : ajouter |
-| chargement | le titre absent, « Chargement du système… » | — |
-| erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
-| connexion perdue | le bandeau ; « Ajouter », « Enregistrer » désactivés, le texte en cours reste | lire |
-| refus | *remplacé* : voir la matrice d'états de « E-15 hors de l'univers » (`kanevas-illustrations`) — le refus mène à « Systèmes de jeu » | — |
-| contenu long | 100 entrées : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 100 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 100 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
+| vide | tab without an entry: text above | GM: add |
+| chargement | no title, « Chargement du système… » | — |
+| erreur | « Impossible de charger ce système. »; write failure: « L'action n'a pas abouti. Réessayez. », input kept | « Réessayer » |
+| connexion perdue | the banner; « Ajouter », « Enregistrer » disabled, text in progress remains | read |
+| refus | *superseded*: see the state matrix in “E-15 outside the universe” (`kanevas-illustrations`) — refusal leads to « Systèmes de jeu » | — |
+| contenu long | 100 entries: « Charger la suite »; name truncated with « … » and a tooltip; 100,000-character content wraps and is displayed in full; beyond that: « Erreur : 100 000 caractères au plus. »; name beyond 120: « Erreur : 120 caractères au plus. » | same |
 
-*Critères.*
-- Étant donné Antor, MJ de Lame d'Ébène rattaché à « CoF Mini », quand il ajoute la créature « Garde
-  du sceau » avec son contenu, alors elle apparaît sous « Créatures ».
-- *Remplacé par le critère de Mira du § de `kanevas-illustrations` (la seule puce « Les Landes
-  grises · MJ ») :* étant donné Mira, MJ des « Landes grises » rattachée au même système, quand
-  elle ouvre « Créatures », alors elle voit « Garde du sceau » et « Utilisé par 2 univers », et aucun
-  nom d'univers.
-- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre le système, alors elle voit « Garde du
-  sceau » sans « Ajouter » ni « Modifier » ; si le MJ envoie une écriture à sa place par l'adresse de
-  l'API, elle est refusée.
-- *Remplacé par le § de `kanevas-illustrations` (critère de Teo, et l'ancienne adresse) :* étant
-  donné « Admin » (groupe `parents`, MJ de l'univers « Brume » qu'il vient de créer, non rattaché),
-  quand il ouvre `/univers/<Brume>/systeme`, alors il voit « Page introuvable. » ; et sur la vue
-  d'ensemble de « Brume » il n'y a pas de bloc « Système de jeu ».
-- Étant donné deux onglets sur la même créature, quand le second enregistre après le premier, alors
-  il voit « Cette entrée a changé depuis que vous l'avez ouverte. » et son texte reste.
+*Criteria.*
+- Given Antor, GM of Lame d'Ébène attached to « CoF Mini », when he adds the « Garde
+  du sceau » creature with its content, it appears under « Créatures ».
+- *Superseded by Mira's criterion in the `kanevas-illustrations` section (the sole « Les Landes
+  grises · MJ » bullet):* given Mira, GM of « Landes grises » attached to the same system, when
+  she opens « Créatures », she sees « Garde du sceau » and « Utilisé par 2 univers », and no
+  universe name.
+- Given Léa, a Player in Lame d'Ébène, when she opens the system, she sees « Garde du
+  sceau » without « Ajouter » or « Modifier »; if the GM sends a write on her behalf through the
+  API address, it is refused.
+- *Superseded by the `kanevas-illustrations` section (Teo's criterion, and the old address):* given
+  « Admin » (`parents` group, GM of the newly created, unattached « Brume » universe),
+  when they open `/univers/<Brume>/systeme`, they see « Page introuvable. »; and the
+  « Brume » overview has no « Système de jeu » block.
+- Given two tabs on the same creature, when the second saves after the first,
+  it sees « Cette entrée a changé depuis que vous l'avez ouverte. » and its text remains.
 
-### Bloc « Système de jeu » de E-3
+### E-3's « Système de jeu » block
 
-Un bloc de la vue d'ensemble (déposé dans `frontend/src/ecrans/vue-ensemble/blocs/`, rang bas,
-visible des MJ et des Joueurs) : le nom du système et un lien « Ouvrir le système » (→ E-15). **Sans
-système, le bloc n'existe pas** : ni message, ni lien mort. Ses états : chargement — le bloc est
-absent ; erreur — le bloc est absent (la vue d'ensemble n'échoue pas pour lui) ; refus et vide —
-sans objet : un univers sans système n'a pas de bloc ; connexion perdue — le bloc reste tel qu'il a été chargé ; contenu long — le nom (80 caractères) est
-tronqué avec infobulle.
+An overview block (placed in `frontend/src/ecrans/vue-ensemble/blocs/`, low rank,
+visible to GMs and Players): the system's name and an « Ouvrir le système » link (→ E-15). **Without a
+system, the block does not exist**: no message or dead link. Its states: loading — the block is
+absent; error — the block is absent (the overview does not fail because of it); refusal and empty —
+not applicable: a universe without a system has no block; connection lost — the block stays as loaded; long content — the name (80 characters) is
+truncated with a tooltip.
 
-### Clôture de `kanevas-systemes`
+### Completion of `kanevas-systemes`
 
-B-13 → E-14 (rattacher, créer et rattacher) ; B-14 → E-15 ; P-8 étape 1 → E-14, étape 2 → E-15 ; le
-lien de E-3 → bloc ci-dessus ; B-29 → les six états de E-14 et E-15. E-14 est atteint par P-8 et par
-la barre (MJ) ; E-15 par P-8 et par E-3. Les trois rôles ont leur colonne : l'admin d'instance sans
-rôle n'a ni E-14 ni E-15 ; l'admin MJ de son propre univers a ceux d'un MJ.
-Écart au cadrage : aucun. Précision : le cadrage dit « nom, description » pour E-14 ; la tranche
-construit donc aussi la **modification** du nom et de la description d'un univers, qu'aucune
-tranche précédente ne livre.
+B-13 → E-14 (attach, create and attach); B-14 → E-15; P-8 step 1 → E-14, step 2 → E-15; the
+E-3 link → block above; B-29 → the six states of E-14 and E-15. E-14 is reached through P-8 and the
+sidebar (GM); E-15 through P-8 and E-3. The three roles have their column: an instance admin without a
+role has neither E-14 nor E-15; an admin who is GM of their own universe has the GM's screens.
+Deviation from scoping: none. Clarification: scoping says “name, description” for E-14; the slice
+therefore also builds **editing** a universe's name and description, which no previous
+slice delivers.
 
-## Détail des écrans de `kanevas-relier-chercher`
+## Screen details for `kanevas-relier-chercher`
 
-> Deux ajouts, aucun écran neuf : la **recherche** dans E-8 et le **bloc Relations** de E-9.
-> Mêmes six états et mêmes textes communs que la première fiche (chargement, erreur, connexion
-> perdue, refus « Page introuvable. », écriture en cours, échec d'écriture). Maquettes : `e08` (états
-> de la recherche) et `e09` (bloc Relations) sont complétées. Le document prime sur la maquette.
+> Two additions, no new screen: **search** in E-8 and the **« Relations » block** of E-9.
+> Same six states and shared text as the first sheet (loading, error, connection
+> lost, refusal « Page introuvable. », write in progress, write failure). Mockups: `e08` (search
+> states) and `e09` (« Relations » block) are completed. The document takes precedence over the mockup.
 
-### E-8 — la recherche dans un type
+### E-8 — search within a type
 
-Au-dessus de la liste d'un type : un champ « Chercher dans les personnages » (« …dans les lieux »,
+Above a type's list: a « Chercher dans les personnages » field (« …dans les lieux »,
 « …dans les factions », « …dans les objets », « …dans les événements », « …dans les quêtes »),
-un bouton « Chercher », et, quand une recherche est en cours, « Effacer la recherche ». La
-recherche part à « Chercher » ou à la touche Entrée, jamais à la frappe. Elle est gardée dans
-l'adresse (`…/personnages?q=Aldric`) : revenir d'une fiche ramène aux résultats.
+a « Chercher » button and, when a search is active, « Effacer la recherche ». The
+search starts on « Chercher » or Enter, never while typing. It is kept in
+the address (`…/personnages?q=Aldric`): returning from a sheet restores the results.
 
-*Ce qu'elle trouve.* Les mots saisis sont cherchés par début de mot, sans tenir compte des
-majuscules ni des accents (« verite » trouve « Vérité »), et **tous** doivent se trouver dans le
-**titre** de la fiche, ou **tous** dans **une même section que le compte peut lire** (titre ou
-contenu de la section). Les résultats sont les fiches de la liste du type, dans le même ordre
-alphabétique, cent à la fois avec « Charger la suite ». Un résultat s'affiche comme une ligne de la
-liste (titre, badge) : pas d'extrait, pas de compteur, pas de classement. Le texte d'une section
-que le compte ne lit pas ne trouve rien, même s'il contient les mots : la fiche est absente des
-résultats, comme elle est absente de la liste.
+*What it finds.* Entered words are matched by word prefix, ignoring
+case and accents (« verite » finds « Vérité »), and **all** must occur in the
+sheet's **title**, or **all** in **one section the account can read** (section title or
+content). Results are sheets from the type's list, in the same
+alphabetical order, one hundred at a time with « Charger la suite ». A result appears as a list
+row (title, badge): no snippet, counter or ranking. The text of a section
+the account cannot read finds nothing, even if it contains the words: the sheet is absent from
+the results, just as it is absent from the list.
 
-*Saisie.* 1 à 100 caractères ; une saisie blanche équivaut à « Effacer la recherche ». Au-delà de
-100 : « Erreur : 100 caractères au plus. » sous le champ, rien n'est envoyé. Les signes sans lettre
-ni chiffre (« - », « " », « * ») ne comptent pas comme des mots ; une saisie qui n'en contient aucun
-se comporte comme une recherche sans résultat.
+*Input.* 1 to 100 characters; blank input is equivalent to « Effacer la recherche ». Beyond
+100: « Erreur : 100 caractères au plus. » below the field, nothing is sent. Symbols without letters
+or digits (« - », « " », « * ») do not count as words; input containing none
+behaves like a search with no results.
 
-*Rôles.* Le MJ cherche dans toutes les fiches de l'univers, y compris une fiche sans section ; un
-Joueur cherche parmi celles qu'il peut lire. « Nouveau personnage » reste visible du MJ pendant une
-recherche.
+*Roles.* The GM searches all sheets in the universe, including a sheet without a section; a
+Player searches readable sheets. « Nouveau personnage » remains visible to the GM during a
+search.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | « Aucun résultat pour « Vérité » dans les personnages. » — **le même texte** que la fiche existe ou non, lisible ou non | « Effacer la recherche » |
-| chargement | « Recherche… » (`role="status"`) ; l'ancienne liste n'est pas montrée | — |
-| erreur | « Impossible de lancer la recherche. » ; le champ garde sa saisie | « Réessayer » |
-| connexion perdue | le bandeau ; « Chercher » désactivé ; les résultats déjà affichés restent | ouvrir un résultat |
-| refus | sans objet pour la recherche : un type inconnu répond « Page introuvable. » comme la liste | — |
-| contenu long | plus de 100 résultats : « Charger la suite » ; un titre trop long est tronqué par « … » avec infobulle ; une saisie de 100 caractères passe à la ligne dans le champ | idem |
+| vide | « Aucun résultat pour « Vérité » dans les personnages. » — **the same text** whether or not the sheet exists or is readable | « Effacer la recherche » |
+| chargement | « Recherche… » (`role="status"`); the old list is not shown | — |
+| erreur | « Impossible de lancer la recherche. »; the field keeps its input | « Réessayer » |
+| connexion perdue | the banner; « Chercher » disabled; already displayed results remain | open a result |
+| refus | not applicable to search: an unknown type responds « Page introuvable. », as for the list | — |
+| contenu long | more than 100 results: « Charger la suite »; an overlong title is truncated with « … » and a tooltip; 100-character input wraps in the field | same |
 
-*Critères.*
-- Étant donné la fiche « Maître Aldric » dont la section « Vérité — MJ seul » est fermée aux
-  joueurs, quand Léa cherche « Vérité » dans les personnages, alors elle voit « Aucun résultat
-  pour « Vérité » dans les personnages. » ; quand Antor fait la même recherche, il voit
+*Criteria.*
+- Given the « Maître Aldric » sheet whose « Vérité — MJ seul » section is closed to
+  players, when Léa searches for « Vérité » among characters, she sees « Aucun résultat
+  pour « Vérité » dans les personnages. »; when Antor performs the same search, he sees
   « Maître Aldric ».
-- Étant donné Léa, quand elle cherche « aldric » dans les personnages, alors elle voit
-  « Maître Aldric » (le titre se trouve) ; et quand elle cherche « apparence », elle le voit aussi
-  (la section « Apparence » est lue des joueurs).
-- Étant donné une recherche qui n'a pas de résultat, quand Léa cherche un mot qui n'existe nulle
-  part, alors le texte affiché est le même que pour « Vérité » (aucune différence ne trahit la
-  fiche cachée).
-- Étant donné Léa devant les résultats de « Aldric », quand elle ouvre la fiche puis revient, alors
-  elle retrouve la même recherche et les mêmes résultats.
+- Given Léa, when she searches for « aldric » among characters, she sees
+  « Maître Aldric » (the title matches); and when she searches for « apparence », she also sees it
+  (the « Apparence » section is readable by players).
+- Given a search with no results, when Léa searches for a word that exists nowhere,
+  the displayed text is the same as for « Vérité » (no difference reveals the
+  hidden sheet).
+- Given Léa viewing the results for « Aldric », when she opens the sheet then returns,
+  she finds the same search and results.
 
-### E-9 — le bloc Relations
+### E-9 — the « Relations » block
 
-Dans chaque section, sous son contenu : un bloc **Relations**, inscrit au registre des blocs de
-section (un fichier, sans modifier un bloc existant). Il liste les relations **portées par cette
-section** : chacune dit son type et nomme sa cible — « membre de → Lames Grises », avec le badge du
-type de la cible (« PJ » or « PNJ » for a character, AD-64) — et mène à la fiche de la cible (E-9). Une relation est dirigée : elle va de la
-section vers la cible ; la fiche cible ne montre pas les relations qui l'atteignent.
+In each section, below its content: a **« Relations »** block, registered in the section block
+registry (one file, without modifying an existing block). It lists relations **carried by that
+section**: each states its type and names its target — « membre de → Lames Grises », with the target's
+type (« PJ » or « PNJ » for a character, AD-64) — and leads to the target sheet (E-9). A relation is directed: it goes from the
+section to the target; the target sheet does not show incoming relations.
 
-| Rôle | Lire les relations d'une section | Relier, retirer | Refus |
+| Role | Read a section's relations | Relate, remove | Refusal |
 |---|---|---|---|
-| MJ | toutes celles de ses sections | oui | sans objet |
-| Joueur | celles dont il lit la section et la cible | non : boutons **absents** | une relation à cible illisible est **absente**, pas refusée |
-| MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section | non : boutons absents | idem |
-| Admin d'instance | aucune | non | « Page introuvable. » |
+| GM | all those of their sections | yes | not applicable |
+| Player | those whose section and target they read | no: buttons **absent** | a relation to an unreadable target is **absent**, not refused |
+| GM in Player mode | as a Player who authors no section | no: buttons absent | same |
+| Instance admin | none | no | « Page introuvable. » |
 
-*Ce que voit chacun.* Une relation n'est montrée que si le compte lit la section **et** la fiche
-cible. Sinon elle est **absente** : ni ligne, ni espace, ni compteur, ni mot « cachée ». Le bloc
-d'un Joueur qui n'a aucune relation à voir n'apparaît pas du tout. Le MJ voit le bloc de chaque
-section, même vide. En mode Joueur, le MJ voit le bloc comme un Joueur qui n'est l'auteur d'aucune
-section (AD-39), sans « Relier » ni « Retirer ».
+*What each person sees.* A relation is shown only if the account reads the section **and** the target
+sheet. Otherwise it is **absent**: no row, space, counter or « cachée » word. The block
+does not appear at all for a Player with no visible relation. The GM sees every section's
+block, even empty. In Player mode, the GM sees the block as a Player who authors no
+section (AD-39), without « Relier » or « Retirer ».
 
-*Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
-1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ;
-2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
-3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
-   « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
-4. choisir une fiche (une seule), puis « Relier » ; « Annuler » ferme sans rien écrire.
+*The GM creates a relation.* « Relier à une fiche » opens a form below the list:
+1. « Type de relation » (free text, 1 to 80 characters, for example « membre de »); *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, 1 to 80; optional with a nature, required without one) — see « Screen details for `kanevas-fiches-liees` »)* *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, 1 to 80; optional with a nature, required without one) — see « Screen details for `kanevas-fiches-liees` »)*
+2. « Type de fiche » (« Personnage », « Lieu », « Faction », « Objet », « Événement », « Quête »; « Personnage » by default); *(`kanevas-fiches-liees`: with a nature, the select is restricted to the target types of the nature, e.g. Lieu for « se situe à »)* *(`kanevas-fiches-liees`: with a nature, the select is restricted to the target types of the nature, e.g. Lieu for « se situe à »)*
+3. a « Chercher dans les factions » field and the list of sheets of that type, one hundred at a time with
+   « Charger la suite »: this is E-8's list and search, not another one;
+4. choose one sheet (only one), then « Relier »; « Annuler » closes without writing anything.
 
-*Le sélecteur de fiche* (étape 3) est la liste et la recherche de E-8 telles quelles : la recherche part à « Chercher » ou à Entrée, avec les mêmes états et les mêmes textes (« Recherche… », « Impossible de lancer la recherche. » et « Réessayer », « Aucun résultat pour « lames » dans les factions. », bandeau de connexion perdue avec « Chercher » et « Relier » désactivés, « Charger la suite » au-delà de 100) ; à l'ouverture du formulaire la liste du type se charge (« Chargement des fiches… », ou « Impossible de charger les fiches. » et « Réessayer ») et « Chercher » reste actif (hors connexion perdue) ; « Relier » reste désactivé tant qu'aucune fiche n'est choisie, pendant le chargement et sur erreur ; « Effacer la recherche » rend la liste du type ; le choix se voit (puce pleine) et disparaît si l'on change le type de fiche ou la recherche.
+*The sheet selector* (step 3) is E-8's list and search unchanged: search starts on « Chercher » or Enter, with the same states and text (« Recherche… », « Impossible de lancer la recherche. » and « Réessayer », « Aucun résultat pour « lames » dans les factions. », connection lost banner with « Chercher » and « Relier » disabled, « Charger la suite » beyond 100); when the form opens, the type's list loads (« Chargement des fiches… », or « Impossible de charger les fiches. » and « Réessayer ») and « Chercher » stays active (unless the connection is lost); « Relier » stays disabled until a sheet is selected, during loading and on error; « Effacer la recherche » restores the type's list; the selection is visible (filled dot) and disappears if the sheet type or search changes.
 
-Le formulaire n'est pas gardé en cas de session expirée. Une fiche se relie à toute fiche de son
-univers, **sauf à elle-même**. Une section porte au plus 100 relations ; deux relations de même
-type vers la même fiche ne coexistent pas. « Retirer » sur une ligne supprime la relation sans
-confirmation (elle se refait en trois gestes) ; retirer une section retire ses relations avec elle.
+The form is not kept if the session expires. A sheet can be related to any sheet in its
+universe, **except itself**. A section carries at most 100 relations; two relations of the same
+nature and the same qualifier to the same sheet cannot coexist *(`kanevas-fiches-liees`)*. « Retirer » on a row deletes the relation without
+confirmation (it can be recreated in three actions); removing a section removes its relations with it.
 
-Textes : bloc sans relation (MJ) : « Aucune relation pour l'instant. » ; erreurs sous les champs :
-« Erreur : le type de relation est obligatoire. », « Erreur : 80 caractères au plus. », « Erreur :
-choisissez une fiche. » ; refus du service, au-dessus du formulaire : « Cette relation existe
-déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. » ;
-liste de choix vide : « Aucune faction à relier. » (autres types : « Aucun personnage… ») ;
-chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises ».
+Text: block without a relation (GM): « Aucune relation pour l'instant. »; errors below fields:
+« Erreur : le qualificatif est obligatoire sans nature. » *(`kanevas-fiches-liees`, replaces « le type de relation est obligatoire »)*, « Erreur : 80 caractères au plus. » (the qualifier; spaces alone count as empty), « Erreur :
+choisissez une fiche. »; service refusals, above the form: « Cette relation existe
+déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »;
+empty selection list: « Aucune faction à relier. » (other types: « Aucun personnage… »);
+each « Retirer » button has the accessible label « Retirer la relation membre de → Lames Grises » *(`kanevas-fiches-liees`: « Retirer la relation membre de · Lames Grises — trésorier »)*.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ : « Aucune relation pour l'instant. » et « Relier à une fiche » ; Joueur : le bloc n'est pas là | MJ : relier |
-| chargement | « Chargement des relations… » dans le bloc seul ; le reste de la fiche reste affiché | — |
-| erreur | « Impossible de charger les relations. » dans le bloc seul, les autres sections intactes ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
-| connexion perdue | le bandeau ; « Relier », « Retirer » désactivés ; la liste affichée reste | suivre un lien |
-| refus | le bloc d'une section illisible n'existe pas (la section est absente, B-9) ; une relation vers une fiche illisible est absente ; « Relier » et « Retirer » n'existent pas pour un Joueur ni en mode Joueur | — |
-| contenu long | 100 relations : la liste défile avec la section ; un type de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
+| vide | GM: « Aucune relation pour l'instant. » and « Relier à une fiche »; Player: the block is not there | GM: relate |
+| chargement | « Chargement des relations… » in the block alone; the rest of the sheet stays displayed | — |
+| erreur | « Impossible de charger les relations. » in the block alone, other sections intact; write failure: « L'action n'a pas abouti. Réessayez. », input kept | « Réessayer » |
+| connexion perdue | the banner; « Relier », « Retirer » disabled; the displayed list remains | follow a link |
+| refus | an unreadable section's block does not exist (the section is absent, B-9); a relation to an unreadable sheet is absent; « Relier » and « Retirer » do not exist for a Player or in Player mode | — |
+| contenu long | 100 relations: the list scrolls with the section; an 80-character qualifier and a 120-character sheet title wrap | same |
 
-*Critères.*
-- Étant donné Antor, MJ, qui a relié la section « Apparence » de « Maître Aldric » à la faction
-  « Lames Grises » (« membre de ») et à la faction « Cercle des Cendres » dont aucune section n'est
-  lue des joueurs, quand Léa ouvre « Maître Aldric », alors elle voit « membre de → Lames Grises »,
-  et rien d'autre dans le bloc : ni « Cercle des Cendres », ni compteur, ni ligne vide.
-- Étant donné la même fiche, quand Antor passe en mode Joueur, alors il voit la même chose que Léa
-  et ni « Relier » ni « Retirer ».
-- Étant donné Léa, quand « Lames Grises » n'a plus de section lue des joueurs, alors la relation
-  disparaît de la fiche d'Aldric sans autre trace.
-- Étant donné Antor sur « Maître Aldric », quand il relie « Apparence » à « Maître Aldric », alors il
-  voit « Une fiche ne se relie pas à elle-même. » et rien n'est écrit.
-- Étant donné Antor, quand il retire la section « Apparence », alors ses relations disparaissent
-  avec elle et ne remontent nulle part.
+*Criteria.*
+- Given Antor, a GM, who has related the « Apparence » section of « Maître Aldric » to the
+  « Lames Grises » faction (« membre de ») and to the « Cercle des Cendres » faction, none of whose sections
+  are readable by players, when Léa opens « Maître Aldric », she sees « membre de → Lames Grises »,
+  and nothing else in the block: no « Cercle des Cendres », counter or empty row.
+- Given the same sheet, when Antor switches to Player mode, he sees the same thing as Léa,
+  with neither « Relier » nor « Retirer ».
+- Given Léa, when « Lames Grises » no longer has a section readable by players, the relation
+  disappears from Aldric's sheet without any other trace.
+- Given Antor on « Maître Aldric », when he relates « Apparence » to « Maître Aldric », he
+  sees « Une fiche ne se relie pas à elle-même. » and nothing is written.
+- Given Antor, when he removes the « Apparence » section, its relations disappear
+  with it and do not appear anywhere else.
 
-### Clôture de `kanevas-relier-chercher`
+### Completion of `kanevas-relier-chercher`
 
-B-10 → bloc Relations de E-9 ; B-11 → recherche de E-8 ; B-29 → six états de la recherche et du
-bloc ci-dessus. Atteints par P-3 étape 4 (relier le PNJ à sa faction : relier une section du PNJ, bloc de E-9) et P-6 étape 2
-(chercher « Aldric », E-8). Les deux rôles ont leur colonne : le MJ cherche et relie, le Joueur
-cherche et lit ce qu'il peut ; l'admin d'instance n'atteint ni l'un ni l'autre (« Page
-introuvable. »). Chemin d'échec propre à cette tranche (`docs/parcours.md` n'en porte pas pour P-3 et P-6) : une recherche sans résultat dit « Aucun résultat pour … »,
-jamais « caché ». Chemin d'échec de relier une section : le refus du service s'écrit au-dessus du formulaire (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), la saisie et le choix sont conservés ; un échec d'écriture générique et une session expirée suivent les textes communs (« L'action n'a pas abouti. Réessayez. » ; connexion, formulaire non gardé).
+B-10 → E-9's « Relations » block; B-11 → E-8 search; B-29 → six states of search and the
+block above. Reached through P-3 step 4 (relate the NPC to its faction: relate an NPC section, E-9 block) and P-6 step 2
+(search for « Aldric », E-8). Both roles have their column: the GM searches and relates, the Player
+searches and reads what they can; the instance admin reaches neither (« Page
+introuvable. »). Failure path specific to this slice (`docs/parcours.md` has none for P-3 and P-6): a search without results says « Aucun résultat pour … »,
+never « caché ». Failure path for relating a section: the service refusal appears above the form (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), input and selection are kept; a generic write failure and an expired session follow the shared text (« L'action n'a pas abouti. Réessayez. »; sign-in, form not kept).
 
-## Détail des écrans de `kanevas-suivi`
+## Screen details for `kanevas-suivi`
 
 > E-13 Comptes-rendus and the E-3 blocks, with the « Campagne » line of E-9. Campaigns and
 > scenarios are sheets of type « Aventure » (E-8, E-9: “Screen details for
@@ -739,41 +759,41 @@ jamais « caché ». Chemin d'échec de relier une section : le refus du service
 > screens spell out « compte-rendu »; “CR” is only an abbreviation in the documentation
 > (B-19, B-20). Dates: « 22 sept. 2026 » (day, abbreviated month, year), as on E-9.
 
-**Ajouts aux écrans déjà construits.**
+**Additions to existing screens.**
 
 - *Sidebar*: **Comptes-rendus** appears for every role between « Vue d'ensemble » and
   « Lore ». On phones, like the other entries (drawer).
-- *E-9, fiche de type compte-rendu* : sous le titre, une ligne « Campagne : <nom> » qui mène à
+- *E-9, session-report sheet*: below the title, a « Campagne : <nom> » line leads to
   the adventure's sheet, for a reader who can read it (`fiche/lignes/` registry). An 80-character name wraps;
   while loading, the line is absent; if the adventure is unreadable or fails to load, the line
   is absent without a message (the report stays readable); offline, an already displayed line
   stays clickable.
-- *E-9, ce que chaque rôle voit d'un compte-rendu* : une seule section, « Compte-rendu », lisible de
-  tous les membres. « Modifier » est offert à son auteur (le Joueur qui l'a créé) et au MJ, pas aux
-  autres Joueurs ; le MJ règle l'audience comme pour toute section. Un compte-rendu créé par un MJ
-  n'a pas d'auteur. Fermer la section aux joueurs la cache aux autres Joueurs, pas à son auteur
+- *E-9, what each role sees of a session report*: a single section, « Compte-rendu », readable by
+  all members. « Modifier » is offered to its author (the player who created it) and the GM, but not
+  other players; the GM sets the audience as for any section. A report created by a GM
+  has no author. Closing the section to players hides it from other players, but not its author
   (AD-61). Creation starts from the adventure’s « Comptes-rendus » block (E-9).
 
-### E-13 Comptes-rendus
+### E-13 Session reports
 
-Tous les comptes-rendus de l'univers **que le compte peut lire**, du plus récemment créé au plus
+All of the universe's session reports **the account can read**, newest creation first
 ancien (un compte-rendu retouché ne remonte pas, B-20) ; chacun : titre, the name of its adventure (only for a reader who can read it), auteur (l'identifiant, rien s'il n'y en a pas),
-date de création, lien vers E-9. Cent à la fois, puis « Charger la suite ». Pas de création ici :
+creation date and link to E-9. One hundred at a time, then « Charger la suite ». No creation here:
 « Nouveau compte-rendu » is in the adventure’s « Comptes-rendus » block (E-9).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | « Aucun compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire pour l'instant. ») | GM and player: « Voir les aventures » (→ E-8, type « Aventure ») |
-| chargement | « Chargement des comptes-rendus… » | — |
-| erreur | « Impossible de charger les comptes-rendus. » ; « Charger la suite » en échec : « Impossible de charger la suite. » | « Réessayer » |
-| connexion perdue | le bandeau ; la liste chargée reste ; « Charger la suite » désactivé | ouvrir |
-| refus | un compte-rendu dont rien n'est lisible est absent de la liste, jamais signalé ; univers sans rôle : « Page introuvable. » | « Mes univers » |
-| contenu long | plus de 100 : « Charger la suite » ; titre de 120 caractères : passe à la ligne | idem |
+| Empty | « Aucun compte-rendu pour l'instant. » (player: « Aucun compte-rendu à lire pour l'instant. ») | GM and player: « Voir les aventures » (→ E-8, type « Aventure ») |
+| Loading | « Chargement des comptes-rendus… » | — |
+| Error | « Impossible de charger les comptes-rendus. »; failed « Charger la suite »: « Impossible de charger la suite. » | « Réessayer » |
+| Offline | Banner; loaded list remains; « Charger la suite » disabled | Open |
+| Refused | A report with nothing readable is absent from the list, never indicated; universe without a role: « Page introuvable. » | « Mes univers » |
+| Long content | Over 100: « Charger la suite »; 120-character title: wraps | Same |
 
-*Critère.* Étant donné Antor qui a fermé aux joueurs la section du compte-rendu « Session 11 » qu'il a écrit, quand
-Léa ouvre E-13, alors elle ne voit pas « Session 11 » et la liste ne laisse aucun trou ni compteur.
+*Acceptance criterion.* Given Antor closing the section of his « Session 11 » report to players, when
+Léa opens E-13, she does not see « Session 11 » and the list leaves no gap or counter.
 
-### Blocs de E-3 (`kanevas-suivi`)
+### E-3 blocks (`kanevas-suivi`)
 
 Three independent blocks, in this order, reading adventures (see “Screen details for
 `kanevas-scenarios`”, “E-3, E-13, E-12 and E-17”). Each has a title and an empty state, and never
@@ -782,7 +802,7 @@ shows a count or a name the account cannot read.
 - **Campagnes en cours** (everyone): adventures of sub-type « Campagne » with status « En cours »
   that the account reads, each linking to its sheet (E-9) with its status. Empty: « Aucune campagne
   en cours. » (GM: « Voir les aventures » link → E-8, type « Aventure »).
-- **Derniers comptes-rendus** (tous) : les cinq plus récemment créés que le compte peut lire,
+- **« Derniers comptes-rendus »** (everyone): the five most recently created reports the account can read,
   title, adventure (if the account reads it), date, link to E-9; « Tous les comptes-rendus » link
   (→ E-13). Empty: « Aucun compte-rendu pour l'instant. » (player: « Aucun compte-rendu à lire
   pour l'instant. »).
@@ -790,25 +810,25 @@ shows a count or a name the account cannot read.
   first five unchecked tasks (oldest first) with their category and a link to the
   sheet. Empty: « Rien à préparer pour l'instant. ».
 
-| État | Ce qu'on voit |
+| State | What is shown |
 |---|---|
-| chargement | chaque bloc affiche « Chargement… » à sa place, indépendamment |
-| erreur | le bloc seul dit « Impossible de charger ce bloc. » avec « Réessayer » ; les autres blocs restent |
-| connexion perdue | le bandeau ; contenu déjà chargé |
-| refus | sans objet pour les blocs ; le bloc Préparation est absent pour un Joueur |
-| contenu long | 120-character adventure title, 120-character report title, 200-character task label: wrap; at most five reports and five tasks per adventure; the number of ongoing adventures is unlimited (AD-60) |
+| Loading | Each block displays « Chargement… » in its place, independently |
+| Error | Only that block says « Impossible de charger ce bloc. » with « Réessayer »; the other blocks remain |
+| Offline | Banner; already loaded content |
+| Refused | Not applicable to blocks; the preparation block is absent for players |
+| Long content | 120-character adventure title, 120-character report title, 200-character task label: wrap; at most five reports and five tasks per adventure; the number of ongoing adventures is unlimited (AD-60) |
 
-*Critère.* Étant donné Léa, quand elle ouvre E-3, alors elle voit « Campagnes en cours » et
-« Derniers comptes-rendus », jamais « Préparation » ; Antor voit les trois.
+*Acceptance criterion.* Given Léa, when she opens E-3, she sees « Campagnes en cours » and
+« Derniers comptes-rendus », never « Préparation »; Antor sees all three.
 
-## Détail des écrans de `kanevas-relier-chercher`
+## Screen details for `kanevas-relier-chercher`
 
-## Détail des écrans de `kanevas-fichiers`
+## Screen details for `kanevas-fichiers`
 
-> Un seul ajout, aucun écran neuf : le **bloc Pièces jointes** de E-9. Mêmes six états et mêmes
-> textes communs que la première fiche (erreur, connexion perdue, refus « Page introuvable. »,
-> écriture en cours, échec d'une écriture). Maquette : `e09` (bloc Pièces jointes : MJ, Joueuse,
-> envoi, échecs). Le document prime sur la maquette.
+> A single addition, no new screen: the E-9 **« Pièces jointes » block**. The same six states and
+> common texts as the first sheet (error, offline, refusal « Page introuvable. »,
+> writing, write failure). Mockup: `e09` (« Pièces jointes » block: GM, player,
+> upload, failures). The document takes precedence over the mockup.
 
 ### E-9 — the « Pièces jointes » block
 
@@ -906,1393 +926,1442 @@ block, even when empty.
   et son fichier joint seront retirés. »; after confirmation, the portrait is gone from the sheet
   but remains in the media library.
 
-### Clôture de `kanevas-fichiers`
+### Closure of `kanevas-fichiers`
 
-Dans chaque section, sous son contenu : un bloc **Relations**, inscrit au registre des blocs de
-section (un fichier, sans modifier un bloc existant). Il liste les relations **portées par cette
-section** : chacune dit son type et nomme sa cible — « membre de → Lames Grises », avec le badge du
-type de la cible (« PJ » or « PNJ » for a character, AD-64) — et mène à la fiche de la cible (E-9). Une relation est dirigée : elle va de la
-section vers la cible ; la fiche cible ne montre pas les relations qui l'atteignent.
+In each section, below its content: a **« Relations »** block, registered in the section block
+registry (one file, without changing an existing block). It lists the relations **carried by that
+section**: each gives its type and names its target — « membre de → Lames Grises », with the target
+sheet's type (« PJ » or « PNJ » for a character, AD-64) — and leads to the target sheet (E-9). A relation is directed: it goes from the
+section to the target; the target sheet does not show incoming relations.
 
-| Rôle | Lire les relations d'une section | Relier, retirer | Refus |
+| Role | Read a section's relations | Link, remove | Refusal |
 |---|---|---|---|
-| MJ | toutes celles de ses sections | oui | sans objet |
-| Joueur | celles dont il lit la section et la cible | non : boutons **absents** | une relation à cible illisible est **absente**, pas refusée |
-| MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section | non : boutons absents | idem |
-| Admin d'instance | aucune | non | « Page introuvable. » |
+| GM | All those of their sections | Yes | Not applicable |
+| Player | Those whose section and target they can read | No: buttons **absent** | A relation to an unreadable target is **absent**, not refused |
+| GM in player mode | Like a player who authors no section | No: buttons absent | Same |
+| Instance admin | None | No | « Page introuvable. » |
 
-*Ce que voit chacun.* Une relation n'est montrée que si le compte lit la section **et** la fiche
-cible. Sinon elle est **absente** : ni ligne, ni espace, ni compteur, ni mot « cachée ». Le bloc
-d'un Joueur qui n'a aucune relation à voir n'apparaît pas du tout. Le MJ voit le bloc de chaque
-section, même vide. En mode Joueur, le MJ voit le bloc comme un Joueur qui n'est l'auteur d'aucune
-section (AD-39), sans « Relier » ni « Retirer ».
+*What each person sees.* A relation is only shown if the account can read the section **and** the target
+sheet. Otherwise it is **absent**: no row, space, counter or word « cachée ». A player's
+block does not appear at all if they have no relation to see. The GM sees every section's
+block, even when empty. In player mode, the GM sees the block like a player who authors no
+section (AD-39), without « Relier » or « Retirer ».
 
-*Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
-1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ;
-2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
-3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
-   « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
-4. choisir une fiche (une seule), puis « Relier » ; « Annuler » ferme sans rien écrire.
+*The GM links.* « Relier à une fiche » opens a form below the list:
+1. « Type de relation » (free text, 1 to 80 characters, for example « membre de »); *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, 1 to 80; optional with a nature, required without one) — see « Screen details for `kanevas-fiches-liees` »)* *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, 1 to 80; optional with a nature, required without one) — see « Screen details for `kanevas-fiches-liees` »)*
+2. « Type de fiche » (« Personnage », « Lieu », « Faction », « Objet », « Événement », « Quête »; « Personnage » by default);
+3. a « Chercher dans les factions » field and the list of sheets of that type, one hundred at a time with
+   « Charger la suite »: the E-8 list and search, not another one;
+4. choose one sheet, then « Relier »; « Annuler » closes without writing anything.
 
-*Le sélecteur de fiche* (étape 3) est la liste et la recherche de E-8 telles quelles : la recherche part à « Chercher » ou à Entrée, avec les mêmes états et les mêmes textes (« Recherche… », « Impossible de lancer la recherche. » et « Réessayer », « Aucun résultat pour « lames » dans les factions. », bandeau de connexion perdue avec « Chercher » et « Relier » désactivés, « Charger la suite » au-delà de 100) ; à l'ouverture du formulaire la liste du type se charge (« Chargement des fiches… », ou « Impossible de charger les fiches. » et « Réessayer ») et « Chercher » reste actif (hors connexion perdue) ; « Relier » reste désactivé tant qu'aucune fiche n'est choisie, pendant le chargement et sur erreur ; « Effacer la recherche » rend la liste du type ; le choix se voit (puce pleine) et disparaît si l'on change le type de fiche ou la recherche.
+*The sheet picker* (step 3) is the E-8 list and search unchanged: search starts on « Chercher » or Enter, with the same states and texts (« Recherche… », « Impossible de lancer la recherche. » and « Réessayer », « Aucun résultat pour « lames » dans les factions. », offline banner with « Chercher » and « Relier » disabled, « Charger la suite » beyond 100); when the form opens, the type's list loads (« Chargement des fiches… », or « Impossible de charger les fiches. » and « Réessayer ») and « Chercher » stays enabled (unless offline); « Relier » stays disabled until a sheet is chosen, while loading and on error; « Effacer la recherche » restores the type's list; the choice is visible (filled dot) and disappears if the sheet type or search changes.
 
-Le formulaire n'est pas gardé en cas de session expirée. Une fiche se relie à toute fiche de son
-univers, **sauf à elle-même**. Une section porte au plus 100 relations ; deux relations de même
-type vers la même fiche ne coexistent pas. « Retirer » sur une ligne supprime la relation sans
-confirmation (elle se refait en trois gestes) ; retirer une section retire ses relations avec elle.
+The form is not kept when the session expires. A sheet can link to any sheet of its
+universe, **except itself**. A section carries at most 100 relations; two relations of the same
+nature and the same qualifier to the same sheet cannot coexist *(`kanevas-fiches-liees`)*. « Retirer » on a row deletes the relation without
+confirmation (it can be recreated in three actions); removing a section removes its relations too.
 
-Textes : bloc sans relation (MJ) : « Aucune relation pour l'instant. » ; erreurs sous les champs :
-« Erreur : le type de relation est obligatoire. », « Erreur : 80 caractères au plus. », « Erreur :
-choisissez une fiche. » ; refus du service, au-dessus du formulaire : « Cette relation existe
-déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. » ;
-liste de choix vide : « Aucune faction à relier. » (autres types : « Aucun personnage… ») ;
-chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises ».
+Texts: block without relations (GM): « Aucune relation pour l'instant. »; errors below fields:
+« Erreur : le qualificatif est obligatoire sans nature. » *(`kanevas-fiches-liees`, replaces « le type de relation est obligatoire »)*, « Erreur : 80 caractères au plus. » (the qualifier; spaces alone count as empty), « Erreur :
+choisissez une fiche. »; service refusals, above the form: « Cette relation existe
+déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »;
+empty choice list: « Aucune faction à relier. » (other types: « Aucun personnage… »);
+each « Retirer » button has the accessible label « Retirer la relation membre de → Lames Grises » *(`kanevas-fiches-liees`: « Retirer la relation membre de · Lames Grises — trésorier »)*.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ : « Aucune relation pour l'instant. » et « Relier à une fiche » ; Joueur : le bloc n'est pas là | MJ : relier |
-| chargement | « Chargement des relations… » dans le bloc seul ; le reste de la fiche reste affiché | — |
-| erreur | « Impossible de charger les relations. » dans le bloc seul, les autres sections intactes ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
-| connexion perdue | le bandeau ; « Relier », « Retirer » désactivés ; la liste affichée reste | suivre un lien |
-| refus | le bloc d'une section illisible n'existe pas (la section est absente, B-9) ; une relation vers une fiche illisible est absente ; « Relier » et « Retirer » n'existent pas pour un Joueur ni en mode Joueur | — |
-| contenu long | 100 relations : la liste défile avec la section ; un type de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
+| Empty | GM: « Aucune relation pour l'instant. » and « Relier à une fiche »; player: no block | GM: link |
+| Loading | « Chargement des relations… » in this block only; the rest of the sheet stays displayed | — |
+| Error | « Impossible de charger les relations. » in this block only, other sections intact; write failure: « L'action n'a pas abouti. Réessayez. », input kept | « Réessayer » |
+| Offline | Banner; « Relier », « Retirer » disabled; displayed list remains | Follow a link |
+| Refused | No block for an unreadable section (the section is absent, B-9); a relation to an unreadable sheet is absent; « Relier » and « Retirer » do not exist for players or in player mode | — |
+| Long content | 100 relations: list scrolls with the section; an 80-character qualifier and a 120-character sheet title wrap | Same |
 
-*Critères.*
-- Étant donné Antor, MJ, qui a relié la section « Apparence » de « Maître Aldric » à la faction
-  « Lames Grises » (« membre de ») et à la faction « Cercle des Cendres » dont aucune section n'est
-  lue des joueurs, quand Léa ouvre « Maître Aldric », alors elle voit « membre de → Lames Grises »,
-  et rien d'autre dans le bloc : ni « Cercle des Cendres », ni compteur, ni ligne vide.
-- Étant donné la même fiche, quand Antor passe en mode Joueur, alors il voit la même chose que Léa
-  et ni « Relier » ni « Retirer ».
-- Étant donné Léa, quand « Lames Grises » n'a plus de section lue des joueurs, alors la relation
-  disparaît de la fiche d'Aldric sans autre trace.
-- Étant donné Antor sur « Maître Aldric », quand il relie « Apparence » à « Maître Aldric », alors il
-  voit « Une fiche ne se relie pas à elle-même. » et rien n'est écrit.
-- Étant donné Antor, quand il retire la section « Apparence », alors ses relations disparaissent
-  avec elle et ne remontent nulle part.
+*Acceptance criteria.*
+- Given Antor, a GM, who has linked the « Apparence » section of « Maître Aldric » to the
+  « Lames Grises » faction (« membre de ») and to the « Cercle des Cendres » faction, none of whose sections
+  players can read, when Léa opens « Maître Aldric », she sees « membre de → Lames Grises »
+  and nothing else in the block: no « Cercle des Cendres », counter or empty row.
+- Given the same sheet, when Antor switches to player mode, he sees the same as Léa,
+  without « Relier » or « Retirer ».
+- Given Léa, when « Lames Grises » no longer has any section players can read, the relation
+  disappears from Aldric's sheet without any other trace.
+- Given Antor on « Maître Aldric », when he links « Apparence » to « Maître Aldric », he
+  sees « Une fiche ne se relie pas à elle-même. » and nothing is written.
+- Given Antor, when he removes the « Apparence » section, its relations disappear
+  with it and do not appear anywhere else.
 
-### Clôture de `kanevas-relier-chercher`
+### Closure of `kanevas-relier-chercher`
 
-B-10 → bloc Relations de E-9 ; B-11 → recherche de E-8 ; B-29 → six états de la recherche et du
-bloc ci-dessus. Atteints par P-3 étape 4 (relier le PNJ à sa faction : relier une section du PNJ, bloc de E-9) et P-6 étape 2
-(chercher « Aldric », E-8). Les deux rôles ont leur colonne : le MJ cherche et relie, le Joueur
-cherche et lit ce qu'il peut ; l'admin d'instance n'atteint ni l'un ni l'autre (« Page
-introuvable. »). Chemin d'échec propre à cette tranche (`docs/parcours.md` n'en porte pas pour P-3 et P-6) : une recherche sans résultat dit « Aucun résultat pour … »,
-jamais « caché ». Chemin d'échec de relier une section : le refus du service s'écrit au-dessus du formulaire (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), la saisie et le choix sont conservés ; un échec d'écriture générique et une session expirée suivent les textes communs (« L'action n'a pas abouti. Réessayez. » ; connexion, formulaire non gardé).
+B-10 → E-9 relations block; B-11 → E-8 search; B-29 → the six states of search and the
+block above. Reached through P-3 step 4 (link the NPC to their faction: link a section of the NPC, E-9 block) and P-6 step 2
+(search for « Aldric », E-8). Both roles have their column: the GM searches and links, the player
+searches and reads what they can; the instance admin reaches neither (« Page
+introuvable. »). Failure path specific to this slice (`docs/parcours.md` has none for P-3 and P-6): a search with no results says « Aucun résultat pour … »,
+never « caché ». Failure path for linking a section: the service refusal appears above the form (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), input and choice are kept; a generic write failure and an expired session follow the common texts (« L'action n'a pas abouti. Réessayez. »; sign-in, form not kept).
 
-## Détail des écrans de `kanevas-assistant-membre`
+## Screen details for `kanevas-assistant-membre`
 
 > *`kanevas-scenarios-suivi`: the tools `creer_campagne`, `creer_scenario` and `lister_campagnes` are gone; the GM now creates sheets, including adventures, through `creer_fiche` (AD-126); players have no creation tool. To find an adventure it searches, with the type « Aventure ».*
 
-> E-12 Assistant, et son ajout au shell d'un univers. Mêmes six états et mêmes textes communs que
-> `kanevas-premiere-fiche` (chargement, connexion perdue, session expirée) ; ne sont redits que les
-> textes propres. Maquette `docs/maquettes/e12-assistant.html` (d'avant la charte : contenu et états seulement) (thème sombre ; MJ, Joueur,
-> et les états). Composant : `docs/charte.md` « Panneau d'assistant ».
+> E-12 Assistant, and its addition to a universe's shell. The same six states and common texts as
+> `kanevas-premiere-fiche` (loading, offline, expired session); only specific
+> texts are repeated. Mockup `docs/maquettes/e12-assistant.html` (predates the charter: content and states only) (dark theme; GM, player,
+> and states). Component: `docs/charte.md`, assistant panel.
 
-**Ajout au shell.** Un bouton flottant « Demander à Kanevas », en bas à droite, sur **tout écran
-d'un univers** pour un membre (MJ ou Joueur) ; il n'existe ni hors d'un univers, ni pour un compte
-sans rôle dans l'univers (l'admin d'instance sans rôle, Teo avant son ajout) : l'écran n'a alors pas
-de bouton, et l'assistant n'a pas de page à lui (l'adresse `/univers/:id/assistant` répond « Page introuvable. ») et sa route d'API répond 404 (AD-75). Il se monte par un seul fichier, sans
-modifier un composant existant du shell. Bascule « mode Joueur » d'une fiche : sans effet sur
-l'assistant, qui garde le catalogue du rôle réel (AD-74) ; le panneau le dit par sa pastille.
+**Addition to the shell.** A floating « Demander à Kanevas » button, bottom right, on **every screen
+of a universe** for a member (GM or player); it exists neither outside a universe nor for an account
+without a role in that universe (the instance admin without a role, Teo before being added): the screen then has no
+button, the assistant has no page of its own (the `/univers/:id/assistant` address answers « Page introuvable. »), and its API route answers 404 (AD-75). It mounts through a single file, without
+changing an existing shell component. A sheet's « mode Joueur » toggle has no effect on
+the assistant, which keeps the real role's catalogue (AD-74); the panel states this through its badge.
 
 ### E-12 Assistant
 
-Un panneau à droite (380 px, sur ordinateur) qui s'ouvre au bouton et se ferme par « Fermer » ou
-Échap ; le contenu de l'écran dessous reste lisible et utilisable. Sur téléphone (moins de 760 px)
-il prend tout l'écran, et Échap ou « Fermer » rend le focus au bouton flottant. Dedans, de haut en
-bas :
+A panel on the right (380 px on desktop) opens through the button and closes through « Fermer » or
+Escape; the screen content underneath stays readable and usable. On phones (under 760 px)
+it takes the whole screen, and Escape or « Fermer » returns focus to the floating button. Inside, top to
+bottom:
 
-- **l'en-tête** : « Kanevas — assistant », la pastille du catalogue (« MJ » ou « Joueur », mot et
-  teinte), « Nouvelle conversation », « Fermer » ;
-- **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (le fil le reste après `kanevas-import`),
-  du plus ancien au plus récent ; le fil défile et reste calé sur le dernier message ;
-- **sous une réponse, les écritures** : un bloc « Écrit par l'assistant » par événement (AD-76), le
-  libellé (« Section « Notes de la table » complétée ») et un lien « Ouvrir » vers E-9 (la fiche).
+- **the header**: « Kanevas — assistant », the catalogue badge (« MJ » or « Joueur », word and
+  tint), « Nouvelle conversation », « Fermer »;
+- **the thread**: the person's messages and the assistant's answers, in plain text (the thread stays that way after `kanevas-import`),
+  oldest first; the thread scrolls and stays aligned with the latest message;
+- **below an answer, the writes**: one « Écrit par l'assistant » block per event (AD-76), the
+  label (« Section « Notes de la table » complétée ») and an « Ouvrir » link to E-9 (the sheet).
   Available writes: « Section « Notes de la table » complétée » (`ajouter_a_section`),
   « Section « Vérité » modifiée » (`modifier_section`) ;
-- **la saisie** : le champ, étiqueté « Demander à Kanevas » par une étiquette visible au-dessus de lui (son texte d'aide est « Votre question »), dans tous les états où il est affiché, et « Envoyer » (Entrée
-  envoie, Maj+Entrée va à la ligne).
+- **the input**: the field, labelled « Demander à Kanevas » by a visible label above it (its hint is « Votre question »), in every state where it is displayed, and « Envoyer » (Enter
+  sends, Shift+Enter inserts a line break).
 
-Le **fil vit dans le navigateur**, dans un magasin du module `frontend/src/ecrans/assistant/fil.ts`, hors du routeur et du stockage du navigateur (AD-28) : il survit à un
-changement d'écran et à la fermeture du panneau ; il disparaît au rechargement de la page, au
-changement d'univers et à la déconnexion ; « Nouvelle conversation » le vide. Il n'est écrit
-nulle part (ni stockage du navigateur, ni serveur). Le client envoie le message et les 20 derniers
-messages du fil (AD-75).
+The **thread lives in the browser**, in a store in `frontend/src/ecrans/assistant/fil.ts`, outside the router and browser storage (AD-28): it survives
+screen changes and closing the panel; it disappears on page reload,
+universe change and sign-out; « Nouvelle conversation » clears it. It is written
+nowhere (neither browser storage nor server). The client sends the message and the thread's last 20
+messages (AD-75).
 
-**Ce que chaque rôle y voit.** Le Joueur : chercher, lire une fiche, lire une section, modifier une
-section, ajouter un paragraphe à une section. The GM: the same, plus creating sheets (`creer_fiche`, AD-126), proposing updates and generating an image (`kanevas-images`). A player asking to generate an image or create a sheet lacks the tool:
-l'assistant répond qu'il ne peut pas, sans événement et sans rien créer (le texte est celui du
-modèle, il n'est pas fixé ; ce qu'on vérifie est l'absence d'écriture). Dans les deux cas
-l'assistant ne lit et n'écrit que ce que la personne lit et écrit : une section fermée est
-« Introuvable. », une section lisible mais non écrite « Vous ne pouvez pas modifier cette
-section. » (AD-74). Cette tranche **ne donne aucun outil sur les cartes ni les graphes** (écarté, AD-74). Elle **ne dessine pas** la proposition de mise à jour (`kanevas-monde`) ; l'image est le bloc de
-`kanevas-images`, décrit plus bas : l'un et l'autre s'inscrivent au registre de blocs.
+**What each role sees.** Player: search, read a sheet, read a section, edit a
+section, append a paragraph to a section. The GM: the same, plus creating sheets (`creer_fiche`, AD-126), proposing updates and generating an image (`kanevas-images`). A player asking to generate an image or create a sheet lacks the tool:
+the assistant replies that it cannot, with no event and without creating anything (the wording comes from the
+model and is not fixed; the check is the absence of a write). In both cases,
+the assistant only reads and writes what the person can read and write: a closed section is
+« Introuvable. », a readable section without write access is « Vous ne pouvez pas modifier cette
+section. » (AD-74). This slice **provides no tool for maps or graphs** (rejected, AD-74). It **does not draw** the update proposal (`kanevas-monde`); the image is the
+`kanevas-images` block described below: both register in the block registry.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide (fil sans message) | « Demandez-moi de chercher, de résumer ou d'écrire dans ce que vous pouvez lire et écrire. Exemple : « Que sait-on d'Aldric ? » » | écrire ; fermer ; « Nouvelle conversation » (sans effet sur un fil vide) |
-| chargement (disponibilité) | le bouton est présent ; dans le panneau, « Chargement… » à la place du champ et de « Envoyer » (absents, pas désactivés) ; aucun « Réessayer » tant que l'appel n'a pas répondu | fermer ; nouvelle conversation |
-| disponibilité en échec (serveur muet, erreur) | « Je n'ai pas pu répondre — réessayer » avec un bouton « Réessayer » qui relit la disponibilité ; le champ et « Envoyer » sont présents mais désactivés (`aria-disabled`) | réessayer ; fermer ; nouvelle conversation |
-| réponse en cours | le message envoyé apparaît ; « Kanevas réfléchit… » (`role="status"`) ; « Envoyer » affiche « … » et est désactivé ; le champ reste lisible ; pour un MJ seulement, au bout de 20 secondes d'attente **quelle que soit la demande** (le client ne sait pas ce que fait l'assistant), « Kanevas travaille toujours… Une image peut prendre jusqu'à trois minutes. » (`kanevas-images`) ; le Joueur garde « Kanevas réfléchit… » | fermer (la réponse arrive dans le fil) ; « Nouvelle conversation » est désactivée tant que la réponse n'est pas arrivée |
-| erreur | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), sans événement, pour toutes les causes (délai de 120 s, erreur de transport) : la personne ne les distingue pas ; demande déjà en cours (429) : « Une demande est déjà en cours. Patientez. » ; la saisie n'est jamais perdue : à l'envoi le champ se vide, la question reste dans le fil, une seule fois ; « Réessayer » (offert pour toutes les erreurs, le 429 compris) la renvoie telle quelle : le message d'erreur disparaît, « Kanevas réfléchit… » prend sa place, et la question n'est pas affichée une seconde fois ; une demande avec image dure 270 secondes au plus (AD-90) : au-delà, le même texte | « Réessayer » renvoie la même question ; saisir autre chose ; fermer ; nouvelle conversation |
-| indisponible (sans jeton, hors bouchon, AD-77) | « L'assistant n'est pas disponible pour le moment. » ; champ et « Envoyer » désactivés (`aria-disabled`) | lire le fil ; fermer ; nouvelle conversation |
-| connexion perdue | le bandeau commun ; le fil reste lisible ; champ et « Envoyer » désactivés. Perdue pendant « Kanevas réfléchit… » : la réponse est perdue, l'état passe à l'erreur ci-dessus avec « Réessayer » (désactivé tant que la connexion n'est pas revenue) ; au retour de la connexion, le bandeau disparaît et le champ est réactivé | lire, ouvrir les liens ; fermer ; nouvelle conversation |
-| refus | le compte sans rôle n'a pas le bouton (rien à décrire ici) ; un refus d'outil est une réponse de l'assistant, pas un écran d'erreur — « Introuvable. », « Vous ne pouvez pas modifier cette section. », « La section a changé depuis que vous l'avez lue. Relisez-la. » —, sans événement ; la réponse commence par ce texte, la suite est du texte libre du modèle ; session expirée : la personne est menée à la connexion, le fil est perdu | refus d'outil : le fil reste, on écrit à nouveau ; fermer ; nouvelle conversation |
-| contenu long | message de plus de 2 000 caractères : « Erreur : 2 000 caractères au plus. » sous le champ, « Envoyer » désactivé ; fil de plus de 20 messages : la note « Seuls les 20 derniers messages sont transmis à l'assistant. » ; réponse longue : passe à la ligne, le fil défile ; titre de 120 caractères dans un libellé : passe à la ligne | écrire (après avoir raccourci le message) ; fermer ; nouvelle conversation |
+| Empty (thread without messages) | « Demandez-moi de chercher, de résumer ou d'écrire dans ce que vous pouvez lire et écrire. Exemple : « Que sait-on d'Aldric ? » » | Write; close; « Nouvelle conversation » (no effect on an empty thread) |
+| Loading (availability) | Button present; in the panel, « Chargement… » replaces the field and « Envoyer » (absent, not disabled); no « Réessayer » until the call answers | Close; new conversation |
+| Availability failure (unresponsive server, error) | « Je n'ai pas pu répondre — réessayer » with a « Réessayer » button that rechecks availability; field and « Envoyer » present but disabled (`aria-disabled`) | Retry; close; new conversation |
+| Answer in progress | Sent message appears; « Kanevas réfléchit… » (`role="status"`); « Envoyer » displays « … » and is disabled; field stays readable; GM only, after 20 seconds of waiting **whatever the request** (the client does not know what the assistant is doing), « Kanevas travaille toujours… Une image peut prendre jusqu'à trois minutes. » (`kanevas-images`); players keep « Kanevas réfléchit… » | Close (answer arrives in the thread); « Nouvelle conversation » disabled until the answer arrives |
+| Error | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), no event, for all causes (120 s timeout, transport error): the person cannot distinguish them; request already in progress (429): « Une demande est déjà en cours. Patientez. »; input is never lost: on send the field clears, the question stays in the thread, once only; « Réessayer » (offered for every error, including 429) resends it unchanged: the error message disappears, « Kanevas réfléchit… » replaces it, and the question is not displayed twice; a request with an image lasts at most 270 seconds (AD-90): beyond that, the same text | « Réessayer » resends the same question; type something else; close; new conversation |
+| Unavailable (no token, outside stub mode, AD-77) | « L'assistant n'est pas disponible pour le moment. »; field and « Envoyer » disabled (`aria-disabled`) | Read thread; close; new conversation |
+| Offline | Common banner; thread stays readable; field and « Envoyer » disabled. Lost during « Kanevas réfléchit… »: the answer is lost, state switches to the error above with « Réessayer » (disabled until back online); on reconnection, banner disappears and field is enabled again | Read, open links; close; new conversation |
+| Refused | Account without a role has no button (nothing to describe here); a tool refusal is an assistant answer, not an error screen — « Introuvable. », « Vous ne pouvez pas modifier cette section. », « La section a changé depuis que vous l'avez lue. Relisez-la. » — with no event; the answer starts with that text, followed by the model's free text; expired session: the person is taken to sign-in, thread is lost | Tool refusal: thread stays, type again; close; new conversation |
+| Long content | Message over 2 000 characters: « Erreur : 2 000 caractères au plus. » below the field, « Envoyer » disabled; thread over 20 messages: note « Seuls les 20 derniers messages sont transmis à l'assistant. »; long answer: wraps, thread scrolls; 120-character title in a label: wraps | Write (after shortening the message); close; new conversation |
 
-*Critère.* Étant donné Léa Joueuse de « Lame d'Ébène », quand elle demande « Que sait-on d'Aldric ? »,
-alors le fil donne « Apparence » et rien de « Vérité » ; quand elle demande de lire « Vérité », le fil
-dit « Introuvable. » ; Antor, lui, obtient les deux sections.
+*Acceptance criterion.* Given Léa, a player in « Lame d'Ébène », when she asks « Que sait-on d'Aldric ? »,
+the thread gives « Apparence » and nothing from « Vérité »; when she asks to read « Vérité », the thread
+says « Introuvable. »; Antor, for his part, gets both sections.
 
-### Clôture de `kanevas-assistant-membre`
+### Closure of `kanevas-assistant-membre`
 
-B-26 → E-12 (toutes ses lignes) ; B-27 → E-12 (campaign or scenario creation: `creer_fiche`, AD-126 ; proposer et
-générer restent à `kanevas-monde` et `kanevas-images`). Parcours : P-3 étape 5 (« rappelle-moi tout
-ce qu'on sait d'Aldric », première moitié), P-6 étape 4, P-7 étape 2. Rôles : MJ et Joueur ont
-E-12, l'admin d'instance sans rôle ne l'a pas. Aucune migration, aucune entité : le fil n'est pas
-stocké. Reste aux autres tranches : les propositions de mise à jour (`kanevas-monde`), les images
+B-26 → E-12 (all its rows); B-27 → E-12 (campaign or scenario creation: `creer_fiche`, AD-126; proposals and
+generation remain with `kanevas-monde` and `kanevas-images`). Journeys: P-3 step 5 (« rappelle-moi tout
+ce qu'on sait d'Aldric », first half), P-6 step 4, P-7 step 2. Roles: GM and player have
+E-12, the instance admin without a role does not. No migration, no entity: the thread is not
+stored. Left to other slices: update proposals (`kanevas-monde`), images
 (`kanevas-images`).
-B-24 → le bloc Pièces jointes de E-9 (ajouter en un geste, voir une image, télécharger un autre
-fichier, retirer; its visibility follows where it was added, see the amendment below). Atteint par P-3 étape 4 (le plan d'un lieu) et P-7 étape 2 (le
-portrait de son personnage). Le bloc livre ses six états (B-29), ci-dessus.
+B-24 → the E-9 attachments block (add in one action, view an image, download another
+file, remove; its visibility follows where it was added, see the amendment below). Reached through P-3 step 4 (a location's map) and P-7 step 2 (the
+portrait of one's character). The block provides its six states (B-29), above.
 
-## Détail des écrans de `kanevas-images`
+## Screen details for `kanevas-images`
 
-> Un seul ajout, aucun écran neuf : le **bloc « Image attachée »** de E-12 (le panneau de
-> l'assistant). Mêmes textes communs et mêmes six états que « Détail des écrans de
-> `kanevas-premiere-fiche` » et « Détail des écrans de `kanevas-assistant-membre` ». Maquette :
-> `e12-assistant.html` (bloc Image attachée, échec de génération).
+> A single addition, no new screen: the E-12 **« Image attachée » block** (the assistant
+> panel). The same common texts and six states as the screen details for
+> `kanevas-premiere-fiche` and the screen details for `kanevas-assistant-membre`. Mockup:
+> `e12-assistant.html` (« Image attachée » block, generation failure).
 
-**Ce que l'assistant fait de plus.** Le catalogue du **MJ** reçoit un outil, `generer_image` (AD-89) ;
-celui du Joueur n'en reçoit pas. Le MJ demande « Fais un portrait pour Apparence d'Aldric » : l'assistant
-décrit l'image, la fait générer, l'attache à la section (comme si le MJ l'avait ajoutée par « Joindre un fichier » de E-9, AD-117 §6)
-et le dit. Une demande n'attache **qu'une** image ; l'image est un fichier de la médiathèque (E-19),
-joint à la section, avec la visibilité que donne l'endroit d'ajout (« Visible des joueurs » si les joueurs lisent la section,
-« Réservé au MJ » sinon, B-24, AD-111), que le MJ peut réserver, retirer ou remplacer depuis E-9 ou E-19. Un Joueur qui demande une image n'a pas l'outil : l'assistant répond
-qu'il ne peut pas, sans événement et sans rien attacher (le texte est celui du modèle ; on vérifie
-l'absence d'écriture). Sans moteur d'images disponible (ni bouchon, ni Codex), l'outil n'est pas dans
-le catalogue du MJ non plus, et l'assistant le dit de même.
+**What the assistant additionally does.** The **GM** catalogue gets one tool, `generer_image` (AD-89);
+the player's does not. The GM asks « Fais un portrait pour Apparence d'Aldric »: the assistant
+describes the image, has it generated, attaches it to the section (as if the GM had added it through E-9's « Joindre un fichier », AD-117 §6)
+and says so. A request attaches **only one** image; the image is a media library file (E-19),
+attached to the section, with visibility determined by where it is added (« Visible des joueurs » if players can read the section,
+« Réservé au MJ » otherwise, B-24, AD-111), which the GM may reserve, remove or replace from E-9 or E-19. A player asking for an image lacks the tool: the assistant replies
+that it cannot, with no event and without attaching anything (wording comes from the model; the check is
+the absence of a write). Without an available image engine (neither stub nor Codex), the tool is absent
+from the GM catalogue too, and the assistant says so in the same way.
 
-### Bloc « Image attachée » (E-12)
+### « Image attachée » block (E-12)
 
-Sous la réponse, comme les autres écritures (AD-76), un événement `image_attachee` : un bloc « Écrit par
-l'assistant » dont le libellé est « Image attachée à la section « Apparence » de « Maître Aldric » »,
-**la vignette de l'image** (au plus 240 px de large, rapport conservé, texte alternatif : la
-description demandée) et un lien « Ouvrir la section » vers E-9, à la section. La vignette est lue par la
-route authentifiée des fichiers (AD-67, AD-111) : aucune adresse publique.
+Below the answer, like other writes (AD-76), an `image_attachee` event: an « Écrit par
+l'assistant » block labelled « Image attachée à la section « Apparence » de « Maître Aldric » »,
+**the image thumbnail** (at most 240 px wide, aspect ratio preserved, alternative text: the
+requested description) and an « Ouvrir la section » link to E-9, at that section. The thumbnail is read through the
+authenticated file route (AD-67, AD-111): no public address.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | sans objet : le bloc n'existe que si une image a été attachée | — |
-| chargement | la vignette est un cadre gris « Chargement de l'image… » (`role="status"`) ; le libellé et le lien sont déjà là | « Ouvrir la section » |
-| erreur | image retirée depuis, ou illisible : le cadre dit « Image indisponible. » avec « Recharger l'image » ; le libellé et le lien restent | « Recharger l'image » (rend la même réponse si l'image est retirée) ; « Ouvrir la section » |
-| connexion perdue | le bandeau commun ; une vignette déjà chargée reste ; sinon « Image indisponible. » avec « Recharger l'image » (désactivé tant que la connexion n'est pas revenue) | lire, ouvrir |
-| refus | rôle ou droit retiré après coup : la lecture de la vignette et le lien répondent « Page introuvable. » comme toute section illisible (le cadre dit « Image indisponible. », sans « Recharger l'image » utile) ; sinon sans objet, l'événement n'existe que pour un MJ qui vient d'écrire dans cette section | — |
-| contenu long | un titre de fiche de 120 caractères et un titre de section de 80 passent à la ligne dans le libellé ; une image très haute est contenue dans 240 px de large et 320 px de haut | idem |
+| Empty | Not applicable: the block exists only if an image was attached | — |
+| Loading | Thumbnail is a grey frame « Chargement de l'image… » (`role="status"`); label and link already present | « Ouvrir la section » |
+| Error | Image removed since, or unreadable: frame says « Image indisponible. » with « Recharger l'image »; label and link remain | « Recharger l'image » (returns the same response if the image was removed); « Ouvrir la section » |
+| Offline | Common banner; already loaded thumbnail remains; otherwise « Image indisponible. » with « Recharger l'image » (disabled until back online) | Read, open |
+| Refused | Role or permission subsequently removed: thumbnail read and link answer « Page introuvable. » like any unreadable section (frame says « Image indisponible. », without a useful « Recharger l'image »); otherwise not applicable, the event exists only for a GM who just wrote to this section | — |
+| Long content | A 120-character sheet title and an 80-character section title wrap in the label; a very tall image fits within 240 px width and 320 px height | Same |
 
-**Pendant la génération.** L'assistant ne répond qu'à la fin (AD-75) : « Kanevas réfléchit… » reste
-affiché ; au bout de 20 secondes, **pour un MJ seulement** (pastille « MJ » ; le Joueur n'a pas l'outil et garde « Kanevas réfléchit… »), il devient « Kanevas travaille toujours… Une image peut prendre
-jusqu'à trois minutes. » (`role="status"`). Le client n'abandonne pas la requête avant 300 secondes.
-Fermer le panneau ne l'arrête pas ; recharger la page ou quitter l'univers l'abandonne : rien n'est alors
-attaché.
+**During generation.** The assistant only answers at the end (AD-75): « Kanevas réfléchit… » stays
+displayed; after 20 seconds, **for a GM only** (« MJ » badge; the player lacks the tool and keeps « Kanevas réfléchit… »), it becomes « Kanevas travaille toujours… Une image peut prendre
+jusqu'à trois minutes. » (`role="status"`). The client does not abandon the request before 300 seconds.
+Closing the panel does not stop it; reloading the page or leaving the universe abandons it: nothing is then
+attached.
 
-**Les échecs, dits par l'assistant** (réponse sans événement, rien n'est attaché) : génération en
-échec ou trop longue — « Je n'ai pas pu générer l'image. » ; section pleine (100 fichiers joints) — « Cette section
-porte déjà 100 fichiers joints. » ; droit d'écrire retiré entre-temps — « Vous ne pouvez pas modifier cette
-section. » ; seconde image dans la même demande — « Une seule image par demande. » ; description de plus de 500 caractères — « La description est limitée à 500 caractères. » (l'assistant en propose une plus courte) ; aucun moteur d'images — l'assistant répond qu'il ne peut pas générer d'image (l'outil est absent). Dans le bouchon, une
-demande dont la description contient « échec » donne le premier cas.
+**Failures, stated by the assistant** (answer without an event, nothing attached): failed or
+overlong generation — « Je n'ai pas pu générer l'image. »; full section (100 attachments) — « Cette section
+porte déjà 100 fichiers joints. »; write permission removed in the meantime — « Vous ne pouvez pas modifier cette
+section. »; second image in the same request — « Une seule image par demande. »; description over 500 characters — « La description est limitée à 500 caractères. » (the assistant suggests a shorter one); no image engine — the assistant replies that it cannot generate an image (the tool is absent). In stub mode, a
+request whose description contains « échec » gives the first case.
 
-*Critères.*
-- Étant donné Antor, MJ, et « Apparence » de « Maître Aldric », quand il demande « Fais un portrait pour
-  « Apparence » d'« Maître Aldric » », alors le fil montre « Image attachée à la section « Apparence » de
-  « Maître Aldric » » avec la vignette et « Ouvrir la section », et la section d'Aldric, ouverte sur E-9,
-  porte un fichier joint image de plus, qui figure aussi dans E-19.
-- Étant donné Léa, Joueuse, quand elle fait la même demande, alors l'assistant répond qu'il ne peut pas
-  et la section ne gagne aucun fichier joint.
-- Étant donné Antor, en bouchon, quand sa demande contient « échec », alors le fil dit « Je n'ai pas pu
-  générer l'image. », sans bloc « Image attachée », et la section n'a pas de fichier de plus.
-- Étant donné Antor et une section qui porte déjà 100 fichiers joints, quand il demande une image, alors
-  l'assistant dit « Cette section porte déjà 100 fichiers joints. » et rien n'est attaché.
-- Étant donné une image attachée puis retirée de E-9, quand Antor ferme puis rouvre le panneau (le fil
-  survit, AD-28, et la vignette est relue à la réouverture), alors le cadre dit « Image indisponible. » avec « Recharger l'image », et « Ouvrir la
-  section » mène toujours à E-9 ; « Recharger l'image » relit la vignette et, l'image étant toujours
-  retirée, rend le même texte.
-- Étant donné une image attachée, quand sa vignette charge, alors le cadre gris « Chargement de l'image… »
-  précède l'image ; et quand la connexion est perdue avant la lecture, alors le bandeau commun s'affiche et
-  le cadre dit « Image indisponible. » avec « Recharger l'image » désactivé jusqu'au retour de la connexion.
-- Étant donné Léa, Joueuse, quand l'assistant tarde plus de 20 secondes, alors elle voit toujours « Kanevas
-  réfléchit… » et jamais le texte sur l'image ; Antor, MJ, le voit dès 20 secondes, même pour une demande qui
-  n'a rien à voir avec une image.
-- Étant donné une demande d'image qui dure plus de 20 secondes, alors le panneau affiche « Kanevas
-  travaille toujours… Une image peut prendre jusqu'à trois minutes. » ; et si la demande passe 270 secondes,
+*Acceptance criteria.*
+- Given Antor, a GM, and « Apparence » of « Maître Aldric », when he asks « Fais un portrait pour
+  « Apparence » d'« Maître Aldric » », the thread shows « Image attachée à la section « Apparence » de
+  « Maître Aldric » » with the thumbnail and « Ouvrir la section », and Aldric's section, opened on E-9,
+  has one more image attachment, also listed in E-19.
+- Given Léa, a player, when she makes the same request, the assistant replies that it cannot,
+  and the section gains no attachment.
+- Given Antor in stub mode, when his request contains « échec », the thread says « Je n'ai pas pu
+  générer l'image. », without an « Image attachée » block, and the section has no extra file.
+- Given Antor and a section already carrying 100 attachments, when he asks for an image,
+  the assistant says « Cette section porte déjà 100 fichiers joints. » and nothing is attached.
+- Given an image attached then removed from E-9, when Antor closes then reopens the panel (the thread
+  survives, AD-28, and the thumbnail is reread on reopening), the frame says « Image indisponible. » with « Recharger l'image », and « Ouvrir la
+  section » still leads to E-9; « Recharger l'image » rereads the thumbnail and, since the image is still
+  removed, returns the same text.
+- Given an attached image, when its thumbnail loads, the grey « Chargement de l'image… » frame
+  precedes the image; and when the connection is lost before the read, the common banner appears and
+  the frame says « Image indisponible. » with « Recharger l'image » disabled until back online.
+- Given Léa, a player, when the assistant takes more than 20 seconds, she still sees « Kanevas
+  réfléchit… » and never the image text; Antor, a GM, sees it after 20 seconds, even for a request
+  unrelated to an image.
+- Given an image request lasting more than 20 seconds, the panel displays « Kanevas
+  travaille toujours… Une image peut prendre jusqu'à trois minutes. »; and if the request exceeds 270 seconds,
   « Je n'ai pas pu répondre — réessayer ».
-- Étant donné un titre de fiche de 120 caractères et un titre de section de 80, alors le libellé passe à la
-  ligne et la vignette, même d'une image très haute, reste dans ses bornes (240 px de large, 320 px de haut).
-- Étant donné une vignette déjà chargée, quand la connexion est perdue, alors elle reste affichée ; et quand
-  le rôle d'Antor dans l'univers est retiré, alors la lecture de la vignette répond « Page introuvable. » et le
-  cadre dit « Image indisponible. ».
-- Étant donné une instance sans moteur d'images, quand Antor demande un portrait, alors l'assistant
-  répond qu'il ne peut pas générer d'image, sans événement et sans fichier joint.
+- Given a 120-character sheet title and an 80-character section title, the label wraps
+  and the thumbnail, even for a very tall image, stays within its bounds (240 px wide, 320 px high).
+- Given an already loaded thumbnail, when the connection is lost, it stays displayed; and when
+  Antor's role in the universe is removed, the thumbnail read answers « Page introuvable. » and the
+  frame says « Image indisponible. ».
+- Given an instance without an image engine, when Antor asks for a portrait, the assistant
+  replies that it cannot generate an image, without an event or attachment.
 
-### Clôture de `kanevas-images`
+### Closure of `kanevas-images`
 
-B-25 → le bloc ci-dessus (générer, attacher en un geste, un échec n'attache rien) ; B-27 (générer) →
-l'outil `generer_image` du catalogue MJ ; P-3 étape 5 → E-12 et E-9 ; B-29 → les six états du bloc. Le
-bloc est atteint par P-3 (étape 5). Les rôles : le MJ a l'outil, le Joueur non ; l'admin d'instance sans
-rôle n'a pas E-12. Écart au cadrage : aucun.
-## Détail de `kanevas-refonte-visuelle`
+B-25 → the block above (generate, attach in one action, a failure attaches nothing); B-27 (generate) →
+the GM catalogue's `generer_image` tool; P-3 step 5 → E-12 and E-9; B-29 → the block's six states. The
+block is reached through P-3 (step 5). Roles: the GM has the tool, the player does not; the instance admin without
+a role has no E-12. Deviation from scope: none.
 
-La refonte ne change ni les droits, ni les données, ni les textes d'un écran : elle change la
-forme, et les gestes ci-dessous, que le testeur vérifie. La direction, les tokens et les
-composants sont dans `docs/charte.md`. E-1, E-3, E-4, E-8, E-9 et E-14 ont leur maquette finie (E-6 and E-7 are retired, their mockups kept: see the opening note) (celle de E-15, `e15-systeme-de-jeu.html`, l'est hors du cadre d'un univers) ; E-2
-et E-13 se refont dans le même cadre et avec les mêmes composants, sans
-maquette finie : leurs maquettes actuelles, faites avant la charte, valent pour le contenu et
-le vocabulaire, pas pour la forme (barre, compte, couleurs).
+## Details for `kanevas-refonte-visuelle`
 
-**Partout.** Le cadre de E-9 sur tous les écrans d'un univers ; chaque entrée de navigation et
-chaque action a son icône ; le compte est derrière l'avatar (§ Barre latérale). Une action
-réussie est confirmée par un **toast** qui part seul après 4 s ou à « Fermer », et ne prend
-jamais le focus ; un échec n'est pas un toast : il reste un message en ligne, comme aujourd'hui.
-Textes des toasts : « « <section> » enregistrée », « Audience de « <section> » enregistrée »,
+The redesign changes neither permissions, data nor screen text: it changes the
+appearance and the interactions below, which the tester checks. Direction, tokens and
+components are in `docs/charte.md`. E-1, E-3, E-4, E-8, E-9 and E-14 have finished mockups (E-6 and E-7 are retired, their mockups kept: see the opening note) (the E-15 mockup, `e15-systeme-de-jeu.html`, is finished outside the universe shell); E-2
+and E-13 are redesigned within the same shell and with the same components, without
+finished mockups: their current mockups, made before the style guide, specify content and
+vocabulary, rather than appearance (sidebar, account, colours).
+
+**Everywhere.** The E-9 shell on every universe screen; each navigation entry and
+action has its icon; the account is behind the avatar (§ Sidebar). A successful
+action is confirmed by a **toast** that disappears after 4 s or on « Fermer », and never
+takes focus; a failure stays as an inline message, as today.
+Toast text: « « <section> » enregistrée », « Audience de « <section> » enregistrée »,
 « Section « <titre> » ajoutée — fermée aux joueurs », « Section « <titre> » retirée »,
 « « <section> » reliée à « <fiche> » », « « <fichier> » est secrète » / « Le secret de
 « <fichier> » est levé »,
 « « <section> » montée d'un cran » / « descendue d'un cran », « « <fichier> » ajouté » /
-« retiré », « Envoi de « <fichier> » annulé », « Relation vers « <fiche> » retirée » ; sur les
-autres écrans, le même gabarit (« « <objet> » <participe> ») ; un message de réussite qu'un écran
-affiche aujourd'hui en ligne devient le texte de son toast (E-14 : « Enregistré. »).
+« retiré », « Envoi de « <fichier> » annulé », « Relation vers « <fiche> » retirée »; on other
+screens, the same template (« « <objet> » <participe> »); a success message currently
+shown inline becomes the toast text (E-14: « Enregistré. »).
 
-**E-9 Fiche**, pour le MJ :
+**E-9 Sheet**, for the GM:
 
-- les sections ne sont plus des panneaux : titre, texte, puis ses blocs, en colonne de lecture ;
-- la **pastille d'audience**, juste après le titre de la section, dit qui la voit — « Lue des
-  joueurs » si les joueurs la lisent (« Écrite par les joueurs » s'ils l'écrivent aussi) ; sinon
-  « Confiée à <auteur> » si un auteur la lit ou l'écrit ; sinon « MJ seul » — et ouvre le
-  réglage d'audience, titré « Qui voit « <section> » » (les cinq réglages, en interrupteurs et
-  une liste, et « Chaque changement est enregistré aussitôt. ») ;
-- un **filet** dans la marge redit la pastille : vert plein pour une section lue ou écrite par
-  les joueurs, pointillé pour une section confiée ; une section « MJ seul » est hachurée d'ambre ;
-- « Modifier » paraît au survol et au focus de la section, et toujours sur un écran sans survol
-  (téléphone, tablette : `hover: none`) ;
-  « Monter », « Descendre » et « Retirer la section » sont dans son menu « ⋯ » ;
-- en édition : sous le champ, le compteur « n / 100 000 » et l'aide « Échap annuler · Ctrl ↵
-  enregistrer » ; Échap fait ce que fait « Annuler » (le texte saisi est abandonné, comme
-  aujourd'hui) ; Ctrl+Entrée (⌘+Entrée sur Mac) fait exactement ce que fait « Enregistrer » :
-  il envoie, et une écriture périmée reçoit « La section a changé depuis que vous l'avez
-  ouverte… » ; au-delà de 100 000 caractères ou connexion perdue, il ne part pas, comme le bouton ;
-- la bascule en tête s'appelle « Mode MJ » et « Mode Joueur » (« MJ » et « Joueur » au
-  téléphone) ; en mode Joueur, un bandeau sous la barre haute : « Mode Joueur : vous voyez ce
+- sections are no longer panels: title, text, then blocks, in a reading column;
+- the **audience badge**, immediately after the section title, says who sees it — « Lue des
+  joueurs » if players read it (« Écrite par les joueurs » if they also write it); otherwise
+  « Confiée à <auteur> » if an author reads or writes it; otherwise « MJ seul » — and opens
+  the audience settings, titled « Qui voit « <section> » » (the five settings, as switches and
+  a list, and « Chaque changement est enregistré aussitôt. »);
+- a **rule** in the margin repeats the badge: solid green for a section read or written by
+  players, dotted for an entrusted section; an « MJ seul » section has amber hatching;
+- « Modifier » appears on section hover and focus, and always on a screen without hover
+  (phone, tablet: `hover: none`);
+  « Monter », « Descendre » and « Retirer la section » are in its « ⋯ » menu;
+- when editing: below the field, the « n / 100 000 » counter and « Échap annuler · Ctrl ↵
+  enregistrer » help; Escape does what « Annuler » does (entered text is discarded, as
+  today); Ctrl+Enter (⌘+Enter on Mac) does exactly what « Enregistrer » does:
+  it submits, and a stale write receives « La section a changé depuis que vous l'avez
+  ouverte… »; beyond 100 000 characters or with connection lost, it does not submit, like the button;
+- the top toggle is called « Mode MJ » and « Mode Joueur » (« MJ » and « Joueur » on
+  phones); in player mode, a banner below the top bar: « Mode Joueur : vous voyez ce
   que voit un joueur. »
 
-**Un Joueur, et le MJ en mode Joueur**, ne voient aucune pastille d'audience, ni filet, ni
-hachure, ni menu « ⋯ » : la section n'a que son titre, son texte et ses blocs.
+**A Player, and the GM in player mode**, see no audience badge, rule,
+hatching or « ⋯ » menu: the section has only its title, text and blocks.
 
-| Ligne de la matrice | MJ | Joueur | MJ en mode Joueur |
+| Matrix row | GM | Player | GM in player mode |
 |---|---|---|---|
-| menu du compte (thème, déconnexion) — et pour l'admin d'instance, hors univers | oui | oui | oui |
-| bascule « Mode MJ » / « Mode Joueur » et bandeau du mode Joueur | oui | caché | oui |
-| « Modifier » d'une section | oui | sur ce qu'il écrit | sur ce que les joueurs écrivent |
-| bouton « Demander à Kanevas » | oui | oui | oui |
-| pastille et réglage d'audience | lire, régler | caché | caché |
-| filet et hachure | voir | caché | caché |
-| menu « ⋯ » (ordre, retrait) | oui | caché | caché |
-| tiroir au téléphone | oui | oui | oui |
+| account menu (theme, sign out) — and for the instance admin, outside universes | yes | yes | yes |
+| « Mode MJ » / « Mode Joueur » toggle and player mode banner | yes | hidden | yes |
+| section « Modifier » | yes | on what they write | on what players write |
+| « Demander à Kanevas » button | yes | yes | yes |
+| audience badge and settings | read, configure | hidden | hidden |
+| rule and hatching | see | hidden | hidden |
+| « ⋯ » menu (order, removal) | yes | hidden | hidden |
+| drawer on phones | yes | yes | yes |
 
-**États des composants du cadre.**
+**Shell component states.**
 
-| Composant | Ce qui peut arriver | Ce qu'on voit |
+| Component | What can happen | What is shown |
 |---|---|---|
-| menu du compte | connexion perdue | il s'ouvre ; le thème change (il est local) ; « Se déconnecter » reste actif |
-| menu du compte | `/api/moi` en échec | l'identifiant manque ; le thème et « Se déconnecter » restent |
-| identifiant, nom d'auteur, fil d'Ariane | trop longs | coupés par « … », le texte entier en infobulle ; dans le fil, le titre de la fiche courante cède en dernier (voir En-tête) |
-| réglage d'audience | échec d'un changement | l'interrupteur revient à sa valeur, « L'action n'a pas abouti. Réessayez. » sous le réglage ; pas de toast |
-| réglage d'audience | connexion perdue | interrupteurs et liste désactivés, le réglage se lit |
-| tiroir | ouvert au téléphone | la barre par-dessus la page, voile derrière ; Échap, le voile ou une entrée le ferment |
-| toast | plusieurs actions de suite | ils s'empilent, le plus récent en bas, trois au plus |
-| bandeau de connexion perdue | la connexion tombe | sous la barre haute, sur tout écran, comme aujourd'hui, au-dessus du bandeau du mode Joueur s'il y est ; il part quand elle revient |
+| account menu | connection lost | it opens; the theme changes (it is local); « Se déconnecter » stays active |
+| account menu | `/api/moi` fails | the identifier is missing; the theme and « Se déconnecter » remain |
+| identifier, author name, breadcrumb | too long | truncated with « … », full text in a tooltip; in the breadcrumb, the current sheet's title gives way last (see Header) |
+| audience settings | a change fails | the switch returns to its value, « L'action n'a pas abouti. Réessayez. » below the setting; no toast |
+| audience settings | connection lost | switches and list disabled, settings remain readable |
+| drawer | open on a phone | sidebar over the page, backdrop behind; Escape, the backdrop or an entry closes it |
+| toast | several successive actions | they stack, newest at the bottom, three at most |
+| connection lost banner | connection drops | below the top bar, on every screen, as today, above the player mode banner if present; it disappears when connection returns |
 
-*Critères.*
-- Étant donné Antor, MJ, sur « Maître Aldric », quand il ouvre la pastille « Lue des joueurs »
-  d'« Apparence » et coupe « Les joueurs la lisent », alors la pastille dit « MJ seul », la section
-  se hachure d'ambre, et un toast dit « Audience de « Apparence » enregistrée ».
-- Étant donné Antor, quand il passe en mode Joueur, alors il voit le bandeau du mode Joueur et
-  ne voit ni pastille, ni filet, ni menu « ⋯ ».
-- Étant donné Antor sur n'importe quel écran d'un univers, quand il ouvre le menu de son avatar,
-  alors il y trouve le thème (Clair, Sombre, Système, en icônes) et « Se déconnecter », et la
-  barre latérale ne les porte plus.
+*Criteria.*
+- Given Antor, GM, on « Maître Aldric », when he opens the « Lue des joueurs » badge
+  of « Apparence » and turns off « Les joueurs la lisent », then the badge says « MJ seul », the section
+  gets amber hatching, and a toast says « Audience de « Apparence » enregistrée ».
+- Given Antor, when he switches to player mode, then he sees the player mode banner and
+  no badge, rule or « ⋯ » menu.
+- Given Antor on any universe screen, when he opens his avatar menu,
+  then he finds the theme (« Clair », « Sombre », « Système », as icons) and « Se déconnecter », and the
+  sidebar no longer carries them.
 
-**Clôture.** Aucun besoin ni parcours nouveau ; B-29 (les six états) est tenu par les tableaux
-ci-dessus et ceux de chaque écran ; le menu du compte, le tiroir et le bandeau sont
-du cadre, atteints par toute étape de tout parcours sur un écran d'univers ; la bascule et son
-bandeau sont P-3 (le MJ vérifie ce que voit la table) ; la pastille
-d'audience porte le geste de P-3 étape 4 (« Apparence » lue des joueurs, « Vérité — MJ seul »),
-déjà sur E-9 ; chaque rôle a sa colonne
-dans la matrice ci-dessus.
+**Closure.** No new need or journey; B-29 (the six states) is met by the tables
+above and those of each screen; the account menu, drawer and banner belong to
+the shell, reached by any step of any journey on a universe screen; the toggle and its
+banner are P-3 (the GM checks what the table sees); the audience badge
+carries the action of P-3 step 4 (« Apparence » read by players, « Vérité — MJ seul »),
+already on E-9; each role has its column
+in the matrix above.
 
-## Détail des écrans de `kanevas-illustrations` (illustrations ; systèmes de jeu hors des univers)
+## Screen details for `kanevas-illustrations` (illustrations; game systems outside universes)
 
-> *Amendé par `kanevas-import` (AD-111, AD-93 amendée, décisions de Monsieur du 2026-10-11) : l'illustration est un fichier image de la médiathèque, référencé par la fiche ; elle se voit si la fiche **et** le fichier sont lisibles — « jamais secrète » tombe ; un joueur qui voit la fiche lit « Image réservée au MJ. » en en-tête et la vignette de repli dans E-8 quand l'illustration est réservée au MJ ; elle se pose par les deux chemins d'ajout de E-9. La matrice « Qui voit quoi » ci-dessous vaut avec cette double garde.*
+> *Amended by `kanevas-import` (AD-111, AD-93 amended, decisions by Monsieur on 2026-10-11): the illustration is an image file in the media library, referenced by the sheet; it is visible if both the sheet **and** the file are readable — the “never secret” rule is dropped; a player who sees the sheet reads « Image réservée au MJ. » in the header and sees the fallback thumbnail in E-8 when the illustration is GM-only; it is set through the two E-9 addition paths. The “Who sees what” matrix below applies with this double guard.*
 
-> Décision de Monsieur (2026-10-06) : « La liste des fiches doit être présentée avec une vignette
-> d'illustration, pas juste une liste » ; « chaque fiche doit avoir une propriété possible qui est
-> son image d'illustration ». Deux changements, aucun écran neuf : **E-8 devient une grille de
-> cartes** et **l'en-tête de E-9 porte l'illustration**. Données : `docs/donnees.md` (migration
-> `kanevas-illustrations`) ; décision : AD-93. Mêmes six états et mêmes textes communs que la
-> première fiche (chargement, erreur, connexion perdue, refus « Page introuvable. », écriture en
-> cours, échec d'une écriture), mêmes toasts que la refonte visuelle. Maquettes : `e08` (grille)
-> et `e09` (en-tête). Le document prime sur la maquette.
+> Decision by Monsieur (2026-10-06): the sheet list must have illustration thumbnails rather than just a list; each sheet must have an optional illustration image property. Two changes, no new screen: **E-8 becomes a card grid** and **the E-9 header carries the illustration**. Data: `docs/donnees.md` (migration
+> `kanevas-illustrations`); decision: AD-93. Same six states and common text as the
+> first sheet (loading, error, connection lost, refusal « Page introuvable. », write in
+> progress, failed write), same toasts as the visual redesign. Mockups: `e08` (grid)
+> and `e09` (header). The document takes precedence over the mockup.
 
-**L'illustration, en une phrase par règle.** Une fiche a **zéro ou une** illustration, une image
-PNG, JPEG, GIF ou WebP (reconnue à son contenu, pas à son nom). Elle se voit **partout où la
-fiche et le fichier se voient** (amended: a GM-only image shows « Image réservée au MJ. » to players). **Le MJ seul** la pose, la remplace
-ou la retire, en mode MJ, depuis l'en-tête de E-9. Ce n'est pas une pièce jointe : elle n'est
-dans aucune section, et une image jointe à une section ne devient jamais l'illustration d'elle-même.
+**The illustration, one sentence per rule.** A sheet has **zero or one** illustration, a
+PNG, JPEG, GIF or WebP image (recognised by its contents, not its name). It is visible **wherever the
+sheet and file are visible** (amended: a GM-only image shows « Image réservée au MJ. » to players). **Only the GM** sets, replaces
+or removes it, in GM mode, from the E-9 header. It is not an attachment: it belongs to
+no section, and an image attached to a section never becomes the illustration automatically.
 
-### E-8 — la grille de cartes
+### E-8 — the card grid
 
-Les fiches du type, **dans le même ordre** (alphabétique sans casse) et avec la même règle de
-lecture qu'avant, s'affichent en **grille de cartes**. Une carte est un lien vers E-9 :
+Sheets of the type, **in the same order** (case-insensitive alphabetical) and with the same
+read rule as before, appear in a **card grid**. A card is a link to E-9:
 
-- la **vignette**, cadre 4:3 aux coins `--rayon-champ`, l'image cadrée sans déformation
-  (`object-fit: cover`, recentrée vers le haut : `object-position: 50% 30%`, pour garder un
-  visage) ; l'image est décorative (`alt=""`) parce que le titre suit ;
-- le **titre**, sur deux lignes au plus, coupé par « … » avec le titre entier en infobulle ;
-- pour un personnage, la pastille **PJ** ou **PNJ** (celle de la liste d'avant) ; les autres types
-  n'ont pas de pastille : la page entière est du type.
+- the **thumbnail**, a 4:3 frame with `--rayon-champ` corners, the image cropped without distortion
+  (`object-fit: cover`, centred towards the top: `object-position: 50% 30%`, to preserve a
+  face); the image is decorative (`alt=""`) because the title follows;
+- the **title**, at most two lines, truncated with « … » with the full title in a tooltip;
+- for a character, the **PJ** or **PNJ** badge (from the previous list); other types
+  have no badge: the whole page is for that type.
 
-**Vignette de repli**, pour une fiche sans illustration — jamais un trou gris ni une image cassée :
-un aplat `--surface-2` tramé de points (`--bord-fort`, un point tous les 12 px), l'**initiale** du
-titre, article écarté (« Le Gué-aux-Saules » → « G »), en Fraunces 56 px (44 au téléphone) `--texte-3` au centre, et l'**icône du type** (Lucide, celle de la barre
-latérale) dans une puce en haut à gauche. Le repli sert aussi quand l'image d'une fiche ne se charge
-pas : la carte ne montre jamais d'erreur. Le tramage en points n'emprunte pas la hachure, réservée
-au secret (la section « MJ seul »).
+**Fallback thumbnail**, for a sheet without an illustration — never a grey hole or a broken image:
+a `--surface-2` fill dotted with `--bord-fort` (one dot every 12 px), the title's **initial**,
+article omitted (« Le Gué-aux-Saules » → « G »), in Fraunces 56 px (44 on phones) `--texte-3` at the centre, and the **type icon** (Lucide, the sidebar icon)
+in a chip at the top left. The fallback also serves when a sheet's image fails to load:
+the card never shows an error. Dots do not use hatching, reserved
+for secrecy (the « MJ seul » section).
 
-*Disposition.* Colonne de 1 120 px au plus (au lieu de 784 : une grille respire plus qu'un texte),
-`repeat(auto-fill, minmax(176 px, 1fr))`, 24 px entre les cartes (16 px entre deux rangées sous
-1 080 px). Au téléphone (moins de 760 px), **deux colonnes** (12 px entre elles, 16 px entre deux rangées),
-titre 13 px, la pastille sous le titre. Les images
-se chargent **à l'approche** (`loading="lazy"`) dans un cadre déjà à sa taille (la grille ne saute
-pas). The illustration address includes its token (`/fichiers/<id>?v=<jeton>`, AD-93), so a replaced
+*Layout.* Column at most 1 120 px wide (instead of 784: a grid needs more space than text),
+`repeat(auto-fill, minmax(176 px, 1fr))`, 24 px between cards (16 px between rows below
+1 080 px). On phones (below 760 px), **two columns** (12 px between them, 16 px between rows),
+13 px title, badge below the title. Images
+load **as they approach** (`loading="lazy"`) in a frame already at its final size (the grid does not
+jump). The illustration address includes its token (`/fichiers/<id>?v=<jeton>`, AD-93), so a replaced
 image reloads while an unchanged image comes from the cache.
 
-*Survol et focus.* La carte se soulève d'un plan (`--surface-2` derrière la carte, contour
-`--bord-fort` autour de la vignette) ; au clavier, l'anneau de focus entoure la carte entière.
-Pas d'ombre (la charte réserve la seule ombre à ce qui flotte).
+*Hover and focus.* The card rises one level (`--surface-2` behind the card, `--bord-fort`
+outline around the thumbnail); with the keyboard, the focus ring surrounds the whole card.
+No shadow (the style guide reserves the only shadow for floating elements).
 
-*Recherche.* Conservée telle quelle au-dessus de la grille (champ, « Chercher », « Effacer la
-recherche », adresse `?q=`) ; ses résultats sont des cartes, dans le même ordre.
+*Search.* Kept as is above the grid (field, « Chercher », « Effacer la
+recherche », `?q=` address); results are cards, in the same order.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ : « Aucun personnage pour l'instant. » et « Nouveau personnage » ; Joueur : « Aucun personnage à voir pour l'instant. » (textes par type inchangés) ; recherche sans résultat : « Aucun résultat pour « Vérité » dans les personnages. » | MJ : créer ; « Effacer la recherche » |
-| chargement | dix cartes squelettes (`--squelette`, cadre 4:3 et un trait ; deux rangées au bureau) et « Chargement des fiches… » (`role="status"`) ; une recherche : « Recherche… » ; une vignette pas encore chargée : son cadre en `--squelette`, à sa taille | — |
-| erreur | « Impossible de charger les fiches. » ou « Impossible de lancer la recherche. » ; une image qui ne se charge pas : la vignette de repli, sans message | « Réessayer » |
-| connexion perdue | le bandeau ; « Nouveau … », « Chercher » désactivés ; les cartes affichées et leurs images déjà chargées restent ; une image pas encore chargée : la vignette de repli | ouvrir une fiche |
-| refus | type inconnu : « Page introuvable. » ; une fiche illisible est absente de la grille, et l'adresse de son illustration répond 404 comme une adresse inconnue | — |
-| contenu long | titre de 120 caractères : deux lignes puis « … », infobulle ; plus de 100 fiches : « Charger la suite » sous la grille ; une image très haute ou très large : cadrée en 4:3 ; un GIF animé : il s'anime | idem |
+| empty | GM: « Aucun personnage pour l'instant. » and « Nouveau personnage »; Player: « Aucun personnage à voir pour l'instant. » (text per type unchanged); search without results: « Aucun résultat pour « Vérité » dans les personnages. » | GM: create; « Effacer la recherche » |
+| loading | ten skeleton cards (`--squelette`, 4:3 frame and a line; two rows on desktop) and « Chargement des fiches… » (`role="status"`); a search: « Recherche… »; thumbnail not yet loaded: its frame in `--squelette`, at its final size | — |
+| error | « Impossible de charger les fiches. » or « Impossible de lancer la recherche. »; an image that fails to load: fallback thumbnail, no message | « Réessayer » |
+| connection lost | the banner; « Nouveau … », « Chercher » disabled; displayed cards and their already loaded images remain; an image not yet loaded: fallback thumbnail | open a sheet |
+| refusal | unknown type: « Page introuvable. »; an unreadable sheet is absent from the grid, and its illustration address returns 404 like an unknown address | — |
+| long content | 120-character title: two lines then « … », tooltip; more than 100 sheets: « Charger la suite » below the grid; a very tall or wide image: cropped to 4:3; an animated GIF: it animates | same |
 
-### E-9 — l'illustration dans l'en-tête
+### E-9 — the illustration in the header
 
-L'en-tête de la fiche devient deux colonnes au bureau : à gauche l'**illustration**, cadre de
-176 × 220 px (4:5, `--rayon-panneau`, contour `--bord`), l'image cadrée comme dans E-8 ; à droite,
-alignés en bas, la pastille du type et le titre. Un clic sur l'illustration ouvre l'image entière
-dans un nouvel onglet ; son texte alternatif est « Illustration de « Maître Aldric » ». **Sans
-illustration, l'en-tête reste celui d'avant** (type puis titre, pleine largeur) : pas de vignette
-de repli sur la fiche, le repli est un objet de la grille. Au téléphone, l'illustration (96 ×
-120 px) reste à gauche de la pastille et du titre, pour que le texte de la fiche commence dans le
-premier écran ; un titre long passe à la ligne à sa droite.
+The sheet header becomes two columns on desktop: on the left the **illustration**, a
+176 × 220 px frame (4:5, `--rayon-panneau`, `--bord` outline), the image cropped as in E-8; on the right,
+bottom-aligned, the type badge and title. Clicking the illustration opens the whole image
+in a new tab; its alternative text is « Illustration de « Maître Aldric » ». **Without
+an illustration, the header stays as before** (type then title, full width): no fallback
+thumbnail on the sheet, the fallback belongs to the grid. On phones, the illustration (96 ×
+120 px) stays to the left of the badge and title so the sheet text starts within the
+first screen; a long title wraps to its right.
 
-*Les gestes du MJ* (mode MJ seulement) :
+*GM actions* (GM mode only):
 
-- **Ajouter** — sur une fiche sans illustration, au-dessus de la pastille du type, un bouton
-  fantôme « Ajouter une illustration » (`image-plus`) suivi de l'aide « Visible de tous ceux qui
-  voient la fiche. » (12 px, `--texte-3`) ; ils paraissent au survol et au focus de l'en-tête, et
-  toujours sur un écran sans survol (comme « Modifier »). Choisir le fichier suffit : l'envoi part
-  aussitôt (un seul fichier ; le sélecteur propose `image/png, image/jpeg, image/gif, image/webp`,
-  mais c'est le serveur qui juge).
-- **Remplacer** et **Retirer** — sur une fiche illustrée, deux boutons-icônes posés en bas à droite
-  de l'illustration, sur une puce `--surface` avec `--ombre-flottant` : « Remplacer l'illustration »
-  (`image-up`) et « Retirer l'illustration » (`trash-2`, danger) ; ils paraissent au survol et au
-  focus de l'illustration, toujours sans survol. L'aide « Visible de tous ceux qui voient la
-  fiche. » est l'infobulle de « Remplacer » et se lit sous l'illustration pendant l'envoi.
-  Remplacer garde l'ancienne image affichée jusqu'à ce que la nouvelle soit enregistrée.
-- **Confirmer le retrait**, sur place, sous l'illustration : « Retirer l'illustration de « Maître
-  Aldric » ? L'image sera perdue. » avec « Annuler » et « Retirer l'illustration » (danger). Retirer
-  ne touche à aucune pièce jointe.
+- **Add** — on a sheet without an illustration, above the type badge, a ghost
+  button « Ajouter une illustration » (`image-plus`) followed by the help text « Visible de tous ceux qui
+  voient la fiche. » (12 px, `--texte-3`); they appear on header hover and focus, and
+  always on screens without hover (like « Modifier »). Choosing the file is enough: upload starts
+  immediately (one file only; the picker offers `image/png, image/jpeg, image/gif, image/webp`,
+  but the server decides).
+- **Replace** and **Remove** — on an illustrated sheet, two icon buttons at the bottom right
+  of the illustration, on a `--surface` chip with `--ombre-flottant`: « Remplacer l'illustration »
+  (`image-up`) and « Retirer l'illustration » (`trash-2`, danger); they appear on illustration hover and
+  focus, always without hover. The help text « Visible de tous ceux qui voient la
+  fiche. » is the « Remplacer » tooltip and appears below the illustration during upload.
+  Replacing keeps the old image displayed until the new one is saved.
+- **Confirm removal**, inline, below the illustration: « Retirer l'illustration de « Maître
+  Aldric » ? L'image sera perdue. » with « Annuler » and « Retirer l'illustration » (danger). Removal
+  does not affect any attachment.
 
-*Textes.* Envoi : dans le cadre (au téléphone, juste sous lui), une barre de 2 px `--accent` et « Envoi… 42 % » (`role="status"`)
-avec « Annuler » ; envoi annulé : rien ne change, toast « Envoi de « portrait.png » annulé ».
-Toasts de réussite : « Illustration de « Maître Aldric » ajoutée », « … remplacée », « … retirée ».
-Échecs, en ligne sous l'en-tête (jamais en toast), avec « Ignorer » : envoi interrompu « « portrait.png » :
-l'envoi n'a pas abouti. » (et « Réessayer ») ; fichier qui n'est pas une image (400
+*Text.* Upload: inside the frame (on phones, just below it), a 2 px `--accent` bar and « Envoi… 42 % » (`role="status"`)
+with « Annuler »; upload cancelled: nothing changes, toast « Envoi de « portrait.png » annulé ».
+Success toasts: « Illustration de « Maître Aldric » ajoutée », « … remplacée », « … retirée ».
+Failures, inline below the header (never a toast), with « Ignorer »: interrupted upload « « portrait.png » :
+l'envoi n'a pas abouti. » (and « Réessayer »); file that is not an image (400
 `pas_une_image`) « « plan.pdf » n'est pas une image. Choisissez un PNG, un JPEG, un GIF ou un
-WebP. » ; fichier vide « « portrait.png » est vide. » ; retrait échoué « L'action n'a pas abouti.
-Réessayez. » (la confirmation se ferme, l'image reste ; « Réessayer » relance le retrait, « Ignorer »
-efface le message) ; droit perdu entre-temps (403, le compte n'est plus MJ) « Vous ne
-pouvez plus modifier l'illustration de cette fiche. », puis la fiche se recharge et les gestes
-disparaissent ; image qui ne se charge pas : le cadre `--surface-2` avec l'icône `image-off` et
-« Image indisponible. » (le MJ garde « Remplacer » et « Retirer »).
+WebP. »; empty file « « portrait.png » est vide. »; failed removal « L'action n'a pas abouti.
+Réessayez. » (confirmation closes, image remains; « Réessayer » retries removal, « Ignorer »
+clears the message); permissions lost meanwhile (403, account no longer a GM) « Vous ne
+pouvez plus modifier l'illustration de cette fiche. », then the sheet reloads and actions
+disappear; image that fails to load: the `--surface-2` frame with the `image-off` icon and
+« Image indisponible. » (the GM keeps « Remplacer » and « Retirer »).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | fiche sans illustration : l'en-tête d'avant ; MJ (mode MJ) : « Ajouter une illustration » et l'aide | MJ : ajouter |
-| chargement | les squelettes de la fiche, avec un cadre 4:5 à gauche du titre ; une image pas encore chargée : son cadre en `--squelette` ; un envoi : « Envoi… 42 % » dans le cadre | annuler l'envoi |
-| erreur | envoi interrompu, fichier qui n'est pas une image, fichier vide, retrait échoué : le message en ligne ci-dessus ; image illisible : « Image indisponible. » | « Réessayer », « Ignorer » |
-| connexion perdue | le bandeau ; « Ajouter une illustration », « Remplacer », « Retirer » désactivés ; l'image déjà chargée reste ; un envoi en cours qui échoue devient l'erreur « l'envoi n'a pas abouti » | lire, ouvrir l'image |
-| refus | MJ rétrogradé pendant le geste : « Vous ne pouvez plus modifier l'illustration de cette fiche. » ; fiche illisible : « Page introuvable. » (et son illustration répond 404) ; Joueur : les gestes sont absents, jamais grisés | recharger |
-| contenu long | un fichier de plusieurs Go : la progression en pourcentage (pas de limite de taille, AD-7) ; une image très haute ou panoramique : cadrée en 4:5 ; un titre de 120 caractères : passe à la ligne à droite de l'illustration, au bureau comme au téléphone | idem |
+| empty | sheet without an illustration: previous header; GM (GM mode): « Ajouter une illustration » and help text | GM: add |
+| loading | sheet skeletons, with a 4:5 frame to the left of the title; image not yet loaded: its frame in `--squelette`; an upload: « Envoi… 42 % » in the frame | cancel upload |
+| error | interrupted upload, non-image file, empty file, failed removal: inline message above; unreadable image: « Image indisponible. » | « Réessayer », « Ignorer » |
+| connection lost | the banner; « Ajouter une illustration », « Remplacer », « Retirer » disabled; already loaded image remains; an ongoing upload that fails becomes the « l'envoi n'a pas abouti » error | read, open image |
+| refusal | GM demoted during the action: « Vous ne pouvez plus modifier l'illustration de cette fiche. »; unreadable sheet: « Page introuvable. » (and its illustration returns 404); Player: actions absent, never greyed out | reload |
+| long content | a multi-GB file: percentage progress (no size limit, AD-7); a very tall or panoramic image: cropped to 4:5; a 120-character title: wraps to the right of the illustration, on desktop and phones | same |
 
-### Qui voit quoi
+### Who sees what
 
-| Ligne de la matrice | MJ | Joueur | MJ en mode Joueur | Admin d'instance (sans rôle) |
+| Matrix row | GM | Player | GM in player mode | Instance admin (without a role) |
 |---|---|---|---|---|
-| vignette (ou repli) d'une fiche dans E-8 | toutes les fiches de l'univers | les fiches qu'il voit | sans objet : E-8 n'a pas de mode | — (« Page introuvable. ») |
-| illustration dans l'en-tête de E-9 | oui | oui, sur une fiche qu'il voit | oui, si la fiche est visible des joueurs | — |
-| ouvrir l'image entière | oui | oui | oui | — |
-| « Ajouter une illustration » et l'aide | oui | **absent** | **absent** | — |
-| « Remplacer », « Retirer » | oui | **absent** | **absent** | — |
-| adresse de l'illustration d'une fiche qu'il ne voit pas | sans objet (il voit tout) | **404**, identique à une adresse inconnue | ses droits réels : il la lit | 404 |
-| `PUT` / `DELETE` de l'illustration par l'API | oui | **403** sur une fiche qu'il voit, 404 sinon | oui (le mode ne change que l'écran) | 404 |
+| sheet thumbnail (or fallback) in E-8 | all universe sheets | sheets they see | not applicable: E-8 has no mode | — (« Page introuvable. ») |
+| illustration in the E-9 header | yes | yes, on a sheet they see | yes, if the sheet is visible to players | — |
+| open the whole image | yes | yes | yes | — |
+| « Ajouter une illustration » and help text | yes | **absent** | **absent** | — |
+| « Remplacer », « Retirer » | yes | **absent** | **absent** | — |
+| illustration address of a sheet they cannot see | not applicable (sees everything) | **404**, identical to an unknown address | actual permissions: can read it | 404 |
+| illustration `PUT` / `DELETE` through the API | yes | **403** on a sheet they see, otherwise 404 | yes (mode only changes the screen) | 404 |
 
-Un Joueur auteur ou rédacteur d'une section ne pose pas d'illustration : elle est au niveau de la
-fiche, pas de la section.
+A Player who authors or writes a section does not set illustrations: these belong to the
+sheet, not the section.
 
-### Critères
+### Criteria
 
-- Étant donné Léa, Joueuse, qui ne voit pas la fiche « Le Prieur masqué » (aucune section lue des
-  joueurs) et à qui Antor a posé une illustration, quand elle demande l'illustration de cette
-  fiche par son adresse, alors elle reçoit 404, de corps identique à celui d'un identifiant de fiche
-  qui n'a jamais existé ; et la fiche n'est pas dans sa grille.
-- Étant donné Antor, MJ, sur « Maître Aldric » sans illustration, en mode MJ, quand il survole
-  l'en-tête, alors il voit « Ajouter une illustration » et « Visible de tous ceux qui voient la
-  fiche. » ; quand il choisit « portrait-aldric.png », alors « Envoi… » paraît dans le cadre, puis
-  l'illustration s'affiche à gauche du titre et un toast dit « Illustration de « Maître Aldric »
+- Given Léa, a Player, who cannot see the « Le Prieur masqué » sheet (no section read by
+  players) and on which Antor set an illustration, when she requests that sheet's illustration
+  by its address, then she receives 404, with the same body as for a sheet identifier
+  that never existed; and the sheet is absent from her grid.
+- Given Antor, GM, on « Maître Aldric » without an illustration, in GM mode, when he hovers
+  over the header, then he sees « Ajouter une illustration » and « Visible de tous ceux qui voient la
+  fiche. »; when he chooses « portrait-aldric.png », then « Envoi… » appears in the frame, then
+  the illustration appears to the left of the title and a toast says « Illustration de « Maître Aldric »
   ajoutée ».
-- Étant donné Léa sur la grille des personnages, quand Antor a posé ce portrait, alors la carte
-  « Maître Aldric » montre le portrait ; la carte « Bran Corvalis », sans illustration, montre la
-  vignette de repli (« B » et l'icône des personnages), jamais un cadre vide.
-- Étant donné Antor qui remplace le portrait d'Aldric, quand Léa revient sur la grille, alors elle
-  voit le nouveau portrait, sans recharger la page de force (le jeton de l'adresse a changé).
-- Étant donné Antor qui choisit « plan.pdf » (ou un fichier « image.png » qui contient du HTML),
-  alors il voit « « plan.pdf » n'est pas une image. Choisissez un PNG, un JPEG, un GIF ou un WebP. »
-  et l'illustration d'avant reste ; rien n'est écrit.
-- Étant donné Antor qui retire l'illustration et confirme « Retirer l'illustration », alors l'en-tête
-  redevient celui d'avant, la carte d'Aldric montre la vignette de repli, et l'ancienne adresse de
-  l'image répond 404.
-- Étant donné Léa sur une fiche qu'elle voit et qui porte une illustration, alors elle voit l'image
-  et ni « Remplacer », ni « Retirer », ni « Ajouter une illustration » ; un `PUT` de sa part reçoit 403.
-- Étant donné Antor en mode Joueur sur « Maître Aldric », alors il voit l'illustration et aucun de
-  ses gestes.
-- Étant donné Antor qui choisit un fichier vide « portrait.png », alors il voit « « portrait.png »
-  est vide. » avec « Ignorer », l'illustration d'avant reste, et rien n'est écrit.
-- Étant donné Antor qui confirme « Retirer l'illustration » quand le serveur échoue, alors la
-  confirmation se ferme et il voit, sous l'en-tête, « L'action n'a pas abouti. Réessayez. » avec
-  « Réessayer » (qui relance le retrait) et « Ignorer » ; l'illustration reste affichée, sur la fiche
-  comme dans la grille.
-- Étant donné une illustration dont l'image ne se charge pas, quand Antor (mode MJ) ouvre la fiche,
-  alors le cadre dit « Image indisponible. » et il garde « Remplacer » et « Retirer » ; quand Léa
-  ouvre la même fiche, alors elle voit le même cadre « Image indisponible. », sans aucun geste, et,
-  sur la grille, la carte montre la vignette de repli.
-- Étant donné un envoi en cours quand la connexion tombe, alors le bandeau paraît, les gestes de
-  l'illustration sont désactivés et l'envoi devient « « portrait.png » : l'envoi n'a pas abouti. »
-  avec « Réessayer » et « Ignorer ».
-- Étant donné Antor rétrogradé Joueur par un autre MJ pendant qu'il envoie, alors il voit « Vous ne
-  pouvez plus modifier l'illustration de cette fiche. » et les gestes disparaissent.
-- Étant donné la grille au téléphone (390 px), alors elle a deux colonnes et aucun titre ne déborde.
+- Given Léa on the character grid, when Antor has set this portrait, then the
+  « Maître Aldric » card shows the portrait; the « Bran Corvalis » card, without an illustration, shows the
+  fallback thumbnail (« B » and the character icon), never an empty frame.
+- Given Antor replacing Aldric's portrait, when Léa returns to the grid, then she
+  sees the new portrait without a forced page reload (the address token changed).
+- Given Antor choosing « plan.pdf » (or an « image.png » file containing HTML),
+  then he sees « « plan.pdf » n'est pas une image. Choisissez un PNG, un JPEG, un GIF ou un WebP. »
+  and the previous illustration remains; nothing is written.
+- Given Antor removing the illustration and confirming « Retirer l'illustration », then the header
+  returns to its previous form, Aldric's card shows the fallback thumbnail, and the old image
+  address returns 404.
+- Given Léa on a sheet she sees that has an illustration, then she sees the image
+  and neither « Remplacer », « Retirer » nor « Ajouter une illustration »; a `PUT` from her receives 403.
+- Given Antor in player mode on « Maître Aldric », then he sees the illustration and none of
+  its actions.
+- Given Antor choosing an empty « portrait.png » file, then he sees « « portrait.png »
+  est vide. » with « Ignorer », the previous illustration remains, and nothing is written.
+- Given Antor confirming « Retirer l'illustration » when the server fails, then the
+  confirmation closes and he sees, below the header, « L'action n'a pas abouti. Réessayez. » with
+  « Réessayer » (which retries removal) and « Ignorer »; the illustration stays displayed, on the sheet
+  and in the grid.
+- Given an illustration whose image fails to load, when Antor (GM mode) opens the sheet,
+  then the frame says « Image indisponible. » and he keeps « Remplacer » and « Retirer »; when Léa
+  opens the same sheet, then she sees the same « Image indisponible. » frame, without any action, and,
+  on the grid, the card shows the fallback thumbnail.
+- Given an upload in progress when connection drops, then the banner appears, the illustration
+  actions are disabled and the upload becomes « « portrait.png » : l'envoi n'a pas abouti. »
+  with « Réessayer » and « Ignorer ».
+- Given Antor demoted to Player by another GM while uploading, then he sees « Vous ne
+  pouvez plus modifier l'illustration de cette fiche. » and the actions disappear.
+- Given the grid on a phone (390 px), then it has two columns and no title overflows.
 
-### Systèmes de jeu, hors des univers
+### Game systems, outside universes
 
-> Décision de Monsieur (2026-10-06) : le système de jeu devient **une dimension à part**, pas un
-> sous-élément d'un univers. Aujourd'hui le fil d'Ariane dit « Lame d'Ébène › CoF Mini » parce que
-> tout accès à un système passe par un univers (AD-83) ; désormais un système a sa propre adresse et
-> sa place dans la barre réduite (AD-94). **Droits inchangés, aucune donnée nouvelle.** Maquettes :
-> `e16-systemes-de-jeu.html` (nouvelle), `e15-systeme-de-jeu.html` (refaite hors univers),
-> `e01-accueil.html` (l'entrée de la barre).
+> Decision by Monsieur (2026-10-06): the game system becomes **a separate dimension**, rather than a
+> sub-element of a universe. Today the breadcrumb says « Lame d'Ébène › CoF Mini » because
+> every system is accessed through a universe (AD-83); from now on a system has its own address and
+> place in the reduced sidebar (AD-94). **Permissions unchanged, no new data.** Mockups:
+> `e16-systemes-de-jeu.html` (new), `e15-systeme-de-jeu.html` (redesigned outside universes),
+> `e01-accueil.html` (sidebar entry).
 
-**Un écran de plus : E-16 Systèmes de jeu**, et non E-15 « en mode liste ». La liste a sa propre
-adresse (`/systemes`), sa place dans la navigation, ses propres six états et un contenu que E-15
-n'a pas (les univers du compte, par système) ; E-15 reste la page d'**un** système
-(`/systemes/:sid`). Un écran par adresse, comme E-1 et E-3.
+**One more screen: E-16 Game systems**, rather than E-15 “in list mode”. The list has its own
+address (`/systemes`), navigation entry, six states and content E-15 does not
+have (the account's universes, per system); E-15 remains the page for **one** system
+(`/systemes/:sid`). One screen per address, like E-1 and E-3.
 
 **Navigation.**
-- Barre réduite (E-1, E-2, E-5, E-15, E-16) : « Mes univers » (`library`), **« Systèmes de jeu »**
-  (`dices`), puis « Administration » pour un admin d'instance. Sur E-15 et E-16, « Systèmes de
-  jeu » est l'item courant. Pas de bouton « Demander à Kanevas » : il n'existe que dans un univers.
-- Depuis un univers : le menu du **sélecteur d'univers** porte, sous la liste des univers, « Mes
-  univers » puis « Systèmes de jeu » (tous deux hors de l'univers). Le bloc « Système de jeu » de
-  E-3 (« Ouvrir le système ») et le panneau de E-14 (« Ouvrir le système ») mènent à E-15 de ce
-  système. Rien ne s'ajoute à la barre d'un univers : le système n'en est pas une partie.
-- Fil d'Ariane : E-16 « Systèmes de jeu » ; E-15 « Systèmes de jeu › CoF Mini » (au téléphone,
-  l'icône `dices` et le nom seul).
-- L'ancienne adresse `/univers/:id/systeme` mène à `/systemes/:sid` si l'univers est rattaché et que
-  le compte en est membre ; sinon « Page introuvable. ». Un lien gardé n'est donc pas cassé.
+- Reduced sidebar (E-1, E-2, E-5, E-15, E-16): « Mes univers » (`library`), **« Systèmes de jeu »**
+  (`dices`), then « Administration » for an instance admin. On E-15 and E-16, « Systèmes de
+  jeu » is the current item. No « Demander à Kanevas » button: it exists only within a universe.
+- From a universe: below the universe list, the **universe selector** menu has « Mes
+  univers » then « Systèmes de jeu » (both outside the universe). The E-3 « Système de jeu » block
+  (« Ouvrir le système ») and E-14 panel (« Ouvrir le système ») lead to that system's E-15.
+  Nothing is added to the universe sidebar: the system is not part of it.
+- Breadcrumb: E-16 « Systèmes de jeu »; E-15 « Systèmes de jeu › CoF Mini » (on phones,
+  the `dices` icon and name only).
+- The old `/univers/:id/systeme` address leads to `/systemes/:sid` if the universe is attached and
+  the account is a member; otherwise « Page introuvable. ». A saved link therefore still works.
 
-**Ce qu'on voit d'un système, et de qui.** Un compte voit un système **seulement s'il est rattaché à
-un univers dont il est membre** ; il le **modifie s'il est MJ d'un de ces univers** (quel que soit
-son rôle dans les autres). Il voit, par système, **ses** univers qui l'utilisent, avec son rôle dans
-chacun, et le nombre total d'univers (« Utilisé par 2 univers ») — **jamais le nom d'un univers dont
-il n'est pas membre** (AD-84). L'adresse d'un système qu'il ne voit pas répond « Page introuvable. »,
-comme une adresse inconnue.
+**What is visible about a system, and to whom.** An account sees a system **only if it is attached to
+ a universe of which they are a member**; they **edit it if they are GM of one of these universes** (whatever
+ their role in the others). Per system, they see **their own** universes using it, with their role in
+ each, and the total universe count (« Utilisé par 2 univers ») — **never the name of a universe of which
+ they are not a member** (AD-84). The address of a system they cannot see answers « Page introuvable. »,
+ like an unknown address.
 
-#### E-16 Systèmes de jeu
+#### E-16 Game systems
 
-Titre « Systèmes de jeu », sous-titre « Les référentiels de vos univers. ». Une **grille de
-cartes** (décision de Monsieur du 2026-10-06 : « des cartes plutôt qu'une liste se prête plus au
-contexte »), de la famille des cartes de fiche de E-8 : colonne de 1 120 px au plus,
-`repeat(auto-fill, minmax(288 px, 1fr))`, 24 px entre les cartes ; au téléphone, **une colonne**
-(une carte porte trop de texte et de puces pour deux). Par nom (ordre alphabétique sans casse), sans
-pagination (on ne voit que les systèmes de ses propres univers). **Toute la carte mène à E-15.**
-Chaque carte (composant « Carte de système » de `docs/charte.md`) :
+Title « Systèmes de jeu », subtitle « Les référentiels de vos univers. ». A **card grid**
+(decision by Monsieur on 2026-10-06: cards rather than a list suit the context better),
+in the same family as E-8 sheet cards: column at most 1 120 px wide,
+`repeat(auto-fill, minmax(288 px, 1fr))`, 24 px between cards; on phones, **one column**
+(a card carries too much text and too many chips for two). By name (case-insensitive alphabetical order), without
+pagination (only systems of one's own universes are visible). **The whole card leads to E-15.**
+Each card (« Carte de système » component in `docs/charte.md`):
 
-- un **en-tête dessiné** 2:1 (5:2 au téléphone), calculé par le frontend à partir du nom, toujours le
-  même pour un nom donné et sans aucune donnée : un treillis triangulaire, un grand dé (d20, d8 ou
-  d12) teinté d'encre avec un halo, un petit dé neutre, et le monogramme du système (« Cm » pour CoF
-  Mini) en Fraunces ; jamais une image, jamais un rectangle vide ;
-- si le compte n'est MJ d'aucun de ses univers : la pastille « Lecture seule » (`eye`) posée en haut à
-  droite de l'en-tête ;
-- le **nom** (Fraunces 18 px, deux lignes au plus, « … », infobulle) ;
-- en `--texte-3` : « Utilisé par 2 univers », puis « 3 règles · 4 créatures · 2 objets » (« 1 règle »,
-  « aucune créature »…) ;
-- **ses univers** qui l'utilisent, en puces (sceau, nom, pastille du rôle) ; dans la carte, les
-  puces ne sont pas des liens à part (la carte entière en est un) ; elles mènent à E-3 sur E-15.
+- a **drawn header** at 2:1 (5:2 on phones), computed by the frontend from the name, always the
+  same for a given name and without any data: a triangular lattice, a large ink-tinted die (d20, d8 or
+  d12) with a halo, a small neutral die, and the system monogram (« Cm » for CoF
+  Mini) in Fraunces; never an image, never an empty rectangle;
+- if the account is GM of none of their universes: the « Lecture seule » badge (`eye`) at the
+  top right of the header;
+- the **name** (Fraunces 18 px, at most two lines, « … », tooltip);
+- in `--texte-3`: « Utilisé par 2 univers », then « 3 règles · 4 créatures · 2 objets » (« 1 règle »,
+  « aucune créature »…);
+- **their universes** using it, as chips (seal, name, role badge); within the card,
+  chips are not separate links (the whole card is one); they lead to E-3 on E-15.
 
-Pas d'action d'écriture sur E-16 : un système se crée et se rattache depuis E-14 (P-8), qui reste le
-seul chemin. Textes du vide : pour un compte MJ d'au moins un univers, « Aucun système de jeu pour
-l'instant. » et « Un système se rattache depuis les paramètres d'un univers que vous menez. » avec le
-lien « Mes univers » ; pour les autres, « Aucun système de jeu pour l'instant. » et « Les systèmes
+No write action on E-16: a system is created and attached from E-14 (P-8), which remains the
+only path. Empty text: for an account that is GM of at least one universe, « Aucun système de jeu pour
+l'instant. » and « Un système se rattache depuis les paramètres d'un univers que vous menez. » with the
+« Mes univers » link; for others, « Aucun système de jeu pour l'instant. » and « Les systèmes
 de vos univers apparaîtront ici quand leur MJ en rattachera un. ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | « Aucun système de jeu pour l'instant. » et le texte selon le compte (ci-dessus) | « Mes univers » |
-| chargement | trois cartes squelettes (en-tête 2:1, nom, une ligne, une puce) et « Chargement des systèmes… » (`role="status"`) | — |
-| erreur | « Impossible de charger les systèmes de jeu. » | « Réessayer » |
-| connexion perdue | le bandeau ; la grille déjà chargée reste (E-16 n'écrit rien) | ouvrir un système |
-| refus | sans objet : E-16 n'a pas de paramètre et ne montre que ce que le compte voit ; un système détaché de tous ses univers disparaît de la grille au prochain chargement | — |
-| contenu long | un nom de 80 caractères : deux lignes, « … », infobulle ; un système utilisé par 12 de ses univers : les puces passent à la ligne et la carte s'allonge (les cartes d'une rangée gardent leur en-tête aligné) ; un nom d'univers de 80 caractères dans une puce : coupé à 24 caractères, infobulle | idem |
+| empty | « Aucun système de jeu pour l'instant. » and account-specific text (above) | « Mes univers » |
+| loading | three skeleton cards (2:1 header, name, one line, one chip) and « Chargement des systèmes… » (`role="status"`) | — |
+| error | « Impossible de charger les systèmes de jeu. » | « Réessayer » |
+| connection lost | the banner; already loaded grid remains (E-16 writes nothing) | open a system |
+| refusal | not applicable: E-16 has no parameter and shows only what the account sees; a system detached from all their universes disappears from the grid on next load | — |
+| long content | an 80-character name: two lines, « … », tooltip; a system used by 12 of their universes: chips wrap and the card grows (cards in a row keep their headers aligned); an 80-character universe name in a chip: truncated at 24 characters, tooltip | same |
 
-#### E-15 hors de l'univers
+#### E-15 outside the universe
 
-Le contenu de E-15 ne change pas (onglets Règles, Créatures, Objets ; entrées ouvertes sur place ;
-ajouter, modifier pour le MJ ; textes et états de `kanevas-systemes`). Ce qui change :
+E-15 content does not change (« Règles », « Créatures », « Objets » tabs; entries opened inline;
+add, edit for the GM; text and states from `kanevas-systemes`). What changes:
 
-- le **cadre** : barre réduite, « Systèmes de jeu » courant, fil « Systèmes de jeu › CoF Mini » ;
-- sous le titre (`dices`, nom) : « Référentiel commun · utilisé par 2 univers », puis la ligne
-  « Dans vos univers » et les puces de ses univers (comme sur E-16) ; si le compte ne le modifie pas,
-  la pastille « Lecture seule » ;
-- l'adresse `/systemes/:sid` ; l'onglet se garde dans l'adresse (`?type=creature`), Créatures par
-  défaut ;
-- le **refus** : système inconnu ou d'aucun univers du compte : « Page introuvable. » et un lien
-  « Systèmes de jeu » ; droit retiré pendant une écriture (le compte n'est plus MJ d'aucun univers
-  rattaché, ou l'univers est détaché) : « Vous ne pouvez plus modifier ce système. » et la page se
-  recharge (en lecture seule, ou « Page introuvable. ») ;
-- les toasts du gabarit commun : « « Garde du sceau » ajoutée », « « Loup des brumes »
+- the **shell**: reduced sidebar, « Systèmes de jeu » current, breadcrumb « Systèmes de jeu › CoF Mini »;
+- below the title (`dices`, name): « Référentiel commun · utilisé par 2 univers », then the
+  « Dans vos univers » line and chips for their universes (as on E-16); if the account cannot edit it,
+  the « Lecture seule » badge;
+- the `/systemes/:sid` address; the tab is kept in the address (`?type=creature`), « Créatures » by
+  default;
+- **refusal**: system unknown or belonging to none of the account's universes: « Page introuvable. » and a
+  « Systèmes de jeu » link; permission removed during a write (account no longer GM of any attached universe,
+  or universe detached): « Vous ne pouvez plus modifier ce système. » and the page
+  reloads (read-only, or « Page introuvable. »);
+- common-template toasts: « « Garde du sceau » ajoutée », « « Loup des brumes »
   enregistré ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | un onglet sans entrée : « Aucune créature pour l'instant. » (MJ, avec « Ajouter une créature ») ; « Aucune créature à voir pour l'instant. » (lecture seule) ; « Aucune règle », « Aucun objet » de même | MJ : ajouter |
-| chargement | squelettes du titre, du sous-titre, des puces, des onglets et de trois lignes ; « Chargement du système… » (`role="status"`) | — |
-| erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie gardée ; écriture périmée : « Cette entrée a changé depuis que vous l'avez ouverte… » ; nom vide ou déjà pris : sous le champ | « Réessayer », « Recharger » |
-| connexion perdue | le bandeau ; « Ajouter … », « Modifier », « Enregistrer » désactivés, le texte en cours reste ; les puces d'univers restent des liens | lire |
-| refus | système inconnu, ou rattaché à aucun univers du compte (y compris par l'ancienne adresse) : « Page introuvable. » et le lien **« Systèmes de jeu »** (plus « Mes univers ») ; droit perdu pendant une écriture : « Vous ne pouvez plus modifier ce système. », puis la page se recharge en lecture seule ou en « Page introuvable. » ; un Joueur : « Ajouter … » et « Modifier » sont absents | « Systèmes de jeu » |
-| contenu long | 100 entrées : « Charger la suite » ; nom d'entrée de 120 caractères tronqué par « … », infobulle ; contenu de 100 000 caractères en entier ; nom de système de 80 caractères : le titre passe à la ligne | idem |
+| empty | a tab with no entry: « Aucune créature pour l'instant. » (GM, with « Ajouter une créature »); « Aucune créature à voir pour l'instant. » (read-only); « Aucune règle », « Aucun objet » similarly | GM: add |
+| loading | skeletons for title, subtitle, chips, tabs and three lines; « Chargement du système… » (`role="status"`) | — |
+| error | « Impossible de charger ce système. »; failed write: « L'action n'a pas abouti. Réessayez. », input kept; stale write: « Cette entrée a changé depuis que vous l'avez ouverte… »; empty or taken name: below the field | « Réessayer », « Recharger » |
+| connection lost | the banner; « Ajouter … », « Modifier », « Enregistrer » disabled, text being edited remains; universe chips remain links | read |
+| refusal | system unknown or attached to none of the account's universes (including through the old address): « Page introuvable. » and the **« Systèmes de jeu »** link (no longer « Mes univers »); permission lost during a write: « Vous ne pouvez plus modifier ce système. », then the page reloads read-only or with « Page introuvable. »; a Player: « Ajouter … » and « Modifier » absent | « Systèmes de jeu » |
+| long content | 100 entries: « Charger la suite »; 120-character entry name truncated with « … », tooltip; 100 000-character content in full; 80-character system name: title wraps | same |
 
-*Le bloc « Dans vos univers »* (E-15 et chaque ligne de E-16) arrive avec le système : il n'a ni
-chargement ni erreur à lui. Vide : sans objet — un système visible est toujours rattaché à au moins
-un univers du compte. Connexion perdue : il reste affiché, ses liens mènent à E-3. Refus : un univers
-dont le compte a été retiré disparaît des puces au chargement suivant (et le système entier, si
-c'était le dernier). Contenu long : douze univers ou plus — les puces passent à la ligne sous le
-libellé ; un nom d'univers de 80 caractères — coupé à 24 caractères par « … », nom entier en
-infobulle et dans l'étiquette accessible de la puce.
+*The « Dans vos univers » block* (E-15 and each E-16 row) arrives with the system: it has no
+loading or error of its own. Empty: not applicable — a visible system is always attached to at least
+one universe of the account. Connection lost: it remains displayed, its links lead to E-3. Refusal: a universe
+from which the account was removed disappears from the chips on next load (and the entire system if
+it was the last). Long content: twelve universes or more — chips wrap below the
+label; an 80-character universe name — truncated at 24 characters with « … », full name in a
+tooltip and in the chip's accessible label.
 
-#### E-3 et E-14 : ce que la retouche change
+#### E-3 and E-14: what the adjustment changes
 
-| Écran | Ce qui change | État touché |
+| Screen | What changes | State affected |
 |---|---|---|
-| E-3, bloc « Système de jeu » | « Ouvrir le système » mène à `/systemes/:sid` (E-15 hors univers) ; le bloc lit le système dans `GET /api/univers/:id` (`systeme: {id, nom}`) | refus : si le système est devenu illisible entre-temps (un MJ a détaché l'univers), le clic mène à E-15 qui dit « Page introuvable. » avec « Systèmes de jeu » ; au retour sur E-3, le bloc a disparu (il n'existe pas sans système) |
-| E-14, panneau « Système de jeu » | « Ouvrir le système » mène à `/systemes/:sid` ; la liste du catalogue se lit dans `GET /api/systemes/catalogue` | refus : de même, si un autre MJ a détaché l'univers pendant que la page était ouverte, E-15 dit « Page introuvable. » ; revenu sur E-14, le panneau dit « Cet univers n'est rattaché à aucun système de jeu. » ; erreur du catalogue : « Impossible de charger cette page. » comme avant |
+| E-3, « Système de jeu » block | « Ouvrir le système » leads to `/systemes/:sid` (E-15 outside universes); the block reads the system in `GET /api/univers/:id` (`systeme: {id, nom}`) | refusal: if the system has become unreadable meanwhile (a GM detached the universe), clicking leads to E-15 which says « Page introuvable. » with « Systèmes de jeu »; back on E-3, the block has disappeared (it does not exist without a system) |
+| E-14, « Système de jeu » panel | « Ouvrir le système » leads to `/systemes/:sid`; the catalogue list is read in `GET /api/systemes/catalogue` | refusal: likewise, if another GM detached the universe while the page was open, E-15 says « Page introuvable. »; back on E-14, the panel says « Cet univers n'est rattaché à aucun système de jeu. »; catalogue error: « Impossible de charger cette page. » as before |
 
-#### Qui voit quoi (systèmes)
+#### Who sees what (systems)
 
-| Ligne de la matrice | MJ d'un univers rattaché | Joueur d'un univers rattaché (et MJ d'aucun) | Compte sans univers rattaché (Teo ; l'admin d'instance sans rôle) |
+| Matrix row | GM of an attached universe | Player of an attached universe (and GM of none) | Account without an attached universe (Teo; instance admin without a role) |
 |---|---|---|---|
-| « Systèmes de jeu » dans la barre réduite et le menu du sélecteur | oui | oui | oui (E-16 vide) |
-| le système dans E-16 | oui, avec ses univers et son rôle | oui, « Lecture seule » | absent |
-| E-15 : lire | oui | oui | « Page introuvable. » |
-| E-15 : « Ajouter … », « Modifier » | oui | **absents** | — |
-| noms des univers d'autres comptes | jamais | jamais | jamais |
-| `GET /api/systemes/:sid` | 200 | 200 | **404**, corps identique à un identifiant inconnu |
-| `POST`/`PUT` d'une entrée | 201 / 200 | **403** | **404** |
+| « Systèmes de jeu » in the reduced sidebar and selector menu | yes | yes | yes (empty E-16) |
+| system in E-16 | yes, with their universes and role | yes, « Lecture seule » | absent |
+| E-15: read | yes | yes | « Page introuvable. » |
+| E-15: « Ajouter … », « Modifier » | yes | **absent** | — |
+| names of other accounts' universes | never | never | never |
+| `GET /api/systemes/:sid` | 200 | 200 | **404**, same body as an unknown identifier |
+| entry `POST`/`PUT` | 201 / 200 | **403** | **404** |
 
-#### Critères (systèmes)
+#### Criteria (systems)
 
-- Étant donné Mira, MJ des « Landes grises » rattachées à « CoF Mini », que partage « Lame d'Ébène »
-  d'Antor, quand elle ouvre « Systèmes de jeu », alors elle voit « CoF Mini », « Utilisé par 2
-  univers » et la seule puce « Les Landes grises · MJ » ; « Lame d'Ébène » n'apparaît nulle part,
-  ni sur E-16 ni sur E-15.
-- Étant donné Antor, quand il ouvre « CoF Mini » depuis E-16, alors le fil d'Ariane dit « Systèmes de
-  jeu › CoF Mini », la barre est la barre réduite et « Systèmes de jeu » y est l'item courant.
-- Étant donné Antor sur la vue d'ensemble de Lame d'Ébène, quand il clique « Ouvrir le système »,
-  alors il arrive sur la même page E-15, hors de l'univers ; et le menu du sélecteur d'univers lui
-  propose « Systèmes de jeu ».
-- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre « Systèmes de jeu », alors elle voit
-  « CoF Mini » avec « Lame d'Ébène · Joueur » et « Lecture seule » ; sur E-15, ni « Ajouter une
-  créature » ni « Modifier » ; un `POST` d'entrée de sa part reçoit 403.
-- Étant donné Antor, MJ de Lame d'Ébène (« CoF Mini ») et Joueur des Cendres de Vaëlis
-  (« Chroniques Oubliées Fantasy »), alors E-16 montre les deux systèmes, « Lecture seule » sur le
-  second seulement.
-- Étant donné Teo, membre d'aucun univers rattaché, quand il ouvre l'adresse de « CoF Mini », alors
-  il voit « Page introuvable. » ; par l'API, `GET /api/systemes/<CoF Mini>` lui répond 404 avec le
-  même corps que `GET /api/systemes/999999` ; sa liste E-16 dit « Aucun système de jeu pour
+- Given Mira, GM of « Landes grises » attached to « CoF Mini », shared with Antor's « Lame d'Ébène »,
+  when she opens « Systèmes de jeu », then she sees « CoF Mini », « Utilisé par 2
+  univers » and only the « Les Landes grises · MJ » chip; « Lame d'Ébène » appears nowhere,
+  neither on E-16 nor on E-15.
+- Given Antor, when he opens « CoF Mini » from E-16, then the breadcrumb says « Systèmes de
+  jeu › CoF Mini », the sidebar is reduced and « Systèmes de jeu » is its current item.
+- Given Antor on the « Lame d'Ébène » overview, when he clicks « Ouvrir le système »,
+  then he reaches the same E-15 page, outside the universe; and the universe selector menu
+  offers « Systèmes de jeu ».
+- Given Léa, Player in « Lame d'Ébène », when she opens « Systèmes de jeu », then she sees
+  « CoF Mini » with « Lame d'Ébène · Joueur » and « Lecture seule »; on E-15, neither « Ajouter une
+  créature » nor « Modifier »; an entry `POST` from her receives 403.
+- Given Antor, GM of « Lame d'Ébène » (« CoF Mini ») and Player in « Les Cendres de Vaëlis »
+  (« Chroniques Oubliées Fantasy »), then E-16 shows both systems, « Lecture seule » only on the
+  second.
+- Given Teo, member of no attached universe, when he opens the « CoF Mini » address, then
+  he sees « Page introuvable. »; through the API, `GET /api/systemes/<CoF Mini>` returns 404 with the
+  same body as `GET /api/systemes/999999`; his E-16 list says « Aucun système de jeu pour
   l'instant. ».
-- Étant donné un lien gardé vers `/univers/<Lame d'Ébène>/systeme`, quand Antor l'ouvre, alors il
-  arrive sur `/systemes/<CoF Mini>`.
-- Étant donné Antor qui détache Lame d'Ébène de « CoF Mini » (E-14), quand Léa recharge E-16, alors
-  « CoF Mini » n'y est plus et son adresse lui répond « Page introuvable. ».
-- Étant donné Mira, quand elle ouvre « Créatures » de « CoF Mini » après qu'Antor y a ajouté
-  « Garde du sceau », alors elle la voit, avec « Utilisé par 2 univers » et la seule puce « Les
-  Landes grises · MJ ».
-- Étant donné « Admin », MJ de l'univers « Brume » qu'il vient de créer, non rattaché, alors la vue
-  d'ensemble de « Brume » n'a pas de bloc « Système de jeu », E-16 ne lui montre aucun système de
-  « Brume », et `/univers/<Brume>/systeme` répond « Page introuvable. ».
-- Étant donné Antor sur E-14 de Lame d'Ébène, ouvert pendant qu'un autre MJ de l'univers la
-  détache de « CoF Mini », quand il clique « Ouvrir le système », alors il voit « Page
-  introuvable. » et le lien « Systèmes de jeu » ; revenu sur E-14, le panneau dit « Cet univers n'est rattaché à aucun système de
+- Given a saved link to `/univers/<Lame d'Ébène>/systeme`, when Antor opens it, then he
+  reaches `/systemes/<CoF Mini>`.
+- Given Antor detaching « Lame d'Ébène » from « CoF Mini » (E-14), when Léa reloads E-16, then
+  « CoF Mini » is no longer there and its address answers « Page introuvable. ».
+- Given Mira, when she opens « Créatures » in « CoF Mini » after Antor added
+  « Garde du sceau », then she sees it, with « Utilisé par 2 univers » and only the « Les
+  Landes grises · MJ » chip.
+- Given « Admin », GM of the newly created, unattached « Brume » universe, then the
+  « Brume » overview has no « Système de jeu » block, E-16 shows no system for
+  « Brume », and `/univers/<Brume>/systeme` answers « Page introuvable. ».
+- Given Antor on E-14 of « Lame d'Ébène », open while another GM of the universe
+  detaches it from « CoF Mini », when he clicks « Ouvrir le système », then he sees « Page
+  introuvable. » and the « Systèmes de jeu » link; back on E-14, the panel says « Cet univers n'est rattaché à aucun système de
   jeu. ».
-- Étant donné Léa sur la vue d'ensemble de Lame d'Ébène, ouverte avant qu'Antor ne détache
-  l'univers, quand elle clique « Ouvrir le système », alors elle voit « Page introuvable. » et le
-  lien « Systèmes de jeu » ; revenue sur la vue d'ensemble, le bloc « Système de jeu » a disparu.
+- Given Léa on the « Lame d'Ébène » overview, opened before Antor detaches the
+  universe, when she clicks « Ouvrir le système », then she sees « Page introuvable. » and the
+  « Systèmes de jeu » link; back on the overview, the « Système de jeu » block has disappeared.
 
-### E-1 en cartes
+### E-1 as cards
 
-Décision de Monsieur (2026-10-06) : « Mes univers » passe en **grille de cartes**, comme E-8 et
-E-16, pour la cohérence. Ce qui ne change pas : l'en-tête (« Mes univers », « Connecté en tant que
-antor », « Créer un univers »), le compte « 2 univers », l'ordre par nom, E-2 et ses états. Grille :
-colonne de 1 120 px au plus, `repeat(auto-fill, minmax(288 px, 1fr))`, 24 px entre les cartes ; au
-téléphone, une colonne. **Toute la carte mène à E-3.** Chaque carte (composant « Carte d'univers »
-de `docs/charte.md`) :
+Decision by Monsieur (2026-10-06): « Mes univers » becomes a **card grid**, like E-8 and
+E-16, for consistency. Unchanged: the header (« Mes univers », « Connecté en tant que
+antor », « Créer un univers »), the « 2 univers » count, ordering by name, E-2 and its states. Grid:
+column at most 1 120 px wide, `repeat(auto-fill, minmax(288 px, 1fr))`, 24 px between cards; on
+phones, one column. **The whole card leads to E-3.** Each card (« Carte d'univers » component
+in `docs/charte.md`):
 
-- un **en-tête dessiné** 2:1 (3:1 au téléphone), calculé du nom par le frontend : deux reliefs en
-  courbes de niveau (un territoire — là où le système a des dés), le sommet teinté d'encre, et le
-  **sceau** de l'univers (son initiale, article écarté : celui du sélecteur d'univers) en bas à
-  gauche ; la pastille du rôle (« MJ » ambre, « Joueur » vert) en haut à droite ;
-- le **nom** (Fraunces 18 px, une ligne, « … », infobulle) ;
-- la **description** sur deux lignes au plus (Newsreader 15 px), absente si l'univers n'en a pas ;
-- ce qui aide à choisir, en `--texte-3` : le **système de jeu** rattaché (`dices`, son nom coupé par
-  « … ») ou « Sans système de jeu », et le **nombre de membres** (`users-round`, « 2 membres »).
+- a **drawn header** at 2:1 (3:1 on phones), computed from the name by the frontend: two hills in
+  contour lines (a territory — where the system has dice), the peak ink-tinted, and the universe
+  **seal** (its initial, article omitted: the universe selector's seal) at the bottom
+  left; the role badge (« MJ » amber, « Joueur » green) at the top right;
+- the **name** (Fraunces 18 px, one line, « … », tooltip);
+- the **description**, at most two lines (Newsreader 15 px), absent if the universe has none;
+- information helping selection, in `--texte-3`: the attached **game system** (`dices`, its name truncated with
+  « … ») or « Sans système de jeu », and the **member count** (`users-round`, « 2 membres »).
 
-Données : `GET /api/univers` rend en plus, par univers, `systeme: {id, nom}` ou `null` et
-`nbMembres` (les membres d'un univers se lisent déjà par ses membres : aucun droit nouveau, aucune
-colonne nouvelle).
+Data: `GET /api/univers` additionally returns, per universe, `systeme: {id, nom}` or `null` and
+`nbMembres` (universe members can already be read by its members: no new permission, no
+new column).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | inchangé : « Aucun univers pour l'instant. » et les deux chemins (« Créer un univers », l'identifiant à donner au MJ) | « Créer un univers » |
-| chargement | trois cartes squelettes (en-tête, nom, deux lignes) et « Chargement de vos univers… » | — |
-| erreur | « Impossible de charger vos univers. » | « Réessayer » |
-| connexion perdue | le bandeau ; la grille déjà chargée reste ; « Créer un univers » désactivé | ouvrir un univers |
-| refus | sans objet : la page ne montre que les univers du compte | — |
-| contenu long | 100 univers : la grille défile ; un nom de 80 caractères : une ligne, « … », infobulle ; une description longue : deux lignes et « … » ; un nom de système de 80 caractères : coupé par « … », nom entier en infobulle | idem |
+| empty | unchanged: « Aucun univers pour l'instant. » and both paths (« Créer un univers », identifier to give the GM) | « Créer un univers » |
+| loading | three skeleton cards (header, name, two lines) and « Chargement de vos univers… » | — |
+| error | « Impossible de charger vos univers. » | « Réessayer » |
+| connection lost | the banner; loaded grid remains; « Créer un univers » disabled | open a universe |
+| refusal | not applicable: page only shows the account's universes | — |
+| long content | 100 universes: grid scrolls; an 80-character name: one line, « … », tooltip; a long description: two lines and « … »; an 80-character system name: truncated with « … », full name in a tooltip | same |
 
-*Critères.*
-- Étant donné Antor, quand il ouvre « Mes univers », alors il voit deux cartes, par nom : « Lame
-  d'Ébène » (MJ, « CoF Mini », « 2 membres ») et « Les Cendres de Vaëlis » (Joueur, « Chroniques
-  Oubliées Fantasy », « 2 membres ») ; un clic n'importe où sur une carte ouvre la vue d'ensemble.
-- Étant donné Teo, compte neuf, alors il voit l'état vide à deux chemins, inchangé.
+*Criteria.*
+- Given Antor, when he opens « Mes univers », then he sees two cards, by name: « Lame
+  d'Ébène » (« MJ », « CoF Mini », « 2 membres ») and « Les Cendres de Vaëlis » (« Joueur », « Chroniques
+  Oubliées Fantasy », « 2 membres »); clicking anywhere on a card opens the overview.
+- Given Teo, a new account, then he sees the unchanged empty state with two paths.
 
-### Données de départ du bouchon
+### Stub seed data
 
-Les critères de cette tranche supposent un monde. **En mode bouchon (AD-55), au démarrage du
-serveur et seulement si la base n'a encore aucun univers**, Kanevas sème ce jeu de départ, par les
-fonctions de service (AD-2) — pas par du SQL — et sans rien qui existe hors bouchon. Le semis vit au
-démarrage du serveur, pas dans la fabrique de l'application : les tests, qui bâtissent leur
-application sur une base vide, ne le reçoivent que s'ils l'appellent ; les serveurs que lance le harnais e2e posent `KANEVAS_SANS_SEMIS=1` (bouchon seulement) pour garder une base vide. Les images sont quelques
-fichiers PNG et WebP de démonstration versionnés avec le code, déposés par la vraie fonction de pose
-(AD-93), avec un fichier « plan.pdf » et un fichier vide pour les échecs.
+The criteria for this slice assume a world. **In stub mode (AD-55), on server startup
+and only if the database has no universe yet**, Kanevas seeds this starting set, through
+service functions (AD-2) — not SQL — and with nothing that exists outside stub mode. Seeding runs at
+server startup, not in the application factory: tests, which build their
+application on an empty database, receive it only if they call it; servers started by the e2e harness set `KANEVAS_SANS_SEMIS=1` (stub only) to keep an empty database. Images are a few
+demo PNG and WebP files versioned with the code, set through the real illustration-setting function
+(AD-93), with a « plan.pdf » file and an empty file for failures.
 
-Il se pose **en deux temps**, comme les tâches : `kanevas-il-systemes-serveur` pose le mécanisme
-(semis au démarrage en bouchon, base sans univers), les univers, les membres, les systèmes et leurs
-entrées, les fiches **sans illustration**, et versionne les fichiers de démonstration ;
-`kanevas-il-illustration-ecrans`, qui en dépend, y ajoute les illustrations (par la fonction de pose)
-et les fichiers d'échec (« plan.pdf », le fichier vide). Les colonnes « avec illustration » du
-tableau ci-dessous sont donc celles du second temps.
+It is set up **in two stages**, like the tasks: `kanevas-il-systemes-serveur` sets up the mechanism
+(seeding at startup in stub mode, database without universes), universes, members, systems and their
+entries, sheets **without illustrations**, and versions the demo files;
+`kanevas-il-illustration-ecrans`, which depends on it, adds illustrations (through the setting function)
+and failure files (« plan.pdf », empty file). The “with illustration” columns in the
+table below therefore belong to the second stage.
 
-**Provoquer les échecs en bouchon** (règles du bouchon, comme « une demande qui contient « échec » »
-du moteur d'images, AD-55 ; elles vivent dans la couche du bouchon, enregistrée seulement avec
-`KANEVAS_STUB=1`, jamais dans le service) :
-- **retrait qui échoue** : retirer l'illustration d'une fiche dont le titre contient « échec » répond
-  une erreur serveur et ne retire rien ; le semis pose une telle fiche, « Le Portrait de l'échec »
-  (personnage PNJ de Lame d'Ébène, « Apparence » lue des joueurs, avec illustration) ;
-- **image illisible** : le semis pose « La Fresque effacée » (lieu de Lame d'Ébène, lu des joueurs),
-  dont l'illustration est enregistrée mais dont le fichier est absent du disque : sa lecture échoue,
-  E-9 dit « Image indisponible. » et la grille montre la vignette de repli ;
-- **envoi qui n'aboutit pas** : couper le réseau du navigateur pendant l'envoi ; **fichier refusé** :
-  « plan.pdf » et le fichier vide du semis.
+**Triggering failures in stub mode** (stub rules, like a request containing « échec »
+for the image engine, AD-55; they live in the stub layer, registered only with
+`KANEVAS_STUB=1`, never in the service):
+- **failed removal**: removing the illustration of a sheet whose title contains « échec » returns
+  a server error and removes nothing; the seed includes such a sheet, « Le Portrait de l'échec »
+  (NPC in « Lame d'Ébène », « Apparence » read by players, with an illustration);
+- **unreadable image**: the seed includes « La Fresque effacée » (place in « Lame d'Ébène », read by players),
+  whose illustration is recorded but whose file is missing from disk: reading it fails,
+  E-9 says « Image indisponible. » and the grid shows the fallback thumbnail;
+- **upload that does not complete**: cut the browser network during upload; **file refused**:
+  « plan.pdf » and the seed's empty file.
 
-| Objet | Contenu |
+| Object | Content |
 |---|---|
-| comptes | ceux du bouchon : Antor, Léa, Teo, Mira, Admin (inchangés) |
-| « Lame d'Ébène » | Antor MJ, Léa Joueuse ; rattachée à « CoF Mini » |
-| « Les Landes grises » | Mira MJ ; rattachées à « CoF Mini » |
-| « Les Cendres de Vaëlis » | Admin MJ, Antor Joueur ; rattachées à « Chroniques Oubliées Fantasy » |
-| Teo | membre d'aucun univers (donc d'aucun univers rattaché) |
-| « CoF Mini » | règles « Attaque au contact », « Points de chance », « Repos » ; créatures « Gobelin des Landes », « Loup des brumes », « Sentinelle d'Ébène », « Vouivre des tourbières » (pas « Garde du sceau », que le critère fait ajouter) ; objets « Lame grise », « Sceau de Val-Fortin » |
-| « Chroniques Oubliées Fantasy » | quelques entrées de chaque type |
-| personnages de Lame d'Ébène | « Maître Aldric » (PNJ ; « Apparence » lue des joueurs, « Vérité — MJ seul » fermée ; **sans** illustration au départ, pour le critère d'ajout) ; « Bran Corvalis » (PNJ, « Apparence » lue, sans illustration) ; « Le Prieur masqué » (PNJ, une seule section « Secret — MJ seul » : **invisible de Léa** ; **avec** illustration) ; « Léa Brisefer » (PJ, avec illustration) ; « Dame Ombeline de Val-Fortin » (PNJ, avec illustration) ; « Suie » (PNJ, avec illustration) |
-| lieux et factions de Lame d'Ébène | « Val-Fortin » et « Le Pendu Joyeux » (avec illustration), « Rue des Cordiers » (sans) ; « Lames Grises » (avec), « Cercle des Cendres » (section MJ seul, avec illustration : invisible de Léa) |
+| accounts | stub accounts: Antor, Léa, Teo, Mira, Admin (unchanged) |
+| « Lame d'Ébène » | Antor GM, Léa Player; attached to « CoF Mini » |
+| « Les Landes grises » | Mira GM; attached to « CoF Mini » |
+| « Les Cendres de Vaëlis » | Admin GM, Antor Player; attached to « Chroniques Oubliées Fantasy » |
+| Teo | member of no universe (therefore no attached universe) |
+| « CoF Mini » | rules « Attaque au contact », « Points de chance », « Repos »; creatures « Gobelin des Landes », « Loup des brumes », « Sentinelle d'Ébène », « Vouivre des tourbières » (not « Garde du sceau », added by the criterion); items « Lame grise », « Sceau de Val-Fortin » |
+| « Chroniques Oubliées Fantasy » | a few entries of each type |
+| characters in « Lame d'Ébène » | « Maître Aldric » (NPC; « Apparence » read by players, « Vérité — MJ seul » closed; **without** illustration initially, for the addition criterion); « Bran Corvalis » (NPC, « Apparence » read, without illustration); « Le Prieur masqué » (NPC, a single « Secret — MJ seul » section: **invisible to Léa**; **with** illustration); « Léa Brisefer » (PC, with illustration); « Dame Ombeline de Val-Fortin » (NPC, with illustration); « Suie » (NPC, with illustration) |
+| places and factions in « Lame d'Ébène » | « Val-Fortin » and « Le Pendu Joyeux » (with illustration), « Rue des Cordiers » (without); « Lames Grises » (with), « Cercle des Cendres » (GM-only section, with illustration: invisible to Léa) |
 
-**Semis de `kanevas-import`** (ajouté au même semis, par les fonctions de service, chaque morceau par
-la tranche qui le cite la première ; plan de l'epic) :
+**`kanevas-import` seed** (added to the same seed through service functions, each part by
+the first slice referencing it; epic plan):
 
-| Objet | Contenu | Semé par |
+| Object | Content | Seeded by |
 |---|---|---|
-| « Essai Kanka » (univers, sans système) et un jeton d'API | Antor MJ, Léa Joueuse ; le jeton « Jeton du bouchon » d'Antor, valeur fixe connue des tests (`kvs_bouchon_essai…`), un an, semé **en bouchon seulement** comme tout le semis ; c'est là et avec lui que les critères importent (aucun import dans « Lame d'Ébène ») | `kanevas-import-fil` |
-| « Port-Sel » (lieu de Lame d'Ébène) | « Description » lue des joueurs (Markdown : intertitre, liste, tableau des quartiers), « Histoire » lue des joueurs, **Léa pour auteur avec lecture et écriture**, avec un bloc MJ « Le port est tenu en sous-main par la Guilde des Brumes… », « Vérité » MJ seul | `kanevas-import-secrets` |
-| « La Guilde des Brumes » (faction, MJ seul) ; « Rapport secret de l'amirauté » (événement, MJ seul) | la Guilde invisible de Léa ; le rapport porte, dans un bloc MJ, un lien vers « Maître Aldric » ; « Histoire » de Port-Sel lie « Maître Aldric » et « La Guilde des Brumes » ; « Apparence » de « Maître Aldric » lie « Port-Sel » ; « Description » de « La Guilde des Brumes » lie « Maître Aldric » ; dans « Essai Kanka », le lieu « Anse-aux-Sels » (lu des joueurs) dont « Description » porte `[[cle:faction:repaire|les contrebandiers du Repaire]]` (en attente) et `[[999999|Capitaine Hesk]]` (cassé : aucune fiche ne porte cet identifiant) | `kanevas-import-liens` |
-| « Les Sphères » (lieu, MJ seul) ; « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels », « Quartier des Cordiers » (lieux lus des joueurs) ; « Le Repaire des contrebandiers » (lieu, MJ seul) | Port-Sel sous Les Sphères ; les cinq sous Port-Sel, dont le Repaire, invisible de Léa | `kanevas-import-arbre` |
-| sous-types des lieux existants | « Val-Fortin » · Ville, « Le Pendu Joyeux » · Taverne, « Rue des Cordiers » · Rue | `kanevas-import-types` |
-| alias, étiquettes, un savoir | Port-Sel : alias « Salport », « Port-aux-Sels », étiquette « Côte des Brumes » (aussi sur « Cercle des Cendres », invisible de Léa) ; « Chronique de l'Âge d'Ombre » (savoir, lu des joueurs) | `kanevas-import-recherche` |
-| fichiers de la médiathèque | « Plan secret de la Guilde » (image, réservée au MJ, non utilisée) ; « Carte des Sphères » (image, visible des joueurs) : illustration de Port-Sel, insérée dans « Description » de « Val-Fortin », jointe à « Apparence » de « Maître Aldric » ; « port-sel-quais.webp » joint à « Description » de Port-Sel ; « Notes de la table », section de « Léa Brisefer » dont Léa est l'auteur (lit, écrit), fermée aux autres joueurs | `kanevas-import-mediatheque` |
+| « Essai Kanka » (universe, no system) and an API token | Antor GM, Léa Player; Antor's « Jeton du bouchon » token, fixed value known to tests (`kvs_bouchon_essai…`), one year, seeded **in stub mode only** like the whole seed; criteria import here and with this token (no import into « Lame d'Ébène ») | `kanevas-import-fil` |
+| « Port-Sel » (place in « Lame d'Ébène ») | « Description » read by players (Markdown: subheading, list, district table), « Histoire » read by players, **Léa as author with read and write**, with a GM block « Le port est tenu en sous-main par la Guilde des Brumes… », « Vérité » GM-only | `kanevas-import-secrets` |
+| « La Guilde des Brumes » (faction, GM-only); « Rapport secret de l'amirauté » (event, GM-only) | Guild invisible to Léa; the report has, in a GM block, a link to « Maître Aldric »; Port-Sel's « Histoire » links to « Maître Aldric » and « La Guilde des Brumes »; « Apparence » of « Maître Aldric » links to « Port-Sel »; « Description » of « La Guilde des Brumes » links to « Maître Aldric »; in « Essai Kanka », the « Anse-aux-Sels » place (read by players) whose « Description » has « `[[cle:faction:repaire|les contrebandiers du Repaire]]` » (pending) and `[[999999|Capitaine Hesk]]` (broken: no sheet has this identifier) | `kanevas-import-liens` |
+| « Les Sphères » (place, GM-only); « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels », « Quartier des Cordiers » (places read by players); « Le Repaire des contrebandiers » (place, GM-only) | Port-Sel under « Les Sphères »; the five under Port-Sel, including the Repaire, invisible to Léa | `kanevas-import-arbre` |
+| subtypes of existing places | « Val-Fortin » · « Ville », « Le Pendu Joyeux » · « Taverne », « Rue des Cordiers » · « Rue » | `kanevas-import-types` |
+| aliases, labels, one lore sheet | Port-Sel: aliases « Salport », « Port-aux-Sels », label « Côte des Brumes » (also on « Cercle des Cendres », invisible to Léa); « Chronique de l'Âge d'Ombre » (lore, read by players) | `kanevas-import-recherche` |
+| media library files | « Plan secret de la Guilde » (image, GM-only, unused); « Carte des Sphères » (image, visible to players): illustration of Port-Sel, inserted in « Description » of « Val-Fortin », attached to « Apparence » of « Maître Aldric »; « port-sel-quais.webp » attached to « Description » of Port-Sel; « Notes de la table », section of « Léa Brisefer » authored by Léa (read, write), closed to other players | `kanevas-import-mediatheque` |
 
-Teo reste membre d'aucun univers dans le semis : un critère qui a besoin de lui l'ajoute d'abord en
-Joueur de « Lame d'Ébène » (E-4).
+Teo remains a member of no universe in the seed: a criterion needing him first adds him as
+Player in « Lame d'Ébène » (E-4).
 
-### Clôture de `kanevas-illustrations`
+### Closure of `kanevas-illustrations`
 
-B-30 → la grille de E-8 (vignette, repli) et l'en-tête de E-9 (voir, poser, remplacer, retirer). Atteint par P-3 (le MJ prépare son lore : il pose l'illustration sur E-9 et la
-retrouve sur E-8) et P-6 (une joueuse parcourt le lore sur son téléphone : la grille). Chaque rôle a
-sa colonne ci-dessus ; les six états de chaque changement sont dans les tableaux (B-29).
-B-31 → E-16 (nouveau) et E-15 hors univers ; atteints par P-8 (étape 2 :
-« Systèmes de jeu », ou « Ouvrir le système » depuis E-14 / E-3) ; B-14 reste servi par E-15 ;
-chaque relation au système (MJ, Joueur, sans univers rattaché) a sa colonne. Aucune donnée
-nouvelle ; B-13 et B-14 sont inchangés. Les deux besoins viennent des décisions de Monsieur du
-2026-10-06, écrites en B-30 et B-31 (`docs/parcours.md`).
+B-30 → the E-8 grid (thumbnail, fallback) and E-9 header (see, set, replace, remove). Reached by P-3 (the GM prepares lore: sets the illustration on E-9 and
+finds it on E-8) and P-6 (a player browses lore on her phone: the grid). Each role has
+its column above; the six states of each change are in the tables (B-29).
+B-31 → E-16 (new) and E-15 outside universes; reached by P-8 (step 2:
+« Systèmes de jeu », or « Ouvrir le système » from E-14 / E-3); B-14 remains served by E-15;
+each relationship to the system (GM, Player, without an attached universe) has its column. No new
+data; B-13 and B-14 are unchanged. Both needs come from Monsieur's decisions on
+2026-10-06, recorded as B-30 and B-31 (`docs/parcours.md`).
 
-## Détail des écrans de `kanevas-monde`
+## Screen details for `kanevas-monde`
 
-> Le bloc « proposition de mise à jour » de E-12, et rien d'autre : pas de nouvel écran, pas de
-> nouvelle adresse d'écran. Mêmes six états et mêmes textes communs que `kanevas-premiere-fiche`
-> (chargement, connexion perdue, session expirée) ; ne sont redits que les textes propres.
-> Maquette `docs/maquettes/e12-propositions.html` (d'avant la charte : contenu et états seulement) (thème sombre ; le bloc dans ses états,
-> sur ordinateur et sur téléphone). Composant : `docs/charte.md` « Proposition de mise à jour ».
+> The E-12 update proposal block, and nothing else: no new screen, no
+> new screen address. Same six states and common text as `kanevas-premiere-fiche`
+> (loading, connection lost, session expired); only specific text is repeated.
+> Mockup `docs/maquettes/e12-propositions.html` (before the style guide: content and states only) (dark theme; block in its states,
+> on desktop and phones). Component: `docs/charte.md` « Proposition de mise à jour ».
 
-**Comment une proposition naît.** Le MJ écrit dans le champ de E-12, en nommant la section et le
-compte-rendu : « Mets à jour la section Vérité d'Aldric d'après le compte-rendu de la séance 3 ».
-L'assistant ne connaît pas l'écran où se trouve la personne (AD-75 n'envoie que le message et le
-fil) : le compte-rendu se nomme dans la demande. La réponse de l'assistant qui accompagne le bloc est du texte libre du modèle (la maquette en illustre un). L'assistant lit le CR et la section, puis appelle
-l'outil `proposer_mise_a_jour` (AD-80) : **rien n'est écrit dans la section**. La réponse porte un
-événement `proposition_creee` (AD-76) que le fil rend comme un bloc « Mise à jour proposée », sous
-la réponse de l'assistant, à la place d'un bloc « Écrit par l'assistant ».
+**How a proposal is created.** The GM writes in the E-12 field, naming the section and
+session report: « Mets à jour la section Vérité d'Aldric d'après le compte-rendu de la séance 3 ».
+The assistant does not know which screen the person is on (AD-75 sends only the message and
+thread): the report is named in the request. The assistant's answer accompanying the block is free-form model text (the mockup illustrates one). The assistant reads the report and section, then calls
+`proposer_mise_a_jour` (AD-80): **nothing is written in the section**. The response carries a
+`proposition_creee` event (AD-76) that the thread renders as a « Mise à jour proposée » block, below
+the assistant's answer, in place of an « Écrit par l'assistant » block.
 
-### Bloc « Mise à jour proposée »
+### « Mise à jour proposée » block
 
-De haut en bas :
+From top to bottom:
 
-- **l'en-tête** : « Mise à jour proposée » ; dessous, la section visée, « Section « Vérité » de
-  « Maître Aldric » », et la source, « d'après « Séance 3 » » ;
-- **deux zones de texte brut côte à côte** (AD-58 ; *depuis `kanevas-import`, rendues en Markdown par la fonction de rendu d'AD-95, vue du MJ, avec une bascule « Rendu / Source » au-dessus des deux*), étiquetées « Actuel » et « Proposé » ; sous
-  760 px elles s'empilent, « Actuel » d'abord. « Actuel » montre le contenu **courant** de la
-  section au moment de l'affichage (pas celui de la proposition) ; une section vide s'écrit « (section vide) » ;
-- **les gestes** : « Appliquer » (principal), « Abandonner », et un lien « Ouvrir » vers la fiche
-  (E-9, à la section).
+- **header**: « Mise à jour proposée »; below, the target section, « Section « Vérité » de
+  « Maître Aldric » », and the source, « d'après « Séance 3 » »;
+- **two plain text areas side by side** (AD-58; *since `kanevas-import`, rendered in Markdown through AD-95's renderer, GM view, with a « Rendu / Source » toggle above both*), labelled « Actuel » and « Proposé »; below
+  760 px they stack, « Actuel » first. « Actuel » shows the **current** section
+  content at display time (not the proposal's content); an empty section reads « (section vide) »;
+- **actions**: « Appliquer » (primary), « Abandonner », and an « Ouvrir » link to the sheet
+  (E-9, at the section).
 
-Le bloc se lit **au serveur** à chaque affichage et après chaque geste (AD-82) : un bloc ancien
-du fil dit la vérité du moment, pas celle de sa création. « Appliquer » écrit le contenu proposé
-dans la section (AD-81) ; « Abandonner » supprime la proposition. Ni l'un ni l'autre ne passe par
-l'assistant.
+The block is read **from the server** on every display and after every action (AD-82): an old block
+in the thread tells the current truth, not the truth at creation. « Appliquer » writes the proposed content
+in the section (AD-81); « Abandonner » deletes the proposal. Neither goes through
+the assistant.
 
-**Ce que chaque rôle y voit.** Le MJ qui a demandé la proposition : le bloc entier. Le Joueur : il n'a pas
-l'outil (AD-80), donc jamais le bloc ; s'il demande une mise à jour, l'assistant répond qu'il ne
-peut pas, sans événement (texte libre du modèle, comme pour la création d'un scénario). Un autre MJ
-du même univers ne voit pas la proposition de son collègue : **caché**, l'adresse répond comme une adresse inconnue (elle n'est à personne d'autre que son
-demandeur, AD-79) ; l'admin d'instance sans rôle n'a pas E-12. Un MJ en mode Joueur d'une fiche garde son catalogue réel (AD-74) : il peut proposer et appliquer.
-Toute lecture de la proposition par un autre compte répond comme une adresse inconnue (AD-81).
+**What each role sees.** The GM who requested the proposal: the whole block. The Player does not have
+the tool (AD-80), therefore never the block; if they request an update, the assistant answers that it
+cannot, without an event (free-form model text, as for creating a scenario). Another GM
+of the same universe does not see their colleague's proposal: **hidden**, its address responds like an unknown address (it belongs only to its
+requester, AD-79); the instance admin without a role has no E-12. A GM in a sheet's player mode keeps their actual catalogue (AD-74): they can propose and apply.
+Any read of the proposal by another account responds like an unknown address (AD-81).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | sans objet : le bloc n'existe qu'avec une proposition (l'outil refuse un contenu vide, AD-80), donc « Proposé » n'est jamais vide ; une section vide s'écrit « (section vide) » dans « Actuel » | — |
-| chargement (lecture de la proposition) | l'en-tête absent ; « Chargement de la proposition… » (`role="status"`) ; ni zones ni gestes | continuer à écrire dans le fil ; fermer |
-| en attente | l'en-tête, « Actuel » et « Proposé », les gestes | Appliquer ; Abandonner ; Ouvrir |
-| relecture (après un geste, ou à l'affichage d'un bloc déjà lu) | l'ancien contenu reste lisible, sans « Chargement… » ; les gestes sont désactivés (`aria-disabled`) le temps de la relecture | lire ; Ouvrir |
-| application ou abandon en cours | « Appliquer » (ou « Abandonner ») affiche « … » ; les deux gestes désactivés (`aria-disabled`) ; zones inchangées | attendre |
-| appliquée | l'en-tête reste (section visée, source) ; « Appliquée : la section « Vérité » est à jour. » (`role="status"`) ; « Actuel » montre le contenu appliqué, « Proposé » disparaît ; plus de geste, sauf « Ouvrir » | Ouvrir |
-| abandonnée (par ce geste) | l'en-tête reste (section visée, source) ; « Proposition abandonnée. » (`role="status"`) ; plus de zones ni de geste | continuer à écrire dans le fil |
-| périmée (la section a changé depuis la proposition, par n'importe qui), vue à l'affichage **ou découverte au clic** sur « Appliquer » (refus `section_modifiee` : le bloc se relit et passe à cet état, rien n'est écrit) | le bandeau « La section a changé depuis la proposition. Demandez-en une nouvelle. » (`role="alert"`) au-dessus des zones ; « Actuel » montre le contenu courant ; « Appliquer » désactivé (`aria-disabled`) | Abandonner ; Ouvrir ; demander une nouvelle proposition dans le fil. Une proposition **appliquée** ne devient jamais « périmée » : elle reste « appliquée » même si la section change ensuite |
-| erreur | à la lecture : « Je n'ai pas pu afficher la proposition — réessayer » (`role="alert"`) avec « Réessayer » qui la relit ; à un geste : « L'action n'a pas abouti. Réessayez. » (`role="alert"`) au-dessus des gestes, la proposition reste en attente, les gestes se réactivent | Réessayer ; le geste à nouveau |
-| connexion perdue | le bandeau commun (« Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », texte de `kanevas-premiere-fiche`) ; zones lisibles ; « Appliquer » et « Abandonner » désactivés ; perdue pendant un geste en cours, la réponse est perdue : le « … » disparaît, les gestes restent désactivés, et au retour de la connexion la proposition est relue — le bloc dit ce que la base dit (appliquée ou en attente), jamais un état supposé | lire ; Ouvrir |
-| refus (adresse inconnue : abandonnée ailleurs, supprimée avec sa section, autre compte, MJ retiré de l'univers) | « Cette proposition n'existe plus. » ; plus de zones ni de geste ; session expirée : la personne est menée à la connexion, le fil est perdu | continuer à écrire dans le fil |
-| déjà appliquée, vue d'un autre onglet | même rendu que « appliquée » (la lecture dit l'état, AD-82) ; un « Appliquer » ou un « Abandonner » en course rend 409 `proposition_appliquee` et le bloc se relit | Ouvrir |
-| contenu long | contenu de 100 000 caractères : chaque zone a une hauteur maximale de 15 lignes et défile (`tabindex="0"`, étiquetée « Actuel » / « Proposé ») ; les paragraphes (lignes vides) sont conservés ; un titre de fiche ou de compte-rendu de 120 caractères passe à la ligne | faire défiler chaque zone |
+| empty | not applicable: the block only exists with a proposal (the tool refuses empty content, AD-80), so « Proposé » is never empty; an empty section reads « (section vide) » in « Actuel » | — |
+| loading (reading the proposal) | no header; « Chargement de la proposition… » (`role="status"`); no areas or actions | keep writing in the thread; close |
+| pending | header, « Actuel » and « Proposé », actions | « Appliquer »; « Abandonner »; « Ouvrir » |
+| rereading (after an action, or when displaying a previously read block) | old content stays readable, without « Chargement… »; actions disabled (`aria-disabled`) during reread | read; « Ouvrir » |
+| applying or abandoning | « Appliquer » (or « Abandonner ») shows « … »; both actions disabled (`aria-disabled`); areas unchanged | wait |
+| applied | header remains (target section, source); « Appliquée : la section « Vérité » est à jour. » (`role="status"`); « Actuel » shows applied content, « Proposé » disappears; no action except « Ouvrir » | « Ouvrir » |
+| abandoned (by this action) | header remains (target section, source); « Proposition abandonnée. » (`role="status"`); no more areas or actions | keep writing in the thread |
+| stale (section changed since the proposal, by anyone), seen on display **or discovered on clicking** « Appliquer » (`section_modifiee` refusal: block reread and moves to this state, nothing written) | « La section a changé depuis la proposition. Demandez-en une nouvelle. » banner (`role="alert"`) above the areas; « Actuel » shows current content; « Appliquer » disabled (`aria-disabled`) | « Abandonner »; « Ouvrir »; request a new proposal in the thread. An **applied** proposal never becomes stale: it stays applied even if the section later changes |
+| error | on read: « Je n'ai pas pu afficher la proposition — réessayer » (`role="alert"`) with « Réessayer » which rereads it; on an action: « L'action n'a pas abouti. Réessayez. » (`role="alert"`) above the actions, proposal stays pending, actions re-enabled | « Réessayer »; repeat the action |
+| connection lost | common banner (« Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », text from `kanevas-premiere-fiche`); readable areas; « Appliquer » and « Abandonner » disabled; lost during an action, the response is lost: « … » disappears, actions stay disabled, and when connection returns the proposal is reread — block says what the database says (applied or pending), never an assumed state | read; « Ouvrir » |
+| refusal (unknown address: abandoned elsewhere, deleted with its section, other account, GM removed from universe) | « Cette proposition n'existe plus. »; no more areas or actions; session expired: person taken to sign-in, thread lost | keep writing in the thread |
+| already applied, seen from another tab | same rendering as applied (read gives state, AD-82); a racing « Appliquer » or « Abandonner » returns 409 `proposition_appliquee` and block is reread | « Ouvrir » |
+| long content | 100 000-character content: each area has a maximum height of 15 lines and scrolls (`tabindex="0"`, labelled « Actuel » / « Proposé »); paragraphs (blank lines) preserved; a 120-character sheet or report title wraps | scroll each area |
 
-La proposition vit en base (AD-79) mais le fil non (AD-28) : au rechargement de la page, au changement d'univers ou
-après « Nouvelle conversation », le bloc disparaît du fil et la proposition devient inatteignable ; elle
-reste en base jusqu'à être remplacée par une nouvelle pour la même section (AD-79). Limite acceptée de la V1, bornée : une
-proposition en attente par section et par MJ.
+The proposal lives in the database (AD-79) but the thread does not (AD-28): on page reload, universe change or
+after « Nouvelle conversation », the block disappears from the thread and the proposal becomes unreachable; it
+stays in the database until replaced by a new one for the same section (AD-79). Accepted, bounded V1 limitation: one
+pending proposal per section and per GM.
 
-*Critère.* Étant donné Léa qui a écrit le compte-rendu « Séance 3 » et la fiche « Maître Aldric »
-dont « Vérité » dit « Il sert la Couronne », quand Antor demande à son assistant de mettre à jour
-« Vérité » d'après ce compte-rendu, alors le fil montre « Mise à jour proposée » avec « Actuel »
-et « Proposé » et **la section n'a pas changé** (la fiche, ouverte à côté, l'atteste) ; quand il clique « Appliquer », la section
-montre le contenu proposé et le bloc dit « Appliquée » ; quand une autre proposition est faite puis que
-quelqu'un modifie la section, « Appliquer » est désactivé et le bandeau dit pourquoi ; Léa,
-qui demande la même chose à son assistant, n'obtient aucune proposition.
+*Criterion.* Given Léa who wrote the « Séance 3 » report and the « Maître Aldric » sheet
+whose « Vérité » says « Il sert la Couronne », when Antor asks his assistant to update
+« Vérité » from this report, then the thread shows « Mise à jour proposée » with « Actuel »
+and « Proposé » and **the section has not changed** (the sheet, opened alongside, proves it); when he clicks « Appliquer », the section
+shows the proposed content and the block says « Appliquée »; when another proposal is made and then
+someone edits the section, « Appliquer » is disabled and the banner explains why; Léa,
+asking her assistant the same thing, receives no proposal.
 
-### Clôture de `kanevas-monde`
+### Closure of `kanevas-monde`
 
-B-21 → bloc « Mise à jour proposée » (toutes ses lignes) ; B-27 → proposer (générer reste à
-`kanevas-images`). Parcours : P-5 étapes 2 et 3. Rôles : le MJ a le bloc et ses gestes, le Joueur
-ne l'a pas, l'admin d'instance sans rôle n'a pas E-12. Une migration (la table `propositions`, numérotée
-à la fusion, AD-51). Reste hors de la tranche : l'application par un joueur, les propositions en
-lot, la reprise d'une proposition après rechargement.
+B-21 → « Mise à jour proposée » block (all its rows); B-27 → propose (generation remains with
+`kanevas-images`). Journey: P-5 steps 2 and 3. Roles: GM has the block and its actions, Player
+does not, instance admin without a role has no E-12. One migration (the `propositions` table, numbered
+at merge, AD-51). Still outside this slice: applying by a player, batch proposals,
+resuming a proposal after reload.
 
-## Maquettes
+## Mockups
 
-`docs/maquettes/<écran>.html`, une par écran structurant. Elles illustrent ; ce document décide,
-et quand les deux divergent, la maquette a tort.
+`docs/maquettes/<écran>.html`, one per structural screen. They illustrate; this document decides,
+and when the two diverge, the mockup is wrong.
 
-**Finies** (direction, tokens et composants de `docs/charte.md`, deux thèmes, bureau et
-téléphone, vrai contenu) : E-1, E-3, E-4, E-6, E-8, E-9, E-14 (liste de référence ; les autres sections y renvoient). Depuis `kanevas-illustrations`, `e08` est la grille de cartes
-(types Personnages, Lieux, Factions, `#etat-lieux`, `#etat-factions`) et `e09` porte l'illustration
-de l'en-tête ; leurs images sont des illustrations de démonstration peintes en SVG. E-15 et E-16
-(`e15-systeme-de-jeu.html`, `e16-systemes-de-jeu.html`) sont finies hors du cadre d'un univers ;
-les menus du sélecteur d'univers des maquettes `e03`, `e08`, `e09`, `e14` et la barre de `e01` portent
-« Systèmes de jeu ». `e09-fiche.html` **fait référence pour le
-cadre** de tous les écrans d'un univers (barre latérale, sélecteur d'univers, menu du compte,
-barre haute, bascule de mode, bouton « Demander à Kanevas », tiroir au téléphone) et pour les
-composants partagés. Leurs états s'ouvrent par l'adresse (`#etat-joueur`, `#etat-menu`,
-`#etat-perdue`… ; la liste est en tête de leur style). Le bloc « Cartes visibles » de `e03` et les maquettes `e10` et `e11` appartiennent à
-`kanevas-cartes-graphes` (détail plus bas).
+**Finished** (direction, tokens and components from `docs/charte.md`, both themes, desktop and
+phones, real content): E-1, E-3, E-4, E-6, E-8, E-9, E-14 (reference list; other sections refer to it). Since `kanevas-illustrations`, `e08` is the card grid
+(types « Personnages », « Lieux », « Factions », `#etat-lieux`, `#etat-factions`) and `e09` carries the header
+illustration; their images are demo illustrations painted in SVG. E-15 and E-16
+(`e15-systeme-de-jeu.html`, `e16-systemes-de-jeu.html`) are finished outside the universe shell;
+the universe selector menus in mockups `e03`, `e08`, `e09`, `e14` and the `e01` sidebar carry
+« Systèmes de jeu ». `e09-fiche.html` **is the reference for the
+shell** of every universe screen (sidebar, universe selector, account menu,
+top bar, mode toggle, « Demander à Kanevas » button, drawer on phones) and shared
+components. Their states open through the address (`#etat-joueur`, `#etat-menu`,
+`#etat-perdue`…; the list is at the top of their styles). The « Cartes visibles » block in `e03` and mockups `e10` and `e11` belong to
+`kanevas-cartes-graphes` (details below).
 
-**Finies par le cadrage de `kanevas-import`** : `e09-fiche-importee.html` (E-9 : Markdown, liens,
-bloc MJ, fil d'ancêtres, « Contient », « Mentionnée dans », menu de la fiche), `e18-acces-api.html`
-(E-18), `e14-types-de-fiche.html` (panneaux « Types de fiche » de E-14 et E-15, suppression d'un
-univers) et `e19-mediatheque.html` (E-19 : images et documents, le sélecteur), dans le cadre et avec les composants
-de `e09-fiche.html`.
+**Finished by the `kanevas-import` framing**: `e09-fiche-importee.html` (E-9: Markdown, links,
+GM block, ancestor trail, « Contient », « Mentionnée dans », sheet menu), `e18-acces-api.html`
+(E-18), `e14-types-de-fiche.html` (E-14 and E-15 « Types de fiche » panels, universe
+deletion) and `e19-mediatheque.html` (E-19: images and documents, the picker), within the shell and with the components
+of `e09-fiche.html`.
 
-**D'avant la charte** : les autres (e02, e05, e07, e10, e11, e12-assistant, e12-propositions, e13). Elles valent pour le contenu et le vocabulaire, pas pour la
-forme ; un écran qui n'a qu'elles se construit dans le cadre et avec les composants de la
-maquette E-9.
+**Before the style guide**: the others (e02, e05, e07, e10, e11, e12-assistant, e12-propositions, e13). They specify content and vocabulary rather than
+appearance; a screen with only these mockups is built within the shell and with the components of the
+E-9 mockup.
 
-**Hors produit, en bouchon seulement** : la page de démonstration des composants
-(`/demo-composants`), servie quand `KANEVAS_STUB=1` et absente sinon (404), comme l'écran de
-choix d'un compte de test.
+**Outside the product, in stub mode only**: the component demo page
+(`/demo-composants`), served when `KANEVAS_STUB=1` and otherwise absent (404), like the test account
+selection screen.
 
-## Détail des écrans de `kanevas-cartes-graphes`
+## Screen details for `kanevas-cartes-graphes`
 
-> E-10 Cartes, E-11 Carte (carte illustrée et graphe), le bloc « Cartes visibles » de E-3, l'item « Cartes »
-> de la barre latérale (il apparaît avec cette tranche). Mêmes états (B-29) et mêmes textes communs que
-> la première fiche (chargement, erreur, connexion perdue, écriture en cours, échec d'une écriture,
-> refus « Page introuvable. », session expirée). Maquettes : `e10` (liste : MJ, Joueuse, vide,
-> création en erreur) et `e11` (carte illustrée et graphe : MJ, MJ en mode Joueur, Joueuse, états).
-> Le document prime sur la maquette.
+> E-10 Maps, E-11 Map (illustrated map and graph), the E-3 « Cartes visibles » block, the « Cartes »
+> sidebar item (appears with this slice). Same states (B-29) and common text as
+> the first sheet (loading, error, connection lost, write in progress, failed write,
+> refusal « Page introuvable. », session expired). Mockups: `e10` (list: GM, Player, empty,
+> creation error) and `e11` (illustrated map and graph: GM, GM in player mode, Player, states).
+> The document takes precedence over the mockup.
 
-### E-10 Cartes
+### E-10 Maps
 
-Le titre « Cartes », le sous-titre « Les cartes de l'univers. Les joueurs ne voient que celles que vous rendez visibles. » (MJ seulement), puis la liste des cartes **de l'univers que le compte lit** : le MJ les voit
-toutes ; un Joueur seulement celles qui sont **visibles**. Une
-ligne : une vignette (le fond d'une carte illustrée, un motif neutre sans fond ou pour un graphe), le
-titre, la forme (« Carte illustrée » ou « Graphe »), et pour le MJ l'état « Visible des joueurs » ou
-« MJ seul » (seul ce dernier est une pastille ambre) avec le geste inverse : « Rendre visible » / « Cacher aux joueurs », qui
-agit au clic. Un clic sur le titre ouvre la carte (E-11). Ordre : titre alphabétique, puis création ;
-cent cartes par page et « Charger la suite ».
+Title « Cartes », subtitle « Les cartes de l'univers. Les joueurs ne voient que celles que vous rendez visibles. » (GM only), then the list of **universe maps the account can read**: GM sees
+them all; a Player sees only those that are **visible**. A
+row: a thumbnail (illustrated map background, neutral pattern without a background or for a graph), the
+title, form (« Carte illustrée » or « Graphe »), and for the GM the « Visible des joueurs » or
+« MJ seul » state (only the latter is an amber badge) with the reverse action: « Rendre visible » / « Cacher aux joueurs », which
+takes effect on click. Clicking the title opens the map (E-11). Order: alphabetical title, then creation;
+one hundred maps per page and « Charger la suite ».
 
-*Créer (MJ).* En tête, « Nouvelle carte » ouvre un formulaire en ligne : **Titre** (1 à 80
-caractères), **Forme** (« Carte illustrée » par défaut, ou « Graphe » ; elle ne se change plus
-ensuite), et pour une carte illustrée **Image de fond** (« Choisir une image », facultative : choisir
-n'envoie rien, l'image part avec « Créer »). « Créer » mène à la carte (E-11), **non visible** ; un
-graphe naît vide, ses fiches se choisissent sur la carte. « Annuler » ferme le formulaire.
+*Create (GM).* At the top, « Nouvelle carte » opens an inline form: **« Titre »** (1 to 80
+characters), **« Forme »** (« Carte illustrée » by default, or « Graphe »; cannot be changed
+later), and for an illustrated map **« Image de fond »** (« Choisir une image », optional: choosing
+sends nothing, the image is sent with « Créer »). « Créer » leads to the map (E-11), **not visible**; a
+graph starts empty, its sheets are selected on the map. « Annuler » closes the form.
 
-| Rôle | Voir | Créer | Rendre visible / cacher |
+| Role | See | Create | Make visible / hide |
 |---|---|---|---|
-| MJ | toutes les cartes de l'univers | oui | oui |
-| Joueur | les cartes visibles ; ni l'état ni le geste de visibilité | **absent** | **absent** |
-| MJ en mode Joueur | sur E-10 la bascule n'est pas proposée : le MJ y voit toujours la liste complète ; le mode Joueur se joue sur E-11 | — | — |
-| Admin d'instance, ou compte sans rôle dans l'univers (Teo) | aucune (« Page introuvable. ») | — | — |
+| GM | all universe maps | yes | yes |
+| Player | visible maps; neither visibility state nor action | **absent** | **absent** |
+| GM in player mode | E-10 offers no toggle: GM always sees the full list here; player mode is on E-11 | — | — |
+| Instance admin, or account without a universe role (Teo) | none (« Page introuvable. ») | — | — |
 
-*Textes.* Aucune carte : MJ « Aucune carte pour l'instant. Créez-en une pour commencer. » (le
-formulaire reste proposé) ; Joueur « Aucune carte n'est visible pour l'instant. » ; titre vide ou
-trop long : « Erreur : le titre est obligatoire. » / « Erreur : 80 caractères au plus. » ; fond qui
-n'est pas une image PNG, JPEG, GIF ou WebP, ou vide : « Erreur : ce fichier n'est pas une image (PNG,
-JPEG, GIF ou WebP). » ; fond de plus de 25 Mo (réponse 413) : « Erreur : l'image dépasse 25 Mo. » *(`kanevas-synchro`: « Image trop lourde : <N> Mo au plus. », N the instance setting, B-89)* ; échec de
-création : « La carte n'a pas pu être créée. Réessayez. », le formulaire garde sa saisie (le fond
-choisi aussi). Une vignette qui ne se charge pas montre le motif neutre.
+*Text.* No map: GM « Aucune carte pour l'instant. Créez-en une pour commencer. » (form
+still available); Player « Aucune carte n'est visible pour l'instant. »; empty or
+long title: « Erreur : le titre est obligatoire. » / « Erreur : 80 caractères au plus. »; background that
+is not a PNG, JPEG, GIF or WebP image, or is empty: « Erreur : ce fichier n'est pas une image (PNG,
+JPEG, GIF ou WebP). »; background above 25 MB (413 response): « Erreur : l'image dépasse 25 Mo. » *(`kanevas-synchro`: « Image trop lourde : <N> Mo au plus. », N the instance setting, B-89)*; failed
+creation: « La carte n'a pas pu être créée. Réessayez. », form keeps its input (including the chosen
+background). A thumbnail that fails to load shows the neutral pattern.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | les textes ci-dessus ; pour le MJ, « Nouvelle carte » | créer (MJ) |
-| chargement | « Chargement… » seul, à la place de l'écran | — |
-| erreur | « Impossible de charger cette page. » ; échec d'une visibilité : « L'action n'a pas abouti. Réessayez. » et l'état d'avant | « Réessayer » |
-| connexion perdue | le bandeau ; « Nouvelle carte », « Créer », « Rendre visible », « Cacher aux joueurs » désactivés ; la liste chargée reste | ouvrir une carte déjà listée |
-| refus | Admin d'instance, ou compte sans rôle : « Page introuvable. » et « Mes univers » | « Mes univers » |
-| contenu long | un titre de 80 caractères passe à la ligne ; 100 cartes, puis « Charger la suite » (« Impossible de charger la suite. » et le bouton reste en cas d'échec) | charger la suite |
+| empty | text above; for GM, « Nouvelle carte » | create (GM) |
+| loading | only « Chargement… », in place of the screen | — |
+| error | « Impossible de charger cette page. »; failed visibility change: « L'action n'a pas abouti. Réessayez. » and previous state | « Réessayer » |
+| connection lost | the banner; « Nouvelle carte », « Créer », « Rendre visible », « Cacher aux joueurs » disabled; loaded list remains | open an already listed map |
+| refusal | Instance admin, or account without a role: « Page introuvable. » and « Mes univers » | « Mes univers » |
+| long content | an 80-character title wraps; 100 maps, then « Charger la suite » (« Impossible de charger la suite. » and button remains on failure) | load more |
 
-*Critères.*
-- Étant donné Antor, MJ, qui crée « La ville de Brume » (carte illustrée, avec un fond) puis revient à
-  la liste, alors Léa ne la voit pas ; quand Antor clique « Rendre visible », elle la voit, sans
-  l'état de visibilité ni le geste.
-- Étant donné un fichier « plan.pdf » choisi comme fond, alors la création est refusée par le texte
-  ci-dessus et rien n'est créé.
-- Étant donné Teo, sans rôle dans l'univers, quand il force l'adresse de la liste, alors il voit
+*Criteria.*
+- Given Antor, GM, creating « La ville de Brume » (illustrated map, with a background) then returning to
+  the list, then Léa does not see it; when Antor clicks « Rendre visible », she sees it without
+  the visibility state or action.
+- Given a « plan.pdf » file chosen as background, then creation is refused with the text
+  above and nothing is created.
+- Given Teo, without a universe role, when he forces the list address, then he sees
   « Page introuvable. ».
 
-### E-11 Carte
+### E-11 Map
 
-En tête : le titre (MJ : « Renommer » — un champ en ligne, 1 à 80 caractères, « Enregistrer » /
-« Annuler »), la forme, l'état de visibilité, et pour le MJ la **bascule mode MJ / mode Joueur** (celle de la barre haute) et
-« Rendre visible » / « Cacher aux joueurs ». Dessous, **le cadre** de la carte, puis la liste
-« Sur la carte », puis (graphe) la liste « Liens ».
+At the top: title (GM: « Renommer » — an inline field, 1 to 80 characters, « Enregistrer » /
+« Annuler »), form, visibility state, and for the GM the **GM mode / player mode toggle** (from the top bar) and
+« Rendre visible » / « Cacher aux joueurs ». Below, the map **frame**, then the
+« Sur la carte » list, then (graph) the « Liens » list.
 
-*Carte illustrée.* Le cadre montre l'image de fond à ses proportions (16/10 neutre sans fond, AD-70) ;
-chaque **token** est un rond portant la première lettre du titre de sa fiche, avec le titre dessous
-(24 caractères, puis « … »). Sa zone cliquable fait au moins 44 px. Un token n'est présent que si sa
-fiche est lisible du lecteur (AD-38). **Joueur** : toucher un token ouvre la fiche (E-9) ; rien d'autre.
-**MJ (mode MJ)** : un clic **sélectionne** le token et met le token en évidence (anneau ambre, la couleur du MJ) et ouvre, sous le cadre, un panneau MJ au liseré ambre « Maître
-Aldric · Personnage » avec « Ouvrir la fiche » et « Retirer de la carte » (ce bouton demande la même confirmation que la liste « Sur la carte » : rien n'est retiré au premier clic) ; on **déplace** un token au
-glisser, ou au clavier (token sélectionné : flèches, 1 %, avec Maj 5 % ; l'aide « Flèches : déplacer de 1 % (Maj : 5 %) » est affichée sous le cadre) ; la position s'enregistre au
-relâchement (ou à la touche) ; hors du cadre elle est ramenée au bord. « Ajouter une fiche » ouvre une
-fenêtre : un choix de **type** (les sept ; *depuis `kanevas-import`, la liste du produit, types activés d'abord, AD-102*), un champ de recherche (lancée par « Chercher » ou Entrée ; plus de 100 caractères : « 100 caractères au plus. »), la liste des fiches de ce type
-(celles que le MJ lit : toutes), chacune avec « Ajouter » ; une fiche déjà sur la carte porte « Déjà
-sur la carte » sans bouton. « Fermer » ferme la fenêtre. Le token apparaît au **centre** (50 %, 50 %), prêt à être déplacé.
-« Changer le fond » (« Ajouter un fond » s'il n'y en a pas) ouvre le sélecteur : **choisir l'image
-suffit**, elle part aussitôt et remplace l'ancienne.
+*Illustrated map.* The frame shows the background image at its aspect ratio (neutral 16/10 without a background, AD-70);
+each **token** is a circle with the first letter of its sheet's title, with the title underneath
+(24 characters, then « … »). Its clickable area is at least 44 px. A token is present only if its
+sheet is readable by the reader (AD-38). **Player**: touching a token opens the sheet (E-9); nothing else.
+**GM (GM mode)**: a click **selects** the token, highlights it (amber ring, the GM colour) and opens, below the frame, an amber-bordered GM panel « Maître
+Aldric · Personnage » with « Ouvrir la fiche » and « Retirer de la carte » (this button requires the same confirmation as the « Sur la carte » list: nothing is removed on first click); a token is **moved** by
+dragging, or with the keyboard (selected token: arrows, 1%, with Shift 5%; the « Flèches : déplacer de 1 % (Maj : 5 %) » help is displayed below the frame); position is saved on
+release (or keypress); outside the frame it is clamped to the edge. « Ajouter une fiche » opens a
+window: a **type** choice (the seven; *since `kanevas-import`, the product list, enabled types first, AD-102*), a search field (started with « Chercher » or Enter; more than 100 characters: « 100 caractères au plus. »), the list of sheets of this type
+(those the GM reads: all), each with « Ajouter »; a sheet already on the map has « Déjà
+sur la carte » without a button. « Fermer » closes the window. The token appears at the **centre** (50%, 50%), ready to move.
+« Changer le fond » (« Ajouter un fond » if there is none) opens the picker: **choosing the image
+is enough**, it is sent immediately and replaces the previous one.
 
-*Graphe.* Le cadre est un schéma : un **nœud** par fiche (rond, première lettre, titre dessous, 24
-caractères), une flèche par **lien** de la fiche d'où vient la relation vers la fiche visée, avec le
-type de la relation écrit sur la flèche (lien de A vers B : « membre de »). La disposition est celle
-du navigateur (AD-71) ; elle n'est pas modifiable. La zone cliquable d'un nœud fait au moins 44 px ; le
-cadre prend la largeur que la page lui donne (jamais moins d'un nœud plus ses marges) et sa hauteur
-grandit avec le nombre de lignes de nœuds ; chaque nœud occupe sa propre case (150 × 70 px) d'une
-grille, donc deux nœuds ne se recouvrent jamais ; ce qui ne tient pas dans la largeur (téléphone)
-défile, et la liste « Sur la carte » reste le chemin sûr au toucher. Joueur : toucher un nœud ouvre sa fiche. MJ : un
-clic sélectionne le nœud, avec « Ouvrir la fiche » et « Retirer de la carte » (même mot, même confirmation que la liste « Sur la carte ») ; « Ajouter une fiche »
-est la même fenêtre. Une relation ajoutée ou retirée sur une fiche se voit au rechargement de la
-carte.
+*Graph.* The frame is a diagram: one **node** per sheet (circle, first letter, title underneath, 24
+characters), one arrow per **link** from the sheet carrying the relation to the target sheet, with the
+relation type written on the arrow (link from A to B: « membre de »). Layout is handled by
+the browser (AD-71); it cannot be edited. A node's clickable area is at least 44 px; the
+frame takes the width the page gives it (never less than a node plus its margins), and its height
+grows with the number of node rows; each node occupies its own cell (150 × 70 px) in a
+grid, so two nodes never overlap; what does not fit the width (phones)
+scrolls, and the « Sur la carte » list remains the reliable touch path. Player: touching a node opens its sheet. GM: a
+click selects the node, with « Ouvrir la fiche » and « Retirer de la carte » (same wording and confirmation as the « Sur la carte » list); « Ajouter une fiche »
+is the same window. A relation added or removed on a sheet appears on map
+reload.
 
-*Fenêtre « Ajouter une fiche »* — états propres, car c'est elle qui décide. **Vide** : un type sans
-fiche, « Aucune fiche de ce type. » ; une recherche sans résultat, « Aucune fiche ne correspond. ».
-**Chargement** : « Chargement… » à la place de la liste, le choix du type et la recherche déjà là.
-**Erreur** : « Impossible de charger les fiches. » et « Réessayer », la fenêtre reste ouverte.
-**Connexion perdue** : le bandeau ; « Ajouter » désactivé, la liste chargée reste. **Contenu long** :
-cent fiches par page et « Charger la suite » (« Impossible de charger la suite. » en cas d'échec) ;
-un titre de 80 caractères passe à la ligne. **Refus** : sans objet, la fenêtre n'existe que pour le
-MJ hors mode Joueur.
+*« Ajouter une fiche » window* — its own states, because it is where the choice is made. **Empty**: a type with no
+sheet, « Aucune fiche de ce type. »; a search without results, « Aucune fiche ne correspond. ».
+**Loading**: « Chargement… » in place of the list, type choice and search already present.
+**Error**: « Impossible de charger les fiches. » and « Réessayer », window stays open.
+**Connection lost**: the banner; « Ajouter » disabled, loaded list remains. **Long content**:
+one hundred sheets per page and « Charger la suite » (« Impossible de charger la suite. » on failure);
+an 80-character title wraps. **Refusal**: not applicable, window exists only for the
+GM outside player mode.
 
-Chaque action de E-10 et de E-11 porte une icône Lucide (règle de `docs/charte.md`, « Icônes ») : Renommer un crayon, Rendre visible / Cacher un œil / œil barré, Ajouter une fiche un plus, Fond une image, Retirer une corbeille, Ouvrir la fiche un lien externe.
+Every E-10 and E-11 action has a Lucide icon (`docs/charte.md`, “Icons” rule): rename a pencil, make visible / hide an eye / crossed-out eye, add a sheet a plus, background an image, remove a bin, open the sheet an external link.
 
-*Sur la carte* (liste sous le cadre, toujours présente quand il y a des éléments) : une ligne par
-token ou nœud, son titre en lien vers la fiche, son type ; pour le MJ, « Retirer de la carte »
-(confirmation sur place : « Retirer « Maître Aldric » de cette carte ? La fiche reste. » avec
-« Retirer de la carte » et « Annuler ») ; c'est aussi le chemin au clavier et au lecteur d'écran.
-*Liens* (graphe) : une ligne « Maître Aldric — membre de → Les Lames Grises » par lien ; aucun lien :
+*« Sur la carte »* (list below the frame, always present when there are elements): one row per
+token or node, title linking to the sheet, type; for the GM, « Retirer de la carte »
+(inline confirmation: « Retirer « Maître Aldric » de cette carte ? La fiche reste. » with
+« Retirer de la carte » and « Annuler »); also the keyboard and screen-reader path.
+*« Liens »* (graph): one « Maître Aldric — membre de → Les Lames Grises » row per link; no links:
 « Aucun lien entre ces fiches. ».
 
-*Visibilité et mode Joueur.* « Rendre visible » rend la carte lisible des Joueurs ; « Cacher aux
-joueurs » la leur retire (au prochain chargement de leur côté : elle leur répond « Page
-introuvable. »). Le **mode Joueur** (AD-39) montre au MJ la carte telle que la verrait un Joueur qui
-n'est l'auteur d'aucune section : mêmes tokens, mêmes nœuds, mêmes liens, plus aucun geste de
-modification. Sur une carte **non visible**, le MJ en mode Joueur voit « Les joueurs ne voient pas
-cette carte : elle n'est pas visible. » avec « Quitter le mode Joueur » (un Joueur, lui, recevrait
+*Visibility and player mode.* « Rendre visible » makes the map readable by Players; « Cacher aux
+joueurs » removes it from them (on their next load: it answers « Page
+introuvable. »). **Player mode** (AD-39) shows the GM the map as a Player who authors no section would
+see it: same tokens, same nodes, same links, no editing
+actions. On a **non-visible** map, the GM in player mode sees « Les joueurs ne voient pas
+cette carte : elle n'est pas visible. » with « Quitter le mode Joueur » (a Player would receive
 « Page introuvable. »).
 
-| Rôle | Voir | Gestes |
+| Role | See | Actions |
 |---|---|---|
-| MJ | la carte, tous ses éléments (toute fiche de l'univers), tous les liens | renommer ; rendre visible ou cacher ; fond ; ajouter une fiche ; déplacer (carte illustrée) ; retirer ; mode Joueur ; ouvrir une fiche |
-| MJ en mode Joueur | comme un Joueur | ouvrir une fiche ; quitter le mode |
-| Joueur | une carte visible ; les éléments dont il lit la fiche, les liens dont il lit la relation (AD-64) et les deux bouts ; **aucun compteur de ce qui manque** | ouvrir une fiche |
-| Admin d'instance, ou compte sans rôle dans l'univers (Teo) | aucune | « Page introuvable. » |
+| GM | map, all its elements (any sheet in the universe), all links | rename; make visible or hide; background; add a sheet; move (illustrated map); remove; player mode; open a sheet |
+| GM in player mode | like a Player | open a sheet; leave mode |
+| Player | a visible map; elements whose sheet they can read, links whose relation (AD-64) and both ends they can read; **no count of what is missing** | open a sheet |
+| Instance admin, or account without a universe role (Teo) | none | « Page introuvable. » |
 
-Un geste qu'un rôle n'a pas est **absent** de l'écran (jamais grisé, sauf hors connexion). Par l'API,
-un geste d'écriture d'un non-MJ est refusé **403** sur une carte qu'il lit ; sur une carte qu'il ne
-lit pas, **404**. Un token dont la fiche devient illisible disparaît au chargement suivant, sans trace.
+An action a role lacks is **absent** from the screen (never greyed out, except offline). Through the API,
+a write action by a non-GM is refused with **403** on a map they can read; on a map they cannot
+read, **404**. A token whose sheet becomes unreadable disappears on next load, without a trace.
 
-*Textes.* Carte illustrée sans token : MJ « Aucun token. Ajoutez une fiche pour la placer sur la
-carte. » ; Joueur « Rien à voir sur cette carte pour l'instant. ». Graphe sans nœud : MJ « Aucune fiche.
-Ajoutez des fiches pour voir leurs liens. » ; Joueur « Rien à voir sur ce graphe pour l'instant. ».
-Fond : fichier non image ou vide « Erreur : ce fichier n'est pas une image (PNG, JPEG, GIF ou WebP). »,
-plus de 25 Mo « Erreur : l'image dépasse 25 Mo. » *(`kanevas-synchro`: the limit and its message are B-89's)*. 100 éléments : « Cette carte porte déjà 100
-éléments. ». Fiche devenue inconnue à l'ajout : « Cette fiche n'existe plus. » (la liste de la fenêtre
-se recharge). Échec d'un déplacement, d'un retrait, d'un ajout, d'un renommage, d'une visibilité, d'un
-fond : « L'action n'a pas abouti. Réessayez. », et l'état d'avant revient (le token retourne à sa
-place) ; une saisie en cours est conservée. Titre vide ou trop long : les textes d'E-10. Le fond qui
-ne charge pas : dans le cadre « Le fond de la carte n'a pas pu être chargé. » avec « Réessayer » ;
-les tokens ne sont pas posés (leurs positions n'ont de sens que sur le fond), la liste « Sur la carte »
-reste. Hors connexion, le fond déjà chargé reste affiché.
+*Text.* Illustrated map without tokens: GM « Aucun token. Ajoutez une fiche pour la placer sur la
+carte. »; Player « Rien à voir sur cette carte pour l'instant. ». Graph without nodes: GM « Aucune fiche.
+Ajoutez des fiches pour voir leurs liens. »; Player « Rien à voir sur ce graphe pour l'instant. ».
+Background: non-image or empty file « Erreur : ce fichier n'est pas une image (PNG, JPEG, GIF ou WebP). »,
+above 25 MB « Erreur : l'image dépasse 25 Mo. » *(`kanevas-synchro`: the limit and its message are B-89's)*. 100 elements: « Cette carte porte déjà 100
+éléments. ». Sheet becoming unknown during addition: « Cette fiche n'existe plus. » (window list
+reloads). Failed move, removal, addition, rename, visibility change or
+background change: « L'action n'a pas abouti. Réessayez. », and previous state returns (token returns to its
+position); ongoing input is preserved. Empty or long title: E-10 text. Background failing to
+load: inside the frame « Le fond de la carte n'a pas pu être chargé. » with « Réessayer »;
+tokens are not placed (their positions make sense only on the background), the « Sur la carte » list
+remains. Offline, the already loaded background stays displayed.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | les textes « Aucun token », « Aucune fiche », « Rien à voir… » ; « Aucun lien entre ces fiches. » pour un graphe sans lien | MJ : ajouter une fiche |
-| chargement | « Chargement… » ; le cadre à 16/10 neutre jusqu'au chargement du fond (« Chargement… » dedans), les tokens posés quand le fond est là | — |
-| erreur | « Impossible de charger cette page. » ; fond : le message du cadre ; échec d'une écriture : « L'action n'a pas abouti. Réessayez. » | « Réessayer » |
-| connexion perdue | le bandeau ; renommer, visibilité, fond, « Ajouter une fiche », déplacer, retirer désactivés (carte illustrée : les tokens deviennent des liens vers la fiche, sans sélection ni glisser ; graphe : la sélection reste) ; la carte chargée reste | lire, ouvrir une fiche |
-| refus | carte inconnue ou illisible, compte sans rôle ou Admin : « Page introuvable. » et « Mes univers » ; MJ en mode Joueur sur une carte non visible : sa propre phrase | « Mes univers », « Quitter le mode Joueur » |
-| contenu long | un titre de 80 caractères passe à la ligne ; 100 éléments : titres de 24 caractères puis « … » (le titre entier dans la liste « Sur la carte », qui défile) ; une image très large ou très haute garde ses proportions et tient en largeur ; téléphone : le cadre prend toute la largeur, une seule colonne | — |
+| empty | « Aucun token », « Aucune fiche », « Rien à voir… » text; « Aucun lien entre ces fiches. » for a graph without links | GM: add a sheet |
+| loading | « Chargement… »; neutral 16/10 frame until background loads (« Chargement… » inside), tokens placed when background is present | — |
+| error | « Impossible de charger cette page. »; background: frame message; failed write: « L'action n'a pas abouti. Réessayez. » | « Réessayer » |
+| connection lost | the banner; rename, visibility, background, « Ajouter une fiche », move, remove disabled (illustrated map: tokens become sheet links, without selection or dragging; graph: selection remains); loaded map remains | read, open a sheet |
+| refusal | map unknown or unreadable, account without a role or Admin: « Page introuvable. » and « Mes univers »; GM in player mode on a non-visible map: its specific sentence | « Mes univers », « Quitter le mode Joueur » |
+| long content | an 80-character title wraps; 100 elements: 24-character titles then « … » (full title in the « Sur la carte » list, which scrolls); a very wide or tall image keeps its aspect ratio and fits the width; phones: frame takes full width, single column | — |
 
-*Critères.*
-- Étant donné la carte illustrée « La ville de Brume » avec un fond, où Antor place « Maître Aldric »
-  et « Les Ombres de Fer » (faction dont Léa ne lit aucune section) puis la rend visible, quand Léa
-  l'ouvre, alors elle voit le fond et le token d'Aldric, ni le token ni le titre de la faction, ni
-  « Les Ombres de Fer » dans la liste « Sur la carte » ; quand elle touche le token d'Aldric, alors
-  elle arrive sur sa fiche.
-- Étant donné la même carte, quand Antor passe en mode Joueur, alors il voit exactement ce que voit
-  Léa ; quand il la cache aux joueurs, alors Léa, au rechargement, voit « Page introuvable. » et la
-  carte n'est plus dans sa liste.
-- Étant donné Antor qui déplace le token d'Aldric puis recharge, alors il est à sa nouvelle place ;
-  une panne pendant le déplacement le ramène à l'ancienne et affiche « L'action n'a pas abouti.
+*Criteria.*
+- Given the illustrated « La ville de Brume » map with a background, where Antor places « Maître Aldric »
+  and « Les Ombres de Fer » (faction of which Léa reads no section) then makes it visible, when Léa
+  opens it, then she sees the background and Aldric's token, neither the faction's token nor title, nor
+  « Les Ombres de Fer » in the « Sur la carte » list; when she touches Aldric's token, then
+  she reaches his sheet.
+- Given the same map, when Antor switches to player mode, then he sees exactly what
+  Léa sees; when he hides it from players, then Léa, on reload, sees « Page introuvable. » and the
+  map is no longer in her list.
+- Given Antor moving Aldric's token then reloading, then it is at its new position;
+  a failure during the move returns it to the old one and displays « L'action n'a pas abouti.
   Réessayez. ».
-- Étant donné le graphe « Les factions » avec « Les Lames Grises », « Les Corbeaux » et « La
-  Guilde » ; la relation « allié de » de la première vers la deuxième, portée par une section que
-  Léa ne lit pas, et « rival de » de la première vers la troisième, portée par une section qu'elle lit :
-  Antor voit les deux liens ; Léa, qui lit les trois fiches de ce graphe, voit seulement « rival de » ;
-  si elle ne lisait pas « La Guilde », elle verrait deux nœuds et aucun lien.
-- Étant donné un graphe où Antor a mis aussi « Les Ombres de Fer » (Léa n'en lit aucune section),
-  alors Léa n'y voit ni son nœud ni ses liens, et aucune trace de leur absence.
-- Étant donné le fond « plan.pdf » choisi sur une carte, alors le refus s'affiche et le fond d'avant
-  reste ; l'adresse du fond d'une carte non visible répond 404 à Léa.
-- Étant donné Léa sur une carte, quand elle force l'adresse d'une action de MJ, alors elle reçoit 403.
+- Given the « Les factions » graph with « Les Lames Grises », « Les Corbeaux » and « La
+  Guilde »; the « allié de » relation from the first to the second, carried by a section
+  Léa does not read, and « rival de » from the first to the third, carried by a section she reads:
+  Antor sees both links; Léa, who reads all three sheets in this graph, sees only « rival de »;
+  if she could not read « La Guilde », she would see two nodes and no link.
+- Given a graph where Antor also placed « Les Ombres de Fer » (Léa reads none of its sections),
+  then Léa sees neither its node nor its links, and no trace of their absence.
+- Given « plan.pdf » chosen as a map background, then the refusal appears and the previous background
+  remains; the background address of a non-visible map returns 404 to Léa.
+- Given Léa on a map, when she forces the address of a GM action, then she receives 403.
 
-### E-3 — le bloc « Cartes visibles »
+### E-3 — the « Cartes visibles » block
 
-Sur la vue d'ensemble, un bloc **Cartes visibles** (le titre de la maquette `e03`), inscrit au registre des blocs de E-3 (un fichier dans
-`frontend/src/ecrans/vue-ensemble/blocs/` que le registre trouve seul (rang après les blocs des campagnes et
-des comptes-rendus) ; aucun bloc existant n'est modifié). Il liste, pour tous les rôles, les **cartes
-visibles des joueurs** (cinq au plus, titre alphabétique) : le titre en lien vers E-11 et la forme ;
-dessous « Toutes » vers E-10. Chaque carte est une vignette (le fond de la carte, ou le motif neutre
-d'un graphe ou d'une carte sans fond) avec une icône carte, le titre et la forme. Le MJ voit donc ce que la table voit ; ses cartes « MJ seul »
-se trouvent sur E-10.
+On the overview, a **« Cartes visibles »** block (the `e03` mockup title), registered in the E-3 block registry (one file in
+`frontend/src/ecrans/vue-ensemble/blocs/` found automatically by the registry (ranked after campaign and
+report blocks); no existing block is changed). For all roles, it lists **maps
+visible to players** (five at most, alphabetical title): title linking to E-11 and form;
+below, « Toutes » to E-10. Each map is a thumbnail (map background, or neutral pattern
+for a graph or map without background) with a map icon, title and form. The GM therefore sees what the table sees; « MJ seul » maps
+are on E-10.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ : « Aucune carte visible des joueurs. » et « Toutes » ; Joueur : **pas de bloc** (ni titre ni compteur) | MJ : « Toutes » |
-| chargement | le titre du bloc et « Chargement… » | — |
-| erreur | « Impossible de charger les cartes. » | « Réessayer » |
-| connexion perdue | le bandeau ; les cartes déjà chargées restent | ouvrir |
-| refus | sans objet : le refus d'E-3 couvre le bloc (« Page introuvable. ») | — |
-| contenu long | un titre tient sur une ligne, puis « … » ; au-delà de cinq cartes, cinq et « Toutes » | — |
+| empty | GM: « Aucune carte visible des joueurs. » and « Toutes »; Player: **no block** (neither title nor count) | GM: « Toutes » |
+| loading | block title and « Chargement… » | — |
+| error | « Impossible de charger les cartes. » | « Réessayer » |
+| connection lost | the banner; already loaded maps remain | open |
+| refusal | not applicable: E-3 refusal covers the block (« Page introuvable. ») | — |
+| long content | title fits on one line, then « … »; beyond five maps, five and « Toutes » | — |
 
-| Rôle | Voir |
+| Role | See |
 |---|---|
-| MJ | le bloc, avec les seules cartes visibles des joueurs |
-| Joueur | le bloc s'il y a au moins une carte visible, sinon aucun bloc |
-| Admin d'instance, ou compte sans rôle | aucun : E-3 lui répond « Page introuvable. » |
+| GM | block, with only maps visible to players |
+| Player | block if at least one map is visible, otherwise no block |
+| Instance admin, or account without a role | none: E-3 answers « Page introuvable. » |
 
-*Critère.* Étant donné deux cartes visibles et une « MJ seul », alors le bloc de Léa en liste deux ;
-celui d'Antor aussi.
+*Criterion.* Given two visible maps and one « MJ seul », then Léa's block lists two;
+Antor's does too.
 
-### Clôture de `kanevas-cartes-graphes`
+### Closure of `kanevas-cartes-graphes`
 
-B-22 → E-10 (créer une carte illustrée avec son fond, ou un graphe) et E-11 (placer des tokens,
-choisir les fiches d'un graphe) ; B-23 → « Rendre visible » et la lecture filtrée d'un joueur ;
-B-12 (carte) → le mode Joueur de E-11. Atteint par P-3 étape 6 (placer le PNJ, mode Joueur, rendre
-visible), P-6 étape 3 (la carte d'un joueur) et P-9 en entier (le graphe). Les écrans E-10 et E-11
-et le bloc de E-3 livrent leurs six états (B-29), ci-dessus.
+B-22 → E-10 (create an illustrated map with its background, or a graph) and E-11 (place tokens,
+choose a graph's sheets); B-23 → « Rendre visible » and a player's filtered read;
+B-12 (map) → E-11 player mode. Reached by P-3 step 6 (place the NPC, player mode, make
+visible), P-6 step 3 (a player's map) and all of P-9 (graph). Screens E-10 and E-11
+and the E-3 block provide their six states (B-29), above.
 
-## Détail des écrans de `kanevas-import` (cadrage)
+## Screen details for `kanevas-import` (scope)
 
-> Cadrage proposé le 2026-10-11 (`epic/kanevas-import`). Besoins B-32 à B-56, parcours P-10 à P-16,
-> décisions AD-95 à AD-111. Les tranches détaillent leurs écrans dans ce cadre ; elles ne
-> l'inventent pas. Écrans structurants, avec maquette finie : **E-9** (la fiche importée, moment fort
-> de P-12), **E-18** (Accès par API, P-10 et P-11), **E-14 / E-15 « Types de fiche »** (P-13), **E-19** (Médiathèque, P-16). E-17 et
-> l'arbre de E-8 sont décrits ici sans maquette : ils se construisent avec les composants de E-8
-> (grille, recherche, pastilles). Les textes communs (chargement, erreur, connexion perdue, refus)
-> sont ceux de `kanevas-premiere-fiche`.
+> Scope proposed on 2026-10-11 (`epic/kanevas-import`). Needs B-32 to B-56, journeys P-10 to P-16,
+> decisions AD-95 to AD-111. Slices detail their screens within this framework; they do not
+> invent it. Key screens, with finished mockups: **E-9** (the imported sheet, the key moment
+> of P-12), **E-18** (API access, P-10 and P-11), **E-14 / E-15 « Types de fiche »** (P-13), **E-19** (media library, P-16). E-17 and
+> the E-8 tree are described here without mockups: they use E-8's components
+> (grid, search, chips). Common texts (loading, error, connection lost, refusal)
+> are those of `kanevas-premiere-fiche`.
 
-### Le Markdown, partout où l'on écrit un texte long
+### Markdown, wherever long text is written
 
-*(`kanevas-scenarios`: a scenario's text is a section of its sheet — what this part says of E-7 holds for that section, resolved in its universe like any section.)* Sections (E-9), scénarios (E-7), entrées d'un système (E-15), comptes-rendus (E-9) : le texte est du
-Markdown (B-32, AD-95). **Ce qui se met en forme** : paragraphes (un saut de ligne simple reste un
-saut de ligne, comme le texte brut d'avant), intertitres `#` à `####` (`#` et `##` au même niveau, rendus sous le titre de la
-section, jamais au-dessus), gras, italique, barré, listes à puces et numérotées, citations, code,
-filets, tableaux, liens web (`http`, `https`, `mailto` seulement ; ils s'ouvrent dans un nouvel
-onglet), fichiers de la médiathèque (une image `![légende](fichier:…)`, un document `[nom](fichier:…)`, B-44), liens vers une fiche (`[[…]]`, B-33),
-blocs MJ (`:::mj` … `:::`, B-34). **Ce qui reste du texte** : tout HTML écrit dans le contenu, une
-image d'une autre adresse (le texte de l'image s'affiche à sa place), un lien d'un autre schéma.
+*(`kanevas-scenarios`: a scenario's text is a section of its sheet — what this part says of E-7 holds for that section, resolved in its universe like any section.)* Sections (E-9), scenarios (E-7), system entries (E-15), session reports (E-9): the text is
+Markdown (B-32, AD-95). **What is formatted**: paragraphs (a single newline remains a
+newline, as with the previous plain text), headings `#` to `####` (`#` and `##` at the same level, rendered below the
+section title, never above it), bold, italic, strikethrough, bulleted and numbered lists, quotations, code,
+rules, tables, web links (`http`, `https`, `mailto` only; they open in a new
+tab), media library files (an image `![légende](fichier:…)`, a document `[nom](fichier:…)`, B-44), sheet links (`[[…]]`, B-33),
+GM blocks (`:::mj` … `:::`, B-34). **What remains text**: any HTML written in the content, an
+image from another address (its alternative text is displayed instead), a link with another scheme.
 
-**Selon le texte** (AD-97) : dans une **section** (et un compte-rendu), tout ce qui précède. Dans un
-**scénario** (E-7), les liens `[[…]]` visent les fiches de l'univers de sa campagne, résolus sous les
-mêmes droits (le lecteur d'un scénario est un MJ de cet univers) ; ils ne comptent pas dans
-« Mentionnée dans » (un scénario n'est pas une fiche) ; pas de fichier ni de bloc MJ (un scénario ne
-référence pas la médiathèque et est déjà au MJ seul). Dans une **entrée de système** (E-15), partagée entre les
-univers rattachés : **pas de lien `[[…]]`** — `[[…]]` y reste du texte, tel qu'écrit, et l'éditeur n'a
-ni « Lien vers une fiche » ni la liste ouverte par `[[` ; pas de fichier ni de bloc MJ non plus. Dans
-un scénario comme dans une entrée de système, `![…](fichier:…)`, `[…](fichier:…)` et `:::mj` **ne sont pas interprétés** :
-ils restent du texte, affiché tel qu'écrit (même règle que `[[…]]` dans une entrée de système) ; l'API
-d'import ne les refuse pas.
+**Depending on the text** (AD-97): in a **section** (and a session report), all of the above. In a
+**scenario** (E-7), `[[…]]` links target sheets in its campaign's universe, resolved under the
+same permissions (a scenario's reader is a GM of that universe); they do not count in
+« Mentionnée dans » (a scenario is not a sheet); no file or GM block (a scenario does not
+reference the media library and is already GM-only). In a **system entry** (E-15), shared between
+attached universes: **no `[[…]]` link** — `[[…]]` remains text as written, and the editor has
+neither « Lien vers une fiche » nor the list opened by `[[`; no file or GM block either. In
+both scenarios and system entries, `![…](fichier:…)`, `[…](fichier:…)` and `:::mj` **are not interpreted**:
+they remain text, displayed as written (the same rule as `[[…]]` in a system entry); the import
+API does not refuse them.
 
-**L'éditeur** (édition en place, charte « L'édition en place ») : le champ de texte garde la police
-de lecture ; au-dessus, une barre d'outils discrète — « Gras », « Italique », « Lien vers une fiche »,
-« Fichier », et pour un MJ « Bloc MJ » (entoure la sélection) — et la bascule « Écrire /
-Aperçu ». Raccourcis : Ctrl/⌘+B, Ctrl/⌘+I, Ctrl/⌘+K (lien vers une fiche), Échap annule, Ctrl/⌘+Entrée
-enregistre. Taper `[[` ouvre la liste de recherche de E-8 (`ListeRecherche`, tous types) au point
-d'insertion ; choisir une fiche insère `[[<id>|<titre>]]`, Échap ferme la liste et laisse `[[`. Le
-compteur dit « 12 480 / 100 000 ».
+**The editor** (inline editing, charter's inline editing section): the text field keeps the reading
+font; above it, a discreet toolbar — « Gras », « Italique », « Lien vers une fiche »,
+« Fichier », and for a GM « Bloc MJ » (wraps the selection) — and the « Écrire /
+Aperçu » toggle. Shortcuts: Ctrl/⌘+B, Ctrl/⌘+I, Ctrl/⌘+K (sheet link), Escape cancels, Ctrl/⌘+Enter
+saves. Typing `[[` opens E-8's search list (`ListeRecherche`, all types) at the insertion
+point; choosing a sheet inserts `[[<id>|<titre>]]`, Escape closes the list and leaves `[[`. The
+counter reads « 12 480 / 100 000 ».
 
-**Rendu** : un lien vers une fiche lisible est en `--accent-texte`, souligné fin, avec l'icône du type
-au survol ; vers une fiche illisible : le texte, sans aucune marque ; **lien cassé** (MJ seul) : le
-texte souligné en tirets `--danger`, infobulle « Lien cassé : cette fiche n'existe plus. » ; **lien en
-attente** d'import (MJ seul) : souligné en tirets `--texte-3`, infobulle « Lien en attente : aucune
-fiche n'a encore la clé « personnage:aldric ». ». Un **bloc MJ**, pour le MJ hors mode Joueur, prend
-la matière de la section MJ seul (trame hachurée, filet ambre, pastille « MJ seul » `lock`) **dans** la
-section, à sa place dans le texte ; en mode Joueur et pour tout autre lecteur, il n'existe pas — pas de
-blanc, pas de filet, le paragraphe suivant suit le précédent. Un tableau large défile dans son cadre
-au téléphone, jamais la page.
+**Rendering**: a link to a readable sheet uses `--accent-texte`, a thin underline, and the type icon
+on hover; to an unreadable sheet: text, without any mark; **broken link** (GM only): text
+with a dashed `--danger` underline, tooltip « Lien cassé : cette fiche n'existe plus. »; **pending import
+link** (GM only): dashed `--texte-3` underline, tooltip « Lien en attente : aucune
+fiche n'a encore la clé « personnage:aldric ». ». A **GM block**, for the GM outside Player mode, takes
+the GM-only section's styling (hatched texture, amber rule, « MJ seul » `lock` chip) **inside** the
+section, at its place in the text; in Player mode and for any other reader, it does not exist — no
+gap, no rule, the next paragraph follows the previous one. A wide table scrolls inside its frame
+on a phone, never the page.
 
-### Le Markdown — ce que `kanevas-import-markdown` construit (E-9, E-7, E-15, E-12)
+### Image size and placement in a text (`kanevas-taille-images`, B-taille-1, AD-taille-1, E-taille-1)
+
+**Notation.** The image's own Markdown *title*: `![alt](fichier:12 "moyen-droite")`. The title is
+`<size>-<placement>` with size in `petit`, `moyen`, `grand` and placement in `gauche`, `droite`,
+`centre`, written exactly so (lowercase, one hyphen). Anything else in the title — a real tooltip, a
+typo, a size alone — is **not a setting**: the image shows as it does today and the text is left
+untouched. No title: the image shows as today (full column width of its natural size, in the flow).
+The address stays `fichier:<id>`, so the references, the import's `fichier:cle:` rewriting, the export
+and the assistant's `[…](fichier:<id>)` form carry the setting as plain text.
+
+**Reading.** A set image is `<img class="img-<size> img-<placement>">`: `gauche` / `droite` float the image
+to that side, the paragraph text wraps it with a `--e-4` gap; `centre` is a block centred between two
+paragraphs' flow, no wrap. Widths, as a share of the text column, capped by the file's natural width
+(an image is never enlarged): `petit` 25 %, `moyen` 40 %, `grand` 60 %. **Phone** (≤ 760 px, the width
+the charte already uses for `.md`): no float — every placement becomes a centred block, `petit` 40 %,
+`moyen` 70 %, `grand` 100 %, so text stays one readable column. A float never leaks out of its section
+(the `.md` container clears it). Closed, deleted and waiting references keep their frames; a setting
+on them is ignored. Only in a **section** or a compte-rendu, preview of its public text included (`rendreApercu`);
+the standalone `scenario` and system-entry text natures do not interpret `fichier:`, see above.
+
+**Editor (E-taille-1).** In « Écrire », the caret inside an `![…](fichier:N…)` reference enables the
+toolbar button « Image » (icon `image`); it opens a `Menu` (existing component, trigger variant `outil`,
+charte « Menu ») with two single-choice `groupe`s,
+« Taille » (Petit, Moyen, Grand) and « Placement » (À gauche, À droite, Centrée), and a « Sans
+réglage » action. Choosing writes the title in the text at once (both groups needed: the first choice
+completes the other with `moyen` / `centre`); « Sans réglage » removes it. Keyboard: ↑ ↓ cross the choices, Échap closes
+and the focus returns to the field. Icons: placement `align-left` / `align-right` / `align-center`, size three `square` of growing size. The text stays the single source: the panel reads the title back from the
+reference at the caret, so a hand-typed setting shows selected. « Aperçu » renders it as in reading (the preview resolves the `fichier:N` files like the reading does).
+Who may write the text sees the button; a reader never gets the editor.
+
+**Where it lives, who, states.** E-taille-1 is not a screen of its own: it is a button of the section
+editor of **E-9** (and of a compte-rendu's editor, E-13, which opens on E-9); reading is E-9's, a
+compte-rendu's included. Roles: a GM outside player mode and a player who may write the section (a
+compte-rendu's author writes his own text) get the button; a GM in player mode and a plain reader have
+no editor at all, so **hidden**, never refused. States: *empty* — caret outside an image reference, the
+button is `desactive` and its `title` says « Placez le curseur sur une image » ; *loading* — none, the
+choice is a local edit of the field; « Aperçu » with a set image waits and fails like any preview
+(« Aperçu en cours… », « L'aperçu n'a pas abouti. Réessayez. » with « Réessayer », the field intact:
+« États de l'aperçu » of the Markdown section below); *error, version conflict, offline* — those of
+saving the section (E-9, « Écrire »), whose messages are read there and unchanged: the written title
+stays in the field with the rest of the text, nothing of its own is added. A reference that is closed, deleted or waiting is still a
+reference: the button is active and writes the title, reading ignores it (above). Extreme content: a
+very long alt text or several images on one line change nothing (the caret's reference is the one
+between the nearest `![` and `)`); an image narrower than its share is never enlarged, so the sizes may
+look alike; two floats in a row stack on their side and the `.md` container clears them. Labels: the menu says « Centrée », the
+notation says `centre`, the reading is a centred block — one setting, three spellings, mapped once in
+the shared table.
+
+### Markdown — what `kanevas-import-markdown` builds (E-9, E-7, E-15, E-12)
 
 > *Since `kanevas-scenarios-suivi`, E-7 no longer exists: what this passage says about a scenario's text applies to its section on E-9 (a sheet of type « Aventure »), and what it says about E-6 applies to the « Comptes-rendus » block of E-9.*
 
-Cette tranche livre le rendu et l'éditeur **sans** lien `[[…]]`, sans fichier et sans bloc MJ (leurs
-tranches les ajoutent à la même barre et au même rendu). Maquette : `e09-fiche-importee.html`,
-`#etat-edition` pour l'éditeur ; `e07-scenario.html`, `e15-systeme-de-jeu.html` et `e12-propositions.html`
-pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page ne change pas).
+This slice delivers rendering and the editor **without** `[[…]]` links, files or GM blocks (their
+slices add them to the same toolbar and rendering). Mockup: `e09-fiche-importee.html`,
+`#etat-edition` for the editor; `e07-scenario.html`, `e15-systeme-de-jeu.html` and `e12-propositions.html`
+for the rendering location (content becomes formatted there, the layout stays the same).
 
-- **Parcours** : lire, P-12 étape 2 (E-9, E-7, E-15, E-12) ; écrire et prévisualiser, P-14 étape 1 (E-9, E-7, E-15).
-  Le texte d'un compte-rendu se lit rendu sur E-9 ; la fenêtre « Nouveau compte-rendu » (in the adventure's E-9 block) garde son
-  champ simple dans cette tranche, avec le plafond de 100 000 (« Erreur : 100 000 caractères au plus. ») et
-  sans barre ni aperçu ; son compteur et son erreur « Erreur : 100 000 caractères au plus. » existent déjà (maquette `e06`, from before E-6 was retired) : seul le
+- **Journeys**: reading, P-12 step 2 (E-9, E-7, E-15, E-12); writing and previewing, P-14 step 1 (E-9, E-7, E-15).
+  A session report's text is rendered on E-9; the « Nouveau compte-rendu » dialog (in the adventure's E-9 block) keeps its
+  simple field in this slice, with the 100,000 limit (« Erreur : 100 000 caractères au plus. ») and
+  no toolbar or preview; its counter and « Erreur : 100 000 caractères au plus. » error already exist (mockup `e06`, from before E-6 was retired): only the
   seuil passe de 20 000 à 100 000 ; its other states are those of the « Comptes-rendus » block (E-9) and remain unchanged.
-- **Maquettes** : `e09-fiche-importee.html` (`#etat-edition`, `#etat-apercu`) montre la barre **complète**
-  de l'epic (avec « Lien vers une fiche », « Fichier », la liste ouverte par `[[`) ; cette tranche n'en
-  construit que « Gras », « Italique » et la bascule, les autres boutons viennent avec leurs tranches. La
-  bascule est un groupe de deux options (`role="radio"`, `aria-checked`) comme la maquette. Les maquettes de
-  E-7, E-15 et E-12 gardent leur mise en page : l'éditeur y est le même, la bascule « Rendu / Source » de
-  E-12 s'ajoute au-dessus des deux zones, à la façon de la bascule « Écrire / Aperçu ».
-- **Rendu** : un seul composant montre le HTML que le serveur a rendu, partout (sections et
-  comptes-rendus de E-9, scénario de E-7, entrées de E-15, zones de E-12). Les intertitres `#` et `##`
-  s'affichent au niveau « intertitre » le plus haut, `###` et `####` plus bas : jamais au niveau du
-  titre de la section. Un lien web s'ouvre dans un nouvel onglet. Tableau large : il défile dans son
-  cadre. Contenu vide : « Rien d'écrit pour l'instant. » (déjà le texte d'aujourd'hui). Un contenu
-  d'avant (texte brut) se lit comme avant : paragraphes et sauts de ligne.
-- **Éditeur** (E-9, E-7, E-15) : le champ, au-dessus la
-  barre « Gras » (`bold`), « Italique » (`italic`) et la bascule « Écrire / Aperçu » (deux boutons, l'un
-  actif, `role="radio"`) ; sous le champ, le compteur « 12 480 / 100 000 ». Ctrl/⌘+B et Ctrl/⌘+I entourent
-  la sélection (ou posent deux marques et placent le curseur entre elles), Ctrl/⌘+Entrée enregistre,
-  Échap annule. « Aperçu » remplace le champ par le rendu de la même fonction que la lecture ; le texte
-  saisi reste dans le champ et revient avec « Écrire ». Les boutons « Lien vers une fiche » et « Fichier » n'existent pas encore ;
-  « Bloc MJ » est décrit plus bas (E-9, bloc MJ).
-- **États de l'aperçu** : en cours, « Aperçu en cours… » (le champ reste, bascule désactivée) ; texte
-  vide, « Rien à prévisualiser. » ; échec ou hors ligne, « L'aperçu n'a pas abouti. Réessayez. » avec
-  « Réessayer », et le champ intact (message aussi d'une session expirée ou d'un refus du serveur : le texte saisi n'est pas perdu) ; plus de 100 000 caractères, pas d'appel, « Erreur : 100 000
-  caractères au plus. » sous le champ. Au-delà de 100 000, le comportement de E-9 d'aujourd'hui
-  (§ E-9, « contenu long ») tient avec le nouveau seuil.
-- **Qui voit quoi** : la lecture ne montre que le rendu. Le champ d'édition reçoit la **source** :
-  elle n'est envoyée qu'à qui peut écrire la section (le scénario, au MJ qui le lit). Un joueur, ou le MJ
-  en mode Joueur, ne la reçoit pas ; la réponse de lecture de Léa ne contient pas le Markdown.
-- **E-12** : au-dessus des zones « Actuel » et « Proposé », deux boutons « Rendu / Source » (« Rendu »
-  par défaut) ; « Source » montre le Markdown brut des deux zones, côte à côte comme aujourd'hui. Le fil
-  de conversation reste en texte. Après « Appliquer » ou « Abandonner », le choix « Rendu / Source » est
-  conservé ; une proposition périmée garde ses deux zones lisibles dans le mode choisi.
-- **Cas extrêmes** : une zone de E-12 garde sa hauteur de 15 lignes et défile ; un mot ou une adresse sans
-  espace passe à la ligne sans élargir la page à 375 px ; une image d'une autre adresse
-  (`![plan](https://…)`) se lit « plan » (son texte alternatif), sans image.
-- **Rôles** :
+- **Mockups**: `e09-fiche-importee.html` (`#etat-edition`, `#etat-apercu`) shows the epic's **complete** toolbar
+  (with « Lien vers une fiche », « Fichier », the list opened by `[[`); this slice
+  builds only « Gras », « Italique » and the toggle, the other buttons come with their slices. The
+  toggle is a group of two options (`role="radio"`, `aria-checked`) as in the mockup. The
+  E-7, E-15 and E-12 mockups keep their layout: the editor is the same there; E-12's « Rendu / Source »
+  toggle is added above the two areas, like the « Écrire / Aperçu » toggle.
+- **Rendering**: a single component shows the server-rendered HTML everywhere (sections and
+  session reports on E-9, E-7 scenario, E-15 entries, E-12 areas). Headings `#` and `##`
+  appear at the highest subheading level, `###` and `####` lower: never at the
+  section title's level. A web link opens in a new tab. Wide table: it scrolls inside its
+  frame. Empty content: « Rien d'écrit pour l'instant. » (already today's text). Previous
+  content (plain text) reads as before: paragraphs and newlines.
+- **Editor** (E-9, E-7, E-15): the field, above it the
+  « Gras » (`bold`), « Italique » (`italic`) toolbar and the « Écrire / Aperçu » toggle (two buttons, one
+  active, `role="radio"`); below the field, the « 12 480 / 100 000 » counter. Ctrl/⌘+B and Ctrl/⌘+I wrap
+  the selection (or insert two marks and place the cursor between them), Ctrl/⌘+Enter saves,
+  Escape cancels. « Aperçu » replaces the field with the output of the same rendering function used for reading; the entered
+  text stays in the field and returns with « Écrire ». The « Lien vers une fiche » and « Fichier » buttons do not exist yet;
+  « Bloc MJ » is described below (E-9, GM block).
+- **Preview states**: in progress, « Aperçu en cours… » (the field stays, toggle disabled); empty
+  text, « Rien à prévisualiser. »; failure or offline, « L'aperçu n'a pas abouti. Réessayez. » with
+  « Réessayer », and the field intact (also the message for an expired session or a server refusal: entered text is not lost); more than 100,000 characters, no call, « Erreur : 100 000
+  caractères au plus. » below the field. Beyond 100,000, today's E-9 behavior
+  (§ E-9, long content) holds with the new threshold.
+- **Who sees what**: reading shows only the rendering. The editing field receives the **source**:
+  it is sent only to those who may write the section (for a scenario, to the GM reading it). A player, or a GM
+  in Player mode, does not receive it; Léa's read response does not contain the Markdown.
+- **E-12**: above the « Actuel » and « Proposé » areas, two « Rendu / Source » buttons (« Rendu »
+  by default); « Source » shows both areas' raw Markdown, side by side as today. The conversation
+  thread stays text. After « Appliquer » or « Abandonner », the « Rendu / Source » choice is
+  kept; a stale proposal keeps both areas readable in the chosen mode.
+- **Extreme cases**: an E-12 area keeps its 15-line height and scrolls; a word or address without
+  spaces wraps without widening the page at 375 px; an image from another address
+  (`![plan](https://…)`) reads « plan » (its alternative text), without an image.
+- **Roles**:
 
-  | | MJ | Joueur lecteur | Joueur qui écrit la section | MJ en mode Joueur |
+  | | GM | Reading player | Player writing the section | GM in Player mode |
   |---|---|---|---|---|
-  | Lit le rendu | oui | oui | oui | oui |
-  | Reçoit la source | oui | non (le champ n'est pas dans la réponse) | oui | comme le rôle qu'il imite |
-  | Barre, aperçu, compteur | en édition | caché | en édition | comme le rôle qu'il imite |
-  | E-12 | éditeur au MJ, rendu pour qui lit | écran absent (404, MJ seul) | écran absent | écran absent |
-  | E-15 (système rattaché) | éditeur au MJ, rendu | rendu seul, ni source ni barre (champ absent) | sans objet | rendu seul |
-- **Plafond** : 100 000 caractères pour une section, un compte-rendu, un scénario, une entrée de système et
-  un contenu proposé ; au-delà le serveur répond 400 « Contenu trop long : 100 000 caractères au plus. ».
+  | Reads the rendering | yes | yes | yes | yes |
+  | Receives the source | yes | no (the field is absent from the response) | yes | like the role being imitated |
+  | Toolbar, preview, counter | while editing | hidden | while editing | like the role being imitated |
+| E-12 | editor for the GM, rendering for readers | screen absent (404, GM only) | screen absent | screen absent |
+  | E-15 (attached system) | editor for the GM, rendering | rendering only, neither source nor toolbar (field absent) | not applicable | rendering only |
+- **Limit**: 100,000 characters for a section, session report, scenario, system entry and
+  proposed content; beyond that the server answers 400 « Contenu trop long : 100 000 caractères au plus. ».
 
-### Les liens `[[…]]` — ce que `kanevas-import-liens` construit
+### `[[…]]` links — what `kanevas-import-liens` builds
 
-*Reconnu* (AD-116) : `[[<id>|<texte>]]` (l'identifiant est un entier ≥ 1) et `[[cle:<clé>|<texte>]]`
-(une clé d'origine d'import), et à l'écriture seulement `[[<id>]]`. Le texte fait 1 à 200 caractères, sans
-`]`, `|` ni saut de ligne ; une forme qui ne tient pas ces règles, ou qui se trouve dans un bloc de code
-ou dans un code en ligne, reste du texte. `[[cle:…]]` s'accepte de l'import comme de l'éditeur (même
-résolution). Un `[[<id>]]` écrit sans texte est **réécrit** par le service en `[[<id>|<titre courant>]]`
-avant d'enregistrer, si l'auteur lit la fiche ; sinon l'écriture est refusée (400, code `lien_illisible`,
-« Cette fiche n'existe pas ou vous ne pouvez pas la lire. »), le texte reste dans le champ. Un
-`[[<id>|<texte>]]` dont la cible est absente ou illisible de l'auteur s'enregistre (le texte est celui de
-l'auteur, rien ne fuit) ; il se lira comme un lien cassé ou comme du texte, selon le lecteur.
+*Recognized* (AD-116): `[[<id>|<texte>]]` (the identifier is an integer ≥ 1) and `[[cle:<clé>|<texte>]]`
+(an import origin key), and on write only `[[<id>]]`. Text is 1 to 200 characters, without
+`]`, `|` or newlines; a form that fails these rules, or occurs in a code block
+or inline code, remains text. `[[cle:…]]` is accepted from both import and editor (same
+resolution). An `[[<id>]]` written without text is **rewritten** by the service as `[[<id>|<titre courant>]]`
+before saving, if the author can read the sheet; otherwise the write is refused (400, code `lien_illisible`,
+« Cette fiche n'existe pas ou vous ne pouvez pas la lire. »), and the text stays in the field. An
+`[[<id>|<texte>]]` whose target is absent or unreadable by the author is saved (the text is the
+author's, nothing leaks); it will read as a broken link or text, depending on the reader.
 
-*Lecture* : le rendu d'un lien dépend du lecteur et se décide **au rendu, par la cible**, pas par la
-table `liens` : cible lisible du lecteur → `<a class="lien-fiche" href="/univers/<u>/fiche/<id>"
-data-type="<type>">` ; cible illisible → le texte seul, sans élément ni marque ; cible supprimée → pour le
-MJ hors mode Joueur `<span class="lien-casse" tabindex="0">` et son infobulle, le texte seul pour tout
-autre lecteur ; clé en attente → pour le MJ hors mode Joueur `<span class="lien-attente" tabindex="0">`
-(infobulle « Lien en attente : aucune fiche n'a encore la clé « <clé> ». »), le texte seul pour tout autre
-lecteur. En mode Joueur le MJ lit comme un joueur. Un lien dans un bloc MJ n'existe, comme le bloc, que
-pour le MJ hors mode Joueur (le bloc est ôté avant le rendu, AD-98). Le rendu résout tous les liens d'un
-texte en **une** requête (jamais une par lien). L'assistant reçoit `[texte](fiche:<id>)` pour une cible
-lisible et `texte` sinon, jamais un identifiant illisible (AD-96).
+*Reading*: a link's rendering depends on the reader and is decided **at rendering time, by the target**, not by the
+`liens` table: target readable by the reader → `<a class="lien-fiche" href="/univers/<u>/fiche/<id>"
+data-type="<type>">`; unreadable target → text only, without any element or mark; deleted target → for the
+GM outside Player mode `<span class="lien-casse" tabindex="0">` and its tooltip, text only for any
+other reader; pending key → for the GM outside Player mode `<span class="lien-attente" tabindex="0">`
+(tooltip « Lien en attente : aucune fiche n'a encore la clé « <clé> ». »), text only for any other
+reader. In Player mode the GM reads as a player. A link in a GM block, like the block itself, exists only
+for the GM outside Player mode (the block is removed before rendering, AD-98). Rendering resolves all links in
+one text in **one** query (never one per link). The assistant receives `[texte](fiche:<id>)` for a readable
+target and `texte` otherwise, never an unreadable identifier (AD-96).
 
-*Écriture* : le service qui écrit le contenu d'une section (le point d'écriture unique de
-`kanevas-import-secrets`) remplace, dans la même transaction, les lignes de `liens` de la section : une
-par lien trouvé, avec `dans_bloc_mj` d'après la position du lien, jamais par expression régulière hors des
-jetons du moteur Markdown. Les textes déjà enregistrés avant la tranche ne sont pas rejoués : un
-`[[…]]` d'avant n'était pas une syntaxe, et la table se remplit à la première écriture de la section.
+*Writing*: the service that writes a section's content (the single write point of
+`kanevas-import-secrets`) replaces the section's `liens` rows in the same transaction: one
+per link found, with `dans_bloc_mj` from the link's position, never through a regular expression outside the
+Markdown engine's tokens. Texts saved before the slice are not replayed: an
+old `[[…]]` was not syntax, and the table is populated at the section's first write.
 
-*Import* : `[[cle:<clé>|<texte>]]` dont la clé est connue de l'univers s'enregistre en `[[<id>|<texte>]]` ;
-sinon il reste tel quel, ligne de `liens` « en attente » (`cible_cle`). La création de la fiche qui porte
-la clé réécrit, **dans la même transaction**, les contenus qui l'attendent (`contenu`, `contenu_public`,
-lignes de `liens`) sans toucher à `version`, à `version_importee` *(dropped by `kanevas-synchro`)* ni à `modifie_le` de la section. Un
-rejeu compare le texte envoyé **après** y avoir résolu les clés connues : un lien déjà résolu rend
-« inchangée » (AD-104). Le lot compte « liens et références en attente » à sa clôture (`en_attente`).
+*Import*: `[[cle:<clé>|<texte>]]` whose key is known in the universe is saved as `[[<id>|<texte>]]`;
+otherwise it stays as written, a pending `liens` row (`cible_cle`). Creating the sheet carrying
+the key rewrites, **in the same transaction**, the waiting content (`contenu`, `contenu_public`,
+`liens` rows) without touching the section's `version`, `version_importee` *(dropped by `kanevas-synchro`)* or `modifie_le`. A
+replay compares the submitted text **after** resolving known keys: an already resolved link yields
+« inchangée » (AD-104). The batch counts « liens et références en attente » at closure (`en_attente`).
 
-*Scénario* (E-7) : mêmes formes, résolues à la lecture dans l'univers de la campagne du scénario, sous les
-droits du lecteur (un MJ de l'univers) ; une clé en attente se résout à la lecture par l'index des clés
-d'origine ; aucune ligne de `liens`. L'éditeur d'un scénario a « Lien vers une fiche » et la liste ouverte
-par `[[`. *Entrée de système* (E-15) : `[[…]]` reste du texte, sans bouton ni liste.
+*Scenario* (E-7): same forms, resolved on read in the scenario's campaign universe, under the
+reader's permissions (a GM of the universe); a pending key is resolved on read through the origin-key
+index; no `liens` row. A scenario's editor has « Lien vers une fiche » and the list opened
+by `[[`. *System entry* (E-15): `[[…]]` remains text, without a button or list.
 
-*La liste ouverte par `[[`* (et « Lien vers une fiche », Ctrl/⌘+K) : le composant `ListeRecherche`, appelé
-sans `type` ; elle cherche par titre dans toutes les fiches que le compte lit
-(`GET /api/univers/:id/fiches?q=`), 50 au plus, chaque ligne avec l'icône et le libellé du type.
-Taper après `[[` filtre ; ↑ ↓ choisissent, Entrée insère `[[<id>|<titre>]]` et ferme la liste, Échap la
-ferme et laisse `[[`. Vide de résultat : « Aucune fiche. ». Erreur : « Impossible de chercher. » et
-« Réessayer » ; la saisie n'est pas perdue. Connexion perdue : la liste ne s'ouvre pas, le bandeau commun
-parle.
+*The list opened by `[[`* (and « Lien vers une fiche », Ctrl/⌘+K): the `ListeRecherche` component, called
+without `type`; it searches by title across all sheets the account reads
+(`GET /api/univers/:id/fiches?q=`), at most 50, each row with its type icon and label.
+Typing after `[[` filters; ↑ ↓ select, Enter inserts `[[<id>|<titre>]]` and closes the list, Escape
+closes it and leaves `[[`. No results: « Aucune fiche. ». Error: « Impossible de chercher. » and
+« Réessayer »; input is not lost. Connection lost: the list does not open, the common banner
+speaks.
 
-*« Mentionnée dans »* (B-36, AD-100) : la route de la fiche rend `mentions` (50 premières) et `mentionsSuite`
-(booléen) ; `GET /api/univers/:id/fiches/:fid/mentions?apres=<n>` rend les 50 suivantes. Une ligne par fiche
-source : titre (lien vers elle), icône du type, et le pourquoi — « lien dans « Histoire » » (la section
-qui porte le lien), le libellé de la relation (« Amiral de »), ou les deux séparés par « · » si la
-même fiche cite de plusieurs façons. Une source compte si sa fiche est lisible **et** que la section qui
-porte le lien (ou la relation) l'est, **et** que le lien n'est pas dans un bloc MJ pour un non-MJ ; une
-fiche qui se cite elle-même ne s'affiche pas ; l'ordre est le titre puis l'identifiant. Jamais de
-compteur de ce qui est caché ; `mentionsSuite` se calcule sur ce que le lecteur voit seulement.
+*« Mentionnée dans »* (B-36, AD-100): the sheet route returns `mentions` (first 50) and `mentionsSuite`
+(boolean); `GET /api/univers/:id/fiches/:fid/mentions?apres=<n>` returns the next 50. One row per source
+sheet: title (link to it), type icon, and the reason — « lien dans « Histoire » » (the section
+carrying the link), the relation label (« Amiral de »), or both separated by « · » if the
+same sheet cites it in several ways. A source counts if its sheet is readable **and** the section
+carrying the link (or relation) is readable, **and** the link is outside a GM block for a non-GM; a
+sheet citing itself is not displayed; order is title then identifier. Never a
+count of hidden items; `mentionsSuite` is calculated only from what the reader sees.
 
-*États* (B-29). **Liste ouverte par `[[`** : chargement — la ligne « Recherche… » sous la saisie (la liste précédente
-s'efface) ; vide — « Aucune fiche. » ; erreur — « Impossible de chercher. » et « Réessayer » ; connexion perdue
-— la liste ne s'ouvre pas, `[[` reste du texte, « Enregistrer » est désactivé et le texte en cours conservé ; refus — l'éditeur n'est offert qu'à qui écrit la section, il n'y a donc ni
-bouton ni liste pour les autres (**caché**) ; contenu extrême — un titre de 120 caractères tient sur une ligne
-tronquée par « … » (le titre entier en infobulle), plus de 50 résultats : les 50 premiers puis la ligne
-« Affinez la recherche pour voir les autres. ». **Bloc « Mentionnée dans »** : la suite en cours — le bouton « Afficher
-les N suivants » devient « Chargement… » désactivé ; échec — « Impossible de charger la suite. » et « Réessayer » ;
-connexion perdue — le bouton est désactivé ; les 50 premières arrivent avec la fiche (pas d'état propre).
-**Refus d'écriture** `lien_illisible` : le message, en `--danger`, sous le champ de l'éditeur (E-9 comme E-7), le
-texte conservé, l'enregistrement non fait. **E-7** : mêmes états pour la liste (lignes « erreur » et « connexion perdue » du tableau de E-7) ; E-7 est un écran MJ
-seul qui ne connaît pas le mode Joueur : un lien cassé ou en attente y est toujours marqué ; `lien_illisible` y est sans objet
-(un MJ lit toutes les fiches de l'univers). *Maquette* : `e09-fiche-importee.html#etat-liens`.
+*States* (B-29). **List opened by `[[`**: loading — the « Recherche… » row below the input (the previous list
+is cleared); empty — « Aucune fiche. »; error — « Impossible de chercher. » and « Réessayer »; connection lost
+— the list does not open, `[[` remains text, « Enregistrer » is disabled and the current text kept; refusal — the editor is offered only to those writing the section, so there is neither
+button nor list for others (**hidden**); extreme content — a 120-character title fits on one row
+truncated with « … » (full title in a tooltip), more than 50 results: the first 50 then the
+« Affinez la recherche pour voir les autres. » row. **« Mentionnée dans » block**: loading more — the « Afficher
+les N suivants » button becomes disabled « Chargement… »; failure — « Impossible de charger la suite. » and « Réessayer »;
+connection lost — the button is disabled; the first 50 arrive with the sheet (no separate state).
+**Write refusal** `lien_illisible`: the message, in `--danger`, below the editor field (E-9 and E-7), the
+text kept, no save. **E-7**: same list states (error and connection-lost rows of E-7's table); E-7 is a GM-only
+screen with no Player mode: a broken or pending link is always marked there; `lien_illisible` is not applicable
+(a GM reads all sheets in the universe). *Mockup*: `e09-fiche-importee.html#etat-liens`.
 
-*Qui fait quoi* (liens) :
+*Who does what* (links):
 
-| Rôle | Éditeur : `[[` et « Lien vers une fiche » | Lecture d'un lien | « Mentionnée dans » |
+| Role | Editor: `[[` and « Lien vers une fiche » | Reading a link | « Mentionnée dans » |
 |---|---|---|---|
-| MJ, hors mode Joueur | oui (E-9) | lien, cassé, en attente marqués | tout ce qu'il lit, blocs MJ compris |
-| MJ en mode Joueur, sur E-9 | **caché** (aucun geste d'écriture en mode Joueur) | comme un Joueur | comme un Joueur |
-| Joueur, section qu'il écrit sans bloc MJ | oui | lien si la cible est lue ; sinon, cassé et en attente compris, le texte seul (**caché**, sans marque) | sources lisibles, hors blocs MJ ; le reste est **caché**, sans compteur |
-| Joueur, section qu'il n'écrit pas, ou qui contient un bloc MJ (B-34) | **caché** : pas de « Modifier », donc ni bouton ni liste | idem | idem |
-| Joueur qui tape à la main le lien d'une fiche qu'il ne lit pas | **refusé** : `lien_illisible` | — | — |
-| Admin d'instance non membre | **caché** : « Page introuvable. » sur E-9 | — | — |
+| GM, outside Player mode | oui (E-9) | link, broken, pending marked | everything they read, including GM blocks |
+| GM in Player mode, on E-9 | **hidden** (no writing action in Player mode) | like a Player | like a Player |
+| Player, section they write without a GM block | yes | link if target is readable; otherwise, including broken and pending, text only (**hidden**, no mark) | readable sources, outside GM blocks; the rest is **hidden**, no count |
+| Player, section they do not write, or containing a GM block (B-34) | **hidden**: no « Modifier », hence neither button nor list | same | same |
+| Player manually typing a link to a sheet they cannot read | **refused**: `lien_illisible` | — | — |
+| Instance admin without membership | **caché** : « Page introuvable. » sur E-9 | — | — |
 
-*Critères* (liste et bloc).
-- Étant donné Antor qui édite « Histoire » de « Port-Sel », quand il tape `[[` puis « ald », alors la liste montre
-  « Maître Aldric » avec l'icône et le libellé de son type ; Entrée insère `[[<id>|Maître Aldric]]`, Échap ferme
-  la liste en laissant `[[`.
-- Étant donné la recherche qui échoue, quand Antor tape `[[`, alors « Impossible de chercher. » et « Réessayer »
-  paraissent et son texte reste.
-- Étant donné une recherche sans résultat, alors « Aucune fiche. ».
-- Étant donné 60 fiches qui citent « Maître Aldric » lisibles de Léa, quand elle ouvre sa fiche, alors « Mentionnée dans »
-  en montre 50 et « Afficher les 10 suivants » ; la touche les ajoute ; sans réseau, le bouton est désactivé.
-- Étant donné « Anse-aux-Sels » dans « Essai Kanka », quand Antor la lit, alors « les contrebandiers du Repaire » est
-  souligné en tirets `--texte-3` (« Lien en attente : aucune fiche n'a encore la clé « faction:repaire ». ») et « Capitaine
-  Hesk » en tirets `--danger` ; Léa lit les deux en texte simple.
-- Étant donné Antor qui a accordé l'écriture aux joueurs sur « Description » de « Port-Sel », et Léa qui y tape à la
-  main `[[<id>]]` (l'identifiant d'une adresse de fiche) de « La Guilde des Brumes », quand elle enregistre, alors
-  « Cette fiche n'existe pas ou vous ne pouvez pas la lire. » paraît sous le champ, son texte intact, la section inchangée.
-- Étant donné une recherche lente, quand Antor tape `[[` puis « ald », alors « Recherche… » paraît sous la saisie jusqu'à la
-  réponse ; hors connexion, `[[` reste du texte et le bandeau commun parle.
-- Étant donné 60 fiches qui répondent à « a », alors la liste montre 50 lignes puis « Affinez la recherche pour voir les
-  autres. » ; un titre de 120 caractères tient sur une ligne finissant par « … ».
-- Étant donné Léa sur une section de « Port-Sel » qu'elle n'écrit pas, alors ni « Lien vers une fiche » ni liste n'existent
-  pour elle ; sur une section qui contient un bloc MJ, pas de « Modifier ».
-- Étant donné « Afficher les 10 suivants » dont la requête est lente, alors le bouton dit « Chargement… » désactivé ; si elle
-  échoue, « Impossible de charger la suite. » et « Réessayer » ; sans réseau, le bouton est désactivé.
-- Étant donné Antor dans le scénario « La Couronne brisée » et la recherche qui échoue, quand il tape `[[`, alors
-  « Impossible de chercher. » et « Réessayer » ; hors connexion, `[[` y reste du texte, « Enregistrer » est désactivé et son
-  texte conservé ; un lien cassé du scénario y est marqué.
+*Criteria* (list and block).
+- Given Antor editing « Histoire » of « Port-Sel », when he types `[[` then « ald », the list shows
+  « Maître Aldric » with its type icon and label; Enter inserts `[[<id>|Maître Aldric]]`, Escape closes
+  the list leaving `[[`.
+- Given a failing search, when Antor types `[[`, « Impossible de chercher. » and « Réessayer »
+  appear and his text stays.
+- Given a search without results, « Aucune fiche. ».
+- Given 60 sheets citing « Maître Aldric » readable by Léa, when she opens his sheet, « Mentionnée dans »
+  shows 50 and « Afficher les 10 suivants »; pressing it adds them; without network, the button is disabled.
+- Given « Anse-aux-Sels » in « Essai Kanka », when Antor reads it, « les contrebandiers du Repaire » has a
+  dashed `--texte-3` underline (« Lien en attente : aucune fiche n'a encore la clé « faction:repaire ». ») and « Capitaine
+  Hesk » a dashed `--danger` underline; Léa reads both as plain text.
+- Given Antor granted players write access to « Description » of « Port-Sel », and Léa manually types
+  `[[<id>]]` (the identifier from a sheet address) of « La Guilde des Brumes », when she saves,
+  « Cette fiche n'existe pas ou vous ne pouvez pas la lire. » appears below the field, her text intact, the section unchanged.
+- Given a slow search, when Antor types `[[` then « ald », « Recherche… » appears below the input until the
+  response; offline, `[[` remains text and the common banner speaks.
+- Given 60 sheets matching « a », the list shows 50 rows then « Affinez la recherche pour voir les
+  autres. »; a 120-character title fits on a row ending with « … ».
+- Given Léa on a section of « Port-Sel » she does not write, neither « Lien vers une fiche » nor the list exists
+  for her; on a section containing a GM block, no « Modifier ».
+- Given a slow request from « Afficher les 10 suivants », the button reads disabled « Chargement… »; if it
+  fails, « Impossible de charger la suite. » and « Réessayer »; without network, the button is disabled.
+- Given Antor in the « La Couronne brisée » scenario and a failing search, when he types `[[`,
+  « Impossible de chercher. » and « Réessayer »; offline, `[[` stays text, « Enregistrer » is disabled and his
+  text kept; a broken link in the scenario is marked.
 
-### E-9 Fiche — ce que `kanevas-import` change
+### E-9 Sheet — what `kanevas-import` changes
 
-*Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-changer-type`, `#etat-joueur`,
+*Finished mockup*: `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », states `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-changer-type`, `#etat-joueur`,
+`#etat-sous-type-survol`, `#etat-sous-type-focus`, `#etat-changer-sous-type`, `#etat-changer-sous-type-echec`,
 `#etat-edition`, `#etat-supprimer`, `#etat-deplacer`).
 
-**En-tête.** Fil d'Ariane : univers › type › ancêtres **lisibles** du plus haut au plus proche ›
-fiche ; un ancêtre illisible est sauté sans marque (B-35) ; plus de trois ancêtres : le premier, « … »
-(menu des autres), les deux derniers. **Largeur (AD-99, arbitrage du 2026-10-15)** : le titre de la fiche courante cède en dernier (les ancêtres rétrécissent d'abord, jusqu'à leur minimum) ; un maillon d'ancêtre garde au moins 8 caractères (largeur `8ch`) et s'ellipse par « … » au-delà, jamais en dessous ; aucun maillon ne recouvre un chevron. Au téléphone (≤ 480 px), dès qu'il y a deux ancêtres lisibles ou plus, tous passent dans le menu « … » (icône du type › « … » › titre) ; avec un seul, il s'ellipse comme dit, sauf pour un MJ sur une fiche (la bascule MJ / Joueur prend la largeur du fil) : il passe alors lui aussi dans « … ». Entre 481 et 760 px, les ancêtres restent visibles. « Poser » ou « Remplacer » l'illustration (MJ) ouvre les deux
-chemins d'ajout (« Fichiers », ci-dessous), limités aux images ; « Retirer » ôte la référence, l'image reste dans la
-médiathèque. Le badge du type porte le **sous-type** : « Lieu · Port » (B-52) ;
-MJ, hors mode Joueur : un clic sur le sous-type l'édite en place, avec la liste des sous-types déjà
-employés pour ce type dans l'univers, par ordre alphabétique (titre de la liste « Sous-types de lieu
-déjà employés » ; complétion sans tenir compte de la casse ; aide « Entrée enregistre · Échap annule »
-et « Champ vide : plus de sous-type » ; 1 à 60 caractères, au-delà « Erreur : 60 caractères au plus. ») ;
-une fiche sans sous-type montre au MJ le libellé « Sous-type » à cet endroit, rien à un joueur. Sous le titre : « Aussi appelée Salport, Port-aux-Sels » (alias,
-`--texte-2`) et les **étiquettes** en pastilles neutres (`tag`), chacune un lien vers E-17 filtrée.
-MJ, hors mode Joueur : le titre s'édite en place (clic, Entrée enregistre) ; le menu « ⋯ » de l'en-tête
-porte « Changer le type… », « Déplacer sous… », « Alias et étiquettes… », une ligne d'information
-« Importée · clé lieu:port-sel · créée le 3 mars 2021 » (si la fiche a une clé d'origine, B-50) et,
-séparé, « Supprimer la fiche… » en `--danger`.
-*Dans la tranche `kanevas-import-fil`*, la ligne « Importée · clé … » est la seule entrée du menu : pour une
-fiche sans clé d'origine, le menu « ⋯ » n'est pas affiché ; « créée le … » est la date de création de la
-fiche (`creeLe` de l'import s'il l'a donnée, B-50, sinon la date de l'import). La clé d'origine est cachée à
-tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de lecture.
+**Header.** Breadcrumb: universe › type › **readable** ancestors from highest to nearest ›
+sheet; an unreadable ancestor is skipped without a mark (B-35); more than three ancestors: the first, « … »
+(menu of the others), the last two. **Width (AD-99, decision of 2026-10-15)**: the current sheet's title yields last (ancestors shrink first, down to their minimum); an ancestor segment keeps at least 8 characters (width `8ch`) and truncates with « … » beyond that, never below; no segment overlaps a chevron. On a phone (≤ 480 px), once there are two or more readable ancestors, all go into the « … » menu (type icon › « … » › title); a single one truncates as described, except for a GM on a sheet (the GM / Player toggle takes the breadcrumb's width): it then also goes into « … ». Between 481 and 760 px, ancestors stay visible. « Poser » or « Remplacer » the illustration (GM) opens the two
+add paths (Files, below), restricted to images; « Retirer » removes the reference, the image stays in the
+media library. The type badge carries the **subtype**: « Lieu · Port » (B-52);
+GM, outside Player mode: clicking the subtype edits it inline, with a list of subtypes already
+used for this type in the universe, alphabetically (list title « Sous-types de lieu
+déjà employés »; case-insensitive completion; help « Entrée enregistre · Échap annule »
+and « Champ vide : plus de sous-type »; 1 to 60 characters, beyond that « Erreur : 60 caractères au plus. »);
+a sheet without a subtype shows the GM the « Sous-type » label there, nothing to a player. Below the title: « Aussi appelée Salport, Port-aux-Sels » (aliases,
+`--texte-2`) and **labels** as neutral chips (`tag`), each a link to filtered E-17.
+GM, outside Player mode: the title edits inline (click, Enter saves); the header's « ⋯ » menu
+carries « Changer le type… », « Déplacer sous… », « Alias et étiquettes… », an information row
+« Importée · clé lieu:port-sel · créée le 3 mars 2021 » (if the sheet has an origin key, B-50) and,
+separately, « Supprimer la fiche… » in `--danger`.
+*In the `kanevas-import-fil` slice*, the « Importée · clé … » row is the menu's only entry: for a
+sheet without an origin key, the « ⋯ » menu is not displayed; « créée le … » is the sheet's creation
+date (the import's `creeLe` if supplied, B-50, otherwise the import date). The origin key is hidden from
+all roles other than the GM (outside Player mode): neither menu nor read response.
 
-- *Changer le type* : une liste des types de la liste du produit, activés d'abord, puis « Autres
-  types » ; pour « Personnage », le choix PJ / PNJ ; et le champ « Sous-type » (vidé au changement de
-  type, puisqu'il est propre au type, avec les sous-types déjà employés pour le nouveau type). Le
-  compte-rendu n'y figure pas ; un compte-rendu n'a pas cette entrée.
-- *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », deux vues (« Arborescence » par défaut, « Recherche » avec le champ « Chercher une fiche » et sa liste, tous types, fiches que le MJ lit), plus « Aucun parent » ; pied : « Annuler » puis « Déplacer » (à droite au bureau, côte à côte sur toute la largeur, 40 px de haut, au téléphone) ;
-  la fiche et ses descendants ne sont jamais proposés (le refus « Une fiche ne peut pas être rangée sous l'un de ses
-  descendants. » ne reste que si la hiérarchie bouge boîte ouverte).
+- *Change type*: a list of types from the product list, enabled first, then « Autres
+  types »; for « Personnage », the PC / NPC choice; and the « Sous-type » field (cleared on type
+  change, since it is specific to the type, with sub-types already used for the new type;
+  *(kanevas-sous-type-dialogue)* filled with the current sub-type while the type stays the current one, and then
+  the box changes the sub-type alone). The
+  session report is not listed; a session report does not have this entry.
+- *Move under…*: « Déplacer « Port-Sel » sous… » dialog, two views (« Arborescence » by default, « Recherche » with the « Chercher une fiche » field and its list, all types, sheets the GM reads), plus « Aucun parent »; footer: « Annuler » then « Déplacer » (on the right on desktop, side by side across the full width, 40 px high, on a phone);
+  the sheet and its descendants are never offered (the refusal « Une fiche ne peut pas être rangée sous l'un de ses
+  descendants. » remains only if the hierarchy moves while the box is open).
   *(kanevas-deplacer-arborescence)* The box has two views, « Arborescence » (open by default, placed
   where the sheet is) and « Recherche » (the search above); the sheet and its descendants are never
   offered as a target. Detail: « Ce que `kanevas-deplacer-arborescence` construit » below.
-- *Alias et étiquettes* : deux champs à pastilles (Entrée ajoute, × retire) ; une étiquette se
-  complète sur celles de l'univers ; alias 1 à 120 caractères, 20 au plus ; étiquette 1 à 40
-  caractères, 20 au plus par fiche.
-- *Supprimer la fiche* : boîte de dialogue « Supprimer « Port-Sel » ? » qui compte ce qui part —
+- *Aliases and labels*: two chip fields (Enter adds, × removes); a label completes
+  from the universe's labels; alias 1 to 120 characters, at most 20; label 1 to 40
+  characters, at most 20 per sheet.
+- *Delete sheet*: « Supprimer « Port-Sel » ? » dialog counting what goes —
   « 3 sections ; 3 relations qui la visent ; 1 place sur une carte. Ses 2 fichiers restent dans la médiathèque. Ses 5 enfants
-  remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés. » — et
-  « Supprimer la fiche » (`--danger`) / « Annuler ». Après : retour à la liste du type, toast « Fiche
-  supprimée. ». Ces nombres ne sont montrés qu'au MJ, qui lit tout.
+  remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés. » — and
+  « Supprimer la fiche » (`--danger`) / « Annuler ». Afterwards: back to the type's list, toast « Fiche
+  supprimée. ». These numbers are shown only to the GM, who reads everything.
 
-**Sections.** Rendu Markdown ci-dessus. « Modifier » n'apparaît pas pour un Joueur sur une section qui
-contient un bloc MJ, même s'il en a l'écriture (B-34) ; s'il l'ouvre par une autre voie, le serveur
-refuse : « Vous ne pouvez pas modifier cette section. ».
+**Sections.** Markdown rendering above. « Modifier » does not appear for a Player on a section
+containing a GM block, even with write permission (B-34); if they open it another way, the server
+refuses: « Vous ne pouvez pas modifier cette section. ».
 
-**Fichiers** (B-24, B-44, B-55, AD-111 ; décisions de Monsieur du 2026-10-11). Tout fichier de la fiche
-vit dans la médiathèque et y est référencé. **Lecture** : un fichier (image insérée, fichier joint,
-lien de fichier dans le texte) ou l'illustration se montre si le lecteur le voit ; sinon, dans une
-section qu'il lit, un cadre neutre (`lock`, `--texte-3`) dit « Image réservée au MJ. » (avec la
-légende s'il y en a une) ou « Fichier réservé au MJ. » pour un document ; dans un bloc MJ, rien.
-L'illustration réservée au MJ d'une fiche qu'un joueur voit : la même mention dans l'en-tête, la
-vignette de repli dans la grille de E-8 (sans mention). Fichier supprimé : « Fichier supprimé de la
-médiathèque. » pour un MJ, rien pour un joueur. In player mode, the GM sees what a player sees, plus files they added themselves (third rule, AD-117).
+**Files** (B-24, B-44, B-55, AD-111; Monsieur's decisions of 2026-10-11). Every file on the sheet
+lives in the media library and is referenced there. **Reading**: a file (inserted image, attachment,
+file link in text) or illustration is shown if the reader can see it; otherwise, in a
+section they read, a neutral frame (`lock`, `--texte-3`) says « Image réservée au MJ. » (with the
+caption if any) or « Fichier réservé au MJ. » for a document; inside a GM block, nothing.
+A GM-only illustration on a sheet a player sees: the same notice in the header, the
+fallback thumbnail in E-8's grid (without notice). Deleted file: « Fichier supprimé de la
+médiathèque. » for a GM, nothing for a player. In player mode, the GM sees what a player sees, plus files they added themselves (third rule, AD-117).
 
-**Deux chemins d'ajout** : le bouton « Fichier » (`paperclip`) de la barre d'outils, en édition, et
-« Joindre un fichier » en pied du bloc Pièces jointes — présent hors édition pour qui écrit la section,
-comme le dépôt d'avant (`kanevas-fichiers`) — ouvrent le même menu —
-1. **« Ajouter depuis l'appareil »** (ou un glisser-déposer sur la section) : en **un seul geste**, le
-   fichier entre dans la médiathèque (ajouté par le compte ; **visibilité selon l'endroit d'ajout** : dans
-   un bloc MJ, ou dans une section que les joueurs ne lisent pas tous, « Réservé au MJ » — la ligne du
-   fichier le dit par sa pastille « MJ seul » — ; ailleurs, « Visible des joueurs » ; une illustration :
-   « Visible des joueurs » si la fiche a une section lue des joueurs) **et** s'intègre à la
-   fiche — depuis la barre d'outils, une image s'insère dans le texte au point d'insertion
-   (`![nom](fichier:<id>)`) et un document y met un lien (`[nom](fichier:<id>)`), each reference on **its own line** (a newline is added before and after when the insertion point touches text or a `:::` fence; after a table row, a blank line separates the reference from the table so it cannot become another row; it never sticks to a closing fence and therefore never falls into the GM block) ; depuis le bloc, le
-   fichier est joint à la section ; depuis l'en-tête (« Poser » ou « Remplacer » l'illustration, MJ),
-   une image devient l'illustration. Un échec n'ajoute rien à la médiathèque ni à la fiche.
-2. **« Choisir dans la médiathèque »** : le sélecteur de E-19 (« Choisir un fichier »), filtré sur ce
-   que le compte voit (et sur les images pour l'illustration) ; choisir intègre la référence de la même
-   façon, sans rien ajouter à la médiathèque, **sans changer sa visibilité**.
-Celui qui a ajouté un fichier le **voit toujours**, ici et dans E-19, même réservé au MJ (troisième règle
-de lecture d'AD-111).
-L'avertissement de B-55 s'affiche sous le champ, ou dans la boîte de l'illustration, tant que la
-condition tient (un fichier réservé au MJ posé hors bloc MJ dans une section lue des joueurs, ou en
-illustration d'une fiche que des joueurs voient) ; il n'empêche rien.
+**Two add paths**: the toolbar's « Fichier » (`paperclip`) button, while editing, and
+« Joindre un fichier » at the foot of the attachments block — present outside editing for those who write the section,
+as in the previous upload flow (`kanevas-fichiers`) — open the same menu —
+1. **« Ajouter depuis l'appareil »** (or drag and drop onto the section): in **one action**, the
+   file enters the media library (added by the account; **visibility from the add location**: inside
+   a GM block, or in a section not all players read, « Réservé au MJ » — the file
+   row says so with its « MJ seul » chip —; elsewhere, « Visible des joueurs »; an illustration:
+   « Visible des joueurs » if the sheet has a section read by players) **and** is integrated into the
+   sheet — from the toolbar, an image is inserted in the text at the insertion point
+   (`![nom](fichier:<id>)`) and a document puts a link there (`[nom](fichier:<id>)`), each reference on **its own line** (a newline is added before and after when the insertion point touches text or a `:::` fence; after a table row, a blank line separates the reference from the table so it cannot become another row; it never sticks to a closing fence and therefore never falls into the GM block); from the block, the
+   file is attached to the section; from the header (« Poser » or « Remplacer » the illustration, GM),
+   an image becomes the illustration. A failure adds nothing to either the media library or the sheet.
+2. **« Choisir dans la médiathèque »**: E-19's picker (« Choisir un fichier »), filtered to
+   what the account sees (and to images for the illustration); choosing integrates the reference in the same
+   way, adding nothing to the media library, **without changing its visibility**.
+Whoever added a file **always sees it**, here and in E-19, even if GM-only (AD-111's third read
+rule).
+The B-55 warning appears below the field, or in the illustration dialog, while the
+condition holds (a GM-only file placed outside a GM block in a section read by players, or as
+illustration of a sheet players see); it does not prevent anything.
 
-**Le bloc Pièces jointes** montre les fichiers joints à la section : images en vignettes, documents par
-l'icône de leur type, leur nom et leur taille ; pour un MJ, la pastille « MJ seul » d'un fichier réservé.
-Menu d'une ligne : « Retirer » ôte la référence, jamais le fichier de la médiathèque ; pour un MJ,
-« Réserver au MJ » / « Rendre visible des joueurs » change la visibilité **du fichier** (même boîte que
-E-19 s'il est lu ailleurs par des joueurs) ; « Ouvrir dans la médiathèque ». La case « secrète » de
-`kanevas-fichiers` disparaît : c'est la visibilité du fichier. **100 fichiers joints** au plus par
-section (« Cette section porte déjà 100 fichiers joints. » au MJ, « Cette section ne peut pas recevoir
-d'autre fichier. » au joueur) ; les références dans le texte ne comptent pas.
+**The attachments block** shows files attached to the section: images as thumbnails, documents with
+their type icon, name and size; for a GM, a reserved file's « MJ seul » chip.
+Row menu: « Retirer » removes the reference, never the media library file; for a GM,
+« Réserver au MJ » / « Rendre visible des joueurs » changes **the file's** visibility (same dialog as
+E-19 if players read it elsewhere); « Ouvrir dans la médiathèque ». The « secrète » checkbox from
+`kanevas-fichiers` disappears: this is the file's visibility. At most **100 attachments** per
+section (« Cette section porte déjà 100 fichiers joints. » to the GM, « Cette section ne peut pas recevoir
+d'autre fichier. » to the player); references in text do not count.
 
 **Pending file reference** (import, `fichiers_attente`, AD-111): a file key not yet known in
 this universe. For a GM outside player mode, an inline image, an attachment row and the
@@ -2321,239 +2390,239 @@ join stays pending and the batch warns « section « Notes » : 100 fichiers joi
 « fichier en attente » (never « référence » on E-9; E-18 counts « liens et références en
 attente » for the batch).
 
-**Blocs de fiche** (après les sections, hors de toute section) :
-- **Contient** (`folder-tree`) — les enfants lisibles, par type puis titre, chacun avec son icône ; 50
-  puis « Afficher les N suivants » (N compté sur ce que le lecteur voit). Absent s'il n'y en a aucun.
-- **Mentionnée dans** (`link-2`) — les fiches qui la citent et que le lecteur voit : titre, icône,
-  et le pourquoi : « lien dans « Histoire » » ou le libellé de la relation (« Amiral de »). 50 puis la
-  suite. Absent s'il n'y en a aucune (B-36). Jamais de compteur de ce qui est caché.
+**Sheet blocks** (after the sections, outside any section):
+- **« Contient »** (`folder-tree`) — readable children, by type then title, each with its icon; 50
+  then « Afficher les N suivants » (N counted from what the reader sees). Absent if there are none.
+- **« Mentionnée dans »** (`link-2`) — sheets citing it that the reader sees: title, icon,
+  and reason: « lien dans « Histoire » » or the relation label (« Amiral de »). 50 then
+  more. Absent if there are none (B-36). Never a count of hidden items.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide | fiche importée sans section : comme avant ; ni « Mentionnée dans » ; « Contient » seulement si elle a des enfants lisibles | MJ : ajouter une section |
-| chargement | squelettes de l'en-tête et de deux sections ; la fiche et ses sections arrivent en une réponse, « Contient » dans une seconde (« Chargement… » sous son titre) | — |
-| erreur | « Impossible de charger cette fiche. » ; image insérée qui ne se charge pas : « Image indisponible. » à sa place, sa légende dessous ; déplacement, changement de type, suppression qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé | « Réessayer » |
-| connexion perdue | le bandeau ; « Modifier », le menu « ⋯ », l'édition du titre désactivés ; les liens restent suivables | lire |
-| refus | fiche illisible : « Page introuvable. » ; un lien vers elle n'est que du texte ; supprimée pendant la lecture : « Page introuvable. » à l'action suivante ; Joueur : ni menu « ⋯ », ni édition du titre (**caché**) | « Mes univers » |
-| contenu long | section de 100 000 caractères : rendue en entier, l'éditeur défile ; « Erreur : 100 000 caractères au plus. » au-delà ; tableau de 12 colonnes : défile dans son cadre ; 300 enfants : 50 puis la suite ; titre de 120 caractères et fil de 6 ancêtres : le fil se replie (« … ») | idem |
+| empty | imported sheet without sections: as before; no « Mentionnée dans »; « Contient » only if it has readable children | GM: add a section |
+| loading | skeletons of the header and two sections; the sheet and its sections arrive in one response, « Contient » in a second (« Chargement… » below its title) | — |
+| error | « Impossible de charger cette fiche. »; inserted image failing to load: « Image indisponible. » in its place, caption below; failed move, type change, deletion: « L'action n'a pas abouti. Réessayez. », nothing changed | « Réessayer » |
+| connection lost | banner; « Modifier », « ⋯ » menu, title editing disabled; links can still be followed | read |
+| refusal | unreadable sheet: « Page introuvable. »; a link to it is text only; deleted while reading: « Page introuvable. » at the next action; Player: neither « ⋯ » menu nor title editing (**hidden**) | « Mes univers » |
+| long content | 100,000-character section: rendered in full, editor scrolls; « Erreur : 100 000 caractères au plus. » beyond that; 12-column table: scrolls within its frame; 300 children: 50 then more; 120-character title and 6-ancestor breadcrumb: breadcrumb collapses (« … ») | same |
 
-*Critères.*
-- Étant donné « Port-Sel » dont la section « Histoire » (lue des joueurs) contient un bloc MJ « Le port
-  est tenu par la Guilde des Brumes », quand Léa ouvre la fiche, alors elle lit « Histoire » sans
-  aucun mot du bloc, sans espace ni marque à sa place.
-- Étant donné la même fiche, quand Antor passe en mode Joueur, alors il voit exactement ce que voit
-  Léa ; revenu en mode MJ, le bloc est hachuré d'ambre, pastille « MJ seul ».
-- Étant donné un lien `[[…]]` de « Port-Sel » vers « La Guilde des Brumes » (fiche dont Léa ne lit
-  rien), quand Léa lit « Port-Sel », alors « La Guilde des Brumes » est du texte simple, sans lien.
-- Étant donné Léa auteur avec écriture d'une section qui contient un bloc MJ, quand elle ouvre la
-  fiche, alors cette section n'a pas « Modifier ».
-- Étant donné « Rapport secret de l'amirauté » (MJ seul) qui lie « Port-Sel », quand Léa ouvre
-  « Port-Sel », alors « Mentionnée dans » ne nomme pas ce rapport ; Antor l'y voit.
-- Étant donné « Port-Sel » sous « Les Sphères » (lieu illisible de Léa), sans autre ancêtre, quand
-  Léa ouvre « Port-Sel », alors le fil est « Lame d'Ébène › Lieux › Port-Sel ».
-- Étant donné « Port-Sel » sous « Les Sphères » (lieu illisible de Léa) sous « Le Grand Vide »
-  (lisible), quand Léa ouvre « Port-Sel », alors le fil est « Lame d'Ébène › Lieux › Le Grand Vide ›
+*Criteria.*
+- Given « Port-Sel » whose « Histoire » section (read by players) contains a GM block « Le port
+  est tenu par la Guilde des Brumes », when Léa opens the sheet, she reads « Histoire » without
+  any word from the block, without a gap or mark in its place.
+- Given the same sheet, when Antor switches to Player mode, he sees exactly what Léa
+  sees; back in GM mode, the block is amber-hatched, with an « MJ seul » chip.
+- Given an `[[…]]` link from « Port-Sel » to « La Guilde des Brumes » (a sheet Léa reads
+  nothing of), when Léa reads « Port-Sel », « La Guilde des Brumes » is plain text, without a link.
+- Given Léa is an author with write permission on a section containing a GM block, when she opens the
+  sheet, this section has no « Modifier ».
+- Given « Rapport secret de l'amirauté » (GM only) linking to « Port-Sel », when Léa opens
+  « Port-Sel », « Mentionnée dans » does not name this report; Antor sees it there.
+- Given « Port-Sel » under « Les Sphères » (a location unreadable by Léa), with no other ancestor, when
+  Léa opens « Port-Sel », the breadcrumb is « Lame d'Ébène › Lieux › Port-Sel ».
+- Given « Port-Sel » under « Les Sphères » (a location unreadable by Léa) under « Le Grand Vide »
+  (readable), when Léa opens « Port-Sel », the breadcrumb is « Lame d'Ébène › Lieux › Le Grand Vide ›
   Port-Sel ».
-- Étant donné Antor qui déplace « Les Sphères » alors que « Port-Sel », son enfant, lui est rangé dessous entre-temps (hiérarchie changée boîte ouverte), alors il voit « Une
-  fiche ne peut pas être rangée sous l'un de ses descendants. » et rien ne change *(kanevas-deplacer-arborescence: the box no longer offers « Port-Sel » in the first place)*.
-- Étant donné Antor qui supprime « Port-Sel » (5 enfants, dont un illisible de Léa, parent « Les Sphères »), alors les 5
-  enfants ont « Les Sphères » pour parent, l'adresse de « Port-Sel » répond « Page introuvable. », et
-  un lien vers elle dans « Maître Aldric » est marqué « lien cassé » pour Antor et du texte pour Léa.
-- Étant donné un contenu qui contient `<script>alert(1)</script>` et `<b>gras</b>`, quand la section
-  s'affiche, alors ces balises s'affichent comme du texte, et aucun script ne s'exécute.
+- Given Antor moving « Les Sphères » while « Port-Sel », its child, is meanwhile put under it (hierarchy changed while the box is open), he sees « Une
+  fiche ne peut pas être rangée sous l'un de ses descendants. » and nothing changes.
+- Given Antor deleting « Port-Sel » (5 children, one unreadable by Léa, parent « Les Sphères »), all 5
+  children have « Les Sphères » as parent, « Port-Sel »'s address answers « Page introuvable. », and
+  a link to it in « Maître Aldric » is marked « lien cassé » for Antor and text for Léa.
+- Given content containing `<script>alert(1)</script>` and `<b>gras</b>`, when the section
+  is displayed, these tags appear as text, and no script runs.
 
-### Ce que `kanevas-import-tenir` construit (E-9 titre et suppression, E-14 « Supprimer l'univers »)
+### What `kanevas-import-tenir` builds (E-9 title and deletion, E-14 « Supprimer l'univers »)
 
-*Précisions de la tranche, sur le cadre ci-dessus (B-39, B-40, B-41, AD-105, AD-119) ; les maquettes sont
-`e09-fiche-importee.html` (`#etat-supprimer`) et `e14-types-de-fiche.html` (`#etat-supprimer-univers`).*
+*Slice details within the framework above (B-39, B-40, B-41, AD-105, AD-119); mockups are
+`e09-fiche-importee.html` (`#etat-supprimer`) and `e14-types-de-fiche.html` (`#etat-supprimer-univers`).*
 
-*La maquette `#etat-supprimer` ne dessine que l'état nominal de la boîte et celle de l'en-tête que le titre au repos : les états ci-dessous (titre vidé ou trop long, toast, bilan en chargement ou en erreur) sont décrits ici, et ce texte fait foi.*
+*The `#etat-supprimer` mockup draws only the dialog's nominal state, and the header mockup only the idle title: the states below (empty or too-long title, toast, summary loading or error) are described here, and this text is authoritative.*
 
-**Titre en place (E-9, MJ hors mode Joueur).** Un clic sur le titre le rend champ de saisie, texte
-sélectionné ; Entrée enregistre, Échap annule, la perte de focus enregistre. 1 à 120 caractères après
-rognage ; vide : « Erreur : le titre est obligatoire. » ; au-delà : « Erreur : 120 caractères au plus. » ; le
-champ reste ouvert. Titre inchangé : rien n'est envoyé. Enregistré : toast « Fiche renommée. », le fil
-d'Ariane des descendants et le badge de la liste suivent à la lecture suivante ; les liens `[[…]]` ne bougent pas
-(ils visent l'identifiant, B-33). Échec : « L'action n'a pas abouti. Réessayez. » sous le titre, le champ reste ouvert avec la saisie (Échap rend l'ancien titre). Un
-Joueur ou le mode Joueur : titre en texte, sans curseur d'édition.
+**Inline title (E-9, GM outside Player mode).** Clicking the title turns it into an input field, text
+selected; Enter saves, Escape cancels, losing focus saves. 1 to 120 characters after
+trimming; empty: « Erreur : le titre est obligatoire. »; beyond that: « Erreur : 120 caractères au plus. »; the
+field stays open. Unchanged title: nothing is sent. Saved: toast « Fiche renommée. », descendants'
+breadcrumbs and the list badge follow on the next read; `[[…]]` links do not change
+(they target the identifier, B-33). Failure: « L'action n'a pas abouti. Réessayez. » below the title, the field stays open with the input (Escape restores the old title). A
+Player or Player mode: title as text, without an editing cursor.
 
-**Suppression d'une fiche (E-9).** « Supprimer la fiche… » ouvre la boîte **après** avoir lu son bilan
-(`GET …/fiches/:fid/suppression`) : « Chargement… » dans la boîte, bouton « Supprimer la fiche » inactif tant que
-le bilan n'est pas là. Le texte est composé des seuls postes non nuls, au singulier ou au pluriel
+**Deleting a sheet (E-9).** « Supprimer la fiche… » opens the dialog **after** reading its summary
+(`GET …/fiches/:fid/suppression`): « Chargement… » in the dialog, « Supprimer la fiche » button inactive until
+the summary arrives. Text contains only nonzero items, singular or plural
 (« 1 section », « 1 relation qui la vise », « 1 place sur une carte », « Son fichier reste dans la
-médiathèque », « Son enfant remontera sous… ») ; sans parent, « … remonteront à la racine de la liste du
-type » ; sans enfant, la phrase manque ; la fiche seule : « Cette fiche ne porte rien d'autre. ».
-Les nombres sont ceux du MJ, qui lit tout. Erreur du bilan : « Impossible de charger le détail. » et
-« Réessayer » ; échec de la suppression : le message dans la boîte, qui reste ouverte, la fiche n'a pas
-bougé. Succès : retour à la liste du type, toast « Fiche supprimée. ». Une fiche déjà supprimée par ailleurs :
-« Page introuvable. » à l'ouverture de la boîte. Un compte-rendu se supprime de même (retour à E-13).
+médiathèque », « Son enfant remontera sous… »); without a parent, « … remonteront à la racine de la liste du
+type »; without children, the sentence is absent; sheet alone: « Cette fiche ne porte rien d'autre. ».
+Numbers are the GM's, who reads everything. Summary error: « Impossible de charger le détail. » and
+« Réessayer »; deletion failure: the message in the dialog, which stays open, the sheet has not
+changed. Success: back to the type's list, toast « Fiche supprimée. ». A sheet already deleted elsewhere:
+« Page introuvable. » when opening the dialog. A session report is deleted the same way (back to E-13).
 
-**Import (E-18).** Un `DELETE` d'import ajoute au bilan du lot le compteur « Fiches : 1 supprimée »
-(« supprimées » au pluriel), sans refus possible ; clé inconnue : rien n'est compté.
+**Import (E-18).** An import `DELETE` adds the « Fiches : 1 supprimée » counter to the batch summary
+(« supprimées » in the plural), with no possible refusal; unknown key: nothing is counted.
 
-**Supprimer l'univers (E-14, tout MJ).** La boîte suit le texte ci-dessus ; le champ compare le nom saisi au
-nom de l'univers à la lettre près, casse et espaces compris (l'espace final saisi par erreur laisse le bouton
-inactif) ; le serveur recompare (`nom`) et refuse un nom différent (400 `nom_different`, « Le nom ne correspond
-pas à celui de l'univers. » ; l'écran affiche « Le nom ne correspond pas. »). Pendant la suppression : bouton « Suppression… » inactif. Après : E-1, toast « Univers supprimé. » ;
-les autres membres, à leur prochaine action, voient « Page introuvable. ». Échec de la suppression : « L'action n'a pas
-abouti. Réessayez. » dans la boîte, qui reste ouverte, l'univers est intact ; une suppression longue garde
-« Suppression… » tant que le serveur n'a pas répondu (pas de délai au-delà duquel la boîte se ferme).
+**Delete universe (E-14, any GM).** The dialog follows the text above; the field compares the entered name to the
+universe name exactly, including case and spaces (an accidentally entered trailing space leaves the button
+inactive); the server compares again (`nom`) and refuses a different name (400 `nom_different`, « Le nom ne correspond
+pas à celui de l'univers. »; the screen displays « Le nom ne correspond pas. »). During deletion: inactive « Suppression… » button. Afterwards: E-1, toast « Univers supprimé. »;
+other members see « Page introuvable. » at their next action. Deletion failure: « L'action n'a pas
+abouti. Réessayez. » in the dialog, which stays open, the universe intact; a long deletion keeps
+« Suppression… » until the server responds (no timeout that closes the dialog).
 
-**États propres à la tranche** (en plus du tableau de E-9 et de E-14).
+**Slice-specific states** (in addition to the E-9 and E-14 tables).
 
-| Écran | État | Ce qu'on voit | Ce qu'on peut faire |
+| Screen | State | What is seen | Available actions |
 |---|---|---|---|
-| E-9, boîte | chargement du bilan | « Chargement… », « Supprimer la fiche » inactif | « Annuler » |
-| E-9, boîte | erreur du bilan | « Impossible de charger le détail. » | « Réessayer », « Annuler » |
-| E-9, boîte | échec de la suppression | « L'action n'a pas abouti. Réessayez. » dans la boîte, la fiche n'a pas bougé | « Supprimer la fiche », « Annuler » |
-| E-9, boîte | connexion perdue | le bandeau ; « Supprimer la fiche » inactif, le bilan chargé reste | « Annuler » |
-| E-9, titre | échec de l'enregistrement | « L'action n'a pas abouti. Réessayez. » sous le titre, le champ reste ouvert avec la saisie | Entrée pour réessayer, Échap |
-| E-9, titre | connexion perdue pendant l'édition | le bandeau ; Entrée n'envoie rien, la saisie est gardée | Échap |
-| E-14, boîte | connexion perdue | le bandeau ; « Supprimer l'univers » inactif | « Annuler » |
+| E-9, dialog | summary loading | « Chargement… », « Supprimer la fiche » inactive | « Annuler » |
+| E-9, dialog | summary error | « Impossible de charger le détail. » | « Réessayer », « Annuler » |
+| E-9, dialog | deletion failure | « L'action n'a pas abouti. Réessayez. » in the dialog, the sheet has not changed | « Supprimer la fiche », « Annuler » |
+| E-9, dialog | connection lost | banner; « Supprimer la fiche » inactive, loaded summary stays | « Annuler » |
+| E-9, title | save failure | « L'action n'a pas abouti. Réessayez. » below the title, field stays open with the input | Enter to retry, Escape |
+| E-9, title | connection lost while editing | banner; Enter sends nothing, input is kept | Escape |
+| E-14, dialog | connection lost | banner; « Supprimer l'univers » inactive | « Annuler » |
 
-Un compte-rendu s'appelle « fiche » dans ces textes (« Supprimer la fiche… ») : c'est une fiche (B-40), et sa boîte
-compte ses sections, ses propositions de l'assistant incluses ; retour à E-13 au lieu de la liste du type.
-Les chemins d'échec de P-14 et de P-10 renvoient à ce tableau.
-### Le bloc MJ — ce que `kanevas-import-secrets` construit (E-9, E-12, import)
+A session report is called « fiche » in these texts (« Supprimer la fiche… »): it is a sheet (B-40), and its dialog
+counts its sections, including assistant proposals; back to E-13 instead of the type's list.
+The failure paths of P-14 and P-10 refer to this table.
+### The GM block — what `kanevas-import-secrets` builds (E-9, E-12, import)
 
-Cette tranche livre le bloc `:::mj` (B-34, AD-98, AD-114) sur le rendu et l'éditeur que
-`kanevas-import-markdown` pose. Elle ne livre ni lien `[[…]]` dans un bloc (`kanevas-import-liens`),
-ni fichier dans un bloc (`kanevas-import-mediatheque`), ni la recherche tous types
-(`kanevas-import-recherche`) ; la recherche **d'un type** (E-8) et celle de l'assistant (`chercher`) lui
-sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel », « Histoire » : le bloc
-`.bloc-mj`, le bouton `.outil-mj` de la barre, l'état `#etat-joueur`) ; aucun écran nouveau.
+This slice delivers the `:::mj` block (B-34, AD-98, AD-114) on the rendering and editor provided by
+`kanevas-import-markdown`. It delivers neither `[[…]]` links inside a block (`kanevas-import-liens`),
+nor files inside a block (`kanevas-import-mediatheque`), nor all-types search
+(`kanevas-import-recherche`); **single-type** search (E-8) and the assistant's search (`chercher`) are
+closed to it from now on. Mockup: `e09-fiche-importee.html` (« Port-Sel », « Histoire »: the
+`.bloc-mj` block, toolbar's `.outil-mj` button, `#etat-joueur` state); no new screen.
 
-- **Parcours** : lire, P-12 étapes 3 et 6 ; chercher dans un type, P-6 étapes 1-2 (la recherche tous types, P-12 étape 4, est à `kanevas-import-recherche`) ; écrire, P-14 étape 1 (« Bloc MJ ») ; vérifier en mode Joueur,
-  P-10 étape 6 ; importer un contenu qui porte `:::mj`, P-10 étape 4.
-- **La syntaxe** : une ligne `:::mj`, des lignes de texte, une ligne `:::`. Le MJ la tape ou la pose par
-  le bouton. Tout ce que le bloc couvre est secret, **quelle que soit la forme** : paragraphes, liste,
-  tableau, citation. Un bloc ne s'ouvre pas dans un bloc de code (` ``` `) : là, `:::mj` reste du texte, et
-  n'est donc pas un secret. Un bloc **jamais fermé** couvre le texte jusqu'à la fin de la section, même s'il est ouvert dans une liste ou une citation
-  (le doute joue contre l'affichage, jamais contre le secret). Un bloc dans un bloc : le plus extérieur
-  gouverne : chaque `:::mj` rencontré dans un bloc ouvre un bloc imbriqué, et le bloc extérieur ne finit qu'à la ligne `:::`
-  qui équilibre les ouvertures (une ligne `:::` dans un bloc de code d'un bloc MJ le ferme, comme à l'écran) ; tout ce qu'il couvre est retiré. `:::MJ` (autre casse), `::: mj` (espace), `::::mj` (quatre deux-points)
-  et `:::mj` suivi de mots ne sont pas des blocs : du texte, visible de tous — une règle de plus que le MJ n'a pas à apprendre.
+- **Journeys**: reading, P-12 steps 3 and 6; searching within a type, P-6 steps 1-2 (all-types search, P-12 step 4, belongs to `kanevas-import-recherche`); writing, P-14 step 1 (« Bloc MJ »); checking in Player mode,
+  P-10 step 6; importing content carrying `:::mj`, P-10 step 4.
+- **Syntax**: a `:::mj` line, text lines, a `:::` line. The GM types it or inserts it with
+  the button. Everything covered by the block is secret, **whatever its form**: paragraphs, list,
+  table, quotation. A block does not open inside a code block (` ``` `): there, `:::mj` remains text, and
+  is therefore not secret. A block **never closed** covers text up to the end of the section, even if opened inside a list or quotation
+  (doubt favors secrecy, never display). A block inside a block: the outermost
+  governs: each `:::mj` encountered inside a block opens a nested block, and the outer block ends only at the `:::` line
+  balancing the openings (a `:::` line in a code block inside a GM block closes it, as on screen); everything covered is removed. `:::MJ` (different case), `::: mj` (space), `::::mj` (four colons)
+  and `:::mj` followed by words are not blocks: text, visible to everyone — one less rule for the GM to learn.
 - **« Bloc MJ » button** (GM only, `lock`, after the existing editor toolbar buttons; « Fichier » is added by `kanevas-import-mediatheque`,
-  avant la bascule « Écrire / Aperçu » ; libellé « Bloc MJ » visible sur ordinateur, l'icône seule de 36 px sous le
-  seuil « téléphone » de la maquette (`@media` de `e09-fiche-importee.html`), sans infobulle au toucher : le libellé accessible la remplace ; infobulle « Bloc MJ · entoure la sélection », libellé accessible « Bloc MJ ») : avec une sélection, il l'entoure d'une ligne `:::mj` avant et d'une
-  ligne `:::` après (en ajoutant les sauts de ligne qui manquent, pour que les deux lignes soient seules) ;
-  sans sélection, il pose les deux lignes à la suite l'une de l'autre, une ligne vide entre, le curseur sur
-  la ligne vide. Il n'a pas de raccourci clavier. Il ne retire pas un bloc : on efface ses deux lignes.
-  Un joueur qui écrit la section, ou le MJ en mode Joueur, ne le voit pas.
-- **Aperçu** (« Écrire / Aperçu ») : ses états sont ceux de `kanevas-import-markdown` — « Aperçu en cours… »,
-  « Rien à prévisualiser. », « L'aperçu n'a pas abouti. Réessayez. » avec « Réessayer », « Erreur : 100 000 caractères au plus. » — ;
-  l'aperçu d'un scénario (E-7) ou d'une entrée de système (E-15) laisse `:::mj` en texte comme leur lecture (seule l'édition d'une
-  section de E-9 demande la nature « section » avec son univers et son mode, AD-114) ; un `nature: 'section'` sans `univers_id` entier est refusé (400), un univers inconnu ou dont le compte n'est pas membre répond 404 comme toute lecture ; un membre non MJ reçoit un aperçu sans bloc. Pour le MJ, le bloc paraît comme à la lecture, hachuré ; pour qui n'est
-  pas MJ, ou hors d'un univers, il n'existe pas (l'aperçu applique la même vue que la lecture, AD-114).
-- **Cas extrêmes** : un bloc de 100 000 caractères défile avec la section ; un tableau large dans un bloc
-  défile dans le cadre du bloc, jamais la page à 375 px ; plusieurs blocs dans une section sont autant de cadres, séparés par
-  le texte public ; un bloc jamais fermé est hachuré **jusqu'à la fin** de la section (le MJ voit ce que le public perd) ; le
-  bloc vide (`:::mj` puis `:::`) se lit comme un cadre sans texte.
-- **Lecture** : pour un MJ hors mode Joueur, le bloc prend la matière de la section « MJ seul » (trame
-  hachurée d'ambre, filet, pastille « MJ seul » `lock`, libellé accessible « Bloc MJ seul »), à sa place dans le
-  texte. Pour tout autre lecteur et pour le MJ en mode Joueur, le bloc n'existe pas : ni blanc, ni filet, ni
-  pastille, le paragraphe suivant suit le précédent ; la réponse de lecture ne contient pas un mot du bloc.
-  Une section dont tout le texte est dans un bloc se lit, pour un non-MJ, « Rien d'écrit pour l'instant. ».
-- **Écrire une section qui contient un bloc** : le MJ seul (AD-98). Pour un joueur qui l'écrit par
-  son audience, ou pour le MJ en mode Joueur qui imite un tel joueur, « Modifier » n'apparaît pas ; s'il y
-  parvient par une autre voie (l'API de session, `modifier_section`, `ajouter_a_section`), le serveur répond 403,
-  « Vous ne pouvez pas modifier cette section. », et rien n'est écrit. L'absence de « Modifier » dit à une joueuse
-  qui écrit la section qu'elle ne peut pas la modifier, jamais pourquoi : aucun message ne nomme le bloc, et c'est
-  la seule trace d'un bloc que ce choix laisse (acceptée : elle ne livre aucun mot du secret). Un joueur qui écrit un contenu qui
-  **contient** un bloc (il a tapé `:::mj` dans une section qui n'en avait pas) reçoit 400, « Un bloc MJ ne peut être
-  écrit que par un MJ. », sous le champ, texte conservé ; il en va de même du texte d'un compte-rendu qu'il crée (the « Comptes-rendus » block of E-9),
-  dont la fenêtre montre ce message sous le champ comme ses autres refus. En mode Joueur, le MJ n'a pas « Modifier »
-  (le mode est une vue de lecture, il imite un joueur qui ne peut pas écrire cette section) ; ce que l'API
-  lui accepte ne change pas, le mode ne restreint que des lectures (AD-39).
-- **L'assistant** (E-12) : `lire_fiche` et `lire_section` rendent, pour un compte joueur, le Markdown
-  **public** (sans bloc) ; pour un compte MJ, la source entière — son catalogue reste celui du MJ même
-  quand il est en mode Joueur à l'écran (AD-74). `modifier_section` et `ajouter_a_section` d'un joueur sont refusés
-  sur une section à bloc (« Vous ne pouvez pas modifier cette section. », sans événement) et sur un contenu qui
-  contient un bloc (« Un bloc MJ ne peut être écrit que par un MJ. »). `modifiable` vaut faux pour une telle
-  section. Un MJ qui écrit une section par l'assistant peut y poser un bloc.
-- **Le texte d'un scénario (E-7) ou d'une entrée de système (E-15)** : `:::mj` n'y est pas interprété, il
-  reste du texte tel qu'écrit (docs/ecrans.md, § « Le Markdown, partout où l'on écrit un texte long ») ; le
-  rendu du bloc est réservé aux sections et aux comptes-rendus, et un scénario ou une entrée n'a pas de `contenu_public`.
-- **La recherche** (le champ de recherche d'un type de E-8, B-11, et `chercher` ; la recherche tous types de
-  P-12 étape 4 vient avec `kanevas-import-recherche` sur la même règle) : un non-MJ, ou un MJ en mode Joueur, ne cherche que dans les titres
-  et le texte **public** des sections ; un mot qui n'est que dans un bloc ne fait pas trouver la fiche. Un
-  MJ hors mode Joueur cherche dans tout le texte.
-- **L'import** : `PUT /fiches/:cle` accepte `:::mj` dans le `contenu` d'une section ; le contenu public
-  est calculé comme pour une écriture d'écran, dans la même transaction. Le jeton est celui d'un MJ : la règle
-  « seul un MJ écrit un bloc » ne le gêne pas. Un contenu rejoué à l'identique reste `inchangee`.
-- **États** : ceux de E-9 (chargement, vide, erreur, connexion perdue, refus, contenu long). Le refus d'une
-  écriture est le message ci-dessus, sous le champ, texte conservé ; la section d'un joueur qui contient un bloc
-  est lisible sans « Modifier » (**caché**, pas grisé).
-- **Rôles** :
+  before the « Écrire / Aperçu » toggle; « Bloc MJ » label visible on desktop, only the 36 px icon below the
+  mockup's phone threshold (`@media` in `e09-fiche-importee.html`), no tooltip on touch: the accessible label replaces it; tooltip « Bloc MJ · entoure la sélection », accessible label « Bloc MJ »): with a selection, it wraps it with a `:::mj` line before and a
+  `:::` line after (adding missing newlines so both lines stand alone);
+  without a selection, it inserts the two lines in sequence, an empty line between, cursor on
+  the empty line. It has no keyboard shortcut. It does not remove a block: delete its two lines.
+  A player writing the section, or the GM in Player mode, does not see it.
+- **Preview** (« Écrire / Aperçu »): its states are those of `kanevas-import-markdown` — « Aperçu en cours… »,
+  « Rien à prévisualiser. », « L'aperçu n'a pas abouti. Réessayez. » with « Réessayer », « Erreur : 100 000 caractères au plus. » —;
+  a scenario (E-7) or system entry (E-15) preview leaves `:::mj` as text, like their reading view (only editing an
+  E-9 section requests the « section » nature with its universe and mode, AD-114); `nature: 'section'` without an integer `univers_id` is refused (400), an unknown universe or one the account does not belong to answers 404 like any read; a non-GM member receives a preview without blocks. For the GM, the block appears hatched as on read; for a non-GM,
+  or outside a universe, it does not exist (preview applies the same view as reading, AD-114).
+- **Extreme cases**: a 100,000-character block scrolls with the section; a wide table inside a block
+  scrolls inside the block's frame, never the page at 375 px; several blocks in a section form separate frames, separated by
+  public text; a never-closed block is hatched **to the end** of the section (the GM sees what the public loses); an
+  empty block (`:::mj` then `:::`) reads as a frame without text.
+- **Reading**: for a GM outside Player mode, the block takes the « MJ seul » section's styling (amber
+  hatched texture, rule, « MJ seul » `lock` chip, accessible label « Bloc MJ seul »), at its place in the
+  text. For every other reader and for the GM in Player mode, the block does not exist: no gap, rule or
+  chip, the next paragraph follows the previous one; the read response contains no word from the block.
+  A section whose entire text is inside a block reads, for a non-GM, « Rien d'écrit pour l'instant. ».
+- **Writing a section containing a block**: GM only (AD-98). For a player with audience-based write
+  permission, or the GM in Player mode imitating such a player, « Modifier » does not appear; if they
+  reach it another way (session API, `modifier_section`, `ajouter_a_section`), the server answers 403,
+  « Vous ne pouvez pas modifier cette section. », and nothing is written. The absence of « Modifier » tells a player
+  who can write the section that she cannot edit it, never why: no message names the block, and this is
+  the only trace this choice leaves of a block (accepted: it reveals no secret words). A player writing content
+  **containing** a block (typing `:::mj` in a section that had none) receives 400, « Un bloc MJ ne peut être
+  écrit que par un MJ. », below the field, text kept; the same applies to the text of a session report they create (the « Comptes-rendus » block of E-9),
+  whose dialog shows this message below the field like its other refusals. In Player mode, the GM has no « Modifier »
+  (the mode is a reading view, imitating a player unable to write this section); what the API
+  accepts from them does not change, the mode restricts reads only (AD-39).
+- **The assistant** (E-12): `lire_fiche` and `lire_section` return, for a player account, **public** Markdown
+  (without blocks); for a GM account, the entire source — its catalogue stays the GM's even
+  while in Player mode on screen (AD-74). A player's `modifier_section` and `ajouter_a_section` are refused
+  on a section containing a block (« Vous ne pouvez pas modifier cette section. », no event) and on content
+  containing a block (« Un bloc MJ ne peut être écrit que par un MJ. »). `modifiable` is false for such a
+  section. A GM writing a section through the assistant can place a block there.
+- **Scenario (E-7) or system entry (E-15) text**: `:::mj` is not interpreted there, it
+  stays text as written (docs/ecrans.md, § Markdown, wherever long text is written); block
+  rendering is reserved for sections and session reports, and a scenario or entry has no `contenu_public`.
+- **Search** (E-8's type search field, B-11, and `chercher`; all-types search in
+  P-12 step 4 comes with `kanevas-import-recherche` under the same rule): a non-GM, or a GM in Player mode, searches only titles
+  and sections' **public** text; a word occurring only inside a block does not find the sheet. A
+  GM outside Player mode searches all text.
+- **Import**: `PUT /fiches/:cle` accepts `:::mj` in a section's `contenu`; public content
+  is computed as for a screen write, in the same transaction. The token belongs to a GM: the
+  GM-only block-writing rule does not hinder it. Identically replayed content stays `inchangee`.
+- **States**: those of E-9 (loading, empty, error, connection lost, refusal, long content). A write
+  refusal is the above message below the field, text kept; a player's section containing a block
+  is readable without « Modifier » (**hidden**, not dimmed).
+- **Roles**:
 
-  | | MJ | Joueur qui lit | Joueur qui écrit la section | MJ en mode Joueur |
+  | | GM | Reading player | Player writing the section | GM in Player mode |
   |---|---|---|---|---|
-  | Voit le bloc | oui, hachuré | rien | rien | rien |
-  | « Bloc MJ » dans la barre | oui | sans objet (pas d'édition) | **caché** | **caché** |
-  | Écrit une section à bloc | oui | non | non (« Modifier » **caché**, 403) | par l'API oui ; à l'écran « Modifier » **caché** |
-  | Écrit un contenu qui contient un bloc (section, text of a report created from the E-9 block) | oui | non | non (**refusé** : 400, message sous le champ) | par l'API oui |
-  | Trouve une fiche par un mot du bloc | oui | **rien** (la fiche n'est pas un résultat) | **rien** | **rien** |
-  | L'assistant lui rend le bloc | oui | **rien** (le public) | **rien** (le public) | oui (catalogue du MJ) |
+  | Sees the block | yes, hatched | nothing | nothing | nothing |
+  | « Bloc MJ » in toolbar | yes | not applicable (no editing) | **hidden** | **hidden** |
+  | Writes a section with a block | yes | no | no (« Modifier » **hidden**, 403) | through the API yes; on screen « Modifier » **hidden** |
+  | Writes content containing a block (section, text of a report created from the E-9 block) | yes | no | no (**refused**: 400, message below the field) | through the API yes |
+  | Finds a sheet through a word in the block | yes | **nothing** (the sheet is not a result) | **nothing** | **nothing** |
+  | Assistant returns the block | yes | **nothing** (public text) | **nothing** (public text) | yes (GM catalogue) |
 
-*Critères.*
-- Étant donné « Port-Sel » dont « Histoire » (lue des joueurs) contient un bloc MJ de trois paragraphes, quand
-  Léa la lit, alors le premier et le dernier paragraphe du texte se suivent sans blanc supplémentaire, et la
-  réponse du serveur ne contient aucun mot du bloc.
-- Étant donné un bloc dans une liste à puces, un bloc dans une citation et un bloc jamais fermé en fin de
-  texte, quand Léa lit, alors rien de ce qu'ils couvrent ne paraît.
-- Étant donné `:::mj` écrit dans un bloc de code, quand Léa lit, alors il se lit comme du texte.
-- Étant donné une section dont tout le texte est un bloc, quand Léa la lit, alors elle lit « Rien d'écrit pour
-  l'instant. » ; Antor y voit le bloc.
-- Étant donné un scénario ou une entrée de système dont le texte porte `:::mj … :::`, quand il se lit, alors
-  les trois lignes se lisent comme du texte, sans cadre.
-- Étant donné un compte-rendu dont le texte porte un bloc, écrit par Antor, quand Léa le lit sur E-9, alors elle
-  n'en lit rien du bloc et n'a pas « Modifier » sur ce texte.
-- Étant donné Léa qui crée un compte-rendu dont le texte porte `:::mj … :::`, quand elle l'envoie, alors la
-  fenêtre dit « Un bloc MJ ne peut être écrit que par un MJ. » et rien n'est créé.
-- Étant donné Léa qui écrit une section qu'elle peut écrire et qui tape `:::mj … :::` dans son texte, quand
-  elle enregistre, alors elle lit « Un bloc MJ ne peut être écrit que par un MJ. » et son texte est conservé.
-- Étant donné la même Léa et une section où Antor a posé un bloc, quand elle envoie une écriture à
-  l'API, alors la réponse est 403 et la section est inchangée ; l'assistant de Léa, qui tente
-  `modifier_section`, reçoit « Vous ne pouvez pas modifier cette section. » et aucun événement n'est émis.
-- Étant donné un mot qui n'est que dans un bloc de « Port-Sel », quand Léa le cherche dans « Lieux », alors
-  « Port-Sel » n'est pas rendue ; Antor la trouve ; Antor en mode Joueur ne la trouve pas.
-- Étant donné Antor sur « Histoire » en édition, quand il sélectionne un paragraphe et touche « Bloc MJ »,
-  alors le paragraphe est entre `:::mj` et `:::` ; « Aperçu » le montre hachuré ; Léa ne voit rien après « Enregistrer ».
-- Étant donné un import de `contenu` à bloc MJ, rejoué à l'identique, alors la réponse dit `inchangee`
-  la seconde fois et Léa ne lit rien du bloc.
+*Criteria.*
+- Given « Port-Sel » whose « Histoire » (read by players) contains a three-paragraph GM block, when
+  Léa reads it, the text's first and last paragraphs follow without an extra gap, and the
+  server response contains no word from the block.
+- Given a block inside a bulleted list, a block inside a quotation and a never-closed block at the end of
+  text, when Léa reads, nothing they cover appears.
+- Given `:::mj` written inside a code block, when Léa reads, it reads as text.
+- Given a section whose entire text is a block, when Léa reads it, she reads « Rien d'écrit pour
+  l'instant. »; Antor sees the block.
+- Given a scenario or system entry whose text carries `:::mj … :::`, when read,
+  the three lines read as text, without a frame.
+- Given a session report whose text carries a block, written by Antor, when Léa reads it on E-9, she
+  reads nothing from the block and has no « Modifier » on this text.
+- Given Léa creating a session report whose text carries `:::mj … :::`, when she submits it, the
+  dialog says « Un bloc MJ ne peut être écrit que par un MJ. » and nothing is created.
+- Given Léa writing a section she may write and typing `:::mj … :::` into its text, when
+  she saves, she reads « Un bloc MJ ne peut être écrit que par un MJ. » and her text is kept.
+- Given the same Léa and a section where Antor placed a block, when she sends a write to
+  the API, the response is 403 and the section is unchanged; Léa's assistant attempting
+  `modifier_section` receives « Vous ne pouvez pas modifier cette section. » and no event is emitted.
+- Given a word occurring only inside a block of « Port-Sel », when Léa searches for it in « Lieux »,
+  « Port-Sel » is not returned; Antor finds it; Antor in Player mode does not find it.
+- Given Antor editing « Histoire », when he selects a paragraph and presses « Bloc MJ »,
+  the paragraph is between `:::mj` and `:::`; « Aperçu » shows it hatched; Léa sees nothing after « Enregistrer ».
+- Given an import of `contenu` with a GM block, replayed identically, the response says `inchangee`
+  the second time and Léa reads nothing from the block.
 
-### E-19 Médiathèque
+### E-19 Media library
 
-*Maquette finie* : `docs/maquettes/e19-mediatheque.html` (états `#etat-joueur`, `#etat-image`,
+*Finished mockup*: `docs/maquettes/e19-mediatheque.html` (states `#etat-joueur`, `#etat-image`,
 `#etat-document`, `#etat-documents`, `#etat-supprimer`, `#etat-reserver`, `#etat-choisir`,
 `#etat-averti`, `#etat-vide`, `#etat-perdue`). The drop overlay, errors, upload progress, « Afficher les N autres »
 and the empty picker are not drawn: **this document takes precedence over the mockup**. Decisions
 of 2026-10-11 (B-53 to B-56, AD-111): all universe files, images and documents.
 
-Atteint (adresse `/univers/<id>/mediatheque`) par « Médiathèque » (`images`) dans la barre de l'univers, sous « Cartes », pour tout membre.
-En tête : le titre, « 1140 fichiers » (ceux que le lecteur voit) et, pour un MJ, « Ajouter des
-fichiers » (plusieurs à la fois, ou un glisser-déposer sur la page : voile « Déposez les fichiers pour
-les ajouter. »). Une bascule segmentée **Tout · Images · Documents** ; une rangée de filtres : la
-recherche par nom (« Chercher par nom ») ; pour un MJ, « Visibilité » (Toutes, Visibles des joueurs,
-Réservées au MJ) ; « Usage » (Tous, Utilisés, Non utilisés — calculé sur les usages que le lecteur peut lire : pour un joueur, « Non utilisés » veut dire « utilisé nulle part où il lit », jamais « utilisé dans une fiche fermée » ; D1) ; l'ordre (Plus récents, Nom). Une
-**grille** : une image en vignette (cadrage `cover`, chargement à l'approche) ; un **document** en
-tuile de même taille — l'icône de son type (`file-text` PDF, `file-spreadsheet` tableur, `file-archive`
-archive, `file` sinon), l'extension en pastille, la taille (« 2,4 Mo ») ; le nom dessous ; pour un MJ,
-la pastille « MJ seul » (`lock`) sur un fichier réservé. 100 puis « Charger la suite ».
+Reached (address `/univers/<id>/mediatheque`) through « Médiathèque » (`images`) in the universe sidebar, below « Cartes », for any member.
+At the top: title, « 1140 fichiers » (those the reader sees) and, for a GM, « Ajouter des
+fichiers » (several at once, or drag and drop onto the page: overlay « Déposez les fichiers pour
+les ajouter. »). A segmented **« Tout · Images · Documents »** toggle; a filter row:
+name search (« Chercher par nom »); for a GM, « Visibilité » (« Toutes », « Visibles des joueurs »,
+« Réservées au MJ »); « Usage » (« Tous », « Utilisés », « Non utilisés » — computed from usages the reader can read: for a player, « Non utilisés » means used nowhere they read, never used in a closed sheet; D1); order (« Plus récents », « Nom »). A
+**grid**: an image as a thumbnail (`cover` crop, loaded on approach); a **document** in a
+same-size tile — its type icon (`file-text` PDF, `file-spreadsheet` spreadsheet, `file-archive`
+archive, `file` otherwise), extension chip, size (« 2,4 Mo »); name below; for a GM,
+the « MJ seul » (`lock`) chip on a reserved file. 100 then « Charger la suite ».
 
-Un clic ouvre le **panneau du fichier** (à droite au bureau, plein écran au téléphone) : l'image en
-grand, ou pour un document sa grande icône, son type (« Document PDF », « Tableur XLSX », « Archive
-ZIP », « Document ODT » : la nature et l'extension) and, for documents only, « Télécharger » (images have no such button) ; le nom (MJ : éditable en
-place, 1 à 200 caractères) ; la **visibilité** en bascule segmentée « Visible des joueurs » /
-« Réservé au MJ » (MJ ; un joueur ne voit pas ce réglage) ; type, taille, « ajouté par lea le 12 oct.
-2026 », la clé d'origine (MJ, si importé) ; **Utilisé dans** — les usages **que le lecteur peut lire** : pour chaque fiche qu'il voit, l'illustration (si la fiche lui est visible) et les seules sections qu'il lit, avec leur titre (« Histoire » (dans le texte), « Pièces jointes de Description ») et un lien ; pour un non-MJ (E-19 n'a pas de mode Joueur), jamais un usage dans une section qu'il ne lit pas ni dans un bloc MJ — un fichier dont aucun usage ne lui est lisible n'a pas de bloc « Utilisé dans » (D1) — ; pour un MJ « Supprimer le fichier » (`--danger`). Aucun aperçu intégré d'un PDF (AD-66).
+Clicking opens the **file panel** (right on desktop, full screen on a phone): the large image,
+or for a document its large icon, type (« Document PDF », « Tableur XLSX », « Archive
+ZIP », « Document ODT »: nature and extension) and, for documents only, « Télécharger » (images have no such button); name (GM: editable
+inline, 1 to 200 characters); **visibility** as a segmented « Visible des joueurs » /
+« Réservé au MJ » toggle (GM; a player does not see this setting); type, size, « ajouté par lea le 12 oct.
+2026 », origin key (GM, if imported); **« Utilisé dans »** — usages **the reader can read**: for each sheet they see, the illustration (if the sheet is visible to them) and only sections they read, with their title (« Histoire » (in text), « Pièces jointes de Description ») and a link; for a non-GM (E-19 has no Player mode), never a usage in a section they cannot read or inside a GM block — a file with no readable usage has no « Utilisé dans » block (D1) —; for a GM « Supprimer le fichier » (`--danger`). No embedded PDF preview (AD-66).
 
-- *Réserver au MJ* un fichier lu des joueurs ailleurs : boîte « Réserver « plan-du-repaire.png » au
+- *Reserve for the GM* a file read by players elsewhere: dialog « Réserver « plan-du-repaire.png » au
   MJ ? Les joueurs ne le verront plus dans : Les Docks — « Histoire » ; Port-Sel — « Description »
-  (jointe). » ; « Réserver au MJ » / « Annuler », puis le toast « Fichier réservé au MJ. ». Sans tel
-  usage : pas de boîte, le même toast. Rendre visible, renommer : sans toast. Nom vide : « Erreur : le
-  nom est obligatoire. » ; au-delà de 200 : « Erreur : 200 caractères au plus. ». « Utilisé dans »
-  n'apparaît pas pour un fichier qu'aucune fiche visible du lecteur n'utilise.
+  (jointe). »; « Réserver au MJ » / « Annuler », then toast « Fichier réservé au MJ. ». Without such
+  usage: no dialog, same toast. Making visible, renaming: no toast. Empty name: « Erreur : le
+  nom est obligatoire. »; beyond 200: « Erreur : 200 caractères au plus. ». « Utilisé dans »
+  does not appear for a file used by no sheet visible to the reader.
 - *Delete*: dialog « Supprimer « Carte des Sphères » ? Elle est utilisée dans 3 fiches : Port-Sel
   (illustration), Val-Fortin (« Description »), Maître Aldric (pièces jointes de « Apparence »). Elle
   disparaîtra de ces fiches. » (« Il est utilisé… Il disparaîtra… » for a document); without usages:
@@ -2580,60 +2649,60 @@ any upload, attributed to the requesting GM's account, with visibility determine
 added (illustration: « Visible des joueurs » if the sheet has a section readable by players).
 The generating assistant tool (`generer_image`, `kanevas-images`) calls that same add path, joining the image to the section.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide | MJ : « Aucun fichier pour l'instant. Ajoutez-en, ou posez-en un dans une fiche. » et « Ajouter des fichiers » ; joueur : « Aucun fichier à voir pour l'instant. » ; un filtre sans résultat : « Aucun fichier ne correspond. » | MJ : ajouter |
-| chargement | tuiles en squelette ; une vignette qui charge garde son cadre | — |
+| empty | GM: « Aucun fichier pour l'instant. Ajoutez-en, ou posez-en un dans une fiche. » and « Ajouter des fichiers »; player: « Aucun fichier à voir pour l'instant. »; filter without results: « Aucun fichier ne correspond. » | GM: add |
+| loading | skeleton tiles; a loading thumbnail keeps its frame | — |
 | Error | « Impossible de charger la médiathèque. »; failed thumbnail or preview: « Image indisponible. » (icon and text only, no button); failed download: « L'action n'a pas abouti. Réessayez. »; an empty file in a multiple upload: « « notes.txt » est vide. » below the grid, other files are added; interrupted upload: « L'envoi n'a pas abouti. » with « Réessayer » and « Abandonner » (E-9 calls the latter « Ignorer »); failed deletion or change: « L'action n'a pas abouti. Réessayez. », nothing changed | « Réessayer » |
-| connexion perdue | le bandeau ; « Ajouter des fichiers », la bascule de visibilité, « Supprimer » désactivés | regarder ce qui est chargé |
+| connection lost | banner; « Ajouter des fichiers », visibility toggle, « Supprimer » disabled | view what is loaded |
 | Refused | A GM-only file the player did not add does not exist for them (absent, direct address: « Page introuvable. »); players have no visibility settings, deletion or add action on E-19 (**hidden**; they add through a writable section on E-9); role removed while viewing: « Vous ne pouvez plus modifier ce fichier. »; instance admin without a universe role forcing the address: « Page introuvable. » | « Mes univers » |
-| contenu long | 1 140 fichiers : 100 puis la suite ; nom de 200 caractères tronqué par « … » avec infobulle ; un fichier utilisé dans 40 fiches : 10 puis « Afficher les 30 autres » ; image de 30 Mo : l'aperçu se charge, rien n'est redimensionné (AD-93) ; document de 300 Mo : la tuile et « Télécharger », rien n'est chargé d'avance | idem |
+| long content | 1,140 files: 100 then more; 200-character name truncated with « … » and tooltip; file used in 40 sheets: 10 then « Afficher les 30 autres »; 30 MB image: preview loads, nothing is resized (AD-93); 300 MB document: tile and « Télécharger », nothing is loaded ahead | same |
 
-*Critères.*
-- Étant donné « plan-du-repaire.png » réservée au MJ et insérée dans « Histoire » des « Docks », lue
-  des joueurs, quand Léa lit « Les Docks », alors elle voit « Image réservée au MJ. » à sa place ; et
-  sa médiathèque ne montre pas ce fichier.
-- Étant donné le même fichier inséré dans un bloc MJ, quand Léa lit la section, alors rien ne paraît.
-- Étant donné Antor qui, en modifiant une section lue des joueurs, choisit dans la médiathèque un
-  fichier réservé au MJ, alors l'éditeur affiche l'avertissement de B-55 ; dans une section MJ seul,
-  non.
-- Étant donné Teo ajouté en Joueur de « Lame d'Ébène » par Antor, et Léa, auteur avec écriture de
-  « Notes de la table » (que les autres joueurs ne lisent pas),
-  quand elle ajoute « carnet.pdf » depuis son appareil, alors le document est joint à la section **et**
-  figure dans la médiathèque, « Réservé au MJ », « ajouté par lea » ; Léa le voit dans la section et
-  dans sa médiathèque, Teo ne le voit nulle part.
-- Étant donné Antor qui ajoute « plan.png » depuis un bloc MJ de « Port-Sel », alors le fichier entre
-  « Réservé au MJ » ; ajouté depuis « Description », lue des joueurs, il entre « Visible des joueurs » ;
-  choisi ensuite dans la médiathèque pour un bloc MJ, sa visibilité ne change pas.
+*Criteria.*
+- Given « plan-du-repaire.png » reserved for the GM and inserted into « Histoire » of « Docks », read
+  by players, when Léa reads « Les Docks », she sees « Image réservée au MJ. » in its place; and
+  her media library does not show this file.
+- Given the same file inserted inside a GM block, when Léa reads the section, nothing appears.
+- Given Antor editing a section read by players and choosing a GM-only file from the media
+  library, the editor displays the B-55 warning; in a GM-only section,
+  it does not.
+- Given Teo added as a Player of « Lame d'Ébène » by Antor, and Léa, author with write access to
+  « Notes de la table » (which other players do not read),
+  when she adds « carnet.pdf » from her device, the document is attached to the section **and**
+  appears in the media library, « Réservé au MJ », « ajouté par lea »; Léa sees it in the section and
+  her media library, Teo sees it nowhere.
+- Given Antor adding « plan.png » from a GM block of « Port-Sel », the file enters as
+  « Réservé au MJ »; added from « Description », read by players, it enters as « Visible des joueurs »;
+  later chosen from the media library for a GM block, its visibility does not change.
 - Given « Carte des Sphères » used by three sheets, when Antor deletes it, the dialog lists all
   three sheets. Afterwards, Antor sees « Fichier supprimé de la médiathèque. » in its place in
   « Val-Fortin »; Léa sees nothing.
-- Étant donné un fichier visible des joueurs utilisé par « Port-Sel » (lisible de Léa) et par « Rapport
-  secret de l'amirauté » (MJ seul), quand Léa ouvre le fichier, alors « Utilisé dans » ne nomme que
+- Given a player-visible file used by « Port-Sel » (readable by Léa) and by « Rapport
+  secret de l'amirauté » (GM only), when Léa opens the file, « Utilisé dans » names only
   « Port-Sel ».
-- Étant donné un fichier visible des joueurs joint à « Vérité — MJ seul » de « Maître Aldric » (fiche
-  que Léa voit par « Apparence ») et inséré dans un bloc MJ de « Port-Sel », quand Léa ouvre le fichier,
-  alors il n'a pas de bloc « Utilisé dans », et il paraît sous le filtre « Non utilisés ».
-- Étant donné la bascule sur « Documents », alors seuls les documents paraissent, chacun avec l'icône
-  de son type, son nom et sa taille.
+- Given a player-visible file attached to « Vérité — MJ seul » of « Maître Aldric » (a sheet
+  Léa sees through « Apparence ») and inserted inside a GM block of « Port-Sel », when Léa opens the file,
+  it has no « Utilisé dans » block, and appears under the « Non utilisés » filter.
+- Given the toggle on « Documents », only documents appear, each with its type
+  icon, name and size.
 
-### E-8 Liste de fiches — l'arbre
+### E-8 Sheet list — the tree
 
-Une bascule « Grille / Arbre » (icônes `layout-grid`, `list-tree`) à côté de la recherche ; le choix est
-mémorisé par type dans le navigateur. **L'arbre** : les fiches du type que le compte lit, dont le
-parent est absent, illisible ou d'un autre type, par titre ; une fiche dont le parent lisible est d'un
-autre type porte « dans La Guilde des Brumes » (`--texte-3`, lien). Chaque nœud qui a des enfants **du même
-type** lisibles a un chevron ; déplier charge ses enfants (100, puis « Charger la suite »). Pas de
-compteur d'enfants (il ne compterait que le lisible, mais n'aide en rien). La recherche dans le type
-rend la grille, jamais l'arbre. Les types de la barre sont ceux qui sont activés ; l'adresse d'un type
-désactivé ouvre quand même sa liste (on y arrive par une fiche), avec la ligne « Ce type est désactivé
-dans cet univers. » et sans bouton de création. Le choix du type à la création : les types activés.
+A « Grille / Arbre » toggle (`layout-grid`, `list-tree` icons) beside search; the choice is
+remembered per type in the browser. **The tree**: readable sheets of the type whose
+parent is absent, unreadable or of another type, by title; a sheet whose readable parent has a
+different type carries « dans La Guilde des Brumes » (`--texte-3`, link). Each node with readable **same-type**
+children has a chevron; expanding loads its children (100, then « Charger la suite »). No
+child count (it would count only readable ones, but helps in no way). Type search
+returns the grid, never the tree. Sidebar types are those enabled; a disabled type's
+address still opens its list (reached through a sheet), with the « Ce type est désactivé
+dans cet univers. » row and no creation button. Type choice at creation: enabled types.
 
-**Sous-type** (B-52, décision de Monsieur du 2026-10-11) : la carte d'une fiche (grille) et la ligne de l'arbre montrent
-son sous-type sous le titre (`--texte-3`) ; un filtre « Sous-type » à côté de la recherche (« Tous » ;
-puis les sous-types des fiches du type que le lecteur voit, par ordre alphabétique, avec leur nombre de
-fiches lisibles) ; un sous-type filtré rend la grille. La fenêtre de création a un champ « Sous-type »
-facultatif, avec la même complétion que E-9.
+**Subtype** (B-52, Monsieur's decision of 2026-10-11): a sheet's card (grid) and tree row show
+its subtype below the title (`--texte-3`); a « Sous-type » filter beside search (« Tous »;
+then subtypes of sheets of this type the reader sees, alphabetically, with their readable
+sheet count); a filtered subtype returns the grid. The creation dialog has an optional « Sous-type »
+field, with the same completion as E-9.
 
 **Visibility** (B-57, `kanevas-fiche-mj-seul`, decision of Monsieur, 2026-10-25). For a GM in GM
 mode, a sheet none of whose sections is readable by the players (the « Les joueurs la lisent »
@@ -2670,83 +2739,83 @@ tooltip says so. Under 760 px the badge never squeezes the title: on a E-17 resu
 stays on one line; without illustration the row wraps to a second line when it must. Beside an
 illustration the text column is narrow, so the row never wraps: « MJ seul » shrinks to its padlock (name
 and tooltip kept for assistive technology), the type badge shrinks with an ellipsis on the sub-type, « ⋯ »
-stays on the row, and the help sentence floats over what follows instead of pushing the illustration down. *Critères.* Étant donné Antor, MJ, et « Le Prieur masqué », personnage dont la seule section est
-« Secret — MJ seul », quand il ouvre la liste des personnages, alors sa carte porte « MJ seul », et
-« Visibilité » ▸ « Réservées au MJ » le liste et ne liste pas « Maître Aldric », dont « Apparence »
-est lue des joueurs. Étant donné la même fiche, quand Antor ouvre sa seule section aux joueurs sur
-E-9, alors la pastille de l'en-tête disparaît sans recharger, et sa carte n'en porte plus à la
-prochaine lecture de la liste. Étant donné Léa, joueuse, quand elle
-ouvre la liste des personnages ou `/univers/1/fiches/personnages?visibilite=mj`, alors elle ne voit
-ni pastille ni filtre, et la liste est celle de ses droits.
+stays on the row, and the help sentence floats over what follows instead of pushing the illustration down. *Criteria.* Given Antor, GM, and « Le Prieur masqué », a character whose only section is
+« Secret — MJ seul », when he opens the list of characters, then its card carries « MJ seul », and
+« Visibilité » ▸ « Réservées au MJ » lists it and does not list « Maître Aldric », whose « Apparence »
+is read by the players. Given the same sheet, when Antor opens its only section to the players on
+E-9, then the header badge disappears without reloading, and its card no longer carries one at the
+next read of the list. Given Léa, a player, when she
+opens the list of characters or `/univers/1/fiches/personnages?visibilite=mj`, then she sees
+neither badge nor filter, and the list is the one her rights give.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide | les textes de la grille ; nouveaux types : « Aucune créature », « Aucune race », « Aucun vaisseau », « Aucun savoir », « Aucun récit », « Aucune règle », « Aucune note » + « pour l'instant. » / « à voir pour l'instant. » ; boutons « Nouvelle créature », « Nouvelle race », « Nouveau vaisseau », « Nouveau savoir », « Nouveau récit », « Nouvelle règle », « Nouvelle note » | MJ : créer |
-| chargement | « Chargement des fiches… » ; un nœud qui se déplie : « Chargement… » sous lui | — |
-| erreur | « Impossible de charger les fiches. » ; un nœud : « Impossible de charger la suite. » | « Réessayer » |
-| connexion perdue | le bandeau ; « Nouveau … » désactivé | déplier ce qui est chargé |
-| refus | un type inconnu de la liste du produit : « Page introuvable. » | — |
-| contenu long | 201 lieux : 100 racines puis la suite ; 12 niveaux de profondeur : l'indentation plafonne à 6 niveaux, la profondeur se lit au chevron | idem |
+| empty | grid texts; new types: « Aucune créature », « Aucune race », « Aucun vaisseau », « Aucun savoir », « Aucun récit », « Aucune règle », « Aucune note » + « pour l'instant. » / « à voir pour l'instant. »; buttons « Nouvelle créature », « Nouvelle race », « Nouveau vaisseau », « Nouveau savoir », « Nouveau récit », « Nouvelle règle », « Nouvelle note » | GM: create |
+| loading | « Chargement des fiches… »; expanding node: « Chargement… » below it | — |
+| error | « Impossible de charger les fiches. »; a node: « Impossible de charger la suite. » | « Réessayer » |
+| connection lost | banner; « Nouveau … » disabled | expand what is loaded |
+| refusal | type unknown to the product list: « Page introuvable. » | — |
+| long content | 201 locations: 100 roots then more; 12 levels deep: indentation capped at 6 levels, depth read from the chevron | same |
 
-*Critère.* Étant donné « La Taverne du Kraken » sous « Port-Sel », lisibles de Léa, quand Léa passe
-« Lieux » en arbre et déplie « Port-Sel », alors elle voit « La Taverne du Kraken » dessous.
-- Étant donné « Port-Sel » et « Havre-Gris » de sous-type « Port », et « Port-Noir » de sous-type
-  « Port » que Léa ne lit pas, quand Léa filtre « Lieux » sur « Port », alors elle voit « Port-Sel » et
-  « Havre-Gris », et le filtre dit « Port (2) ».
+*Criterion.* Given « La Taverne du Kraken » under « Port-Sel », readable by Léa, when Léa switches
+« Lieux » to tree and expands « Port-Sel », she sees « La Taverne du Kraken » below it.
+- Given « Port-Sel » and « Havre-Gris » with subtype « Port », and « Port-Noir » with subtype
+  « Port » that Léa cannot read, when Léa filters « Lieux » by « Port », she sees « Port-Sel » and
+  « Havre-Gris », and the filter says « Port (2) ».
 
-### Ce que `kanevas-import-arbre` construit (E-8 arbre, E-9 fil, « Contient », « Déplacer sous… »)
+### What `kanevas-import-arbre` builds (E-8 tree, E-9 breadcrumb, « Contient », « Déplacer sous… »)
 
-*Précisions de la tranche, sur le cadre ci-dessus (AD-99, AD-115) ; la maquette de E-9 est `e09-fiche-importee.html`
-(`#etat-deplacer`), l'arbre n'en a pas.*
+*Slice details within the framework above (AD-99, AD-115); E-9's mockup is `e09-fiche-importee.html`
+(`#etat-deplacer`), the tree has none.*
 
-**Arbre (E-8).** L'adresse ne change pas ; le choix « Grille / Arbre » est gardé par type sous la clé
-`kanevas:vue-liste:<univers>:<type>` du navigateur (`localStorage`, valeurs `grille`, `arbre`) ; absent : la grille.
-La liste est un `role="tree"`, chaque nœud un `role="treeitem"` avec `aria-expanded` quand il a un chevron et
-`aria-level` ; le chevron est un bouton (`aria-label` « Déplier » / « Replier ») distinct du lien vers la fiche ;
-au clavier, flèche droite déplie, flèche gauche replie, Entrée ouvre. Déplier appelle
-`GET …/fiches?type=T&parent=<id>` ; replier garde ce qui est chargé, le déplier de nouveau ne rappelle pas.
-Les racines sont `…&parent=racine` ; « Charger la suite » charge la page suivante d'un nœud ou des racines.
-Un nœud sans enfant lisible du même type n'a pas de chevron (le champ `aDesEnfants`). La ligne d'un nœud :
-icône du type, titre, sous-type (`--texte-3`), et « dans « La Guilde des Brumes » » quand `dans` est rendu.
-Au téléphone, l'indentation vaut 12 px par niveau, plafonnée à 6 niveaux ; la ligne ne passe pas sous 44 px de haut.
-En mode Joueur d'un MJ, la bascule garde son choix et l'arbre se recharge sous le mode. Un filtre de sous-type ou une recherche rend la grille ; vider le filtre ou la recherche rend l'arbre si c'était le choix mémorisé. Un nœud déplié dont la fiche devient illisible entre deux lectures disparaît à la lecture suivante (404 : « Impossible de charger la suite. »). Un parent « en attente » de l'import (AD-104) est compté, avec les liens en attente, dans la ligne « liens et références en attente » de E-18 ; le rejeu qui le pose se voit dans l'arbre.
+**Tree (E-8).** The address stays the same; the « Grille / Arbre » choice is kept per type under the browser's
+`kanevas:vue-liste:<univers>:<type>` key (`localStorage`, values `grille`, `arbre`); absent: grid.
+The list is a `role="tree"`, each node a `role="treeitem"` with `aria-expanded` when it has a chevron and
+`aria-level`; the chevron is a button (`aria-label` « Déplier » / « Replier ») separate from the sheet link;
+on the keyboard, right arrow expands, left arrow collapses, Enter opens. Expanding calls
+`GET …/fiches?type=T&parent=<id>`; collapsing keeps what is loaded, expanding again makes no new call.
+Roots are `…&parent=racine`; « Charger la suite » loads the next page of a node or roots.
+A node without readable same-type children has no chevron (the `aDesEnfants` field). A node's row:
+type icon, title, subtype (`--texte-3`), and « dans « La Guilde des Brumes » » when « `dans` » is returned.
+On a phone, indentation is 12 px per level, capped at 6 levels; a row is never less than 44 px high.
+In a GM's Player mode, the toggle keeps its choice and the tree reloads under that mode. A subtype filter or search returns the grid; clearing the filter or search returns the tree if that was the remembered choice. An expanded node whose sheet becomes unreadable between reads disappears on the next read (404: « Impossible de charger la suite. »). A pending import parent (AD-104) is counted with pending links in E-18's « liens et références en attente » row; a replay that sets it is visible in the tree.
 
-**Fil d'Ariane (E-9).** `ancetres` vient de la vue de la fiche ; chaque ancêtre est un lien vers sa fiche ; une
-fiche sans ancêtre lisible a le fil de toujours. Plus de trois ancêtres : le premier, « … » (un menu qui liste
-les autres, avec leur type), les deux derniers. Le retour par le fil (P-12 étape 5) est ce lien : aucun état
-particulier. Un ancêtre qui devient illisible entre deux lectures n'est plus dans le fil à la lecture suivante.
+**Breadcrumb (E-9).** `ancetres` comes from the sheet view; each ancestor links to its sheet; a
+sheet without readable ancestors has the usual breadcrumb. More than three ancestors: the first, « … » (a menu listing
+the others with their type), the last two. Returning via the breadcrumb (P-12 step 5) uses this link: no special
+state. An ancestor becoming unreadable between reads is absent from the breadcrumb on the next read.
 
-**« Contient » (E-9).** Le bloc suit les textes de `Contient` plus haut. Il appelle
-`GET …/fiches/:fid/enfants` une fois la fiche chargée, indépendamment des sections (la fiche et ses sections arrivent en une réponse, « Contient » dans une seconde) : son erreur ne retire pas le
-texte. Ses états : *chargement* « Chargement… » sous le titre du bloc ; *erreur* « Impossible de charger les
-enfants. » avec « Réessayer » ; *vide* le bloc est absent ; *contenu long* 50 puis « Afficher les N suivants »
-(N = ce que la page suivante compte, jamais un total) ; l'échec de cette suite dit « Impossible de charger la suite. » sans retirer ce qui est affiché ; connexion perdue : le bandeau, le bloc chargé reste ; fiche supprimée entre-temps (404) : le bloc disparaît. Une fiche sans section lisible mais avec des enfants lisibles montre quand même « Contient ». Chaque enfant montre l'icône, le titre et le sous-type (« Taverne »). En mode Joueur le bloc se relit sous le mode.
+**« Contient » (E-9).** The block follows the `Contient` texts above. It calls
+`GET …/fiches/:fid/enfants` once the sheet is loaded, independently of sections (the sheet and its sections arrive in one response, « Contient » in a second): its error does not remove the
+text. Its states: *loading* « Chargement… » below the block title; *error* « Impossible de charger les
+enfants. » with « Réessayer »; *empty* block absent; *long content* 50 then « Afficher les N suivants »
+(N = the next page's count, never a total); failure to load more says « Impossible de charger la suite. » without removing what is displayed; connection lost: banner, loaded block stays; sheet deleted meanwhile (404): block disappears. A sheet without readable sections but with readable children still shows « Contient ». Each child shows the icon, title and subtype (« Taverne »). In Player mode the block is reread under that mode.
 
-**« Déplacer sous… » (E-9).** *(kanevas-deplacer-arborescence)* Ce paragraphe décrit la vue « Recherche » ; la boîte entière est « Ce que `kanevas-deplacer-arborescence` construit » plus bas. Le champ cherche dans la liste de
-recherche existante (`GET …/fiches?q=`, sans `type`, 300 ms après la frappe, 1 caractère au moins, 100 au plus) ;
-la fiche et ses descendants sont écartés de la liste (`horsDe`) ; une ligne montre l'icône du type, le titre et le sous-type (« Lieu · Sphère »), et la recherche est celle de la liste (AD-63 : titre, alias, sous-type et texte lisible des sections, comme E-17 ; la boîte n'ajoute que `horsDe`) (le placeholder « Titre ou alias » de la maquette est celui de E-17 : ici le champ dit « Chercher une fiche ») ; « 1 caractère au moins, 100 au plus » vise la saisie, la liste rend 100 lignes au plus puis « Charger la suite », et défile dans la boîte ; avant toute saisie la liste dit « Tapez le début d'un titre. » ; une saisie sans résultat dit « Aucune fiche ne correspond. », la recherche en cours « Recherche… », son échec « Impossible de chercher. » avec « Réessayer » ; « Aucun parent » est la première ligne et met la fiche à la racine.
-« Déplacer » reste inactif tant qu'aucune ligne n'est choisie ou tant que le choix est le parent actuel (la maquette le montre actif parce qu'un choix y est déjà fait) ; le refus s'écrit sous la liste ; il envoie `PATCH …/fiches/:fid` `{parent}`. Réponses :
-succès (200, la fiche en réponse) → la boîte se ferme, le fil se recharge et le toast dit « Fiche déplacée. » ; 400 `cycle` → le texte
-« Une fiche ne peut pas être rangée sous l'un de ses descendants. » sous la liste, la boîte reste ouverte ;
-400 `trop_profond` → « La hiérarchie est trop profonde. » et 404 → « Introuvable. », tous deux sous la liste comme le cycle ; connexion perdue →
-bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mode Joueur, et le menu « ⋯ » est absent pour un Joueur. Une fiche de tout type peut être parent ou enfant, un compte-rendu compris (AD-99) : « Déplacer sous… » existe aussi pour lui (MJ seulement : un Joueur, même auteur de son compte-rendu, n'a pas le menu « ⋯ ») ; E-13 ne montre pas la hiérarchie et ne change pas.
+**« Déplacer sous… » (E-9).** *(kanevas-deplacer-arborescence)* This paragraph describes the « Recherche » view; the whole dialog is « Ce que `kanevas-deplacer-arborescence` construit » below. The field searches the existing search
+list (`GET …/fiches?q=`, without `type`, 300 ms after typing, at least 1 character, at most 100);
+the sheet and its descendants are excluded from the list (`horsDe`); a row shows the type icon, title and subtype (« Lieu · Sphère »), and search is the list's own (AD-63: title, alias, subtype and readable section text, like E-17; the dialog adds only `horsDe`) (the mockup's « Titre ou alias » placeholder belongs to E-17: here the field says « Chercher une fiche »); the 1-to-100-character constraint applies to input, the list returns at most 100 rows then « Charger la suite », and scrolls inside the dialog; before any input the list says « Tapez le début d'un titre. »; input without results says « Aucune fiche ne correspond. », searching « Recherche… », failure « Impossible de chercher. » with « Réessayer »; « Aucun parent » is the first row and puts the sheet at the root.
+« Déplacer » stays inactive until a row is chosen or while the choice is the current parent (the mockup shows it active because a choice has already been made); refusal appears below the list; it sends `PATCH …/fiches/:fid` `{parent}`. Responses:
+success (200, sheet in response) → dialog closes, breadcrumb reloads and toast says « Fiche déplacée. »; 400 `cycle` → text
+« Une fiche ne peut pas être rangée sous l'un de ses descendants. » below the list, dialog stays open;
+400 `trop_profond` → « La hiérarchie est trop profonde. » and 404 → « Introuvable. », both below the list like the cycle; connection lost →
+banner, « Déplacer » disabled. The dialog exists only for a GM outside Player mode, and the « ⋯ » menu is absent for a Player. A sheet of any type may be parent or child, including a session report (AD-99): « Déplacer sous… » also exists for it (GM only: a Player, even the author of their session report, has no « ⋯ » menu); E-13 does not show the hierarchy and stays unchanged.
 *(kanevas-deplacer-arborescence)* This paragraph now describes the « Recherche » view only, and three of its
 rules changed: the sheet **and its descendants** are left out (not the sheet alone); a refusal is written under
 the list (the « Arborescence » view has no field); « Déplacer » is also inactive while the choice is the current
 parent. The box as a whole is « Ce que `kanevas-deplacer-arborescence` construit » below.
 
-*Critères de la tranche* (les données sont celles du semis, `docs/ecrans.md` plus haut) :
-- Étant donné « Les Sphères » (lieu MJ seul) dont « Port-Sel » est l'enfant, quand Léa ouvre « Lieux » en arbre,
-  alors « Port-Sel » est une racine sans « dans … » (son parent est illisible) ; Antor, lui, voit « Les Sphères »
-  racine, et « Port-Sel » dessous.
-- Étant donné « Le Repaire des contrebandiers » (MJ seul) sous « Port-Sel », quand Léa déplie « Port-Sel », alors
-  elle voit « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels » et « Quartier des Cordiers », pas le Repaire,
-  et aucun nombre ne lui dit qu'il existe.
-- Étant donné un enfant d'un autre type sous « Port-Sel » (un événement lu des joueurs ; le semis du bouchon n'en pose pas, il se crée ou s'importe pour ce critère), quand Léa déplie
-  « Port-Sel » dans « Lieux », alors cet enfant n'y est pas ; il est dans « Contient » de « Port-Sel », et dans
-  « Événements » il porte « dans Port-Sel ».
-- Étant donné une réponse de `GET …/fiches?type=lieu&parent=racine` pour Léa, alors aucun champ ne porte le titre,
-  l'identifiant ou le nombre d'une fiche qu'elle ne lit pas (`dans` est `null` si le parent est illisible).
+*Slice criteria* (data is the seed data, `docs/ecrans.md` above):
+- Given « Les Sphères » (GM-only location) whose child is « Port-Sel », when Léa opens « Lieux » as a tree,
+  « Port-Sel » is a root without « dans … » (its parent is unreadable); Antor sees « Les Sphères »
+  as a root, and « Port-Sel » below it.
+- Given « Le Repaire des contrebandiers » (GM only) under « Port-Sel », when Léa expands « Port-Sel »,
+  she sees « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels » and « Quartier des Cordiers », not the hideout,
+  and no number tells her it exists.
+- Given a child of another type under « Port-Sel » (an event read by players; the stub seed does not create one, it is created or imported for this criterion), when Léa expands
+  « Port-Sel » in « Lieux », that child is absent there; it is in « Contient » of « Port-Sel », and in
+  « Événements » it carries « dans Port-Sel ».
+- Given a `GET …/fiches?type=lieu&parent=racine` response for Léa, no field carries the title,
+  identifier or count of a sheet she cannot read (« `dans` » is `null` if the parent is unreadable).
 
 ### Ce que `kanevas-deplacer-arborescence` construit (« Déplacer sous… » of E-9)
 
@@ -2863,101 +2932,101 @@ Docks », « Le Phare aux Sels », « Quartier des Cordiers », « Le Repaire de
   Antor opens « Déplacer sous… » on its deepest sheet, then the path shows the universe, « … » and the last two
   crumbs; when he opens « … » and chooses the first hidden level, then that level's children are listed.
 
-### E-17 Recherche
+### E-17 Search
 
-*Maquette finie* : `docs/maquettes/e17-recherche.html` (MJ, Joueur, mode Joueur, étiquette, savoir, états).
+*Finished mockup*: `docs/maquettes/e17-recherche.html` (GM, Player, Player mode, label, lore, states).
 
-Adresse `/univers/:id/recherche?q=…&type=…&etiquette=…`. Un champ en tête (focus à l'ouverture,
-1 à 100 caractères, sans bouton : la recherche part à la frappe ou à Entrée), dessous deux rangées de filtres : les **types** (pastilles à icône, « Tous » par
-défaut ; **seuls les types activés** ont leur pastille, B-42 — une fiche d'un type désactivé reste un
-résultat sous « Tous ») et les **étiquettes** (une liste à
-compléter, celles des fiches que le compte voit). Les résultats : la ligne de E-8 (vignette, icône du
-type, titre, badge, sous-type) plus, si la fiche a été trouvée par un alias, « alias : Salport » ; ses étiquettes.
-Le champ cherche dans le titre, les alias, le **sous-type** (B-52) et les sections lisibles. **Ordre** : titre, alphabétique sans casse — pas de pertinence ni d'extrait (AD-63 tient : un extrait
-est du contenu à filtrer, un classement trahit ce qui est caché). 100 puis « Charger la suite ». Une
-étiquette seule, sans mot, liste les fiches qui la portent. **Mode Joueur** (MJ) : la barre haute de
-E-17 porte la bascule du cadre (« Mode MJ » / « Mode Joueur ») ; en mode Joueur, la recherche répond comme pour un
-joueur qui n'est l'auteur d'aucune section (AD-39, AD-101) — sans blocs MJ, sans fiche qu'un joueur ne
-lit pas ; le mode passe par l'adresse (`&mode=joueur`) et suit le MJ qui arrive d'une fiche ouverte en
-mode Joueur (« Rechercher », une étiquette).
+Address `/univers/:id/recherche?q=…&type=…&etiquette=…` (the « Recherche avancée » panel and its `lie`, `nature`, `descendants` addresses are described below, with « Lié à » changing the starting state). A field at the top (focused on opening,
+1 to 100 characters, no button: search starts on typing or Enter), below it two filter rows: **types** (icon chips, « Tous » by
+default; **only enabled types** have a chip, B-42 — a sheet of a disabled type remains a
+result under « Tous ») and **labels** (a list with
+completion, from sheets the account sees). Results: E-8's row (thumbnail, type icon,
+title, badge, subtype) plus, if the sheet was found through an alias, « alias : Salport »; its labels.
+The field searches titles, aliases, **subtype** (B-52) and readable sections. **Order**: title, case-insensitive alphabetical — no relevance or snippet (AD-63 holds: a snippet
+is content to filter, ranking betrays hidden content). 100 then « Charger la suite ». A
+label alone, without a word, lists sheets carrying it. **Player mode** (GM): E-17's top bar
+carries the shell's toggle (« Mode MJ » / « Mode Joueur »); in Player mode, search answers like for a
+player who authors no section (AD-39, AD-101) — without GM blocks, without sheets a player cannot
+read; the mode goes through the address (`&mode=joueur`) and follows the GM arriving from a sheet open in
+Player mode (« Rechercher », a label).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide | une saisie d'espaces seuls ne part pas : l'état de départ reste ; sans saisie ni filtre : « Cherchez un nom, un alias ou un mot. » ; sans résultat : « Aucune fiche ne correspond. » | changer la saisie, retirer un filtre |
-| chargement | « Recherche… » sous le champ, les résultats d'avant restent grisés ; à l'ouverture, la rangée des étiquettes attend son appel (aucune pastille, le reste de l'écran est utilisable) ; « Charger la suite » en cours : le bouton est grisé et porte « Chargement… » | — |
-| erreur | « La recherche n'a pas abouti. Réessayez. » (le champ et les filtres sont conservés) ; échec de « Charger la suite » : « Impossible de charger la suite. », les résultats restent ; échec de la rangée des étiquettes : elle est absente, sans message ; saisie de plus de 100 caractères (collage, ou adresse `?q=` : le champ ne la bloque pas à la frappe mais refuse l'envoi) : « Erreur : 100 caractères au plus. » | « Réessayer » (pour « La recherche n'a pas abouti. » seulement ; les autres erreurs se corrigent en changeant la saisie, ou disparaissent à la prochaine recherche) |
-| connexion perdue | le bandeau de connexion perdue du cadre (texte de la section « Textes communs ») ; le champ reste, la recherche ne part pas ; les résultats déjà affichés restent lisibles, « Charger la suite » est désactivé | — |
-| refus | compte sans rôle : « Page introuvable. » ; une fiche illisible n'est jamais un résultat, une étiquette qui ne porte que des fiches illisibles n'est pas proposée | — |
-| contenu long | 501 résultats : 100 puis la suite ; titre long tronqué par « … » avec infobulle ; alias de 120 caractères et étiquette de 40 tronqués par « … » avec infobulle ; plus de 4 étiquettes sur une ligne : « +N » ; les rangées de pastilles passent à la ligne ; sur un téléphone (390 px) la rangée des types défile à l'horizontale à l'intérieur de sa rangée, la page jamais | idem |
+| empty | spaces-only input is not sent: the initial state stays; no input or filter: « Cherchez un nom, un alias ou un mot. »; no results: « Aucune fiche ne correspond. » | change input, remove a filter |
+| loading | « Recherche… » below the field, previous results stay dimmed; on opening, the label row waits for its call (no chips, rest of screen usable); loading « Charger la suite »: button dimmed and reads « Chargement… » | — |
+| error | « La recherche n'a pas abouti. Réessayez. » (field and filters kept); « Charger la suite » failure: « Impossible de charger la suite. », results stay; label-row failure: absent, no message; input exceeding 100 characters (paste, or `?q=` address: field does not block typing but refuses submission): « Erreur : 100 caractères au plus. » | « Réessayer » (only for « La recherche n'a pas abouti. »; other errors are corrected by changing input, or disappear at the next search) |
+| connection lost | shell's connection-lost banner (text in the common-texts section); field stays, search is not sent; displayed results stay readable, « Charger la suite » disabled | — |
+| refusal | account without a role: « Page introuvable. »; an unreadable sheet is never a result, a label carrying only unreadable sheets is not offered | — |
+| long content | 501 results: 100 then more; long title truncated with « … » and tooltip; 120-character alias and 40-character label truncated with « … » and tooltip; more than 4 labels on one row: « +N »; chip rows wrap; on a phone (390 px) the type row scrolls horizontally within itself, never the page | same |
 
-*Critères.*
-- Étant donné le mot « sous-main » présent seulement dans le bloc MJ de « Port-Sel », quand Léa
-  cherche « sous-main », alors « Port-Sel » n'est pas un résultat ; quand Antor le cherche, il l'est.
-  Quand Antor le cherche en mode Joueur, « Port-Sel » n'est pas un résultat.
-- Étant donné « Savoir » désactivé dans Lame d'Ébène et « Chronique de l'Âge d'Ombre » (un savoir
-  lisible de Léa), quand Léa cherche « chronique », alors elle est un résultat sous « Tous », et aucune
-  pastille « Savoirs » n'est proposée.
-- Étant donné « Le Pendu Joyeux » de sous-type « Taverne », quand Léa cherche « taverne », alors
-  « Le Pendu Joyeux » est un résultat ; sous la pastille « Lieux », seuls des lieux le sont.
-- Étant donné le texte de lien « La Guilde des Brumes » écrit dans « Histoire » (lue de Léa) vers une
-  fiche que Léa ne lit pas, quand Léa cherche « guilde », alors « Port-Sel » est un résultat et « La
-  Guilde des Brumes » n'en est pas un (ce lien est semé par `kanevas-import-liens`, livrée avant la recherche dans l'ordre du plan mais pas sa dépendance : le critère se joue à la recette d'ensemble de l'epic, P-12 étape 4).
-- Étant donné « Port-Sel » d'alias « Salport », quand Léa cherche « salport », alors « Port-Sel » est
-  un résultat, avec « alias : Salport ».
-- Étant donné l'étiquette « Côte des Brumes » posée sur « Port-Sel » et sur « Cercle des Cendres »
-  (illisible de Léa), quand Léa filtre sur elle, alors seul « Port-Sel » est rendu.
+*Criteria.*
+- Given the word « sous-main » present only in the GM block of « Port-Sel », when Léa
+  searches « sous-main », « Port-Sel » is not a result; when Antor searches it, it is.
+  When Antor searches it in Player mode, « Port-Sel » is not a result.
+- Given « Savoir » disabled in « Lame d'Ébène » and « Chronique de l'Âge d'Ombre » (lore
+  readable by Léa), when Léa searches « chronique », it is a result under « Tous », and no
+  « Savoirs » chip is offered.
+- Given « Le Pendu Joyeux » with subtype « Taverne », when Léa searches « taverne »,
+  « Le Pendu Joyeux » is a result; under the « Lieux » chip, only locations are results.
+- Given the link text « La Guilde des Brumes » written in « Histoire » (read by Léa) targeting a
+  sheet Léa cannot read, when Léa searches « guilde », « Port-Sel » is a result and « La
+  Guilde des Brumes » is not (this link is seeded by `kanevas-import-liens`, delivered before search in the plan order but not its dependency: the criterion is played at the epic's overall acceptance, P-12 step 4).
+- Given « Port-Sel » with alias « Salport », when Léa searches « salport », « Port-Sel » is
+  a result, with « alias : Salport ».
+- Given the « Côte des Brumes » label on « Port-Sel » and « Cercle des Cendres »
+  (unreadable by Léa), when Léa filters by it, only « Port-Sel » is returned.
 
-### La recherche — ce que `kanevas-import-recherche` construit
+### Search — what `kanevas-import-recherche` builds
 
-- **Fichier et adresse** : `frontend/src/ecrans/recherche.tsx` (un `Ecran` du registre), adresse `/univers/:id/recherche`. L'entrée « Rechercher » (`search`) est la **première** de `items.ts`, avant « Vue d'ensemble », et ne montre qu'avec l'écran enregistré. Le raccourci `/` (hors d'un champ de saisie, d'une boîte ouverte ou de l'éditeur) est posé une fois par le cadre (`useRaccourciRecherche`, appelé dans `Cadre.tsx`) et navigue vers l'adresse ci-dessus ; hors d'un univers il ne fait rien.
-- **Saisie** : la recherche part 300 ms après la dernière frappe ou à Entrée, et à chaque changement de pastille ; une saisie plus courte que 1 caractère utile ne part pas ; l'adresse suit l'état (`?q=&type=&etiquette=&mode=`, remplacement d'entrée d'historique, pas d'empilement). Une seule requête est en vol : la plus récente gagne.
-- **Pastilles de types** : « Tous » puis les types **activés** (ordre de la liste du produit) ; une seule à la fois. Pastilles d'étiquettes : celles que renvoie `GET /api/univers/:id/etiquettes` (nom, ordre alphabétique sans casse), une seule à la fois ; retirer la pastille active la ré-appuie. Une adresse qui nomme un type ou une étiquette inconnus ou non proposés les ignore (pas d'erreur).
-- **Mode Joueur** : la bascule du cadre (`cadre-contexte`), qui reste affichée avec la navigation du MJ ; le mode part en `?mode=joueur` de toute requête de cette tranche (liste, étiquettes proposées, écriture d'étiquetage) ; le MJ qui arrive d'une fiche en mode Joueur garde le mode (`&mode=joueur` posé par le lien « Rechercher » et par les pastilles d'étiquette de E-9). Un non-MJ n'a pas la bascule et l'adresse `mode=joueur` n'y change rien.
-- **Alias et étiquettes de la boîte** : à l'enregistrement, « Enregistrer » est grisé et porte « Enregistrement… » jusqu'à la réponse ; pas d'état de chargement à l'ouverture (la boîte s'ouvre sur les valeurs déjà lues) ; 20 alias de 120 caractères et 20 étiquettes de 40 : les pastilles passent à la ligne et la boîte défile verticalement ; permission : la boîte n'existe pas pour un joueur ni en mode Joueur (menu sans l'entrée, rien à refuser).
-- **Touche `/`** : critère de la tâche E-17 ; elle ne fait rien dans un champ, un éditeur, une boîte ouverte ou hors d'un univers.
-- **Résultat** : lien vers E-9 ; l'alias n'est montré que si le **titre ne correspond pas** aux mots et qu'un alias y correspond (le premier par ordre alphabétique) ; les étiquettes de la fiche suivent, chacune ré-applique le filtre. Les pastilles d'étiquettes proposées et celles d'une fiche ne comptent jamais une fiche illisible.
-- **E-9** : sous le titre « Aussi appelée … » et les pastilles d'étiquettes (liens vers E-17 `?etiquette=`) ; la boîte « Alias et étiquettes… » enregistre les deux listes d'un coup (« Enregistrer » / « Annuler » ; refus : « Erreur : 20 alias au plus. », « Erreur : 20 étiquettes au plus. », « Erreur : 120 caractères au plus. », « Erreur : 40 caractères au plus. » ; un doublon sans tenir compte de la casse est ignoré à la saisie) ; toast « Alias et étiquettes enregistrés. ». Elle est cachée à un joueur et au MJ en mode Joueur.
-- **États de la boîte** : vide (fiche sans alias ni étiquette) : deux champs vides, « Enregistrer » actif (rien à écrire = aucun appel) ; enregistrement refusé par le serveur : « L'action n'a pas abouti. Réessayez. », la saisie reste ; connexion perdue boîte ouverte : le bandeau, « Enregistrer » désactivé, la saisie reste ; « Annuler » ou Échap abandonne la saisie non enregistrée sans demande. La boîte est décrite ici seule (pas de maquette propre : fenêtre de la famille des boîtes de E-9, `e09-fiche-importee.html`).
-- **Semis du bouchon** (`KANEVAS_STUB=1`, univers « Lame d'Ébène ») : alias « Salport » et « Port-aux-Sels » sur « Port-Sel » ; étiquette « Côte des Brumes » sur « Port-Sel » et « Cercle des Cendres » (illisible de Léa) ; savoir lisible « Chronique de l'Âge d'Ombre » (sous-type « Récit ») ; le mot « sous-main » seulement dans le bloc MJ de « Port-Sel » (semé par `kanevas-import-secrets`) ; les sous-types « Taverne » (« Le Pendu Joyeux ») et « Récit » viennent de `kanevas-import-types` et de ce semis.
+- **File and address**: `frontend/src/ecrans/recherche.tsx` (an `Ecran` in the registry), address `/univers/:id/recherche`. The « Rechercher » (`search`) entry is **first** in `items.ts`, before « Vue d'ensemble », and appears only with the screen registered. The `/` shortcut (outside an input field, open dialog or editor) is installed once by the shell (`useRaccourciRecherche`, called in `Cadre.tsx`) and navigates to the above address; outside a universe it does nothing.
+- **Input**: search starts 300 ms after the last keystroke or on Enter, and at every chip change; input shorter than 1 meaningful character is not sent; the address follows state (`?q=&type=&etiquette=&mode=`, history entry replacement, no stacking). Only one request is in flight: the latest wins.
+- **Type chips**: « Tous » then **enabled** types (product list order); one at a time. Label chips: those returned by `GET /api/univers/:id/etiquettes` (name, case-insensitive alphabetical order), one at a time; pressing the active chip again removes it. An address naming unknown or unavailable types or labels ignores them (no error).
+- **Player mode**: the shell toggle (`cadre-contexte`), which stays displayed with the GM's navigation; the mode is sent as `?mode=joueur` on every request of this slice (list, offered labels, label writes); the GM arriving from a sheet in Player mode keeps the mode (`&mode=joueur` set by the « Rechercher » link and E-9's label chips). A non-GM has no toggle and the `mode=joueur` address changes nothing for them.
+- **Dialog aliases and labels**: on save, « Enregistrer » is dimmed and reads « Enregistrement… » until the response; no loading state on opening (dialog opens with already-read values); 20 aliases of 120 characters and 20 labels of 40: chips wrap and dialog scrolls vertically; permission: the dialog does not exist for a player or in Player mode (menu without the entry, nothing to refuse).
+- **`/` key**: E-17 task criterion; it does nothing in a field, editor, open dialog or outside a universe.
+- **Result**: link to E-9; an alias is shown only if the **title does not match** the words and an alias does (first alphabetically); the sheet's labels follow, each reapplies the filter. Offered label chips and a sheet's label chips never count an unreadable sheet.
+- **E-9**: below the title « Aussi appelée … » and label chips (links to E-17 `?etiquette=`); the « Alias et étiquettes… » dialog saves both lists at once (« Enregistrer » / « Annuler »; refusals: « Erreur : 20 alias au plus. », « Erreur : 20 étiquettes au plus. », « Erreur : 120 caractères au plus. », « Erreur : 40 caractères au plus. »; case-insensitive duplicates are ignored during input); toast « Alias et étiquettes enregistrés. ». It is hidden from a player and the GM in Player mode.
+- **Dialog states**: empty (sheet without aliases or labels): two empty fields, « Enregistrer » active (nothing to write = no call); server refuses save: « L'action n'a pas abouti. Réessayez. », input stays; connection lost with dialog open: banner, « Enregistrer » disabled, input stays; « Annuler » or Escape discards unsaved input without asking. The dialog is described only here (no separate mockup: a dialog in E-9's family, `e09-fiche-importee.html`).
+- **Stub seed** (`KANEVAS_STUB=1`, universe « Lame d'Ébène »): aliases « Salport » and « Port-aux-Sels » on « Port-Sel »; label « Côte des Brumes » on « Port-Sel » and « Cercle des Cendres » (unreadable by Léa); readable lore « Chronique de l'Âge d'Ombre » (subtype « Récit »); word « sous-main » only in the GM block of « Port-Sel » (seeded by `kanevas-import-secrets`); subtypes « Taverne » (« Le Pendu Joyeux ») and « Récit » come from `kanevas-import-types` and this seed.
 
-### E-18 Accès par API (MJ)
+### E-18 API access (GM)
 
-*Maquette finie* : `docs/maquettes/e18-acces-api.html` (états `#etat-nouveau`, `#etat-jeton-montre`,
+*Finished mockup*: `docs/maquettes/e18-acces-api.html` (states `#etat-nouveau`, `#etat-jeton-montre`,
 `#etat-lot`, `#etat-vide`, `#etat-perdue`).
 
-*(`kanevas-synchro` : ce qui suit sur les jetons — liste, « Nouveau jeton », boîte du jeton montré, « Révoquer » — passe à E-23 et E-5 ; E-18 garde les lots, voir « E-18 Accès par API — batches only ».)* Atteint par « Univers ▸ Accès par API » (`key-round`), MJ seul. Le bouton « Demander à Kanevas » de la maquette est celui de l'assistant, présent sur tous les écrans (B-26, E-12), sans rien de propre à E-18. Une introduction d'une ligne :
-« Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import. » et
-l'**adresse de base** à copier (`https://kanevas.berard.me/api/import/v1/univers/<id>`, « Copier »,
-toast « Adresse copiée. »). Deux panneaux.
+*(`kanevas-synchro`: what follows on tokens — list, « Nouveau jeton », the box showing the token, « Révoquer » — moves to E-23 and E-5; E-18 keeps the batches, see « E-18 Accès par API — batches only ».)* Reached through « Univers ▸ Accès par API » (`key-round`), GM only. The mockup's « Demander à Kanevas » button belongs to the assistant, present on all screens (B-26, E-12), with nothing specific to E-18. A one-line introduction:
+« Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import. » and
+the **base address** to copy (`https://kanevas.berard.me/api/import/v1/univers/<id>`, « Copier »,
+toast « Adresse copiée. »). Two panels.
 
-1. **Jetons** — « Nouveau jeton » (`plus`). Une ligne par jeton, actifs d'abord puis révoqués et expirés
-   (les 20 derniers) : nom, « créé par antor le 11 oct. 2026 », « dernier usage il y a 3 min » ou
-   « jamais », « expire le 10 nov. 2026 » ou la pastille « Révoqué » (danger) / « Expiré » (neutre), les infos séparées par « · » au bureau ; « Révoquer » au
-   survol (visible au toucher). *Nouveau jeton* : boîte « Nouveau jeton » — « Nom » (1 à 80 caractères,
-   obligatoire), « Durée » (bascule segmentée 7 jours, **30 jours**, 90 jours, 1 an), « Créer le
-   jeton », « Annuler » ; puis la même boîte montre le nom du jeton en étiquette et le jeton seul, en chasse fixe, pleine largeur, puis l'encadré (`circle-alert`) « Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre
-   script. », et au pied « Copier » (toast « Jeton copié. ») et « J'ai copié le jeton » — tant que le jeton est montré, seul ce bouton ferme la boîte
-   (ni Échap ni le voile) ; la ligne du jeton arrive alors en tête de la liste. Le jeton d'un MJ qui n'a plus ce rôle (B-46) reste listé, avec la pastille « Inactif »
-   et l'infobulle « Son créateur n'est plus MJ de cet univers. » (au toucher, la même phrase s'écrit sous la ligne) ; il reste parmi les jetons actifs, rangé avec eux par date de création ; « Révoquer » reste possible. Pendant « Créer le
-   jeton » et « Révoquer le jeton » le bouton est désactivé et dit « Création… » / « Révocation… » (pas de double envoi) ; « Annuler » et la fermeture de la boîte sont désactivés aussi jusqu'à la réponse. La maquette ne dessine ni « Inactif » ni ces boutons : le texte d'ici fait foi (pastille neutre, en `--texte-2` ; « Révoqué » est en teinte danger, « Expiré » neutre). *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
-   qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler » ; toast « Jeton révoqué. ».
-2. **Lots d'import** — les 20 derniers lots, du plus récent : date d'ouverture, jeton, état (« En
-   cours », « Clos », « Abandonné » — ouvert depuis plus de 24 h sans écriture), et les compteurs
-   **par nature d'objet**, à la suite et séparés par « · », les natures sans objet omises : « Fiches : 498 créées ·
+1. **Tokens** — « Nouveau jeton » (`plus`). One row per token, active first then revoked and expired
+   (the last 20): name, « créé par antor le 11 oct. 2026 », « dernier usage il y a 3 min » or
+   « jamais », « expire le 10 nov. 2026 » or the « Révoqué » (danger) / « Expiré » (neutral) chip, information separated by « · » on desktop; « Révoquer » on
+   hover (visible on touch). *New token*: « Nouveau jeton » dialog — « Nom » (1 to 80 characters,
+   required), « Durée » (segmented toggle « 7 jours », **« 30 jours »**, « 90 jours », « 1 an »), « Créer le
+   jeton », « Annuler »; then the same dialog shows the token name as a label and the token alone, monospace, full width, then the notice (`circle-alert`) « Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre
+   script. », and at the foot « Copier » (toast « Jeton copié. ») and « J'ai copié le jeton » — while the token is shown, only this button closes the dialog
+   (neither Escape nor overlay); the token row then arrives at the top of the list. A token whose GM no longer has that role (B-46) remains listed, with the « Inactif » chip
+   and tooltip « Son créateur n'est plus MJ de cet univers. » (on touch, the same sentence appears below the row); it remains among active tokens, sorted with them by creation date; « Révoquer » stays possible. During « Créer le
+   jeton » and « Révoquer le jeton » the button is disabled and reads « Création… » / « Révocation… » (no double submission); « Annuler » and dialog closing are also disabled until the response. The mockup draws neither « Inactif » nor these buttons: this text is authoritative (neutral chip in `--texte-2`; « Révoqué » has danger tint, « Expiré » neutral). *Revoke*: dialog « Révoquer « Script Kanka — Mac » ? Le script
+   qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler »; toast « Jeton révoqué. ».
+2. **Import batches** — the last 20 batches, newest first: opening date, token, state (« En
+   cours », « Clos », « Abandonné » — open with no write for more than 24 h), and counters
+   **per object nature**, in sequence separated by « · », natures without objects omitted: « Fiches : 498 créées ·
    3 refusées », « Fichiers : 1 140 créés »,
-   « Relations : 324 créées », puis « 6 liens et références en attente » et « 1 avertissement ». Dans une
-   nature, chaque forme (« créée(s) », « mise(s) à jour », « inchangée(s) », « refusée(s) ») n'est écrite que
-   si elle n'est pas nulle : un rejeu sans rien de neuf lit « Fiches : 1 inchangée » (le rapport de l'API,
-   lui, rend tous les compteurs, `creees: 0`), et un compte nul d'attente ou d'avertissements est omis
-   (la maquette abrège « 6 en attente » ; le texte est celui d'ici). Un `PUT` refusé (400) avec son lot
+   « Relations : 324 créées », then « 6 liens et références en attente » and « 1 avertissement ». Within a
+   nature, each form (« créée(s) », « mise(s) à jour », « inchangée(s) », « refusée(s) ») is written only
+   if nonzero: a replay with nothing new reads « Fiches : 1 inchangée » (the API report
+   returns all counters, `creees: 0`), and a zero pending or warning count is omitted
+   (the mockup shortens it to « 6 en attente »; this text is authoritative). A refused `PUT` (400) with its batch
    counts one refusal and records its origin key and reason (for example, « type « monstre » inconnu de Kanevas »); without a batch it leaves no trace here. A
-   ligne se déplie :
-   les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
-   (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
-   fiche écrite sans parent » ; « section « Notes » modifiée dans Kanevas depuis le dernier import : non
-   écrasée » ; « titre modifié dans Kanevas : non écrasé »), en deux groupes titrés par leur compte (« 3 refusées », « 2 avertissements »), 200 au
-   plus puis « … et 37 autres ». Un lot sans refus ni avertissement ne se déplie pas. Le jeton,
-   l'adresse et les clés d'origine sont en chasse fixe (pile système `ui-monospace`, charte).
+   row expands:
+   refusals and warnings, each with the origin key, what is affected and the reason
+   (« section « Vérité » : 112 000 caractères, 100 000 au plus »; « parent lieu:les-docks inconnu :
+   fiche écrite sans parent »; « section « Notes » modifiée dans Kanevas depuis le dernier import : non
+   écrasée »; « titre modifié dans Kanevas : non écrasé »), in two groups titled with their count (« 3 refusées », « 2 avertissements »), at most 200
+   then « … et 37 autres ». A batch without refusals or warnings does not expand. The token,
+   address and origin keys use monospace (system `ui-monospace` stack, charter).
    File warnings also include « fichier vide : 0 octet, refusé », « visibilité modifiée
    dans Kanevas : non écrasée » and « nom modifié dans Kanevas : non écrasé ». *(`kanevas-synchro`: the « modifié dans Kanevas » warnings disappear with B-48; a refusal by fingerprint reads « modifiée depuis la lecture ».)* A pending
    reference warns « fichier « img:quais » inconnu : référence en attente ».
@@ -2965,253 +3034,925 @@ toast « Adresse copiée. »). Deux panneaux.
 
 *(`kanevas-synchro`: the token rows of this table — « Aucun jeton », « Nouveau jeton », « Révoquer », the role message — move to E-23 and E-5; E-18 keeps the batches, see « E-18 Accès par API — batches only ».)*
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide | « Aucun jeton. Créez-en un pour qu'un script écrive dans cet univers. » (aucun jeton du tout ; avec seulement des jetons révoqués ou expirés, la liste les montre, sans ce texte) ; « Aucun lot d'import pour l'instant. » | « Nouveau jeton » |
-| chargement | squelettes des deux panneaux | — |
-| erreur | « Impossible de charger cette page. » ; nom vide : « Erreur : le nom est obligatoire. » ; création ou révocation qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé (aucun jeton à moitié créé) | « Réessayer » |
-| connexion perdue | le bandeau ; « Nouveau jeton » et « Révoquer » désactivés ; si la boîte montre un jeton, il reste affiché jusqu'à « J'ai copié le jeton » | copier |
-| refus | Joueur, compte sans rôle, admin sans rôle : item absent, « Page introuvable. » ; rôle retiré pendant la page : « Vous ne pouvez plus gérer l'accès par API de cet univers. » à l'action suivante | « Mes univers » |
-| contenu long | nom de 80 caractères tronqué par « … » avec infobulle ; un lot de 501 refus : 200 puis « … et 301 autres » ; plus de 20 jetons : les 20 derniers, les actifs toujours tous | idem |
+| empty | « Aucun jeton. Créez-en un pour qu'un script écrive dans cet univers. » (no tokens at all; with only revoked or expired tokens, the list shows them without this text); « Aucun lot d'import pour l'instant. » | « Nouveau jeton » |
+| loading | skeletons of both panels | — |
+| error | « Impossible de charger cette page. »; empty name: « Erreur : le nom est obligatoire. »; failed creation or revocation: « L'action n'a pas abouti. Réessayez. », nothing changed (no half-created token) | « Réessayer » |
+| connection lost | banner; « Nouveau jeton » and « Révoquer » disabled; if the dialog shows a token, it stays displayed until « J'ai copié le jeton » | copy |
+| refusal | Player, account without a role, admin without a role: item absent, « Page introuvable. »; role removed while viewing: « Vous ne pouvez plus gérer l'accès par API de cet univers. » at the next action | « Mes univers » |
+| long content | 80-character name truncated with « … » and tooltip; batch of 501 refusals: 200 then « … et 301 autres »; more than 20 tokens: last 20, always all active ones | same |
 
-*Critères.*
-- Étant donné Antor, MJ, quand il crée « Script Kanka — Mac » pour 30 jours, alors le jeton s'affiche
-  une fois ; après « J'ai copié le jeton », la ligne montre le nom, « jamais » et l'expiration, et la
-  valeur n'est plus nulle part à l'écran ni dans une réponse de l'API.
-- Étant donné ce jeton révoqué, quand le script appelle l'API d'import avec lui, alors il reçoit 401
-  et aucun lot n'apparaît.
-- Étant donné un lot clos avec 3 refus, quand Antor déplie la ligne, alors il lit les 3 clés d'origine
-  et leur raison.
-- Étant donné Léa, Joueuse, quand elle ouvre l'adresse de E-18, alors elle voit « Page introuvable. »
-  et l'item n'est pas dans sa barre.
+*Criteria.*
+- Given Antor, GM, when he creates « Script Kanka — Mac » for 30 days, the token is shown
+  once; after « J'ai copié le jeton », the row shows the name, « jamais » and expiry, and the
+  value is no longer anywhere on screen or in an API response.
+- Given this token revoked, when the script calls the import API with it, it receives 401
+  and no batch appears.
+- Given a closed batch with 3 refusals, when Antor expands the row, he reads the 3 origin keys
+  and their reasons.
+- Given Léa, Player, when she opens E-18's address, she sees « Page introuvable. »
+  and the item is absent from her sidebar.
 
-### E-14 et E-15 — « Types de fiche »
+### E-14 and E-15 — « Types de fiche »
 
-*Maquette finie* : `docs/maquettes/e14-types-de-fiche.html` (le panneau de E-14, le panneau de E-15,
-états `#etat-sans-systeme`, `#etat-confirmer`, `#etat-joueur`, `#etat-supprimer-univers`).
+*Finished mockup*: `docs/maquettes/e14-types-de-fiche.html` (E-14 panel, E-15 panel,
+states `#etat-sans-systeme`, `#etat-confirmer`, `#etat-joueur`, `#etat-supprimer-univers`).
 
-**E-15 (système)** : un quatrième onglet « Types de fiche » après Règles, Créatures, Objets. Une ligne
-par type de la liste du produit (sauf compte-rendu) : icône, nom, et un **interrupteur** « Activé »
-(colonne titrée « Système »).
-Sous la liste : « Utilisé par N univers. Un univers peut forcer un type à activé ou désactivé dans ses
-paramètres. » Basculer enregistre aussitôt (toast « Vaisseau désactivé pour CoF Mini. » ou « Vaisseau activé pour CoF Mini. ») ; tout univers
-qui suit le système le voit au chargement suivant. Joueur : la liste, interrupteurs en lecture seule
+**E-15 (system)**: a fourth « Types de fiche » tab after « Règles », « Créatures », « Objets ». One row
+per type in the product list (except session report): icon, name, and an **« Activé » switch**
+(column titled « Système »).
+Below the list: « Utilisé par N univers. Un univers peut forcer un type à activé ou désactivé dans ses
+paramètres. » Toggling saves immediately (toast « Vaisseau désactivé pour CoF Mini. » or « Vaisseau activé pour CoF Mini. »); any universe
+following the system sees it on the next load. Player: list, read-only switches
 (« Lecture seule »).
 
-**E-14 (univers)** : un quatrième panneau « Types de fiche », après « Créer un système ». Une ligne par
-type : icône, nom, le nombre de fiches de l'univers de ce type (« Aucune fiche », « 1 fiche », « 201 fiches »), et une **bascule
-segmentée à trois choix** : « Système · activé » (ou « Système · désactivé » ; « Par défaut · activé »
-pour un univers sans système), « Activé », « Désactivé ». Un choix forcé porte un point d'accent à
-gauche du nom ; la ligne dit, si le forçage contredit le système, « Le système le désactive. » (ou « Le système
-l'active. »). Enregistré au changement, toast « Vaisseau : activé dans Lame d'Ébène. » (« désactivé »,
-« suit le système »). Désactiver (par forçage ou en suivant) un type qui a des fiches demande
-confirmation : « Désactiver « Lieu » dans Lame d'Ébène ? Les 201 lieux restent ; on les atteint par un
-lien, la recherche ou l'arbre. » (au singulier : « Le seul événement reste ; … »), boutons
-« Désactiver » / « Annuler ». Le panneau « Supprimer l'univers » ferme la page, séparé par un filet
-`--danger` : « Supprimer l'univers » ouvre une boîte « Supprimer « Lame d'Ébène » ? Tout son contenu —
+**E-14 (universe)**: a fourth « Types de fiche » panel, after « Créer un système ». One row per
+type: icon, name, number of sheets of this type in the universe (« Aucune fiche », « 1 fiche », « 201 fiches »), and a **three-option
+segmented toggle**: « Système · activé » (or « Système · désactivé »; « Par défaut · activé »
+for a universe without a system), « Activé », « Désactivé ». An override carries an accent dot to the
+left of the name; if the override contradicts the system, the row says « Le système le désactive. » (or « Le système
+l'active. »). Saved on change, toast « Vaisseau : activé dans Lame d'Ébène. » (« désactivé »,
+« suit le système »). Disabling (by override or inheritance) a type with sheets asks for
+confirmation: « Désactiver « Lieu » dans Lame d'Ébène ? Les 201 lieux restent ; on les atteint par un
+lien, la recherche ou l'arbre. » (singular: « Le seul événement reste ; … »), buttons
+« Désactiver » / « Annuler ». The « Supprimer l'univers » panel ends the page, separated by a
+`--danger` rule: « Supprimer l'univers » opens a dialog « Supprimer « Lame d'Ébène » ? Tout son contenu —
 fiches, sections, fichiers de la médiathèque, campagnes, cartes, jetons — sera effacé, pour tous ses membres. Le
-système de jeu reste. » ; un champ « Tapez le nom de l'univers pour confirmer » ; « Supprimer
-l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse comprise). Après : E-1, toast
+système de jeu reste. »; a « Tapez le nom de l'univers pour confirmer » field; « Supprimer
+l'univers » (`--danger`) activates only if the typed name matches exactly (including case). Afterwards: E-1, toast
 « Univers supprimé. ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide | sans objet : la liste du produit n'est jamais vide ; univers sans système : la colonne « Par défaut · activé » | forcer |
-| chargement | squelette du panneau ; les autres panneaux se chargent seuls | — |
-| erreur | un changement qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau, la bascule revient ; suppression qui échoue : le message dans la boîte, l'univers reste | « Réessayer » |
-| connexion perdue | le bandeau ; bascules, interrupteurs, « Supprimer l'univers » désactivés | lire |
-| refus | E-14 : Joueur — page introuvable (inchangé) ; E-15 : Joueur — lecture seule ; un MJ qui n'a plus de rôle : « Vous ne pouvez plus modifier ces paramètres. » | — |
-| contenu long | E-15 : les mêmes états que ceux de cette ligne et des lignes précédentes de ce tableau (squelette de l'onglet, « L'action n'a pas abouti. Réessayez. », bandeau de connexion perdue qui désactive les interrupteurs, une colonne au téléphone) ; 13 types réglables : la liste tient sans défiler au bureau, une colonne au téléphone (la bascule passe sous le nom) ; nom d'univers de 80 caractères dans la boîte : passe à la ligne | idem |
+| empty | not applicable: product list is never empty; universe without a system: « Par défaut · activé » column | override |
+| loading | panel skeleton; other panels load independently | — |
+| error | failed change: « L'action n'a pas abouti. Réessayez. » above the panel, toggle reverts; failed deletion: message in dialog, universe stays | « Réessayer » |
+| connection lost | banner; toggles, switches, « Supprimer l'univers » disabled | read |
+| refusal | E-14: Player — page not found (unchanged); E-15: Player — read only; GM who no longer has a role: « Vous ne pouvez plus modifier ces paramètres. » | — |
+| long content | E-15: same states as this row and previous rows of this table (tab skeleton, « L'action n'a pas abouti. Réessayez. », connection-lost banner disabling switches, one column on a phone); 13 configurable types: list fits without scrolling on desktop, one column on a phone (toggle moves below name); 80-character universe name in dialog: wraps | same |
 
-*Critères.*
-- Étant donné « CoF Mini » qui désactive « Vaisseau » et « Lame d'Ébène » qui le force à « Activé »,
-  quand Antor ouvre « Lame d'Ébène », alors « Vaisseaux » est dans sa barre ; quand Mira ouvre « Les
-  Landes grises » (qui suit le système), il n'y est pas.
-- Étant donné « Lame d'Ébène » qui suit le système pour « Note », quand le système réactive « Note »,
-  alors « Notes » apparaît dans la barre de « Lame d'Ébène » au chargement suivant.
-- Étant donné un univers dont le MJ désactive « Lieu », alors « Lieux » quitte la barre et la création,
-  et un lien vers un lieu ouvre toujours sa fiche.
-- Étant donné Antor qui tape « lame d'ébène » dans la boîte de suppression de « Lame d'Ébène », alors
-  « Supprimer l'univers » reste inactif ; avec le nom exact, l'univers est supprimé, et Léa qui en
-  ouvre une adresse voit « Page introuvable. ».
+*Criteria.*
+- Given « CoF Mini » disabling « Vaisseau » and « Lame d'Ébène » overriding it to « Activé »,
+  when Antor opens « Lame d'Ébène », « Vaisseaux » is in his sidebar; when Mira opens « Les
+  Landes grises » (following the system), it is absent.
+- Given « Lame d'Ébène » following the system for « Note », when the system enables « Note » again,
+  « Notes » appears in « Lame d'Ébène »'s sidebar on the next load.
+- Given a universe whose GM disables « Lieu », « Lieux » leaves the sidebar and creation,
+  and a link to a location still opens its sheet.
+- Given Antor typing « lame d'ébène » in « Lame d'Ébène »'s deletion dialog,
+  « Supprimer l'univers » stays inactive; with the exact name, the universe is deleted, and Léa opening
+  one of its addresses sees « Page introuvable. ».
 
-#### Les types — ce que `kanevas-import-types` construit
+#### Types — what `kanevas-import-types` builds
 
-Le panneau « Supprimer l'univers » de E-14 est à `kanevas-import-tenir` ;
-celle-ci construit le panneau et l'onglet « Types de fiche » ci-dessus, et ce qui suit.
-La liste des types (identifiant, adresse, libellés, icône) est celle du serveur (AD-120) : les écrans
-la lisent par `GET /api/univers/:id/types`, ils n'en tiennent aucune copie. Icônes (Lucide) :
-Personnage `users-round`, Lieu `map-pin`, Faction `shield`, Objet `gem`, Événement `hourglass`, Quête
-`scroll-text`, Créature `paw-print`, Race `dna`, Vaisseau `ship`, Savoir `lightbulb`, Récit `book-open`,
-Règle `scale`, Note `sticky-note` ; adresses de E-8 : `/univers/:id/fiches/<pluriel>` (`creatures`,
+E-14's « Supprimer l'univers » panel belongs to `kanevas-import-tenir`;
+this slice builds the « Types de fiche » panel and tab above, and the following.
+The type list (identifier, address, labels, icon) is the server's (AD-120): screens
+read it through `GET /api/univers/:id/types`, keeping no copy. Icons (Lucide):
+character `users-round`, location `map-pin`, faction `shield`, item `gem`, event `hourglass`, quest
+`scroll-text`, creature `paw-print`, race `dna`, ship `ship`, lore `lightbulb`, story `book-open`,
+rule `scale`, note `sticky-note`; E-8 addresses: `/univers/:id/fiches/<pluriel>` (`creatures`,
 `races`, `vaisseaux`, `savoirs`, `recits`, `regles`, `notes`).
 
-**Barre latérale.** La section « Lore » se construit de la réponse : les types activés, dans l'ordre de la
-liste. Pendant le chargement, trois lignes de squelette sous le titre « Lore » ; en erreur, la ligne
-« Impossible de charger les types. » et « Réessayer » à sa place — le reste de la barre ne bouge pas.
-Si aucun type n'est activé (tous désactivés), la section montre « Aucun type de fiche activé. » (et, au MJ,
-le lien « Régler les types » vers E-14). Connexion perdue : la barre garde la dernière liste lue ; sans liste
-déjà lue, c'est l'état d'erreur.
-Après un réglage (E-14, E-15) sur un autre onglet, la barre se met à jour au retour sur l'onglet ou au
-prochain chargement, jamais au milieu d'une saisie.
+**Sidebar.** The « Lore » section is built from the response: enabled types, in list
+order. During loading, three skeleton rows below the « Lore » title; on error, the
+« Impossible de charger les types. » row and « Réessayer » instead — the rest of the sidebar stays unchanged.
+If no type is enabled (all disabled), the section shows « Aucun type de fiche activé. » (and, to the GM,
+the « Régler les types » link to E-14). Connection lost: sidebar keeps the last read list; without a
+previously read list, this is the error state.
+After a setting change (E-14, E-15) in another tab, the sidebar updates on return to the tab or on the
+next load, never in the middle of input.
 
-**E-8 — création et sous-type.** La liste « Type » de la fenêtre de création ne propose que les types
-activés ; le champ « Sous-type » (facultatif, 60 caractères au plus, « Erreur : 60 caractères au plus. »)
-propose, en tapant, les sous-types déjà employés pour le type choisi (titre « Sous-types de lieu déjà
-employés ») ; changer le type dans la fenêtre vide le champ. Si le type vient d'être désactivé par un
-autre MJ, « Créer » répond « Ce type est désactivé dans cet univers. » dans la fenêtre, rien n'est créé. Le
-filtre « Sous-type » n'apparaît que si au moins une fiche lisible du type en porte un ; pendant son
-chargement il est désactivé (« Sous-type : … ») ; s'il échoue, « Sous-types indisponibles. » à sa place
-et la grille reste utilisable. Si « Créer » échoue : « L'action n'a pas abouti. Réessayez. » dans la fenêtre, la saisie gardée. Contenu long : 40
-sous-types distincts : la liste du filtre défile ; un sous-type de 60 caractères est tronqué par une ellipse, entier
-dans son infobulle. Un sous-type filtré qui n'a plus de fiche (renommée entre-temps) rend
-« Aucune fiche de ce sous-type. » avec « Voir tous les lieux ».
+**E-8 — creation and subtype.** The creation dialog's « Type » list offers only enabled
+types; the « Sous-type » field (optional, at most 60 characters, « Erreur : 60 caractères au plus. »)
+suggests, while typing, subtypes already used for the chosen type (title « Sous-types de lieu déjà
+employés »); changing type in the dialog clears the field. If another GM just disabled the
+type, « Créer » answers « Ce type est désactivé dans cet univers. » in the dialog, nothing is created. The
+« Sous-type » filter appears only if at least one readable sheet of this type has one; while
+loading it is disabled (« Sous-type : … »); on failure, « Sous-types indisponibles. » replaces it
+and the grid stays usable. If « Créer » fails: « L'action n'a pas abouti. Réessayez. » in the dialog, input kept. Long content: 40
+distinct subtypes: filter list scrolls; a 60-character subtype is truncated with an ellipsis, full text
+in its tooltip. A filtered subtype with no remaining sheet (renamed meanwhile) returns
+« Aucune fiche de ce sous-type. » with « Voir tous les lieux ».
 
-**E-9 — sous-type en place.** Le MJ (hors mode Joueur) clique le sous-type du badge : champ, liste de
-complétion, Entrée enregistre, Échap annule (maquette `#etat-sous-type`). Enregistrement en cours : champ
-désactivé, « Enregistrement… ». Échec : « L'action n'a pas abouti. Réessayez. » sous le champ, la valeur
-tapée est gardée. Un champ vidé retire le sous-type (« Sous-type retiré. »). Connexion perdue : l'édition est désactivée (le sous-type reste lisible). Contenu long : 60 caractères, tronqués par
-une ellipse dans le badge, entiers dans l'infobulle. Un joueur lit le sous-type en
-simple texte ; une fiche sans sous-type ne montre rien à un joueur.
+**E-9 — inline subtype.** The GM (outside Player mode) clicks the badge's subtype: field, completion
+list, Enter saves, Escape cancels (mockup `#etat-sous-type`). Saving: field
+disabled (no label). Failure: « Le sous-type n’a pas été enregistré. Réessayez. » below the field, typed value
+kept. Saved: toast « Sous-type enregistré. »; an emptied field removes the sub-type (« Sous-type retiré. »). Connection lost: editing disabled (subtype stays readable). Long content: 60 characters, truncated with
+an ellipsis in the badge, full text in the tooltip. A player reads the subtype as
+plain text; a sheet without a subtype shows nothing to a player.
+*(kanevas-sous-type-dialogue)* **The sub-type shows that it is editable** (GM, outside player mode; mockup
+`#etat-sous-type-survol`). At rest, nothing changes. On hover of the sub-type, and when it receives
+keyboard focus (it is a button, reached with Tab after the type badge), it takes the
+`--surface-3` background (4 px radius) and a pencil icon (`pencil`, 12 px, decorative) appears
+after its text — on that background, the pencil and the « Sous-type » label turn `--texte-2` (the charter never puts
+`--texte-3` on `--surface-3`); the pointer is the text cursor; keyboard focus adds the charter's focus ring
+(2 px `--focus`, offset 2 px). The tooltip says « Modifier le sous-type »; the accessible name is
+« Sous-type : Port. Modifier le sous-type » (without a sub-type: « Ajouter un sous-type »).
+Where there is no hover (touch screen, `(hover: none)`), the pencil is always visible (charter,
+« Les actions secondaires se révèlent au survol et au focus »). A sheet without a sub-type: the label
+« Sous-type » in `--texte-3` at rest, with the same hover and the same pencil. The pencil does not push the title:
+its room (12 px plus a 4 px gap) is counted in the badge's width, which does not move on hover.
+A player, or the GM in player mode: no background, no pencil, no focus — the sub-type is text.
+Connection lost: the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. »; the sub-type is disabled (`disabled`): no background or
+pencil on hover, ordinary cursor, Tab no longer stops on it; everything returns with the connection.
+Saving in progress: not applicable to hover — the edit field replaces the sub-type while saving
+(field disabled, above), and the modal box « Changer le type… » covers it.
+Hover and keyboard focus are two distinct states: hover shows the background and the pencil, without the
+ring; keyboard focus shows them with the ring (mockup `#etat-sous-type-survol` and `#etat-sous-type-focus`).
 
-**E-9 — « Changer le type… »** (MJ, hors mode Joueur ; absent pour un compte-rendu) : maquette
-`e09-fiche-importee.html#etat-changer-type`. Boîte « Changer le type de « Port-Sel » » : une
-liste à choix unique des types, les types activés d'abord, puis le titre « Autres types » avec les
-désactivés (« désactivé » en `--texte-3`), le type courant coché et indiqué « (actuel) » ; choisir
-« Personnage » ouvre le choix « PJ / PNJ » (PNJ par défaut) ; le champ « Sous-type » (vide d'office pour un
-autre type, avec les sous-types déjà employés pour le type choisi). Si la fiche a un sous-type, la boîte dit :
-« Le sous-type « Port » sera retiré. » tant que le champ n'est pas rempli. Boutons « Changer le
-type » (désactivé tant que le type reste l'actuel) et « Annuler ». Après : la fiche se recharge sous son
-nouveau type, toast « Type changé : Note → Savoir. », le fil d'Ariane et la barre suivent ; ses sections,
-relations, places sur une carte et propositions sont intactes.
-Le choix PJ / PNJ n'apparaît que pour **devenir** un personnage ; le PJ / PNJ d'un personnage existant ne se
-change pas ici. Chargement : tant que la liste des types n'est pas lue, la liste de la boîte dit « Chargement des
-types… » et « Changer le type » reste désactivé. Contenu long : un titre de 120 caractères passe à la ligne dans
-le titre de la boîte ; un sous-type de 60 caractères est tronqué par une ellipse dans le badge, entier dans son
-infobulle et dans le champ. Échecs : « Le type n'a pas changé. Réessayez. » dans la boîte (elle reste ouverte) ; un MJ qui n'a plus de
-rôle : « Vous ne pouvez plus modifier cette fiche. » ; connexion perdue : bandeau, bouton désactivé.
-Enregistrement en cours : le bouton passe à « Enregistrement… » et la boîte est figée. Échec de lecture de la
-liste des types : « Impossible de charger les types. » et « Réessayer » à la place de la liste, bouton désactivé.
-La liste des 14 types défile dans la boîte (hauteur bornée) au bureau comme au téléphone, où la boîte occupe
-l'écran. Un sous-type de plus de 60 caractères saisi dans le champ : « Erreur : 60 caractères au plus. ». Le
-cas « vide » est sans objet : la liste des types n'est jamais vide (fourteen configurable types).
-**E-9 — sous-type en place.** La liste de complétion défile au-delà de huit entrées ; sans sous-type déjà
-employé pour ce type, elle n'apparaît pas et le champ reste libre.
-**E-8 — compte du filtre.** Le compte de « Port (N) » reste toujours visible, jusqu'à 9 999 ; au-delà la
-pastille dit « Port (9 999+) ».
-**E-14 — bascule d'un type.** Toast, comme celui de E-15 (même composant, maquette `e14` : `.toast`) :
+**E-9 — « Changer le type… »** (GM, outside Player mode; absent for a session report): mockup
+`e09-fiche-importee.html#etat-changer-type`. « Changer le type de « Port-Sel » » dialog: a
+single-choice type list, enabled types first, then the « Autres types » title with
+disabled ones (« désactivé » in `--texte-3`), current type checked and marked « (actuel) »; choosing
+« Personnage » opens the « PJ / PNJ » choice (NPC by default); the « Sous-type » field (empty by default for a
+different type, with subtypes already used for the chosen type). If the sheet has a subtype, the dialog says:
+« Le sous-type « Port » sera retiré. » until the field is filled. Buttons « Changer le
+type » and « Annuler » (for the sub-type alone, see below: « Changer le type » is disabled until something differs). Afterwards: sheet reloads under its
+new type, toast « Type changé : Note → Savoir. », breadcrumb and sidebar follow; its sections,
+relations, map placements and proposals stay intact.
+*(kanevas-sous-type-dialogue — changing the sub-type alone; mockup `#etat-changer-sous-type`.)* On
+opening, the current type is ticked and the « Sous-type » field holds the sheet's current sub-type
+(empty if it has none), with the completion of the current type. While the type stays the current one:
+- the box does not say « … sera retiré. » (that warning exists only for another type, if the sheet has a
+  sub-type and while the field stays empty);
+- the button stays **« Changer le type »** — the sub-type is part of the type (Monsieur's decision of
+  2026-10-29: a label « Enregistrer le sous-type » was proposed and refused); it is disabled while the field, trimmed,
+  equals the current sub-type (case counts: « capitaine » replaces « Capitaine »); it enables as soon as
+  it differs, an emptied field included when the sheet had a sub-type;
+- it sends `PATCH …/fiches/:fid` `{sousType}` (the trimmed text, or `null` for an empty field) — the
+  existing route (AD-120), nothing else; on success: the box closes, the header reloads, toast « Sous-type
+  enregistré. » (« Sous-type retiré. » for an empty field), the same as the in-badge edit;
+- PJ / PNJ is not shown, « Personnage (actuel) » included (it is not changed here, see below).
+Choosing another type gives the behaviour of a type change: field emptied, « … sera retiré. » if the
+sheet has a sub-type, button « Changer le type ». Going back to the current type restores the field with the
+current sub-type and the button « Changer le type » (disabled while nothing differs). Saving in
+progress: the button shows its waiting mark « … » (as every button) and the box is frozen. `PATCH` failure: « Le sous-type n'a
+pas changé. Réessayez. » in the box, which stays open with the input; 403: the box closes and
+« Vous ne pouvez plus modifier cette fiche. » shows; 404: « Introuvable. » in the box; connection lost:
+the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », button disabled, input kept. A sub-type over 60 characters: « Erreur : 60 caractères au plus. »
+under the field, nothing is sent. Loading: while the types list is not read, the « Sous-type » field is
+already there, holding the current sub-type and editable, with « Chargement des types… » shown, and the button stays
+disabled even if the field already differs; it enables only once the list is read (its failure: « Impossible de charger les types. »,
+above, button disabled). No empty state of its own: the field is filled from the sheet already read, and the types list is
+never empty. Failure drawn: mockup `#etat-changer-sous-type-echec`. A Player has neither the « ⋯ » menu nor
+the box (hidden, as for « Changer le type… »).
+The PC / NPC choice appears only when **becoming** a character; an existing character's PC / NPC status
+cannot be changed here. Loading: until the type list is read, the dialog's list says « Chargement des
+types… » and « Changer le type » stays disabled. Long content: a 120-character title wraps in
+the dialog title; a 60-character subtype is truncated with an ellipsis in the badge, full text in its
+tooltip and field. Failures: « Le type n'a pas changé. Réessayez. » in the dialog (it stays open); a GM who no longer has a
+role: « Vous ne pouvez plus modifier cette fiche. »; connection lost: banner, button disabled.
+Saving: button becomes « … » and dialog is frozen. Type-list read failure:
+« Impossible de charger les types. » and « Réessayer » replace the list, button disabled.
+The 14-type list scrolls within the dialog (bounded height) on desktop and on a phone, where the dialog fills
+the screen. A subtype exceeding 60 characters entered in the field: « Erreur : 60 caractères au plus. ». The
+empty case is not applicable: the type list is never empty (fourteen configurable types).
+**E-9 — inline subtype.** The completion list scrolls beyond eight entries; with no subtype already
+used for this type, it does not appear and the field stays free-form.
+**E-8 — filter count.** The « Port (N) » count stays visible, up to 9,999; beyond that the
+chip says « Port (9 999+) ».
+**E-14 — type toggle.** Toast, like E-15's (same component, mockup `e14`: `.toast`):
 « Vaisseau : activé dans Lame d'Ébène. » / « … : désactivé dans … » / « … : suit le système. ».
-**E-15 — « Types de fiche ».** « Utilisé par 0 univers » et « Utilisé par 1 univers » (singulier) sous la liste ;
-un nom de système de 80 caractères passe à la ligne dans l'en-tête.
-**Rôles (kanevas-import-types).** Joueur : E-9 montre le sous-type en lecture seule ; « Changer le type… » est
-**caché** ; le champ « Sous-type » de la création est **absent** (la création n'est pas offerte) ; le lien
-« Régler les types » de la barre est **caché**. Admin d'instance sans rôle dans l'univers : il n'a pas la section
-« Lore » (la barre n'est celle d'aucun univers pour lui).
+**E-15 — « Types de fiche ».** « Utilisé par 0 univers » and « Utilisé par 1 univers » (singular) below the list;
+an 80-character system name wraps in the header.
+**Roles (kanevas-import-types).** Player: E-9 shows the subtype read only; « Changer le type… » is
+**hidden**; creation's « Sous-type » field is **absent** (creation is not offered); the sidebar's
+« Régler les types » link is **hidden**. Instance admin without a role in the universe: no
+« Lore » section (the sidebar belongs to no universe for them).
 
-La maquette `e08-liste-fiches.html` n'est pas redessinée pour le sous-type : le texte ci-dessus dit où il se pose
-(sous le titre de la carte, `--texte-3` ; filtre à côté de la recherche).
+The `e08-liste-fiches.html` mockup is not redrawn for subtype: the text above says where it goes
+(below the card title, `--texte-3`; filter beside search).
 
-*Critères de la tranche* (les critères d'écran ci-dessus restent les siens).
-- Étant donné « Les Cristaux d'Ombre » (Savoir · Ressource), quand Antor la passe en Note, alors elle est
-  dans « Notes » sans sous-type, et la boîte l'avait annoncé.
-- Étant donné « Lame d'Ébène » où « Note » est désactivé, quand Antor ouvre « Changer le type… » d'une
-  fiche, alors « Note » est sous « Autres types » et le choisir fonctionne.
-- Étant donné un type désactivé, quand Antor ouvre l'adresse de sa liste, alors elle s'ouvre avec « Ce type
-  est désactivé dans cet univers. » et sans bouton de création.
+*Slice criteria* (the screen criteria above still apply).
+- *(kanevas-sous-type-dialogue)* Given an NPC « Capitaine » in Lame d'Ébène, when Antor (GM, outside player
+  mode) opens « Changer le type… », leaves « Personnage (actuel) », replaces the sub-type with « Amiral » and
+  clicks « Changer le type », then the box closes, the toast says « Sous-type enregistré. » and the badge
+  shows « PNJ · Amiral »; the sheet is still an NPC, under « Personnages ».
+- *(kanevas-sous-type-dialogue)* Given that same NPC, when Antor opens « Changer le type… », then the field
+  holds « Capitaine », the « Changer le type » button is disabled and the box does not say « … sera
+  retiré. »; it stays so while neither the type nor the sub-type changes, and enables as soon as he empties the field.
+- *(kanevas-sous-type-dialogue)* Given that same NPC, when Antor empties the field and saves, then the toast
+  says « Sous-type retiré. » and the badge shows « PNJ » alone.
+- *(kanevas-sous-type-dialogue)* Given that same NPC, when Antor picks « Lieu » then goes back to
+  « Personnage », then the field holds « Capitaine » again, « Changer le type » is disabled and the warning is gone;
+  picking « Lieu » had emptied the field and shown « Le sous-type « Capitaine » sera retiré. ».
+- *(kanevas-sous-type-dialogue)* Given Antor on that NPC, when he hovers the sub-type « Capitaine » of the
+  badge, then reaches it with the Tab key, then the `--surface-3` background and the pencil appear (and,
+  with the keyboard, the focus ring); Enter opens the in-place edit. Given Léa (player), when she
+  hovers « Capitaine », then nothing changes and Tab does not stop on it.
+- *(kanevas-sous-type-dialogue)* Given the NPC « Capitaine » and a `PATCH` that fails (500), when Antor
+  saves « Amiral » from « Changer le type… », then the box stays open with « Le sous-type n'a pas
+  changé. Réessayez. », the field still holds « Amiral », and the badge still says « PNJ · Capitaine ».
+- *(kanevas-sous-type-dialogue)* Given the connection lost, when Antor has the box open with « Amiral »
+  typed, then the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant
+  qu'elle ne revient pas. » shows, « Changer le type » is disabled and the input stays; with the box
+  closed, the badge's sub-type is disabled: no background or pencil on hover, Tab does not stop on it.
+- *(kanevas-sous-type-dialogue)* Given the types list not yet read, when Antor opens « Changer le
+  type… », then the « Sous-type » field is already there holding « Capitaine » and can be typed in,
+  « Chargement des types… » shows, and « Changer le type » stays disabled — even once « Amiral » replaces
+  « Capitaine » — until the list is read.
+- *(kanevas-sous-type-dialogue)* Given the box open on that NPC, when Antor types 61 characters and
+  saves, then « Erreur : 60 caractères au plus. » shows under the field, nothing is sent and the badge
+  still says « PNJ · Capitaine ».
+- Given « Les Cristaux d'Ombre » (« Savoir · Ressource »), when Antor changes it to « Note », it is
+  in « Notes » without a subtype, and the dialog had announced this.
+- Given « Lame d'Ébène » where « Note » is disabled, when Antor opens « Changer le type… » on a
+  sheet, « Note » is under « Autres types » and choosing it works.
+- Given a disabled type, when Antor opens its list address, it opens with « Ce type
+  est désactivé dans cet univers. » and no creation button.
 
 ### E-7, E-13, E-5
 
-- **E-7** et les entrées de **E-15** : l'éditeur et le rendu Markdown ci-dessus, avec ce que permet
-  chaque texte (« Selon le texte ») : E-7 garde « Lien vers une fiche » ; ni E-7 ni E-15 n'ont
-  « Fichier » ni « Bloc MJ » ; E-15 n'a pas de lien vers une fiche.
-- **E-13** : l'ordre est la date de création de la fiche, qui est sa **date d'origine** si l'import en
-  a donné une (B-50) ; la ligne montre cette date.
-- **E-5** (B-51, dernière tranche) : un panneau « Jeton de l'assistant » sous la liste des
-  univers — « Aucun jeton posé. » ou « Jeton posé le 11 octobre 2026. » (jamais la valeur) ;
-  « Connecter l'abonnement » montre l'adresse d'autorisation (« Ouvrir », « Copier ») et un champ
-  « Code » avec « Valider » ; la fenêtre expire au bout de 10 minutes (« La connexion a expiré.
-  Recommencez. ») ; un code refusé : « La connexion n'a pas abouti. Recommencez. », l'ancien jeton reste.
-  États et maquette : la tranche.
+- **E-7** and **E-15** entries: the Markdown editor and rendering above, with what each
+  text allows (Depending on the text): E-7 keeps « Lien vers une fiche »; neither E-7 nor E-15 has
+  « Fichier » or « Bloc MJ »; E-15 has no sheet link.
+- **E-13**: order is the sheet's creation date, which is its **original date** if the import
+  provided one (B-50); the row shows that date.
+- **E-5** (B-51, last slice): a « Jeton de l'assistant » panel below the universe
+  list — « Aucun jeton posé. » or « Jeton posé le 11 octobre 2026. » (never the value);
+  « Connecter l'abonnement » shows the authorization address (« Ouvrir », « Copier ») and a
+  « Code » field with « Valider »; the window expires after 10 minutes (« La connexion a expiré.
+  Recommencez. »); a refused code: « La connexion n'a pas abouti. Recommencez. », old token stays.
+  States and mockup: the slice.
 
-### Clôture de `kanevas-import` (cadrage)
+### Closure of `kanevas-import` (scope)
 
-- **Chaque besoin a un écran** : B-32 E-9, E-7, E-15 · B-33 E-9 · B-34 E-9 (et E-17, E-12 pour ce
-  qu'ils ne montrent pas) · B-35 E-9, E-8 · B-36 E-9 · B-37 E-17 · B-38 E-9, E-17 · B-39 E-9 · B-40 E-9 ·
-  B-41 E-14 · B-42 E-14, E-15, barre · B-43 E-9 · B-44 E-9 · B-45, B-46, B-49 E-18 · B-47, B-48 : **pas
-  d'écran, par décision** — le geste est le script, son résultat se lit sur E-18 (B-49) ; AD-53 tient :
-  l'écran d'un import est E-18 · B-50 E-9, E-13 · B-51 E-5 · B-52 E-8, E-9, E-17 · B-53, B-54 E-19 ·
-  B-55 E-9 (les deux chemins d'ajout), E-19 (le sélecteur) · B-56 : pas d'écran (le script), résultat sur E-19 et E-18 — tient.
-- **Chaque écran est atteint par un parcours** : E-17 (P-12), E-18 (P-10, P-11), E-14 et E-15 (P-13,
-  P-10), E-9 (P-12, P-14, P-16), E-8 (P-12), E-5 (P-15), E-19 (P-16, P-10) — tient.
-- **Chaque rôle a sa colonne** : MJ, Joueur, Admin d'instance pour E-17, E-18 et E-19 (matrice) ; le script
-  d'import n'est pas un rôle : il agit comme le MJ du jeton, sur l'API seule — tient.
+- **Every need has a screen**: B-32 E-9, E-7, E-15 · B-33 E-9 · B-34 E-9 (and E-17, E-12 for what
+  they do not show) · B-35 E-9, E-8 · B-36 E-9 · B-37 E-17 · B-38 E-9, E-17 · B-39 E-9 · B-40 E-9 ·
+  B-41 E-14 · B-42 E-14, E-15, sidebar · B-43 E-9 · B-44 E-9 · B-45, B-46, B-49 E-18 · B-47, B-48: **no
+  screen, by decision** — the action is the script, its result is read on E-18 (B-49); AD-53 holds:
+  an import's screen is E-18 · B-50 E-9, E-13 · B-51 E-5 · B-52 E-8, E-9, E-17 · B-53, B-54 E-19 ·
+  B-55 E-9 (both add paths), E-19 (the picker) · B-56: no screen (the script), result on E-19 and E-18 — holds.
+- **Every screen is reached by a journey**: E-17 (P-12), E-18 (P-10, P-11), E-14 and E-15 (P-13,
+  P-10), E-9 (P-12, P-14, P-16), E-8 (P-12), E-5 (P-15), E-19 (P-16, P-10) — holds.
+- **Every role has its column**: GM, Player, Instance admin for E-17, E-18 and E-19 (matrix); the import
+  script is not a role: it acts as the token's GM, on the API alone — holds.
 
-## Détail de l'écran de `kanevas-import-jeton-assistant`
+## Screen details for `kanevas-import-jeton-assistant`
 
-> **E-5** reçoit un panneau, rien d'autre (B-51, P-15). Maquette finie :
-> `docs/maquettes/e05-administration.html` (les états principaux : vide, posé, connexion en cours, échec, expirée, erreur de lecture ; les autres sont décrits par le tableau ci-dessous). Les textes communs
-> (chargement, erreur, connexion perdue, refus) sont ceux de E-5 ci-dessus.
+> **E-5** gets a panel, nothing else (B-51, P-15). Finished mockup:
+> `docs/maquettes/e05-administration.html` (main states: empty, set, connecting, failure, expired, read error; others are described by the table below). Common texts
+> (loading, error, connection lost, refusal) are those of E-5 above.
 
-**Place.** Un panneau pleine largeur « Jeton de l'assistant », **sous** les deux zones (liste des
-univers, membres), visible quelle que soit la sélection d'univers (adresses inchangées :
-`/administration`, `/administration/univers/:id`) ; le jeton est de l'instance, pas d'un univers.
-Une sélection d'univers ne remet pas le panneau à zéro, une connexion en cours survit au changement
-d'univers. Le panneau ne montre **jamais** la valeur du jeton : ni dans une réponse, ni dans le DOM,
-ni dans un message d'erreur.
+**Location.** A full-width « Jeton de l'assistant » panel, **below** both areas (universe
+list, members), visible regardless of universe selection (unchanged addresses:
+`/administration`, `/administration/univers/:id`); the token belongs to the instance, not a universe.
+Selecting a universe does not reset the panel, a connection in progress survives a universe
+change. The panel **never** shows the token value: neither in a response, the DOM,
+nor an error message.
 
-**Ce qu'on voit.** Le titre ; une ligne d'état, dans cet ordre de priorité : « Jeton posé le 11 octobre
-2026. » (le jeton du fichier du volume, date de sa pose), « Jeton fourni par le déploiement. » (pas de
-fichier, la variable `CLAUDE_CODE_OAUTH_TOKEN` non vide : le panneau ne sait pas depuis quand),
-« Aucun jeton posé. » ; le bouton « Connecter l'abonnement » (« Reconnecter l'abonnement » dès qu'un jeton est posé, du fichier
-ou du déploiement, dans tous les états ci-dessous). Un admin qui est aussi membre d'un univers voit le panneau comme les autres. Un clic démarre la connexion : l'adresse d'autorisation, en lecture seule, avec « Ouvrir »
-(nouvel onglet, `rel="noopener noreferrer"`) et « Copier » (« Copiée. » 2 s) ; un champ « Code » et
-« Valider » ; « Annuler » ; la mention « Cette connexion expire dans 10 minutes. » suivie de « Reste 9 min. »
-(minutes pleines arrondies au-dessus, « Reste moins d'une minute. » sous la minute ; rafraîchi chaque seconde, sans annonce
-vocale ; à 0 la phrase d'expiration remplace le champ). Recharger la page ne rouvre pas la connexion : le panneau repart de l'état lu, sans adresse ni champ « Code » ; la connexion du
-serveur vit jusqu'à son expiration. Quand un admin clique « Connecter » (le même après un rechargement, ou un second admin), le
-serveur en démarre une nouvelle qui remplace la précédente, et le « Valider » de l'ancienne reçoit alors « La connexion a expiré.
-Recommencez. ». « Valider » est désactivé tant que le champ est vide. Le code collé n'est pas conservé : le
-champ est vidé après chaque validation. Le jeton posé prime sur la variable : un jeton du volume se
-remplace par une nouvelle connexion, jamais par un champ de saisie (il n'y en a pas).
+**What is seen.** Title; a status line, in this priority order: « Jeton posé le 11 octobre
+2026. » (token from the volume file, date set), « Jeton fourni par le déploiement. » (no
+file, nonempty `CLAUDE_CODE_OAUTH_TOKEN` variable: the panel does not know since when),
+« Aucun jeton posé. »; the « Connecter l'abonnement » button (« Reconnecter l'abonnement » once a token is set, from file
+or deployment, in all states below). An admin also belonging to a universe sees the panel like the others. Clicking starts the connection: the authorization address, read only, with « Ouvrir »
+(new tab, `rel="noopener noreferrer"`) and « Copier » (« Copiée. » 2 s); a « Code » field and
+« Valider »; « Annuler »; the notice « Cette connexion expire dans 10 minutes. » followed by « Reste 9 min. »
+(whole minutes rounded up, « Reste moins d'une minute. » below one minute; refreshed every second, without spoken
+announcement; at 0 the expiry sentence replaces the field). Reloading the page does not reopen the connection: the panel restarts from the read state, without an address or « Code » field; the server's
+connection lives until expiry. When an admin clicks « Connecter » (the same admin after reload, or a second admin), the
+server starts a new one replacing the previous one, and the old one's « Valider » then receives « La connexion a expiré.
+Recommencez. ». « Valider » is disabled while the field is empty. The pasted code is not kept: the
+field is cleared after every validation. The set token takes precedence over the variable: a volume token is
+replaced through a new connection, never through an input field (there is none).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide (aucun jeton) | « Aucun jeton posé. » ; sous le titre : « L'assistant est indisponible tant qu'aucun jeton n'est posé. » (affichée seulement si l'assistant n'a vraiment aucun moyen de répondre ; sous le bouchon, où l'assistant répond déjà, rien) | « Connecter l'abonnement » |
-| posé | « Jeton posé le 11 octobre 2026. » (ou « Jeton fourni par le déploiement. ») ; « L'assistant est disponible sur tous les univers. » (le jeton est de l'instance : voulu aussi pour le jeton du déploiement) | « Reconnecter l'abonnement » |
-| chargement | « Chargement de l'état du jeton… » (lecture de l'état) ; « Connexion en cours… » pendant le démarrage (le bouton désactivé, `aria-busy`) | — |
-| connexion en cours | l'adresse, « Ouvrir », « Copier », le champ « Code », « Valider », « Annuler », le temps restant | coller le code, valider, annuler |
-| validation en cours | « Validation… », champ et boutons désactivés | — |
-| posé à l'instant | « Jeton posé le 11 octobre 2026. » (région `role="status"`), le champ disparaît ; l'assistant est disponible sans redéploiement ni redémarrage | « Reconnecter l'abonnement » |
-| échec | code refusé : « La connexion n'a pas abouti. Recommencez. » ; l'ancien état (posé ou non) reste affiché, le champ est vidé, la connexion en cours est terminée côté serveur | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
-| échec de validation autre (serveur injoignable, 5xx) | « L'action n'a pas abouti. Réessayez. » ; le champ est vidé, la connexion reste ouverte tant qu'elle n'a pas expiré | coller de nouveau, annuler |
-| expirée | au bout de 10 minutes, ou serveur redémarré : « La connexion a expiré. Recommencez. » ; l'ancien état reste | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
-| erreur de lecture | « Impossible de charger l'état du jeton. » avec « Réessayer » ; le reste de la page reste utilisable | « Réessayer » |
-| erreur de démarrage | « La connexion n'a pas pu démarrer. Réessayez. » (le programme `claude` ou `script` absent, ou aucune adresse rendue en 30 s — y compris une adresse sur un hôte autre que claude.com, claude.ai, anthropic.com et leurs sous-domaines, que le filtre écarte, AD-112) ; aucun détail technique | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
-| connexion perdue | le bandeau ; « Connecter l'abonnement » (« Reconnecter » si un jeton est posé), « Valider » et « Annuler » désactivés ; l'état chargé reste | lire |
-| refus | tout compte hors du groupe : la page entière est « Page introuvable. » (E-5 ci-dessus) ; une route du panneau sans le groupe répond 404 comme une adresse inconnue | « Mes univers » |
-| contenu long | l'adresse d'autorisation (plus de 200 caractères) se replie sur plusieurs lignes dans une zone qui défile, sans élargir la page ; le champ « Code » accepte 500 caractères au plus | idem |
+| empty (no token) | « Aucun jeton posé. »; below the title: « L'assistant est indisponible tant qu'aucun jeton n'est posé. » (shown only if the assistant truly has no way to answer; under the stub, where the assistant already answers, nothing) | « Connecter l'abonnement » |
+| set | « Jeton posé le 11 octobre 2026. » (or « Jeton fourni par le déploiement. »); « L'assistant est disponible sur tous les univers. » (the token belongs to the instance: intentional also for the deployment token) | « Reconnecter l'abonnement » |
+| loading | « Chargement de l'état du jeton… » (reading state); « Connexion en cours… » during startup (button disabled, `aria-busy`) | — |
+| connecting | address, « Ouvrir », « Copier », « Code » field, « Valider », « Annuler », remaining time | paste code, validate, cancel |
+| validating | « Validation… », field and buttons disabled | — |
+| just set | « Jeton posé le 11 octobre 2026. » (`role="status"` region), field disappears; assistant available without redeployment or restart | « Reconnecter l'abonnement » |
+| failure | refused code: « La connexion n'a pas abouti. Recommencez. »; old state (set or not) stays displayed, field cleared, ongoing connection ended server-side | « Connecter l'abonnement » (« Reconnecter » if a token is set) |
+| other validation failure (server unreachable, 5xx) | « L'action n'a pas abouti. Réessayez. »; field cleared, connection stays open until expiry | paste again, cancel |
+| expired | after 10 minutes, or server restarted: « La connexion a expiré. Recommencez. »; old state stays | « Connecter l'abonnement » (« Reconnecter » if a token is set) |
+| read error | « Impossible de charger l'état du jeton. » with « Réessayer »; rest of page stays usable | « Réessayer » |
+| startup error | « La connexion n'a pas pu démarrer. Réessayez. » (`claude` or `script` program absent, or no address returned in 30 s); no technical detail | « Connecter l'abonnement » (« Reconnecter » if a token is set) |
+| connection lost | banner; « Connecter l'abonnement » (« Reconnecter » if a token is set), « Valider » and « Annuler » disabled; loaded state stays | read |
+| refusal | any account outside the group: entire page is « Page introuvable. » (E-5 above); a panel route without the group answers 404 like an unknown address | « Mes univers » |
+| long content | authorization address (more than 200 characters) wraps across lines in a scrolling area without widening the page; « Code » field accepts at most 500 characters | same |
 
-**Clavier et lecteur d'écran.** Le panneau est un `section` titré ; l'ouverture de la connexion place
-le focus sur le champ « Code » ; à l'expiration ou à l'échec le focus revient sur le bouton « Connecter
-l'abonnement » ; les messages d'état sont dans une région `aria-live="polite"`, sauf le temps restant.
+**Keyboard and screen reader.** The panel is a titled `section`; opening the connection places
+focus on the « Code » field; on expiry or failure focus returns to the « Connecter
+l'abonnement » button; status messages are in an `aria-live="polite"` region, except remaining time.
 
-*Critères.*
-- Étant donné Admin (groupe `parents`) et un bouchon sans jeton, quand il ouvre `/administration`, alors le
-  panneau dit « Aucun jeton posé. » ; quand il clique « Connecter l'abonnement », alors il voit une adresse
-  d'autorisation, un champ « Code » et « Valider » désactivé.
-- Étant donné la connexion ouverte, quand Admin colle `bouchon` et valide, alors il voit « Jeton posé le
-  <date du jour>. » ; la disponibilité de l'assistant, lue **sans** `KANEVAS_STUB` (config injectée),
-  est `claude-agent`, sans redémarrage ; aucune réponse des routes du panneau ne contient la valeur du
-  jeton (le test cherche la valeur factice dans chaque corps et dans le journal).
-- Étant donné la connexion ouverte, quand Admin colle un autre code, alors il voit « La connexion n'a pas
-  abouti. Recommencez. » et l'état d'avant (posé ou non) est inchangé ; un second essai valide s'ouvre.
-- Étant donné la connexion ouverte et l'horloge passée au-delà de 10 minutes, quand Admin valide, alors il
-  voit « La connexion a expiré. Recommencez. » ; le processus est arrêté.
-- Étant donné un jeton posé par le panneau et une variable `CLAUDE_CODE_OAUTH_TOKEN` différente, alors
-  l'assistant utilise celui du fichier ; après suppression du fichier, la variable reprend.
-- Étant donné une connexion ouverte, quand Admin recharge la page, alors le panneau montre l'état lu (« Aucun jeton posé. » ou « Jeton posé… ») sans adresse ni champ « Code » ; quand il clique « Connecter l'abonnement », alors une nouvelle adresse paraît ; et le « Valider » d'un second onglet resté sur l'ancienne connexion dit « La connexion a expiré. Recommencez. ».
-- Étant donné le panneau affiché, quand le réseau est coupé, alors « Connecter l'abonnement » (ou « Reconnecter »), « Valider » et « Annuler » sont désactivés et le bandeau s'affiche ; au retour du réseau ils se réactivent.
-- Étant donné Léa (hors du groupe), quand elle appelle une route du panneau, alors elle reçoit 404.
+*Criteria.*
+- Given Admin (`parents` group) and a stub without a token, when they open `/administration`, the
+  panel says « Aucun jeton posé. »; when they click « Connecter l'abonnement », they see an authorization
+  address, a « Code » field and disabled « Valider ».
+- Given the connection open, when Admin pastes `bouchon` and validates, they see « Jeton posé le
+  <date du jour>. »; assistant availability, read **without** `KANEVAS_STUB` (injected config),
+  is `claude-agent`, without restart; no panel-route response contains the token
+  value (the test searches for the dummy value in every body and the log).
+- Given the connection open, when Admin pastes another code, they see « La connexion n'a pas
+  abouti. Recommencez. » and the previous state (set or not) is unchanged; a second valid attempt opens.
+- Given the connection open and the clock advanced beyond 10 minutes, when Admin validates, they
+  see « La connexion a expiré. Recommencez. »; the process is stopped.
+- Given a token set through the panel and a different `CLAUDE_CODE_OAUTH_TOKEN` variable, the
+  assistant uses the file's token; after deleting the file, the variable takes over.
+- Given an open connection, when Admin reloads the page, the panel shows the read state (« Aucun jeton posé. » or « Jeton posé… ») without an address or « Code » field; when they click « Connecter l'abonnement », a new address appears; and « Valider » in a second tab left on the old connection says « La connexion a expiré. Recommencez. ».
+- Given the panel displayed, when the network is cut, « Connecter l'abonnement » (or « Reconnecter »), « Valider » and « Annuler » are disabled and the banner appears; when the network returns they reactivate.
+- Given Léa (outside the group), when she calls a panel route, she receives 404.
+
+## Screen details for `kanevas-outils` (scope)
+
+> **Built so far (`kanevas-outils-cadre`):** the « Outils » tab of E-14 and E-15 without catalogue at that point (`kanevas-outils-catalogue` then adds « Importer un catalogue… » and « Voir les éléments »; « Supprimer les données de l'outil… » is added by `kanevas-outils-retrait`, below), the system's responsible and « Transférer la responsabilité », the sidebar's « Outils » section; E-21 (read side: see « What `kanevas-outils-galaxie-lire` builds of E-21 and E-10 » below), E-22 and removal are other slices and not built.
+>
+> Scope proposed on 2026-10-16 (`epic/kanevas-outils`). Needs B-57 to B-79, journeys P-17 to P-21,
+> decisions AD-121 to AD-137. Key screens, with finished mockups: **E-20** (`docs/maquettes/e20-outils.html`,
+> key moment of P-17), **E-21** (`e21-carte-galaxie.html`, P-18), **E-22** (`e22-concepteur-vaisseaux.html`, P-19,
+> with E-9's managed section). Common texts (loading, error, connection lost, refusal) are those of
+> `kanevas-premiere-fiche`. **Format**: both tools work on phones and tablets as on
+> desktop (B-70): below 760 px, one column, panels below the map, hover gestures become taps.
+
+### What a tool brings to the interface
+
+Three entry points, according to the tool type's contract (AD-122): a **dynamic map** lives in the
+maps section (E-10) and opens on its screen; a **generator** has its own screen (E-22) and **managed sections** on
+sheets; a **play aid** would have its own sidebar entry (none here). A tool's code loads
+only when its screen opens or when a sheet shows one of its sections (AD-133). No screen is
+added or modified manually in the router: a module declares its entry point.
+
+### E-20 — Tools (E-14 and E-15 tab)
+
+**Content**: a card per applicable tool (name, one line, « Système · activé/désactivé », « Univers · suit /
+forcé »), its **dependencies**, **visibility** (two checkboxes, GM and Players), **settings** (each: effective
+value, its source, « Remplacer pour l'univers »), **catalogue** (version, element count per
+nature, « Importer un catalogue… », « Voir les éléments »), and at the foot « Supprimer les données de l'outil… ». At the top, on E-15, the
+system's **responsible** and « Transférer la responsabilité ».
+
+| State | What the user sees | Text |
+|---|---|---|
+| empty | system has no applicable tool | « Aucun outil ne s'applique à ce système de jeu. » |
+| loading | card skeletons | « Chargement des outils… » |
+| error | list does not arrive | « Impossible de charger les outils. » + « Réessayer » |
+| offline | banner; all writing actions disabled | « Connexion perdue. » |
+| refusal | a player: « Page introuvable. »; a GM who is not the system's responsible: read only, actions **hidden** | — |
+| long content | 6 tools: scrolling list; 300-line import report: truncated to 50 refusals with « Voir tout » | « 237 autres refus… » |
+
+Criteria:
+- Given a test tool depending on another disabled tool, when Antor, GM and responsible, attempts to enable it,
+  it stays disabled and the screen says « <Outil> demande <autre outil> : activez-le d'abord. » (no SWN tool has a dependency).
+- Given Mira, GM of an attached universe but not the system's responsible, when she opens E-20 on the system, she sees
+  tools and their values and neither « Activer », « Importer » nor « Supprimer les données ».
+- Given a catalogue file where a weapon lacks mass, when Antor imports it, the preview lists
+  « 1 refusée » with the key and `masse` field, the rest is offered for application, and nothing is written before « Appliquer ».
+- Given Léa, Player, when she forces E-20's address, she reads « Page introuvable. ».
+
+**What `kanevas-outils-cadre` builds of E-20** (everything above except the catalogue block, « Voir les éléments » and « Supprimer les données de l'outil… », which `catalogue` and `retrait` add; the card leaves no empty slot for them). Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-cadre` ».
+- **Where**: one component `PanneauOutils` (`frontend/src/ecrans/outils/`), mounted as the « Outils » tab beside « Types de fiche » in E-14 (`niveau: 'univers'`, GM only, like the rest of that page) and in E-15 (`niveau: 'systeme'`); it follows the pattern of `ecrans/types-reglage/`. Tab content loads on opening the tab (`GET …/outils`).
+- **Top of E-15**: « Responsable : <nom> » (« vous » when it is the viewer; « Aucun responsable : tout MJ d'un univers rattaché agit » when none) and, for the responsible or any GM when none, the button « Transférer la responsabilité » opening a dialog: a list of the GMs of the attached universes (name only), « Transférer » / « Annuler », and the sentence « <Nom> pourra activer les outils et régler le système ; vous gardez vos droits de MJ. ». Refusal when the target stopped being a GM meanwhile: « Ce compte n'est plus MJ d'un univers de ce système. ».
+- **Card of a tool**: title, « <Type> · <Module> » (« Carte dynamique », « Générateur », « Aide de jeu »), the description. A switch row: on the system tab « Activé » / « Désactivé » (« Système · activé »); on the universe tab a three-way choice « Suit le système (Activé) », « Activé », « Désactivé ». Two checkboxes « MJ » and « Joueurs » (on the universe tab with « Suit le système » as a third state each, shown as the inherited value in grey). Dependencies: « Demande : Essai A » with the dependency's current state. Each setting: its label, effective value, origin « Système · Oui » or « Univers · Non » (or « Par défaut »), and on the universe tab « Remplacer pour l'univers » (opens the field with « Enregistrer » / « Annuler » and, once overridden, « Revenir à la valeur du système »). A setting reserved to the universe has no system row on the system tab. « Réglages communs · <Module> » is a card above the module's tools, same rows.
+- **Refusals in the card**: the dependency text « <Outil> demande <autre outil> : activez-le d'abord. » (or « <Autre outil> demande <Outil> : désactivez-le d'abord. ») shown under the switch, which stays where it was; a stale value: « Ce réglage a changé depuis que vous l'avez ouvert. » + « Recharger »; a value out of its shape: the field's own message under the field. A non-responsible GM on the system tab sees every value and none of the switches, checkboxes, « Remplacer » or « Transférer » (hidden, not disabled), plus the line « Seul le responsable du système règle ces valeurs. ».
+- **Sidebar « Outils »** (section heading, as « Lore »): one entry per tool enabled **and** visible to the viewer, in the order of the registry; absent altogether when there is none. It opens the tool's screen at `/univers/:id/outils/:module/:outil`. A tool turned off or hidden meanwhile: the address answers « Page introuvable. » at the next load; the bar refreshes after a change made on E-20 in the same session.
+- **Phone and tablet** (B-70): below 760 px a card is one column, switches and checkboxes are 44 px targets, the origin text wraps under the value.
+- **States the slice shows** (the grid's six, for what it builds; the table above keeps the catalogue and report rows for the slices that add them):
+  - *Long content*: a tool name or a setting value of 80+ characters wraps inside the card (no horizontal scroll, the switch stays visible); the transfer dialog lists up to 8 GMs and scrolls beyond.
+  - *Waiting*: after a click the switch, checkbox or field shows its new value at once, is disabled until the answer, then shows the server's value; on a failure it returns to the previous value and the card says « Enregistrement impossible. » + « Réessayer » (network or server). Activation and visibility are last-write-wins (no `version`); only settings conflict (« Ce réglage a changé… »).
+  - *Transfer dialog*: loading « Chargement… »; empty (no other GM of an attached universe, the viewer is never listed) « Aucun autre MJ d'un univers de ce système. » with « Annuler » only; error « Impossible de charger les MJ. » + « Réessayer »; offline « Connexion perdue. » with « Transférer » disabled.
+  - *Offline*: « Connexion perdue. » disables every writing control of the card (the mockup shows the banner alone; this text wins).
+  - *Universe without a game system* (« Essai Kanka »): E-14 has the « Outils » tab with the empty state « Aucun outil ne s'applique à ce système de jeu. » replaced for this case by « Cet univers n'a pas de système de jeu. » ; E-15 does not apply.
+  - *Sidebar*: while the entries load the section is absent (no placeholder); on a load error it stays absent and the rest of the bar is unaffected (the next navigation retries).
+  - *Tool screen of the trial module* (`/univers/:id/outils/essai/a`): title « Essai A », its description, then « Pas de charges de carburant : <Oui|Non> » with its origin; « Chargement de l'outil… » while the code loads; « Page introuvable. » when the description answers 404; on a network error « Impossible de charger l'outil. » + « Réessayer ».
+- **Roles on E-20, made explicit** (the matrix cell mixes them): *responsible* (or any GM when the system has none): writes at both levels; *GM of an attached universe, not responsible*: reads the system tab, writes at universe level only; *Player* (E-14 and E-15 alike): the « Outils » tab is **absent** and its address reads « Page introuvable. » — E-15's read-only access to the system does not extend to the tab; *instance admin* who is not a GM of an attached universe: tab absent, address « Page introuvable. »; an admin who is such a GM follows the GM rows.
+- **Where the mockup and this text differ, this text wins** (`docs/maquettes/e20-outils.html` is the epic's reference for the SWN tools and the catalogue, drawn before this slice): the universe-tab switch has three values (« Suit le système (…) », « Activé », « Désactivé ») and each visibility checkbox a « Suit le système » third state; « Revenir à la valeur du système » replaces « Retirer la surcharge »; the refusal reads « …activez-le d'abord. »; the read-only line is « Seul le responsable du système règle ces valeurs. »; « Transférer la responsabilité » is a button; the catalogue block and its « Réglages » header are not drawn for a tool without catalogue or settings; the word is « Responsable » everywhere; the footer name of Mira's mockup is Mira.
+- **B-59 and B-60 in this slice**: a tool that is disabled or hidden is absent from the bar, from its address and from the assistant's catalogue (tested); search (E-17) indexes no tool in this slice, so nothing is to hide there until a tool has indexed content. A protected setting is guarded by the service (`confirmation_requise`); the trial module declares none, so no confirmation dialog exists before `kanevas-outils-vaisseaux-regles`/`galaxie-tenir` use it (their screens carry the sentence that says what the change moves).
+- **Journey**: the transfer of responsibility and the sidebar entry are exercised by the exit criteria of the slice's tasks (they extend P-17 step 1 with the checkboxes « MJ » / « Joueurs » and the « Responsable : » line); `docs/parcours.md` is not amended, the epic's journeys being the framing Monsieur read.
+- **Criteria added by the slice** (the numbers of the feature's exit criterion): Given « Essai A » enabled and visible to GMs only, when Léa looks at her sidebar, no « Outils » section appears; when Antor ticks « Joueurs » on the system tab, Léa's bar shows « Essai A » after her next load. Given Antor on the universe tab choosing « Désactivé » for « Essai A » while the system enables it, the origin text says « Univers · désactivé » and Léa loses the entry. Given Antor transferring the responsibility to Mira, Antor's system tab shows no switch and Mira's does.
+
+**Catalogue elements** (« Voir les éléments », on E-14; Monsieur's decision of 2026-10-17): list by
+nature, each element with its origin (« Système », « Univers », « Remplacé pour l'univers », « Retiré de
+l'univers ») and, for a universe element, « Visible des joueurs » / « MJ seul ». Universe GM actions:
+« Masquer aux joueurs » and « Rendre visible » on a universe element; « Retirer de cet univers » and
+« Rétablir » on a system element. On E-15 (system), the list is read without any of these actions.
+The one-line summary of a ship element carries its mass as E-22 writes it (`kanevas-outils-format-evolue`,
+B-80): « masse 0,5 · coût 4 », the comma only when the mass has a decimal, never « 0.5 » nor « 1,0 ».
+- Given the trial catalogue's element of mass 0.5, when Antor opens « Voir les éléments », then its line
+  reads « masse 0,5 · coût 4 » and an element of mass 8 reads « masse 8 ».
+- Given an import file carrying an element of mass 0.3, when the GM chooses it in the import dialog, then
+  the preview (step 4, before « Appliquer ») lists « Arme « … », champ `masse` : multiple de 0,5 attendu. »
+  (the reason of a mass that is a number but not a multiple of 0.5; « nombre attendu » stays the reason of a
+  missing or non-numeric mass) and the catalogue does not change.
+- Given the universe weapon « Lance d'Orak'Ziel » hidden by Antor, when Léa opens the designer,
+  it appears in no list, and nothing says an element is missing; Antor sees it, marked « MJ seul ».
+- Given Léa's design already carrying the « Lance d'Orak'Ziel », when Antor hides it, Léa still sees it
+  on her ship and saves again without warning; she can no longer add it elsewhere.
+- Given the system's « Laser à impulsion » overridden for « Éneria d'essai » then hidden, when Léa opens the
+  designer, no « Laser à impulsion » appears in her list (neither universe nor system element);
+  a design carrying it is calculated with the universe's values.
+- Given the system hull « Corvette » removed from « Éneria d'essai », no account in that universe
+  sees it in the designer; the system's other universe sees it; « Rétablir » brings it back.
+
+### E-21 — Galaxy map
+
+**Content**: a hexagonal canvas (pan, zoom, pinch), legend, selected-system panel
+(name, size, readable notes, routes, shareable link), measurement on hover (touch: tap), the
+« Trajet » tool (departure, arrival, routes: all / public, drive → distance and duration), system search
+(among readable systems). GM: « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone »,
+« Renommer », « Supprimer la galaxie… » (confirmation: « Les 214 systèmes, 52 routes et 6 zones de cette galaxie seront effacés. »), « Graine… », « Document MJ… » (choose the sheet, or create one of type Savoir; the tool writes the GM-only « Document MJ » managed section there), Player mode. The view requests only the blocks it shows.
+
+| State | Text |
+|---|---|
+| empty | GM: « Aucun système défini. Placez-en un ou promouvez un système généré. »; Player: « Rien à voir sur cette carte pour l'instant. » |
+| loading | « Chargement de la carte… » (blocks arrive progressively) |
+| error | block not arriving: block stays empty, « Impossible de charger une partie de la carte. » + « Réessayer » |
+| offline | displayed view stays, « Connexion perdue. » banner, writes disabled |
+| refusal | map not visible to role, or tool invisible: « Page introuvable. » (GM in Player mode on hidden map: E-11 notice) |
+| long content | 500 defined systems, 52 routes: name labels collapse on zooming out; 80-character names truncated |
+| conflict | « Ce système a changé depuis que vous l'avez ouvert. » + « Recharger » |
+
+Criteria:
+- Given Léa, Player, when she searches « Station fantôme » (a GM ghost system), search finds
+  nothing, with no trace of hiding, and no route or zone leads there on her map.
+- Given Léa at 390 px width, when she taps « Vael », the panel opens below the map with
+  name, distance and « Trajet depuis ici ».
+- Given the « Port-Sel » → « Vael » journey of 7 hexes with drive 2, when Léa calculates it, she reads « 4,5 jours ».
+- Given Antor, GM, switching to Player mode, the private route and secret territory disappear from the
+  map, journey and search.
+- Given two visits to the same anonymous hex, the same system is generated; changing the seed asks for
+  confirmation stating that all undefined systems change position.
+
+**What `kanevas-outils-galaxie-lire` builds of E-21 and E-10** (the read side; the GM's writing gestures — « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone », « Renommer », « Supprimer la galaxie… », « Graine… », « Document MJ… », the Player-mode toggle of the screen, the conflict state — are `kanevas-outils-galaxie-tenir`: the screen leaves no empty slot for them). Mockup: `docs/maquettes/e21-carte-galaxie.html` (the document wins). Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-galaxie-lire` » (G-1 to G-9). Format: web, desktop and phone/tablet (390 px is the proof width). This section stays the read slice as it was built, its « arrives with `galaxie-tenir` » included; the write controls are those of « What `kanevas-outils-galaxie-tenir` builds » below, which wins.
+
+*Entry.* **E-10** lists the galaxies of the universe among the maps, after the illustrated maps, with a « Galaxie » badge; a GM also sees the « MJ seul » badge (amber, as on the other maps) on one that is not visible; a player sees only visible ones; none when the tool is disabled or invisible to the role. The thumbnail is a neutral hex-grid tile (no image); with no galaxy readable the list says nothing more than for any universe without maps. The address is `/univers/:id/outils/swn/galaxie/:galaxieId` (`?systeme=<cle>` for a system link). The galaxy is reached through « Cartes » only, as the epic's framing says (the « Outils » sidebar section lists the tools that have no map); creating a galaxy (« Nouvelle carte ») is `kanevas-outils-galaxie-tenir` (B-71), this slice's galaxy comes from the stub seed.
+
+*Layout.* From 760 px: the map on the left, a 320 px column on the right holding, from top to bottom, the search field, the selected system's panel and the « Trajet » tool. Below 760 px: the map under the title (60 % of the viewport height), then the same three blocks stacked below it, in the same order; selecting a system scrolls its panel into view and leaves the map in place. The map has « + », « − » and « Recentrer » buttons (44 px) besides pinch and wheel; the map opens wide, then frames every system of the first blocks (unless a system link already centred it), and « Recentrer » frames them again; the legend (system, selected, departure/arrival, route, zone) folds into a « Légende » button on a phone.
+
+*Gestures.* Drag pans; wheel/pinch zooms; tapping a system selects it (panel + distance in hexagons from the reference system, written « 7 cases »); on a mouse, hovering shows the same name and distance in a tag. The reference system is the **departure** set by « Trajet depuis ici » in the panel, else by default the galaxy's first readable defined system (lowest identifier: the one the GM seeded first, « Port-Sel » in the trial galaxy), and the distance is written « 7 cases depuis Port-Sel » (the reference comes with the galaxy's answer, `reference`, so it is known even when its block is not loaded); selecting the reference itself shows no distance. Tapping an empty hexagon selects nothing; tapping a generated (undefined) system opens a panel « Système non défini » with its coordinates and its distance, and no journey button (a journey joins defined systems). The « Trajet » block has « Départ » and « Arrivée » (each a search field over readable systems, or « Trajet depuis ici » / « Trajet vers ici »), « Moteur » (1 to 6, default 2), « Routes » (« Toutes » / « Publiques », shown to a GM only) and « Calculer » (disabled until both ends are chosen, « Calcul… » while it runs). The result: « 7 cases · 4,5 jours », the list of stops, the highlighted path on the map; « Effacer » clears it. « Copier le lien » in the panel copies the address of the system and says « Lien copié » for two seconds (if the clipboard is refused: the address selected in a field).
+
+| Who | Sees and can do |
+|---|---|
+| Léa (Player, galaxy visible) | the map without secret systems, private routes or secret zones; search, measure, journey on public routes, copy a link; **no** writing control, no visibility badge, and no « Routes » choice (the control is absent, not disabled) |
+| Roxane (Player) | same as Léa |
+| Antor, Mira (GM) | what a player sees plus secret systems (badge « MJ seul »), private routes (dashed, « Privée ») and secret zones (« Secret »), « Routes: Toutes »; their writing controls are those of the writing section below |
+| A GM in Player mode | exactly what a player sees, with no « Routes » choice. In this slice the mode is the product's existing toggle (the one of E-9 and E-11, read as `?mode=joueur`); the screen only reads it, its own toggle in the header is described in the writing section below. On a hidden galaxy: the E-11 notice for Player mode, « Cette carte n'est pas visible des joueurs. » |
+| Teo (no role), a player on a hidden galaxy, an invisible tool | « Page introuvable. » (hidden, no distinction between *absent* and *forbidden*) |
+
+States (the shared ones are those of the E-21 table above; this slice adds):
+
+| State | What the user sees | Text |
+|---|---|---|
+| journey, no path | the result block, no highlighted path | « Aucun trajet avec ce moteur. » |
+| journey, same system | nothing computed | « Choisissez deux systèmes différents. » |
+| journey, an end missing | « Calculer » disabled, no text | — |
+| journey, computing | « Calcul… » on the button, the previous result stays | — |
+| journey or search, server error | under the field or the block, a « Réessayer » | « Le calcul a échoué. » / « La recherche a échoué. » |
+| connection lost | the view stays; « Calculer » and the search are disabled; « Copier le lien » still works | « Connexion perdue. » |
+| right removed while the map is open (galaxy hidden, tool disabled) | the next request answers 404: the whole page | « Page introuvable. » |
+| long content | notes wrap and the panel scrolls beyond 40 % of the viewport; the list of stops scrolls beyond 8 lines; long route and zone names wrap | — |
+| journey, system unreadable (address kept after a change of rights) | the field cleared | « Ce système n'existe plus ou n'est plus visible. » (one text for both) |
+| search, no match | under the field | « Aucun système ne correspond. » (never « masqué ») |
+| search, too short | nothing | — (from 2 characters) |
+| system link, unreadable | whole page | « Page introuvable. » |
+| link, readable | map centred on the system, panel open | — |
+| blocks loading | the grid and what is already loaded stay; missing blocks hatched | « Chargement de la carte… » once, at first load only |
+| zoomed out to the limit | « − » disabled | — |
+| 80-character name | truncated to 24 on the map, in full (wrapped) in the panel | — |
+
+Criteria:
+- Given Léa at 390 px on « Galaxie d'essai », when she taps « Vael », then the panel opens below the map with « Vael », « 7 cases depuis Port-Sel » (the default reference, no departure chosen) and « Trajet depuis ici ».
+- Given the trial galaxy, when Léa calculates Port-Sel → Vael, engine 2, public routes, then she reads « 7 cases · 4,5 jours » and the path is highlighted.
+- Given Léa and Antor asking Port-Sel → Hesper, engine 2, when each calculates (Antor with « Toutes »), then Antor reads « 6 cases · 4 jours » through the private route and Léa « 13 cases · 8,5 jours » through Vael, with no segment of the private route.
+- Given Léa, when she types « fant » in the search, then nothing is listed and the text is « Aucun système ne correspond. »; the map shows no route, zone or hexagon marked as hidden.
+- Given Antor in Player mode, when the map reloads, then the secret system, the private route and the secret zone are gone from map, search and journey, and block (−2,0), which overlaps the secret zone, is the one Léa sees.
+- Given a mouse, when the pointer rests on « Hesper » with « Vael » as departure, then a tag reads « Hesper · 6 cases ».
+- Given Teo (no role in the universe) or Léa on a hidden galaxy, when they open the address, then « Page introuvable. » and the tool's code is not requested (no request for the tool's code in the browser's log, for either).
+- Given Antor on the list of maps, then « Galaxie d'essai » carries the « Galaxie » badge; made invisible, it carries « MJ seul » for him and is absent for Léa.
+- Given Léa opening a galaxy by address while the tool is disabled, then « Page introuvable. ».
+- Given Léa pasting `…/galaxie/1?systeme=station-fantome`, then « Page introuvable. »; with `?systeme=vael`, the map is centred on « Vael » with its panel open.
+- Given the connection lost after the first view, then the displayed view stays, « Connexion perdue. » shows, « Calculer » and the search are disabled, and panning to unloaded blocks leaves them hatched with « Impossible de charger une partie de la carte. » and « Réessayer ».
+- Given the assistant asked « Combien de temps de Port-Sel à Vael avec un moteur 2 ? » by Léa, then, through the tool `swn_galaxie_trajet`, it answers with the screen's result « 7 cases · 4,5 jours » (proved on the tool in `src/outils/swn/routes.test.ts`; the stub's keyword assistant has no rule for it, so it is not playable in stub mode).
+
+**What `kanevas-outils-galaxie-tenir` builds of E-21 and E-10** (the write side, on the screen `galaxie-lire` built). Mockup: `docs/maquettes/e21-ecriture.html` (the document wins); the frames of `e21-carte-galaxie.html` for the GM, Player mode and the seed stay valid. Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-galaxie-tenir` » (T-1 to T-10). Format: web, desktop and phone/tablet (390 px is the proof width).
+
+*Creating the galaxy (E-10).* For a GM, « Nouvelle carte » offers, in « Forme », « Carte illustrée », « Graphe » and **« Carte de la galaxie »** when the tool is enabled and visible to him. Choosing it hides « Image de fond » and keeps « Titre » (1 to 80 characters, same errors as the other maps). « Créer » leads to E-21 of the new galaxy, **not visible** (« MJ seul »), empty, with a seed drawn by the server. A galaxy of the list carries « Rendre visible » / « Cacher aux joueurs » like the other maps; a hidden one is absent for players on their next load and its address answers « Page introuvable. ».
+
+*The header of E-21 (GM).* The title, the shell's « Mode MJ » / « Mode Joueur » toggle (the product's own, mounted here; in Player mode the page becomes exactly the read-only page of `galaxie-lire`: every control below is **absent**, not disabled), then the write controls: « Placer un système » (primary), « Tracer une route », « Dessiner une zone », and a menu « Galaxie ▾ » with « Renommer », « Rendre visible » / « Cacher aux joueurs » (same words as the list of E-10), « Document MJ… », « Graine… » and, apart and in the danger colour, « Supprimer la galaxie… ». Below 760 px the controls fold into one « Modifier la carte ▾ » (44 px, same items). Léa and Roxane see none of it, and the toggle is absent for them.
+
+*Gestures.* Each is a mode of the map with one instruction line above it and « Annuler » (or `Échap`) to leave:
+
+| Gesture | Instruction | Then |
+|---|---|---|
+| Placer un système | « Touchez un hexagone. » | an empty hexagon opens the form « Nouveau système »; a **generated** one (« Système non défini » in the panel) opens « Promouvoir ce système » (same form, title only differs: it keeps the hexagon); an hexagon already holding a system selects it instead |
+| « Tracer une route » | « Touchez le système de départ, puis celui d'arrivée. » | the form « Nouvelle route »: « De Port Noir à Vael », « Longueur : 6 cases » (shown, calculated, not an input), « Type de lien (facultatif) » (the `Champ` text field, the word « facultatif » written in its label — the component's own « facultative » tag is not used, it agrees in the feminine; 40 characters at most, empty by default; the helper « 40 caractères au plus » in its `compteur` slot), « Route publique » switch (on by default), « Tracer » |
+| « Dessiner une zone » | « Touchez les sommets du contour, puis « Terminer ». » | the outline is drawn as the vertices are tapped; « Annuler le dernier point », « Terminer » (enabled from 3); then the form « Nouvelle zone »: « Nom », « Couleur », « Densité de systèmes » (a percentage, empty: the zone does not change the density), « Secrète » switch (off by default) |
+
+*The system form* (also « Modifier » in the panel of a defined system): « Nom » (1 to 80), « Taille » (three segmented buttons « Petite », « Moyenne », « Grande »; « Moyenne » by default), « Couleur » (six swatches, each named in text for assistive technology), « Notes » (plain text, 2 000 characters), « Secret (MJ seul) » switch, « Hexagone (4, −2) » read-only with « Déplacer » (the map then asks « Touchez le nouvel hexagone. »; the routes of the system are recomputed and the form says so: « Ses 2 routes seront recalculées. »). The panel of a defined system gains, for the GM, « Modifier » and « Retirer » (confirmation: « Retirer « Vael » ? Ses 2 routes seront effacées. »); a route and a zone, selected on the map, open a panel with « Modifier » (visibility and type of link for a route, every field for a zone) and « Retirer ». The route's panel and form carry the **type of link** (B-81): the panel adds the line « Type : Pirate » under the length when there is one (no line otherwise); « Modifier » shows the same field as the creation form, and emptying it removes the label. The map marks, for the GM only, secret systems (« MJ seul »), private routes (dashed, « Privée ») and secret zones (« Secret »), as `galaxie-lire` did.
+
+*Type of link on the map (`kanevas-outils-format-evolue`, B-81).* A route that has a type shows it as a small SVG text (the secondary-label style of the map, `--texte` with the halo of the system names, not the GM colour) at the middle of the segment, kept horizontal and pushed off the segment **along its normal** (downwards) by half of its own extent on that axis plus 6 px, so that the oblique route never crosses the text, whatever its slope, on a halo of the background colour (as the graph labels, below) — « Privée » stays 6 px above the line, so a private typed route reads « Privée » over the line and « Pirate » under it; the labels fold away with the system names when the map is zoomed out and a click on a label selects its route (it is the route's, never a second target); the full type is the label's tooltip. Everyone who can read the route sees the label (Léa on a public route, the GMs on all); a private route is absent for a player and so is its label. The label and the panel's « Type : … » line both read the `type_lien` carried by the route in the block reading of G-6 (`galaxies/:gid/blocs`, the same filtered rows for each level; a private route is absent from the player's response as a whole). The route panel is the GM's only (a player gets no route panel), so the label on the map is the player's single place to read it; the « Trajet » tool is unchanged. A route without a type looks exactly as before. Refusals: a type of 41 characters or more stops at the field, « Le type de lien fait 1 à 40 caractères. », nothing is sent; the form sends an empty or blank field as « none » (nothing is written), while the service, the route and the import refuse a blank string. The GM document (T-7) says the type after the length (`Port-Sel — Vael · 7 cases · Pirate`, before « privée » when both apply).
+
+*States added by the type of link (E-21).* Long content: a 40-character type is the longest the label can be; it stays on one line, centred on the segment, and is cut with « … » (tooltip: the full type) beyond 14 characters on the map, so it never passes under the system names; the panel line wraps. Error: saving a route whose type is refused keeps the form open with its input and the sentence under the field; a version conflict on the route reads « Cette route a changé depuis que vous l'avez ouverte. » with « Recharger »; a refused write (role lost, tool disabled) reads « Action refusée. » and keeps the input — the lines every write form of E-21 already has. Empty, loading, connection lost: unchanged (a route without a type draws no label and no panel line).
+
+- Given Antor, GM, tracing a route Port-Sel → Vael with the type « Pirate », when he saves, then the label « Pirate » is on the map under the middle of the segment and the route panel reads « Type : Pirate ».
+- Given that public route, when Léa opens the map, then she reads « Pirate » on it; when Antor makes it private, then Léa's `galaxies/:gid/blocs` response holds neither the route nor its type, Antor's holds `type_lien` in both states, and Antor in Player mode does not see it either.
+- Given Antor typing 41 characters in « Type de lien (facultatif) », then « Le type de lien fait 1 à 40 caractères. » shows under the field and nothing is sent; given routes drawn before this slice, then they show no label and no « Type : » line, exactly as before.
+- Given a route typed with 40 characters, when the map is shown at 390 px, then the label is cut with « … » and the panel line wraps.
+
+*API import.* Pushing a galaxy by the import API has no screen of its own in this slice: its batch report (« 0 refusé, n créés », each refusal with its field) is read in the batches of E-18, which `kanevas-outils-catalogue` extends to tool batches; the galaxy reached by E-21 shows the imported elements.
+
+*Dialogs.*
+- **« Renommer »**: « Titre », « Enregistrer ».
+- **« Graine… »** (protected setting, B-64): shows the current seed, « Nouvelle graine » (1 to 64 characters, « Tirer au hasard »), then « Changer la graine » opens the confirmation « Tous les systèmes non définis changent de place. Les 5 systèmes que vous avez placés ou promus gardent la leur. » with « Changer la graine » and « Annuler » (focus on « Annuler »). 
+- **« Supprimer la galaxie… »**: « Les 5 systèmes, 4 routes et 2 zones de cette galaxie seront effacés. » (the counts are read when the dialog opens; if they changed meanwhile: « Cette galaxie a changé : relisez le décompte. » with the new counts), and, when a document exists, « Sa section « Document MJ » de la fiche « Notes MJ » sera retirée. » ; « Effacer la galaxie » / « Annuler ». Singular and plural follow the count (« 1 système », « 1 route », « 1 zone »; « 0 route »).
+- **« Document MJ… »**: with no document, two choices — « Choisir une fiche » (a search field over the universe's sheets) or « Créer une fiche de type Savoir » (« Titre », « Galaxie — notes MJ » by default) — and « Écrire le document » (the section is GM only; the dialog says « Seul le MJ lit ce document. »). With a document: « Document dans « Notes MJ » », « Ouvrir la fiche », and its state — « À jour. », or « Le document n'est plus à jour. » — the write that made it stale has already filed the GM's proposal (S-5), so the dialog says « Proposition en attente — à appliquer dans les propositions » with a link to it, and offers « Proposer la mise à jour » only when the state is out of date and he has **no** pending proposal (he abandoned it) — the section changes only when the GM applies the proposal.
+
+| State (adds to the table of E-21) | Text |
+|---|---|
+| conflict, system | « Ce système a changé depuis que vous l'avez ouvert. » + « Recharger » (fields replaced by the stored ones) |
+| conflict, route / zone / galaxy | « Cette route a changé depuis que vous l'avez ouverte. » / « Cette zone a changé… » / « Cette galaxie a changé depuis que vous l'avez ouverte. » + « Recharger » |
+| hexagon taken | « Cet hexagone porte déjà un système. » (under « Hexagone ») |
+| outside the map | « Cet hexagone est hors de la carte. » |
+| name | « Erreur : le nom est obligatoire. » / « Erreur : 80 caractères au plus. » |
+| route, same system | « Choisissez deux systèmes différents. » |
+| route, already there | « Ces deux systèmes sont déjà reliés. » |
+| zone, too short / crossing | « Un contour compte au moins 3 points. » / « Ce contour se croise. Corrigez-le. » |
+| loading | a write in flight: the button shows « Enregistrement… » and the form is frozen; a dialog reading at opening (counts of « Supprimer la galaxie… », current seed of « Graine… », state of « Document MJ… », search of « Choisir une fiche »): « Chargement… » in its body, its confirm button disabled; if the reading fails: « Impossible de lire. Réessayez. » + « Réessayer » |
+| error, texts | « Renommer » empty or over 80: the « name » texts below; « Graine… » empty or over 64: « Erreur : la graine fait 1 à 64 caractères. », stale: the conflict text; notes over 2 000: « Erreur : 2 000 caractères au plus. »; density outside 0–100: « Erreur : entre 0 et 100. »; zone, 65th vertex: « Un contour compte 64 points au plus. »; « Document MJ… » with a chosen sheet deleted or unreadable meanwhile: « Cette fiche n'est plus disponible. », and a document already put there by the other GM: « Cette fiche porte déjà un document. »; the sheet search with no result: « Aucune fiche. »; E-10 « Créer » failing: « L'enregistrement a échoué. Réessayez. », the tool disabled meanwhile: « Cet outil est désactivé. »; « Rendre visible » in version conflict: « Cette galaxie a changé depuis que vous l'avez ouverte. » + « Recharger » |
+| refused while the screen is open | a write refused for the role (GM demoted, tool disabled, galaxy hidden meanwhile): the form stays with its input and says « Action refusée. » for a role lost, or the screen turns to « Page introuvable. » when the galaxy is no longer readable; switching to « Mode Joueur » with a gesture or form in progress cancels it and discards the input (the player view is exactly the read page) |
+| write failed | « L'enregistrement a échoué. Réessayez. » (the form keeps its input) |
+| connection lost | every write control disabled, « Connexion perdue. » (already shown); an open form keeps its input; a gesture in progress (vertices already tapped) keeps its points; the confirm buttons of an open dialog (« Effacer la galaxie », « Changer la graine ») are disabled until the connection returns |
+| nothing defined (GM) | the empty text of E-21 stays, with « Placer un système » highlighted |
+| long content | a zone of 64 vertices, 80-character names (panel wraps), a document listing 500 systems (the sheet scrolls; the list is cut under the section ceiling with « … n systèmes de plus non listés. ») |
+
+**A zone that is a set of hexagons** *(`kanevas-outils-format-zones`, B-84, Z-6).* A zone the import wrote as a set of hexagons (up to 5 000; drawing one by hand is not offered) is drawn as one block: the fill follows the hexagons exactly, with no line between two hexagons of the zone, and the outline runs only along the outer edge (around an island or a notch too). Colours, the secret hatching (`--mj-trame`, dashed edge) and the label threshold are those of a polygon zone; the label sits on the member hexagon nearest to the mean of the members. Selecting it (click on the fill) opens the panel « Zone sélectionnée » whose line reads « Hexagones » and the count (« 800 ») instead of « Sommets ». « Modifier » opens the same form (name, colour, density, secret); it has no outline to correct. The shape is computed once per zone version and kept: panning or zooming the map moves it without recomputing. In Player mode, and for Léa, a secret zone leaves no shape, label or hatching. A zone of 64 vertices drawn before looks and selects as before.
+
+Criteria:
+- Given Antor on « Galaxie d'essai » (4 systems, 3 routes, 1 zone), when he places « Port Noir » on an empty hexagon, traces a private route from it to « Vael » and draws a second secret zone, then Léa's map, search and journeys show none of the three, and the route's length is the grid distance (never typed).
+- Given Antor switching to Player mode, then « Port Noir », the route, the zone and every write control are gone, and the toggle still offers « Mode MJ ».
+- Given Antor and Mira both on « Vael », when Antor moves it one hexagon and Mira then saves her form with the version she read, then Mira reads « Ce système a changé depuis que vous l'avez ouvert. » and « Recharger » shows the moved system.
+- Given a generated system tapped in « Placer un système », when Antor names it « Relais » and saves, then it is at the tapped hexagon, defined; and when he changes the seed after the confirmation, « Relais » stays and an undefined system elsewhere has moved.
+- Given Antor opening « Document MJ… » and creating a sheet, then the sheet holds the section « Document MJ », Léa cannot read it, and a system placed afterwards makes the dialog say « Le document n'est plus à jour. » with « Proposition en attente » (no « Proposer » button, the proposal exists) while the text is unchanged; accepting the proposal updates it; abandoning it brings « Proposer la mise à jour » back.
+- Given Antor on E-10 creating « Galaxie neuve » by « Carte de la galaxie », then it is « MJ seul », Léa does not list it; renamed « Galaxie du bord » and made visible she lists it; hidden again she reads « Page introuvable. » on its address.
+- Given 5 systems, 4 routes and 2 zones, « Supprimer la galaxie… » says the sentence above and deletes them after « Effacer la galaxie ».
+- Given Léa at 390 px, no write control is rendered; given Antor at 390 px, « Modifier la carte ▾ » holds the gestures and the form opens under the map.
+
+### E-22 — Ship designer
+
+*Masses (`kanevas-outils-format-evolue`, B-80).* A mass — the hull's, an element's, a line's, the free mass in the results, the amounts in a « Masse insuffisante : … » alert and in the choice lists — is a multiple of 0.5 and **shows its decimal with a comma, only when it has one**: « 1,5 », « 7 », « −0,5 ». Nothing else moves: same blocks, same places, the quantity stepper stays integer. The mock-up shows the choice « Coupleur d'essai · masse 0,5 ». One formatter serves the results and the lists (a support file of `frontend/src/outils/swn/vaisseaux/`, not a component of `ui/`). Example: in the trial catalogue, a design that takes an element of mass 0.5 three times has a free mass that reads the exact remainder (no « mass used » is added to the results). The one-line summary of an element in E-20's « Voir les éléments » panel (« masse 0,5 · coût 4 ») uses the same formatter; the catalogue import dialog reports a mass that is not a multiple of 0.5 as a refusal of the field `masse` (« multiple de 0,5 attendu »).
+
+*States added by the masses (E-22).* Long content: a free mass like « −12,5 » and a line of 99 × 0,5 (« 49,5 ») stay on one line in the results block and in an alert (the alert wraps, the figure does not); lists keep their one-column phone layout. Error, empty, loading, connection lost, refusal: unchanged (a mass is displayed, never typed on this screen).
+
+- Given the trial catalogue and a design that takes the element of mass 0,5 three times, then the free mass of E-22 reads « coque − 1,5 » exactly (a hull of mass 7 gives « 5,5 »), with no block or value of mass used added; a free mass that is a whole number reads « 7 », without comma.
+- Given a design whose mass exceeds the hull by half a unit, then the alert reads « Masse insuffisante : −0,5 » and saving is refused; given a free mass of exactly 0, then there is no alert.
+- Given the choice list of the engines, then the trial element reads « Coupleur d'essai · masse 0,5 ».
+
+**Content**: the **list** of readable designs (name, hull, class, price, alerts) and a design's **workshop**: on the
+left, choices by nature (hull, drive, fittings, defenses, weapons, modifications) taken from the system
+catalogue supplemented by the universe's (a local element is marked « Univers »); on the right, results
+(price, HP, AC, free power and mass, shipyard, maintenance) and **alerts** (« Bloquante » / « À surveiller »),
+« Enregistrer », « Recalculer » when the design is « calculée avec d'anciens réglages »; GM: « Générer les fiches de règles… » (creates missing rule sheets, one per nature, and the examples sheet; updates the others, managed sections). On E-9, the managed
+section shows its banner and an « Ouvrir dans l'outil » link styled as a button (`kanevas-outils-sections-gerees`).
+
+| State | Text |
+|---|---|
+| empty | list: « Aucune conception. » (GM: « Créez une fiche de vaisseau, puis ouvrez-la ici. »); catalogue without elements: « Le catalogue du système est vide. Importez-en un (Outils). » |
+| loading | « Chargement du concepteur… » |
+| error | « Impossible de calculer ce vaisseau. » + « Réessayer » (never a partial result) |
+| offline | choices locked, « Connexion perdue. » |
+| refusal | unreadable design: « Page introuvable. »; non-author: read only, « Enregistrer » and « Annuler » absent (there is no « Modifier » button) |
+| long content | 40 fittings: list filterable by nature; design with 30 alerts: blocking first |
+| conflict | « Cette conception a changé depuis que vous l'avez ouverte. » + « Recharger » |
+| stale | « Calculée avec d'anciens réglages. » + « Recalculer » (nothing recalculated without the action) |
+| removed element | « Bloquante » alert « Élément retiré de cet univers » on the choice row; « Enregistrer » refused until replaced; section text does not change (B-62, Monsieur's decision of 2026-10-17) |
+
+Criteria:
+- Given Léa, author of « Caractéristiques » on « Vent d'Orak », when she adds a weapon exceeding power,
+  a blocking « Puissance insuffisante » alert appears and « Enregistrer » is refused with the reason.
+- Given Léa on sheet E-9, « Caractéristiques » shows « Générée par le concepteur de vaisseaux » and no editor.
+- Given Antor changing jump range in a universe setting, Léa's design shows « Calculée avec d'anciens
+  réglages » and its text has not changed until someone recalculates.
+- Given the designer disabled, the sheet shows « Caractéristiques » as text with « Outil désactivé ».
+- Given Teo, without a role in the universe, when he forces a design's address, « Page introuvable. ».
+
+**What `kanevas-outils-format-vaisseaux-fiches` builds of E-22** (B-82: the rules a catalogue says about hulls and elements). Mockup: the last frame of `docs/maquettes/e22-concepteur-vaisseaux.html` (the document wins). Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-format-vaisseaux-fiches` » (F-1 to F-8). Format: web, desktop and phone/tablet (390 px is the proof width). **Every addition below appears only when the catalogue states the value**: a catalogue that says nothing renders exactly as before, no empty slot, no « — » placeholder in a choice row.
+
+- *Crew.* A block « Équipage » between the hull and the first nature, **present when the chosen hull states a minimum or a maximum, or when the design already carries a crew**: a number stepper (integer, 0 to 100 000, `−` / `+` and a typed value, 44 px targets at 390 px) prefilled with the hull's minimum for a new design; changing the hull while the field is untouched refills it with the new hull's minimum, and a field the user has touched is kept. The number is saved with the design. Its bounds are written under it in the muted style: « 6 à 20 » (« 6 au moins » / « 20 au plus » when one only). Read-only for a reader who cannot write (the figure shown, no stepper). Design-system verdict (guardian): the one new component is this stepper, a numeric `Champ` (34 px, 44 px at 390 px) between two `−` / `+` icon buttons (Lucide `minus`, `plus`, 14 px, `--texte-3`), digits `tabular-nums`, bounds in 12 px `--texte-3`, disabled at 45 % opacity, no new token; it is a `role="group"` named « Équipage », the field an `input type="number"` with `aria-describedby` on the bounds line, ↑ / ↓ step by 1, and a typed value out of 0–100 000 (or not a whole number) is refused without losing what was typed: the field is marked invalid and the line « Équipage : un nombre entier de 0 à 100 000. » replaces the bounds line until the value is valid. **Empty cases**: no hull chosen, the block is absent (unless the design already carries a crew) and no element shows the « Classe » mark; a hull that states no bound, with a crew already on the design, shows the stepper without a bounds line and raises no crew alert; the block never shows an empty bounds line. The crew of an example is a catalogue value read by the API only: it has no screen. It is local to `frontend/src/outils/swn/vaisseaux/` (beside `.vx-stepper`, whose 99 ceiling differs); the « Classe » mark is the existing neutral `Pastille`, the captions and the `condition` line the existing `.vx-sous`.
+- *Results.* The block gains the rows « Vitesse », « Armure » and « Équipage » (after « Portée de saut »), each only when the result states it.
+- *Choice rows.* The caption of a hull adds « vitesse 3 · armure 5 · équipage 6 à 20 »; of an engine, fitting or defence « classe 2 à 3 » (« classe 3 au moins », « classe 2 au plus », « classe 2 seulement »), its `condition` as a second muted line (plain text, wraps) and, for a defence, « vitesse +1 »; of a weapon « dégâts 1d8 · PA 3 · qualités : Bruyant · NT 3 » (each part only when stated). An element whose class range excludes the **chosen hull** shows a « Classe » mark beside its name (the same mark as « Univers », a neutral badge, never a colour alone) and stays selectable: choosing it raises the blocking alert. The same mark shows on an already chosen line carrying a `classe_inadaptee` alert (after the hull changes).
+- *Alerts.* The texts are exactly « « Hangar d'essai » : classe de coque 3 au moins. », « … classe de coque 3 au plus. », « … classe de coque 2 seulement. » (blocking), « Équipage insuffisant : 4 sur 6 au moins. » and « Équipage excessif : 21 sur 20 au plus. » (watch). The three new codes of F-3 appear in the existing alerts list, with the existing blocking / watch presentation; `classe_inadaptee` carries the row (`ligne`) like the other per-line alerts, and « Enregistrer » is refused while it stands. `equipage_insuffisant` / `equipage_excessif` do not block the save.
+- *States.* Loading, error, offline, refusal, conflict, stale, removed element: unchanged. Offline: the crew stepper is disabled with the other controls. **Long content**: a condition of 200 characters wraps inside the row on its own lines, a damage text of 40 characters wraps without widening the column (390 px), 40 fittings and a filter behave as before. A stored result of before the slice shows no new row (nothing to compute in the browser).
+- *Rule sheets and E-9.* The sheets generated by « Générer les fiches de règles… » print the new columns **only when one row of the table states the value**, after the existing columns, a row that does not state it printing « — »: hulls « Vitesse », « Armure », « Équipage min », « Équipage max »; engines, fittings, defences « Classe min », « Classe max », « Condition » (defences also « Bonus de vitesse »); weapons « Dégâts », « Perforation », « Qualités », « Niveau tech. »; E-9's « Caractéristiques » prints the rows « Vitesse », « Armure », « Équipage » after « Portée de saut », each only when the result states it. E-20's « Voir les éléments » summary is unchanged (not in this slice).
+
+*Criteria (the slice's, in the plan).* Given a hull that states speed 3, armour 5 and crew 6 to 20, a defence with a speed bonus of 1 and a design on it, when Léa opens the workshop, then the results read « Vitesse 4 » and « Armure 5 » and the crew field reads « 6 »; at 5 an « Équipage insuffisant : 5 sur 6 au moins. » watch alert appears and « Enregistrer » stays available; at 21 « Équipage excessif : 21 sur 20 au plus. »; at 6 and at 20 no crew alert. Given a fitting of minimum class 3 on a class-2 hull, then a blocking alert names the fitting and saving is refused; on a class-3 hull it passes; the fitting shows the « Classe » mark while the class-2 hull is chosen. Given the trial catalogue (which states none of this), then the workshop, E-9 and the rule sheets are unchanged. At 390 px the crew block is one column above the first nature and the results stay above the choices. Given Roxane, who reads Léa's design and cannot write, then the crew figure is shown with no stepper. Given the connection lost, then the stepper is disabled with the other controls. Given a typed crew of 100 001, then the field is marked invalid, the line « Équipage : un nombre entier de 0 à 100 000. » shows and the typed value stays. Given a condition of 200 characters at 390 px, then it wraps on the row's second line without horizontal scroll. Given a design on a hull that states no crew bound and no crew, then no crew block and no crew row appear. Given the rule sheets of a catalogue whose hulls state speed, armour and crew, then the hull table gains the columns « Vitesse », « Armure », « Équipage min », « Équipage max », and a catalogue stating none prints the tables as before.
+
+**What `kanevas-outils-format-vaisseaux-effets` builds of E-22** (B-83: modifications at a percentage of the hull, their effects in play, the system engine). Mockup: the last frame of `docs/maquettes/e22-concepteur-vaisseaux.html` (the document wins). Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-format-vaisseaux-effets` » (X-1 to X-8). Format: web, desktop and phone/tablet (390 px is the proof width). **Every addition appears only when the catalogue or the chosen elements state it**: a catalogue that says nothing renders exactly as before.
+
+- *Repair skill.* A block « Compétence de réparation » below the crew block (or below the hull when there is none), **present when a chosen element asks for a skill (`reparation_min`) or the design already carries a skill above 0**: the same numeric stepper as « Équipage » (0 to 20), prefilled with 0, saved with the design, read-only for a reader who cannot write. A typed value out of 0–20 marks the field invalid with « Compétence de réparation : un nombre entier de 0 à 20. ».
+- *Choice rows.* A modification's caption adds « 10 % de la coque », its effect in words (« armure +2 », « vitesse −1 », « soutes doublées », « magasins doublés », « réparation 2 au moins », « puissance → masse, jusqu'à 5 points ») and, when it has a percentage, « Ligne : 30 000 cr » on a second muted line. A fitting with a system engine reads « moteur système · rend puissance 4 et masse 2 » for the chosen hull's class (nothing when no hull), a fitting with a cargo « soutes 10 ».
+- *Points exchanged.* Under a chosen line whose modification exchanges points: the label « Points échangés », the same stepper (0 to the modification's maximum, `−` disabled at 0 and `+` at the maximum, a typed value out of range refused with « Points échangés : un nombre entier de 0 à 5. », what was typed kept), and the muted line of the consequence « 3 points : −3 puissance, +1,5 masse » (written from the line's `echange` deltas in the server's result; no figure is computed in the browser).
+- *Target element.* Under a chosen line with a doubling: the label « Élément visé » and a **select** listing the design's lines eligible for that effect, filtered on fields the server sends, validity staying the server's alert (fittings stating a cargo for « soutes doublées », weapons for « magasins doublés »), by name, with the placeholder « Choisir un élément » while none is chosen; with no eligible line, the select is replaced by the muted line « Aucun élément à viser dans cette conception. » and the blocking alert shows. Removing the targeted line leaves the select empty and raises the alert (no silent retarget).
+- *Results.* The block gains the row « Soutes » (after « Équipage »), only when the result states it; « Vitesse » and « Armure » include the effects.
+- *Alerts.* Texts exactly as X-5: « Un seul moteur système par vaisseau. », « « Cale d'essai » : choisissez l'élément visé. » (and its two variants), blocking; « « Blindage d'essai » : réparation 2 au moins (1 choisie). », watch, not blocking the save.
+- *Import refusals.* The catalogue import dialog (E-20) and the import report name the field as for `masse`: « Modification « … », champ `effet` : effet inconnu. », « … champ `points_max` : nombre entier requis (échange de points). », « … champ `cout_pct` : nombre entier de 1 à 1 000 attendu. ». A refused entry is never stored, so the workshop never meets an unknown effect nor a missing maximum: there is no workshop state for them.
+- *Roles and states.* A reader who cannot write (another reader; a GM in Player mode on a design he does not author; Roxane) sees **no stepper and no select — absent, not disabled** — and reads text: « Points échangés : 3 » with its consequence line, « Élément visé : Soute d'essai » (« Élément visé : aucun » when none is chosen), « Compétence de réparation : 1 »; the server refuses a forced write. **Many**: several lines exchanging points or aiming at an element each carry their own block, in the order of the lines; the target select scrolls past 12 options, without a filter. Unchanged: loading, error, offline (steppers and selects disabled with the other controls), refusal, conflict, stale, removed element: unchanged. **Long content**: a 200-character condition and an effect caption wrap inside the row; at 390 px the steppers and the select are on their own line, 44 px targets, no horizontal scroll. A stored result of before the slice shows no new row.
+
+**What `kanevas-outils-format-vaisseaux-ecarts` changes of E-22** (B-85, `ARCHITECTURE.md` Y-1 to Y-6): **captions only — no new control, no new screen state, so no new mockup frame** (the frames of the effects slice are the reference; the document wins). A catalogue that states none of it renders exactly as before. *Refused (relecture UX, mandate decision):* giving these captions their own Given/When/Then here — the criteria of the slice stay in the plan, as in every sibling slice of the workshop; and printing « + » on a positive speed bonus in the rule sheets (E-9) to match the signed caption of E-22 — the caption shows the designer's signed bonus, the sheets keep the identity of a catalogue without gaps (Y-5). Phone/tablet: the longer captions wrap inside the row, as the effect captions do (390 px is the proof width).
+
+- *Defence row.* The speed bonus caption reads « vitesse −2 » / « vitesse +2 » (the sign is written for a non-zero bonus, U+2212 for the minus; a bonus of 0 reads « vitesse 0 »).
+- *Modification row.* A modification asking a repair skill adds « réparation 2 au moins » to its caption, **after** its effect (« armure +2 · réparation 2 au moins »); an effect `reparation_min` alone reads as before. The repair-skill block (« Compétence de réparation ») is present when a chosen element asks for a skill **by either way**.
+- *Fitting row.* A cargo per class reads « soutes 20 » for the chosen hull's class (nothing when no hull is chosen, as for the system engine's gift); a system engine with a reduction reads « moteur système · rend puissance 3 et masse 1,5 · coût −10 % », and the muted second line « Ligne : 36 000 cr » appears for it as for a percentage line (the server's `cout` of the line). The « Élément visé » select lists fittings stating a cargo by either field.
+- *Import refusals (E-20).* Same presentation, new texts: « … champ `soute_par_classe` : quatre nombres entiers de 0 à 1 000 000 attendus (classes 1 à 4). », « … champ `reduction_cout_pct` : nombre entier de 1 à 100 attendu. », « … champ `reduction_cout_pct` : réduction du coût réservée au moteur système. », « … champ `reparation_min` : nombre entier de 1 à 20 attendu. », « … champ `reparation_min` : déjà dit par l'effet. », « … champ `bonus_vitesse` : nombre entier de −9 à 9 attendu. ».
+- *Rule sheets (E-9).* The sheets of R-3 gain the columns of Y-5, only when a row states them; a negative speed bonus reads « −2 » (U+2212), a positive one as before, without « + ».
+- *Roles and states*: unchanged (a reader who cannot write reads the same captions; loading, error, offline, refusal, conflict, stale, removed element, long content: unchanged).
+
+*Design-system verdict (guardian): everything exists, nothing new.* The repair skill and the points are the crew stepper of the fiches slice with its bounds as a parameter (still local to `frontend/src/outils/swn/vaisseaux/`; the invalid-value line carries the field's own name); the consequence line replaces the bounds line, muted like it; « Élément visé » is `Champ` with `liste` (native `<select>`, `htmlFor`, `aria-invalid` when the blocking alert shows; the mockup's inline select is not the render reference); captions use the muted line of the crew captions; the « Soutes » row and the alerts are the existing results row and alert presentations. No token.
+
+*Criteria (the slice's, in the plan).* Given a hull of cost 300 000 and a modification at 10 % with armour +2, when Léa chooses it, then « Ligne : 30 000 cr » shows, the price rises by exactly 30 000 and « Armure » reads 7. Given a points exchange with a maximum of 5, then the stepper stops at 5, 6 typed is refused and the consequence line follows the number. Given a doubled-cargo modification with no target, then the blocking alert shows and saving is refused; with the fitting chosen as target, « Soutes » doubles. Given a repair skill of 1 against a minimum of 2, then the watch alert shows and « Enregistrer » stays available; at 2 it goes. Given a second system engine, then « Un seul moteur système par vaisseau. ». Given the trial catalogue (which states none of this), then the workshop, E-9 and the rule sheets are unchanged. At 390 px the new controls are one column, 44 px high. Given Roxane, or Antor in Player mode, who reads Léa's design, then points, target and skill are text only, with the labels above and no control in the page. Given a catalogue file whose modification names an unknown effect, then the import report says « champ `effet` : effet inconnu » for it and applies the rest.
+
+**What `kanevas-outils-format-vaisseaux-suite` changes of E-22** (B-86, `ARCHITECTURE.md` Z-1 to Z-7): **captions and one display filter only — no new control, no new screen state, so no new mockup frame** (the frames of the effects slice are the reference; the document wins; the criteria of the slice stay in the plan, as in the sibling slices). A catalogue that states none of it renders exactly as before. Phone/tablet: the longer captions wrap inside the row (390 px is the proof width).
+
+- *Fitting row.* A system engine whose reduction is on the hull reads « moteur système · rend puissance 3 et masse 1,5 · coût −10 % de la coque », with « Ligne : 10 000 cr » on the second muted line (the server's `cout`); on the fitting's own cost it reads as before.
+- *Modification row.* After the existing wording: « soutes −10 % de masse » (`soutes_optimisees`), « armure +2 » (`armure_par_classe`, the value of the chosen hull's class; nothing before a hull is chosen, as the system engine's gift), « emports −1 » or « emports +1 » (`montage_specialise`), « puissance de l'arme +50 % » (`surcharge_arme`); a rounded exchange adds « arrondi par installation ». The consequence line of the points stepper reads the server's `echange`: « 3 points : −3 puissance, +1 masse ».
+- *Target element.* The « Élément visé » select also serves the three targeted effects: fittings stating a cargo for « soutes −10 % de masse », weapons for the mounting and the overload — a display filter on fields the server sends, validity staying the server's alert. Under a targeted line the muted line of the consequence reads the server's `ajuste` (« masse −1 », « emports −1 », « puissance +5 »).
+- *Points.* A rounded exchange may be taken several times: the points stepper keeps its bounds (0 to the modification's maximum, per installation).
+- *Import refusals (E-20).* Same presentation, new texts: « … champ `effet_pct` : nombre entier de 1 à 100 attendu. » (and « … de 1 à 1 000 … » for the overload), « … champ `armure_par_classe` : quatre nombres entiers de 0 à 9 attendus (classes 1 à 4). », « … champ `echange_arrondi` : « installation » attendu. », « … champ `reduction_base` : « coque » ou « amenagement » attendu. », « … champ `reduction_base` : base réservée à la réduction du coût. »; the targeted effects reuse « limite 1 attendue »; three more cases: a parameter on another effect reads « … champ `<paramètre>` : paramètre réservé à son effet. », an effect without its parameter « … champ `<paramètre>` : paramètre requis par l'effet. », and a mounting's `valeur` of 0 or beyond ±9 « … champ `valeur` : nombre entier de −9 à 9, sauf 0, attendu. » (the server writes them; the browser prints them).
+- *Rule sheets (E-9).* The sheets of R-3 gain the columns of Z-7, only when a row states them.
+- *States (the criteria of the plan test them).* Error: a targeted modification of this slice with no target, or whose target is not one of the design's lines or cannot be aimed at, raises the blocking alert of the effects slice with its three texts (« « Montage d'essai » : choisissez l'élément visé. », « … : l'élément visé n'est pas dans cette conception. », « … : cet élément ne peut pas être visé. »), the modification's name in the quotes. Empty: while the target is not chosen, the muted line under a targeted row reads nothing (no `ajuste` key, no placeholder). Extreme: a reduction larger than the line's cost reads « Ligne : 0 cr » (the excess is lost, never carried over) and the caption keeps saying « coût −10 % de la coque »; percentages round half up and the rounded exchange rounds its mass **down** per installation, both as the server computes them (« 3 points : −3 puissance, +1 masse »), the browser only prints; a mounting that cannot lower the emports further, or an armour of 0 for the hull's class, reads no `ajuste` line and no « armure » caption (the server's `ajuste` is the signed change actually applied); the overload's bound reads « 1 000 % » with the app's usual thousands separator; when a design has no fitting stating a cargo (or no weapon), the « Élément visé » list is empty and the blocking alert « choisissez l'élément visé » stays. Read-only (Roxane, Antor in Player mode): the same captions, the muted `ajuste` line and « arrondi par installation » are text, with no control. Loading, offline, conflict, stale and removed element: unchanged (no new control).
+- *Wording.* « emports » is the word of the captions and of the effect's label « Montage spécialisé » (the label names the effect, the caption the figure it changes), as « Emport » in the mockup's columns; the results block's « hardpoints » is the same quantity (the document wins, and the caption of this slice says « emports »).
+
+*Design-system verdict (guardian): everything exists, nothing new.* No component, no token and no mockup is added; the select and the stepper are those of the effects slice.
+
+**What `kanevas-outils-format-vaisseaux-regles-livre` changes of E-22** (B-87, `ARCHITECTURE.md` W-1 to W-7): **captions and the same display filter only — no new control, no new state (the one new case of an existing block is the repair skill below), no mockup frame**; it replaces the captions of the four effects of the previous slice. A catalogue that employs none renders as before.
+
+- *Modification row.* « soutes −10 % de masse libre, fret ×2 » (`soutes_optimisees_livre`), « armure +2 et réparation » (`blindage_renforce`, the value stated; the result block reads the sum with the repair skill she entered), « puissance et masse de l'arme visée ÷ 2 » (`montages_specialises`), « puissance de l'arme +50 % par installation » (`surcharge_cumulable`).
+- *Target element.* For the four new effects, the « Élément visé » select serves the mounting and the overload (weapons) only; the two doublings of B-83 (« soutes doublées », « magasins doublés ») keep their select, their eligible lines, their empty state (« Aucun élément à viser dans cette conception. ») and the blocking alert. With no weapon in the design, the select of a mounting or an overload reads that same muted line and the same alert shows.
+- *Consequence line.* Under the targeted rows and the two untargeted ones, the muted line reads the server's `ajuste`, signed as the server sends it: mounting « masse +1, puissance +5 » (a laser of power 10, mass 1), overload « puissance +10 » (two installations at 50 % on that laser), reinforced armour « armure +5 » (value 2 and repair skill 3), optimised holds « masse −2 » (a free mass of 20); a free mass of 0 or below reads no `ajuste` line. A reinforced armour of value 0 reads « armure +0 et réparation » and its `ajuste` line follows the repair skill entered (nothing while it is 0).
+- *Repair skill.* The block « Compétence de réparation » is also present as soon as a chosen element is a reinforced armour (`blindage_renforce`), prefilled with 0, same stepper, same read-only text for a reader who cannot write.
+- *Wording.* **Supersedes** the previous slice's captions of the four old effects (« soutes −10 % de masse », « armure +2 » by class, « emports ±1 », « puissance de l'arme +50 % » and « arrondi par installation » as it stood) and its « Wording » note on « emports »: only the captions of this paragraph are read; the mounting no longer says « emports ».
+- *Roles and states.* Unchanged: loading, error, offline, refusal, conflict, stale, removed element, read-only (the same captions as text, no control). **Long content**: the longest captions (« soutes −10 % de masse libre, fret ×2 », « puissance de l'arme +50 % par installation ») wrap inside the row, no horizontal scroll at 390 px.
+- *Import refusals (E-20).* The old codes read « effet inconnu : <code> »; new texts: « … champ `valeur` : nombre entier de 0 à 9 attendu. », « … champ `effet_pct` : paramètre réservé à son effet »; « … champ `limite` : limite 1 attendue » for the three effects other than the overload (optimised holds, reinforced armour, mounting), none for the overload. Also: « … champ `vise` : élément visé exigé » (mounting, overload), « … champ `vise` : paramètre réservé à son effet. » (the two others), « … champ `limite` : nombre entier de 1 ou plus attendu. » (overload).
+- *Rule sheets (E-9).* The sheets state each rule in words (W-6), with no figure of a real game.
+
+## What `kanevas-outils-retrait` builds (E-20 deletion dialog)
+
+Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-retrait` » (D-1 to D-8). Mockup: `docs/maquettes/e20-suppression.html` (states `#etat-univers`, `#etat-systeme`, `#etat-galaxie`, `#etat-vide`, `#etat-changement`, `#etat-refus`); where it and this text differ, this text wins. Format: desktop and phone — below 760 px the dialog is a full-height sheet and its buttons are 44 px high, stacked, the destructive one last. Disabling needs no screen of its own: it is the toggle of the card (`kanevas-outils-cadre`), and the banner of a managed section is E-9's (`kanevas-outils-sections-gerees`).
+
+### « Supprimer les données de l'outil… » (structuring screen: a dialog from the card's foot)
+
+- **Where and who**: at the foot of each tool card that declares data, on the universe tab (E-14) and on the system tab (E-15), always apart from the toggle, in the destructive style, with the line « Désactiver garde tout ; supprimer efface. » above it. *Universe tab*: any GM of the universe, outside Player mode, even when the tool is disabled. *System tab*: only the system's responsible (or any GM when there is none); another GM of an attached universe sees neither the button nor the line (**hidden**, not in the DOM, not a refusal); a Player never sees the tab.
+- **A card with nothing to erase** (no `donnees`, no catalogue) shows no button. A card whose data are empty keeps the button active (never dimmed) and opens the empty state below, so that the user learns that there is nothing rather than guessing.
+- **Opening** reads the summary (`GET …/suppression`) — never the card's list, which may be stale. While it loads, the dialog shows « Lecture des données de l'outil… » and the confirmation button is absent.
+- **Content, universe level** — title « Supprimer les données de « Carte de la galaxie » ? » (the tool's name); the sentence « 14 conceptions, 3 éléments locaux de catalogue seront effacés. » (the lines of the summary, comma-separated, the count first, singular for 1, no line at 0, « et » before the last line when there are three or more); a reassurance line « Les fiches et leur texte sont conservés : leurs sections ne seront plus gérées par l'outil. » shown only when the summary's `sectionsGerees` is above 0; « Cette action est définitive. » ; the buttons « Supprimer les données » (destructive) and « Annuler ». The activation, visibility and settings of the tool are not touched, and the dialog does not say otherwise.
+- **Content, system level** — same title and sentence about the system catalogue (« 4 coques, 8 armes du catalogue du système seront effacées. » is written as one sum line: « 12 éléments du catalogue du système seront effacés. »), then, when `encoreUtilise` is not empty, a block « Encore utilisé par : » listing the universes (« Univers voisin ») and, after them, one line for all of them together (« Ensemble : 3 conceptions. » — the designs of the listed universes, counted as a whole), and the sentence « Ces univers perdent les éléments du système : leurs conceptions seront à recalculer. ». The system level never erases an element of a universe, a design or a sheet: the block informs, it does not extend the deletion.
+- **Galaxy tool** — the universe level says « Les 4 systèmes, 3 routes et 1 zone de cette galaxie seront effacés. » (the sentence of E-21's « Supprimer la galaxie… », counted the same way); its system level has no data and no button.
+- **Frame** (`docs/charte.md` § Dialog): a `trash-2` badge (danger on danger background) before the title, 440 px wide at most, footer « Annuler » (neutral) then « Supprimer les données » (danger) on the desktop; on the phone the buttons are stacked full width, the danger one last.
+- **Confirmation**: no typed name (the sentence is read and counted; the typed name is reserved for the universe itself, AD-119). While the deletion runs the button reads « Suppression… » and the dialog cannot be closed. The result replaces the content: « Données supprimées : 14 conceptions, 3 éléments locaux de catalogue. » and « Fermer »; the card refreshes its counts (« aucun catalogue importé », no design in the list).
+
+| State | What the user sees | Text |
+|---|---|---|
+| empty | the recount is zero everywhere | « Cet outil n'a aucune donnée à supprimer. » + « Fermer »; no destructive button |
+| loading | summary being read | « Lecture des données de l'outil… » |
+| error | the summary or the deletion does not answer (5xx) | « L'action n'a pas abouti. Rien n'est supprimé. » + « Réessayer » (replays the summary read, then asks again: the lines shown are always those just read) |
+| offline | the connection drops | banner « Connexion perdue. », the destructive button disabled; during the deletion: « Connexion perdue pendant la suppression. Rien n'est supprimé à moitié : rouvrez la fenêtre pour voir l'état. » |
+| changed meanwhile | the recount differs from the lines read (`contenu_change`) | « Les données ont changé depuis que vous avez ouvert cette fenêtre. » + the new lines + « Recharger » (re-reads; nothing is erased until the user confirms the new lines) |
+| refusal | the role was lost meanwhile (no longer GM, no longer responsible, Player mode) | « Vous ne pouvez plus supprimer ces données. » + « Fermer »; the address of a player or non-member: « Page introuvable. » |
+| long content | 14 000 conceptions; a universe name of 80 characters in the system block | counts with thin spaces (« 14 000 conceptions »); names wrap, the block scrolls beyond 6 universes with « … et N autres » |
+
+*Criteria.*
+- Given « Éneria d'essai » with 2 designs and 2 local catalogue elements (« Lance d'essai » and one more), when Antor opens « Supprimer les données de l'outil… » on « Concepteur de vaisseaux », then he reads « 2 conceptions, 2 éléments locaux de catalogue seront effacés. », and when he confirms he reads « Données supprimées : 2 conceptions, 2 éléments locaux de catalogue. »; the designer list is empty and the two ship sheets are still in « Vaisseaux », their « Caractéristiques » section shown as ordinary text, without banner.
+- Given « Univers voisin », which holds one design, when Antor erased « Éneria d'essai »'s data, then that design is intact.
+- Given Antor who disabled the designer, when he re-enables it without deleting, then the same 2 designs and the same managed sections are there (counts before and after are equal).
+- Given Antor, responsible of « Système d'essai », when he first disables the designer on the system tab and then opens the deletion there, then the dialog adds « Encore utilisé par : » « Univers voisin », which forced the tool « Activé », and not « Éneria d'essai », which follows the system and so now has the tool disabled.
+- Given Mira, GM of an attached universe but not responsible, on the system tab, then neither the button nor its line exists in the DOM; on the tab of her own universe she has them.
+- Given the galaxy tool of « Éneria d'essai » (4 systems, 3 routes, 1 zone), when Antor opens the deletion, then the dialog reads « Les 4 systèmes, 3 routes et 1 zone de cette galaxie seront effacés. »; once confirmed, the galaxy no longer appears in E-10.
+- Given Antor with the dialog open while Mira adds a design, when he confirms, then the dialog reads « Les données ont changé depuis que vous avez ouvert cette fenêtre. » with 3 designs, and nothing was erased.
+- Given Léa, Player, who forces the address of the tab or of the summary, then she reads « Page introuvable. ».
+- Given Antor in Player mode, when he forces the deletion, then the tab is absent and the call is refused.
+- Given the network cut while « Supprimer les données » is pressed, then the dialog reads « Connexion perdue pendant la suppression. Rien n'est supprimé à moitié… » and the rows are all there or all gone.
+- Given Antor deleting the universe « Éneria d'essai » (AD-119), then no `swn_*` row of that universe remains and « Univers voisin » is intact.
+
+**What `kanevas-outils-vaisseaux` builds of E-22 and E-9** (the first designer: list, workshop, creation, save, share link, the E-9 component and the assistant's calculation; **not** built here, and leaving no empty slot: the stale banner and « Recalculer », « Générer les fiches de règles… » and the rule and example sheets — `kanevas-outils-vaisseaux-regles`). Mockup: `docs/maquettes/e22-concepteur-vaisseaux.html` (the document wins; its « calculée avec d'anciens réglages » state belongs to the later slice). Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-vaisseaux` » (V-1 to V-12). Format: web, desktop and phone/tablet (390 px is the proof width).
+
+*Entry.* The « Outils » sidebar item « Concepteur de vaisseaux » (declared by the tool, shown only when the tool is enabled and visible to the role) opens the **list** at `/univers/:id/outils/swn/vaisseaux`; a design opens at `…/vaisseaux?fiche=<ficheId>` (the share link: copy button « Copier le lien »; the address is kept in sync, nothing else in it). On E-9 the banner link « Ouvrir dans le concepteur » opens the same address. A sheet or a section the account cannot read gives « Page introuvable. », identical to a missing address.
+
+*List.* One row per readable design: title (link), hull and class, price, a « N bloquante(s) » / « N à surveiller » badge when there are any, the author's name. Empty: « Aucune conception. » (GM: « Créez une fiche de vaisseau, puis ouvrez-la ici. »). The tool without any catalogue element: « Le catalogue du système est vide. Importez-en un (Outils). » (the GM sees the link to E-20; a player sees the sentence only). The GM has « Nouvelle conception » (absent for a player and for a GM in Player mode).
+
+*« Nouvelle conception » (GM).* A dialog: the **sheet** (sheets of type Vaisseau without a design, by title; none: « Aucune fiche de vaisseau sans conception. », the button is disabled), the **hull** (from the catalogue, filterable), the **author** (a member who reads the sheet, or « Personne » : only GMs write; Léa in the seed). « Créer » creates the section « Caractéristiques » (managed, empty of choices but for the hull) and opens the workshop; « Annuler » closes. A refused creation says why in the dialog (`conflit` / `deja_concue`: « Cette fiche a déjà une conception. »).
+
+*Workshop.* From 760 px: choices on the left (hull, drive, fittings, defences, weapons, modifications; a block per nature, a quantity stepper on each chosen line, « Ajouter… » opening the catalogue of that nature, a filter field above the long lists), results on the right in a 320 px column: price, shipyard time labelled « Chantier » (« 28 jours »), upkeep labelled « Entretien » (« 34 250 cr / an »), the labels of the text version (V-6), HP, AC, jump range (« 15 cases », « — » without engine), free power and free mass, hardpoints (« 2 / 3 »), then the alerts, blocking first (red, « Bloquante »), then watch (amber, « À surveiller »), then « Enregistrer » and « Annuler » (back to the last saved state, with a confirmation only when the draft differs). Every change recalculates (V-12); a figure that changes stays on screen until the answer comes (no blink to empty). « Enregistrer » is disabled while a blocking alert shows (the reason is the alert itself, repeated under the button: « Enregistrement refusé : Puissance insuffisante (−2). »), and after a successful save the screen says « Conception enregistrée. » and E-9's « Caractéristiques » shows the new text. Choices: each catalogue line shows its name, its key figures (« puissance 6 · masse 2 »), the origin tag « Univers » for an element of the universe's catalogue (a replaced system element shows « Univers » too) and, for a GM, « Masqué » on a masked one; a masked element is **not offered** to a player, and stays on a design that carries it, shown like any other, without alert. A withdrawn element stays on its line with the red tag « Élément retiré de cet univers » and the line's figures are those of the last save; the alert says what to replace; « Enregistrer » stays disabled until it is replaced or removed (« Changer de coque » / « Retirer » on the line).
+
+*Roles.* **GM** (outside Player mode): everything; writes any design. **Author** (a player with « L'auteur l'écrit »): workshop and « Enregistrer » on her own design; reads the others she may read. **Another reader**: the workshop opens read-only (choices without steppers, no « Enregistrer », no « Annuler »), results and alerts visible, « Copier le lien ». **No role / unreadable**: « Page introuvable. ». A GM in Player mode sees what a player sees (no « Nouvelle conception », no masked elements offered, read-only on a design he does not author).
+
+*States.* The table of E-22 above applies, but for the stale row and for the « Générer… » entries. Additions of this slice: **loading** (list) « Chargement du concepteur… »; **calculating** a small « Calcul… » beside the results title, never a blank; **calculation error** « Impossible de calculer ce vaisseau. » + « Réessayer », the last good result kept dimmed, « Enregistrer » disabled; **save refused by the server** (blocking alert the screen did not know, because the catalogue changed meanwhile) the reason in place and the results refreshed; **offline** the steppers and « Ajouter… » are disabled, « Enregistrer » too, « Connexion perdue. » at the top, nothing of the draft lost; **long content** 40 fittings: filter above the list, 50 shown per page with « Afficher la suite »; a design with 30 alerts: blocking first, the list scrolls inside its panel; **conflict** « Cette conception a changé depuis que vous l'avez ouverte. » + « Recharger » (the draft is replaced after confirmation by « Recharger »; until then it stays on screen).
+
+*E-9.* The section « Caractéristiques » shows the banner « Générée par le concepteur de vaisseaux » and a framed table of the results (the display component, loaded only when the sheet has such a section; fallback: the text version with « Mise en forme indisponible — version texte affichée. »), no editor. Tool disabled: the text version with « Outil désactivé ». Offline: the section as last loaded stays readable, « Connexion perdue. » is the common banner, and « Ouvrir dans le concepteur » stays a plain link (navigation only; the designer then says « Connexion perdue. » and locks its choices). The stale banner of the section is the core's (sections-gerees): it offers « Recalculer » and works through the same write as the designer (V-4).
+
+*Added by the UX review (texts that the tester looks for).* **List**: the row shows title, hull, price and author's name; the badge is « N à surveiller » (a saved design never carries a blocking alert, except a withdrawn element: « N bloquante(s) » then); loading « Chargement du concepteur… »; failure to load « Impossible de charger les conceptions. » + « Réessayer »; offline: the last loaded list stays, « Connexion perdue. » at the top, « Nouvelle conception » disabled; 200 designs: 50 per page with « Afficher la suite », a long title is cut on one line (full in the tooltip); at 390 px one column, the price below the title. **« Nouvelle conception »**: while loading, « Créer » is disabled and the fields show « Chargement… »; a catalogue without hull: « Le catalogue du système n'a aucune coque. » and « Créer » disabled; offline: « Connexion perdue. », « Créer » disabled, the choices kept; any other server failure: « Impossible de créer la conception. » in the dialog, the choices kept. **Workshop**: a freshly created design (hull only) shows the watch alert « Aucun moteur de saut : ce vaisseau ne peut pas voyager. » and the empty block of a nature reads « Aucun choix » with « Ajouter un moteur » / « Ajouter une arme » (per nature); the blocking alerts' help texts under the alert are « Retirez une arme ou changez de moteur. » (power) and « Remplacez-le pour enregistrer. » (withdrawn element); « Résultats enregistrés » heads the saved figures; offline the choices read « Les choix sont verrouillés. » under « Connexion perdue. »; a save that fails on the network keeps the draft and says « Enregistrement impossible : connexion perdue. »; a disabled tool reached by the design's address says « Page introuvable. » (as for the galaxy); « Ouvrir la fiche » in the header leads to the sheet's E-9. **Link**: « Copier le lien » shows for every reader, author included. **List, refusal**: the list shows only the designs the account reads, and says nothing of the others (no count, no placeholder); an account without role in the universe gets « Page introuvable. » for the whole screen. **E-9**: while the component loads, the text version shows; an unreadable design shows the text version without banner. **Phone** (390 px): the list rows and the dialog fields are one column; the read-only workshop has the results above the choices. The results panel is whole in the flow there (not sticky, no inner scroll: figures, alerts, « Enregistrer » and its reason all readable); from 760 px it is the right-hand column, sticky under the frame bars. The E-9 table scrolls sideways inside its frame with edge shadows while columns are hidden. **Assistant (B-69)**: the answer is the text version of V-6 in the thread, and « Introuvable. » for an unreadable design (no event). **Author**: the author is chosen at creation; changing or removing it afterwards is not built in this slice (no new screen).
+
+*Criteria (the slice's, in the plan).* Given « Vent d'Orak » and Léa, when she adds a second « Lance d'essai », « Puissance insuffisante : −2 » appears, « Enregistrer » is disabled and the server also refuses; she removes it, saves: E-9 shows the figures of V-11 (685 000 cr, 28 jours). Given Roxane, « Étoile du soir » opens read-only and « Vent d'Orak » is « Page introuvable. ». Given Antor withdrawing the éclaireur hull from the universe, « Étoile du soir » keeps its text, E-22 says « Élément retiré de cet univers » and refuses to save until the hull is changed. Given Antor masking « Lance d'essai », Léa still sees it on « Vent d'Orak », saves without alert, and does not find it in her choices. At 390 px the catalogue is one column and the results stay above it.
+
+**What `kanevas-outils-vaisseaux-regles` builds of E-22 and E-9** (the stale design and « Recalculer »; « Générer les fiches de règles… »; the rule and example sheets). Mockup: the frames « calculée avec d'anciens réglages », « la liste », « Générer les fiches de règles… » and « les fiches générées » of `docs/maquettes/e22-concepteur-vaisseaux.html` (the document wins). Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-vaisseaux-regles` » (R-1 to R-9). Format: web, desktop and phone/tablet (390 px is the proof width).
+
+*Stale design (workshop).* When the sources a design was calculated with have moved (a setting of the universe or the system, a catalogue import; a mask or a withdrawal alone does not make a design stale), the workshop shows, **above the results**, an amber band (`role="status"`): « Calculée avec d'anciens réglages. » and the second line « Le texte de la fiche n'a pas changé. Enregistrer ou recalculer le met à jour. ». The results column keeps its title « Résultats » and shows the **stored** result (the one the section holds), with no extra label; as soon as the reader edits a choice, the column shows the live calculation (« Calcul… » then the figures). « Recalculer » sits in the band, under the text, as a small button of its natural width for who has the usage `concevoir` and the right to write the section (the GM, the author with « L'auteur l'écrit »), outside Player mode; another reader sees the band and no button. With an unsaved draft, « Recalculer » opens a dialog « Recalculer cette conception ? » — « Vos modifications non enregistrées seront abandonnées. » — « Recalculer » / « Annuler »; without a draft it acts at once. While it runs, the button reads « Recalcul… » and is disabled; success: « Conception recalculée. », the band disappears, E-9's section carries the new text. Nothing else moves: the choices are untouched.
+
+| State | Text |
+|---|---|
+| stale, reader | band « Calculée avec d'anciens réglages. », no button |
+| stale, writer | band + « Recalculer » |
+| up to date | no band |
+| recalculating | « Recalcul… », button disabled, the stored result stays |
+| recalculation refused, element withdrawn | in the band: « Élément retiré de cet univers : Éclaireur. Remplacez-le dans le concepteur. » — nothing moved, the band stays |
+| recalculation conflict (the section changed meanwhile) | « Cette conception a changé depuis que vous l'avez ouverte. » + « Recharger » |
+| usage lost | « Vous ne pouvez plus recalculer cette conception. », the button removed |
+| offline | « Connexion perdue. », « Recalculer » disabled |
+| failure | « Impossible de recalculer cette conception. » + « Réessayer », nothing moved |
+| tool disabled or invisible | the screen is « Page introuvable. »; on E-9 the section reads « Outil désactivé » |
+
+*List.* A row of a stale design carries the badge « Anciens réglages » beside its alert badge; nothing else changes (no count of stale designs in the header). The GM has, beside « Nouvelle conception », the button « Générer les fiches de règles… » (absent for a player and for a GM in Player mode, absent when the tool is disabled).
+
+*« Générer les fiches de règles… » (GM).* A dialog lists the seven sheets with their state: « Règles — Coques », « Règles — Moteurs », « Règles — Aménagements », « Règles — Défenses », « Règles — Armes », « Règles — Modifications », « Exemples de vaisseaux », each « À créer », « À jour », « À mettre à jour » or « Mise à jour proposée » (a link to the proposal on E-12), with the sheet as a link when it exists. Above the list: « Les fiches montrent le catalogue tel que les joueurs le voient : les éléments masqués n'y figurent pas. » and, when a sheet exists: « Les fiches existantes seront réécrites. ». Buttons « Générer » and « Annuler » (« Générer » is disabled while everything is « À jour » and nothing is stale, with the reason « Les fiches sont à jour. »). While it runs: « Génération… ». Success: « 7 fiches créées. » / « 3 fiches mises à jour, 4 inchangées. » (singular « 1 fiche créée. »), the list refreshed. A catalogue without any element: the sheets are generated all the same, the six nature sheets each saying « Aucun élément dans le catalogue. » and the examples sheet « Aucun exemple. », and the dialog shows « Le catalogue est vide : les fiches seront vides. ». Failure: « Impossible de générer les fiches. » + « Réessayer », nothing created (one transaction). Offline: « Connexion perdue. », « Générer » disabled. A GM who removed a rule sheet's section by hand sees « À créer » for it, with the note « Une nouvelle fiche sera créée ; l'ancienne reste telle quelle. ».
+
+*The sheets (E-9).* Each is an ordinary sheet of type Règle with one managed section; E-9 shows the core's banner with the name « Générée par le concepteur de vaisseaux », no editor, the text version as a table (the Markdown of R-3 rendered; no display component, so the fallback sentence never appears). Stale (a catalogue import, a mask, a setting for the examples): « Calculée avec d'anciens réglages. » and, for the GM, « Proposer un recalcul » or « Voir la proposition » (the core's, `kanevas-outils-sections-gerees`). A reader sees the text and the banner without actions. A player reads them like any sheet; a masked element, a withdrawn one and any example that uses either are absent, with no trace.
+
+*Roles.* **GM** (outside Player mode): « Recalculer » on any design, « Générer… », proposals. **Author** (player): « Recalculer » on her own design when she has « L'auteur l'écrit »; reads the rule sheets. **Another reader**: the band without a button. **No role**: « Page introuvable. ». A GM in Player mode sees what a player sees: no « Générer… », no « Recalculer ».
+
+*Criteria (the slice's, in the plan).* Given Antor changing the jump range, Léa's « Vent d'Orak » shows « Calculée avec d'anciens réglages. » on E-22 and E-9, 685 000 cr and its text unchanged; she confirms « Recalculer » and E-9 shows the new range. Given Antor importing the universe catalogue with a changed weapon, the same state. Given Antor in the dialog, « Générer » creates seven sheets, and « Générer » is then disabled (« Les fiches sont à jour. »); the same generation sent again by the route reports « 7 inchangées ». Given Antor masking « Lance d'essai », E-20 says « Les fiches de règles montrent encore cet élément : acceptez la mise à jour proposée. », « Règles — Armes » proposes its update and Léa still reads the old text until he accepts. At 390 px the band stays above the results and the dialog is one column.
+
+## What `kanevas-outils-catalogue` builds (E-20 catalogue block, E-18 scope)
+
+Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-catalogue` » (K-1 to K-8). Mockups: `docs/maquettes/e20-catalogue.html` (states `#etat-apercu`, `#etat-refus`, `#etat-resultat`, `#etat-elements`, `#etat-elements-systeme`) and `docs/maquettes/e18-portee-outil.html` (`#etat-nouveau-outil`, `#etat-lot-outil`); where a mockup and this text differ, this text wins. Format: desktop and phone — below 760 px the dialog is a full-height sheet, tables become stacked rows, buttons are 44 px targets (B-70). The block appears only on a tool that **declares a catalogue**; the card of a tool without one shows no catalogue line at all (the old mockup's « Pas de catalogue » sentence is dropped).
+
+### The catalogue block of a tool's card (E-20, both tabs)
+
+- **Content**: « Catalogue du système · version 2026-11-essai · 4 coques · 8 armes » and, on the universe tab, a second line « Catalogue de l'univers · version 2026-12-orak · 1 arme » (each count is the rows **of that level**; « aucun catalogue importé » when the version is empty). Two buttons: « Importer un catalogue… » and « Voir les éléments ».
+- **Who** (the table « Roles, made explicit for the catalogue » below crosses the roles): *universe tab* — any GM of the universe imports for the universe, even if the tool is disabled; *system tab* — only the responsible (or any GM when there is none) sees « Importer un catalogue… »; a non-responsible GM sees the line, « Voir les éléments » (read only) and, under the buttons, « Seul le responsable du système importe le catalogue. »; a Player never sees the tab.
+- **Which level**: « Importer un catalogue… » on the system tab writes the system's catalogue, on the universe tab the universe's. The dialog says it in its title: « Importer le catalogue du système » / « Importer le catalogue de l'univers ».
+
+### The import dialog (structuring screen)
+
+Opened by « Importer un catalogue… »: a header with the title and « Fermer » (disabled while an application runs), a file field (« Choisir un fichier JSON ») accepting `.json`, « Annuler ». Choosing the file reads it in the browser, sends it to the preview route and shows, **before anything is written**:
+
+1. « Fichier : catalogue-essai.json · version 2026-11-essai » (the version the file declares).
+2. A summary sentence: « 11 ajoutés, 0 modifié, 1 refusé » (singular when 0 or 1, plural otherwise: « 0 modifié », « 1 modifié », « 2 modifiés »; « inchangés » likewise), then « N inchangés » only when non-zero; on the universe tab « dont N remplacent un élément du système » when non-zero.
+3. A table by nature (Nature · Ajouté · Modifié · Inchangé · Refusé), natures labelled by the tool (« Coques », « Armes »).
+4. The refusals, in a list of 50 at most, one line each: « Arme « laser-lourd », champ `masse` : nombre attendu. Cet élément n'est pas appliqué. » (key and field in monospace); beyond 50, « 237 autres refus… » and a « Voir tout » button that unfolds all of them (the server sends at most 1 000; past that the line reads « … et N autres »).
+5. « Les éléments qui ne sont plus dans le fichier restent dans le catalogue. » and, when non-zero, « N éléments du catalogue ne sont pas dans ce fichier. ».
+6. The buttons « Appliquer (11 éléments) » (the count of added plus modified; disabled when it is 0, with the line « Rien à appliquer. ») and « Annuler ».
+
+« Appliquer » sends the same file to the application route; while it runs the button reads « Application… » and the dialog cannot be closed. The result replaces the preview in the same dialog: « Catalogue appliqué · version 2026-11-essai » with the summary sentence of the *application* (« 11 ajoutés, 0 modifié, 1 refusé »), « Fermer »; the card's line refreshes (counts, version). A replay of the same file reads « 0 ajouté, 0 modifié, 11 inchangés » and the version line does not change.
+
+| State | What the user sees | Text |
+|---|---|---|
+| empty | no file chosen yet | « Choisissez un fichier de catalogue (JSON). » |
+| loading | after choosing the file, while the preview is computed | « Lecture du fichier… » (the buttons except « Annuler » disabled) |
+| invalid file | not JSON, wrong tool, no version, unknown section, over 5 000 elements | « Ce fichier n'est pas un catalogue valide. » + the cause in small text (« Ce catalogue est pour « Essai G », pas pour « Essai A ». », « Section inconnue : `canons`. », « Ce catalogue dépasse 5 000 éléments. ») + « Choisir un autre fichier »; over 8 MiB: « Ce fichier est trop volumineux (8 Mio au plus). » |
+| error | the preview or the application does not answer (network, 5xx) | « L'action n'a pas abouti. Rien n'est appliqué. » + « Réessayer », which replays the call with **the file already chosen** (kept in memory until « Fermer ») |
+| connection lost | **during the preview**: banner « Connexion perdue. », « Appliquer » disabled, the chosen file kept; **during the application**: the dialog keeps the preview, « Appliquer » enabled again | « Connexion perdue pendant l'application. Rien n'est appliqué à moitié : relancez l'aperçu pour voir l'état du catalogue. » |
+| changed meanwhile | the catalogue changed between the preview and the application (another import, another GM): the application's counts differ from the previewed ones | the result shows the application's counts under « Le catalogue a changé depuis l'aperçu : voici ce qui a été appliqué. » (the import is by key, nothing is refused, so no « Recharger » exists here) |
+| refusal | the role lost meanwhile (no longer responsible / GM) | « Vous ne pouvez plus importer ce catalogue. » (the dialog closes on « Fermer ») |
+| long content | 300 refusals; a 80-character key; a reason of 200 characters | 50 shown + « 250 autres refus… » + « Voir tout »; keys and reasons wrap, no horizontal scroll |
+
+*Criteria.*
+- Given Antor, responsible of « Système d'essai », when he chooses the 12-element file with an arme « laser-lourd » lacking `masse` on the system tab, then the dialog reads « 11 ajoutés, 0 modifié, 1 refusé » (masculine: the dialog counts elements; the older « 1 refusée » of the epic's first criterion is superseded) and « Arme « laser-lourd », champ `masse` : nombre attendu. », and the card still says « aucun catalogue importé » (nothing written).
+- Given that preview, when he presses « Appliquer (11 éléments) », then the dialog reads « Catalogue appliqué · version 2026-11-essai » and the card says « 4 coques · 7 armes »; choosing the same file again reads « 0 ajouté, 0 modifié, 11 inchangés ».
+- Given a text file that is not JSON, then the dialog reads « Ce fichier n'est pas un catalogue valide. » and « Appliquer » does not exist.
+- Given a file of 300 faulty elements, then 50 refusals are listed with « 250 autres refus… » and « Voir tout » lists the 300.
+- Given the network cut while « Appliquer » is pressed, then the dialog reads « Connexion perdue pendant l'application. Rien n'est appliqué à moitié… » and a new preview shows the real state (all or nothing).
+- Given Antor on E-18 with « Outils » chosen, when the list of offerable tools does not arrive, then « Impossible de charger les outils. » and « Réessayer » show and « Créer le jeton » is disabled; when the connection drops while he creates the token, then the dialog keeps its fields and shows « Connexion perdue. Réessayez. » with « Réessayer ».
+- Given Antor who lost the responsibility while « Voir les éléments » is open, when he masks an element, then the panel shows « Vous ne pouvez plus gérer ce catalogue. » and nothing is written.
+- Given Antor in Player mode, when he opens the « Outils » tab of E-14 or E-18 by address, then the tab is absent and the address answers « Page introuvable. ».
+- Given Mira, GM of an attached universe but not the responsible, on the system tab, then the card shows the catalogue line, « Voir les éléments » and « Seul le responsable du système importe le catalogue. », and no « Importer un catalogue… » (absent from the DOM).
+- Given Antor on « Éneria d'essai », when he imports a file whose weapon « laser » has the key of a system weapon, then the dialog says « dont 1 remplace un élément du système »; « Univers voisin » still shows the system's.
+
+### « Voir les éléments » (structuring screen: a panel under the card)
+
+A panel titled « Éléments · <tool> » (« Éléments · Essai G ») listing the **resolved** catalogue (K-2) of the tool, loaded when opened: a segmented control of the tool's natures (« Coques · 4 », « Armes · 8 » — counts of the resolved list the user is allowed to see), then rows of 50, « Afficher la suite » at the end. A row: the name, the key in monospace, the module's one-line summary (« masse 12 · coût 4 »), an origin chip and, for a universe row, a visibility chip.
+
+- **Origin chips (GM only)**: « Système », « Univers », « Remplacé pour l'univers », « Retiré de l'univers » (a withdrawn system element, shown dimmed; it appears **only** to a GM). Visibility chip on an « Univers » / « Remplacé » row: « Visible des joueurs » or « MJ seul ».
+- **Actions, universe tab, GM (not in Player mode)**: on an « Univers » or « Remplacé » row, « Masquer aux joueurs » (when visible) / « Rendre visible » (when « MJ seul »); on a « Système » row, « Retirer de cet univers »; on a « Retiré » row, « Rétablir ». A « Remplacé » row has no withdrawal (the replacement is the row). No action exists to hide a system element. Each action asks no confirmation (every one is undone by its opposite) and, while it runs, the row's button is disabled; the row then shows its new chip.
+- **System tab (and a non-responsible GM, and any read-only view)**: the same list with « Système » chips only, **no action**, and under the panel title the sentence « Lecture seule : seul le responsable importe. »; E-15 shows the system's own rows (no universe, no withdrawal).
+- **A Player** has no panel (the tab is absent); the same list is what the designer's choice lists show later, with neither chip.
+
+| State | What the user sees | Text |
+|---|---|---|
+| empty | the tool has no element | « Aucun élément dans ce catalogue. » (+ « Importer un catalogue… » for who may); a nature with none: « Aucun élément de ce type. » |
+| loading | row skeletons | « Chargement des éléments… » |
+| error | the list does not arrive | « Impossible de charger les éléments. » + « Réessayer »; a failed action: « L'action n'a pas abouti. » + the row back to its previous chip |
+| connection lost | banner, the displayed list stays, actions disabled | « Connexion perdue. » |
+| refusal | role lost meanwhile (no longer a GM, switched to Player mode) | the action answers « Vous ne pouvez plus gérer ce catalogue. » and the panel reloads as a player's read (no chip, no button); a Player has no panel (the tab is absent) and forcing the catalogue route returns 404 |
+| conflict | the element changed meanwhile (another GM, an import) | « Cet élément a changé depuis que vous l'avez ouvert. » + « Recharger » (the list reloads) |
+| long content | 300 elements; a 120-character name | 50 per page; the name wraps, the chips stay visible |
+
+*Criteria.*
+- Given the universe weapon « Lance d'essai » masked by Antor, when Léa's session reads the catalogue route (a Player has no catalogue screen in this slice; the designer that shows these lists comes with `kanevas-outils-vaisseaux`), then it is nowhere, with no count or gap; Antor reads it with « MJ seul » and « Rendre visible », and once visible Léa reads it.
+- Given the system hull « Corvette » withdrawn for « Éneria d'essai », then no one in that universe reads it, Antor sees it dimmed as « Retiré de l'univers » with « Rétablir », « Univers voisin » reads it as « Système »; « Rétablir » brings it back.
+- Given the system weapon « Laser » replaced for the universe then masked, then Léa reads neither the replacement nor the system's « Laser ».
+- Given Antor masking an element on a version another GM already changed, then he reads « Cet élément a changé depuis que vous l'avez ouvert. » and « Recharger »; he masks an element, then re-applies the file that contains it: the element stays « MJ seul ».
+- Given Mira on the system tab, then the list has « Système » chips and no button.
+- Given a connection cut, then « Connexion perdue. » shows and every action is disabled; a 120-character name wraps without hiding its chips.
+
+### E-18 — the scope of a token and tool batches
+
+- **« Nouveau jeton »** gains a **« Portée »** choice below « Durée »: « Contenu de l'univers » (default: sheets, files, campaigns… as before) or « Outils », which lists the tools of the universe's system that have a catalogue as checkboxes (« Essai G · Générateur · Module d'essai »; none checked by default; at least one is required). A tool token writes **only** those tools' data and no content; the dialog says it: « Un jeton d'outil n'écrit que le catalogue des outils cochés. Il n'ouvre ni fiches ni fichiers. » An universe whose system has no tool with a catalogue shows « Outils » disabled with « Aucun outil de ce système ne reçoit de catalogue par l'API. ». A scope cannot be changed afterwards (create another token).
+- **A token row** shows its scope after its dates: « Portée : contenu » or « Portée : Essai G » (several: « Essai G, Essai X »; a tool no longer offered keeps its key as label, and so does the title of its batches).
+- **A tool batch** (E-18's second panel) is titled with its tool — « Essai G » — instead of the date alone, and its counters read **by the tool's natures**: « Coques : 4 créés · Armes : 7 créés, 1 refusé » (the elements are masculine); its refusals expand like the others (nature, key, reason with the field: « armes · laser-lourd : champ `masse` : nombre attendu »), 200 then « … et N autres ». Content batches are unchanged.
+- **States added to the dialog** (the rest of E-18's grid stands): *the list of offerable tools is loading* — « Outils » shows « Chargement… » and « Créer le jeton » is disabled while « Outils » is chosen (« Contenu de l'univers » stays usable); *connection lost while creating the token* — the dialog keeps its fields and shows « Connexion perdue. Réessayez. » with « Réessayer »; *the list of offerable tools does not arrive* — « Impossible de charger les outils. » + « Réessayer » in the « Outils » choice, « Créer le jeton » disabled; *none offerable* (a universe without a game system such as « Essai Kanka », or a system whose tools have no catalogue) — « Outils » disabled with « Aucun outil de ce système ne reçoit de catalogue par l'API. »; *validation* — « Créer le jeton » stays disabled with the dialog's error line « Cochez au moins un outil. » while « Outils » is chosen and nothing is checked; *a tool no longer offered after the token was created* — the row keeps its scope under the tool's key and the script's import receives 401.
+- Additional criteria —
+  - Given Antor creating « Script catalogue » with scope « Outils » and « Essai G » checked, then the row reads « Portée : Essai G », and with nothing checked « Créer le jeton » is disabled with « Cochez au moins un outil. ».
+  - Given that token used to import a 12-element file with one refusal into a batch, then E-18 shows « Essai G » with « Coques : 4 créés · Armes : 7 créés, 1 refusé » and the expanded refusal.
+  - Given a content token calling the tool route, or that tool token calling a sheet route, then the script receives 401 and no batch appears.
+- Roles: unchanged — GM only, absent for players; a GM in Player mode is treated as a Player on E-18 (absent from the sidebar, « Page introuvable. » by address), like any E-18 screen; the roles table below has no E-18 line because this slice adds none.
+
+### Roles, made explicit for the catalogue
+
+| Role | System tab (E-15) | Universe tab (E-14) |
+|---|---|---|
+| Responsible (or any GM when none) | catalogue line, « Importer un catalogue… », « Voir les éléments » (read) | the GM row |
+| GM of an attached universe, not responsible | line and « Voir les éléments », **no import** (the button is absent, the sentence « Seul le responsable du système importe le catalogue. » explains) | import and every element action for the universe |
+| GM in Player mode | **tab hidden** on E-14 and E-15, as for a Player (the catalogue is read by the route as a player reads it: no masked or withdrawn element, no chip) | no panel, no import, no action: « Page introuvable. » by address |
+| Player, foreigner, instance admin without a role | tab absent, « Page introuvable. » | tab absent, « Page introuvable. » |
+
+### Journey
+
+`docs/parcours.md` carries the detail of P-17 step 3 (elements panel, tool-scoped token, batch named after the tool); P-17 step 2 (system catalogue, with its refusal wording) and step 3 (universe catalogue) are what the criteria above play, with the trial module standing for « Stars Without Number révisé » until `kanevas-outils-vaisseaux`. The two catalogues of the epic's journey are those two dialogs; the withdrawal and masking gestures are those of B-62.
+
+## Screen details for `kanevas-outils-sections-gerees`
+
+Mockup: `docs/maquettes/e09-section-geree.html` (the banner in its five states, desktop and 360 px). Decisions: `ARCHITECTURE.md`, « Detail of `kanevas-outils-sections-gerees` » (S-1 to S-8). The slice changes only the **section panel of E-9**; the rest of the sheet, the audience controls, « Monter », « Descendre » and « Retirer la section » are those of E-9.
+
+### E-9 — a managed section
+
+A managed section is a panel like the others: its title, its audience badge (« MJ seul » for the GM), then, **above the text**, a **banner** of one line (wrapping on a phone) and the content. There is **never an editor**: no « Modifier », for the GM either, and the section's audience controls stay (the audience is the GM's, the content is the tool's). The content is the rendered text version (AD-95); when the tool has a display component for this section (`geree.composant`), the component replaces the text, loaded only then (S-7).
+
+**Banner** — always visible, above the content, violet-tinted band (a neutral grey band when the tool is disabled). « Ouvrir dans l'outil » is a link styled as a button (it navigates); « Recalculer », « Proposer un recalcul » and « Voir la proposition » are buttons. In the code the class is `.bandeau-gere`: `.bandeau` already names the page messages (connection lost, Player mode). Its parts (the mockup tints the band in the violet of the tool badges and carries no badge of its own; the frame and the legend « Composant de l'outil » around the component are mockup annotations: the product draws no frame or legend of its own, the component draws itself):
+
+- **Name**: « Générée par <libellé de l'outil> », a link to the tool's entry (`geree.lien`) when the reader can open the tool; « Générée par un outil » (no link) when the tool exists but is not visible to the reader's role; **« Outil désactivé »** (no name, no link) when the tool is disabled or unknown.
+- **State**, to the right of the name, when the tool is open to the reader: nothing when up to date; **« Calculée avec d'anciens réglages. »** (amber, `role="status"`) when stale. The text and `version` have not moved.
+- **Actions** (buttons on the banner's row): « Ouvrir dans l'outil » (GM outside Player mode, and the section's author); « Recalculer » when stale, of type `geste`, for who has the tool's usage and the right to write the section; for a `proposition` section: « Voir la proposition » (the GM who requested it; leads to the proposal on E-12) or « Proposer un recalcul » (GM without pending proposal). Nothing else.
+
+| Who | Sees |
+|---|---|
+| GM (outside Player mode), tool open to them | banner, state, « Ouvrir dans l'outil »; when stale: « Recalculer » (type `geste`) or « Proposer un recalcul » / « Voir la proposition » (type `proposition`), if the tool's usage allows it |
+| GM in Player mode | what Léa would see; no action (absent from the DOM) |
+| Author (player) who can open the tool | banner, state, « Ouvrir dans l'outil »; « Recalculer » only with the tool's usage and « L'auteur l'écrit » |
+| Player who is not the author | banner and state only, no action (even with the usage: the right to write the section is also needed) |
+| Author or player without the tool's usage | banner and state; « Ouvrir dans l'outil » for the author; no « Recalculer » (Essai G's usage is GM only) |
+| Reader whose role cannot see the tool (enabled but hidden from them) | « Générée par un outil », no link, no state, **no action, « Ouvrir dans l'outil » included, even for the author** |
+| Tool disabled, for everyone (the GM too) | « Outil désactivé », the text, no action |
+| A reader of a GM-only managed section | nothing: the section does not exist for them (no title, no banner) |
+| Account without a role | « Page introuvable. » as for any sheet |
+| A GM who did not request the pending proposal | does not see it; « Proposer un recalcul » is offered if the section is stale |
+
+*Hidden versus refused*: an action the role cannot take is **absent from the DOM**; the server refuses it anyway (`refuse`, or `introuvable` when the reader cannot see the section).
+
+| State | Text / behaviour |
+|---|---|
+| up to date | banner with the name only |
+| stale | « Calculée avec d'anciens réglages. » + the action of the role; the text stays, nothing rewritten (AD-128) |
+| recalculating | the button reads « Recalcul… », disabled; the text stays until the answer; focus stays on the button |
+| recalculated | the text and the state update in place; the banner reads the name only; a polite live region says « Section recalculée. » |
+| proposal filed | « Voir la proposition » replaces « Proposer un recalcul »; the text is unchanged until the proposal is applied (E-12) |
+| tool disabled | « Outil désactivé »; the text version only; no action; no regeneration |
+| error | under the banner, « Le recalcul n'a pas abouti. Réessayez. » (`role="alert"`), the button back; the text unchanged |
+| conflict | « La section a changé depuis que vous l'avez ouverte. Rechargez-la pour voir la nouvelle version. » with « Recharger la section » (the words of the other sections) |
+| usage lost | « Vous ne pouvez plus recalculer cette section. », the button removed |
+| offline | « Connexion perdue. », « Recalculer » and « Proposer un recalcul » disabled |
+| component unavailable | the text version, with « Mise en forme indisponible — version texte affichée. » |
+| long content | the text scrolls with the page like any section (up to 100 000 characters); a tool label of 80 characters wraps inside the banner (no truncation); from 760 px down the banner is one column, the buttons below its text, full width, 44 px high (360 px is the checked width) |
+| loading the component | the text version shows at once, in place; the component replaces it when loaded (no empty frame, no layout jump larger than the component) |
+| error reading the sheet | the existing E-9 error (« Impossible de charger cette fiche. » with « Réessayer »); the banner is part of the section view and is never shown alone |
+| offline, reading | the page already loaded stays readable; banner actions disabled; the stale state shown may be out of date until the connection returns |
+| very wide or tall component | it scrolls inside its own area (horizontal and vertical), never widening the page; the banner stays above it |
+| empty text | not a state: a managed write refuses an empty text (`invalide`), so a managed section always has text |
+| proposal already pending by another GM | « Proposer un recalcul » is offered to a GM who has none of their own: proposals are per requester (AD-79), the other GM's is invisible to them |
+
+**Accessibility**: the banner is a `<div role="group" aria-label="Section gérée par un outil">`; the state is `role="status"`; the name link and the buttons are reached by keyboard in that order, before the content; the amber of the stale state is never the only signal (the words carry it).
+
+**Order of the section list on E-9 in an edit**: unchanged. Other sections of the sheet remain editable beside a managed one (a sheet mixes both, B-66).
+
+### E-12 — a proposal that recalculates
+
+The proposal screen shows, for a proposal with `source = 'recalcul'` (no report), the line « Recalcul proposé après un changement de réglage — <libellé de l'outil> » where a report proposal shows « Depuis le compte-rendu … », then the same side-by-side view and « Appliquer » / « Ignorer ». « Appliquer » on a disabled tool gives « Introuvable. » (the proposal stays). Applying updates the text and the banner's source.
+
+### Criteria
+
+- Given a managed section, when Antor or Léa sends `PUT …/contenu`, then `refuse` with `code: 'section_geree'`, whatever the role.
+- Given Léa reading « Vaisseau d'essai », « Caractéristiques » shows « Générée par le générateur d'essai » and no « Modifier »; her view carries no source.
+- Given Antor changing « Marge d'essai », when Léa reloads, then « Calculée avec d'anciens réglages. » and the same text; Antor's « Recalculer » updates the text, and the state disappears.
+- Given the generator disabled, then « Outil désactivé » and the text; a write is `introuvable`.
+- Given a `proposition` section and Antor changing the setting, then « Voir la proposition » appears for Antor only; « Ignorer » leaves the text, « Appliquer » replaces it.
+- Given 360 px width, the banner wraps and no action is cut off.
+- Given Antor clicking « Recalculer », when the answer is pending, then the button reads « Recalcul… » disabled and the text is unchanged; when it arrives, the new text shows and « Section recalculée. » is announced.
+- Given the recalculation answering an error, then « Le recalcul n'a pas abouti. Réessayez. » shows under the banner and the text is unchanged.
+- Given another GM having changed the section meanwhile, when Antor recalculates, then « La section a changé depuis que vous l'avez ouverte… » with « Recharger la section ».
+- Given Antor's usage removed meanwhile, when he clicks « Recalculer », then « Vous ne pouvez plus recalculer cette section. » and the button disappears.
+- Given the connection lost, then « Connexion perdue. » and the recalculation buttons are disabled.
+- Given the component failing to load, then the text version and « Mise en forme indisponible — version texte affichée. ».
+- Given Antor having filed a proposal, then « Voir la proposition » replaces « Proposer un recalcul » and the text is unchanged.
+- Given the tool disabled, then « Outil désactivé » and no action for the GM either.
+- Given a tool enabled but hidden from players, then Léa reads « Générée par un outil » with no link, no state and no action.
+- Given a component wider than the column, then it scrolls inside its area and the page does not widen.
+- Given a failed sheet load, then « Impossible de charger cette fiche. » and no banner alone.
+- Given the component still loading, then the text version shows in place and the component replaces it when loaded.
+- Given the connection lost while reading, then the loaded page stays readable and the actions are disabled.
+- Given a tool label of 80 characters, then it wraps inside the banner, untruncated.
+- Given Mira, a GM who did not file the pending proposal, then she does not see it and « Proposer un recalcul » is offered if the section is stale.
+- Given Roxane, a player who is not the author, then she reads the banner and state and has no action, the tool's usage notwithstanding.
+- Given a GM-only managed section, Léa sees neither its title nor its banner.
+- Given Antor in Player mode, then no banner action is in the DOM.
 
 ## Screen details for `kanevas-scenarios`
 
@@ -3383,9 +4124,291 @@ this text is authoritative where they differ.
   P-4 ; E-3 by P-3 ; E-12 by P-3. Covered.
 - Each role has its column: GM and player above ; instance admin: nothing new. Covered.
 
+## Screen details for `kanevas-fiches-liees`
+
+> Decisions of Monsieur, 2026-10-25 (B-63 to B-69, AD-130 to AD-134 and AD-136). No new screen: E-9 (the
+> « Relier » form, a block « Fiches liées », the dead mark), E-8 and E-17 (a mark, two filters, an
+> advanced mode), E-11 (labels). New text in English (canon); user-facing labels French. Same six
+> states and common texts as the other screens.
+>
+> **Built so far** (`kanevas-fiches-liees-natures`): the « Relier » form (nature, qualifier), the relation line, the
+> E-11 labels and « Familles ». The block « Fiches liées » (slice `-bloc`), the advanced mode of E-17, the
+> filters and the dead mark are built (sections below).
+
+**Format.** Web, desktop and phone, as the rest of Kanevas.
+
+**Information architecture.** Two notions for the user: a **relation** now says *what* it is
+(its nature: « se situe à », « membre de », « détient »…) and *how* (its qualifier,
+free); and the **linked sheets** of a sheet — what points to it by a nature, read backwards. The
+vocabulary: « nature » for the finite kind, « qualificatif » for the free text (never « type »,
+which names the type of sheet), « Fiches liées » for the block, « sous-lieux compris » for the
+aggregation through the tree, « vivant » / « mort » for the mark.
+
+### The natures (AD-136)
+
+The product's list, in code like the types (decision of Monsieur, 2026-10-25: these five to
+start — « dirige » was set aside, « dirige » is a qualifier of « membre de » ; a nature is added by a
+line, never removed once used) :
+
+| Nature (key) | Read from the source | Read from the target | Source types → target types |
+|---|---|---|---|
+| `se_situe` | se situe à | s'y trouvent | personnage, créature, objet, faction, famille, vaisseau → lieu |
+| `membre` | membre de | membres | personnage, créature → faction, famille |
+| `detient` | détient | détenu par | personnage, faction, famille, lieu → objet, vaisseau |
+| `allie` *(symmetric)* | allié de | allié de | faction, famille, personnage ↔ faction, famille, personnage |
+| `ennemi` *(symmetric)* | ennemi de | ennemi de | faction, famille, personnage ↔ faction, famille, personnage |
+
+A **symmetric** nature reads the same from both sides and is stored once, on the side that
+entered it: both sheets list the other in « Fiches liées », under the section's audience of the
+side that holds it (AD-136 (3)).
+
+A relation without nature is « sans nature » (free, as today). The place-in-place relation is the
+tree, never a nature (« se situe » is not offered for lieu → lieu). Aventures (`kanevas-scenarios`)
+take no nature in this epic (reopened with the first need): their « Relier » form has « Qualificatif » alone, required, and « Type de fiche » lists every enabled type.
+
+### E-9 — « Relier à une fiche », with a nature
+
+The form of the Relations block (`kanevas-relier-chercher`) gains a first step: **« Nature »**, a
+list of the natures whose source types include this sheet's type, read from the source, plus
+« Sans nature » (the first nature is preselected; « Sans nature » alone when the list is empty, last otherwise); choosing a nature restricts
+« Type de fiche » to the nature's target types (the select shows them only); then the sheet
+picker as today; then **« Qualificatif »** (1 to 80; optional with a nature, **required without one** — « Le qualificatif est obligatoire sans nature. » —, replaces the former free « Type de
+relation » field, same place, placeholder « habite, capitaine… »). « Relier » refuses a nature
+that does not fit the pair (400 `nature_incompatible`, « Cette nature ne relie pas ces deux types
+de fiches. ») — the screen never offers it. A relation line reads « se situe à · **Port-Sel** —
+habite » (nature, target, qualifier in grey); a free relation reads its qualifier alone as today.
+The relation lines in the block and the lines of « Fiches liées » show the « gone » mark on a
+target that carries it (B-67). Nothing changes for the audience: the relation belongs to its
+section.
+
+**The form, state by state** (slice `kanevas-fiches-liees-natures`).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| loading | the list of natures loads with the types: « Chargement… » in place of the « Nature » field | — |
+| error | « Impossible de charger les natures. » with « Réessayer »; the form stays usable with « Sans nature » alone | « Réessayer », relier sans nature |
+| empty | a sheet whose type is the source of no nature (événement, quête, race, savoir…): the « Nature » field is not shown, the form is the former one (qualifier required) | relier sans nature |
+| connection lost | the banner; « Relier » disabled, the entries stay | read |
+| refused | « Le qualificatif est obligatoire sans nature. » (checked by the screen before sending, and by the server: 400 `invalide`; more than 80 characters: « Erreur : 80 caractères au plus. »); « Relier » refused by the server (`relation_existante`, `limite_relations`, `nature_incompatible`): « Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. » (`auto_relation`), « Cette section porte déjà 100 relations. », « Cette nature ne relie pas ces deux types de fiches. », the entries stay | corriger |
+| vide de recherche | the sheet picker without a result: « Aucune fiche pour cette recherche. » (« Aucune fiche de ce type. » when the type has none), « Relier » stays disabled | changer de type ou de recherche |
+| long content | a 80-character qualifier wraps in the line; on the graph the label is cut at 40 characters with an ellipsis, whole in the tooltip | same |
+
+Changing the nature after a sheet was picked keeps the pick if its type still fits, else empties it.
+The error texts and the accessible names of the block say « qualificatif » and « relation », never
+« type de relation »; the line reads « se situe à · Port-Sel — habite » where the former text read
+« membre de → Lames Grises » (the older criteria are read that way). A symmetric nature (« allié de »)
+entered on one sheet is listed by that sheet's section, and by « Fiches liées » on the other side (`kanevas-fiches-liees-bloc`); the same fact entered from the other side with the same qualifier is refused as
+`relation_existante` (« Cette relation existe déjà. », the other side holding it). Roles: the GM outside player mode relates; a player, and the GM in player mode,
+never see « Relier », the « Nature » field or « Nouvelle famille » (hidden); the list « Familles »
+is read like any list of E-8, empty state « Aucune famille pour l’instant. » with « Nouvelle famille » for the GM.
+
+*Criteria.* Given Antor, GM, on « Dame Ombeline de Val-Fortin », when he links « se
+situe à » → Port-Sel with « habite », then the line reads « se situe à · Port-Sel — habite »; when he
+links « Sans nature » without a qualifier, then « Le qualificatif est obligatoire sans nature. » and nothing
+is written. Given the map « Carte de la côte » (E-11), when Antor opens it, then the link
+from Aldric to Port-Sel is labelled « se situe à — habite » and his free link « maître de port ».
+
+### E-9 — the block « Fiches liées » (B-64, AD-131)
+
+On every sheet whose type is the target of at least one nature, a sheet block placed **after « Contient » and before**
+« Mentionnée dans » (a row with a grey label like theirs, not a framed panel; registry of the sheet blocks by type, AD-124): one group per nature read
+backwards, in the natures' order, each with its counts by type (« S'y trouvent : Personnages (12),
+Créatures (3) ») — counts of what the reader reads —, folded beyond five lines per group
+(« Afficher les 12 »), each line the card line of E-8 (vignette, title, badge, sub-type, the dead
+mark) and the qualifier in grey; on a **place**, a toggle **« sous-lieux compris »** (off by default,
+remembered per browser) adds the sheets linked to its descendants in the tree (bounded by the
+tree's depth, AD-130), each line then saying its place in grey (« — Les Docks »); the mock-up also draws a grey line naming the sub-places read, which is not built; a group has a
+link **« Chercher parmi »** to E-17 with the filters pre-filled (lié à, nature, sous-lieux). A group
+with nothing readable is absent; the block is absent when every group is. « Mentionnée dans »
+keeps the links and the free relations only.
+
+**Block, not side panel** (decision of Monsieur, 2026-10-25: « on commence par un bloc et on
+verra à l'usage »). Kanka shows the linked entities in a right-hand panel; here a block of the
+sheet, like « Contient » and « Mentionnée dans » — one place to read a sheet, the same on a phone,
+the charte's folding and counts. A side panel on desktop (≥ 1200 px) that folds into this block
+stays a possible evolution, drawn as the state `#etat-volet` of `e09-lieu-liees.html`; it is not
+built.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| empty | the route gives, per group, the totals with and without descendants (AD-131) : nothing readable either way, the block is absent ; nothing at the place's own level but something below, the block shows with « sous-lieux compris » checked and disabled, and a line « Rien à ce niveau ; N fiches dans ses sous-lieux. » | — |
+| loading | « Chargement… » in the block, the sheet readable; it also shows while the universe's list of types is still loading, so that no group is drawn under the raw type (« personnage (2) ») — if that list fails, the groups show with the raw type | — |
+| error | « Impossible de charger les fiches liées. » with « Réessayer », the rest of the sheet readable | « Réessayer » |
+| connection lost | the banner of the other blocks (the text of the connection-lost state above, B-29); the loaded content stays readable, the toggle and « Afficher les 12 » (which ask the server) are disabled | read |
+| refused | a player: only the relations whose section and source sheet he reads, counts included; the block is absent (no trace) when nothing is readable; the toggle is shown to every role on a place; in player mode the GM sees the same | — |
+| rafraîchissement | after the toggle or « Afficher les N »: the previous content stays, dimmed, controls disabled; a failed re-read keeps it, the toggle back in the state the shown content answers (not the one just clicked), and shows « Impossible de charger les fiches liées. » with « Réessayer » | « Réessayer » |
+| long content | a place with 300 characters: « Personnages (300) », five shown, « Afficher les 300 » pages by 50 (the button then reads « Afficher les N suivants », N the lines left) ; a depth of 50 sub-places: the toggle says « sous-lieux compris (50 niveaux au plus) » | same |
+
+*Criteria (states).* Given « Port-Sel » loading, then « Chargement… » in the block and the rest of the sheet readable. Given the route failing, then « Impossible de charger les fiches liées. » and « Réessayer » reads it again. Given the connection lost, then the banner, the loaded content readable, the toggle and « Afficher les 12 » disabled. Given a re-read that fails after a click on the toggle, then the previous content stays, the checkbox goes back to its previous state, and « Impossible de charger les fiches liées. » with « Réessayer ». Given Léa on a place of which nothing is readable to her, neither at its own level nor below, then the block is absent, without trace. Given 50 levels of sub-places, then the toggle says « sous-lieux compris (50 niveaux au plus) ». Given Antor (GM), a place with no relation at its own level and a single readable sheet in its sub-places, then « Rien à ce niveau ; 1 fiche dans ses sous-lieux. », the checkbox checked and disabled. Given Antor on « Les Sphères » (nothing at its own level, Port-Sel below), then the toggle is checked and disabled with « Rien à ce niveau ; 4 fiches dans ses sous-lieux. » (Aldric, « le Prieur masqué », Suie, « Le Kraken des Cales »); Léa cannot read « Les Sphères » (GM only), the block does not exist for her there. Given « Port-Sel » and a click on the toggle or on « Afficher les 12 » whose re-read is under way, then the previous content stays, dimmed, the toggle and « Afficher les 12 » disabled; if the re-read of « Afficher les 12 » fails, then the five previous lines stay, with « Impossible de charger les fiches liées. » and « Réessayer ». Given a group of 300 sheets, then « Personnages (300) », five lines, « Afficher les 300 » by pages of 50. Given the GM in player mode on « Port-Sel », then he reads like Léa. Given an 80-character qualifier on a phone (360 px), then the line wraps and the whole text is in the tooltip.
+
+*Criteria.* Given Antor, GM, and « Port-Sel » where « Maître Aldric » and « Le Prieur masqué »
+are located, when he opens the sheet, then « Fiches liées » says « S'y trouvent : Personnages (2) »
+with the two cards; when he ticks « sous-lieux compris », then « Suie » (located at the Docks,
+in Port-Sel) is added with « — Les Docks », and « Le Kraken des Cales » (Créatures (1), « — La Taverne du Kraken ») on its own type line of the same group. Given Léa, Player, when she opens
+« Port-Sel », then she reads « Personnages (1) »: Maître Aldric; « Le Prieur masqué », whose relation is
+in « Secret — MJ seul », is neither named nor counted. Given Antor on « La Guilde des
+Brumes », when he opens the sheet, then « Membres : Personnages (2) » shows « Maître Aldric —
+trésorier » and « Dame Ombeline de Val-Fortin — dirige »; « Dirige » is not a nature: Aldric « membre de » the Guilde with the qualifier « trésorier », Ombeline « membre de » with « dirige ». Given the family « Les Corvalis »
+(type Famille), when Antor opens its sheet, then « Membres : Personnages (2) » shows « Bran
+Corvalis — aîné » and « Dame Ombeline de Val-Fortin — veuve » (Bran carries the « mort » mark once
+the gesture of « Marquer mort » is played, not before).
+
+### E-17 — the advanced search (B-65, AD-130)
+
+Under the field and the two filter rows, a disclosure **« Recherche avancée »** (open when the
+address carries one of its parameters): **« Lié à »** (a sheet picker, the E-8 list as in
+« Relier » ; a chip « Port-Sel ✕ » once chosen), **« Par »** (the natures whose target types include
+the chosen sheet's type, read backwards: « s'y trouvent », « membres », « détenu par »…, the symmetric ones
+whichever side holds them, plus « toute relation » by default), **« sous-lieux compris »** (shown when the chosen sheet is a place), and the « gone » filter of the type (the three words of the type's row in the table below — « Vivants / Morts / Tous » for Personnage, « Vivantes / Mortes / Toutes » for Créature, « Intacts / Détruits / Tous » for a lieu…, shown when the type filter is one that carries the mark). Address :
+`&lie=<id>&nature=<key>&descendants=1&etat=la|disparu`. The results are the E-17 list (the row of E-8 with its aliases and labels), same
+order, same rights (a relation counts only if its section, the sheet that holds it and the sheet it points to are all readable by the
+searcher: a hidden sub-place such as « Le Repaire » does not count for Léa; in player mode, as a player). « sous-lieux compris » descends only through sheets of the same type as the chosen one (a descendant of another type is ignored). With « Lié à » set, the words become optional (the search starts with the filters alone, as a label does today ; the field reads « Cherchez un nom, un alias ou un mot — facultatif avec « Lié à ». » and E-17 has no « Chercher » button). With « sous-lieux compris », a row found through a sub-place says it in grey under the title (« Les Docks » for Suie): its `via`, the place the relation points to — never an intermediate place. The text is authoritative; the mockup shows the layout, minus the nature sub-line (« se situe à — habite », which belongs to `-bloc`: this list shows only the grey `via`) ; the « gone » filter it draws (« Vivants / Morts », `etat=`) is delivered by `kanevas-fiches-liees-disparu`, not by the slice that builds this volet, and its address line is the browser's, not a component. « Chercher parmi » from a « Fiches liées »
+group opens E-17 so pre-filled.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| empty | « Aucune fiche liée à « Port-Sel » pour ces critères. » — with « Lié à » set this text wins over « Aucune fiche ne correspond. », words or not ; without « Lié à » and without words: E-17 asks for a word, as today | retirer un filtre |
+| loading | as E-17 (the previous results stay, dimmed, until the new ones arrive) ; the picker shows « Chargement… » | — |
+| error | as E-17 ; a failed picker call reads « Impossible de charger les fiches. » inside the picker | « Réessayer » |
+| connection lost | as E-17 ; the picker disabled, « Hors connexion » in its field | read |
+| `nature` / `descendants` that do not fit the chosen sheet (a nature whose target types exclude it, `sous-lieux` on a person) | the address is cleaned by `replace` and the list runs without them | — |
+| empty picker | « Aucune fiche. » under the field when the typed words match no sheet the caller reads | edit the input |
+| read error of the sheet or the natures | the chip reads « Impossible de charger la fiche. », or « Par » reads « Impossible de charger les natures. », each with « Réessayer » ; the list still runs | « Réessayer » |
+| refused | a player or player mode: the sheet picker lists what he reads ; `?lie=` on a sheet the caller does not read (a player, **or the GM** on a deleted sheet or one of another universe): the chip reads « Fiche introuvable » (✕ kept) and the search still runs with it: the API answers an empty page, the list reads « Aucune fiche liée pour ces critères. » ; « Par » then offers « toute relation » only and « sous-lieux compris » is hidden | — |
+| long content | a tree deeper than 50 levels is searched down to the 50th, without a word about it ; « Par » holds five natures at most ; the filters wrap on two rows under 760 px ; a picked title of 120 characters is cut with an ellipsis in the chip and in the empty sentence, whole in the chip's tooltip | same |
+
+*Criteria.* Given Antor, when he searches « lié à Port-Sel », « s'y trouvent », sub-places
+included, type Personnage, then the list holds Aldric, the Prieur and Suie; with « Vivants » *(`kanevas-fiches-liees-disparu`, not this slice)*, the
+Prieur (dead) disappears. Given Léa, when she opens the same address, then the list holds
+Aldric and Suie only, and the mode switch is absent.
+
+### E-8, E-9, E-17 — the « gone » mark (B-67, AD-132)
+
+One mark, `disparu`, carried by the types that can be gone, each with its word (decision of
+Monsieur, 2026-10-25) :
+
+| Type | Word (badge) | Menu entry | Filter | Glyph |
+|---|---|---|---|---|
+| personnage | Mort | Marquer mort · Marquer vivant | Vivants / Morts / Tous | `skull` |
+| créature | Morte | Marquer morte · Marquer vivante | Vivantes / Mortes / Toutes | `skull` |
+| famille | Éteinte | Marquer éteinte · Marquer vivante | Vivantes / Éteintes / Toutes | `skull` |
+| faction | Détruite | Marquer détruite · Marquer active | Actives / Détruites / Toutes | `shield-off` |
+| lieu, objet, vaisseau | Détruit | Marquer détruit · Marquer intact | Intacts / Détruits / Tous | `flame` |
+
+The other types (événement, quête, savoir, récit, règle, note, compte-rendu, aventure) carry no
+mark. The grammatical gender of the word follows the type's label (« Détruite » for a faction,
+« Détruit » for a lieu), never the sheet's content.
+
+- **Header of E-9**: for the GM in GM mode, the menu entry of the table in the « ⋯ » menu of the
+  header (the reverse entry when gone), written whole; the header then carries the badge with the
+  word (`Pastille` neutral, the type's glyph) next to the type badge, and the illustration takes the
+  mark below. A player sees the badge, never the entry.
+- **The mark on the image**: on the vignette of a card (E-8, E-17) and on the illustration of E-9, a sober mark — the image desaturated at 60 %
+  and the type's glyph in a small round chip at the bottom-left of the frame; on the drawn fallback,
+  the glyph alone. Never a cross over a face, never a red overlay (the charte's restraint). Built today: « Contient » and the
+  relation lines are text lines with no image, so they carry no mark; « Fiches liées » renders its lines with the marked component.
+- **Filter** of the table (« Tous » by default) on E-8 for the types that carry the mark, next to
+  « Sous-type », kept in the address (`?etat=la|disparu` — the two values are the same for every
+  type, the words differ); a filtered state renders the grid; empty: « Aucun personnage mort. »,
+  « Aucun lieu détruit. »… with « Voir tous les … ».
+- **Import**: `disparu: true|false` on a sheet of a type that carries the mark (default false); refused with `champ_inconnu` on another type.
+
+**Values and words.** `?etat=la|disparu` : `la` is « there » (alive, intact, active : the mark absent), `disparu`
+is the mark set ; the words of the table are what is shown, never the key. The filter is offered, for the seven
+types, on E-8 (the grid of the type) and in the advanced volet of E-17 once the chosen type carries the mark.
+Without a type, E-17 offers no filter. The mark is public : the filter and the badge are the same for a player.
+
+**States** (the gesture and the filter) :
+
+| State | What is shown |
+|---|---|
+| marking, waiting | the entry is disabled while the write is in flight, the header stays as it was ; no optimistic badge |
+| marking, done | the badge, the mark on the illustration and the reverse entry appear together, with the toast « Fiche marquée : Mort. » (the word of the type, capitalised ; « Marque retirée. » for the reverse) |
+| marking, failed | not a toast : an inline message under the header, « Impossible de modifier la fiche. Réessayez. », the sheet unchanged ; the message is `role="alert"`, stays until the next attempt or a reload, and the « ⋯ » menu is closed on click (the header shows the entry disabled while waiting) ; a network cut mid-gesture reads the same sentence (« Connexion perdue » is only shown when the browser is offline before the gesture) ; if the sheet was deleted meanwhile, « Fiche introuvable. » and the screen leaves for E-8 ; if the caller lost the GM role meanwhile, the same sentence (the write is refused, the sheet is re-read and the entry is gone) |
+| GM in player mode | the entry is absent (the mode reads the sheet as a player) |
+| offline | « ⋯ » is disabled as for every write of E-9 (« Connexion perdue ») ; a filtered list shows the generic offline state of its screen |
+| filter, loading | the grid keeps its skeleton cards under the control, which stays usable |
+| filter, no sheet of the type | the control stays (it is the type's, not the list's) and the list shows the type's usual empty state |
+| filter, load error | the control stays, the grid is replaced by the screen's generic error line with « Réessayer » ; the filter chosen is kept |
+| extreme content | a title of 120 characters is cut with an ellipsis on the card, whole in its tooltip ; the chip never covers more than the frame's corner ; the header badge keeps the word on one line (the words are short) ; a grid wholly marked is a grid of marked cards, nothing more |
+| filter, empty | « Aucun personnage mort. », « Aucune créature morte. », « Aucune faction détruite. », « Aucune famille éteinte. », « Aucun lieu détruit. », « Aucun objet détruit. », « Aucun vaisseau détruit. » (the other state reads « Aucun personnage vivant. », « Aucune créature vivante. », « Aucune faction active. », « Aucune famille vivante. », « Aucun lieu intact. », « Aucun objet intact. », « Aucun vaisseau intact. » ; on E-17, with a type and a state and nothing found, the screen's own « Aucune fiche pour ces critères. »), with « Voir tous les <pluriel du type>. » that clears `etat` |
+| mark, accessibility | the chip carries `aria-label` = the word (« Mort ») and a `title` ; the badge is text, the mark never the only carrier of the meaning |
+| mark on a fallback | the glyph of the type's mark replaces the chip : a gone character shows the skull where the live one shows the initial and the type icon ; the badge or the card's word tells which |
+
+*Criteria.* Given Antor on « Bran Corvalis » (alive in the seed, « Apparence » read by
+players), when he chooses « Marquer mort », then the header carries « Mort », the portrait takes the
+mark, and so does his card in the grid at the next read of the list; « Vivants » no longer lists him;
+Léa sees the mark on his sheet and card, but not the menu entry. Given Antor on
+« Le Phare aux Sels » (place), when he chooses « Marquer détruit », then the header carries
+« Détruit » with the flame, and « Intacts » no longer lists it; on a quest, the menu has no
+entry. Given Bran marked dead, when
+Antor chooses « Marquer vivant », then the badge and the mark disappear and « Vivants » lists him again;
+« Morts » lists the dead only; on « La Guilde des Brumes » (faction), the entry is « Marquer détruite » and the
+badge « Détruite » with `shield-off`; on « Les Corvalis » (family), « Marquer éteinte » and « Éteinte ». The mark
+shows on the Prieur's line (dead in the seed) in an E-17 « Morts » search (type Personnage); in « Contient » and
+in « Fiches liées », it comes from the same component. Given Antor
+in player mode, when he opens Bran, then the menu entry is absent. Given the PATCH fails,
+when Antor chooses « Marquer mort », then the message « Impossible de modifier la fiche. Réessayez. » appears under
+the header and the sheet has neither badge nor mark. Given the places grid with no destroyed place, when Antor chooses
+« Détruits », then the list says « Aucun lieu détruit. » with « Voir tous les lieux. »; when a read of the filter fails,
+the control stays and the grid shows the error line with « Réessayer ». A 120-character title is cut on the
+marked card, whole in the tooltip.
+
+### E-11 and « Mentionnée dans » (B-69)
+
+The graph labels a link with the nature's label read from the source (« se situe à ») and the
+qualifier after a dash; a free relation keeps its qualifier as label. « Mentionnée dans » drops the
+natured relations (they are in « Fiches liées ») and keeps the links and the free relations.
+
+**Where a graph label sits** (one rule, the same on desktop and at 390 px, light and dark):
+- Each link is drawn once, as its own stroke. Parallel links between the same two nodes are
+  spread by a perpendicular step (18 px, tightened to 26/(n−1) px from three links on a pair, so that
+  every stroke still meets both discs) around the node axis, **once**: the offset moves the
+  stroke, and the label is placed from the offset stroke, never offset a second time.
+- A label starts centred on the middle of **its own** stroke, just above it, on a halo of the
+  background colour, so the stroke never crosses the text. It slides along that stroke (steps of 2 %,
+  up to 40 % of its length) until its box meets no pill and no other label; failing that, it moves off
+  the stroke in steps of 20 px, trying either side of it (the other side included, with the full slide). The rendered test requires it within 16 px of its
+  nearest stroke.
+- **Stroke geometry** (same at 390 px): a stroke runs from the **edge** of its source node's disc to the
+  edge of its target node's disc, on the line parallel to the node axis shifted by the step above
+  (the ends are the intersections of that parallel with the two discs, not the disc centres shifted);
+  the arrowhead touches the target disc without covering it. With a step of 18 px and a disc radius of
+  15 px two parallel strokes both meet both discs. A node's pill sits below or above its disc, whichever
+  is crossed by fewer strokes (measured on the real pill boxes); if both are crossed, the pill stays
+  crossed — the case is not met on the seeded map.
+- A label overlaps no node pill and no other label. When the middle of the stroke is covered by a
+  pill, the label slides along its stroke as said above.
+- Testable on the rendered boxes: for the two Aldric–Port-Sel links, the label's box is within 16 px of its nearest stroke,
+  no stroke segment crosses a label box, and no label box meets a pill box or another
+  label box — checked at 1440 px and at 390 px on « Carte de la côte » (the two Aldric–Port-Sel
+  links).
+
+**The « Relier » picker list** (E-9): the bounded list (max 176 px, scrolling) is a **complete frame** —
+a visible border on all four sides, rounded bottom corners, as in `docs/maquettes/e09-fiche.html`;
+a row clipped by the frame's bottom edge is allowed — it is the scrolling cue, and the height is not rounded to whole rows — and the selected row is highlighted. The gap between « Type de
+fiche » and the search field is the form's field gap (`var(--e-2)`), with no extra margin on the search field.
+Code: `frontend/src/ecrans/fiche/blocs/relations.tsx` and `relations.css`; the graph is `frontend/src/ecrans/carte/cadre-graphe.tsx`.
+
+### Mockups
+
+`docs/maquettes/e09-lieu-liees.html` — « Port-Sel » for the GM: the block « Fiches liées » with
+« S'y trouvent » folded, « sous-lieux compris », a dead mark on a line; `#etat-volet` shows the
+side-panel alternative; `#etat-joueur` what Léa sees. `docs/maquettes/e17-recherche-avancee.html`
+— E-17 with the disclosure open, « Port-Sel » chosen, « s'y trouvent », sous-lieux compris,
+« Vivants ». The E-9 « Relier » form reuses `e09-fiche.html`; the mark itself (header badge, « ⋯ » entry, desaturated
+illustration, E-8 filter, the states below) is `e09-marque-disparu.html`; this text is authoritative.
+
+### Closure
+
+- Each need has a screen: B-63 → E-9 (Relier) ; B-64 → E-9 (Fiches liées) ; B-65 → E-17 ; B-66 →
+  E-8/E-14 (the type's list) ; B-67 → E-9, E-8, E-17 ; B-68 → the import API (E-18 lists the lots) ;
+  B-69 → E-11, E-9. Holds.
+- Each screen is reached by a journey: P-17 (E-9, E-17), P-3 step 4 (Relier), P-6 step 6 (Léa). Holds.
+- Each role has its column: GM and player above ; instance admin: nothing new. Holds.
 ## Screens of `kanevas-synchro` (framing, 2026-11-01)
 
-The epic is an API first (B-80 to B-87, read and written by a script, P-22); its human gestures
+The epic is an API first (B-105 to B-112, read and written by a script, P-22); its human gestures
 land on existing screens and on two new ones (E-23, E-24, below), in the product's visual direction
 (`docs/charte.md`).
 The slices draw them; nothing here invents a component.
@@ -3397,61 +4420,172 @@ The slices draw them; nothing here invents a component.
   fiche… » replaces it in one gesture. An attached sheet the
   reader cannot read is not named (AD-38): the line is absent for him.
 - Under the frame, the block **« Texte »**: rendered Markdown with its GM blocks (the shared renderer,
-  AD-96); GM: « Modifier » opens the section editor without the `[[` list — preview and GM block
+  AD-96); GM: « Modifier » and « Vider » (small neutral buttons with an icon) sit at the right of the block's title; « Modifier » opens the section editor without the `[[` list — preview and GM block
   only (links are not active in a map's text, AD-142) —, 5,000 characters at most (« 5 000 caractères
   au plus. »); « Vider » asks no confirmation and can be undone by « Modifier »; empty: GM « Ajouter
   un texte », player nothing. Two GMs saving the same version: the second sees « Le texte a changé
   depuis votre lecture. » with « Recharger » (409 `carte_modifiee`, AD-142), his draft kept.
-- GM, imported map: its origin key under the title, GM-only, as on E-9 (B-50).
-- States: text save failed → « Impossible d'enregistrer le texte. » with « Réessayer », the draft
-  kept; background over the limit → « Image trop lourde : <N> Mo au plus. » (N the current setting).
+- GM, imported map: its origin key under the title, GM-only, as on E-9 (B-50); the mock-up's « · MJ seul »
+  suffix, breadcrumb and reduced sidebar are the usual frame of E-11, not new elements.
+- A player sees « Rattachée à » only if he reads the sheet; a GM in player mode sees what a player sees
+  (no gesture: the buttons « Rattacher à une fiche… », « Changer de fiche… », « Détacher », « Modifier »,
+  « Ajouter un texte » and « Vider » are **hidden**, not refused). A GM whose attached sheet was deleted sees
+  « Rattacher à une fiche… » alone (the deletion detaches the map, AD-142). A text made only of GM blocks is
+  an empty text for a player: no « Texte » block.
+- « Vider » empties the text at once: the GM then sees « Ajouter un texte »; the previous text is not
+  restored (no history of a map's text, nothing promised).
+- States (the shared patterns of this document for the loading and the lost connection):
+
+| Where | State | What is read | Gestures |
+|---|---|---|---|
+| Text | loading | « Chargement… » in the block | — |
+| Text | save failed | « Impossible d'enregistrer le texte. », the draft kept | « Réessayer » |
+| Text | version changed (409) | « Le texte a changé depuis votre lecture. », the draft kept | « Recharger » |
+| Text | connection lost | the banner; « Enregistrer » inactive, the draft kept | — |
+| Text | extreme | 5,000 characters: the block scrolls inside the page, no cut | — |
+| Sheet line | attach, change or detach failed | « Impossible de rattacher la carte. » under the line, nothing changed | « Réessayer » |
+| Choice window | no sheet found | « Aucune fiche trouvée. » | the search field |
+| Choice window | list failed | « Impossible de charger les fiches. » | « Réessayer », « Annuler » |
+| Sheet line | very long title | wrapped on two lines at most, ellipsis, full title in the link's `title` | — |
+| Frame | background over the limit | « Image trop lourde : <N> Mo au plus. » (N the current setting), the background unchanged | choose another image |
 
 ### E-9 Fiche — the block « Cartes »
 A sheet block (registry AD-124), after « Relations »: the maps attached to the sheet that the reader
-may read (GM: all, with « Cachée aux joueurs » on a hidden one; player: the visible ones), each a
-line « <titre> · <forme> » opening E-11. Absent when there is none for this reader.
+may read (GM: all, with « Cachée aux joueurs » — `Pastille` `sens="mj"` with the `lock` icon — on a hidden
+one; player: the visible ones; GM in player mode: as a player), each a line « <titre> · <forme> » (the form
+in words: « Carte illustrée », « Graphe ») opening E-11. Absent when there is none for this reader; no
+count of hidden ones. Loading: the block's own « Chargement… » (the sheet does not wait for it); error:
+« Impossible de charger les cartes. » with « Réessayer », the other blocks untouched; many maps: the block lists them all, scrolling inside the page (a sheet carries few maps).
 
 ### E-5 Administration — the panel « Limites »
 Under « Jeton de l'assistant »: « Taille maximale d'un fond de carte » — a number in MB (1 to 500,
 75 by default), « Enregistrer »; the note « S'applique aux prochains envois ; les fonds déjà posés
-restent. » Refusal out of range: « Entre 1 et 500 Mo. »
+restent. » Refusal out of range: « Entre 1 et 500 Mo. » Seen by the instance admin only; for anyone
+else the panel does not exist (E-5 answers « Page introuvable. »).
+
+| State | What is read | Gestures |
+|---|---|---|
+| loading | « Chargement… » in the panel, « Enregistrer » inactive | — |
+| read failed | « Impossible de charger les limites. » | « Réessayer » |
+| saved | « Limite enregistrée. » beside the button, the field shows the saved value | — |
+| save failed | « L'action n'a pas abouti. Réessayez. » under the field, the entry kept | « Enregistrer » |
+| connection lost | the banner; « Enregistrer » inactive, the entry kept | — |
+| empty / extreme | a field cannot be empty (« Entre 1 et 500 Mo. »); 500 is the largest value | — |
 
 ### E-18 Accès par API — the batch report
 The counters gain the nature **« cartes »**; a write refused by its fingerprint appears among the
 refusals with its key and « modifiée depuis la lecture ». The warnings « modifié dans Kanevas : non
 écrasé » disappear with B-48.
 
+### Components of the maps slice (`kanevas-synchro-cartes`, verdict of the design-system keeper)
+Nothing new, no token. E-5 « Limites »: `Panneau`, `Champ` (the width goes in `administration.css`,
+not inline), `Bouton` primary, the refusal an inline message, after `jeton-assistant.tsx`. E-9 « Cartes »:
+`BlocSection` and `LigneRelation` in a variant « target then type, no arrow » (added to its spec; fallback
+a plain list of links); « Cachée aux joueurs » is the `Pastille` `sens="mj"` with the `lock` icon. E-11:
+`Bouton` small for « Rattacher… / Changer de fiche… / Détacher »; the choice is a `Fenetre` around
+`ListeRecherche` (`frontend/src/ecrans/fiche/liste-recherche.tsx`); « Texte » is a `Panneau`, `Markdown`
+and `Editeur`, the GM block a `Panneau reserveMj` (not a copied style). E-18: the existing batch counter,
+one more nature.
+
 ### Cross-check
-- Each need has a screen or its script: B-80 to B-87, B-90, B-91 → the import API (E-18 shows the batches);
+- Each need has a screen or its script: B-105 to B-112, B-90, B-91 → the import API (E-18 shows the batches);
   B-88 → E-11, E-9; B-89 → E-5, E-11.
 - Each journey reaches its screens: P-22 → E-18; P-23 → E-11, E-9, E-5.
 - Each role: GM (E-11, E-9, E-18), player (E-9, E-11 reading), admin (E-5).
 
 ### E-23 Mes jetons d'API (every account) — `kanevas-synchro`
-Reached from the account menu, outside any universe; address `/compte/jetons`.
-- The list: each token with its name, expiry, last use and accesses (« Tous mes univers — lecture +
-  écriture », or « Éneria : lecture + écriture · Essai : lecture »); a token the admin changed or revoked
-  says so (« modifié par l'admin », « révoqué par l'admin »).
-- « Créer un jeton »: name (1–80), lifetime (7, 30 default, 90, 365 days), then the accesses: « Tous mes
-  univers » with a level and, under it, optional exceptions (a universe at another level or at « — »),
-  or the list of the account's universes, each « — / Lecture / Lecture + écriture ». An exception the
-  admin set is shown like the owner's and can be changed by him. The value is shown once with « Copier » and the note « Il ne sera plus affiché. ».
-- On a token: « Modifier les accès » (the same form), « Révoquer » (confirmation naming the token).
-- « Outils » (`kanevas-outils`, B-65, which this epic follows): an optional list of tools, for the
-  token as a whole; a token with tools writes only those tools' data and no content, and its line says
-  « outils : galaxie » after its accesses.
-- The note under the form: « Un jeton n'a jamais plus de droits que votre compte : là où vous êtes
-  joueur, il agit en joueur. »
-- States: none yet → « Aucun jeton. » with « Créer un jeton »; save failed → « Impossible
-  d'enregistrer. » with « Réessayer ».
+*Finished mockup*: `docs/maquettes/e23-jetons.html` (states `#etat-creer`, `#etat-liste`, `#etat-jeton-montre`,
+`#etat-modifier`, `#etat-revoquer`, `#etat-erreur`, `#etat-vide`, `#etat-perdue`). The entry
+« Mes jetons d'API » (`key-round`) is in the account menu, above « Se déconnecter » (`e01-accueil.html` draws it;
+the other mockups share the frame); the screen is outside any universe, with the bar of the home
+(« Mes univers »), address `/compte/jetons`. One line of introduction: « Un jeton permet à un script ou à un agent
+d'agir avec vos droits, par l'API ou par le serveur MCP, dans les univers que vous choisissez. » Then the panel
+« Jetons » and « Créer un jeton » (`plus`).
+- **A line** (the owner's tokens, active ones first — all of them — then revoked and expired ones up to 20 in
+  all, newest first): the name (80 characters, cut with a tooltip), under it the accesses (« **Tous mes univers** —
+  lecture + écriture · Les Cendres de Vaëlis : lecture » — the exceptions after the level —, or
+  « Lame d'Ébène : lecture · Les Cendres de Vaëlis : — » for a list; a universe the account no longer belongs to
+  keeps its entry, followed by « (plus membre) »), then « créé le … », « dernier usage il y a 3 min » or
+  « jamais utilisé », « expire le … ». A token the admin changed carries the pill « Modifié par l'admin »
+  (accent, until the owner saves the accesses again); one he revoked, the pill « Révoqué par l'admin »; a token
+  the owner revoked, « Révoqué »; an expired one, « Expiré ». « Modifier les accès » (`sliders-horizontal`) and
+  « Révoquer » (`ban`) appear on hover and focus (always visible by touch) on an active token only.
+- **« Créer un jeton »**: a box with « Nom » (1–80; « Erreur : le nom est obligatoire. »), « Durée » (7, **30**,
+  90 days, 1 an), then « Univers atteints »: a segmented choice **« Tous mes univers » / « Une liste d'univers »**
+  (the note « Tous mes univers » covers the ones joined later).
+  *« Tous mes univers »*: a « Niveau » choice (Lecture / **Lecture + écriture**), then « Exceptions »: one line per
+  universe of the account (name, role pill MJ or Joueur) with a choice **« Comme le reste » / « — » / « Lecture » /
+  « Lecture + écriture »** — only a line moved off « Comme le reste » is an exception, so a universe joined later
+  follows the level. *« Une liste »*: the same lines without « Comme le reste », **— by default**; at least one
+  universe at a level other than « — » (« Choisissez au moins un univers. » otherwise, the button stays active and
+  the message is shown under the list). The note « Un jeton n'a jamais plus de droits que votre compte : là où vous
+  êtes joueur, il agit en joueur. » Footer « Annuler » / « Créer le jeton » (« Création… », disabled, while it runs).
+  Then the same box shows the token name as a label and the value alone, monospace, with « Il ne sera plus affiché. »,
+  « Copier » (toast « Jeton copié. ») and « J'ai copié le jeton »: while the value is shown only that button closes
+  the box (neither Esc nor the veil); the line then arrives first in the list.
+- **« Modifier les accès »**: the same box titled « Modifier les accès » without name and lifetime, filled with
+  the current accesses (the admin's exceptions shown like the owner's), « Enregistrer » (toast « Accès enregistrés. »);
+  saving clears « Modifié par l'admin ». Changing the accesses does not change the value, the name or the expiry.
+- **« Révoquer »**: confirmation « Révoquer « <nom> » ? Le script ou l'agent qui l'utilise ne pourra plus rien lire ni
+  écrire. », « Révoquer le jeton » (`--danger`) / « Annuler »; toast « Jeton révoqué. ».
+- « Outils » (`kanevas-outils`, B-65, which this epic follows): an optional list of tools, for the token as a
+  whole; a token with tools writes only those tools' data and no content, and its line says « outils : galaxie »
+  after its accesses. Built here on the existing `jetons_outils` table (no new table): `POST /api/compte/jetons`
+  accepts `outils` and the list of offerable tools comes with `GET /api/compte/jetons`; the mockup does not draw it.
+  A tool token is refused 401 `jeton_invalide` on `/api/v1` (content routes).
+- The level shown on a line is the one **chosen**, not the effective one: where the account is a player, a
+  « lecture + écriture » entry still acts as reading (the note of the form says it; the 403 `lecture_seule` answers a write).
+- The mockup `e23-jetons.html` does not draw the pills « Révoqué » and « (plus membre) », the 409, « Les accès ont changé. » and the load
+  error: the text prevails.
+- Roles: every account sees and manages **its own** tokens, a player as a GM; no account's list shows another's
+  (the admin does on E-5).  A GM has no gesture on a token that reaches his universe (B-95).
+
+| State | What is seen | What can be done |
+|---|---|---|
+| empty | « Aucun jeton. » (no token at all; with only revoked or expired ones the list shows them, without this text) | « Créer un jeton » |
+| loading | skeleton of the panel | — |
+| load error | « Impossible de charger vos jetons. » | « Réessayer » |
+| save error | creation, change or revocation that fails: « Impossible d'enregistrer. » in the box, the entries kept, nothing created or changed | « Réessayer », « Annuler » |
+| changed meanwhile | the admin changed the accesses while the box « Modifier les accès » is open: « Les accès ont changé. » on saving, the box reloads with the new accesses, nothing is overwritten | « Enregistrer » again, « Annuler » |
+| connection lost | the banner; « Créer un jeton », « Modifier les accès », « Révoquer » disabled; a shown value stays until « J'ai copié le jeton » | copy |
+| permission refused | **without object**: the screen is open to any account with a session; an expired session leads to the sign-in, as every screen | — |
+| long content | a 80-character name cut with a tooltip; many exceptions: the box scrolls inside itself; more than 20 inactive tokens: the 20 latest | — |
+| revoked meanwhile | « Modifier les accès » or « Révoquer » on a token the admin revoked in the meantime: « Ce jeton est révoqué. » (409), the list reloads | « Fermer » |
+
+*Components (guardian's verdict, `docs/charte.md` « components added »)*: the list line is the new **Ligne de jeton**; the choices of the form are the new
+**Choix segmenté** and **Liste d'accès**; the value shown and the base address of E-18 are the new **Valeur copiable**; the pills are `Pastille` (new *sens* `accent`);
+the boxes are `Fenêtre` (new *large* and *locked* properties) and `BoiteDialogue`; everything else is existing (`Bouton`, `Champ`, `Menu`, `Toast`, `Bandeau`, `Panneau`, états d'écran).
 
 ### E-18 Accès par API — batches only (`kanevas-synchro`)
-The token list and its creation leave E-18 (to E-23); E-18 keeps the batches of the universe, unchanged.
+The token list and its creation leave E-18 (to E-23); E-18 keeps the batches of the universe, unchanged. The
+introduction becomes « Un script écrit dans cet univers avec vos droits, par l'API d'import. Ses jetons se
+gèrent dans « Mes jetons d'API ». » (the last words a link to E-23), the base address to copy becomes
+`https://kanevas.berard.me/api/v1/univers/<clé de l'univers>` (the former `/api/import/v1/univers/<id>` still
+answers, AD-149), and the panel « Jetons » with its boxes is removed. A lot line keeps the **name** of the token that opened it (a label of the lot, whoever owns the token and
+whether or not it is still active; nothing else of a token is shown to a GM, B-95).
+*State table of E-18 above*: every row about a token — « Aucun jeton… », « Nouveau jeton », the creation and revocation errors, the disabled « Nouveau jeton » and « Révoquer », the role message — is void; the rows kept are the batches (empty, loading, load error, long content), the banner, and « Page introuvable. » for anyone who is not a GM of the universe.
+Empty batches: « Aucun lot d'import pour l'instant. » The mockup `e18-acces-api.html` still draws the removed panel: the text prevails.
 
 ### E-5 Administration — the panel « Jetons d'API » (`kanevas-synchro`)
-Every token of the instance: name, owner, accesses, expiry, last use; filter by owner; on each
-« Modifier les accès » (the E-23 form, exceptions included) and « Révoquer » (confirmation). The owner's E-23 marks the
-token « modifié par l'admin » or « révoqué par l'admin ».
+*Mockup*: `docs/maquettes/e05-administration.html` (panels « Jetons d'API », « révoquer », « vide », « erreur »); it does not draw « Expiré », « Révoqué par l'admin », « Aucun jeton pour ce compte. » nor the 409: the text prevails.
+Full width, under « Jeton de l'assistant », visible to the instance admin only (« Page introuvable. » for anyone
+else, as the screen). A table of every token of the instance: name, owner (account), accesses (as on E-23, universe
+names written in full, « Tous les univers du compte » in place of E-23's « Tous mes univers »), expiry, last use; a filter « Propriétaire » (all, or one account); active tokens all listed, then the 20 latest revoked or expired, each with its pill « Révoqué » (the owner's), « Révoqué par l'admin » or « Expiré », and no action. On an
+active token: « Modifier les accès » (the E-23 box, exceptions included; the choices are the **owner's**
+universes) and « Révoquer » (confirmation naming the token and its owner; « Léa verra « Révoqué par l'admin » »). The value of a
+token is never shown. The owner's E-23 marks the token « Modifié par l'admin » or « Révoqué par l'admin ».
+Under 760 px each token becomes a block (name and owner, accesses, expiry and last use, then the two actions at full width) in place of the table row. States: none → « Aucun jeton sur cette instance. »; load error → « Impossible de charger les jetons. » with
+« Réessayer »; save error as E-23.
+
+| State (E-5, jetons) | What is seen | What can be done |
+|---|---|---|
+| loading | skeleton of the table | — |
+| filter without result | the chosen owner has no token: « Aucun jeton pour ce compte. » (distinct from the empty state), the filter stays | change the filter |
+| connection lost | the banner; « Modifier les accès » and « Révoquer » disabled | — |
+| long content | a 80-character name or a long list of accesses cut with a tooltip; more than 20 inactive tokens: the 20 latest | — |
+| changed meanwhile | the owner changed the accesses before the admin saved: « Les accès ont changé. » in the box, the box reloads with the new accesses, nothing of the admin's entry is applied | « Enregistrer » again, « Annuler » |
+| revoked meanwhile | the owner (or another admin) revoked it before the admin acted — on « Modifier les accès » as on « Révoquer »: « Ce jeton est révoqué. » (409) in the box, the list reloads with the pill « Révoqué » | « Fermer » |
+| permission refused | not the instance admin: « Page introuvable. » (the panel is absent) | — |
 
 ### E-24 Historique de l'univers (GM) — `kanevas-synchro`
 Address `/univers/eneria/historique`. Lines from the newest: date, contributor (account, and « via
@@ -3464,11 +4598,20 @@ next to the current one, and « Restaurer cette version » for a section (a dele
 sections as they were, read-only. Refusals: changed or deleted since the detail opened → « La fiche a changé depuis
 l'affichage. » with « Recharger »; a deleted section whose key was taken since → « Une autre section
 porte maintenant cette clé. ». Over 30 days, the
-line has no detail: « Valeur précédente non conservée (plus de 30 jours). » Lines over 90 days are gone.
+line opens a detail with no previous value: « Valeur précédente non conservée (plus de 30 jours). » Lines over 90 days are gone.
+
+*Detail of the slice `kanevas-synchro-historique`* (mock-up `maquettes/e24-historique.html`; components by the design-system keeper):
+- **Composition.** The sidebar item « Historique » (under « Univers », GM only, `items.ts`); the filters are `Champ` with `liste` (contributor, action, period), the sheet filter is a `ListeLiens` in a `Fenetre` (as E-11's search), with « Toutes les fiches » (small ghost button) when the page is filtered on a sheet; the list is the new `LigneHistorique` (charte); « Charger la suite » is a neutral button; the detail replaces the list on the same address (`?ligne=<id>`, « ← Retour à la liste »): a `Panneau` holding the `Comparaison` (charte) and, under it, « Restaurer cette version » (primary button, `rotate-ccw`), which opens the restoration confirmation (variant of `BoiteDialogue`, focus on « Annuler »); on success a `Toast` « Version restaurée » and the list reloaded with the new line on top.
+- **Refusals** are `Alerte` with « Recharger », above the button; the filters stay.
+- **States.** Empty « Aucune modification dans cette période. » (`EtatVide`); loading skeletons (`ChargementListe`); error « Impossible de charger l'historique. » with « Réessayer » (`ErreurChargement`).
+- **Roles.** GM outside player mode only; a player, or a GM in player mode, has no sidebar item and the address answers « Page introuvable. » (`PageIntrouvable`); the session API answers 404 to a non-member and 403 to a player; no count of lines (a line can reveal a GM block exists).
+- **What a line says.** `Section « <titre> » réécrite | créée | supprimée`, `Titre changé`, `Type changé`, `Fiche déplacée`, `Alias ajouté | retiré`, `Étiquette ajoutée | retirée`, `Fichier joint | retiré` (on the section's sheet), `Relation vers <cle> ajoutée | modifiée | retirée`, `Fiche créée | supprimée`; a section's text in the detail is its source Markdown, as the GM sees it, in plain text.
+- **Restorable.** A section (rewritten or deleted) and a header field (title, type, sub-type, parent, aliases, labels); shown without button: a relation, « section créée », a deleted sheet, an attached file.
+- E-9, GM menu « ⋯ »: entry « Historique » (`Menu`, icon `history`), absent for a player and in player mode; it opens E-24 with `?fiche=<id>`.
 
 ### E-9 Fiche — key and history (`kanevas-synchro`)
 - Under the title, for the GM: the key `lieu:nyx` with « Copier » and « Modifier la clé… » (a field,
-  the warning « Les liens et outils qui citent lieu:nyx ne la retrouveront plus ; l'ancienne clé
+  the warning « Les liens et outils qui citent lieu:nyx ne la retrouveront plus par cette clé ; l'ancienne clé
   continuera de mener ici. »; refused if taken: « Cette clé existe déjà dans l'univers. »; out of form: « Lettres minuscules,
   chiffres, - et _, un « : » au plus, avec au moins une lettre. »).
 - GM menu « ⋯ »: « Historique » opens E-24 filtered on the sheet.
@@ -3486,3 +4629,75 @@ moins une lettre. »).
 - P-24 → the MCP, E-9 by its address; P-25 → E-23, E-5; P-26 → E-24, E-9.
 - Roles: every account on E-23; GM on E-24, E-9 key, E-14; admin on E-5 (tokens); player: E-23 only.
 
+
+### What `kanevas-synchro-cles` builds (E-9 key, E-14 identifier, addresses)
+
+*Scope*: B-99, B-100, B-101, B-104, AD-146. No new screen, no new component: one field on E-9 and one on E-14, both
+built from the existing field and inline-edit patterns of those screens (the gardien's verdict: five elements, all existing — Bouton, Champ,
+Bandeau, toast — none new; render `Champ`, whose « Erreur : » prefix is the one the mockups show). The key block of E-9 and the identifier field of E-14 are shown in the mockups `e09-fiche.html` and
+`e14-parametres.html` (state « clé »).
+
+**Addresses (B-101).** The router is not edited (AD-16): the sheet screen answers both
+`/univers/:id/fiche/:fid` (registered today) and the readable forms. The screen reads `:id` and `:fid` as
+*reference* (id or key, never converted by the browser): it asks `GET /api/univers/:ref` and
+`GET /api/univers/:ref/fiches/:ref2`, whose answers carry the numeric `id`, the `cle` and the universe `cle`. When the
+reference used is numeric (or a former key), the screen replaces the address (`history.replace`, no extra entry) by
+`/univers/<u.cle>/<a>/<b>` (key `a:b`, `a` a registered type) or `/univers/<u.cle>/fiche/<key>`; a server-side
+request for a numeric address answers 302 to the readable address (the front's `index.html` fallback keeps serving
+the app). A key whose first part is a type slug is *not* read as a page name: the address list of a universe's pages
+(`fiches`, `fiche`, `membres`, `parametres`, `cartes`, `mediatheque`, `recherche`, `comptes-rendus`, `acces-api`, …)
+is closed and the type registry is checked against it at startup (a type slug equal to a page name is refused).
+
+**E-9 — the key block** (GM only; a player and the GM in player mode see no block, and the sheet's body carries no `cle`
+for them. The key is not a secret, though: it is the readable address, which any reader of the sheet may type, share or
+be redirected to — the 302 serves it to a reader of the sheet and answers like a 404 for a sheet they cannot read. The
+browser of a player does not rewrite the address it was given. This refines « the origin key is hidden from any role but
+the GM » of `kanevas-import` as: not displayed and not in the body). Under the title, `lieu:nyx` in monospace,
+« Copier », « Modifier la clé… ». The field opens inline with the warning, « Enregistrer » / « Annuler »; errors under
+the field, in the words of E-9 above (`cle_prise` 409 → « Cette clé existe déjà dans l'univers. »; `invalide`,
+`champ: cle` → « Lettres minuscules, chiffres, - et _, un « : » au plus, avec au moins une lettre. »). On success the
+address is replaced by the new one and « Enregistré. » shows; the former address still opens the sheet.
+
+| State | Behaviour |
+|---|---|
+| reading | key + two buttons |
+| editing | field prefilled with the key, focus, warning visible, « Enregistrer » inactive while unchanged |
+| refused | message under the field, the field keeps the typed value and the focus |
+| saving | the button inactive, the field read-only |
+| connection lost | the bar's banner; the buttons inactive; the typed value kept |
+| role lost meanwhile | « Vous ne pouvez plus modifier cette fiche. » (as the other E-9 writes), the block disappears |
+| loading | no block until the sheet is loaded (no skeleton) |
+| no key | impossible after the migration (`cle` is not null): the block always shows a key |
+| long key | up to 200 characters: the key wraps on several lines (`overflow-wrap: anywhere`), the buttons stay under it |
+| save failed (server error) | « Impossible d'enregistrer la clé. Réessayez. » under the field, value and focus kept |
+| copy | the label « Copier » becomes « Copiée. » for two seconds |
+| copy refused (clipboard denied) | the label stays « Copier »; the toast « Impossible de copier. Sélectionnez la clé à la main. » shows; the key text stays selectable |
+
+The warning reads: « Les liens et outils qui citent <ancienne clé> ne la retrouveront plus par cette clé ; l'ancienne
+clé continuera de mener ici. » (an import by former key is `kanevas-synchro-ecriture`'s, not promised here). The label of
+the field is « Clé de la fiche ». The « Importée · clé … » line of the « ⋯ » menu loses the key, now shown by the block.
+A key is typed with the sheet's **type** word: `personnage:maitre-aldric` (mockups use that).
+
+**E-14 — the identifier** (GM). A field « Identifiant » in the first panel, with the same save button as the name.
+The states of the mockup are « Identifiant refusé » and « Identifiant mal formé »; the rest is as the key block for editing, refused, saving, connection lost, loading; **not transposed**: no « Copier » and no copy state (the identifier is not a key to paste), no « no key » state (an identifier always exists), no long-key wrapping (40 characters at most, one line); the field is prefilled with the current identifier and « Enregistrer » is inactive while Nom, Identifiant and Description are all unchanged (one button serves the three; an unchanged identifier is not sent). Specifics: one « Enregistrer » for Nom, Description and Identifiant; a form error reads « Lettres minuscules, chiffres et tirets, 2 à 40, avec au moins une lettre. » (mockup: « Identifiant mal formé »); a refused
+identifier saves nothing (the Nom too stays unsaved, typed values kept); server error « Impossible d'enregistrer les
+paramètres. Réessayez. »; role lost « Vous ne pouvez plus modifier ces paramètres. »; the success toast is
+« Enregistré. »; a player gets « Page introuvable. »; the help text under the field reads « Il sert d'adresse :
+/univers/<identifiant>. L'ancien identifiant continue de mener à l'univers. ». On success the address of the whole screen is replaced (`/univers/<new>/parametres`) and the former
+identifier keeps leading to the universe. A key or identifier that is a former one of **another** target is refused (`cle_prise`, it keeps leading
+there); the **owner** may take its own former key back (P-22: `eneria-v2` back to `eneria`): the former row is removed.
+
+**Addresses, states.** An unknown key or identifier, or a sheet the reader cannot read: « Page introuvable. » (the
+same for both, no trace of the key). While the reference resolves, the screen shows its loading state at the address as
+typed; if the server is unreachable the typed address stays and the bar's banner shows. A former key held now by
+another sheet opens that sheet. Léa (player) who opens a shared `/univers/eneria/lieu/nyx` for a sheet she reads sees it;
+for a GM-only sheet she gets « Page introuvable. ». At creation (E-2, E-8) nothing announces the key: it appears
+on the sheet. A key of digits only that the migration renamed to `cle-<digits>` shows nowhere but in the key block.
+
+**Where the browser gets the identifier.** The sidebar, the universe selector, « Mes univers » and the breadcrumbs
+build their links from `cle` when the list answers carry it (`GET /api/univers` returns `cle`); the numeric forms
+stay for what is not yet loaded.
+
+Cross-check: B-99 → E-9 block, `PATCH /fiches/:fid {cle}`; B-100 → E-14 field (P-22 return of `eneria-v2`), `PATCH /univers/:id {cle}`; B-101 →
+router (above) + 302; admin who is not a GM of the universe: no E-9 block, and E-14 answers « Page introuvable. » (the GM guard, as a player); B-104 → the section key travels in the API (`cle` on a section's view); no screen edits it in
+this slice (the import and the MCP address by it).

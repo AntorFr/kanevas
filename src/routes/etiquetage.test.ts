@@ -1,7 +1,7 @@
 // Tests of kanevas-recherche-donnees, written from the exit criterion (B-38, AD-21, AD-118 (1,4,5,8)).
 // HTTP in stub mode, real SQLite.
 import assert from 'node:assert/strict';
-import { copyFileSync, mkdirSync, mkdtempSync, readdirSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -12,6 +12,7 @@ delete process.env.DB_PATH;
 
 const { buildApp } = await import('../app.js');
 const { semerBouchon } = await import('../bouchon/depart.js');
+const { avantSemis, apresSemis } = await import('../db/jetons-pour-semis.js');
 const { migrate, openDb } = await import('../db/db.js');
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
@@ -175,11 +176,45 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
   db.exec('CREATE TABLE fichiers_sections (fichier_id, section_id, joint, dans_texte, dans_bloc_mj, PRIMARY KEY (fichier_id, section_id))');
   db.exec('CREATE TABLE fichiers_attente (id INTEGER PRIMARY KEY, univers_id, cle, section_id, fiche_id, maniere)');
   db.exec('ALTER TABLE fiches ADD COLUMN illustration_fichier_id INTEGER');
+  // Same for the keys (0037): the seed draws them, the columns and tables come only with 0037.
+  db.exec('ALTER TABLE univers ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN creee_via TEXT; ALTER TABLE sections ADD COLUMN cle TEXT');
+  db.exec('CREATE TABLE cles_anciennes (univers_id, cle, fiche_id); CREATE TABLE univers_cles_anciennes (cle, univers_id)');
+  // Same for the owner of a system (0019), which the current services write.
+  db.exec('ALTER TABLE systemes_jeu ADD COLUMN responsable_id INTEGER');
+  // Likewise `relations` (0018): the seed writes `nature` / `qualificatif`, absent from this schema (`type`).
+  db.exec('ALTER TABLE relations RENAME COLUMN type TO qualificatif');
+  db.exec("ALTER TABLE relations ADD COLUMN nature TEXT NOT NULL DEFAULT ''");
+  // The seed also enables the galaxy tool and sows its galaxy: scratch copies of the tables of 0019, 0021, 0022 and 0024.
+  const avantScratch = new Set((db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as Any[]).map((r) => r.name));
+  const scratch = ['0019-outils.sql', '0021-catalogues.sql', '0022-swn-galaxie.sql', '0024-swn-vaisseaux.sql'].map((f) => readFileSync(src + f, 'utf8').replace(/^ALTER TABLE .*$/m, '')).join('\n');
+  // The seed also sows managed sections and ship designs (0020, 0021, 0024): two columns of `sections`, then the tables.
+  db.exec('ALTER TABLE sections ADD COLUMN gere_par TEXT; ALTER TABLE sections ADD COLUMN source_version TEXT; ALTER TABLE propositions ADD COLUMN source_version TEXT');
+  db.exec('ALTER TABLE lots_import ADD COLUMN outil TEXT');
+  // The designs' reads also go through the aliases and labels of 0014 (plain scratch tables, no triggers).
+  db.exec('CREATE TABLE fiche_alias (fiche_id, alias); CREATE TABLE etiquettes (id INTEGER PRIMARY KEY, univers_id, nom, cree_le); CREATE TABLE fiche_etiquettes (fiche_id, etiquette_id)');
+  db.exec(scratch);
+  db.exec('ALTER TABLE swn_conceptions ADD COLUMN equipage INTEGER'); // 0030: the seed writes it
+  db.exec('ALTER TABLE swn_catalogue_armes ADD COLUMN classe_min INTEGER'); // 0028: the seed writes it
+  // 0029: the seed writes the optional columns of the catalogue too.
+  for (const [t, cs] of Object.entries({ coques: ['vitesse', 'armure', 'equipage_min', 'equipage_max'], moteurs: ['classe_min', 'classe_max', 'condition'],
+    amenagements: ['classe_min', 'classe_max', 'condition', 'effet', 'rend_puissance', 'rend_masse', 'soute', 'soute_par_classe', 'reduction_cout_pct', 'reduction_base'], defenses: ['classe_min', 'classe_max', 'condition', 'bonus_vitesse'],
+    armes: ['degats', 'perforation', 'qualites', 'niveau_tech'], exemples: ['equipage'],
+    // 0032: the seed writes the optional columns of modifications and fittings too.
+    modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse', 'reparation_min', 'effet_pct', 'echange_arrondi'] })) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} ADD COLUMN ${c} INTEGER`);
+  const ajoutees = (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as Any[]).map((r) => r.name as string).filter((n) => !avantScratch.has(n) && !n.startsWith('sqlite_'));
+  avantSemis(db);
   semerBouchon(db);
-  db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers; ALTER TABLE fiches DROP COLUMN illustration_fichier_id');
+  apresSemis(db);
+  db.exec('PRAGMA foreign_keys = OFF');
+  for (const t of ajoutees) db.exec(`DROP TABLE ${t}`);
+  db.exec('PRAGMA foreign_keys = ON; ALTER TABLE sections DROP COLUMN gere_par; ALTER TABLE sections DROP COLUMN source_version; ALTER TABLE propositions DROP COLUMN source_version; ALTER TABLE lots_import DROP COLUMN outil');
+  db.exec('DROP TABLE cles_anciennes; DROP TABLE univers_cles_anciennes; ALTER TABLE univers DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN creee_via; ALTER TABLE sections DROP COLUMN cle');
+  db.exec('ALTER TABLE relations DROP COLUMN nature');
+  db.exec('ALTER TABLE relations RENAME COLUMN qualificatif TO type');
+  db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers; ALTER TABLE fiches DROP COLUMN illustration_fichier_id; ALTER TABLE systemes_jeu DROP COLUMN responsable_id');
   const avant = db.prepare('SELECT id, titre FROM fiches ORDER BY id').all() as { id: number; titre: string }[];
   assert.ok(avant.length >= 5);
-  assert.deepEqual(migrate(db), [14, 15, 16, 17]);
+  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41]);
   for (const f of avant) {
     const mot = f.titre.split(/[^\p{L}\p{N}]+/u)[0]!;
     const ids = (db.prepare('SELECT rowid FROM recherche_fiches WHERE recherche_fiches MATCH ?').all(`titre:${mot}*`) as Any[]).map((r) => r.rowid);

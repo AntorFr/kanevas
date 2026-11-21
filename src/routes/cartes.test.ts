@@ -174,6 +174,7 @@ test('critère : Antor en mode Joueur ne peut pas écrire', async () => {
 
 test('critère : fond .pdf → 400 fond_invalide, > 25 Mo → 413 fond_trop_lourd, rien d’écrit', async () => {
   const m = await monter();
+  m.app.db.prepare("INSERT INTO reglages_instance (cle, valeur, modifie_le) VALUES ('fond_carte_max_mo', '25', 'x') ON CONFLICT (cle) DO UPDATE SET valeur = '25'").run();
   const pdf = await envoyer(m.app, m.antor, 'POST', m.cartes, 'plan.pdf', Buffer.from('%PDF-1.4 hello'), { titre: 'P', forme: 'illustree' });
   assert.equal(pdf.statusCode, 400);
   assert.equal(pdf.json().code, 'fond_invalide');
@@ -255,11 +256,11 @@ test('critère : liens du graphe = lecture filtrée pour chaque compte', async (
   await appel(m.app, m.antor, 'PATCH', `${m.cartes}/${g.id}`, { visible: true });
   const mj = (await appel(m.app, m.antor, 'GET', `${m.cartes}/${g.id}`)).json();
   assert.deepEqual(
-    mj.liens.map((l: { de: number; vers: number; type: string }) => [l.de, l.vers, l.type]).sort(),
+    mj.liens.map((l: { de: number; vers: number; libelle: string }) => [l.de, l.vers, l.libelle]).sort(),
     [[m.grises.id, m.aldric.id, 'allié de'], [m.grises.id, m.secrete.id, 'rival de']].sort(),
   );
   const l = await appel(m.app, m.lea, 'GET', `${m.cartes}/${g.id}`);
-  assert.deepEqual(l.json().liens.map((x: { vers: number; type: string }) => [x.vers, x.type]), [[m.aldric.id, 'allié de']]);
+  assert.deepEqual(l.json().liens.map((x: { vers: number; libelle: string }) => [x.vers, x.libelle]), [[m.aldric.id, 'allié de']]);
   assert.ok(!l.body.includes('Cendres') && !l.body.includes('rival'));
   assert.equal((await appel(m.app, m.antor, 'GET', `${m.cartes}/${g.id}?mode=joueur`)).body, l.body);
 });
@@ -333,4 +334,42 @@ test('critère : requête interrompue en plein envoi (création et remplacement)
   } finally {
     await m.app.close();
   }
+});
+
+test('B-89 : 30 Mo passe au défaut ; réglage 20 → 413 portant limiteMo 20 ; relevé par l’admin, le même envoi passe', async () => {
+  const m = await monter();
+  const admin = await connecter(m.app, 'admin');
+  const trente = Buffer.concat([PNG, Buffer.alloc(30 * 1024 * 1024, 7)]);
+  const donnees = { titre: 'T', forme: 'illustree' };
+  assert.equal((await appel(m.app, admin, 'GET', '/api/instance/reglages')).json().fondCarteMaxMo, 75);
+  assert.equal((await envoyer(m.app, m.antor, 'POST', m.cartes, 't.png', trente, donnees)).statusCode, 201);
+  assert.equal((await appel(m.app, admin, 'PUT', '/api/instance/reglages', { fondCarteMaxMo: 20 })).statusCode, 200);
+  const r = await envoyer(m.app, m.antor, 'POST', m.cartes, 't.png', trente, donnees);
+  assert.equal(r.statusCode, 413);
+  assert.equal(r.json().code, 'fond_trop_lourd');
+  assert.equal(r.json().limiteMo, 20);
+  assert.equal(lignes(m.app), 1);
+  assert.equal((await appel(m.app, admin, 'PUT', '/api/instance/reglages', { fondCarteMaxMo: 40 })).statusCode, 200);
+  assert.equal((await envoyer(m.app, m.antor, 'POST', m.cartes, 't.png', trente, donnees)).statusCode, 201);
+  assert.equal(lignes(m.app), 2);
+});
+
+test('B-89 : réglages réservés à l’admin d’instance (404 identique), 0, 501, 1.5, texte, absent → 400 invalide', async () => {
+  const m = await monter();
+  const admin = await connecter(m.app, 'admin');
+  const ref = await appel(m.app, m.antor, 'GET', '/api/adresse-inconnue');
+  for (const [v, h] of [['GET', m.antor], ['PUT', m.antor]] as const) {
+    const r = await appel(m.app, h, v, '/api/instance/reglages', v === 'PUT' ? { fondCarteMaxMo: 30 } : undefined);
+    assert.equal(r.statusCode, 404);
+    assert.equal(r.body, ref.body);
+  }
+  assert.equal((await m.app.inject({ method: 'GET', url: '/api/instance/reglages' })).statusCode, 401);
+  for (const v of [0, 501, -1, 1.5, '20', null, undefined]) {
+    const r = await appel(m.app, admin, 'PUT', '/api/instance/reglages', { fondCarteMaxMo: v } as object);
+    assert.equal(r.statusCode, 400, String(v));
+    assert.equal(r.json().code, 'invalide');
+    assert.equal(r.json().champ, 'fondCarteMaxMo');
+  }
+  for (const v of [1, 500]) assert.equal((await appel(m.app, admin, 'PUT', '/api/instance/reglages', { fondCarteMaxMo: v })).statusCode, 200);
+  assert.equal((await appel(m.app, admin, 'GET', '/api/instance/reglages')).json().fondCarteMaxMo, 500);
 });

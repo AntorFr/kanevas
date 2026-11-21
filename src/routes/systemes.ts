@@ -13,7 +13,9 @@ import {
   rattacherSysteme,
 } from '../services/systemes.js';
 import { reglerTypeSysteme, reglerTypeUnivers, typesDeLUnivers, typesDuSysteme } from '../services/types-fiche.js';
-import { modifierUnivers } from '../services/univers.js';
+import { changerCleUnivers } from '../services/cles.js';
+import { lireUnivers, modifierUnivers } from '../services/univers.js';
+import { acteur } from './fiches.js';
 import { idDeChemin } from './univers.js';
 
 function corps(request: { body?: unknown }): Record<string, unknown> {
@@ -41,12 +43,26 @@ export function registerSystemesRoutes(app: FastifyInstance) {
 
   app.patch('/api/univers/:id', async (request) => {
     const b = corps(request);
-    if (typeof b.nom !== 'string') throw invalide('Le nom doit faire de 1 à 80 caractères.');
-    if (typeof b.description !== 'string') throw invalide('La description doit être un texte.');
-    return modifierUnivers(app.db, request.session!.id, idUnivers(request), {
-      nom: b.nom,
-      description: b.description,
-    });
+    const compteId = request.session!.id;
+    const id = idUnivers(request);
+    // The identifier (AD-146) may travel with the name and the description, or alone; without it both are required.
+    if (b.cle === undefined) {
+      if (typeof b.nom !== 'string') throw invalide('Le nom doit faire de 1 à 80 caractères.');
+      if (typeof b.description !== 'string') throw invalide('La description doit être un texte.');
+      return modifierUnivers(app.db, compteId, id, { nom: b.nom, description: b.description });
+    }
+    if (b.nom !== undefined && typeof b.nom !== 'string') throw invalide('Le nom doit faire de 1 à 80 caractères.');
+    if (b.description !== undefined && typeof b.description !== 'string') throw invalide('La description doit être un texte.');
+    // One transaction: a refused identifier saves neither the name nor the description.
+    return app.db.transaction(() => {
+      changerCleUnivers(app.db, acteur(request), id, b.cle);
+      const u = lireUnivers(app.db, compteId, id);
+      if (b.nom === undefined && b.description === undefined) return u;
+      return modifierUnivers(app.db, compteId, id, {
+        nom: (b.nom as string | undefined) ?? u.nom,
+        description: (b.description as string | undefined) ?? u.description,
+      });
+    })();
   });
 
   app.put('/api/univers/:id/systeme', async (request, reply) => {

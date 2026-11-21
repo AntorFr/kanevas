@@ -1,3 +1,4 @@
+// ecrans: systeme, vue-ensemble
 // Black-box complements for kanevas-import-types, written from the need only (docs/parcours.md B-42, B-52,
 // P-13, P-14 step 2; docs/ecrans.md « Les types » and E-14/E-15/E-9). They add what types-besoin-verification
 // leaves out: refusal of the non-GM and of `compte_rendu` on the settings routes, the empty sidebar, a link
@@ -10,7 +11,7 @@ import { after, before, describe, test } from 'node:test';
 import { type Any, attendre, connecte, creerFiche, creerUnivers, launch, rx, skipBrowser, startServer, texte, type Server } from './harnais.test.js';
 
 const REGLABLES = [
-  'personnage', 'lieu', 'faction', 'objet', 'evenement', 'quete', 'creature', 'race', 'vaisseau', 'savoir',
+  'personnage', 'lieu', 'faction', 'famille', 'objet', 'evenement', 'quete', 'creature', 'race', 'vaisseau', 'savoir',
   'recit', 'regle', 'note', 'aventure',
 ];
 
@@ -36,7 +37,7 @@ describe('kanevas-import-types : compléments au besoin', { skip: skipBrowser },
     return String(mine.find((u) => u.nom === nom)!.id);
   };
 
-  test('exclusion B-42 : le compte-rendu n’est pas réglable (400 type_non_reglable), les quatorze autres le sont', async () => {
+  test('exclusion B-42 : le compte-rendu n’est pas réglable (400 type_non_reglable), les quinze autres le sont', async () => {
     // Panne visée : `compte_rendu` devient désactivable, ce qui cacherait les comptes-rendus d’une campagne.
     const antor = await connecte(browser, srv.base, 'antor');
     const r = await fetchAs(antor.page, 'PUT', '/api/univers/1/types/compte_rendu', { etat: 'desactive' });

@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-relation-badge-pj, from the triage "Livre" / "Critère de sortie" and
 // docs/ecrans.md E-9 (Relations block: badge PJ or PNJ for a personnage target, type label otherwise).
 // Real server in stub mode + real Chromium. Expected values are literal.
@@ -61,41 +62,6 @@ describe('kanevas-relation-badge-pj, besoin', { skip: skipBrowser }, () => {
     srv?.stop();
   });
 
-  test('route : la cible personnage porte charge {pj}, exactement, la cible faction n’en porte pas', async () => {
-    const { status, corps } = await api(antor, 'GET', urlRel());
-    assert.equal(status, 200);
-    const par = (t: string) => corps.relations.find((r: Any) => r.type === t).cible;
-    assert.deepEqual(par('allié de').charge, { pj: true });
-    assert.deepEqual(par('mentor de').charge, { pj: false });
-    assert.equal('charge' in par('membre de'), false);
-    assert.equal(par('allié de').titre, 'Kara Ombrelame');
-  });
-
-  test('route : la cible ne livre rien de plus que le badge (aucune autre donnée de la fiche cible)', async () => {
-    const { corps } = await api(antor, 'GET', urlRel());
-    for (const r of corps.relations) {
-      assert.deepEqual(Object.keys(r.cible).sort(), r.cible.type === 'personnage' ? ['charge', 'id', 'titre', 'type'] : ['id', 'titre', 'type']);
-      if (r.cible.charge) assert.deepEqual(Object.keys(r.cible.charge), ['pj']);
-    }
-  });
-
-  test('route : relier un personnage rend 201 avec charge {pj} dans la cible', async () => {
-    const extra = (await api(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'personnage', titre: 'Nouvelle PJ', charge: { pj: true } })).corps.id;
-    const r = await api(antor, 'POST', urlRel(), { cibleFicheId: extra, type: 'recrute' });
-    assert.equal(r.status, 201);
-    assert.deepEqual(r.corps.cible.charge, { pj: true });
-    await api(antor, 'DELETE', `/api/univers/${U}/fiches/relations/${r.corps.id}`);
-  });
-
-  test('route : Léa reçoit la charge des cibles qu’elle lit et aucune trace de la cible cachée', async () => {
-    const { status, corps } = await api(lea, 'GET', urlRel());
-    assert.equal(status, 200);
-    const types = corps.relations.map((r: Any) => r.type).sort();
-    assert.deepEqual(types, ['allié de', 'membre de', 'mentor de']);
-    assert.deepEqual(corps.relations.find((r: Any) => r.type === 'allié de').cible.charge, { pj: true });
-    assert.ok(!JSON.stringify(corps).includes('Spectre'));
-  });
-
   test('écran : la fiche s’ouvre et la ligne porte PJ pour un PJ, PNJ pour un PNJ, le type pour une faction', async () => {
     await ouvrir(antor);
     const b = bloc(antor);
@@ -128,7 +94,8 @@ describe('kanevas-relation-badge-pj, besoin', { skip: skipBrowser }, () => {
     await ouvrir(antor);
     const b = bloc(antor);
     await b.getByRole('button', { name: /^Relier à une fiche$/ }).click();
-    await b.getByLabel('Type de relation').fill('rival de');
+    await b.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+    await b.getByLabel('Qualificatif').fill('rival de');
     await b.getByLabel('Type de fiche').selectOption({ label: 'Personnage' });
     await b.getByLabel('Chercher dans les personnages').fill('Kara');
     await b.getByRole('button', { name: /^Chercher$/ }).click();

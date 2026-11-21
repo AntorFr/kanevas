@@ -1,3 +1,4 @@
+// ecrans: accueil, fiche, fiches, parametres, systeme, systeme-ancien, systemes, vue-ensemble
 // Feature-level tests of kanevas-illustrations (complement of illustrations-systemes-besoin.test.ts), written from
 // the need (docs/parcours.md B-30, B-31, B-29, B-13, B-14; docs/ecrans.md « Détail des écrans de
 // `kanevas-illustrations` »), not from the code. Real server in stub mode WITH its starting world, real Chromium.
@@ -323,7 +324,7 @@ describe('kanevas-illustrations (A) : illustrations, états et écrans en lectur
     assert.ok(!/Sans système de jeu/.test(noms.join(' ')));
     const box = await cartes.first().boundingBox();
     await antor.mouse.click(box.x + box.width / 2, box.y + box.height - 6);
-    await antor.waitForURL(new RegExp(`/univers/${m.U}(/|$)`));
+    await antor.waitForURL(new RegExp(`/univers/[^/]+(/|$)`));
   });
 
   test('B-14 : Antor ajoute « Garde du sceau » à CoF Mini ; Mira la voit avec « Utilisé par 2 univers » et la seule puce « Les Landes grises », Léa la lit sans « Ajouter » ni « Modifier »', opts, async () => {

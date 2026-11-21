@@ -1,3 +1,4 @@
+import { ecrire } from './historique.js';
 import type { Db } from '../db/db.js';
 import { exigerRole, peutVoirFiche, sqlFicheLisible } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
@@ -87,7 +88,7 @@ export function poserEtiquetage(
     throw refus('etiquettes_trop_nombreuses', `${MAX_ETIQUETTES} étiquettes au plus.`);
   }
 
-  db.transaction(() => {
+  ecrire(db, acteur.compteId, () => {
     // Aliases: keep the stored spelling of those already there.
     const voulus = new Set(alias.map(cle));
     const presents = db.prepare('SELECT rowid AS r, alias FROM fiche_alias WHERE fiche_id = ?').all(ficheId) as {
@@ -128,7 +129,7 @@ export function poserEtiquetage(
         'DELETE FROM etiquettes WHERE id = ? AND NOT EXISTS (SELECT 1 FROM fiche_etiquettes WHERE etiquette_id = ?)',
       ).run(l.id, l.id);
     }
-  })();
+  });
   return etiquetageDe(db, ficheId);
 }
 

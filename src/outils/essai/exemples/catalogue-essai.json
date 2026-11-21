@@ -1,0 +1,88 @@
+{
+  "catalogue": "essai/g",
+  "version": "2026-11-essai",
+  "coques": [
+    {
+      "cle": "corvette",
+      "nom": "Corvette",
+      "masse": 12,
+      "cout": 100
+    },
+    {
+      "cle": "cargo",
+      "nom": "Cargo",
+      "masse": 20,
+      "cout": 80
+    },
+    {
+      "cle": "fregate",
+      "nom": "Frégate",
+      "masse": 35,
+      "cout": 240
+    },
+    {
+      "cle": "patrouilleur",
+      "nom": "Patrouilleur",
+      "masse": 8,
+      "cout": 60
+    }
+  ],
+  "armes": [
+    {
+      "cle": "laser",
+      "nom": "Laser à impulsion",
+      "masse": 2,
+      "cout": 12,
+      "portee": "courte"
+    },
+    {
+      "cle": "laser-lourd",
+      "nom": "Laser lourd",
+      "masse": 5,
+      "cout": 28,
+      "portee": "longue"
+    },
+    {
+      "cle": "canon-leger",
+      "nom": "Canon léger",
+      "masse": 3,
+      "cout": 9,
+      "portee": "courte"
+    },
+    {
+      "cle": "mitrailleuse",
+      "nom": "Mitrailleuse",
+      "masse": 1,
+      "cout": 5,
+      "portee": "courte"
+    },
+    {
+      "cle": "torpille",
+      "nom": "Torpille",
+      "masse": 4,
+      "cout": 18,
+      "portee": "longue"
+    },
+    {
+      "cle": "missile",
+      "nom": "Missile",
+      "masse": 2,
+      "cout": 14,
+      "portee": "longue"
+    },
+    {
+      "cle": "brouilleur",
+      "nom": "Brouilleur",
+      "masse": 1,
+      "cout": 10,
+      "portee": "courte"
+    },
+    {
+      "cle": "harpon",
+      "nom": "Harpon",
+      "masse": 3,
+      "cout": 7,
+      "portee": "courte"
+    }
+  ]
+}

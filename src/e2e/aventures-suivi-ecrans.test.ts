@@ -1,3 +1,4 @@
+// ecrans: comptes-rendus, fiche, fiches, vue-ensemble
 // Black-box tests of the E-3 blocks and E-13 on adventure sheets (kanevas-scenarios-suivi-pivot, AD-127), from
 // docs/ecrans.md « E-13 Comptes-rendus », « Blocs de E-3 » and the « kanevas-scenarios » amendments.
 // Real server in stub mode + real Chromium. Expected texts are literals from the doc.
@@ -85,7 +86,7 @@ test('états vides : E-3 (blocs) et E-13, MJ et Joueuse', opts, async () => {
   await lea.page.getByRole('link', { name: rxExact('Comptes-rendus') }).click();
   await lea.page.getByText(rx('Aucun compte-rendu à lire pour l\'instant.')).first().waitFor();
   await lea.page.getByRole('link', { name: rxExact('Voir les aventures') }).click();
-  await lea.page.waitForURL(new RegExp(`/univers/${uid}/fiches/aventures$`));
+  await lea.page.waitForURL(new RegExp(`/univers/[^/]+/fiches/aventures$`));
 });
 
 test('E-3 : Campagnes en cours (seule celle « En cours », lien vers sa fiche), Préparation = cinq premières non cochées', opts, async () => {
@@ -115,7 +116,7 @@ test('E-3 : Campagnes en cours (seule celle « En cours », lien vers sa fiche),
   assert.ok(avant(t, 'Tâche 1', 'Tâche 3') && avant(t, 'Tâche 5', 'Tâche 6'), 'plus anciennes d\'abord');
   await antor.screenshot({ path: '/tmp/e3-prepa.png' });
   await antor.getByRole('link', { name: rx(NOM) }).first().click();
-  await antor.waitForURL(new RegExp(`/univers/${uid}/fiche/${campId}$`));
+  await antor.waitForURL(new RegExp(`/univers/[^/]+/(fiche/[^/]+|(?!fiches/|cartes/|outils/)[^/]+/[^/]+)$`));
 
   await lea.page.goto(`/univers/${uid}`);
   await lea.page.getByRole('link', { name: rx(NOM) }).first().waitFor();
@@ -133,13 +134,10 @@ test('comptes-rendus : cinq derniers sur E-3, ordre de création sur E-13, retou
     return r.body.id as number;
   };
   const premier = await cr(antor, 'Prologue');
-  await dormir(1100);
   for (const n of [2, 3, 4, 5, 6]) {
     await cr(antor, `Session ${n}`);
-    await dormir(1100);
   }
   await cr(lea.page, 'Récit de Léa');
-  await dormir(1100);
   session11 = await cr(antor, 'Session 11');
 
   // edit the oldest one: it must not climb
@@ -158,7 +156,7 @@ test('comptes-rendus : cinq derniers sur E-3, ordre de création sur E-13, retou
   assert.match(t, /\d{1,2} \S+ 2026/, 'date « 22 sept. 2026 »');
   await antor.screenshot({ path: '/tmp/e13-liste.png' });
   await antor.getByRole('link', { name: rx('Session 11') }).click();
-  await antor.waitForURL(new RegExp(`/univers/${uid}/fiche/${session11}$`));
+  await antor.waitForURL(new RegExp(`/univers/[^/]+/(fiche/[^/]+|(?!fiches/|cartes/|outils/)[^/]+/[^/]+)$`));
 
   await antor.goto(`/univers/${uid}`);
   await antor.getByRole('heading', { name: 'Derniers comptes-rendus' }).waitFor();
@@ -169,7 +167,7 @@ test('comptes-rendus : cinq derniers sur E-3, ordre de création sur E-13, retou
   assert.ok(await antor.getByRole('link', { name: rxExact('Tous les comptes-rendus') }).count());
   await antor.screenshot({ path: '/tmp/e3-derniers.png' });
   await antor.getByRole('link', { name: rxExact('Tous les comptes-rendus') }).click();
-  await antor.waitForURL(new RegExp(`/univers/${uid}/comptes-rendus$`));
+  await antor.waitForURL(new RegExp(`/univers/[^/]+/comptes-rendus$`));
 
   // Antor closes the section of « Session 11 » to players
   const g = await api(antor, 'GET', `/api/univers/${uid}/fiches/${session11}`);
@@ -200,7 +198,7 @@ test('comptes-rendus : cinq derniers sur E-3, ordre de création sur E-13, retou
 
 test('E-3 : chaque bloc échoue pour soi ; Réessayer ; chargement par bloc', opts, async () => {
   const page = antor;
-  await page.route(`**/api/univers/${uid}/comptes-rendus*`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
+  await page.route(`**/api/univers/*/comptes-rendus*`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
   await page.goto(`/univers/${uid}`);
   await page.getByText('Impossible de charger ce bloc.').waitFor();
   await attendre(page);
@@ -223,7 +221,7 @@ test('E-3 : chaque bloc échoue pour soi ; Réessayer ; chargement par bloc', op
   await page.unrouteAll({ behavior: 'ignoreErrors' });
 
   // loading is per block
-  await page.route(`**/api/univers/${uid}/comptes-rendus*`, async (r: Any) => {
+  await page.route(`**/api/univers/*/comptes-rendus*`, async (r: Any) => {
     await dormir(1500);
     await r.continue();
   });
@@ -236,7 +234,7 @@ test('E-3 : chaque bloc échoue pour soi ; Réessayer ; chargement par bloc', op
 
 test('E-13 : chargement, erreur + Réessayer, connexion perdue, univers sans rôle', opts, async () => {
   const page = antor;
-  await page.route(`**/api/univers/${uid}/comptes-rendus*`, async (r: Any) => {
+  await page.route(`**/api/univers/*/comptes-rendus*`, async (r: Any) => {
     await dormir(1500);
     await r.continue();
   });
@@ -247,7 +245,7 @@ test('E-13 : chargement, erreur + Réessayer, connexion perdue, univers sans rô
   await attendre(page);
 
   let casse = true;
-  await page.route(`**/api/univers/${uid}/comptes-rendus*`, (r: Any) => (casse ? r.fulfill({ status: 500, body: '{}' }) : r.continue()));
+  await page.route(`**/api/univers/*/comptes-rendus*`, (r: Any) => (casse ? r.fulfill({ status: 500, body: '{}' }) : r.continue()));
   await page.goto(`/univers/${uid}/comptes-rendus`);
   await page.getByText('Impossible de charger les comptes-rendus.').waitFor();
   await page.screenshot({ path: '/tmp/e13-erreur.png' });
@@ -286,7 +284,7 @@ test('E-13 contenu long : 100 puis « Charger la suite », échec de la suite, t
   assert.equal(await antor.getByRole('link', { name: rx('Titre long') }).count(), 1);
   await antor.screenshot({ path: '/tmp/e13-100.png' });
 
-  await antor.route(`**/api/univers/${uid}/comptes-rendus?curseur=*`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
+  await antor.route(`**/api/univers/*/comptes-rendus?curseur=*`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
   await antor.getByRole('button', { name: rxExact('Charger la suite') }).click();
   await antor.getByText('Impossible de charger la suite.').waitFor();
   assert.equal(await antor.locator('main li').count(), 100, 'la liste chargée reste');

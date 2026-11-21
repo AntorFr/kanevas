@@ -4,7 +4,11 @@ import type { FastifyInstance } from 'fastify';
 import {
   ajouterElement,
   creerCarte,
+  cartesDeFiche,
   deplacerElement,
+  detacherCarte,
+  ecrireTexteCarte,
+  rattacherCarte,
   lireCarte,
   listerCartes,
   ouvrirFond,
@@ -13,7 +17,9 @@ import {
   retirerElement,
   type FormeCarte,
 } from '../services/cartes.js';
-import { invalide } from '../services/erreurs.js';
+import { roleDe, vueMJ } from '../services/droits.js';
+import { formesCreablesOutils, listerCartesOutils } from '../services/outils.js';
+import { ErreurService, invalide } from '../services/erreurs.js';
 import { acteur, corps } from './fiches.js';
 import { idDeChemin } from './univers.js';
 
@@ -42,9 +48,20 @@ export function registerCartesRoutes(app: FastifyInstance) {
     const a = acteur(request);
     const q = request.query as Record<string, unknown>;
     if (q.curseur !== undefined && typeof q.curseur !== 'string') throw invalide('Requête invalide.');
-    return listerCartes(app.db, a.compteId, !!a.modeJoueur, ids(request).univers, {
+    const univers = ids(request).univers;
+    const page = listerCartes(app.db, a.compteId, !!a.modeJoueur, univers, {
       curseur: q.curseur as string | undefined,
     });
+    // Tool maps (G-8) join the first page; this route knows no module by name.
+    if (q.curseur !== undefined) return page;
+    const mj = vueMJ(roleDe(app.db, univers, a.compteId)!, a);
+    const outils = listerCartesOutils(app.db, a, univers).map((c) => ({
+      type: 'outil' as const, id: c.id, universId: univers, titre: c.titre, module: c.module,
+      outil: { module: c.module, outil: c.outil },
+      adresse: `/univers/${univers}/outils/${c.module}/${c.outil}/${c.id}`,
+      ...(mj ? { visible: c.visible, ...(c.version === undefined ? {} : { version: c.version }) } : {}),
+    }));
+    return { ...page, cartes: [...page.cartes, ...outils], formes: formesCreablesOutils(app.db, a, univers) };
   });
 
   // JSON `{titre, forme}`, or multipart with `titre` and `forme` before the `fichier` (illustrated map).
@@ -136,5 +153,36 @@ export function registerCartesRoutes(app: FastifyInstance) {
     const i = ids(request);
     retirerElement(app.db, a.compteId, !!a.modeJoueur, i.carte, i.element);
     return reply.code(204).send();
+  });
+
+  // Attach to a sheet `{ficheId}` / detach; GM only, anyone else 404 (AD-142).
+  app.put(`${base}/:cid/fiche`, async (request) => {
+    const a = acteur(request);
+    return rattacherCarte(app.db, a.compteId, !!a.modeJoueur, ids(request).carte, corps(request).ficheId as number);
+  });
+
+  app.delete(`${base}/:cid/fiche`, async (request) => {
+    const a = acteur(request);
+    return detacherCarte(app.db, a.compteId, !!a.modeJoueur, ids(request).carte);
+  });
+
+  // The text with the version read: the screen always sends it (AD-59's rule), a stale one is 409 `carte_modifiee`.
+  app.put(`${base}/:cid/texte`, async (request) => {
+    const a = acteur(request);
+    const b = corps(request);
+    if (typeof b.texte !== 'string') {
+      throw new ErreurService('invalide', 'Le texte doit être une chaîne.', undefined, 'texte');
+    }
+    if (typeof b.version !== 'number' || !Number.isInteger(b.version)) {
+      throw new ErreurService('invalide', 'La version lue est requise.', undefined, 'version');
+    }
+    return ecrireTexteCarte(app.db, a.compteId, !!a.modeJoueur, ids(request).carte, b.texte, b.version);
+  });
+
+  // The block « Cartes » of a sheet (E-9): the maps attached to it that the reader reads.
+  app.get('/api/univers/:id/fiches/:fid/cartes', async (request) => {
+    const a = acteur(request);
+    const p = request.params as { id: string; fid: string };
+    return { cartes: cartesDeFiche(app.db, a, idDeChemin(p.id), idDeChemin(p.fid)) };
   });
 }

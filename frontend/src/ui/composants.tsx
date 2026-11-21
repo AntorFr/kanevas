@@ -119,7 +119,7 @@ export function Champ({
   const props = {
     ...reste,
     id,
-    'aria-invalid': erreur ? true : undefined,
+    'aria-invalid': erreur ? true : (reste['aria-invalid'] as boolean | undefined),
     'aria-describedby': decrit || undefined,
   };
   return (
@@ -223,7 +223,7 @@ export function Pastille({
   expanded,
   children,
 }: {
-  sens: 'mj' | 'table' | 'neutre' | 'secrete' | 'danger';
+  sens: 'mj' | 'table' | 'neutre' | 'secrete' | 'danger' | 'accent';
   /** A button that opens a setting: whether it is open (`aria-expanded`). */
   expanded?: boolean;
   icone?: LucideIcon;
@@ -309,14 +309,24 @@ export function Avatar({ nom, joueur, petit }: { nom: string; joueur?: boolean; 
   );
 }
 
-/** A titled `section`; `reserveMj` adds the amber rule and the words « MJ seul ». */
-export function Panneau({ titre, reserveMj, danger, children }: { titre: string; reserveMj?: boolean; danger?: boolean; children: ReactNode }) {
+/** A titled `section`; `reserveMj` adds the amber rule and the words « MJ seul »; `actions` sit at the right of the title. */
+export function Panneau({ titre, reserveMj, danger, actions, children }: { titre: string; reserveMj?: boolean; danger?: boolean; actions?: ReactNode; children: ReactNode }) {
   const id = useId();
+  const titreH2 = (
+    <h2 id={id}>
+      {titre} {reserveMj && <Pastille sens="mj" icone={Lock}>MJ seul</Pastille>}
+    </h2>
+  );
   return (
     <section className={`panneau${reserveMj ? ' reserve-mj' : ''}${danger ? ' zone-danger' : ''}`} aria-labelledby={id}>
-      <h2 id={id}>
-        {titre} {reserveMj && <Pastille sens="mj" icone={Lock}>MJ seul</Pastille>}
-      </h2>
+      {actions ? (
+        <div className="panneau-tete">
+          {titreH2}
+          <div className="panneau-actions">{actions}</div>
+        </div>
+      ) : (
+        titreH2
+      )}
       {children}
     </section>
   );
@@ -353,10 +363,32 @@ export function BasculeMjJoueur({ mode, onChange }: { mode: 'mj' | 'joueur'; onC
   );
 }
 
-/** Modal dialog: focus enters and stays, Escape closes, focus returns to the opener. */
-export function Fenetre({ titre, onFermer, icone: Icone, children }: { titre: string; onFermer: () => void; icone?: LucideIcon; children: ReactNode }) {
+/**
+ * Modal dialog: focus enters and stays, Escape closes, focus returns to the opener.
+ * `large` is the 560 px version, scrolling inside itself; `verrouillee` keeps it open (Escape does nothing) while a
+ * value shown once has not been acknowledged (E-23). The veil never closes a window.
+ */
+export function Fenetre({
+  titre,
+  onFermer,
+  icone: Icone,
+  large,
+  verrouillee,
+  children,
+}: {
+  titre: string;
+  onFermer: () => void;
+  icone?: LucideIcon;
+  large?: boolean;
+  verrouillee?: boolean;
+  children: ReactNode;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const id = useId();
+  const fermer = useRef(onFermer);
+  fermer.current = onFermer;
+  const verrou = useRef(verrouillee);
+  verrou.current = verrouillee;
   useEffect(() => {
     const ouvrant = document.activeElement as HTMLElement | null;
     const focalisables = () =>
@@ -365,7 +397,10 @@ export function Fenetre({ titre, onFermer, icone: Icone, children }: { titre: st
       );
     (focalisables()[0] ?? ref.current)?.focus();
     const touche = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') return onFermer();
+      if (e.key === 'Escape') {
+        if (verrou.current) return e.preventDefault();
+        return fermer.current();
+      }
       if (e.key !== 'Tab') return;
       const f = focalisables();
       if (f.length === 0) return e.preventDefault();
@@ -384,10 +419,10 @@ export function Fenetre({ titre, onFermer, icone: Icone, children }: { titre: st
       document.removeEventListener('keydown', touche);
       ouvrant?.focus();
     };
-  }, [onFermer]);
+  }, []);
   return (
     <div className="voile">
-      <div className="fenetre" role="dialog" aria-modal="true" aria-labelledby={id} ref={ref} tabIndex={-1}>
+      <div className={`fenetre${large ? ' large' : ''}`} role="dialog" aria-modal="true" aria-labelledby={id} ref={ref} tabIndex={-1}>
         {Icone && (
           <div className="ic-fenetre">
             <Icone size={18} strokeWidth={1.75} aria-hidden="true" />

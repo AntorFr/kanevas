@@ -1,4 +1,5 @@
 import {
+  History,
   Images,
   KeyRound,
   LayoutGrid,
@@ -17,12 +18,12 @@ import { iconeDeNom, type TypeVue } from './types-contexte';
 /**
  * The sidebar's items (docs/ecrans.md, « Barre latérale »). They live here, not in the bar: an item
  * shows only when a registered screen answers its address, so a screen not built yet
- * has no entry in the bar until it is registered. `chemin(id)` is the concrete address.
+ * has no entry in the bar until it is registered. `chemin(ref)` is the concrete address: `ref` is the universe's key, or its id while the key is not known.
  */
 export interface Item {
   libelle: string;
   icone: LucideIcon;
-  chemin: (universId: number) => string;
+  chemin: (universId: number | string) => string;
   /** Section heading in the bar; items with the same one are grouped. */
   section?: string;
   /** Only this role sees it. */
@@ -33,6 +34,8 @@ export interface Item {
   horsUnivers?: boolean;
   /** The link carries the player-mode view of the GM (`?mode=joueur`) when it is on. */
   garderMode?: boolean;
+  /** Hidden while the GM is in player mode (E-24: the history is the GM's, not the player's view). */
+  horsModeJoueur?: boolean;
 }
 
 /** Authelia group carried by `GET /api/moi` that makes an instance admin (B-6). */
@@ -47,6 +50,7 @@ export const ITEMS_UNIVERS: Item[] = [
   { libelle: 'Membres', icone: ContactRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/membres` },
   { libelle: 'Paramètres', icone: Settings2, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/parametres` },
   { libelle: 'Accès par API', icone: KeyRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/acces-api` },
+  { libelle: 'Historique', icone: History, section: 'Univers', role: 'mj', horsModeJoueur: true, chemin: (id) => `/univers/${id}/historique` },
   // « Administration » (E-5): instance admins only, wherever the bar is.
   { libelle: 'Administration', icone: ShieldCheck, section: 'Instance', groupe: GROUPE_ADMIN, horsUnivers: true, chemin: () => '/administration' },
 ];
@@ -61,5 +65,5 @@ export const itemsLore = (types: TypeVue[]): Item[] =>
     libelle: t.pluriel,
     icone: iconeDeNom(t.icone),
     section: 'Lore',
-    chemin: (id: number) => `/univers/${id}/fiches/${t.slug}`,
+    chemin: (id: number | string) => `/univers/${id}/fiches/${t.slug}`,
   }));

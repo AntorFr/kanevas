@@ -2,6 +2,7 @@ export type Role = 'mj' | 'joueur';
 
 export { TYPES_FICHE, type TypeFiche } from './types-fiche.js';
 import type { TypeFiche } from './types-fiche.js';
+import type { Geree } from './sections-gerees.js';
 
 /**
  * Who is asking. `modeJoueur` (AD-39) only restricts READS: the caller is read
@@ -20,6 +21,8 @@ export interface Compte {
 
 export interface Univers {
   id: number;
+  /** Readable identifier, the address of the universe (AD-146); a member reads it. */
+  cle: string;
   nom: string;
   description: string;
   creeLe: string;
@@ -36,6 +39,7 @@ export interface SectionRow {
   fiche_id: number;
   titre: string;
   ordre: number;
+  cle: string;
   contenu: string;
   /** `contenu` without the GM blocks (AD-114), kept by `sections.ts` at each write. */
   contenu_public: string;
@@ -46,6 +50,10 @@ export interface SectionRow {
   auteur_id: number | null;
   auteur_lit: number;
   auteur_ecrit: number;
+  /** `module/outil/type` of the tool that manages the section (AD-127), null for a free section. */
+  gere_par: string | null;
+  /** Version of the sources the managed text was produced with (AD-128), null with `gere_par`. */
+  source_version: string | null;
 }
 
 export interface Audience {
@@ -58,6 +66,8 @@ export interface Audience {
 
 export interface SectionVue {
   id: number;
+  /** Key of the section (B-104): the GM outside player mode only, like the sheet's. */
+  cle?: string;
   titre: string;
   ordre: number;
   /** Markdown source: only when the caller may write the section (AD-113). */
@@ -72,6 +82,8 @@ export interface SectionVue {
   audience?: Audience;
   /** Attachments the caller sees; filled by a sheet read (AD-67). */
   piecesJointes?: PieceJointeVue[];
+  /** Only on a section managed by a tool (AD-128): the banner's state, never the source. */
+  geree?: Geree;
 }
 
 export interface PieceJointeVue {
@@ -87,8 +99,17 @@ export interface PieceJointeVue {
   attente?: string;
 }
 
+/** A passage of a readable section that matches a search (AD-145). */
+export interface Passage {
+  section: number;
+  titre: string;
+  extrait: string;
+}
+
 export interface Fiche {
   id: number;
+  /** Key of the sheet (AD-146): the GM outside player mode only; a reader's body never carries it. */
+  cle?: string;
   universId: number;
   type: TypeFiche;
   titre: string;
@@ -106,6 +127,10 @@ export interface Fiche {
   etiquettes?: string[];
   /** With a search: the first alias that answers when the title does not (AD-118 (3)). */
   aliasTrouve?: string;
+  /** With `extraits` (AD-145): the matching readable sections with their excerpt. */
+  passages?: Passage[];
+  /** With a linked search including descendants: the readable other end, absent for a direct link. */
+  via?: { id: number; titre: string };
 }
 
 export type IllustrationVue =
