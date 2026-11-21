@@ -1,5 +1,6 @@
 # Status — kanevas
 
+> MàJ : 2026-11-21 (assemblage de `rouge-kanevas-battlemap-8` : `elementAttendu` de `src/e2e/carte-illustree-ecran.test.ts` attend dans la page (`page.waitForFunction`, bornes sérialisables) au lieu d'un sommeil de 100 ms, ce que refusait le garde `harnais-sans-delai` (AD-harnais-3) ; test seul, produit et garde inchangés)
 > MàJ : 2026-11-20 (assemblage de `kanevas-battlemap-table`, repris après la recette : la fenêtre « Ajouter un pion » ▸ Asset tient dans l'écran, B-104 ; PR vers `epic/kanevas-battlemap` ; `epic/kanevas-battlemap` déjà fusionnée dans la feature)
 > MàJ : 2026-11-17 (assemblage de `rouge-kanevas-battlemap-6` : le test e2e « E-19 contenu long · 102 fichiers » de `src/e2e/mediatheque-besoin-verification.test.ts` attend la 100e puis la 102e tuile au lieu de les compter d'un coup ; instable sous charge, test seul, produit inchangé)
 > MàJ : 2026-11-17 (assemblage de `kanevas-battlemap-generation`, PR vers `epic/kanevas-battlemap` ; `epic/kanevas-battlemap` déjà fusionnée dans la feature)
