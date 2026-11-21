@@ -128,7 +128,6 @@ describe('E-29 à distance : trois écrans sur la même table', { skip: skipBrow
     let l1 = l0;
     let r1 = r0;
     while (Date.now() < deadline && (l1 === l0 || r1 === r0)) {
-      await lea.waitForTimeout(500);
       l1 = await image(lea);
       r1 = await image(second);
     }
@@ -174,7 +173,6 @@ describe('E-29 à distance : trois écrans sur la même table', { skip: skipBrow
       const deadline = Date.now() + 20000;
       let apres = avant;
       while (Date.now() < deadline && apres === avant) {
-        await lea.waitForTimeout(500);
         apres = await image(lea);
       }
       assert.notEqual(apres, avant, 'les pions bougent chez Léa');

@@ -78,7 +78,7 @@ const token = (page: Any, titre: string) => page.getByRole('button', { name: rxE
 async function elements(): Promise<Any[]> {
   return (await api(antor, 'GET', base())).body.elements;
 }
-/** Re-reads the first element through the API every 100 ms until `ok` holds (10 s deadline); the failure message carries the last value read. */
+/** Re-reads the first element through the API until `ok` holds (10 s deadline); the failure message carries the last value read. */
 async function elementAttendu(ok: (el: Any) => boolean, attendu: string): Promise<Any> {
   const echeance = Date.now() + 10000;
   let dernier: Any;
@@ -86,7 +86,6 @@ async function elementAttendu(ok: (el: Any) => boolean, attendu: string): Promis
     dernier = (await elements())[0];
     if (dernier && ok(dernier)) return dernier;
     if (Date.now() >= echeance) assert.fail(`${attendu}, dernière lecture (${dernier?.x}, ${dernier?.y})`);
-    await new Promise((r) => setTimeout(r, 100));
   }
 }
 /** Waits until the layout is laid out: background loaded (no `en-attente`) and the token box identical on two successive frames. */
