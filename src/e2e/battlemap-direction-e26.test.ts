@@ -98,7 +98,9 @@ describe('E-26 Direction artistique au navigateur', { skip: skipBrowser }, () =>
     assert.equal((await direction()).source === 'assistant', false, 'la demande préremplie n’est pas envoyée');
     await champ.fill('Propose une direction artistique pour cet univers.');
     await panneau.getByRole('button', { name: 'Envoyer' }).click();
-    await bandeau.waitFor();
+    await bandeau.waitFor({ timeout: 15000 }).catch(async (e: Any) => {
+      throw new Error(`pas de bannière : fil = ${JSON.stringify(await panneau.innerText())} ; direction = ${JSON.stringify(await direction())} ; ${e.message}`);
+    });
     assert.match(await style.inputValue(), /Peinture à plat/);
     assert.equal((await direction()).source, 'assistant');
     await antor.reload();
