@@ -15,12 +15,13 @@ export type TypeEvenement =
   | 'section_supprimee'
   | 'relation_creee'
   | 'relation_modifiee'
-  | 'relation_retiree';
+  | 'relation_retiree'
+  | 'systeme_modifie';
 
 export interface Evenement {
   type: TypeEvenement;
   libelle: string;
-  cible: { type: 'fiche' | 'proposition'; [id: string]: string | number };
+  cible: { type: 'fiche' | 'proposition' | 'systeme'; [id: string]: string | number };
 }
 
 /**

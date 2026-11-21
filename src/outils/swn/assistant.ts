@@ -11,12 +11,13 @@ import type { Db } from '../../db/db.js';
 import type { Acteur } from '../../services/types.js';
 import type { Outil, Resultat } from '../../services/assistant/types.js';
 import type { ContexteOutil } from '../declaration.js';
+import { outilsEcriture } from './assistant-ecriture.js';
 
-const INTROUVABLE: Resultat = { ok: false, erreur: 'Introuvable.' };
+export const INTROUVABLE: Resultat = { ok: false, erreur: 'Introuvable.' };
 const plier = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
 
 /** The galaxy a tool names (or the only one the actor reads): its id, `null` when none, or the message of G-9. */
-function galaxieChoisie(db: Db, acteur: Acteur, universId: number, galaxie: string | undefined): number | null | Resultat {
+export function galaxieChoisie(db: Db, acteur: Acteur, universId: number, galaxie: string | undefined): number | null | Resultat {
   const lisibles = cartesGalaxies(db, acteur, universId);
   if (galaxie !== undefined) {
     const trouvees = lisibles.filter((g) => plier(g.titre) === plier(galaxie));
@@ -72,7 +73,7 @@ export function outilTrajet({ db, acteur, universId }: ContexteOutil): Outil[] {
 
 /** Every assistant tool of the `swn/galaxie` tool (AD-outils-1). */
 export function outilsAssistant(ctx: ContexteOutil): Outil[] {
-  return [...outilTrajet(ctx), ...outilLireSysteme(ctx)];
+  return [...outilTrajet(ctx), ...outilLireSysteme(ctx), ...(ctx.role === 'mj' ? outilsEcriture(ctx) : [])];
 }
 
 const schemaLecture = z.strictObject({
@@ -119,6 +120,13 @@ async function systemeEnDonnees(vue: InterieurVue, masque: boolean, mj: boolean)
   };
 }
 
+/** The system as `swn_lire_systeme` returns it, whichever tool answers (a write returns the same object, AD-outils-2). */
+export async function donneesDuSysteme(db: Db, acteur: Acteur, universId: number, galaxieId: number, vue: InterieurVue, mj: boolean): Promise<Record<string, unknown>> {
+  const { niveau } = galaxieLisible(db, acteur, universId, galaxieId);
+  const masque = systemesLisibles(db, galaxieId, niveau).some((s) => s.q === vue.q && s.r === vue.r && estMasque(s));
+  return systemeEnDonnees(vue, masque, mj);
+}
+
 /** `swn_lire_systeme` (B-94): names and coordinates in, data out; `lireInterieur` is the only read. */
 export function outilLireSysteme({ db, acteur, universId, role }: ContexteOutil): Outil[] {
   return [{
@@ -134,10 +142,7 @@ export function outilLireSysteme({ db, acteur, universId, role }: ContexteOutil)
         if (id !== null && typeof id === 'object') return id;
         if (id === null) return INTROUVABLE;
         const vue = lireInterieur(db, acteur, universId, id, q, r);
-        const mj = role === 'mj';
-        const { niveau } = galaxieLisible(db, acteur, universId, id);
-        const masque = systemesLisibles(db, id, niveau).some((s) => s.q === q && s.r === r && estMasque(s));
-        return { ok: true, donnees: await systemeEnDonnees(vue, masque, mj) };
+        return { ok: true, donnees: await donneesDuSysteme(db, acteur, universId, id, vue, role === 'mj') };
       } catch (e) {
         if (!(e instanceof ErreurService)) throw e;
         return e.code === 'introuvable' ? INTROUVABLE : { ok: false, erreur: e.message };
