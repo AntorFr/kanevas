@@ -355,3 +355,10 @@ a.jeton:hover { box-shadow: inset 0 0 0 1px var(--bord-champ); }
   background: var(--champ-fond, var(--surface)); border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); }
 .vignette-ref-legende:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
 .vignette-ref .bouton-icone { align-self: flex-end; }
+
+/* ---------- BandeauAnnulable (charte § 4, « Reversible notice ») ---------- */
+.bandeau-annulable { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); padding: var(--e-2) var(--e-3);
+  border: 1px solid var(--accent); border-radius: var(--rayon-champ); background: var(--accent-fond); color: var(--texte); font-size: var(--t-13); }
+.bandeau-annulable .ba-texte { overflow-wrap: anywhere; }
+.bandeau-annulable .ba-note { flex-basis: 100%; color: var(--texte-2); }
+.bandeau-annulable .ba-erreur { color: var(--danger); }

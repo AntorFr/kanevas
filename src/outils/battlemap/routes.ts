@@ -16,7 +16,7 @@ import {
 import { appliquerCommandes, creerCarte, lireCarte, reglerCarte, supprimerCarte } from '../../services/battlemap-cartes.js';
 import { appliquerCommandesTable, creerTable, definirProprietaire, lireTable, ouvertureFlux } from '../../services/battlemap-tables.js';
 import {
-  ajouterReference, ajouterReferenceDepuisFichier, ecrireDirection, legenderReference, lireDirection, retirerReference,
+  ajouterReference, ajouterReferenceDepuisFichier, annulerDirection, ecrireDirection, legenderReference, lireDirection, retirerReference,
 } from '../../services/battlemap-direction.js';
 
 const RACINE = '/api/univers/:id/outils/battlemap';
@@ -150,6 +150,9 @@ export function routesBattlemap(app: FastifyInstance, garde: (cle: string) => pr
     const b = corps(request);
     return ecrireDirection(app.db, acteur(request), univers(request), b.texte, b.version);
   }));
+
+  app.post(`${RACINE}/direction/annuler`, opts, proteger((request) =>
+    annulerDirection(app.db, acteur(request), univers(request), corps(request).version)));
 
   app.post(`${RACINE}/direction/images`, opts, proteger(async (request, reply) => {
     const { flux, nom } = await recevoir(request);

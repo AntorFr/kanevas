@@ -133,10 +133,10 @@ describe('bibliothèque et direction — monde semé', () => {
     await ouvrirBibliotheque(lea, uid);
     await lea.getByRole('heading', { name: 'Bibliothèque', level: 1 }).waitFor();
     await carte(lea, 'Tonneau').waitFor();
-    assert.equal(await grille(lea).getByRole('listitem').count(), 9);
+    assert.equal(await grille(lea).getByRole('listitem').count(), 10);
     assert.equal(await carte(lea, 'Coffre piégé').count(), 0, 'le MJ seul est absent (pas refusé, absent)');
-    await segment(lea, 'Tous', 9).waitFor();
-    assert.equal(await segment(lea, 'Tous', 10).count(), 0, 'le compte ne trahit pas le MJ seul');
+    await segment(lea, 'Tous', 10).waitFor();
+    assert.equal(await segment(lea, 'Tous', 11).count(), 0, 'le compte ne trahit pas le MJ seul');
     await segment(lea, 'Sols', 3).waitFor();
     for (const nom of ['Ajouter des images', 'Choisir dans la médiathèque', 'Retirer…']) {
       assert.equal(await lea.getByRole('button', { name: nom }).count(), 0, `pas de « ${nom} »`);
@@ -171,7 +171,7 @@ describe('bibliothèque et direction — monde semé', () => {
     assert.equal((await lea.request.get(`/api/univers/${uid}/fichiers/${visible.fichierId}`)).status(), 200);
     assert.equal((await lea.request.get(`/api/univers/${uid}/fichiers/${cache.fichierId}`)).status(), 404);
     const laListe = (await api(lea, uid, 'assets')).corps.assets.map((a: Any) => a.nom);
-    assert.equal(laListe.length, 9);
+    assert.equal(laListe.length, 10);
     assert.ok(!laListe.includes('Coffre piégé'));
   });
 
@@ -194,7 +194,7 @@ describe('bibliothèque et direction — monde semé', () => {
   test('B-97 · Antor dépose trois images en « Objets », les sélectionne et règle l’empreinte « 2×1 »', opts, async () => {
     await ouvrirBibliotheque(antor, uid);
     await carte(antor, 'Tonneau').waitFor();
-    await segment(antor, 'Objets', 3).waitFor();
+    await segment(antor, 'Objets', 4).waitFor();
     await deposer(
       antor,
       [fichierPng('couchette-a.png'), fichierPng('couchette-b.png'), fichierPng('console.png')],
@@ -203,8 +203,8 @@ describe('bibliothèque et direction — monde semé', () => {
     );
     await antor.getByText(rx('3 images ajoutées.')).waitFor();
     for (const nom of ['couchette-a', 'couchette-b', 'console']) await carte(antor, nom).waitFor();
-    await segment(antor, 'Objets', 6).waitFor();
-    await segment(antor, 'Tous', 13).waitFor();
+    await segment(antor, 'Objets', 7).waitFor();
+    await segment(antor, 'Tous', 14).waitFor();
     // Nommé depuis le fichier (extension ôtée), catégorie du dépôt, 1×1 par défaut pour un objet.
     const apres = await listeAssets(antor, uid);
     const a = apres.find((x: Any) => x.nom === 'couchette-a');
@@ -304,7 +304,7 @@ describe('bibliothèque et direction — monde semé', () => {
   test('B-97 · les étiquettes « bois » et « taverne » se combinent en ET : seul « Tonneau » porte les deux', opts, async () => {
     await ouvrirBibliotheque(antor, uid);
     await carte(antor, 'Tonneau').waitFor();
-    await attendreCartes(antor, 15);
+    await attendreCartes(antor, 16);
     await antor.getByRole('button', { name: 'bois', exact: true }).click();
     await antor.getByRole('button', { name: 'taverne', exact: true }).click();
     await attendreCartes(antor, 1);
@@ -489,14 +489,19 @@ describe('bibliothèque et direction — monde semé', () => {
     await second.screenshot({ path: join(CAPTURES, 'antor-texte-perime.png') });
   });
 
-  test('E-26 · « Demander à l’assistant » reste désactivé', opts, async () => {
+  test('E-26 · « Demander à l’assistant » est actif et préremplit une demande non envoyée', opts, async () => {
     await ouvrirBibliotheque(antor, uid, '?onglet=direction');
     const bouton = antor.getByRole('button', { name: 'Demander à l’assistant' });
     await bouton.waitFor();
-    assert.equal(await bouton.getAttribute('aria-disabled'), 'true', 'le bouton est désactivé jusqu’à la tranche assistant');
-    assert.equal(await antor.getByRole('dialog').count(), 0, 'il n’ouvre rien');
-    await bouton.click({ force: true });
-    assert.equal(await antor.getByRole('dialog').count(), 0, 'un clic sur le bouton désactivé n’ouvre rien');
+    assert.equal(await bouton.isDisabled(), false, 'le bouton est actif quand l’assistant répond');
+    const texte = await antor.getByRole('textbox', { name: 'Style', exact: true }).inputValue();
+    await bouton.click();
+    const champ = antor.getByRole('complementary', { name: /Kanevas — assistant/ }).getByRole('textbox', { name: 'Demander à Kanevas' });
+    await champ.waitFor();
+    assert.equal(
+      await champ.inputValue(),
+      texte.trim() === '' ? 'Propose une direction artistique pour cet univers.' : 'Améliore la direction artistique en gardant son esprit.',
+    );
   });
 
   // ---------------------------------------------------------------- droits de l'API

@@ -73,7 +73,7 @@ export function refusDuCoeur(r: coeur.RefusCoeur): ErreurService {
   if (r.code === 'limite_depassee') {
     return new ErreurService('invalide', 'Cette taille laisse des éléments hors de la carte, ou dépasse 200 cases.', 'limite_depassee', r.champ ?? 'taille');
   }
-  return new ErreurService('invalide', 'Commande refusée.', r.code, r.champ);
+  return new ErreurService('invalide', 'Commande refusée.', r.code, r.champ, r.index);
 }
 
 export interface Document {

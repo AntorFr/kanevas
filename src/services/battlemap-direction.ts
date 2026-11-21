@@ -13,11 +13,17 @@ export const MAX_TEXTE_DIRECTION = 5000;
 export const MAX_REFERENCES = 8;
 export const MAX_LEGENDE = 200;
 
+export type OrigineDirection = 'mj' | 'assistant';
+
 export interface ReferenceVue { fichierId: number; nom: string; legende: string; rang: number; jeton: string }
 export interface DirectionVue {
   texte: string;
   /** The text before the last change, for « Annuler » (AD-76); null before any change. */
   textePrecedent: string | null;
+  /** Whether « Annuler » has a text to put back. */
+  peutAnnuler: boolean;
+  /** Who wrote the current text; the banner of E-26 shows for `assistant` with a previous text. */
+  source: OrigineDirection;
   /** 0 while nothing was ever written. */
   version: number;
   modifieLe: string | null;
@@ -31,14 +37,15 @@ function exigerLecture(db: Db, acteur: Acteur, universId: number): void {
 }
 
 function lire(db: Db, universId: number): DirectionVue {
-  const d = db.prepare('SELECT texte, texte_precedent, version, modifie_le FROM bm_direction WHERE univers_id = ?').get(universId) as
-    { texte: string; texte_precedent: string | null; version: number; modifie_le: string } | undefined;
+  const d = db.prepare('SELECT texte, texte_precedent, source, version, modifie_le FROM bm_direction WHERE univers_id = ?').get(universId) as
+    { texte: string; texte_precedent: string | null; source: OrigineDirection; version: number; modifie_le: string } | undefined;
   const images = (db.prepare(
     `SELECT i.fichier_id, f.nom, i.legende, i.rang, f.disque FROM bm_direction_images i JOIN fichiers f ON f.id = i.fichier_id
      WHERE i.univers_id = ? ORDER BY i.rang`,
   ).all(universId) as { fichier_id: number; nom: string; legende: string; rang: number; disque: string }[])
     .map((r) => ({ fichierId: r.fichier_id, nom: r.nom, legende: r.legende, rang: r.rang, jeton: r.disque }));
-  return { texte: d?.texte ?? '', textePrecedent: d?.texte_precedent ?? null, version: d?.version ?? 0, modifieLe: d?.modifie_le ?? null, images };
+  return { texte: d?.texte ?? '', textePrecedent: d?.texte_precedent ?? null, peutAnnuler: (d?.texte_precedent ?? null) !== null,
+    source: d?.source ?? 'mj', version: d?.version ?? 0, modifieLe: d?.modifie_le ?? null, images };
 }
 
 export function lireDirection(db: Db, acteur: Acteur, universId: number): DirectionVue {
@@ -46,11 +53,16 @@ export function lireDirection(db: Db, acteur: Acteur, universId: number): Direct
   return lire(db, universId);
 }
 
+const versionPerimee = () =>
+  new ErreurService('conflit', 'Ce texte a changé depuis que vous l’avez ouvert.', 'direction_modifiee', 'version');
+
 /**
  * Writes the text if `version` is the current one (0 before any write). The previous text is kept when the text changes.
  * A stale version is `conflit` (`direction_modifiee`); over 5 000 characters is `invalide` (`texte_trop_long`).
  */
-export function ecrireDirection(db: Db, acteur: Acteur, universId: number, texte: unknown, version: unknown): DirectionVue {
+export function ecrireDirection(
+  db: Db, acteur: Acteur, universId: number, texte: unknown, version: unknown, origine: OrigineDirection = 'mj',
+): DirectionVue {
   return db.transaction(() => {
     exigerEcriture(db, acteur, universId);
     if (typeof texte !== 'string') throw new ErreurService('invalide', 'Le texte est invalide.', 'texte_invalide');
@@ -62,17 +74,39 @@ export function ecrireDirection(db: Db, acteur: Acteur, universId: number, texte
     }
     const maintenant = lire(db, universId);
     if (version !== maintenant.version) {
-      throw new ErreurService('conflit', 'Ce texte a changé depuis que vous l’avez ouvert.', 'direction_modifiee');
+      throw versionPerimee();
     }
     const quand = new Date().toISOString();
     if (maintenant.version === 0) {
-      db.prepare('INSERT INTO bm_direction (univers_id, texte, texte_precedent, version, modifie_le) VALUES (?, ?, NULL, 1, ?)')
-        .run(universId, texte, quand);
+      db.prepare('INSERT INTO bm_direction (univers_id, texte, texte_precedent, source, version, modifie_le) VALUES (?, ?, ?, ?, 1, ?)')
+        // The assistant's first text replaces the empty one: « Annuler » puts the empty text back.
+        .run(universId, texte, origine === 'assistant' ? '' : null, origine, quand);
     } else {
       const precedent = texte === maintenant.texte ? maintenant.textePrecedent : maintenant.texte;
-      db.prepare('UPDATE bm_direction SET texte = ?, texte_precedent = ?, version = version + 1, modifie_le = ? WHERE univers_id = ?')
-        .run(texte, precedent, quand, universId);
+      db.prepare('UPDATE bm_direction SET texte = ?, texte_precedent = ?, source = ?, version = version + 1, modifie_le = ? WHERE univers_id = ?')
+        .run(texte, precedent, origine, quand, universId);
     }
+    return lire(db, universId);
+  })();
+}
+
+/**
+ * « Annuler » (AD-battlemap-assistant-3): puts the previous text back, empties it, hands the text back to the GM and raises the
+ * version. One step, no redo. Stale version is `conflit` (`champ: version`); nothing to put back is `conflit` (`rien_a_retablir`).
+ */
+export function annulerDirection(db: Db, acteur: Acteur, universId: number, version: unknown): DirectionVue {
+  return db.transaction(() => {
+    exigerEcriture(db, acteur, universId);
+    if (typeof version !== 'number' || !Number.isInteger(version) || version < 0) {
+      throw new ErreurService('invalide', 'La version est invalide.', 'version_invalide');
+    }
+    const maintenant = lire(db, universId);
+    if (version !== maintenant.version) throw versionPerimee();
+    if (maintenant.textePrecedent === null) {
+      throw new ErreurService('conflit', 'Il n’y a rien à rétablir.', 'rien_a_retablir');
+    }
+    db.prepare("UPDATE bm_direction SET texte = ?, texte_precedent = NULL, source = 'mj', version = version + 1, modifie_le = ? WHERE univers_id = ?")
+      .run(maintenant.textePrecedent, new Date().toISOString(), universId);
     return lire(db, universId);
   })();
 }

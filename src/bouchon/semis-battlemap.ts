@@ -13,10 +13,11 @@ import { pngPlat } from './png-plat.js';
 
 type Rvb = readonly [number, number, number];
 
-/** Ten assets: three objects, three pieces of scenery, three floors and a wall; the last object is GM-only (AD-battlemap-assets-4). */
+/** Eleven assets (« Caisses » carries « réserve », none carries « cuisine »: the stub's missing-asset answer, AD-battlemap-assistant-8): four objects, three pieces of scenery, three floors and a wall; the last object is GM-only (AD-battlemap-assets-4). */
 const ASSETS: { nom: string; categorie: Categorie; couleur: Rvb; mj?: true; tags?: string[] }[] = [
   { nom: 'Tonneau', categorie: 'objet', couleur: [139, 94, 60], tags: ['taverne', 'bois'] },
   { nom: 'Coffre', categorie: 'objet', couleur: [184, 134, 11] },
+  { nom: 'Caisses', categorie: 'objet', couleur: [150, 110, 70], tags: ['réserve'] },
   { nom: 'Coffre piégé', categorie: 'objet', couleur: [160, 40, 40], mj: true },
   { nom: 'Arbre', categorie: 'decor', couleur: [46, 125, 50] },
   { nom: 'Rocher', categorie: 'decor', couleur: [120, 120, 125] },
@@ -38,6 +39,8 @@ export async function semerBattlemap(db: Db, racine: string = attachmentsDir): P
   if (!u || u.systeme_id === null) return;
   const antor = { compteId: assurerCompte(db, 'antor').id };
   poserActivation(db, antor.compteId, { niveau: 'systeme', id: u.systeme_id }, 'battlemap/assets', true);
+  // The assistant's « dix décors » rule prepares a batch through the generation tool: it must be on for E-27 to show it (stub engine, AD-88).
+  poserActivation(db, antor.compteId, { niveau: 'systeme', id: u.systeme_id }, 'battlemap/generation', true);
   const flux = (c: Rvb) => Readable.from([pngPlat(c)]);
   const ids = new Map<string, string>();
   for (const a of ASSETS) {

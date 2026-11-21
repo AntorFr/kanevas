@@ -17,6 +17,8 @@ export class ErreurService extends Error {
     readonly detail?: string,
     /** The request field a refusal is about (import API, `invalide` with `champ`). */
     readonly champ?: string,
+    /** Rank of the offending command in a batch refused by the map core (the assistant's tools name it). */
+    readonly index?: number,
   ) {
     super(message);
     this.name = 'ErreurService';

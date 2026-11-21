@@ -10,12 +10,16 @@ export type TypeEvenement =
   | 'section_modifiee'
   | 'section_completee'
   | 'proposition_creee'
-  | 'image_attachee';
+  | 'image_attachee'
+  // Battle map (AD-battlemap-assistant-6): the registry of blocks is the next slice's.
+  | 'direction_ecrite'
+  | 'lot_prepare'
+  | 'carte_composee';
 
 export interface Evenement {
   type: TypeEvenement;
   libelle: string;
-  cible: { type: 'fiche' | 'proposition'; [id: string]: string | number };
+  cible: { type: 'fiche' | 'proposition' | 'direction' | 'lot' | 'carte'; [id: string]: string | number };
 }
 
 /**

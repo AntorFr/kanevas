@@ -457,6 +457,10 @@ instead of an image.
   Player nor in Player mode; clicking the image opens the original in a new tab;
   removal is confirmed inline (« Annuler » takes focus).
 
+**Reversible notice** (`BandeauAnnulable`, E-26 banner « Texte modifié par l'assistant »). A notice attached to a content, with one reversible gesture; not an application state, so not the `Bandeau`.
+- V: block in normal flow under the page title (neither sticky nor full width); `--accent-fond` background, `--texte` text 13 px (`--t-13`), 1 px `--accent` border, radius `--rayon-champ`, padding `--e-2` `--e-3`; text on the left, small neutral `Bouton` « Annuler » beside it. No new token.
+- C: `role="status"`, not dismissible; shown while the server says `source = 'assistant'`, removed by a hand save or by « Annuler » (after the status line « Texte précédent rétabli. », `role="status"`, not a toast). « Annuler » is `aria-disabled` offline, « Annulation… » while sending, one shot; accessible name « Annuler la modification de l'assistant ». A stale version replaces the notice with the `Alerte` « Ce texte a changé depuis que vous l'avez ouvert. » + « Recharger ». GM only.
+
 **Components of `kanevas-battlemap-assets`** (verdict of the design-system guardian; mockups `e25-bibliotheque.html`, `e26-direction.html`; the mockups keep their own variables and hard-coded radii, the code takes the tokens).
 - **Tabs** (`ui/onglets.tsx`, extracted from the markup of `ecrans/parametres.tsx`, reused by E-27). V: 36 px bar, `--bord` bottom rule; tab `--texte-2`, hover `--texte`, active `--texte` with a 2 px `--accent` underline. C: `role="tablist"` / `tab` (`aria-selected`) / `tabpanel`, left/right arrows, one tab stop; the active tab is in the address (`?onglet=`). Not `Segments` (a value choice).
 - **Filter chip** (`ui/puce-filtre.tsx`, drawn from `Pastille`). V: 24 px, `--rayon-pastille`, 12 px, `--texte-2` on `--surface-2` with `--bord`; active `--accent-texte` on `--accent-fond` with a 12 px `check`. C: `<button aria-pressed>`, several at once, never colour alone; the row wraps, never scrolls sideways.
