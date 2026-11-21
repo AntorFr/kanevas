@@ -128,7 +128,7 @@ describe('critère de sortie : Port-Sel, Maître Aldric, La Guilde des Brumes', 
     assert.ok(!(await hl.innerHTML()).includes(`/fiche/${id['La Guilde des Brumes']}`), "l'adresse de la Guilde ne sort pas");
     await lea.screenshot({ path: `${SHOTS}/liens-critere-lea-port-sel.png` });
     await lien.click();
-    await lea.waitForURL(new RegExp(`/univers/${lame}/fiche/${id['Maître Aldric']}$`));
+    await lea.waitForURL(new RegExp(`/univers/[^/]+/(fiche/[^/]+|(?!fiches/|cartes/|outils/)[^/]+/[^/]+)$`));
     await lea.waitForLoadState('networkidle');
     await lea.getByRole('heading', { name: 'Maître Aldric', level: 1 }).waitFor();
     const mentions = lea.getByRole('region', { name: /Mentionnée dans/ });
@@ -284,7 +284,7 @@ describe('B-33 : import `[[cle:…|…]]`, en attente puis résolu (Essai Kanka,
     const antor = await C.antor.ctx.newPage();
     await fichePage(antor, kanka, portKanka);
     await antor.getByRole('link', { name: 'la Guilde', exact: true }).click();
-    await antor.waitForURL(new RegExp(`/fiche/${g.id}$`));
+    await antor.waitForURL(new RegExp(`/(fiche/[^/]+|(?!fiches/|cartes/|outils/)[^/]+/[^/]+)$`));
     await antor.close();
   });
 

@@ -126,10 +126,10 @@ test("création de « Aube de Sel » : Antor oui, Léa refusé, Teo introuvable,
   const d = err(() => k.creerConception(db, antor, u, { ficheId: aube, coque: 'eclaireur' }));
   assert.deepEqual([d.code, d.detail], ['conflit', 'deja_concue']);
   assert.equal(err(() => k.creerConception(db, antor, u, { ficheId: orak, coque: 'fregate' })).detail, 'deja_concue');
-  const autre = (db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', 'Un lieu', '{}', 'x', 'x')").run(u).lastInsertRowid) as number;
+  const autre = (db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('un-lieu', 'ecran', ?, 'lieu', 'Un lieu', '{}', 'x', 'x')").run(u).lastInsertRowid) as number;
   assert.equal(err(() => k.creerConception(db, antor, u, { ficheId: Number(autre), coque: 'eclaireur' })).code, 'invalide');
   // atomicité : une coque inconnue ne laisse ni ligne ni section
-  const nouvelle = Number(db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'vaisseau', 'Neuf', '{}', 'x', 'x')").run(u).lastInsertRowid);
+  const nouvelle = Number(db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('neuf', 'ecran', ?, 'vaisseau', 'Neuf', '{}', 'x', 'x')").run(u).lastInsertRowid);
   const e = err(() => k.creerConception(db, antor, u, { ficheId: nouvelle, coque: 'nimporte' }));
   assert.equal(e.code, 'invalide');
   assert.equal(rangee(db, nouvelle), undefined);

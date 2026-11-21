@@ -10,15 +10,19 @@ import { Bouton, Champ, Chargement, ErreurChargement, PageIntrouvable, Pastille 
 import './ecrans.css';
 import './cartes/cartes.css';
 import './carte/carte.css';
-import { adresseFond, FORMES } from './cartes/commun';
+import { adresseFond, FORMES, type Carte } from './cartes/commun';
 import { AjoutFiche } from './carte/ajout-fiche';
+import { LigneRattachee } from './carte/rattache';
+import { TexteCarte } from './carte/texte';
 import { CadreGraphe } from './carte/cadre-graphe';
 import { CadreIllustre } from './carte/cadre-illustre';
 import { libelleDuType, useTypes } from '../types-contexte';
 import { adresseFiche, ECHEC, type CarteLue, type Element } from './carte/types';
 
 const NON_IMAGE = 'Erreur : ce fichier n’est pas une image (PNG, JPEG, GIF ou WebP).';
-const TROP_LOURD = 'Erreur : l’image dépasse 25 Mo.';
+/** The refusal carries the ceiling of the moment (B-89): the message says it. */
+const tropLourd = (limiteMo: unknown) =>
+  typeof limiteMo === 'number' ? `Image trop lourde : ${limiteMo} Mo au plus.` : 'Image trop lourde.';
 
 type Etat =
   | { k: 'chargement' }
@@ -127,6 +131,9 @@ function Corps({
     setAjout(false);
     setErreurAjout(undefined);
   }, []);
+
+  const majCarte = useCallback((c: Carte) => maj((l) => ({ ...l, carte: { ...l.carte, ...c } })), [maj]);
+  const relireCarte = useCallback(() => lire<CarteLue>(base).then((t) => t.carte, () => undefined), [base]);
 
   async function deplacer(elementId: number, x: number, y: number): Promise<boolean> {
     setEchec(false);
@@ -237,7 +244,7 @@ function Corps({
       maj((l) => ({ ...l, carte: { ...l.carte, fond: c.fond ?? true } }));
       setJetonFond((n) => n + 1);
     } catch (e) {
-      if (e instanceof ErreurApi && (e.code === 'fond_trop_lourd' || e.statut === 413)) setMessageFond(TROP_LOURD);
+      if (e instanceof ErreurApi && (e.code === 'fond_trop_lourd' || e.statut === 413)) setMessageFond(tropLourd(e.details?.limiteMo));
       else if (e instanceof ErreurApi && e.code === 'fond_invalide') setMessageFond(NON_IMAGE);
       else setEchec(true);
     } finally {
@@ -305,6 +312,7 @@ function Corps({
           </Bouton>
         )}
       </div>
+      {gerer && carte.cleOrigine && <p className="carte-cle">{carte.cleOrigine}</p>}
       <div className="carte-sous">
         <span>{FORMES[carte.forme]}</span>
         {gerer && carte.visible !== undefined && (
@@ -316,6 +324,7 @@ function Corps({
           </>
         )}
       </div>
+      <LigneRattachee universId={universId} base={base} carte={carte} gerer={gerer} onCarte={majCarte} />
       {echec && (
         <div className="echec" role="alert">
           {ECHEC}
@@ -379,6 +388,8 @@ function Corps({
           vide={videTexte}
         />
       )}
+
+      <TexteCarte universId={universId} base={base} carte={carte} gerer={gerer} onCarte={majCarte} relire={relireCarte} />
 
       {gerer && choisi && (
         <div className="carte-panneau mj">

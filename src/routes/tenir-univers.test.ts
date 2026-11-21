@@ -173,7 +173,7 @@ test('le_garnissage_couvre_les_tables_attendues', async () => {
   const w = await monde();
   const p = possedees(w.db, w.essai);
   for (const t of [
-    'univers', 'membres', 'jetons_api', 'lots_import', 'fiches', 'sections', 'cartes', 'elements_carte', 'fichiers',
+    'univers', 'membres', 'jetons_univers', 'lots_import', 'fiches', 'sections', 'cartes', 'elements_carte', 'fichiers',
     'fichiers_sections', 'relations', 'taches_preparation', 'propositions', 'etiquettes',
     'fiche_etiquettes', 'fiche_alias', 'pieces_jointes',
   ]) {
@@ -258,8 +258,10 @@ test('le_nom_exact_supprime_tout_ce_qui_pend_de_l_univers_et_rien_d_autre', asyn
     url: `/api/import/v1/univers/${w.essai}/lots`,
     headers: { authorization: `Bearer ${JETON_BOUCHON}` },
   });
-  assert.equal(jeton.statusCode, 401);
-  assert.equal(JSON.parse(jeton.body).code ?? JSON.parse(jeton.body).erreur, 'jeton_invalide');
+  // The token belongs to an account (AD-144) and stays valid; its line for the deleted universe is gone, so the address is unknown.
+  assert.equal(jeton.statusCode, 404);
+  assert.equal((w.db.prepare('SELECT count(*) n FROM jetons_univers WHERE univers_id = ?').get(w.essai) as Any).n, 0);
+  assert.equal((w.db.prepare('SELECT count(*) n FROM jetons_api').get() as Any).n, 1, 'the token stays');
   // deleting again: unknown
   assert.equal((await w.req('antor', 'DELETE', D(w.essai), { nom: 'Essai Kanka' })).status, 404);
 });

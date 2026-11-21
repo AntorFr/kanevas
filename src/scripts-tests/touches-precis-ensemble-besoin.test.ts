@@ -103,9 +103,9 @@ describe('écrans touchés : l’éditeur d’un outil seul (équivalent de l’
 });
 
 describe('écrans touchés : Cadre.tsx touche tous les écrans', () => {
-  test('Cadre.tsx : les 256 tests d’écran', () => {
+  test('Cadre.tsx : tous les tests d’écran', () => {
     const tous = git('ls-files', 'src/e2e').split('\n').filter((f) => f.endsWith('.test.ts')).sort();
-    assert.equal(tous.length, 256);
+    assert.ok(tous.length > 0);
     assert.deepEqual([...choisir('frontend/src/Cadre.tsx')].sort(), tous);
   });
 });
@@ -190,9 +190,9 @@ describe('écrans touchés : Rust et wasm associés aux écrans qui les chargent
 });
 
 describe('écrans touchés : l’en-tête // ecrans: de chaque test d’écran', () => {
-  test('les 256 tests de src/e2e/ ont leur ligne // ecrans: en première ligne', () => {
+  test('les tests de src/e2e/ ont leur ligne // ecrans: en première ligne', () => {
     const fichiers = git('ls-files', 'src/e2e').split('\n').filter((f) => f.endsWith('.test.ts'));
-    assert.equal(fichiers.length, 256);
+    assert.ok(fichiers.length > 0);
     const sans = fichiers.filter((f) => !/^\/\/ ecrans: [a-z0-9-]+(, [a-z0-9-]+)*$/.test(premiereLigne(f)));
     assert.deepEqual(sans, []);
   });

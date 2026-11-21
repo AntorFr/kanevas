@@ -66,7 +66,8 @@ describe('kanevas-arbre-liste, E-8 arbre', { skip: skipBrowser }, () => {
     assert.equal(await arbre(antor).count(), 0, 'grille par défaut');
     await passerEnArbre(antor);
     assert.equal(
-      await antor.evaluate((u: number) => localStorage.getItem(`kanevas:vue-liste:${u}:lieu`), U),
+      // the screen keys the memory by the universe reference of its address (B-101: the key)
+      await antor.evaluate((u: string) => localStorage.getItem(`kanevas:vue-liste:${u}:lieu`), new URL(antor.url()).pathname.split('/')[2]),
       'arbre',
     );
     await antor.reload();
@@ -130,7 +131,9 @@ describe('kanevas-arbre-liste, E-8 arbre', { skip: skipBrowser }, () => {
     assert.equal(await p.getAttribute('aria-expanded'), 'false');
     await p.focus();
     await lea.keyboard.press('Enter');
-    await lea.waitForURL(new RegExp(`/fiche/${ids['Port-Sel']}$`));
+    await lea.waitForURL((u: URL) => /^\/univers\/[^/]+\/(fiche\/[^/]+|lieu\/[^/]+)$/.test(u.pathname));
+    assert.equal((await (await lea.request.get(`/api/univers/${U}/fiches/${ids['Port-Sel']}`)).json()).titre, 'Port-Sel');
+    await lea.getByRole('heading', { name: 'Port-Sel', level: 1 }).waitFor();
   });
 
   test('événement rangé sous Port-Sel : racine de Événements « dans Port-Sel », absent des enfants de Port-Sel dans Lieux', async () => {

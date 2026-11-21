@@ -26,7 +26,7 @@ async function session(): Promise<{ base: string; api: Api; E: number }> {
     return { status: r.status, json, texte };
   };
   const E = ((await api('antor', 'GET', '/api/univers')).json as Any[]).find((u) => u.nom === "Éneria d'essai").id as number;
-  return { base: srv.base, api, E };
+  return { base: srv.base, api, E, jeton: srv.jeton };
 }
 
 describe('B-80 (critère amendé) : masse libre exacte d’une coque de masse 7, sans masse utilisée', () => {
@@ -34,7 +34,7 @@ describe('B-80 (critère amendé) : masse libre exacte d’une coque de masse 7,
   async function monde() {
     const s = await session();
     const V = `/api/univers/${s.E}/outils/swn/vaisseaux`;
-    const jeton = (await s.api('antor', 'POST', `/api/univers/${s.E}/jetons`, { nom: 'Script masses', dureeJours: 30, outils: ['swn/vaisseaux'] })).json.valeur as string;
+    const jeton = s.jeton('antor', s.E, 'Script masses', ['swn/vaisseaux']);
     const imp = (methode: string, chemin: string, corps?: unknown) =>
       fetch(`${s.base}/api/import/v1/univers/${s.E}${chemin}`, { method: methode, headers: { authorization: `Bearer ${jeton}`, ...(corps === undefined ? {} : { 'content-type': 'application/json' }) }, body: corps === undefined ? undefined : JSON.stringify(corps) });
     const lot = ((await (await imp('POST', '/lots?outil=swn/vaisseaux')).json()) as Any).lotId as number;

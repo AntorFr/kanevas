@@ -27,7 +27,7 @@ A single sidebar on every screen within a universe:
   « Notes »;
 - since `kanevas-import`, at the top of the sidebar below the universe selector: **« Rechercher »** (E-17;
   shortcut `/` outside a field);
-- for a GM: **« Univers »** ▸ « Membres », « Paramètres », and since `kanevas-import` **« Accès par API »** (E-18);
+- for a GM: **« Univers »** ▸ « Membres », « Paramètres », and since `kanevas-import` **« Accès par API »** (E-18); *(kanevas-synchro)* **« Historique »** (E-24); for every account, in the account menu: **« Mes jetons d'API »** (E-23);
 - for an instance admin: **« Administration »**;
 - at the bottom, the **account**: the avatar and username, opening a menu — the username, the
   **theme** (three-icon toggle: « Clair », « Sombre », « Système ») and « Se déconnecter ». Theme and
@@ -59,7 +59,7 @@ have it (sheet, map and, since `kanevas-import`, search E-17).
 | **E-2 Create a universe** | E-1 | name, description; the creator becomes GM | P-1 |
 | **E-3 Universe overview** | E-1; universe selector; E-5 (admin who has become a member) | active campaigns (*`kanevas-scenarios`*: « Campagnes en cours », the adventures), latest reports, preparation (GM), visible maps | P-2, P-3, P-4, P-6 |
 | **E-4 Members** | « Univers » navigation (GM) | list, add by username, change role, remove | P-2 |
-| **E-5 Administration** | navigation (instance admin) | list the instance's universes, manage their members — never their content; set the assistant token (B-51) | P-2, P-15 |
+| **E-5 Administration** | navigation (instance admin) | list the instance's universes, manage their members — never their content; set the assistant token (B-51) *(`kanevas-synchro`: see all API tokens, change their accesses, revoke them, B-95)* | P-2, P-15, P-25 |
 | **E-6 Campagne**, **E-7 Scénario** | *retired (`kanevas-scenarios-suivi`)* — an adventure is a sheet: its list is E-8 of the « Aventure » type, its page E-9, with the blocks « Préparation » and « Comptes-rendus » | — | — |
 | **E-8 Sheet list** | « Lore » navigation | sheets of one type that the account can read, in a grid of illustrated cards; search within that type; create (GM); *(kanevas-scenarios)* « Aventure » type: status badge and filter, status menu (GM), « Nouvelle aventure » with sub-type | P-3, P-6 |
 | **E-9 Sheet** | E-8; a token; a link; E-13 | read and write permitted sections; add, reorder, remove a section, set its audience, relate (GM); attach a file (both addition paths, AD-111), restrict a file to the GM (GM), remove a reference; set the subtype (GM); set, replace, remove the illustration (GM); Player mode toggle (GM). A session report opens here. ; *(kanevas-scenarios)* on an adventure: the status line and its menu (GM) | P-3 to P-7 |
@@ -72,7 +72,8 @@ have it (sheet, map and, since `kanevas-import`, search E-17).
 | **E-16 Game systems** | reduced sidebar; universe selector menu | systems attached to the account's universes, each with those of its universes using it | P-8 |
 | **E-17 Search** *(kanevas-import)* | « Rechercher » in the sidebar; `/`; a label tapped on E-9 ; *(kanevas-fiches-liees)* « Chercher parmi » of a « Fiches liées » block | search all types, titles, aliases and readable sections; filter by type; *(kanevas-fiches-liees)* advanced search: linked to a sheet, by nature, sub-places included, alive / dead and by label; *(kanevas-scenarios)* the status badge of an adventure result | P-12, P-10, P-17 |
 | **E-19 Media library** *(kanevas-import)* | « Médiathèque » navigation; « Choisir dans la médiathèque » in the editor and illustration (E-9) | see files (images, documents) accessible to the account and where they are used; GM: add, rename, set visibility, delete | P-16, P-10 |
-| **E-18 API access** *(kanevas-import)* | « Univers » ▸ « Accès par API » navigation (GM) | create, list, revoke the universe's API tokens; see import batches and their refusals | P-10, P-11 |
+| **E-18 API access** *(kanevas-import)* | « Univers » ▸ « Accès par API » navigation (GM) | create, list, revoke the universe's API tokens; see import batches and their refusals *(`kanevas-synchro`: batches only; tokens move to E-23 and E-5)* | P-10 *(P-11 replaced by P-25)* |
+| **E-23 My API tokens** *(kanevas-synchro)* | account menu (every account) | create, change the accesses of, revoke one's API tokens; the value shown once (B-94) | P-25 |
 | **E-20 Tools** *(kanevas-outils)* | « Outils » tab of E-15 (system) and E-14 (universe) | enable a tool, set its visibility per role and its settings (system value, universe value), import a catalogue (preview then confirmation), see dependencies, disable, delete data; the system's responsible | P-17, P-21 |
 | **E-21 Galaxy map** *(kanevas-outils)* | E-10 (a tool map); E-3; a shareable link | explore the grid, measure, calculate a route; GM: place, promote, plot, draw, Player mode, GM document | P-18, P-20 |
 | **E-22 Ship designer** *(kanevas-outils)* | « Outils » sidebar; a ship sheet's managed section (E-9); a shareable link | readable designs list and a design's workshop: choices, budgets, warnings, save, recalculate | P-19 |
@@ -109,13 +110,13 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-2 | create | create | create |
 | E-3 | everything | no preparation or scenarios ; *(kanevas-scenarios)* « Campagnes en cours »: those he reads, with their status | — |
 | E-4 | everything | — | — (through E-5) |
-| E-5 | — | — | list universes and their members; add, change a role, remove a member; see assistant token status, connect or reconnect the subscription |
+| E-5 | — | — | list universes and their members; add, change a role, remove a member; see assistant token status, connect or reconnect the subscription; *(kanevas-synchro)* set the maximum size of a map background (B-89); see all tokens, change their accesses, revoke them (B-95) |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
 | E-8 | read, search, create; each sheet's thumbnail (its illustration, or the drawn fallback) ; *(kanevas-fiches-liees)* the mark on the thumbnail (Mort, Morte, Détruit, Détruite, Éteinte depending on the type), the type's filter (Vivants / Morts, Intacts / Détruits…) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | read, search; thumbnails of visible sheets ; *(kanevas-fiches-liees)* the « gone » mark and its filter, the same as the GM sees them (the « Marquer … » entry is on E-9 only, hidden from a player) ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**hidden**) | — |
-| E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) ; *(kanevas-taille-images)* the « Image » button (size, placement) in « Écrire », outside player mode — **hidden** in player mode | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) ; *(kanevas-taille-images)* the « Image » button in the sections he may write — **hidden** elsewhere | — |
+| E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-synchro)* the « Cartes » block: all the attached maps, « Cachée aux joueurs »; in Player mode, as a player ; *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) ; *(kanevas-taille-images)* the « Image » button (size, placement) in « Écrire », outside player mode — **hidden** in player mode | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-synchro)* the « Cartes » block: the visible attached maps ; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) ; *(kanevas-taille-images)* the « Image » button in the sections he may write — **hidden** elsewhere | — |
 | E-10 | everything, tool maps (the galaxy) included, with « MJ seul » on those not visible; « Nouvelle carte » ▸ « Carte de la galaxie », « Rendre visible » / « Cacher aux joueurs » | visible maps, tool maps included when visible and the tool is visible to their role (otherwise absent); « Nouvelle carte », « Carte de la galaxie » and « Rendre visible » / « Cacher aux joueurs » **hidden** | — |
-| E-11 | everything; Player mode | read a visible map, open a sheet | — |
+| E-11 | everything; Player mode; *(kanevas-synchro)* write the text, attach or detach a sheet (outside player mode; **hidden** in player mode) | read a visible map, open a sheet; *(kanevas-synchro)* read the text without its GM blocks, open the attached sheet; never write the text nor attach (**hidden**) | — |
 | E-12 | GM catalogue (including image generation, if an image engine is available); proposals: only the requesting GM sees, applies, abandons them | Player catalogue (no image: the tool is absent, the assistant answers that it cannot); proposals: **hidden** (neither tool nor block; what is checked is the absence of a proposal and block, not the assistant's free text) | — |
 | E-13 | all session reports ; *(kanevas-scenarios)* the adventure of each, « Aventure supprimée » when it is gone | readable session reports ; the adventure column only for an adventure he reads (**hidden** otherwise, deleted or closed alike) | — |
 | E-14 | everything; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
@@ -123,7 +124,9 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-16 (outside a universe) | own systems, with own universes and role | own systems, « Lecture seule » | list of own systems (as GM or Player if a member of an attached universe); otherwise empty — the screen is offered to every account |
 | E-17 *(kanevas-import)* | search all sheets in the universe, including GM blocks; in **Player mode**, as a player (no GM blocks or sheets unreadable by a player); filters: enabled types; sheets of disabled types remain results under « Tous » | search readable content, excluding GM blocks; type and label filters from visible sheets only; mode toggle: absent (hidden); GM blocks: excluded from search (never read); « Alias et étiquettes… » on E-9: hidden | — |
 | E-19 *(kanevas-import)* | everything: add, rename, visibility, delete; complete « Utilisé dans » | files visible to players and files they added; « Utilisé dans » restricted to readable sheets; no adding from E-19 (**hidden**; they add a file through a section they write, E-9), no settings or deletion (**hidden**) | — |
-| E-18 *(kanevas-import)* | create a token; see and revoke all the universe's tokens (including another GM's); see batches | — (**hidden**: absent from the sidebar, « Page introuvable. » by address) | — |
+| E-18 *(kanevas-import)* | *(kanevas-synchro: batches only; tokens move to E-23, and to E-5 for the admin)* create a token; see and revoke all the universe's tokens (including another GM's); see batches | — (**hidden**: absent from the sidebar, « Page introuvable. » by address) | — |
+| E-23 *(kanevas-synchro)* | its tokens: create, change accesses, revoke | its tokens: create, change accesses, revoke | its tokens |
+| E-24 *(kanevas-synchro)* | read the universe's history, filter, restore a value under 30 days old | — | — |
 
 What `kanevas-scenarios` adds to the lines above: **E-17** — the status badge on the result card of an adventure, for every role that reads the sheet; **E-12** — the GM creates sheets through `creer_fiche` (AD-126), with a « Fiche « X » créée » writing block and « Ouvrir » leading to E-9; the player has no creation tool; **E-18** — no « Campagnes » or « Scénarios » counter in a lot: adventures count among « Fiches ».
 | E-20 *(kanevas-outils)* | **on the universe**: enable, override, disable; visibility per role; settings; import the universe catalogue; delete universe data. **on the system**: read only (**hidden**: « Activer », « Importer », « Supprimer les données ») except the **responsible**, who also acts on the system | — (**hidden**: « Page introuvable. ») | — |
@@ -1830,7 +1833,7 @@ graph starts empty, its sheets are selected on the map. « Annuler » closes the
 still available); Player « Aucune carte n'est visible pour l'instant. »; empty or
 long title: « Erreur : le titre est obligatoire. » / « Erreur : 80 caractères au plus. »; background that
 is not a PNG, JPEG, GIF or WebP image, or is empty: « Erreur : ce fichier n'est pas une image (PNG,
-JPEG, GIF ou WebP). »; background above 25 MB (413 response): « Erreur : l'image dépasse 25 Mo. »; failed
+JPEG, GIF ou WebP). »; background above 25 MB (413 response): « Erreur : l'image dépasse 25 Mo. » *(`kanevas-synchro`: « Image trop lourde : <N> Mo au plus. », N the instance setting, B-89)*; failed
 creation: « La carte n'a pas pu être créée. Réessayez. », form keeps its input (including the chosen
 background). A thumbnail that fails to load shows the neutral pattern.
 
@@ -1926,7 +1929,7 @@ read, **404**. A token whose sheet becomes unreadable disappears on next load, w
 carte. »; Player « Rien à voir sur cette carte pour l'instant. ». Graph without nodes: GM « Aucune fiche.
 Ajoutez des fiches pour voir leurs liens. »; Player « Rien à voir sur ce graphe pour l'instant. ».
 Background: non-image or empty file « Erreur : ce fichier n'est pas une image (PNG, JPEG, GIF ou WebP). »,
-above 25 MB « Erreur : l'image dépasse 25 Mo. ». 100 elements: « Cette carte porte déjà 100
+above 25 MB « Erreur : l'image dépasse 25 Mo. » *(`kanevas-synchro`: the limit and its message are B-89's)*. 100 elements: « Cette carte porte déjà 100
 éléments. ». Sheet becoming unknown during addition: « Cette fiche n'existe plus. » (window list
 reloads). Failed move, removal, addition, rename, visibility change or
 background change: « L'action n'a pas abouti. Réessayez. », and previous state returns (token returns to its
@@ -2193,7 +2196,7 @@ old `[[…]]` was not syntax, and the table is populated at the section's first 
 *Import*: `[[cle:<clé>|<texte>]]` whose key is known in the universe is saved as `[[<id>|<texte>]]`;
 otherwise it stays as written, a pending `liens` row (`cible_cle`). Creating the sheet carrying
 the key rewrites, **in the same transaction**, the waiting content (`contenu`, `contenu_public`,
-`liens` rows) without touching the section's `version`, `version_importee` or `modifie_le`. A
+`liens` rows) without touching the section's `version`, `version_importee` *(dropped by `kanevas-synchro`)* or `modifie_le`. A
 replay compares the submitted text **after** resolving known keys: an already resolved link yields
 « inchangée » (AD-104). The batch counts « liens et références en attente » at closure (`en_attente`).
 
@@ -2991,7 +2994,7 @@ Player mode (« Rechercher », a label).
 *Finished mockup*: `docs/maquettes/e18-acces-api.html` (states `#etat-nouveau`, `#etat-jeton-montre`,
 `#etat-lot`, `#etat-vide`, `#etat-perdue`).
 
-Reached through « Univers ▸ Accès par API » (`key-round`), GM only. The mockup's « Demander à Kanevas » button belongs to the assistant, present on all screens (B-26, E-12), with nothing specific to E-18. A one-line introduction:
+*(`kanevas-synchro`: what follows on tokens — list, « Nouveau jeton », the box showing the token, « Révoquer » — moves to E-23 and E-5; E-18 keeps the batches, see « E-18 Accès par API — batches only ».)* Reached through « Univers ▸ Accès par API » (`key-round`), GM only. The mockup's « Demander à Kanevas » button belongs to the assistant, present on all screens (B-26, E-12), with nothing specific to E-18. A one-line introduction:
 « Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import. » and
 the **base address** to copy (`https://kanevas.berard.me/api/import/v1/univers/<id>`, « Copier »,
 toast « Adresse copiée. »). Two panels.
@@ -3025,9 +3028,11 @@ toast « Adresse copiée. »). Two panels.
    then « … et 37 autres ». A batch without refusals or warnings does not expand. The token,
    address and origin keys use monospace (system `ui-monospace` stack, charter).
    File warnings also include « fichier vide : 0 octet, refusé », « visibilité modifiée
-   dans Kanevas : non écrasée » and « nom modifié dans Kanevas : non écrasé ». A pending
+   dans Kanevas : non écrasée » and « nom modifié dans Kanevas : non écrasé ». *(`kanevas-synchro`: the « modifié dans Kanevas » warnings disappear with B-48; a refusal by fingerprint reads « modifiée depuis la lecture ».)* A pending
    reference warns « fichier « img:quais » inconnu : référence en attente ».
 
+
+*(`kanevas-synchro`: the token rows of this table — « Aucun jeton », « Nouveau jeton », « Révoquer », the role message — move to E-23 and E-5; E-18 keeps the batches, see « E-18 Accès par API — batches only ».)*
 
 | State | What is seen | Available actions |
 |---|---|---|
@@ -4306,8 +4311,7 @@ mark. The grammatical gender of the word follows the type's label (« Détruite 
   « Sous-type », kept in the address (`?etat=la|disparu` — the two values are the same for every
   type, the words differ); a filtered state renders the grid; empty: « Aucun personnage mort. »,
   « Aucun lieu détruit. »… with « Voir tous les … ».
-- **Import**: `disparu: true|false` on a sheet of a type that carries the mark (default false,
-  protected by B-48 like `pj`); refused with `champ_inconnu` on another type.
+- **Import**: `disparu: true|false` on a sheet of a type that carries the mark (default false); refused with `champ_inconnu` on another type.
 
 **Values and words.** `?etat=la|disparu` : `la` is « there » (alive, intact, active : the mark absent), `disparu`
 is the mark set ; the words of the table are what is shown, never the key. The filter is offered, for the seven
@@ -4402,3 +4406,298 @@ illustration, E-8 filter, the states below) is `e09-marque-disparu.html`; this t
   B-69 → E-11, E-9. Holds.
 - Each screen is reached by a journey: P-17 (E-9, E-17), P-3 step 4 (Relier), P-6 step 6 (Léa). Holds.
 - Each role has its column: GM and player above ; instance admin: nothing new. Holds.
+## Screens of `kanevas-synchro` (framing, 2026-11-01)
+
+The epic is an API first (B-105 to B-112, read and written by a script, P-22); its human gestures
+land on existing screens and on two new ones (E-23, E-24, below), in the product's visual direction
+(`docs/charte.md`).
+The slices draw them; nothing here invents a component.
+
+### E-11 Carte — text and attached sheet
+- Under the header, a line **« Rattachée à <titre> »** (a link to E-9) — GM: « Rattacher à une
+  fiche… » (the same search window as « Ajouter une fiche », one choice) and « Détacher »; without an
+  attachment the GM sees « Rattacher à une fiche… » alone, a player sees nothing. « Changer de
+  fiche… » replaces it in one gesture. An attached sheet the
+  reader cannot read is not named (AD-38): the line is absent for him.
+- Under the frame, the block **« Texte »**: rendered Markdown with its GM blocks (the shared renderer,
+  AD-96); GM: « Modifier » and « Vider » (small neutral buttons with an icon) sit at the right of the block's title; « Modifier » opens the section editor without the `[[` list — preview and GM block
+  only (links are not active in a map's text, AD-142) —, 5,000 characters at most (« 5 000 caractères
+  au plus. »); « Vider » asks no confirmation and can be undone by « Modifier »; empty: GM « Ajouter
+  un texte », player nothing. Two GMs saving the same version: the second sees « Le texte a changé
+  depuis votre lecture. » with « Recharger » (409 `carte_modifiee`, AD-142), his draft kept.
+- GM, imported map: its origin key under the title, GM-only, as on E-9 (B-50); the mock-up's « · MJ seul »
+  suffix, breadcrumb and reduced sidebar are the usual frame of E-11, not new elements.
+- A player sees « Rattachée à » only if he reads the sheet; a GM in player mode sees what a player sees
+  (no gesture: the buttons « Rattacher à une fiche… », « Changer de fiche… », « Détacher », « Modifier »,
+  « Ajouter un texte » and « Vider » are **hidden**, not refused). A GM whose attached sheet was deleted sees
+  « Rattacher à une fiche… » alone (the deletion detaches the map, AD-142). A text made only of GM blocks is
+  an empty text for a player: no « Texte » block.
+- « Vider » empties the text at once: the GM then sees « Ajouter un texte »; the previous text is not
+  restored (no history of a map's text, nothing promised).
+- States (the shared patterns of this document for the loading and the lost connection):
+
+| Where | State | What is read | Gestures |
+|---|---|---|---|
+| Text | loading | « Chargement… » in the block | — |
+| Text | save failed | « Impossible d'enregistrer le texte. », the draft kept | « Réessayer » |
+| Text | version changed (409) | « Le texte a changé depuis votre lecture. », the draft kept | « Recharger » |
+| Text | connection lost | the banner; « Enregistrer » inactive, the draft kept | — |
+| Text | extreme | 5,000 characters: the block scrolls inside the page, no cut | — |
+| Sheet line | attach, change or detach failed | « Impossible de rattacher la carte. » under the line, nothing changed | « Réessayer » |
+| Choice window | no sheet found | « Aucune fiche trouvée. » | the search field |
+| Choice window | list failed | « Impossible de charger les fiches. » | « Réessayer », « Annuler » |
+| Sheet line | very long title | wrapped on two lines at most, ellipsis, full title in the link's `title` | — |
+| Frame | background over the limit | « Image trop lourde : <N> Mo au plus. » (N the current setting), the background unchanged | choose another image |
+
+### E-9 Fiche — the block « Cartes »
+A sheet block (registry AD-124), after « Relations »: the maps attached to the sheet that the reader
+may read (GM: all, with « Cachée aux joueurs » — `Pastille` `sens="mj"` with the `lock` icon — on a hidden
+one; player: the visible ones; GM in player mode: as a player), each a line « <titre> · <forme> » (the form
+in words: « Carte illustrée », « Graphe ») opening E-11. Absent when there is none for this reader; no
+count of hidden ones. Loading: the block's own « Chargement… » (the sheet does not wait for it); error:
+« Impossible de charger les cartes. » with « Réessayer », the other blocks untouched; many maps: the block lists them all, scrolling inside the page (a sheet carries few maps).
+
+### E-5 Administration — the panel « Limites »
+Under « Jeton de l'assistant »: « Taille maximale d'un fond de carte » — a number in MB (1 to 500,
+75 by default), « Enregistrer »; the note « S'applique aux prochains envois ; les fonds déjà posés
+restent. » Refusal out of range: « Entre 1 et 500 Mo. » Seen by the instance admin only; for anyone
+else the panel does not exist (E-5 answers « Page introuvable. »).
+
+| State | What is read | Gestures |
+|---|---|---|
+| loading | « Chargement… » in the panel, « Enregistrer » inactive | — |
+| read failed | « Impossible de charger les limites. » | « Réessayer » |
+| saved | « Limite enregistrée. » beside the button, the field shows the saved value | — |
+| save failed | « L'action n'a pas abouti. Réessayez. » under the field, the entry kept | « Enregistrer » |
+| connection lost | the banner; « Enregistrer » inactive, the entry kept | — |
+| empty / extreme | a field cannot be empty (« Entre 1 et 500 Mo. »); 500 is the largest value | — |
+
+### E-18 Accès par API — the batch report
+The counters gain the nature **« cartes »**; a write refused by its fingerprint appears among the
+refusals with its key and « modifiée depuis la lecture ». The warnings « modifié dans Kanevas : non
+écrasé » disappear with B-48.
+
+### Components of the maps slice (`kanevas-synchro-cartes`, verdict of the design-system keeper)
+Nothing new, no token. E-5 « Limites »: `Panneau`, `Champ` (the width goes in `administration.css`,
+not inline), `Bouton` primary, the refusal an inline message, after `jeton-assistant.tsx`. E-9 « Cartes »:
+`BlocSection` and `LigneRelation` in a variant « target then type, no arrow » (added to its spec; fallback
+a plain list of links); « Cachée aux joueurs » is the `Pastille` `sens="mj"` with the `lock` icon. E-11:
+`Bouton` small for « Rattacher… / Changer de fiche… / Détacher »; the choice is a `Fenetre` around
+`ListeRecherche` (`frontend/src/ecrans/fiche/liste-recherche.tsx`); « Texte » is a `Panneau`, `Markdown`
+and `Editeur`, the GM block a `Panneau reserveMj` (not a copied style). E-18: the existing batch counter,
+one more nature.
+
+### Cross-check
+- Each need has a screen or its script: B-105 to B-112, B-90, B-91 → the import API (E-18 shows the batches);
+  B-88 → E-11, E-9; B-89 → E-5, E-11.
+- Each journey reaches its screens: P-22 → E-18; P-23 → E-11, E-9, E-5.
+- Each role: GM (E-11, E-9, E-18), player (E-9, E-11 reading), admin (E-5).
+
+### E-23 Mes jetons d'API (every account) — `kanevas-synchro`
+*Finished mockup*: `docs/maquettes/e23-jetons.html` (states `#etat-creer`, `#etat-liste`, `#etat-jeton-montre`,
+`#etat-modifier`, `#etat-revoquer`, `#etat-erreur`, `#etat-vide`, `#etat-perdue`). The entry
+« Mes jetons d'API » (`key-round`) is in the account menu, above « Se déconnecter » (`e01-accueil.html` draws it;
+the other mockups share the frame); the screen is outside any universe, with the bar of the home
+(« Mes univers »), address `/compte/jetons`. One line of introduction: « Un jeton permet à un script ou à un agent
+d'agir avec vos droits, par l'API ou par le serveur MCP, dans les univers que vous choisissez. » Then the panel
+« Jetons » and « Créer un jeton » (`plus`).
+- **A line** (the owner's tokens, active ones first — all of them — then revoked and expired ones up to 20 in
+  all, newest first): the name (80 characters, cut with a tooltip), under it the accesses (« **Tous mes univers** —
+  lecture + écriture · Les Cendres de Vaëlis : lecture » — the exceptions after the level —, or
+  « Lame d'Ébène : lecture · Les Cendres de Vaëlis : — » for a list; a universe the account no longer belongs to
+  keeps its entry, followed by « (plus membre) »), then « créé le … », « dernier usage il y a 3 min » or
+  « jamais utilisé », « expire le … ». A token the admin changed carries the pill « Modifié par l'admin »
+  (accent, until the owner saves the accesses again); one he revoked, the pill « Révoqué par l'admin »; a token
+  the owner revoked, « Révoqué »; an expired one, « Expiré ». « Modifier les accès » (`sliders-horizontal`) and
+  « Révoquer » (`ban`) appear on hover and focus (always visible by touch) on an active token only.
+- **« Créer un jeton »**: a box with « Nom » (1–80; « Erreur : le nom est obligatoire. »), « Durée » (7, **30**,
+  90 days, 1 an), then « Univers atteints »: a segmented choice **« Tous mes univers » / « Une liste d'univers »**
+  (the note « Tous mes univers » covers the ones joined later).
+  *« Tous mes univers »*: a « Niveau » choice (Lecture / **Lecture + écriture**), then « Exceptions »: one line per
+  universe of the account (name, role pill MJ or Joueur) with a choice **« Comme le reste » / « — » / « Lecture » /
+  « Lecture + écriture »** — only a line moved off « Comme le reste » is an exception, so a universe joined later
+  follows the level. *« Une liste »*: the same lines without « Comme le reste », **— by default**; at least one
+  universe at a level other than « — » (« Choisissez au moins un univers. » otherwise, the button stays active and
+  the message is shown under the list). The note « Un jeton n'a jamais plus de droits que votre compte : là où vous
+  êtes joueur, il agit en joueur. » Footer « Annuler » / « Créer le jeton » (« Création… », disabled, while it runs).
+  Then the same box shows the token name as a label and the value alone, monospace, with « Il ne sera plus affiché. »,
+  « Copier » (toast « Jeton copié. ») and « J'ai copié le jeton »: while the value is shown only that button closes
+  the box (neither Esc nor the veil); the line then arrives first in the list.
+- **« Modifier les accès »**: the same box titled « Modifier les accès » without name and lifetime, filled with
+  the current accesses (the admin's exceptions shown like the owner's), « Enregistrer » (toast « Accès enregistrés. »);
+  saving clears « Modifié par l'admin ». Changing the accesses does not change the value, the name or the expiry.
+- **« Révoquer »**: confirmation « Révoquer « <nom> » ? Le script ou l'agent qui l'utilise ne pourra plus rien lire ni
+  écrire. », « Révoquer le jeton » (`--danger`) / « Annuler »; toast « Jeton révoqué. ».
+- « Outils » (`kanevas-outils`, B-65, which this epic follows): an optional list of tools, for the token as a
+  whole; a token with tools writes only those tools' data and no content, and its line says « outils : galaxie »
+  after its accesses. Built here on the existing `jetons_outils` table (no new table): `POST /api/compte/jetons`
+  accepts `outils` and the list of offerable tools comes with `GET /api/compte/jetons`; the mockup does not draw it.
+  A tool token is refused 401 `jeton_invalide` on `/api/v1` (content routes).
+- The level shown on a line is the one **chosen**, not the effective one: where the account is a player, a
+  « lecture + écriture » entry still acts as reading (the note of the form says it; the 403 `lecture_seule` answers a write).
+- The mockup `e23-jetons.html` does not draw the pills « Révoqué » and « (plus membre) », the 409, « Les accès ont changé. » and the load
+  error: the text prevails.
+- Roles: every account sees and manages **its own** tokens, a player as a GM; no account's list shows another's
+  (the admin does on E-5).  A GM has no gesture on a token that reaches his universe (B-95).
+
+| State | What is seen | What can be done |
+|---|---|---|
+| empty | « Aucun jeton. » (no token at all; with only revoked or expired ones the list shows them, without this text) | « Créer un jeton » |
+| loading | skeleton of the panel | — |
+| load error | « Impossible de charger vos jetons. » | « Réessayer » |
+| save error | creation, change or revocation that fails: « Impossible d'enregistrer. » in the box, the entries kept, nothing created or changed | « Réessayer », « Annuler » |
+| changed meanwhile | the admin changed the accesses while the box « Modifier les accès » is open: « Les accès ont changé. » on saving, the box reloads with the new accesses, nothing is overwritten | « Enregistrer » again, « Annuler » |
+| connection lost | the banner; « Créer un jeton », « Modifier les accès », « Révoquer » disabled; a shown value stays until « J'ai copié le jeton » | copy |
+| permission refused | **without object**: the screen is open to any account with a session; an expired session leads to the sign-in, as every screen | — |
+| long content | a 80-character name cut with a tooltip; many exceptions: the box scrolls inside itself; more than 20 inactive tokens: the 20 latest | — |
+| revoked meanwhile | « Modifier les accès » or « Révoquer » on a token the admin revoked in the meantime: « Ce jeton est révoqué. » (409), the list reloads | « Fermer » |
+
+*Components (guardian's verdict, `docs/charte.md` « components added »)*: the list line is the new **Ligne de jeton**; the choices of the form are the new
+**Choix segmenté** and **Liste d'accès**; the value shown and the base address of E-18 are the new **Valeur copiable**; the pills are `Pastille` (new *sens* `accent`);
+the boxes are `Fenêtre` (new *large* and *locked* properties) and `BoiteDialogue`; everything else is existing (`Bouton`, `Champ`, `Menu`, `Toast`, `Bandeau`, `Panneau`, états d'écran).
+
+### E-18 Accès par API — batches only (`kanevas-synchro`)
+The token list and its creation leave E-18 (to E-23); E-18 keeps the batches of the universe, unchanged. The
+introduction becomes « Un script écrit dans cet univers avec vos droits, par l'API d'import. Ses jetons se
+gèrent dans « Mes jetons d'API ». » (the last words a link to E-23), the base address to copy becomes
+`https://kanevas.berard.me/api/v1/univers/<clé de l'univers>` (the former `/api/import/v1/univers/<id>` still
+answers, AD-149), and the panel « Jetons » with its boxes is removed. A lot line keeps the **name** of the token that opened it (a label of the lot, whoever owns the token and
+whether or not it is still active; nothing else of a token is shown to a GM, B-95).
+*State table of E-18 above*: every row about a token — « Aucun jeton… », « Nouveau jeton », the creation and revocation errors, the disabled « Nouveau jeton » and « Révoquer », the role message — is void; the rows kept are the batches (empty, loading, load error, long content), the banner, and « Page introuvable. » for anyone who is not a GM of the universe.
+Empty batches: « Aucun lot d'import pour l'instant. » The mockup `e18-acces-api.html` still draws the removed panel: the text prevails.
+
+### E-5 Administration — the panel « Jetons d'API » (`kanevas-synchro`)
+*Mockup*: `docs/maquettes/e05-administration.html` (panels « Jetons d'API », « révoquer », « vide », « erreur »); it does not draw « Expiré », « Révoqué par l'admin », « Aucun jeton pour ce compte. » nor the 409: the text prevails.
+Full width, under « Jeton de l'assistant », visible to the instance admin only (« Page introuvable. » for anyone
+else, as the screen). A table of every token of the instance: name, owner (account), accesses (as on E-23, universe
+names written in full, « Tous les univers du compte » in place of E-23's « Tous mes univers »), expiry, last use; a filter « Propriétaire » (all, or one account); active tokens all listed, then the 20 latest revoked or expired, each with its pill « Révoqué » (the owner's), « Révoqué par l'admin » or « Expiré », and no action. On an
+active token: « Modifier les accès » (the E-23 box, exceptions included; the choices are the **owner's**
+universes) and « Révoquer » (confirmation naming the token and its owner; « Léa verra « Révoqué par l'admin » »). The value of a
+token is never shown. The owner's E-23 marks the token « Modifié par l'admin » or « Révoqué par l'admin ».
+Under 760 px each token becomes a block (name and owner, accesses, expiry and last use, then the two actions at full width) in place of the table row. States: none → « Aucun jeton sur cette instance. »; load error → « Impossible de charger les jetons. » with
+« Réessayer »; save error as E-23.
+
+| State (E-5, jetons) | What is seen | What can be done |
+|---|---|---|
+| loading | skeleton of the table | — |
+| filter without result | the chosen owner has no token: « Aucun jeton pour ce compte. » (distinct from the empty state), the filter stays | change the filter |
+| connection lost | the banner; « Modifier les accès » and « Révoquer » disabled | — |
+| long content | a 80-character name or a long list of accesses cut with a tooltip; more than 20 inactive tokens: the 20 latest | — |
+| changed meanwhile | the owner changed the accesses before the admin saved: « Les accès ont changé. » in the box, the box reloads with the new accesses, nothing of the admin's entry is applied | « Enregistrer » again, « Annuler » |
+| revoked meanwhile | the owner (or another admin) revoked it before the admin acted — on « Modifier les accès » as on « Révoquer »: « Ce jeton est révoqué. » (409) in the box, the list reloads with the pill « Révoqué » | « Fermer » |
+| permission refused | not the instance admin: « Page introuvable. » (the panel is absent) | — |
+
+### E-24 Historique de l'univers (GM) — `kanevas-synchro`
+Address `/univers/eneria/historique`. Lines from the newest: date, contributor (account, and « via
+<jeton> », « assistant » or « import · lot <n> »), the sheet (link; a deleted one in plain text with
+« supprimée »), what changed (« Section Histoire réécrite », « Titre changé », « Relation vers
+faction:les-veilleurs ajoutée », « Fiche supprimée »). Filters: contributor (an account, or one of its tokens), sheet, action, period;
+100 lines at a time, then « Charger la suite ». A line under 30 days opens its detail: the previous value
+next to the current one, and « Restaurer cette version » for a section (a deleted one included) or a header field
+(confirmation; B-103); for a relation or a line « section créée », the previous value (if any) without the button; for a deleted sheet, its
+sections as they were, read-only. Refusals: changed or deleted since the detail opened → « La fiche a changé depuis
+l'affichage. » with « Recharger »; a deleted section whose key was taken since → « Une autre section
+porte maintenant cette clé. ». Over 30 days, the
+line opens a detail with no previous value: « Valeur précédente non conservée (plus de 30 jours). » Lines over 90 days are gone.
+
+*Detail of the slice `kanevas-synchro-historique`* (mock-up `maquettes/e24-historique.html`; components by the design-system keeper):
+- **Composition.** The sidebar item « Historique » (under « Univers », GM only, `items.ts`); the filters are `Champ` with `liste` (contributor, action, period), the sheet filter is a `ListeLiens` in a `Fenetre` (as E-11's search), with « Toutes les fiches » (small ghost button) when the page is filtered on a sheet; the list is the new `LigneHistorique` (charte); « Charger la suite » is a neutral button; the detail replaces the list on the same address (`?ligne=<id>`, « ← Retour à la liste »): a `Panneau` holding the `Comparaison` (charte) and, under it, « Restaurer cette version » (primary button, `rotate-ccw`), which opens the restoration confirmation (variant of `BoiteDialogue`, focus on « Annuler »); on success a `Toast` « Version restaurée » and the list reloaded with the new line on top.
+- **Refusals** are `Alerte` with « Recharger », above the button; the filters stay.
+- **States.** Empty « Aucune modification dans cette période. » (`EtatVide`); loading skeletons (`ChargementListe`); error « Impossible de charger l'historique. » with « Réessayer » (`ErreurChargement`).
+- **Roles.** GM outside player mode only; a player, or a GM in player mode, has no sidebar item and the address answers « Page introuvable. » (`PageIntrouvable`); the session API answers 404 to a non-member and 403 to a player; no count of lines (a line can reveal a GM block exists).
+- **What a line says.** `Section « <titre> » réécrite | créée | supprimée`, `Titre changé`, `Type changé`, `Fiche déplacée`, `Alias ajouté | retiré`, `Étiquette ajoutée | retirée`, `Fichier joint | retiré` (on the section's sheet), `Relation vers <cle> ajoutée | modifiée | retirée`, `Fiche créée | supprimée`; a section's text in the detail is its source Markdown, as the GM sees it, in plain text.
+- **Restorable.** A section (rewritten or deleted) and a header field (title, type, sub-type, parent, aliases, labels); shown without button: a relation, « section créée », a deleted sheet, an attached file.
+- E-9, GM menu « ⋯ »: entry « Historique » (`Menu`, icon `history`), absent for a player and in player mode; it opens E-24 with `?fiche=<id>`.
+
+### E-9 Fiche — key and history (`kanevas-synchro`)
+- Under the title, for the GM: the key `lieu:nyx` with « Copier » and « Modifier la clé… » (a field,
+  the warning « Les liens et outils qui citent lieu:nyx ne la retrouveront plus par cette clé ; l'ancienne clé
+  continuera de mener ici. »; refused if taken: « Cette clé existe déjà dans l'univers. »; out of form: « Lettres minuscules,
+  chiffres, - et _, un « : » au plus, avec au moins une lettre. »).
+- GM menu « ⋯ »: « Historique » opens E-24 filtered on the sheet.
+
+### E-14 Paramètres de l'univers — its identifier (`kanevas-synchro`)
+The field « Identifiant » (`eneria`: lowercase letters, digits, dashes, 2–40, at least one letter),
+with the warning that the former one keeps leading here; refused if taken on the instance (« Cet
+identifiant est déjà pris. ») or out of form (« Lettres minuscules, chiffres et tirets, 2 à 40, avec au
+moins une lettre. »).
+
+### Cross-check (extension)
+- B-92, B-93, B-97, B-98 → the API and the MCP (no screen; E-24 shows what they wrote);
+  B-94 → E-23 (its tools too); B-95 → E-5; B-96, B-102, B-103 → E-24, E-9; B-99 → E-9; B-100 → E-14; B-101 → every
+  address.
+- P-24 → the MCP, E-9 by its address; P-25 → E-23, E-5; P-26 → E-24, E-9.
+- Roles: every account on E-23; GM on E-24, E-9 key, E-14; admin on E-5 (tokens); player: E-23 only.
+
+
+### What `kanevas-synchro-cles` builds (E-9 key, E-14 identifier, addresses)
+
+*Scope*: B-99, B-100, B-101, B-104, AD-146. No new screen, no new component: one field on E-9 and one on E-14, both
+built from the existing field and inline-edit patterns of those screens (the gardien's verdict: five elements, all existing — Bouton, Champ,
+Bandeau, toast — none new; render `Champ`, whose « Erreur : » prefix is the one the mockups show). The key block of E-9 and the identifier field of E-14 are shown in the mockups `e09-fiche.html` and
+`e14-parametres.html` (state « clé »).
+
+**Addresses (B-101).** The router is not edited (AD-16): the sheet screen answers both
+`/univers/:id/fiche/:fid` (registered today) and the readable forms. The screen reads `:id` and `:fid` as
+*reference* (id or key, never converted by the browser): it asks `GET /api/univers/:ref` and
+`GET /api/univers/:ref/fiches/:ref2`, whose answers carry the numeric `id`, the `cle` and the universe `cle`. When the
+reference used is numeric (or a former key), the screen replaces the address (`history.replace`, no extra entry) by
+`/univers/<u.cle>/<a>/<b>` (key `a:b`, `a` a registered type) or `/univers/<u.cle>/fiche/<key>`; a server-side
+request for a numeric address answers 302 to the readable address (the front's `index.html` fallback keeps serving
+the app). A key whose first part is a type slug is *not* read as a page name: the address list of a universe's pages
+(`fiches`, `fiche`, `membres`, `parametres`, `cartes`, `mediatheque`, `recherche`, `comptes-rendus`, `acces-api`, …)
+is closed and the type registry is checked against it at startup (a type slug equal to a page name is refused).
+
+**E-9 — the key block** (GM only; a player and the GM in player mode see no block, and the sheet's body carries no `cle`
+for them. The key is not a secret, though: it is the readable address, which any reader of the sheet may type, share or
+be redirected to — the 302 serves it to a reader of the sheet and answers like a 404 for a sheet they cannot read. The
+browser of a player does not rewrite the address it was given. This refines « the origin key is hidden from any role but
+the GM » of `kanevas-import` as: not displayed and not in the body). Under the title, `lieu:nyx` in monospace,
+« Copier », « Modifier la clé… ». The field opens inline with the warning, « Enregistrer » / « Annuler »; errors under
+the field, in the words of E-9 above (`cle_prise` 409 → « Cette clé existe déjà dans l'univers. »; `invalide`,
+`champ: cle` → « Lettres minuscules, chiffres, - et _, un « : » au plus, avec au moins une lettre. »). On success the
+address is replaced by the new one and « Enregistré. » shows; the former address still opens the sheet.
+
+| State | Behaviour |
+|---|---|
+| reading | key + two buttons |
+| editing | field prefilled with the key, focus, warning visible, « Enregistrer » inactive while unchanged |
+| refused | message under the field, the field keeps the typed value and the focus |
+| saving | the button inactive, the field read-only |
+| connection lost | the bar's banner; the buttons inactive; the typed value kept |
+| role lost meanwhile | « Vous ne pouvez plus modifier cette fiche. » (as the other E-9 writes), the block disappears |
+| loading | no block until the sheet is loaded (no skeleton) |
+| no key | impossible after the migration (`cle` is not null): the block always shows a key |
+| long key | up to 200 characters: the key wraps on several lines (`overflow-wrap: anywhere`), the buttons stay under it |
+| save failed (server error) | « Impossible d'enregistrer la clé. Réessayez. » under the field, value and focus kept |
+| copy | the label « Copier » becomes « Copiée. » for two seconds |
+| copy refused (clipboard denied) | the label stays « Copier »; the toast « Impossible de copier. Sélectionnez la clé à la main. » shows; the key text stays selectable |
+
+The warning reads: « Les liens et outils qui citent <ancienne clé> ne la retrouveront plus par cette clé ; l'ancienne
+clé continuera de mener ici. » (an import by former key is `kanevas-synchro-ecriture`'s, not promised here). The label of
+the field is « Clé de la fiche ». The « Importée · clé … » line of the « ⋯ » menu loses the key, now shown by the block.
+A key is typed with the sheet's **type** word: `personnage:maitre-aldric` (mockups use that).
+
+**E-14 — the identifier** (GM). A field « Identifiant » in the first panel, with the same save button as the name.
+The states of the mockup are « Identifiant refusé » and « Identifiant mal formé »; the rest is as the key block for editing, refused, saving, connection lost, loading; **not transposed**: no « Copier » and no copy state (the identifier is not a key to paste), no « no key » state (an identifier always exists), no long-key wrapping (40 characters at most, one line); the field is prefilled with the current identifier and « Enregistrer » is inactive while Nom, Identifiant and Description are all unchanged (one button serves the three; an unchanged identifier is not sent). Specifics: one « Enregistrer » for Nom, Description and Identifiant; a form error reads « Lettres minuscules, chiffres et tirets, 2 à 40, avec au moins une lettre. » (mockup: « Identifiant mal formé »); a refused
+identifier saves nothing (the Nom too stays unsaved, typed values kept); server error « Impossible d'enregistrer les
+paramètres. Réessayez. »; role lost « Vous ne pouvez plus modifier ces paramètres. »; the success toast is
+« Enregistré. »; a player gets « Page introuvable. »; the help text under the field reads « Il sert d'adresse :
+/univers/<identifiant>. L'ancien identifiant continue de mener à l'univers. ». On success the address of the whole screen is replaced (`/univers/<new>/parametres`) and the former
+identifier keeps leading to the universe. A key or identifier that is a former one of **another** target is refused (`cle_prise`, it keeps leading
+there); the **owner** may take its own former key back (P-22: `eneria-v2` back to `eneria`): the former row is removed.
+
+**Addresses, states.** An unknown key or identifier, or a sheet the reader cannot read: « Page introuvable. » (the
+same for both, no trace of the key). While the reference resolves, the screen shows its loading state at the address as
+typed; if the server is unreachable the typed address stays and the bar's banner shows. A former key held now by
+another sheet opens that sheet. Léa (player) who opens a shared `/univers/eneria/lieu/nyx` for a sheet she reads sees it;
+for a GM-only sheet she gets « Page introuvable. ». At creation (E-2, E-8) nothing announces the key: it appears
+on the sheet. A key of digits only that the migration renamed to `cle-<digits>` shows nowhere but in the key block.
+
+**Where the browser gets the identifier.** The sidebar, the universe selector, « Mes univers » and the breadcrumbs
+build their links from `cle` when the list answers carry it (`GET /api/univers` returns `cle`); the numeric forms
+stay for what is not yet loaded.
+
+Cross-check: B-99 → E-9 block, `PATCH /fiches/:fid {cle}`; B-100 → E-14 field (P-22 return of `eneria-v2`), `PATCH /univers/:id {cle}`; B-101 →
+router (above) + 302; admin who is not a GM of the universe: no E-9 block, and E-14 answers « Page introuvable. » (the GM guard, as a player); B-104 → the section key travels in the API (`cle` on a section's view); no screen edits it in
+this slice (the import and the MCP address by it).

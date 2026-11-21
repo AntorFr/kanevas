@@ -217,22 +217,11 @@ describe('E-20 catalogue: écrans', { skip: skipBrowser, timeout: 600000 }, () =
   it('E-18: portée « Outils » — « Cochez au moins un outil. », ligne « Portée : Essai G », contenu par défaut', async () => {
     const { page } = await connecte(browser, srv.base, 'Antor');
     const { E } = await ids(page);
+    // Title kept (the screen inventory cites it): E-18 no longer creates tokens, the tool token is made by the service (E-23 will offer the tools).
+    const valeur = await srv.jetonOutils('antor', E, 'Script catalogue', ['essai/g']);
     await page.goto(`/univers/${E}/acces-api`);
-    await page.getByRole('button', { name: /Nouveau jeton/ }).first().click();
-    const dlg = page.getByRole('dialog');
-    await dlg.getByLabel('Nom').fill('Script catalogue');
-    assert.equal(await dlg.getByLabel('Contenu de l’univers').or(dlg.getByLabel("Contenu de l'univers")).isChecked(), true, 'content is the default scope');
-    await dlg.getByLabel('Outils').check();
-    await dlg.getByText('Cochez au moins un outil.').waitFor();
-    assert.equal(await dlg.getByRole('button', { name: 'Créer le jeton' }).isDisabled(), true);
-    await dlg.getByLabel(/Essai G/).check();
-    assert.equal(await dlg.getByRole('button', { name: 'Créer le jeton' }).isDisabled(), false);
-    await dlg.getByText(/Un jeton d.outil n.écrit que le catalogue des outils cochés\. Il n.ouvre ni fiches ni fichiers\./).waitFor();
-    await dlg.getByRole('button', { name: 'Créer le jeton' }).click();
-    const valeur = (await dlg.getByLabel('Jeton', { exact: true }).textContent())!.trim();
-    assert.match(valeur, /^kvs_/);
-    await dlg.getByRole('button', { name: /J.ai copié le jeton/ }).click();
-    await page.locator('[data-jeton="Script catalogue"]').getByText('Portée : Essai G').waitFor();
+    await page.getByRole('heading', { name: 'Accès par API' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: /Nouveau jeton/ }).count(), 0);
     await page.screenshot({ path: `${SHOTS}/e18-portee.png`, fullPage: true });
     // the script's import comes back as a batch named after the tool, counted by nature
     const lot = await page.request.post(`/api/import/v1/univers/${E}/lots?outil=essai/g`, { headers: { authorization: `Bearer ${valeur}` } });

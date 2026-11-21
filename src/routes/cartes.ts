@@ -4,7 +4,11 @@ import type { FastifyInstance } from 'fastify';
 import {
   ajouterElement,
   creerCarte,
+  cartesDeFiche,
   deplacerElement,
+  detacherCarte,
+  ecrireTexteCarte,
+  rattacherCarte,
   lireCarte,
   listerCartes,
   ouvrirFond,
@@ -15,7 +19,7 @@ import {
 } from '../services/cartes.js';
 import { roleDe, vueMJ } from '../services/droits.js';
 import { formesCreablesOutils, listerCartesOutils } from '../services/outils.js';
-import { invalide } from '../services/erreurs.js';
+import { ErreurService, invalide } from '../services/erreurs.js';
 import { acteur, corps } from './fiches.js';
 import { idDeChemin } from './univers.js';
 
@@ -149,5 +153,36 @@ export function registerCartesRoutes(app: FastifyInstance) {
     const i = ids(request);
     retirerElement(app.db, a.compteId, !!a.modeJoueur, i.carte, i.element);
     return reply.code(204).send();
+  });
+
+  // Attach to a sheet `{ficheId}` / detach; GM only, anyone else 404 (AD-142).
+  app.put(`${base}/:cid/fiche`, async (request) => {
+    const a = acteur(request);
+    return rattacherCarte(app.db, a.compteId, !!a.modeJoueur, ids(request).carte, corps(request).ficheId as number);
+  });
+
+  app.delete(`${base}/:cid/fiche`, async (request) => {
+    const a = acteur(request);
+    return detacherCarte(app.db, a.compteId, !!a.modeJoueur, ids(request).carte);
+  });
+
+  // The text with the version read: the screen always sends it (AD-59's rule), a stale one is 409 `carte_modifiee`.
+  app.put(`${base}/:cid/texte`, async (request) => {
+    const a = acteur(request);
+    const b = corps(request);
+    if (typeof b.texte !== 'string') {
+      throw new ErreurService('invalide', 'Le texte doit être une chaîne.', undefined, 'texte');
+    }
+    if (typeof b.version !== 'number' || !Number.isInteger(b.version)) {
+      throw new ErreurService('invalide', 'La version lue est requise.', undefined, 'version');
+    }
+    return ecrireTexteCarte(app.db, a.compteId, !!a.modeJoueur, ids(request).carte, b.texte, b.version);
+  });
+
+  // The block « Cartes » of a sheet (E-9): the maps attached to it that the reader reads.
+  app.get('/api/univers/:id/fiches/:fid/cartes', async (request) => {
+    const a = acteur(request);
+    const p = request.params as { id: string; fid: string };
+    return { cartes: cartesDeFiche(app.db, a, idDeChemin(p.id), idDeChemin(p.fid)) };
   });
 }

@@ -47,7 +47,7 @@
 - Attachments (AD-7, AD-65): bytes under `<db dir>/attachments/` (`ATTACHMENTS_DIR`), written only through
   `services/stockage.ts` (tmp/ then rename; `tmp/` emptied at startup). `ajouterFichier` in
   `services/fichiers.ts` is the one upload function of the media library for the screens (AD-117: every file is a row of `fichiers`, its
-  visibility deduced from where it is added, never sent by the client); the import API's `assurerFichier` (same service, `PUT /fichiers/:cle`, AD-104) is the only other writer: its visibility comes from the script (`joueurs` or `mj`, B-48 protects it), and it resolves `fichiers_attente`; `fichierLisible` is the one read rule; only
+  visibility deduced from where it is added, never sent by the client); the import API's `assurerFichier` (same service, `PUT /fichiers/:cle`, AD-104) is the only other writer: its visibility comes from the script (`joueurs` or `mj`; B-48 is retired, a replay without it leaves the file's), and it resolves `fichiers_attente`; `fichierLisible` is the one read rule; only
   `services/` writes `fichiers*`); map backgrounds
   (`services/cartes.ts`, AD-69) go through `stockage.ts` directly, never write the volume themselves. The type is sniffed from the bytes, never trusted.
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
@@ -83,7 +83,7 @@
   names an adventure the caller reads (`aventureLue`, `droits.ts`); a report's adventure leaves the API only for a reader of it
   (`campagneId`/`campagneNom`, `campagneDuCompteRendu`), `campagneSupprimee` only for a GM when the id matches no sheet — a closed
   and a deleted adventure are the same silence for anyone else, `charge.campagne_id` included. A sheet's title is written only by
-  `renommerFiche` (it leaves `dernier_import` alone, AD-119); sheets and universes are deleted only by `supprimerFiche` and
+  `renommerFiche` (AD-119); sheets and universes are deleted only by `supprimerFiche` and
   `supprimerUnivers` (AD-119; the bilan of an adventure adds `taches`, `scenarios`, `comptesRendus`); a compte-rendu is deleted as a sheet.
 - Search and relations (`kanevas-relier-chercher`): search is `listerFiches({recherche})`, never a second
   function (AD-63). The FTS5 indexes (migration 0005) only deliver candidate ids and are kept by SQL
@@ -91,17 +91,18 @@
   (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
   placeholder for hidden ones. The `cible` of a relation carries `charge: {pj}` for a personnage and no other charge key (the badge reads only that; more would leak data of the target sheet; `chargeDeCible`). Refusal codes: `auto_relation` and `nature_incompatible` (invalide), `relation_existante` and
   `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.
-- Maps (`kanevas-cartes-graphes`, migration 0007): `src/services/cartes.ts`. `lireCarte` is the only read
+- Maps (`kanevas-cartes-graphes`, migration 0007): `src/services/cartes.ts` (plus `src/services/import-cartes.ts`, the import `PUT /cartes/:cle`, which writes `cartes` itself inside `avecContexte`, origin `import`, with the same guards and `ecrireFond`/`stockage.ts` for the background). `lireCarte` is the only read
   of a map, elements and graph links included (AD-68); the browser filters nothing. Graph links are never
   stored (AD-41): they come from `lireRelations` per readable section, so the two guards of AD-64 apply.
   Reads: no role, unknown id and hidden map for a non-GM are the same `introuvable`; a GM in player mode on
   a hidden map gets `refuse` with `detail: 'mode_joueur'`. Writes (GM outside player mode only): `introuvable`
   if the caller cannot read the map, else `refuse`. Refusal codes in `ErreurService.detail`: `fond_invalide`,
   `fond_trop_lourd`, `position_invalide`, `fiche_inconnue` (invalide), `fiche_deja_placee`, `carte_pleine`
-  (conflit). The route answers `fond_trop_lourd` with 413. A background goes through `stockage.ts` only and `ouvrirFond` takes no mode.
+  (conflit); `champ: fiche` and `champ: texte` (invalide: unknown sheet, text over 5,000 characters), `carte_modifiee` (conflit: the text version moved).
+  Migration 0041 adds to a map its attached sheet (`cartes.fiche_id`), its text with a public copy (GM blocks removed) and its `version`; the import writes the text without a version check (AD-142). The route answers `fond_trop_lourd` with 413. A background goes through `stockage.ts` only and `ouvrirFond` takes no mode.
 
 - Assistant tools (`kanevas-assistant-membre`, `src/services/assistant/`): `catalogueDe(db, compteId,
-  universId)` is the only door — the server picks the catalogue from the role read in `membres` (no role →
+  universId, {porte, niveau, images})` is the only door — for the assistant and for the MCP door (`routes/mcp.ts`, `outils-ecriture-mcp.ts`, `docs/mcp.md`) — the server picks the catalogue from the role read in `membres` (no role →
   `introuvable`, AD-26); a tool is `{nom, description, schema (zod strictObject), executer}`, neutral of any
   transport. Account, universe and role are closed over, **never a tool parameter**; the actor is
   `{compteId}` with no player mode. Tools only compose service functions (AD-27, no SQL): refusals come
@@ -127,16 +128,15 @@
   moved, else `en_attente`), never stored. `appliquerProposition` writes through `ecrireContenu` with
   `version_origine` in the same transaction as the mark (`section_modifiee`, `proposition_appliquee` as
   `ErreurService.detail`, both `conflit`). Never write a section from here by another path (AD-48).
-- Import API (`kanevas-import-fil`, migration 0010, AD-103/104): `routes/import.ts` is the scope `/api/import/v1`, beside the
-  session guard — only a `Bearer kvs_…` token opens it (`verifierJeton`: fingerprint, not revoked, not expired, creator still
-  GM), the cookie is ignored there and no other route reads `Authorization`. Refusal is always the same 401 `jeton_invalide`
-  and opens no batch; another universe is 404. The clock is `app.horloge()` (tests move it). `services/jetons.ts` and
+- Import API (`kanevas-import-fil`, migration 0010, AD-103/104): `routes/import.ts` is the scope `/api/v1` (`/api/import/v1` is its alias, same handlers; the universe is addressed by id or key), beside the
+  session guard — only a `Bearer kvs_…` token opens it (`verifierJeton`: fingerprint, not revoked, not expired; it reads no role — the guard of `routes/import.ts` then takes the lesser of the token's access and the account's current role, `niveauEffectif`) — a `lecture` token gets 403 `lecture_seule` on anything but GET/HEAD, and a universe out of its reach is 404, like an unknown one, the cookie is ignored there and no other route reads `Authorization`. Refusal is always the same 401 `jeton_invalide`
+  and opens no batch; another universe, or an account with no role in it, is 404. The clock is `app.horloge()` (tests move it). `services/jetons.ts` and
   `services/lots.ts` are the only readers/writers of `jetons_api` / `lots_import`; write services of later slices count
   through `noterDansLot` (counters per nature, report capped at 1 000).
 - Markdown (AD-95, AD-113): the only renderer is `rendreMarkdown` in `services/markdown.ts` (`html: false`, links limited to http/https/mailto); a view returns `html` to everyone and the source `contenu` only to who may write it — never render elsewhere, never ship the source to a reader. The ceiling is 100 000 characters (`MAX_CONTENU_SECTION`).
 - Import of sheets (`kanevas-fil-fiches`): `PUT /fiches/:cle` calls `assurerFiche` (`services/import-fiches.ts`), which composes
   `creerFiche`, `renommerFiche`, `changerTypeFiche` and the section services, plus a few direct updates of its own
-  (`modifie_le`, `dernier_import`, `cle_origine`, `version_importee` — import bookkeeping only; content still goes through the services). Refusals are validated **before** the transaction
+  (`modifie_le`, `cle_origine` — bookkeeping only; content still goes through the services). Refusals are validated **before** the transaction
   (`ErreurService.champ`, sent as `champ` with code `invalide`); with `?lot=` they count « 1 refusée » in the batch, without it they leave
   no trace; a closed batch answers 409 `lot_clos`. The stub token is `JETON_BOUCHON` (`bouchon/depart.ts`), seeded in « Essai Kanka ».
 - Public content (feature `kanevas-import-secrets`, migration 0011, AD-114): `sections.contenu_public` is `contenu` without its `:::mj` blocks,
@@ -187,3 +187,5 @@
   import (`code: 'section_geree'`, before the transaction) refuse a managed section too.
 - Sheet visibility (`kanevas-fiche-mj-seul`, B-57, rule 11 of `docs/donnees.md`): a sheet has none of its own. `visibleJoueurs` is computed in the query (`SQL_VISIBLE_JOUEURS`, `services/fiches.ts`) from `sections.joueurs_lisent` and given to the GM outside player mode only; never store it in a column, never recompute it in the browser, never count the author's right of a player as « visible ».
 - Tool data deletion (`kanevas-outils-retrait`, D-1 to D-8): `services/outils-donnees.ts` is the only caller of a module's `donnees` and of the catalogue port's `compter` / `effacer`; `libererSections` (`sections-gerees.ts`) is the only way to free a lock when data go (sheets and their text are never deleted); the `…/suppression` routes sit beside `garde(...)` (they answer for a disabled tool); no assistant tool and no import route deletes tool data. Disabling erases nothing.
+- Keys (`kanevas-synchro-cles`, migration 0037, AD-146): `src/services/cles.ts` is the only place that draws, changes and resolves keys, and the only reader/writer of `cles_anciennes` and `univers_cles_anciennes` (a creation stores the key drawn there, the import the key it carries; nothing else writes `univers.cle`, `fiches.cle` or `sections.cle`); the creation of a sheet, section or universe draws its key there (`tirerCle*`), `insererSection` never receives a key from a caller, and only `creerFiche` receives the import's (the import sets a section's key afterwards by an `UPDATE`). A key is changed only by `changerCleFiche` / `changerCleUnivers` (the former one keeps resolving), resolved by `resoudreFiche` / `resoudreUnivers` (digits only = an id). `fiches.cle_origine` and `sections.cle_origine` no longer exist (`fichiers.cle_origine` does); the pure shapes are in `cles-forme.ts`, whose SQL twins `openDb` registers for the migration.
+- History (`kanevas-synchro-historique`, migration 0039, AD-147): triggers on `fiches`, `sections`, `relations`, `fiche_alias`, `fiche_etiquettes` and `fichiers_sections` set `modifie_le` and write the `historique` line from the write context `contexte_ecriture`; never write `fiches.modifie_le` by hand. Every write service runs inside `ecrire(db, compteId, fn)` (`services/historique.ts`; `ecrireSysteme` for a link resolution or a cache rewrite, which writes no line; `avecContexte` is their low level); a new writer of those tables is added to `ECRIVAINS` in `src/services/inventaire-ecritures.test.ts`, or it files under « inconnu ».

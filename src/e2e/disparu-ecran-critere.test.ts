@@ -176,14 +176,14 @@ describe('kanevas-fiches-liees-disparu-ecran, la marque disparu à l’écran', 
     await antor.goto(`/univers/${U}/fiche/${ids['Bran Corvalis']}`);
     await antor.getByRole('heading', { level: 1, name: 'Bran Corvalis' }).waitFor();
     await attendre(antor);
-    await antor.route(`**/api/univers/${U}/fiches/${ids['Bran Corvalis']}`, (r: Any) =>
+    await antor.route(`**/api/univers/*/fiches/${ids['Bran Corvalis']}`, (r: Any) =>
       r.request().method() === 'PATCH' ? r.fulfill({ status: 500, contentType: 'application/json', body: '{}' }) : r.continue());
     await menu(antor, 'Bran Corvalis');
     await antor.getByRole('menuitem', { name: 'Marquer mort' }).click();
     await antor.getByRole('alert').filter({ hasText: 'Impossible de modifier la fiche. Réessayez.' }).waitFor();
     assert.equal(await entete(antor).getByText('Mort', { exact: true }).count(), 0);
     await antor.screenshot({ path: `${SHOTS}/echec.png` });
-    await antor.unroute(`**/api/univers/${U}/fiches/${ids['Bran Corvalis']}`);
+    await antor.unroute(`**/api/univers/*/fiches/${ids['Bran Corvalis']}`);
     // player mode
     await antor.goto(`/univers/${U}/fiche/${ids['Bran Corvalis']}`);
     await antor.getByRole('heading', { level: 1, name: 'Bran Corvalis' }).waitFor();

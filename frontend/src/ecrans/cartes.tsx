@@ -14,7 +14,9 @@ import { adresseCarte, estCarteOutil, FORMES, type Carte, type CarteOutil, type 
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 const NON_IMAGE = 'ce fichier n’est pas une image (PNG, JPEG, GIF ou WebP).';
-const TROP_LOURD = 'l’image dépasse 25 Mo.';
+/** The refusal carries the ceiling of the moment (B-89): the message says it. */
+const tropLourd = (limiteMo: unknown) =>
+  typeof limiteMo === 'number' ? `Image trop lourde : ${limiteMo} Mo au plus.` : 'Image trop lourde.';
 
 /** E-10 Cartes: the maps the account reads; the GM creates one and flips its visibility in place. */
 function Cartes() {
@@ -159,7 +161,7 @@ function Cartes() {
         }
         const json = (await reponse.json().catch(() => ({}))) as Record<string, unknown>;
         if (!reponse.ok) {
-          if (json.code === 'fond_trop_lourd' || reponse.status === 413) return setErreurFond(TROP_LOURD);
+          if (json.code === 'fond_trop_lourd' || reponse.status === 413) return setErreurFond(tropLourd(json.limiteMo));
           if (json.code === 'fond_invalide') return setErreurFond(NON_IMAGE);
           throw new Error('echec');
         }

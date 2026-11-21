@@ -53,7 +53,7 @@ test('B-38: an alias of 121 characters does not refuse the sheet and warns', asy
   assert.ok(Array.isArray(r.json.avertissements) && r.json.avertissements.length >= 1, JSON.stringify(r.json));
 });
 
-test('B-48: a set of aliases edited in Kanevas is not overwritten by the replay of the import, which reports it, and the search finds the added alias', async () => {
+test('B-47: a set of aliases edited in Kanevas is replaced by the replay of the import, with no warning, and the search no longer finds the alias the script does not carry', async () => {
   const w = await monde();
   const un = await w.imp('PUT', '/fiches/lieu:modifie-ailleurs', w.corps({ titre: 'Modifié-Ailleurs', alias: ['Premier'] }));
   assert.equal(un.json.etat, 'creee');
@@ -62,7 +62,10 @@ test('B-48: a set of aliases edited in Kanevas is not overwritten by the replay 
   const { lotId } = (await w.imp('POST', '/lots')).json;
   const deux = await w.imp('PUT', `/fiches/lieu:modifie-ailleurs?lot=${lotId}`, w.corps({ titre: 'Modifié-Ailleurs', alias: ['Premier'] }));
   assert.equal(deux.status, 200);
-  assert.match((await w.imp('GET', `/lots/${lotId}`)).body, /alias modifiés dans Kanevas/);
+  assert.equal(deux.json.etat, 'mise_a_jour');
+  assert.doesNotMatch((await w.imp('GET', `/lots/${lotId}`)).body, /modifiés dans Kanevas/);
   const q = await w.app.inject({ method: 'GET', url: `/api/univers/${w.essai}/fiches?q=${encodeURIComponent('Ajouté dans Kanevas')}`, headers: w.antor });
-  assert.ok((q.json().fiches as Any[]).some((f) => f.titre === 'Modifié-Ailleurs'));
+  assert.ok(!(q.json().fiches as Any[]).some((f) => f.titre === 'Modifié-Ailleurs'));
+  const p = await w.app.inject({ method: 'GET', url: `/api/univers/${w.essai}/fiches?q=Premier`, headers: w.antor });
+  assert.ok((p.json().fiches as Any[]).some((f) => f.titre === 'Modifié-Ailleurs'));
 });

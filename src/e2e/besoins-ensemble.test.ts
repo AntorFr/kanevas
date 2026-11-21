@@ -47,7 +47,7 @@ async function creerUnivers(page: Any, nom: string, description = ''): Promise<v
   await page.getByLabel('Nom', { exact: true }).fill(nom);
   if (description) await page.getByLabel('Description').fill(description);
   await page.getByRole('button', { name: rxExact("Créer l'univers") }).click();
-  await page.waitForURL(/\/univers\/\d+$/);
+  await page.waitForURL(/\/univers\/[^/]+$/);
   await attendre(page);
 }
 
@@ -185,7 +185,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await voit(p, 'Erreur : 80 caractères au plus.');
     await p.getByLabel(/^Nom/).fill('y'.repeat(80));
     await p.getByRole('button', { name: rxExact("Créer l'univers") }).click();
-    await p.waitForURL(/\/univers\/\d+$/);
+    await p.waitForURL(/\/univers\/[^/]+$/);
     await attendre(p);
     assert.ok((await texte(p)).includes('y'.repeat(80)));
   });

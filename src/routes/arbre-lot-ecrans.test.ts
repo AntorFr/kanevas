@@ -127,7 +127,7 @@ test('AD-99 bord : en rangeant une chaîne de 60 fiches, le déplacement est ref
   assert.deepEqual(v.ancetres, []);
 });
 
-test('P-10 / AD-104 : import de Les Docks avec un parent absent → fiche sans parent et avertissement ; la clé arrive → le parent est posé ; changé à la main → plus écrasé', async () => {
+test('P-10 / AD-104 : import de Les Docks avec un parent absent → fiche sans parent et avertissement ; la clé arrive → le parent est posé ; changé à la main → remis par le rejeu', async () => {
   const lot1 = (await importer('POST', '/lots')).corps.lotId;
   const r1 = await importer('PUT', `/fiches/${encodeURIComponent('lieu:les-docks')}?lot=${lot1}`, {
     type: 'lieu', titre: 'Les Docks', sections: [], parent: 'lieu:port-sel-absent',
@@ -152,7 +152,7 @@ test('P-10 / AD-104 : import de Les Docks avec un parent absent → fiche sans p
   const place = (await dire(antor, 'GET', `/api/univers/${E}/fiches/${docks}`)).corps;
   assert.deepEqual(place.ancetres.map((a: Any) => a.titre), ['Port-Sel Kanka']);
 
-  // a parent changed by hand is no more overwritten
+  // a parent changed by hand is put back by the replay: the script carries it (B-48 withdrawn)
   const anse = (await dire(antor, 'GET', `/api/univers/${E}/fiches?q=Anse-aux-Sels`)).corps.fiches[0].id;
   assert.equal((await patch(antor, docks, anse, '', E)).status, 200);
   const lot3 = (await importer('POST', '/lots')).corps.lotId;
@@ -161,7 +161,8 @@ test('P-10 / AD-104 : import de Les Docks avec un parent absent → fiche sans p
   });
   assert.equal(encore.status, 200);
   const fin = (await dire(antor, 'GET', `/api/univers/${E}/fiches/${docks}`)).corps;
-  assert.deepEqual(fin.ancetres.map((a: Any) => a.titre), ['Anse-aux-Sels']);
+  assert.deepEqual(encore.corps.avertissements, []);
+  assert.deepEqual(fin.ancetres.map((a: Any) => a.titre), ['Port-Sel Kanka']);
 });
 
 test('P-10 échec : sans jeton valide, l’import avec parent est refusé 401 et n’écrit rien', async () => {
