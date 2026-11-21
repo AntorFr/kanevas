@@ -33,7 +33,7 @@ const VERSION_LUE = z.number().int();
 
 type Geste = (galaxieId: number, args: Record<string, unknown>) => ResultatEcriture & { libelle: string; extra?: Record<string, unknown> };
 
-/** The frame of the five tools: validate, pick the galaxy, run the gesture, answer the system and the event. */
+/** The frame of the write tools: validate, pick the galaxy, run the gesture, answer the system and the event. */
 function outil(ctx: ContexteOutil, nom: string, description: string, forme: z.ZodRawShape, geste: Geste): Outil {
   const schema = z.strictObject({ ...POSITION, ...forme });
   return {
