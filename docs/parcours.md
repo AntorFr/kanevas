@@ -988,7 +988,7 @@ refused (401/403 depending on the import API) and nothing written.
 1. At the Mac, **the conversion script** of the `eneria` repository (`_outils/kanevas`) reads the prototype's data and
    writes the catalogue (12 hulls, 6 drives, 40 fittings, 9 defences, 19 weapons, 18 modifications, 10 examples) and the
    14 designs; it states for each modification what it does, never which element it aims at. It pushes them through the
-   import API with the universe's token (P-20 steps 1 to 3; the script, the token and the report are P-20's).
+   import API with an API token of the GM's account that reaches the universe and carries the tool `swn/vaisseaux` (AD-144, B-65; E-23; P-20 steps 1 to 3; the script, the token and the report are P-20's).
 2. **E-22** of « Éneria »: Antor opens a converted design, sees the price, HP, AC, power and mass of the prototype's
    reference figures, the capacities and the crew costs, and the sheet's section in step. The campaign's ships
    (`classe-hyperion`, `le-pie-rouge`, …) are opened and checked against their sheets.
