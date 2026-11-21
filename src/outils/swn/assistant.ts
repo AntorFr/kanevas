@@ -73,7 +73,15 @@ export function outilTrajet({ db, acteur, universId }: ContexteOutil): Outil[] {
 
 /** Every assistant tool of the `swn/galaxie` tool (AD-outils-1). */
 export function outilsAssistant(ctx: ContexteOutil): Outil[] {
-  return [...outilTrajet(ctx), ...outilLireSysteme(ctx), ...(ctx.role === 'mj' ? outilsEcriture(ctx) : [])];
+  const lecture = outilLireSysteme(ctx);
+  const ecriture = ctx.role === 'mj' ? outilsEcriture(ctx) : [];
+  // The MCP door offers the system's ten tools, the same objects as the assistant's (AD-outils-5); the journey stays the
+  // assistant's. Writes only where the token writes, as the door's own write tools.
+  if (ctx.porte === 'mcp') {
+    const offerts = ctx.niveau === 'ecriture' ? [...lecture, ...ecriture] : lecture;
+    return offerts.map((o) => ({ ...o, portes: ['assistant', 'mcp'] as const }));
+  }
+  return [...outilTrajet(ctx), ...lecture, ...ecriture];
 }
 
 const schemaLecture = z.strictObject({
