@@ -28,6 +28,8 @@ export interface CoqueResolue {
   armure?: number
   equipage_min?: number
   equipage_max?: number
+  /** H-2: 0 for a station (no Spike drive, no speed); absent = 1, a hull stored before the slice (B-94). */
+  moteur_spike?: number
 }
 
 export interface ElementResolu {
@@ -40,6 +42,8 @@ export interface ElementResolu {
   pv: number
   ca: number
   limite: number
+  /** H-3: the count is capped by the total quantity of the design's weapon lines (`armes` only); absent = no such cap. */
+  limite_par?: string
   /** Engines only. */
   niveau?: number
   /** Weapons only. */
@@ -312,6 +316,18 @@ export function calculer(
       bloquantes.push({ niveau: 'bloquante', code: 'limite_depassee', texte: `« ${l.nom} » : ${l.element.limite} au plus.`, ligne: i })
     }
   })
+  const station = coque.moteur_spike === 0
+  const armesTotal = lignes.reduce((n, l) => n + (l.nature === 'armes' ? l.quantite : 0), 0)
+  lignes.forEach((l, i) => {
+    if (l.element.limite_par === 'armes' && l.quantite > armesTotal) {
+      bloquantes.push({ niveau: 'bloquante', code: 'limite_depassee',
+        texte: `Limite dépassée : ${l.quantite} système(s) d'auto-ciblage pour ${armesTotal} arme(s)`, ligne: i })
+    }
+    if (station && l.quantite > 0 && (l.nature === 'moteurs' || l.element.effet === 'moteurs' || l.element.effet === 'moteur_systeme')) {
+      bloquantes.push({ niveau: 'bloquante', code: 'moteur_sur_station',
+        texte: `« ${l.nom} » : une station n'a pas de moteur de saut ni de moteur système.`, ligne: i })
+    }
+  })
   if (uniteMoteur > 1) {
     bloquantes.push({ niveau: 'bloquante', code: 'moteur_multiple', texte: 'Un seul moteur par vaisseau.' })
   }
@@ -346,7 +362,7 @@ export function calculer(
     } else return
     bloquantes.push({ niveau: 'bloquante', code: 'cible_invalide', texte: `« ${l.nom} » : ${raison}`, ligne: i })
   })
-  if (uniteMoteur === 0) {
+  if (uniteMoteur === 0 && !station) {
     surveiller.push({ niveau: 'a_surveiller', code: 'moteur_absent', texte: 'Aucun moteur de saut : ce vaisseau ne peut pas voyager.' })
   }
   if (puissanceLibre === 0) {
@@ -394,7 +410,7 @@ export function calculer(
     emports,
     chantierJours: Math.ceil(prix / CADENCE_CHANTIER),
     entretien: Math.floor(prix * TAUX_ENTRETIEN + 0.5 + 1e-9),
-    porteeSaut: niveauMoteur === null ? null : reglages.porteeSaut * (niveauMoteur + 1),
+    porteeSaut: station || niveauMoteur === null ? null : reglages.porteeSaut * (niveauMoteur + 1),
     vitesse: vitesseBase,
     armure: armureBase,
     equipage: equipage === null ? null : { choisi: equipage, min, max },
