@@ -277,7 +277,7 @@ test('lierElement lie une fiche de l\'univers, refuse fiche_inconnue sinon ; del
   const c = L.ajouterElement(...w.AS, { genre: 'ville', nom: 'Port' }).cle!;
   const f = w.fiche('Port-fiche');
   const autre = w.q('SELECT id FROM univers WHERE id != ? LIMIT 1', w.univers)[0].id as number;
-  const etrangere = w.db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', 'Ailleurs', '{}', 1, 1)").run(autre).lastInsertRowid as number;
+  const etrangere = w.db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', 'Ailleurs', '{}', 1, 1)").run(autre).lastInsertRowid as number;
   const v = () => lignes(w)[0].version as number;
   for (const ficheId of [999999, etrangere, 0, -1, 1.5, '1', null, undefined]) {
     const e = erreur(() => L.lierElement(...w.AS, c, { ficheId, version: v() }));
@@ -307,7 +307,7 @@ test("AD-144 : pour une joueuse, un élément dont la fiche liée lui est illisi
   // the control: a sheet the player reads gives a link; the other has no section a player reads
   w.db.prepare('UPDATE sections SET joueurs_lisent = 1 WHERE fiche_id = ?').run(lisible);
   w.db.prepare('UPDATE sections SET joueurs_lisent = 0 WHERE fiche_id = ?').run(cachee);
-  w.db.prepare('INSERT INTO sections (fiche_id, titre, contenu, contenu_public, joueurs_lisent, ordre, modifie_le) VALUES (?, ?, ?, ?, 1, 90, ?)')
+  w.db.prepare("INSERT INTO sections (cle, fiche_id, titre, contenu, contenu_public, joueurs_lisent, ordre, modifie_le) VALUES ('texte-' || hex(randomblob(4)), ?, ?, ?, ?, 1, 90, ?)")
     .run(lisible, 'Vue', 'x', 'x', '2026-01-01T00:00:00Z');
   assert.ok(lireFiche(w.db, w.lea, w.univers, lisible));
   assert.equal(erreur(() => lireFiche(w.db, w.lea, w.univers, cachee)).code, 'introuvable');
@@ -363,18 +363,18 @@ test("le MJ réserve et dé-réserve : la clé est unique pour tout le système,
   assert.deepEqual(lignes(w).map((x) => x.cle), [b]);
 });
 
-test('0039 : montée depuis 0038 avec le semis, tout reste, swn_elements neuve et contrainte, foreign_key_check vide', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'migration-0039-'));
+test('0044 : montée depuis 0043 avec le semis, tout reste, swn_elements neuve et contrainte, foreign_key_check vide', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'migration-0044-'));
   const db = openDb(':memory:');
   const source = new URL('../../db/migrations/', import.meta.url);
-  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 38) copyFileSync(new URL(f, source), join(dir, f));
+  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 43) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
   assert.equal(semerBouchon(db), true);
   const tables = () => (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all() as any[]).map((x) => x.name);
   assert.ok(!tables().includes('swn_elements'));
   const tout = (t: string) => db.prepare(`SELECT * FROM ${t} ORDER BY 1`).all();
   const avant = { s: tout('swn_systemes'), a: tout('swn_astres'), f: tout('fiches'), g: tout('swn_galaxies') };
-  assert.deepEqual(migrate(db), [39, 40]);
+  assert.deepEqual(migrate(db), [44, 45]);
   assert.ok(tables().includes('swn_elements'));
   assert.deepEqual({ s: tout('swn_systemes'), a: tout('swn_astres'), f: tout('fiches'), g: tout('swn_galaxies') }, avant);
   assert.equal((db.prepare('SELECT COUNT(*) n FROM swn_elements').get() as any).n, 0);

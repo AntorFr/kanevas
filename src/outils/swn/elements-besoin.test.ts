@@ -257,7 +257,7 @@ async function monde_import() {
   const put = (url: string, payload: unknown) =>
     app.inject({ method: 'PUT', url: `/api/import/v1/univers/${E}${url}`, headers: { authorization: `Bearer ${t}` }, payload: payload as any });
   const fe = creerFiche(app.db, antor, E, { type: 'lieu', titre: 'Fiche essai', sections: [{ titre: 'Apparence', joueursLisent: true }] });
-  app.db.prepare('UPDATE fiches SET cle_origine = ? WHERE id = ?').run('fiche-essai', fe.id);
+  app.db.prepare('UPDATE fiches SET cle = ? WHERE id = ?').run('fiche-essai', fe.id);
   assert.equal((await put(`/outils/swn/galaxie/galaxies/${gal}`, { systemes: [{ cle: 'vael', nom: 'Vael', q: 0, r: 0 }] })).statusCode, 200);
   const atlas = (elements: unknown[]) => ({ ...JSON.parse(readFileSync(ESSAI, 'utf8')), elements });
   const atlasPut = (elements: unknown[]) => put(`/outils/swn/galaxie/galaxies/${gal}/systemes/vael/atlas`, atlas(elements));
@@ -299,23 +299,23 @@ test('P-25 échec : un élément sur un corps inconnu est refusé avec son chemi
 
 // ---- the migration ----
 const SRC = fileURLToPath(new URL('../../db/migrations/', import.meta.url));
-test('0039 : la montée depuis le schéma précédent garde les lignes existantes et crée swn_elements vide qui refuse un genre inconnu', () => {
+test('0044 : la montée depuis le schéma précédent garde les lignes existantes et crée swn_elements vide qui refuse un genre inconnu', () => {
   const dir = join(mkdtempSync(join(tmpdir(), 'elb-')), 'm') + '/';
   mkdirSync(dir);
   const fichiers = readdirSync(SRC).filter((f) => /^\d{4}-.+\.sql$/.test(f));
-  for (const f of fichiers) if (Number(f.slice(0, 4)) < 39) copyFileSync(SRC + f, dir + f);
+  for (const f of fichiers) if (Number(f.slice(0, 4)) < 44) copyFileSync(SRC + f, dir + f);
   const db = openDb(':memory:');
   migrate(db, dir);
   const d = '2026-11-01T00:00:00.000Z';
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'antor', ?)").run(d);
-  db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', ?)").run(d);
+  db.prepare("INSERT INTO univers (id, cle, nom, cree_le) VALUES (1, 'uu', 'U', ?)").run(d);
   db.prepare("INSERT INTO swn_galaxies (id, univers_id, titre, visible, graine, densite_defaut, version) VALUES (1, 1, 'G', 1, 'abc', 0.68, 1)").run();
   db.prepare("INSERT INTO swn_systemes (id, galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (1, 1, 1, 's', 'S', 1, 2, 3, 'accent', '', 0, 1)").run();
   db.prepare("INSERT INTO swn_astres (id, systeme_id, cle, genre, type, orbite, heure, taille) VALUES (1, 1, 'p', 'planete', 'rocheux', 2, 4, 1)").run();
   assert.equal(db.prepare("SELECT count(*) n FROM sqlite_master WHERE name = 'swn_elements'").get().n, 0);
   const avant = [db.prepare('SELECT * FROM swn_systemes').all(), db.prepare('SELECT * FROM swn_astres').all()];
   const appliquees = migrate(db);
-  assert.ok(appliquees.includes(39), String(appliquees));
+  assert.ok(appliquees.includes(44), String(appliquees));
   assert.deepEqual([db.prepare('SELECT * FROM swn_systemes').all(), db.prepare('SELECT * FROM swn_astres').all()], avant);
   assert.equal(db.prepare('SELECT count(*) n FROM swn_elements').get().n, 0);
   assert.throws(() => db.prepare("INSERT INTO swn_elements (systeme_id, cle, genre, nom, orbite, heure) VALUES (1, 'x', 'moto', 'X', 1, 1)").run());

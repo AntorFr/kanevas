@@ -1,7 +1,7 @@
 // Reading of the atlas of a system (AD-atlas-2, AD-atlas-3): a pure function, no database, no write. It checks the
 // shape and the bounds of the JSON body, collects EVERY refusal with its path, and returns the normalised items.
 // What a type, an aspect or a formation may carry is decided by the Rust core (AD-140): nothing of its bounds is
-// copied here. The resolution of `fiche` (a sheet's `cle_origine`) is the application's (`appliquerAtlas`, below), which
+// copied here. The resolution of `fiche` (a sheet's key (`cle`, or a former key)) is the application's (`appliquerAtlas`, below), which
 // writes through the functions of `ecriture-systeme.ts` only (AD-edition-1): no `INSERT` / `UPDATE` of the system's tables here.
 import type { Db } from '../../db/db.js';
 import { peutVoirFiche, roleDe } from '../droits.js';
@@ -431,14 +431,14 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
   if (!lecture.ok) return rapportRefuse(lecture.refus, lecture.refusTotal);
   const atlas = lecture.atlas;
 
-  // The sheets: the `cle_origine` of a sheet already imported, readable by the token's account.
+  // The sheets: the key (`cle`, or a former key) of a sheet, readable by the token's account.
   const role = roleDe(db, universId, acteur.compteId);
   const fiches = new Map<string, number | null>();
   const fichesRefus: RefusAtlas[] = [];
   const resoudre = (cle: string | null, chemin: string): number | null => {
     if (cle === null) return null;
     if (!fiches.has(cle)) {
-      const ligne = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?').get(universId, cle) as { id: number } | undefined;
+      const ligne = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle = ? UNION ALL SELECT fiche_id FROM cles_anciennes WHERE univers_id = ? AND cle = ?').get(universId, cle, universId, cle) as { id: number } | undefined;
       fiches.set(cle, ligne && role !== null && peutVoirFiche(db, role, ligne.id, acteur) ? ligne.id : null);
     }
     const id = fiches.get(cle)!;

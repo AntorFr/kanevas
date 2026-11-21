@@ -50,7 +50,7 @@ const PUIS = '42/43';
 
 test('routes d\'écran : importee et cle du corps sont ignorés, la ligne reste hors import', async () => {
   const w = await monde();
-  const fiche = one(w.app, "INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', 'Port', '{}', 1, 1) RETURNING id", w.E).id as number;
+  const fiche = one(w.app, "INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', 'Port', '{}', 1, 1) RETURNING id", w.E).id as number;
   const jeton = async () => (await w.lire('antor')).versionSysteme as number;
   const astres = () => w.app.db.prepare('SELECT * FROM swn_astres WHERE systeme_id = (SELECT id FROM swn_systemes WHERE cle = ?)').all('int-ouvert') as any[];
   const formations = () => w.app.db.prepare('SELECT * FROM swn_formations WHERE systeme_id = (SELECT id FROM swn_systemes WHERE cle = ?)').all('int-ouvert') as any[];
