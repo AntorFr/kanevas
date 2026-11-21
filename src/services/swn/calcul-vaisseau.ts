@@ -1,6 +1,6 @@
 import type { Db } from '../../db/db.js';
 import { calculer, type AlerteVaisseau, type CoqueResolue, type LigneResolue, type NatureVaisseau,
-  type ElementResolu as ElementCalcul, type ResultatVaisseau } from '../../outils/swn/regles/vaisseau.js';
+  type ElementResolu as ElementCalcul, type ReglagesVaisseau, type ResultatVaisseau } from '../../outils/swn/regles/vaisseau.js';
 import { lireElement, type ElementResolu } from '../catalogues.js';
 import { ErreurService, introuvable } from '../erreurs.js';
 import { accessible, lireLigneOutil, resoudreOutil } from '../outils.js';
@@ -91,10 +91,16 @@ const texteRetire = (nom: string) => `Élément retiré de cet univers : ${nom}.
 export const alerteRetiree = (nom: string, ligne: number): AlerteVaisseau =>
   ({ niveau: 'bloquante', code: 'element_retire', texte: texteRetire(nom), ligne });
 
-/** The `portee_saut` of the module, resolved for the universe (G-5). */
-function porteeSaut(db: Db, universId: number): number {
-  const v = resoudreOutil(db, universId, OUTIL_VAISSEAUX).communs.reglages['portee_saut']?.valeur;
-  return typeof v === 'number' ? v : 5;
+/** The settings of the calculation, resolved for the universe: the module's `portee_saut` (G-5) and the tool's four (H-capacites-1 (4)). */
+function reglagesDe(db: Db, universId: number): ReglagesVaisseau {
+  const r = resoudreOutil(db, universId, OUTIL_VAISSEAUX);
+  const v = r.communs.reglages['portee_saut']?.valeur;
+  const nombre = (nom: string, defaut: number) => {
+    const x = Number(r.reglages[nom]?.valeur);
+    return Number.isFinite(x) ? x : defaut;
+  };
+  return { porteeSaut: typeof v === 'number' ? v : 5, diviseurPrix: nombre('diviseur_prix', 1), cadenceChantier: nombre('cadence_chantier', 25000),
+    soldeJour: nombre('solde_jour', 100), vivresJour: nombre('vivres_jour', 20) };
 }
 
 function resoudre(db: Db, universId: number, nature: string, cle: string, masque: boolean): ElementResolu | null {
@@ -178,7 +184,7 @@ export function resoudreChoix(db: Db, universId: number, e: EntreeCalcul, porte:
 /** Calculates from resolved elements; `null` result and the alerts alone when one does not resolve. */
 export function calculerResolu(db: Db, universId: number, r: Resolution): SortieCalcul {
   if (r.retirees.length > 0 || !r.coque || r.lignes.some((l) => l === null)) return { resultat: null, alertes: r.retirees };
-  const resultat = calculer(r.coque, r.lignes as LigneResolue[], { porteeSaut: porteeSaut(db, universId) }, r.equipage, r.reparation);
+  const resultat = calculer(r.coque, r.lignes as LigneResolue[], reglagesDe(db, universId), r.equipage, r.reparation, r.pj, r.robots);
   return { resultat, alertes: resultat.alertes };
 }
 
