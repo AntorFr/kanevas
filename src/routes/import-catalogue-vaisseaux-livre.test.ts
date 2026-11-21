@@ -95,10 +95,10 @@ const cas: [string, Record<string, unknown>, string, string][] = [
   ['blindage-l', { vise: VISE }, 'vise', 'paramètre réservé à son effet.'],
   ['blindage-l', { limite: 2 }, 'limite', 'limite 1 attendue'],
   ['blindage-l', { effet_pct: 50 }, 'effet_pct', 'paramètre réservé à son effet'],
-  ['montage-l', { vise: undefined }, 'vise', 'élément visé exigé.'],
+  ['montage-l', { vise: undefined }, 'vise', 'élément visé exigé'],
   ['montage-l', { limite: 2 }, 'limite', 'limite 1 attendue'],
   ['montage-l', { effet_pct: 50 }, 'effet_pct', 'paramètre réservé à son effet'],
-  ['surcharge-l', { vise: undefined }, 'vise', 'élément visé exigé.'],
+  ['surcharge-l', { vise: undefined }, 'vise', 'élément visé exigé'],
   ['surcharge-l', { effet_pct: 0 }, 'effet_pct', ''],
   ['surcharge-l', { effet_pct: 1001 }, 'effet_pct', ''],
   ['surcharge-l', { limite: 0 }, 'limite', 'nombre entier de 1 ou plus attendu.'],
@@ -145,4 +145,18 @@ test('W-6 : la colonne Armure par classe a disparu des fiches de règles, Pource
   const entete = w.regles('modifications').split('\n').find((l) => l.startsWith('| Nom'))!;
   assert.doesNotMatch(entete, /Armure par classe|Pourcentage|Arrondi/);
   assert.match(entete, /Effet/);
+});
+
+test('W-7 : le refus « vise » exigé a pour raison exactement « élément visé exigé » (sans point : l’écran du rapport ajoute le sien)', async () => {
+  const w = await monde();
+  for (const cle of ['montage-l', 'surcharge-l']) {
+    const f = catalogue();
+    delete f.modifications.find((x: any) => x.cle === cle).vise;
+    const r = await w.post(f);
+    assert.equal(r.statusCode, 200, r.body);
+    const refus = r.json().refus;
+    assert.equal(refus.length, 1, cle);
+    assert.equal(refus[0].champ, 'vise', cle);
+    assert.equal(refus[0].raison, 'élément visé exigé', cle);
+  }
 });

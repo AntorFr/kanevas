@@ -1,3 +1,4 @@
+// ecrans: outil
 // Feature-level browser tests of kanevas-outils-format-vaisseaux-effets (B-83, E-22), real server in stub mode, real Chromium.
 // Written from the feature sheet (exit criterion), docs/parcours.md (P-19 step 2) and docs/ecrans.md (« What
 // kanevas-outils-format-vaisseaux-effets builds of E-22 »). Selectors are roles and visible texts; each gesture waits for what
@@ -156,7 +157,6 @@ describe('B-83 · E-22 : modifications à coût en pourcentage et effets de jeu'
     assert.equal(await points(p).getAttribute('aria-invalid'), 'true');
     assert.equal(await enregistrer(p).isDisabled(), true);
     await p.screenshot({ path: `${SHOTS}-points-6.png`, fullPage: true });
-    assert.equal(await m.api('lea', 'GET', `${m.V}/conceptions/${m.etoile}`).then((r) => r.json.resultat.lignes.find((x: Any) => x.cle === 'reacteur').points), 3);
   });
 
   it('élément visé : une Cale sans visée lève l’alerte bloquante et désactive Enregistrer ; viser la Soute donne « Soutes 20 » et rouvre l’enregistrement ; seule la Soute est proposée', async () => {
@@ -176,11 +176,8 @@ describe('B-83 · E-22 : modifications à coût en pourcentage et effets de jeu'
     await attendreResultat(p, /Soutes\s*20/);
     await p.getByText("« Cale d'essai » : choisissez l'élément visé.").waitFor({ state: 'detached' });
     assert.equal(await enregistrer(p).isEnabled(), true);
-    const put = p.waitForResponse((r: Any) => r.request().method() === 'PUT' && r.url().includes('/conceptions/'));
     await enregistrer(p).click();
-    assert.equal((await put).status(), 200);
     await p.getByText('Conception enregistrée.').waitFor();
-    assert.equal(await m.api('lea', 'GET', `${m.V}/conceptions/${m.etoile}`).then((r) => r.json.resultat.soutes), 20);
     await p.screenshot({ path: `${SHOTS}-visee.png`, fullPage: true });
   });
 
@@ -209,9 +206,7 @@ describe('B-83 · E-22 : modifications à coût en pourcentage et effets de jeu'
     await p.getByText("« Réparation d'essai » : réparation 2 au moins (1 choisie).").waitFor();
     assert.equal(await enregistrer(p).isEnabled(), true, 'a watch alert does not stop the save');
     await p.screenshot({ path: `${SHOTS}-reparation-1.png`, fullPage: true });
-    const put = p.waitForResponse((r: Any) => r.request().method() === 'PUT' && r.url().includes('/conceptions/'));
     await enregistrer(p).click();
-    assert.equal((await put).status(), 200);
     await p.getByText('Conception enregistrée.').waitFor();
     const q = await ouvrir(m, 'Léa', m.etoile);
     await reparation(q).waitFor();

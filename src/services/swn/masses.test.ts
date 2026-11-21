@@ -10,6 +10,7 @@ process.env.KANEVAS_STUB = '1';
 
 const { migrate, openDb } = await import('../../db/db.js');
 const { semerBouchon } = await import('../../bouchon/depart.js');
+const { avantSemis, apresSemis } = await import('../../db/jetons-pour-semis.js');
 const calc = await import('./calcul-vaisseau.js');
 const c = await import('../catalogues.js');
 const { texteMasse } = await import('../../outils/swn/regles/masse.js');
@@ -132,7 +133,7 @@ test('montée : un élément de masse 8 (semis) reste lisible et inchangé, comp
   // The seed writes `classe_min` (0028): the old schema gets a stand-in column for the seeding only, dropped before the climb.
   // The seed also writes the optional columns of 0029 (null): stand-ins on every catalogue table, same lifetime.
   const AJOUTS: Record<string, string[]> = {
-    coques: ['vitesse', 'armure', 'equipage_min', 'equipage_max'],
+    coques: ['vitesse', 'armure', 'equipage_min', 'equipage_max', 'moteur_spike'], // 0042
     moteurs: ['classe_min', 'classe_max', 'condition'], amenagements: ['classe_min', 'classe_max', 'condition', 'effet', 'rend_puissance', 'rend_masse', 'soute', 'soute_par_classe', 'reduction_cout_pct', 'reduction_base'],
     modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse', 'reparation_min', 'effet_pct', 'echange_arrondi'], // 0032
     defenses: ['classe_min', 'classe_max', 'condition', 'bonus_vitesse'],
@@ -142,12 +143,18 @@ test('montée : un élément de masse 8 (semis) reste lisible et inchangé, comp
     for (const [t, cols] of Object.entries(AJOUTS)) for (const c of cols) db.exec(`ALTER TABLE swn_catalogue_${t} ${verbe} ${c}${verbe === 'ADD COLUMN' ? ' INTEGER' : ''}`);
   };
   stub('ADD COLUMN');
+  // The seed draws keys (0037): stand-in columns and tables for the seed only, dropped before the climb.
+  db.exec('ALTER TABLE univers ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN creee_via TEXT; ALTER TABLE sections ADD COLUMN cle TEXT');
+  db.exec('CREATE TABLE cles_anciennes (univers_id, cle, fiche_id); CREATE TABLE univers_cles_anciennes (cle, univers_id)');
   db.exec('ALTER TABLE swn_conceptions ADD COLUMN equipage INTEGER'); // 0030, written by the seed
+  avantSemis(db);
   semerBouchon(db);
+  apresSemis(db);
+  db.exec('DROP TABLE cles_anciennes; DROP TABLE univers_cles_anciennes; ALTER TABLE univers DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN creee_via; ALTER TABLE sections DROP COLUMN cle');
   db.exec('ALTER TABLE swn_conceptions DROP COLUMN equipage');
   stub('DROP COLUMN');
   // 0028 adds `classe_min` to the weapons: the rows are compared without it, which is checked apart below.
-  const snap = () => TABLES.map((t) => (db.prepare(`SELECT * FROM swn_catalogue_${t} ORDER BY rowid`).all() as any[]).map(({ cout_pct, effet, valeur, points_max, sens, echange_puissance, echange_masse, rend_puissance, rend_masse, soute, classe_min, vitesse, armure, equipage_min, equipage_max, classe_max, condition, bonus_vitesse, degats, perforation, qualites, niveau_tech, equipage, reparation_min, soute_par_classe, reduction_cout_pct, effet_pct, echange_arrondi, reduction_base, ...r }) => r));
+  const snap = () => TABLES.map((t) => (db.prepare(`SELECT * FROM swn_catalogue_${t} ORDER BY rowid`).all() as any[]).map(({ cout_pct, effet, valeur, points_max, sens, echange_puissance, echange_masse, rend_puissance, rend_masse, soute, classe_min, vitesse, armure, equipage_min, equipage_max, classe_max, condition, bonus_vitesse, degats, perforation, qualites, niveau_tech, equipage, reparation_min, soute_par_classe, reduction_cout_pct, effet_pct, echange_arrondi, reduction_base, moteur_spike, limite_par, ...r }) => r));
   const idx = () => db.prepare("SELECT name, tbl_name FROM sqlite_master WHERE type = 'index' AND name LIKE 'swn_catalogue_%' ORDER BY name").all();
   const avant = snap();
   const indexAvant = idx();

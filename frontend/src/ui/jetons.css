@@ -1,0 +1,77 @@
+/* Components of the tokens screens (docs/charte.md, « kanevas-synchro-jetons — components added »): choix segmenté,
+   liste d'accès, ligne de jeton, valeur copiable. Colours only through tokens. */
+
+/* Choix segmenté */
+.choix-segmente-groupe { min-width: 0; }
+.choix-segmente-legende { display: block; margin-bottom: var(--e-1); font-size: var(--t-12); font-weight: 500; color: var(--texte-2); }
+.choix-segmente { display: inline-flex; max-width: 100%; padding: 2px; gap: 2px; background: var(--surface-2); border-radius: var(--rayon-champ);
+  box-shadow: inset 0 0 0 1px var(--bord); }
+.choix-segmente [role="radio"] { min-height: 28px; padding: 0 var(--e-3); border: 0; border-radius: var(--rayon-item); background: transparent;
+  color: var(--texte-2); font: inherit; font-size: var(--t-13); font-weight: 500; cursor: pointer; white-space: nowrap;
+  transition: background var(--duree) var(--courbe), color var(--duree) var(--courbe); }
+.choix-segmente [role="radio"]:hover { color: var(--texte); }
+.choix-segmente [role="radio"][aria-checked="true"] { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort); }
+.choix-segmente [role="radio"]:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.choix-segmente [role="radio"]:disabled { opacity: .45; cursor: not-allowed; }
+.choix-segmente.petit [role="radio"] { min-height: 26px; padding: 0 6px; font-size: var(--t-12); }
+@media (max-width: 760px) { .choix-segmente:not(.petit) [role="radio"] { min-height: 36px; } .choix-segmente:not(.petit) { display: flex; } .choix-segmente:not(.petit) [role="radio"] { flex: 1 1 0; } }
+@media (prefers-reduced-motion: reduce) { .choix-segmente [role="radio"] { transition: none; } }
+
+/* Liste d'accès */
+.liste-acces { list-style: none; margin: 0; padding: 0; border-radius: var(--rayon-champ); box-shadow: inset 0 0 0 1px var(--bord); }
+.liste-acces > li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-3); padding: var(--e-2) var(--e-3); }
+.liste-acces > li + li { border-top: 1px solid var(--bord); }
+.liste-acces-nom { flex: 1 1 8rem; display: flex; align-items: center; gap: var(--e-2); min-width: 0; font-size: var(--t-14); color: var(--texte); }
+.liste-acces-titre { min-width: 0; overflow-wrap: anywhere; }
+.liste-acces-nom small { color: var(--texte-3); font-size: var(--t-12); white-space: nowrap; }
+.liste-acces-erreur { margin: var(--e-2) 0 0; color: var(--danger); font-size: var(--t-13); }
+@media (max-width: 760px) {
+  .liste-acces > li { flex-direction: column; align-items: stretch; }
+  .liste-acces-nom { flex: none; }
+  .liste-acces .choix-segmente { display: flex; flex-wrap: wrap; width: 100%; }
+  .liste-acces .choix-segmente [role="radio"] { flex: 1 1 auto; }
+}
+
+/* Ligne de jeton */
+.liste-jetons { list-style: none; margin: 0; padding: 4px; border-radius: var(--rayon-panneau); box-shadow: inset 0 0 0 1px var(--bord); }
+.ligne-jeton { position: relative; display: flex; align-items: center; gap: var(--e-3); min-height: 60px; padding: 10px 10px 10px 12px;
+  border-radius: var(--rayon-champ); }
+.ligne-jeton + .ligne-jeton::before { content: ""; position: absolute; top: -2px; left: 52px; right: 12px; height: 1px; background: var(--bord); }
+.ligne-jeton:hover, .ligne-jeton:focus-within { background: var(--surface-2); }
+.ligne-jeton-icone { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); color: var(--texte-2); }
+.ligne-jeton:hover .ligne-jeton-icone, .ligne-jeton:focus-within .ligne-jeton-icone { background: var(--surface-3); }
+.ligne-jeton.inactif .ligne-jeton-icone { background: transparent; color: var(--texte-3); }
+.ligne-jeton-corps { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ligne-jeton-nom { display: flex; align-items: center; gap: var(--e-2); min-width: 0; }
+.ligne-jeton-nom b { font-size: var(--t-14); font-weight: 500; color: var(--texte); }
+.ligne-jeton.inactif .ligne-jeton-nom b { color: var(--texte-2); }
+.ligne-jeton-acces { font-size: var(--t-13); color: var(--texte-2); overflow-wrap: anywhere; }
+.ligne-jeton-acces strong { color: var(--texte); font-weight: 500; }
+.ligne-jeton-acces small { color: var(--texte-3); font-size: inherit; }
+.ligne-jeton-meta { font-size: var(--t-13); color: var(--texte-3); }
+.ligne-jeton-actions { flex: none; display: flex; gap: var(--e-1); opacity: 0; transition: opacity var(--duree) var(--courbe); }
+.ligne-jeton:hover .ligne-jeton-actions, .ligne-jeton:focus-within .ligne-jeton-actions { opacity: 1; }
+@media (hover: none) { .ligne-jeton-actions { opacity: 1; } }
+.ligne-jeton.hors { opacity: .45; }
+@media (max-width: 760px) {
+  .ligne-jeton { align-items: flex-start; flex-wrap: wrap; }
+  .ligne-jeton-actions { flex-basis: 100%; padding-left: 40px; }
+  .ligne-jeton + .ligne-jeton::before { left: 46px; right: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { .ligne-jeton-actions { transition: none; } }
+
+/* Valeur copiable */
+.valeur-copiable-bloc { min-width: 0; }
+.valeur-copiable { display: flex; align-items: center; gap: var(--e-2); min-height: 34px; padding: 0 var(--e-1) 0 var(--e-3); background: var(--surface-2);
+  border-radius: var(--rayon-champ); box-shadow: inset 0 0 0 1px var(--bord); }
+.valeur-copiable.secret { box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.valeur-copiable code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; user-select: all; font-family: var(--police-code); font-size: var(--t-13);
+  color: var(--texte); padding: var(--e-2) 0; }
+.valeur-copiable code:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.valeur-copiable .bouton { min-height: 34px; flex: none; }
+.valeur-copiable-note { display: flex; align-items: center; gap: var(--e-2); margin: var(--e-2) 0 0; padding: var(--e-2) var(--e-3); background: var(--surface-2);
+  border-radius: var(--rayon-champ); color: var(--texte-2); font-size: var(--t-13); }
+@media (max-width: 760px) {
+  .valeur-copiable code { white-space: normal; overflow-wrap: anywhere; overflow-x: visible; }
+  .valeur-copiable .bouton { min-height: 40px; }
+}

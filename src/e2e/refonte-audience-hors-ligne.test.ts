@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box test of kanevas-refonte-visuelle, written from docs/ecrans.md § « États des composants du cadre »:
 // « réglage d'audience · connexion perdue · interrupteurs et liste désactivés, le réglage se lit ».
 //

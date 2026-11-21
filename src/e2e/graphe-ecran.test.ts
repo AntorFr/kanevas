@@ -1,3 +1,4 @@
+// ecrans: carte, cartes
 // Black-box tests of kanevas-cg-ecran-graphe, written from its exit criterion and
 // docs/ecrans.md « E-11 Carte » (graphe). Real server in stub mode + real Chromium.
 import assert from 'node:assert/strict';
@@ -301,12 +302,12 @@ test('100 nœuds à 390 px : cadre dans l’écran, aucun recouvrement, tous les
 });
 
 test('erreur et connexion perdue du graphe', opts, async () => {
-  await antor.route(`**/api/univers/${uid}/cartes/${cid}`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
+  await antor.route(`**/api/univers/*/cartes/${cid}`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
   await antor.goto(`/univers/${uid}/cartes/${cid}`);
   await antor.getByText('Impossible de charger cette page.').waitFor();
   await antor.getByRole('button', { name: rxExact('Réessayer') }).waitFor();
   await antor.screenshot({ path: '/tmp/e11-graphe-erreur.png' });
-  await antor.unroute(`**/api/univers/${uid}/cartes/${cid}`);
+  await antor.unroute(`**/api/univers/*/cartes/${cid}`);
   await antor.getByRole('button', { name: rxExact('Réessayer') }).click();
   await antor.locator('.graphe').waitFor();
 

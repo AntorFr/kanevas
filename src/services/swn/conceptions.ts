@@ -78,7 +78,10 @@ function vue(db: Db, acteur: Acteur, universId: number, l: Lue): VueConception {
   const choix = JSON.parse(l.ligne.choix) as LigneChoix[];
   // The elements the design carries that no longer resolve: computed now, never stored (V-3).
   const r = resoudreChoix(db, universId, { coque: l.ligne.coque_cle, choix }, porteDe(l.ligne));
-  const bloquantes = resultat.alertes.filter((a) => a.niveau === 'bloquante');
+  // A class alert the stored result predates (the catalogue raised an arm's classe_min): computed now, never stored (H-7).
+  const neuf = r.retirees.length === 0 ? calculerResolu(db, universId, r).alertes : [];
+  const classes = neuf.filter((a) => a.code === 'classe_inadaptee' && !resultat.alertes.some((s) => s.code === a.code && s.texte === a.texte));
+  const bloquantes = [...resultat.alertes.filter((a) => a.niveau === 'bloquante'), ...classes];
   const surveiller = resultat.alertes.filter((a) => a.niveau !== 'bloquante');
   const geree = etatGere(db, acteur, universId, l.section);
   return {

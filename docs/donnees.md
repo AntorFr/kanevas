@@ -34,7 +34,7 @@ backend service functions, called in the same way by routes and agent tools
 | **alias** *(kanevas-import)* | another name for the sheet | sheet | anyone who sees the sheet | GM; the import |
 | **label** *(kanevas-import)* | name, unique in the universe | universe; ↔ sheets | its sheets that an account sees; a label with no visible sheet does not exist for that account | GM; the import (created on first use) |
 | **type setting** *(kanevas-import)* | a type, enabled or disabled — at system level; forced enabled or disabled — at universe level; absence means « suit » (inherit, AD-102) | game system or universe | members of an attached universe (system); universe members (universe) | GM of an attached universe (system, B-42); universe GM (universe) |
-| **API token** *(kanevas-import)* | name, fingerprint (never the value), creation date, expiry date, revocation date, last use | universe, account of the GM who created it (the actor) | universe GMs (without the value) | creation: GM; revocation: any universe GM (B-45, B-46) |
+| **API token** *(kanevas-import)* | name, fingerprint (never the value), creation date, expiry date, revocation date, last use | universe, account of the GM who created it (the actor) | universe GMs (without the value) | creation: GM; revocation: any universe GM (B-45, B-46) — *`kanevas-synchro`: the token belongs to an account, seen, created and revoked by its owner, seen, modified and revoked by the instance admin; no longer by GMs (B-94, B-95)* |
 | **import batch** *(kanevas-import)* | opening date, closing date, state, counters (created, updated, unchanged, refused, warnings), report of refusals and warnings | universe, token | universe GMs | the server, for a script presenting a token (B-49) |
 | **proposal** | proposed content, original content fingerprint (the section's `version`, AD-59), creation date, application date | universe, requesting account, section, source report | its requester only | created by the GM's agent; applied once by its requester, if the section has not changed (B-21) |
 
@@ -287,7 +287,7 @@ sheet and role): an element's sheet is **in the same universe** as the map; an
 **illustrated** map carries elements with positions, a **graph** elements without positions; at most **100
 elements** per map (AD-72); only a GM outside Player mode creates a map, configures it (title,
 visibility), changes its background, places, moves or removes an element; a background is only an image of
-at most 25 MB (AD-69). Removing an element deletes its row, never the sheet.
+at most 25 MB (AD-69; *`kanevas-synchro`: the instance setting `fond_carte_max_mo`, AD-143*). Removing an element deletes its row, never the sheet.
 
 Reading, evaluated for **the caller's account and mode** (AD-68): a map is readable if the
 account is a GM outside Player mode, or if it is visible. An element is returned if its sheet is readable
@@ -345,7 +345,7 @@ the sheet's universe and writes the three columns; **after** commit, it deletes 
 replaced file. Remove: resets the three columns to `NULL`, then deletes the file. A failure
 or cancellation writes neither column nor file; a replaced or removed file whose
 deletion fails remains orphaned and unreachable (same accepted risk as attachments).
-Setting, replacing or removing does not change the sheet's `modifie_le` (it is not a write to
+*(`kanevas-synchro`: it does now, B-93, AD-147.)* Setting, replacing or removing does not change the sheet's `modifie_le` (it is not a write to
 its sections). The `tmp/` directory is emptied at startup, as for attachments.
 
 **Permissions, one sentence each.**
@@ -411,7 +411,9 @@ Invariants, in sentences:
     the relations and map elements targeting it are removed; its children move up under its parent;
     links targeting it become broken.
 11. Deleting a universe leaves no row targeting it (the game system does not belong to it).
-12. An import never overwrites a field that a human has changed in Kanevas since the last import:
+12. *(`kanevas-synchro`: **retired** with B-48, AD-138 — Kanevas no longer keeps what an import wrote;
+    an import write may carry a fingerprint precondition, AD-140; a file's visibility omitted by a
+    replay is left as it is, B-91.)* An import never overwrites a field that a human has changed in Kanevas since the last import:
     the sheet, section, campaign, scenario and file know what the last import wrote
     (B-48); a file visibility changed in Kanevas is never restored by a replay.
     A field the import could not write (missing parent or one that would cause a cycle, file not yet
@@ -432,9 +434,9 @@ contraction in a later slice, outside this epic. The table describes the epic's 
 |---|---|---|
 | `type` | the seven-value `CHECK` is **removed** | validated by the service against the code list (5) — the database can no longer guarantee it: this is the cost of a type without a migration, chosen by Monsieur |
 | `parent_id` | new, → `fiches`, **ON DELETE SET NULL**; null: the sheet is at the root | (1) same universe and no cycle: **service** (the rule spans the table; a recursive trigger is rejected, AD-99); `CHECK (parent_id <> id)` |
-| `cle_origine` | new, text 1 to 200; null: sheet created in Kanevas | (2) unique index `(univers_id, cle_origine)` (multiple `NULL` values allowed) |
+| `cle_origine` | new, text 1 to 200; null: sheet created in Kanevas *(`kanevas-synchro`: becomes `cle`, not null, B-99)* | (2) unique index `(univers_id, cle_origine)` (multiple `NULL` values allowed) |
 | `sous_type` | new, text 1 to 60 after trimming; null: no subtype (B-52, decision by Monsieur on 2026-10-11) | `CHECK (sous_type IS NULL OR length(trim(sous_type)) BETWEEN 1 AND 60)`; specific to the type: the service clears it when the type changes; index `fiches (univers_id, type, sous_type)` — the E-8 filter and E-9 completion (case-insensitively distinct subtypes for a type in the universe) |
-| `dernier_import` | new, JSON: values written by the last import — title, type (and PC), subtype, aliases, labels; illustration (key); for the parent, the **requested** key and the **written** parent; null: never written by an import | (12) written by the service on each import write; a field whose current value differs from the **written** value has been changed in Kanevas; a field left alone by B-48 keeps its previous written value (it remains changed); while the written parent differs from the requested parent (missing target, cycle), the sheet has a **pending parent**: each replay retries setting the requested parent, and this is never treated as a human change |
+| `dernier_import` | *(`kanevas-synchro`: dropped, AD-138)* new, JSON: values written by the last import — title, type (and PC), subtype, aliases, labels; illustration (key); for the parent, the **requested** key and the **written** parent; null: never written by an import | (12) written by the service on each import write; a field whose current value differs from the **written** value has been changed in Kanevas; a field left alone by B-48 keeps its previous written value (it remains changed); while the written parent differs from the requested parent (missing target, cycle), the sheet has a **pending parent**: each replay retries setting the requested parent, and this is never treated as a human change |
 | `cree_le`, `modifie_le` | unchanged; `cree_le` can come from the import (B-50) | — |
 | `illustration_fichier_id` | New (`ADD COLUMN` in the media library slice), → `fichiers` **ON DELETE SET NULL**; null: no illustration | Replaces the three AD-93 illustration columns (`illustration_fichier`, `_type`, `_taille`), left **unused** until removal in a later tightening slice outside this epic. Migration turns each existing illustration into a media library file (`mj` if the sheet has no section readable by players, `joueurs` otherwise) and sets this reference (AD-111). Same universe as the sheet, image files only: enforced by the service. |
 | `id` | `AUTOINCREMENT` retained | (3) — checked in `0001-premiere-fiche.sql`: SQLite does not reuse an `AUTOINCREMENT` identifier |
@@ -446,7 +448,7 @@ as is; `recherche_fiches` triggers are recreated.
 
 | Table | Columns (excluding keys) | Constraints |
 |---|---|---|
-| `fichiers` | `id`, `univers_id`, `nom`, `type` (server-detected MIME), `taille`, `disque` (UUID filename on disk), `empreinte` (null for files predating the library, AD-117), `visibilite`, `cle_origine`, `ajoute_par` (non-null account that added it; for imports: the token’s GM), `ajoute_le`, `dernier_import` (JSON: name and visibility written by the last import; null: never imported) | → `univers`; → `comptes`; `taille > 0`; unique `disque`; `visibilite` `CHECK IN ('joueurs','mj')`, default `joueurs` (decision of 2026-10-11); `nom` 1–200 characters; nature (image for one of the four supported image MIME types, document otherwise) is not stored; unique index `(univers_id, cle_origine)`; index `(univers_id, ajoute_le)` for the E-19 grid. |
+| `fichiers` | `id`, `univers_id`, `nom`, `type` (server-detected MIME), `taille`, `disque` (UUID filename on disk), `empreinte` (null for files predating the library, AD-117), `visibilite`, `cle_origine`, `ajoute_par` (non-null account that added it; for imports: the token’s GM), `ajoute_le`, `dernier_import` *(dropped by `kanevas-synchro`, AD-138)* (JSON: name and visibility written by the last import; null: never imported) | → `univers`; → `comptes`; `taille > 0`; unique `disque`; `visibilite` `CHECK IN ('joueurs','mj')`, default `joueurs` (decision of 2026-10-11); `nom` 1–200 characters; nature (image for one of the four supported image MIME types, document otherwise) is not stored; unique index `(univers_id, cle_origine)`; index `(univers_id, ajoute_le)` for the E-19 grid. |
 | `fichiers_sections` | `fichier_id`, `section_id`, `joint` (boolean), `dans_texte` (boolean), `dans_bloc_mj` (boolean) | primary key `(fichier_id, section_id)`; → `fichiers` ON DELETE CASCADE; → `sections` ON DELETE CASCADE; `CHECK (joint OR dans_texte)`; same universe: service; at most 100 `joint` per section: service; `dans_texte` and `dans_bloc_mj` recomputed on each content write (like `liens`); index `(section_id)` — rendering, and `(fichier_id)` — « Utilisé dans » and deletion |
 | `fichiers_attente` | `id`, `univers_id`, `cle`, `section_id` (null for an illustration), `fiche_id` (null except for an illustration), `maniere` (`texte` \| `joint` \| `illustration`) | → `univers`; → `sections` and → `fiches` ON DELETE CASCADE; `CHECK ((section_id IS NULL) = (maniere = 'illustration'))` and `CHECK ((fiche_id IS NULL) <> (maniere = 'illustration'))`; `UNIQUE (univers_id, cle, section_id, fiche_id, maniere)`; index `(univers_id, cle)` — a file arriving through the API finds what is waiting for it (C1: like `liens (cible_cle)`); rows are deleted on resolution |
 | `fiche_alias` | `fiche_id`, `alias` | → `fiches` ON DELETE CASCADE; `alias` 1 to 120; `UNIQUE (fiche_id, alias COLLATE NOCASE)` (6); at most 20 per sheet: service |
@@ -455,7 +457,7 @@ as is; `recherche_fiches` triggers are recreated.
 | `liens` | `id`, `section_id`, `cible_fiche_id` (null if pending or broken), `cible_cle` (null unless pending), `texte`, `dans_bloc_mj` (boolean) | → `sections` ON DELETE CASCADE; `cible_fiche_id` → `fiches` **ON DELETE SET NULL** (the deleted sheet leaves a broken link, 10); `CHECK (cible_fiche_id IS NULL OR cible_cle IS NULL)` (4); indexes `liens (cible_fiche_id)` and `liens (cible_cle)` |
 | `types_systeme` | `systeme_id`, `type`, `active` (boolean) | primary key `(systeme_id, type)` (5); → `systemes_jeu`; no row: the product default (enabled) |
 | `types_univers` | `univers_id`, `type`, `active` (boolean) | primary key `(univers_id, type)` (5); → `univers`; no row: the universe inherits from its system |
-| `jetons_api` | `id`, `univers_id`, `compte_id`, `nom`, `empreinte`, `cree_le`, `expire_le`, `revoque_le` (null: active), `dernier_usage_le` (null: never) | → `univers`, → `comptes`; unique `empreinte` (7); `nom` 1 to 80; `CHECK (expire_le > cree_le)`; at most one year: service |
+| `jetons_api` | *(since migration 0038 there is no `univers_id`: the universes a token reaches are in `jetons_univers`, see the amendment below)* `id`, `compte_id`, `nom`, `empreinte`, `cree_le`, `expire_le`, `revoque_le` (null: active), `dernier_usage_le` (null: never) | → `comptes`; unique `empreinte` (7); `nom` 1 to 80; `CHECK (expire_le > cree_le)`; at most one year: service |
 | `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (null: in progress), `dernier_ecrit_le`, `compteurs` (JSON: per nature — `fiches`, `fichiers`, `relations` (`campagnes` and `scenarios` no longer exist since `kanevas-scenarios-suivi`: adventures are sheets, counted in `fiches`) — `{creees, mises_a_jour, inchangees, refusees}`, integers ≥ 0; nature `fiches` adds `supprimees`, written by `DELETE /fiches/:cle`, `kanevas-import-tenir`), `avertissements`, `en_attente` (integers ≥ 0; pending links and references at closure), `rapport` (JSON: at most 1,000 entries, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api`; « abandonné » (abandoned) is not stored: open with `dernier_ecrit_le` older than 24 h |
 
 **Added columns** (`ALTER TABLE … ADD COLUMN`, as in 0002 and 0006):
@@ -477,7 +479,7 @@ as is; `recherche_fiches` triggers are recreated.
 
 **Detail of `kanevas-outils-format-vaisseaux-regles-livre` (`ARCHITECTURE.md` W-1 to W-7, B-87).** One migration: `swn_catalogue_modifications` is rebuilt again (the `effet` `CHECK` takes the four new codes `soutes_optimisees_livre`, `blindage_renforce`, `montages_specialises`, `surcharge_cumulable`) and loses `armure_par_classe`; `effet_pct` stays for the overload alone. Rows with an old code are converted in the same transaction (`surcharge_arme` → `surcharge_cumulable`; the three other old effects are dropped, the row stays a plain modification). Nothing else is added; the rules between columns (`limite` 1 for three of the effects, none for the overload) are the import's.
 
-**Detail of `kanevas-concepteur-vaisseaux` (`ARCHITECTURE.md` H-1 to H-10, B-88 to B-95; the ledger of the rules is `docs/vaisseaux-regles.md`).** The shape does not change: seven catalogue tables, one JSON line list per design. Additions, all optional or defaulted so that a row written before reads as before (B-94): `coques.moteur_spike` (0/1, default 1; 0 for a station — H-2); on `amenagements` `limite_par` (`NULL` or `armes` — H-3) and `capacite` (a code of a closed list in code, `NULL` = none — H-4); on **every** catalogue table but `exemples` `effet_jeu` (text 1-200, the « effect » line of the book, shown and never evaluated — H-4); on `modifications` `composants` (0..99) and `composants_par_classe` (0/1) (H-9) and **three new effect codes** (`surdimensionne`, `moteur_niveau`, and `magasins_doubles` loses its target; `montages_specialises` and `surcharge_cumulable` keep theirs **on the design only** — H-8; the `effet` `CHECK` is rebuilt, as in W-1). The catalogue **no longer states a target** (gap EC-14 of `docs/vaisseaux-regles.md` § 9): `vise` of a row is tolerated and ignored by the import, never required. A **design** (`swn_conceptions`) gains `pj`, `robots`, `mod_int_con` (integers, default 0, H-5, H-9) and its `choix` line changes `vise {nature,cle}` into `cibles [{nature,cle,quantite}]` (the sum of the quantities is the line's, H-8) and gains `integre` (0..`quantite`, H-9); a stored line with `vise` is read as `cibles` of the whole line (B-94). The module settings (`reglages` of the tool) gain `solde_jour` (100), `vivres_jour` (20), `diviseur_prix` (1), `cadence_chantier` (25 000). The result gains `capacites`, `fraisEquipage`, `composants`, `installation`, `refonte`, `maintenance`, `effetsJeu`, and a `vitesse` that may be negative; the stored `resultat` is read with the new keys at `null` (as F-1 did).
+**Detail of `kanevas-concepteur-vaisseaux` (only `moteur_spike` and `limite_par` (migration 0042) exist so far, the other columns and fields come with the next slices; see `ARCHITECTURE.md` H-1 to H-10, B-88 to B-95; the ledger of the rules is `docs/vaisseaux-regles.md`).** The shape does not change: seven catalogue tables, one JSON line list per design. Additions, all optional or defaulted so that a row written before reads as before (B-94): `coques.moteur_spike` (0/1, default 1; 0 for a station — H-2); on `amenagements` `limite_par` (`NULL` or `armes` — H-3) and `capacite` (a code of a closed list in code, `NULL` = none — H-4); on **every** catalogue table but `exemples` `effet_jeu` (text 1-200, the « effect » line of the book, shown and never evaluated — H-4); on `modifications` `composants` (0..99) and `composants_par_classe` (0/1) (H-9) and **three new effect codes** (`surdimensionne`, `moteur_niveau`, and `magasins_doubles` loses its target; `montages_specialises` and `surcharge_cumulable` keep theirs **on the design only** — H-8; the `effet` `CHECK` is rebuilt, as in W-1). The catalogue **no longer states a target** (gap EC-14 of `docs/vaisseaux-regles.md` § 9): `vise` of a row is tolerated and ignored by the import, never required. A **design** (`swn_conceptions`) gains `pj`, `robots`, `mod_int_con` (integers, default 0, H-5, H-9) and its `choix` line changes `vise {nature,cle}` into `cibles [{nature,cle,quantite}]` (the sum of the quantities is the line's, H-8) and gains `integre` (0..`quantite`, H-9); a stored line with `vise` is read as `cibles` of the whole line (B-94). The module settings (`reglages` of the tool) gain `solde_jour` (100), `vivres_jour` (20), `diviseur_prix` (1), `cadence_chantier` (25 000). The result gains `capacites`, `fraisEquipage`, `composants`, `installation`, `refonte`, `maintenance`, `effetsJeu`, and a `vitesse` that may be negative; the stored `resultat` is read with the new keys at `null` (as F-1 did).
 
 **What the database does not express, and the service enforces**, with the reason: same universe for parent,
 label, link and relation target (the rule spans two tables); no cycle (recursive); the
@@ -497,7 +499,7 @@ accepted, `kanevas-fichiers`).
 sees the sheet, written by the GM; a label is suggested to an account if it carries at least one
 sheet they see; a system type setting is written by a GM of an attached universe, read by
 members of attached universes; a universe setting is written by a universe GM; a token and
-a batch are read by universe GMs, a token is revoked by any universe GM; the origin
+a batch are read by universe GMs, a token is revoked by any universe GM *(`kanevas-synchro`: a batch only; a token is read and revoked by its owner and the instance admin)*; the origin
 key is read by the GM.
 
 ### Physical
@@ -519,7 +521,7 @@ filter, AD-101). Triggers remain the sole source of the indexes (AD-21); the ser
 **Multi-tenant**: unchanged — everything is in a universe; each new table carries `univers_id` or
 hangs off a row carrying it, and every query filters on it. A game system remains outside universes.
 
-Migration `0016-import-suivi.sql` gave `campagnes` and `scenarios` origin keys and import markers; `0017` carries them to the `aventure` sheets (`fiches.cle_origine`, `dernier_import`, `version_importee`) and drops both tables.
+Migration `0016-import-suivi.sql` gave `campagnes` and `scenarios` origin keys and import markers; `0017` carries them to the `aventure` sheets (`fiches.cle_origine`, `dernier_import`, `version_importee`) and drops both tables. *(`kanevas-synchro`: the sheets took `dernier_import` only; a scenario's `version_importee` went to its section — `sections.version_importee`.)*
 
 ### Migration plan
 
@@ -573,6 +575,8 @@ tree » ; « an adventure has exactly one status among four » ; « a task belon
   (« Aventure supprimée », told to a GM only: the server sends the deleted adventure to nobody else, so a player cannot tell it from one closed to him).
 - `campagnes` and `scenarios` are **dropped** ; `cle_origine`, `dernier_import`, `version_importee`
   of a scenario move to the sheet (same columns on `fiches`, same unique `(univers_id, cle_origine)`).
+  *(`kanevas-synchro`, checked against `0017-scenarios-pivot.sql`: the sheet took `dernier_import`;
+  a scenario's `version_importee` went to its section.)*
 
 **Physical.** SQLite, unchanged. The status filter reads `json_extract(charge, '$.statut')` : no
 index — a universe counts tens of adventures, hundreds at most ; reopened above ten thousand.
@@ -698,7 +702,7 @@ Invariants, in sentences:
 | `outils_univers` | `univers_id`, `outil`, `active` (null: inherits), `visibilite_mj`, `visibilite_joueur` (null: inherit), `reglages` (JSON of overridden values only), `version_reglages`, `version_catalogue` (as above, for the universe's catalogue) | primary key `(univers_id, outil)`; → `univers`; null = inherits (3) |
 | `systemes_jeu` | added column `responsable_id` | → `comptes` ON DELETE SET NULL; null: no maintainer (1); set at system creation (its creator); GM of an attached universe: service (1) |
 | `sections` | added columns `gere_par` (`module/outil/type`, null: free), `source_version` (text) | (6) the service function refuses a write from another caller; `contenu` is always the text version |
-| `jetons_api` | child table `jetons_outils` `(jeton_id, outil)` | → `jetons_api` ON DELETE CASCADE; (10); a token belongs to a universe: it writes the **system's** catalogue only if its account is its maintainer (or, without a maintainer, a GM of an attached universe) **at each use**, like an import token's GM role |
+| `jetons_api` | child table `jetons_outils` `(jeton_id, outil)` | → `jetons_api` ON DELETE CASCADE; (10); a token belongs to an account and reaches the universes of `jetons_univers`: it writes the **system's** catalogue only if its account is its maintainer (or, without a maintainer, a GM of an attached universe) **at each use**, like an import token's GM role |
 | `lots_import` | added column `outil` (null: sheet batch) | a tool import has its own batch, counters per module element nature |
 
 **SWN module (module tables, `swn_*`)**, organized into typed tables because computation reads specific fields (AD-123):
@@ -752,3 +756,107 @@ Rollback: an earlier image ignores the new tables; managed sections keep their t
 **Rule `kanevas-taille-images` (B-taille-1).** No column: an image's size and placement are the title of its
 reference in the text of a section (`![alt](fichier:N "moyen-droite")`, AD-taille-1). Same read and write
 rights as the text; a title that is not one of the nine `<size>-<placement>` pairs changes nothing.
+## Framing of `kanevas-synchro` (2026-11-01): the model
+
+**Conceptual.** No new entity of the game: a map gains an **origin key**, an **attached sheet** and a
+**text**; the instance gains **settings**; the import's memory (`dernier_import`,
+`version_importee`) leaves the model (B-48 retired, AD-138). A **fingerprint** is computed, never
+stored (AD-139).
+
+**Logical.**
+- `cartes` + `cle_origine` (text, 1–200, unique per universe when set), `fiche_id` (a sheet of the
+  same universe, or none; the sheet deleted → none), `texte` (Markdown, 0–5,000 characters, with GM
+  blocks), `texte_public` (the text without its GM blocks, written with `texte` at each write, as
+  `sections.contenu_public`, AD-114), `version` (integer, +1 at each text write, AD-59's rule). No
+  `[[…]]` link is active in a map's text: no row in `liens`. A map attaches to one sheet at most; a sheet has any number of maps.
+- `reglages_instance` (`cle` primary key, `valeur`, `modifie_le`, `modifie_par`): one row
+  `fond_carte_max_mo` (integer 1–500; absent = 75).
+- `lots_import`: the counters gain the nature `cartes`.
+- Removed: `fiches.dernier_import`, `sections.dernier_import`, `sections.version_importee`,
+  `fichiers.dernier_import` (the `campagnes` and `scenarios` tables that also had them are gone
+  since `kanevas-scenarios`).
+  `sections.version` stays: it serves concurrent editing (AD-59), not the import.
+
+**Rights.** A map's text is read under the map's visibility, its GM blocks for the GM only (AD-114);
+the attached sheet is named only to a reader who may read it (AD-38). The settings: instance admin
+only, read by the upload checks. The import token reads what its GM reads (AD-103): the whole
+universe, GM blocks included. *(Extension: a token is its account's — a player's token reads as the
+player; see below.)*
+
+**Tokens, in detail** (`kanevas-synchro-jetons`). `jetons_api` is rebuilt (table copy, ids kept so `lots_import.jeton_id`
+and `jetons_outils.jeton_id` still point at the same rows — the migration starts with
+`-- migrate: sans-cles-etrangeres`, then `foreign_key_check`): `id`, `compte_id` → `comptes` (the owner), `nom` 1 to 80,
+`empreinte` unique, `cree_le`, `expire_le` (> `cree_le`), `revoque_le` (null: active), `revoque_par` → `comptes` (null
+until revoked; the owner or an admin), `dernier_usage_le`, `tous` (0 or 1), `niveau_tous` (`lecture` | `ecriture`; **not null
+exactly when `tous` = 1**, a `CHECK`), `modifie_par_admin_par` → `comptes` and `modifie_par_admin_le` (both null or both set; set when an admin
+changes the accesses, cleared when the owner saves them). The column `univers_id` and the index `jetons_api_par_univers` are gone; an index
+`jetons_api_par_compte (compte_id, cree_le)`. `jetons_univers (jeton_id → jetons_api ON DELETE CASCADE, univers_id →
+univers, niveau)`, primary key `(jeton_id, univers_id)`, `niveau` in `lecture` | `ecriture` | `aucun` (`aucun` only
+with `tous` = 1: the exception that leaves a universe out; a list token never stores `aucun` — a universe left at « — » has no row). Rules held by the
+service: a list token has at least one row; an exception row never repeats the level of `tous` (a line put back on « Comme le reste » deletes its row);
+only universes the owner belongs to are accepted (`invalide`, `champ: acces`); the accesses of a revoked or expired token cannot be changed (409
+`jeton_revoque`). Existing tokens: `compte_id` = the creator, `tous` = 0, one `jetons_univers` row at `ecriture` for the former universe,
+`revoque_par` = `compte_id` when `revoque_le` is set (a revocation made by another GM was
+not recorded: the owner is the nearest honest answer, so « Révoqué » rather than « par l'admin »), the other columns unchanged. Deleting a
+universe deletes its `jetons_univers` rows (tokens stay). Reading the effective right at a request is `niveau d'accès ∧ rôle courant`
+(AD-144, AD-jetons-1); nothing is stored.
+
+**Physical and migration.** The migration is cut by slice, each numbered at merge (AD-51) in the slice that needs it (`ecriture`: the column removal; `cartes`: the map model and settings): on `cartes`, five columns (`cle_origine`, `fiche_id`, `texte`, `texte_public`, `version`) and a partial
+unique index `(univers_id, cle_origine) WHERE cle_origine IS NOT NULL` on `cartes`, a foreign key
+`fiche_id → fiches(id) ON DELETE SET NULL` (SQLite: the table is rebuilt, as for `cartes` in
+0007; the `forme` trigger is recreated), `reglages_instance`, and `DROP COLUMN` of the four import
+columns (SQLite ≥ 3.35; `better-sqlite3` 12 embeds a later one). Played at start-up;
+the backup of the file is a manual gesture before the deploy.
+
+### Extension of `kanevas-synchro` (2026-11-01): tokens, keys, history
+
+**Conceptual.** A **token** belongs to an **account** and reaches **universes** at a **level**; a
+**sheet** and a **universe** have a **readable key**, with their **former keys**; a **history line**
+records one write, with a **previous value** for 30 days.
+
+**Logical.**
+- `jetons_api`: `univers_id` and the « GM who created it » give way to `compte_id` (the owner) and
+  `tous` (boolean) with `niveau_tous` (`lecture` | `ecriture`, when `tous`); child
+  `jetons_univers (jeton_id, univers_id, niveau)` — the list when not `tous`; with `tous`, the exceptions —
+  a row at the other level, or at `aucun` to leave a universe out — set by the owner or the admin alike;
+  `modifie_par_admin` (account, date) on the token, cleared when the owner saves the accesses again;
+  `revoque_par` (account: the owner or an admin; « révoqué par l'admin » when it is not the owner).
+  `jetons_outils (jeton_id, outil)` (`kanevas-outils`) stays a child of the token: a token with tool
+  rows writes only those tools.
+- `fiches.creee_via` (`ecran` | `assistant` | `import` | `mcp`, set at creation; existing sheets: `import`
+  if they had an origin key, else `ecran`) — « née dans Kanevas » is every value but `import`.
+- `fiches.cle_origine` becomes `fiches.cle`, **not null**, unique per universe; the migration gives one
+  to every sheet without (type and title, AD-146). `cles_anciennes (univers_id, cle, fiche_id)`: a former
+  key leads to its sheet; a key in use cannot be the former key of another sheet (`cle_prise`), the owner may take its
+  own former key back (the row is removed). A key is drawn at creation: sheet `type:name` from the title, section from
+  its title, universe from its name (collision suffixed `-2`, `-3`…).
+- `sections.cle_origine` becomes `sections.cle`, **not null**, unique per sheet; generated from the title
+  for the sections without one.
+- `univers.cle` (form: lowercase letters, digits and hyphens, 2 to 40, at least one letter; unique on the instance, not null; the migration derives it from the name) and
+  `univers_cles_anciennes (cle, univers_id)`.
+- `fiches.modifie_le` moves on every write to what the read returns, held by **triggers** (AD-147).
+- `historique (id, univers_id, fiche_id (null once the sheet is deleted), fiche_cle, fiche_titre, objet
+  (entete | section | relation | fiche), objet_cle, action, empreinte_apres, compte_id, jeton_id,
+  origine (ecran | assistant | import | mcp | outil | inconnu), lot_id, cree_le, valeur_avant (JSON, null after 30 days))`.
+  Written by triggers from a per-transaction context (AD-147). `compte_id` is nullable (an import
+  through the existing session-less path, a write without context). A daily purge empties
+  `valeur_avant` over 30 days and deletes lines over 90.
+- `contexte_ecriture (id (always 1, CHECK), compte_id (null), jeton_id (null), origine (ecran | assistant |
+  import | mcp | outil | inconnu | systeme), lot_id (null))`: a one-row table the service layer fills at the
+  start of each write transaction and clears at commit (AD-147). Empty, a write is recorded with origin
+  `inconnu`; `systeme` (link resolution, cache rewrite) writes no line. `systeme` is never stored in
+  `historique`.
+
+**Rights.** A token reads and writes what its account may — a player's token reads what that player
+reads, and the fingerprints it receives are computed on that —  in the universes it reaches at its level,
+re-checked at each request (role lost → refused there). The history: GMs of the universe and tokens of
+a GM; never a player (a line can reveal a GM block exists). A previous value in the history is served
+under the same rule as the GM view.
+
+**Physical and migration.** The migration is cut by slice, each numbered at merge (AD-51) (`cles`: keys and `creee_via`; `jetons`: tokens; `historique`: triggers and history): tokens re-homed (each existing
+token gets `compte_id` = its creator and one `jetons_univers` row at `ecriture`), keys generated
+(collisions suffixed `-2`, `-3`… in id order; an existing key without a letter becomes `cle-<digits>`, its former form not kept in `cles_anciennes` (it would read as an id), and a
+universe name without a letter gives `univers-<id>`), triggers created, the history table empty at start.
+`better-sqlite3` runs triggers inside the write's transaction: a write and its history line are
+atomic.
+

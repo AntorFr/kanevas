@@ -61,7 +61,7 @@ test('migration : neuf tables créées, lignes existantes intactes, foreign_key_
   db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', 'x')").run();
   db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 'lieu', 'F', '{}', 'x', 'x')").run();
   db.prepare("INSERT INTO swn_galaxies (univers_id, titre, graine) VALUES (1, 'G', 'g')").run();
-  const snap = () => ['comptes', 'univers', 'fiches', 'swn_galaxies'].map((t) => db.prepare(`SELECT * FROM ${t}`).all());
+  const snap = () => ['comptes', 'univers', 'fiches', 'swn_galaxies'].map((t) => (db.prepare(`SELECT * FROM ${t}`).all() as any[]).map(({ cle, creee_via, cle_origine, dernier_import, version_importee, ...r }) => r)); // 0037 turns cle_origine into cle
   const avant = snap();
   const swn = () => db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'swn_%' AND type='table' ORDER BY name").all().map((r: any) => r.name as string);
   const tablesAvant = swn();

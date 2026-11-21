@@ -56,11 +56,13 @@ const PLAGE_CLASSES: Champ[] = [facultatif('classe_min', 1, 4), facultatif('clas
 const CHAMPS: Record<NatureCatalogueVaisseau, Champ[]> = {
   coques: [entier('classe', 1, 4), entier('cout'), entier('pv'), entier('ca'), entier('puissance'), masse(),
     entier('emports'), entier('facteur_cout', 1), entier('facteur_puissance', 1), entier('facteur_masse', 1),
-    facultatif('vitesse', 0, 99), facultatif('armure', 0, 99), facultatif('equipage_min', 0, 100_000), facultatif('equipage_max', 0, 100_000)],
+    facultatif('vitesse', 0, 99), facultatif('armure', 0, 99), facultatif('equipage_min', 0, 100_000), facultatif('equipage_max', 0, 100_000),
+    entier('moteur_spike', 0, 1, 1)], // H-2: 0 for a station
   moteurs: [entier('niveau', 1, 6), ...ELEMENT, ...PLAGE_CLASSES],
   amenagements: [...ELEMENT, ...PLAGE_CLASSES, code('effet'), liste4('rend_puissance'), liste4('rend_masse'), facultatif('soute', 0, 1_000_000),
     liste4('soute_par_classe'), verifie('reduction_cout_pct', 1, 100, 'nombre entier de 1 à 100 attendu'),
-    libre('reduction_base', (v) => v === 'coque' || v === 'amenagement', '« coque » ou « amenagement » attendu')],
+    libre('reduction_base', (v) => v === 'coque' || v === 'amenagement', '« coque » ou « amenagement » attendu'),
+    libre('limite_par', (v) => v === 'armes', '« armes » attendu')], // H-3
   defenses: [...ELEMENT, ...PLAGE_CLASSES, verifie('bonus_vitesse', -9, 9, 'nombre entier de −9 à 9 attendu')],
   armes: [entier('emport'), entier('munitions'), entier('cout_munition'), entier('classe_min', 1, 4, 1), ...ELEMENT,
     texteLibre('degats', 40), facultatif('perforation', 0, 99), texteLibre('qualites', 120), facultatif('niveau_tech', 0, 9)],
@@ -284,7 +286,7 @@ function verifierEffet(nature: 'modifications' | 'amenagements', d: Record<strin
       const v = d.vise as { nature?: unknown; cle?: unknown } | string | null | undefined;
       const ok = typeof v === 'string' ? v.length >= 1 && v.length <= 64
         : v !== null && typeof v === 'object' && !Array.isArray(v) && typeof v.cle === 'string' && v.cle.length >= 1 && v.cle.length <= 64;
-      if (!ok) return { champ: 'vise', raison: 'élément visé exigé.' };
+      if (!ok) return { champ: 'vise', raison: 'élément visé exigé' };
     } else if (d.vise !== undefined) return { champ: 'vise', raison: 'paramètre réservé à son effet.' };
   }
   if (d.effet_pct !== undefined && !entierDans(d.effet_pct, 1, 1000)) return { champ: 'effet_pct', raison: 'nombre entier de 1 à 1 000 attendu' };

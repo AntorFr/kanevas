@@ -75,22 +75,22 @@ test('antor_renomme_port_sel_et_les_titres_invalides_sont_400_lea_403', async ()
   assert.equal((w.app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(port) as Any).titre, 'x'.repeat(120));
 });
 
-test('renommer_ne_touche_pas_dernier_import_et_un_compte_rendu_se_renomme', async () => {
+test('un_compte_rendu_se_renomme_et_une_fiche_importee_aussi', async () => {
   const w = await monde();
   const camp = creerFiche(w.app.db, w.idC('antor'), w.lame, { type: 'aventure', sousType: 'Campagne', titre: 'Brumes' });
   const cr = creerCompteRendu(w.app.db, w.idC('antor'), w.lame, camp.id, { titre: 'Séance 1' });
-  const avant = w.app.db.prepare('SELECT dernier_import FROM fiches WHERE id = ?').get(cr.id);
   const r = await w.req('antor', 'PATCH', F(w.lame, cr.id), { titre: 'Séance 1 bis' });
   assert.equal(r.status, 200, JSON.stringify(r.json));
   assert.equal(r.json.titre, 'Séance 1 bis');
-  assert.deepEqual(w.app.db.prepare('SELECT dernier_import FROM fiches WHERE id = ?').get(cr.id), avant);
-  // an imported sheet: dernier_import (the title the import wrote) survives a rename
+  // an imported sheet is renamed the same way; the replay then carries its own title back
   const lot = ((await w.imp('POST', 'lots')).json() as Any).lotId;
   const im = (await w.imp('PUT', `fiches/lieu:x?lot=${lot}`, { type: 'lieu', titre: 'Xanadu', sections: [] })).json() as Any;
-  const di = w.app.db.prepare('SELECT dernier_import FROM fiches WHERE id = ?').get(im.id) as Any;
-  assert.ok(di.dernier_import);
-  await w.req('antor', 'PATCH', F(w.essai, im.id), { titre: 'Autre' });
-  assert.deepEqual(w.app.db.prepare('SELECT dernier_import FROM fiches WHERE id = ?').get(im.id), di);
+  assert.equal((await w.req('antor', 'PATCH', F(w.essai, im.id), { titre: 'Autre' })).status, 200);
+  assert.equal((w.app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(im.id) as Any).titre, 'Autre');
+  const rejeu = (await w.imp('PUT', `fiches/lieu:x?lot=${lot}`, { type: 'lieu', titre: 'Xanadu', sections: [] })).json() as Any;
+  assert.equal(rejeu.etat, 'mise_a_jour');
+  assert.deepEqual(rejeu.avertissements, []);
+  assert.equal((w.app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(im.id) as Any).titre, 'Xanadu');
 });
 
 test('bilan_de_port_sel_pour_antor_404_pour_lea', async () => {
@@ -196,7 +196,7 @@ test('import_delete_par_cle_cree_supprime_recree_et_cle_inconnue_204_sans_ecritu
   assert.equal((await put(l1)).etat, 'creee');
   const d = await w.imp('DELETE', `fiches/lieu:havre-gris?lot=${l1}`);
   assert.equal(d.statusCode, 204);
-  assert.equal((w.app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE cle_origine = 'lieu:havre-gris'").get() as Any).n, 0);
+  assert.equal((w.app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE cle = 'lieu:havre-gris'").get() as Any).n, 0);
   assert.equal((await put(l1)).etat, 'creee');
   await w.imp('POST', `lots/${l1}/clore`);
   const rap1 = (await w.imp('GET', `lots/${l1}`)).json() as Any;
@@ -226,7 +226,7 @@ test('import_delete_par_cle_cree_supprime_recree_et_cle_inconnue_204_sans_ecritu
   assert.equal(autre.statusCode, 404);
 });
 
-test('titre_renomme_dune_fiche_importee_nest_pas_ecrase_au_rejeu_et_le_lot_le_dit', async () => {
+test('titre_renomme_dune_fiche_importee_est_remis_au_rejeu_sans_avertissement', async () => {
   const w = await monde();
   const corps = { type: 'lieu', titre: 'Havre-Gris', sections: [{ cle: 'd', titre: 'Description', contenu: 'Un havre.' }] };
   const l1 = ((await w.imp('POST', 'lots')).json() as Any).lotId;
@@ -235,11 +235,12 @@ test('titre_renomme_dune_fiche_importee_nest_pas_ecrase_au_rejeu_et_le_lot_le_di
   const l2 = ((await w.imp('POST', 'lots')).json() as Any).lotId;
   const r2 = (await w.imp('PUT', `fiches/lieu:havre-gris?lot=${l2}`, corps)).json() as Any;
   assert.equal(r2.id, r1.id);
-  assert.equal((w.app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(r1.id) as Any).titre, 'Havre-Brume');
+  assert.equal(r2.etat, 'mise_a_jour');
+  assert.equal((w.app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(r1.id) as Any).titre, 'Havre-Gris');
   await w.imp('POST', `lots/${l2}/clore`);
   const rap = (await w.imp('GET', `lots/${l2}`)).json() as Any;
-  assert.ok(JSON.stringify(rap.rapport).includes('titre modifié dans Kanevas'), JSON.stringify(rap));
-  assert.equal(rap.avertissements, 1);
+  assert.doesNotMatch(JSON.stringify(rap), /modifié dans Kanevas/);
+  assert.equal(rap.avertissements, 0);
 });
 
 test('joueur_en_mode_joueur_ne_supprime_ni_ne_renomme', async () => {

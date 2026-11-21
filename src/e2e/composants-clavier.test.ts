@@ -1,3 +1,4 @@
+// ecrans: demo-composants
 // kanevas-rv-composants, in a real Chromium on /demo-composants (stub mode): the keyboard behaviour of
 // each shared component, as docs/charte.md § 4 states it. Expected values are literals from the charte.
 //
@@ -133,12 +134,12 @@ test('bouton : Entrée et Espace activent ; désactivé ne part pas ; « … » 
   assert.equal(await b.getAttribute('aria-disabled'), 'true');
   await page.keyboard.press('Space');
   await b.click();
-  await page.waitForTimeout(1800);
+  await page.waitForFunction((el: HTMLElement) => el.innerText.trim() === 'Enregistrer', await b.elementHandle());
   assert.equal((await b.innerText()).trim(), 'Enregistrer');
   await b.focus();
   await page.keyboard.press('Space');
   assert.equal((await b.innerText()).trim(), '…', 'Espace active aussi');
-  await page.waitForTimeout(1800);
+  await page.waitForFunction((el: HTMLElement) => el.innerText.trim() === 'Enregistrer', await b.elementHandle());
   // disabled: reachable by aria, never fires
   const dis = page.getByRole('button', { name: 'Danger', exact: true });
   assert.equal(await dis.getAttribute('aria-disabled'), 'true');
@@ -158,6 +159,8 @@ test('bouton icône : l’étiquette accessible nomme l’objet, l’infobulle e
 
 test('toast : région role=status polie, ne prend pas le focus, Fermer, part seul après 4 s', opts, async () => {
   const region = page.locator('.toasts');
+  // the toast of the previous test goes away on its own (4 s): it is waited for, not guessed
+  await page.waitForFunction(() => document.querySelectorAll('.toast').length === 0, null, { timeout: 6000 });
   assert.equal(await region.getAttribute('role'), 'status');
   assert.equal(await region.getAttribute('aria-live'), 'polite');
   const bouton = page.getByRole('button', { name: 'Afficher un toast' });
@@ -171,9 +174,8 @@ test('toast : région role=status polie, ne prend pas le focus, Fermer, part seu
   assert.equal(await t.count(), 0, 'Fermer le retire');
   await bouton.click();
   await t.waitFor();
-  await page.waitForTimeout(3000);
   assert.equal(await t.count(), 1, 'toujours là avant 4 s');
-  await t.waitFor({ state: 'detached', timeout: 2500 });
+  await t.waitFor({ state: 'detached', timeout: 6000 });
   assert.ok(Date.now() - debut >= 3900, 'part seul à 4 s');
 });
 
@@ -183,7 +185,7 @@ test('toast : quatre à la suite, trois au plus, le plus ancien part', opts, asy
   assert.equal(await page.locator('.toast').count(), 3);
   assert.equal(await page.getByText('Toast Un', { exact: true }).count(), 0);
   assert.equal(await page.getByText('Toast Deux', { exact: true }).count(), 1);
-  await page.waitForTimeout(4300);
+  await page.waitForFunction(() => document.querySelectorAll('.toast').length === 0, null, { timeout: 6000 });
   assert.equal(await page.locator('.toast').count(), 0);
 });
 

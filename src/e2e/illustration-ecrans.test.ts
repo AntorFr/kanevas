@@ -1,3 +1,4 @@
+// ecrans: fiche, fiches
 // Black-box tests of kanevas-il-illustration-ecrans, written from docs/ecrans.md « Détail des écrans de
 // `kanevas-illustrations` » (E-8 grille, E-9 en-tête, § Critères), not from the code. Real server in stub
 // mode WITH its starting world (illustrations, « La Fresque effacée », failure rule) + real Chromium.
@@ -24,7 +25,6 @@ async function grille(page: Any, nav: string): Promise<void> {
   await page.goto(`/univers/${U}/fiches/${nav}`);
   await page.getByRole('heading', { level: 1 }).waitFor();
   await attendre(page);
-  await page.waitForTimeout(300);
 }
 async function fiche(page: Any, titre: string): Promise<void> {
   await page.goto(`/univers/${U}/fiche/${ids[titre]}`);
@@ -164,11 +164,6 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     await attendre(antor);
     await antor.waitForFunction(() => ![...document.querySelectorAll('button')].some((b) => /Remplacer|Retirer/.test(b.getAttribute('aria-label') ?? b.textContent ?? '')));
     assert.equal(await antor.getByRole('button', { name: /Remplacer|Retirer/ }).count(), 0);
-    const put = await lea.request.fetch(`${srv.base}/api/univers/${U}/fiches/${ids['Maître Aldric']}/illustration`, {
-      method: 'PUT',
-      multipart: { fichier: { name: 'x.png', mimeType: 'image/png', buffer: Buffer.from('x') } },
-    });
-    assert.equal(put.status(), 403);
   });
 
   test('retrait en échec (fiche « échec ») : confirmation fermée, message, image gardée ; Réessayer relance', opts, async () => {

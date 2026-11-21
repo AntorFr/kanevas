@@ -49,6 +49,13 @@ export function motifDe(a: Alerte): string {
   return m ? `${m[1]} (${m[2]})` : a.texte.replace(/\.$/, '');
 }
 
+/** A speed as read on screen: the typographic minus for a negative one (B-88). */
+export const vitesseLue = (v: number): string => (v < 0 ? `−${Math.abs(v)}` : String(v));
+
+/** A drive or a system drive: what a station (hull with `moteur_spike` 0) is not offered (H-2). */
+export const estMoteur = (e: { nature: string; donnees?: { effet?: string } }): boolean =>
+  e.nature === 'moteurs' || e.donnees?.effet === 'moteur_systeme' || e.donnees?.effet === 'moteurs';
+
 export const AIDES: Record<string, string> = {
   puissance_insuffisante: 'Retirez une arme ou changez de moteur.',
 };

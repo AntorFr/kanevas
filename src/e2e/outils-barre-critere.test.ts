@@ -1,3 +1,4 @@
+// ecrans: outil, vue-ensemble
 // Browser test of kanevas-outils-cadre-barre, written from the exit criterion (AD-133, B-59, B-70).
 // Stub world with the seed: « Éneria d'essai » (Antor GM, Léa player, system with the trial module).
 import assert from 'node:assert/strict';
@@ -78,7 +79,7 @@ describe('section « Outils » de la barre et écran d’un outil', { skip: skip
 
     // Antor opens Essai A
     await antor.page.getByRole('link', { name: 'Essai A', exact: true }).click();
-    await antor.page.waitForURL((x: URL) => x.pathname === `/univers/${universId}/outils/essai/a`);
+    await antor.page.waitForURL((x: URL) => /^\/univers\/[^/]+\/outils\/essai\/a$/.test(x.pathname));
     await antor.page.getByRole('heading', { name: 'Essai A' }).waitFor();
     const ta = await texte(antor.page);
     assert.match(ta, /Une carte pour éprouver le cadre des outils\./);
