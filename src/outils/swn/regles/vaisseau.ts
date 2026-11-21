@@ -91,6 +91,8 @@ export interface LigneResolue {
   /** X-4: points of an `echange` line (default 0) and the line a doubling aims at. */
   points?: number
   vise?: { nature: NatureVaisseau; cle: string }
+  /** H-8: one pair per installation, for the effects that aim at elements of the design. */
+  cibles?: { nature: NatureVaisseau; cle: string; quantite: number }[]
   element: ElementResolu
 }
 
@@ -114,6 +116,7 @@ export interface ResultatVaisseau {
     points?: number
     echange?: { puissance: number; masse: number }
     vise?: { nature: NatureVaisseau; cle: string }
+    cibles?: { nature: NatureVaisseau; cle: string; quantite: number }[]
     /** Z-3: only on a targeted modification (cargo mass, mounting, overload): the signed deltas actually applied to its target. */
     ajuste?: { masse?: number; puissance?: number; emports?: number; armure?: number }
   }[]
@@ -399,7 +402,7 @@ export function calculer(
       nature: l.nature, cle: l.cle, nom: l.nom, quantite: l.quantite, ...(l.magasins ? { magasins: l.magasins } : {}),
       ...(coutsLigne.has(i) ? { cout: coutsLigne.get(i)! } : {}),
       ...(echanges.has(i) ? { points: l.points ?? 0, echange: echanges.get(i)! } : {}),
-      ...(l.vise ? { vise: { nature: l.vise.nature, cle: l.vise.cle } } : {}),
+      ...(l.cibles ? { cibles: l.cibles } : l.vise ? { vise: { nature: l.vise.nature, cle: l.vise.cle } } : {}),
       ...(ajustes.has(i) ? { ajuste: ajustes.get(i)! } : {}),
     })),
     prix,

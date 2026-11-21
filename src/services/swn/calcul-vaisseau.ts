@@ -1,4 +1,5 @@
 import type { Db } from '../../db/db.js';
+import { EFFETS } from '../../outils/swn/regles/effets.js';
 import { calculer, type AlerteVaisseau, type CoqueResolue, type LigneResolue, type NatureVaisseau,
   type ElementResolu as ElementCalcul, type ResultatVaisseau } from '../../outils/swn/regles/vaisseau.js';
 import { lireElement, type ElementResolu } from '../catalogues.js';
@@ -11,9 +12,13 @@ import { NATURES_DE_LIGNE } from './catalogue-vaisseaux.js';
 export const OUTIL_VAISSEAUX = 'swn/vaisseaux';
 export const TYPE_CARACTERISTIQUES = 'caracteristiques';
 
+export type CibleLigne = { nature: NatureVaisseau; cle: string; quantite: number }
+
 export interface LigneChoix { nature: NatureVaisseau; cle: string; quantite: number; magasins?: number;
   /** X-4: points of an exchange line and the line a doubling aims at. */
-  points?: number; vise?: { nature: NatureVaisseau; cle: string } }
+  points?: number; vise?: { nature: NatureVaisseau; cle: string }
+  /** H-8: one pair per installation (quantities), for the effects that aim at an element of the design. */
+  cibles?: CibleLigne[] }
 /** `equipage`: `undefined` = the hull's minimum (F-2); `null` = no crew, kept as such. */
 export interface EntreeCalcul { coque: string; choix: LigneChoix[]; equipage?: number | null; reparation?: number }
 export interface SortieCalcul { resultat: ResultatVaisseau | null; alertes: AlerteVaisseau[] }
@@ -25,8 +30,37 @@ export interface Porte {
   noms: { coque: string | null; lignes: { nature: string; cle: string; nom: string }[] };
 }
 
-const EFFETS_VISANT = ['soutes_doublees', 'magasins_doubles', 'montages_specialises', 'surcharge_cumulable'];
+/** The effects whose line stores `cibles` (H-cibles-1 (1)): those that declare the natures they may aim at. */
+const aCibles = (effet: string | undefined): boolean => effet !== undefined && Object.hasOwn(EFFETS, effet) && EFFETS[effet as keyof typeof EFFETS].cible !== undefined;
+// `vise` is still accepted at the input for `soutes_doublees` and, tolerated and ignored, for `magasins_doubles` (H-8).
+const accepteVise = (effet: string | undefined): boolean => effet === 'soutes_doublees' || effet === 'magasins_doubles' || aCibles(effet);
+
+/**
+ * The one reading of the targets of a stored or submitted line (H-cibles-1 (1), B-94): `cibles` as they are, else the old single
+ * `vise` as one pair holding the line's quantity; `undefined` when the effect aims at nothing of the design, or nothing is chosen.
+ * A `vise` on a `magasins_doubles` line is ignored; `soutes_doublees` keeps its `vise` and has no `cibles`.
+ */
+export function ciblesDeLigne(l: Pick<LigneChoix, 'quantite' | 'vise' | 'cibles'>, effet: string | undefined): CibleLigne[] | undefined {
+  if (!aCibles(effet)) return undefined;
+  if (l.cibles !== undefined && l.cibles.length > 0) return l.cibles.map((c) => ({ nature: c.nature, cle: c.cle, quantite: c.quantite }));
+  return l.vise === undefined ? undefined : [{ nature: l.vise.nature, cle: l.vise.cle, quantite: l.quantite }];
+}
+
+/** What a save writes of a line: `cibles` and no `vise` for the effects that aim; `vise` only on `soutes_doublees` (B-94). */
+export function ligneAEnregistrer(l: LigneChoix, effet: string | undefined): LigneChoix {
+  const { vise, cibles: _cibles, ...reste } = l;
+  const cibles = ciblesDeLigne(l, effet);
+  return { ...reste, ...(cibles ? { cibles } : {}), ...(effet === 'soutes_doublees' && vise ? { vise } : {}) };
+}
 const invalide = (message: string, detail: string, champ: string) => new ErreurService('invalide', message, detail, champ);
+
+const ciblesValides = (v: unknown): boolean => Array.isArray(v) && v.length <= 99 && v.every((c) => {
+  const o = c as Record<string, unknown> | null;
+  return !!o && typeof o === 'object' && !Array.isArray(o) && Object.keys(o).length === 3
+    && typeof o.nature === 'string' && (NATURES_DE_LIGNE as readonly string[]).includes(o.nature)
+    && typeof o.cle === 'string' && o.cle.length >= 1 && o.cle.length <= 64
+    && Number.isInteger(o.quantite) && (o.quantite as number) >= 1 && (o.quantite as number) <= 99;
+});
 
 const viseValide = (v: unknown): boolean => {
   const o = v as Record<string, unknown> | null;
@@ -48,6 +82,7 @@ export function validerChoix(coque: unknown, choix: unknown): EntreeCalcul {
       || !Number.isInteger(o.quantite) || (o.quantite as number) < 1 || (o.quantite as number) > 99
       || (o.points !== undefined && (!Number.isInteger(o.points) || (o.points as number) < 0 || (o.points as number) > 99))
       || (o.vise !== undefined && !viseValide(o.vise))
+      || (o.cibles !== undefined && !ciblesValides(o.cibles))
       || (o.magasins !== undefined && (o.nature !== 'armes' || !Number.isInteger(o.magasins) || (o.magasins as number) < 1 || (o.magasins as number) > 9))) {
       throw invalide('Choix invalides.', 'choix_invalide', 'choix');
     }
@@ -57,7 +92,9 @@ export function validerChoix(coque: unknown, choix: unknown): EntreeCalcul {
     return { nature: o.nature as NatureVaisseau, cle: o.cle, quantite: o.quantite as number,
       ...(o.magasins === undefined ? {} : { magasins: o.magasins as number }),
       ...(o.points === undefined ? {} : { points: o.points as number }),
-      ...(o.vise === undefined ? {} : { vise: { nature: (o.vise as { nature: NatureVaisseau }).nature, cle: (o.vise as { cle: string }).cle } }) };
+      ...(o.vise === undefined ? {} : { vise: { nature: (o.vise as { nature: NatureVaisseau }).nature, cle: (o.vise as { cle: string }).cle } }),
+      ...(o.cibles === undefined || (o.cibles as unknown[]).length === 0 ? {}
+        : { cibles: (o.cibles as CibleLigne[]).map((c) => ({ nature: c.nature, cle: c.cle, quantite: c.quantite })) }) };
   });
   return { coque, choix: lignes };
 }
@@ -120,10 +157,23 @@ export function controlerChoix(r: Resolution): void {
       if (e.effet !== 'echange') throw invalide('Points sur un élément sans échange.', 'points_invalides', 'points');
       if (l.points > (e.points_max ?? 0)) throw invalide(`Points : ${e.points_max ?? 0} au plus.`, 'points_invalides', 'points');
     }
-    if (l.vise !== undefined && !(e.effet !== undefined && EFFETS_VISANT.includes(e.effet))) {
+    if (l.vise !== undefined && !accepteVise(e.effet)) {
       throw invalide('Élément visé sur un élément sans effet ciblé.', 'vise_invalide', 'vise');
     }
+    if (l.cibles !== undefined && !aCibles(e.effet)) {
+      throw invalide('Cibles sur un élément sans effet ciblé.', 'cibles_invalide', 'cibles');
+    }
   });
+}
+
+/**
+ * What the calculation is given of a line's targets: `cibles` read once (`ciblesDeLigne`). Until the calculation reads the pairs
+ * (next slice), a line with one pair still gives it as `vise`, and `soutes_doublees` / `magasins_doubles` give theirs as stored.
+ */
+function ciblage(l: LigneChoix, effet: string | undefined): Pick<LigneResolue, 'vise' | 'cibles'> {
+  const cibles = ciblesDeLigne(l, effet);
+  if (cibles !== undefined) return { cibles, ...(cibles.length === 1 ? { vise: { nature: cibles[0]!.nature, cle: cibles[0]!.cle } } : {}) };
+  return l.vise === undefined || aCibles(effet) ? {} : { vise: l.vise };
 }
 
 /**
@@ -155,7 +205,8 @@ export function resoudreChoix(db: Db, universId: number, e: EntreeCalcul, porte:
     }
     return { nature: l.nature, cle: l.cle, nom: el.nom, quantite: l.quantite,
       ...(l.magasins === undefined ? {} : { magasins: l.magasins }),
-      ...(l.points === undefined ? {} : { points: l.points }), ...(l.vise === undefined ? {} : { vise: l.vise }), element: el.donnees as unknown as ElementCalcul };
+      ...(l.points === undefined ? {} : { points: l.points }), ...ciblage(l, el.donnees.effet as string | undefined),
+      element: el.donnees as unknown as ElementCalcul };
   });
   const equipage = e.equipage === undefined ? (coque?.equipage_min ?? null) : e.equipage;
   return { coque, lignes, equipage, reparation: e.reparation ?? 0, retirees, nomsRetires, inconnu };
