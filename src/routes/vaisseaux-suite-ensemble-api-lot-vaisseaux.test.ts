@@ -286,8 +286,8 @@ describe('B-86 import : champs créés, relus, inchangés au rejeu', () => {
     ] });
     const r = await m.antor('POST', `${m.V}/catalogue/application`, cat);
     assert.equal(r.status, 200, r.texte);
-    assert.deepEqual(refus(r), { 'pct-sur-armure': 'effet_pct', 'vise-sur-vitesse': 'vise', 'pct-sans-effet': 'effet_pct', 'surcharge-sans-pct': 'effet_pct' });
-    assert.equal(r.json.natures.modifications.ajoutes, 1);
+    assert.deepEqual(refus(r), { 'pct-sur-armure': 'effet_pct', 'pct-sans-effet': 'effet_pct', 'surcharge-sans-pct': 'effet_pct' });
+    assert.equal(r.json.natures.modifications.ajoutes, 2); // `vise` is tolerated and ignored (H-8): the line 'vise-sur-vitesse' is created
   });
 
   it('un fichier qui retire un champ au rejeu modifie l’élément : la base de la réduction disparaît, le moteur revient à 36 000', async () => {

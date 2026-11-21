@@ -36,7 +36,7 @@ test('0042 : montée depuis 0041, coque à moteur_spike 1, aménagement à limit
   const avantA = db.prepare('SELECT * FROM swn_catalogue_amenagements').get() as any;
   const avantK = db.prepare('SELECT * FROM swn_conceptions').get();
 
-  assert.deepEqual(migrate(db), [42]);
+  assert.deepEqual(migrate(db), [42, 43]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
 
   const c = db.prepare('SELECT * FROM swn_catalogue_coques').get() as any;

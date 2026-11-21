@@ -299,7 +299,7 @@ describe('B-87 import : refus avec leur champ, le reste passe', () => {
     assert.equal(r.json.natures.modifications.ajoutes, 2);
   });
 
-  it('montages spécialisés : limite 1 passe ; limite 2 et limite 0 refusées', async () => {
+  it('montages spécialisés : toute limite passe (H-8 : plus de limite 1 exigée)', async () => {
     const m = await monde(false);
     const b = { ...el, effet: 'montages_specialises', vise: { nature: 'armes', cle: 'laser-z' } };
     const cat = catalogue('m-1', { modifications: [
@@ -309,8 +309,8 @@ describe('B-87 import : refus avec leur champ, le reste passe', () => {
     ] });
     const r = await importer(m, cat);
     assert.equal(r.status, 200, r.texte);
-    assert.deepEqual(refus(r), { 'm-2': 'limite', 'm-0': 'limite' });
-    assert.equal(r.json.natures.modifications.ajoutes, 1);
+    assert.deepEqual(refus(r), {});
+    assert.equal(r.json.natures.modifications.ajoutes, 3);
   });
 
   it('surcharge cumulable : limite 1, 2, 3 et effet_pct 1 et 1 000 passent ; effet_pct 0, 1 001, absent refusés ; limite 0 et 1,5 refusées', async () => {
