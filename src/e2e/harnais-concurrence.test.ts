@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Concurrency of the e2e harness: startups share one lock, a vanished owner is reported, a failed
 // startup frees its turn, and the attested runner refuses a bad --concurrence.
 import assert from 'node:assert/strict';

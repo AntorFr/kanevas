@@ -1,3 +1,4 @@
+// ecrans: accueil, fiche
 // Black-box complements for `kanevas-refonte-visuelle`, written from the need only (fiche « Critère de
 // sortie », docs/ecrans.md « Détail de `kanevas-refonte-visuelle` » : critères, E-9 édition, § Barre latérale).
 // Real server in stub mode + real Chromium (harnais.test.ts). Expected values are literals of the docs.

@@ -1,3 +1,4 @@
+// ecrans: recherche
 // Feature-level visual tests of E-17 against its mockup (docs/maquettes/e17-recherche.html), written from
 // the mockup and docs/ecrans.md, never from the code: in a result, « alias : Salport » and the label pills
 // share one line; the empty states (« Cherchez un nom, un alias ou un mot. », « Aucune fiche ne

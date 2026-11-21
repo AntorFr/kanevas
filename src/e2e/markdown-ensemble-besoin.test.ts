@@ -1,3 +1,4 @@
+// ecrans: fiche, systeme
 // Black-box tests of kanevas-import-markdown at the level of the assembled feature (B-32, B-43), written from the
 // need alone (docs/parcours.md, docs/ecrans.md « Le Markdown », the fiche's exit criterion), against the real
 // server in stub mode driven by a real Chromium. Expected values are literals.

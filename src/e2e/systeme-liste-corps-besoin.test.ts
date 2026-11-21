@@ -1,3 +1,4 @@
+// ecrans: outil-interieur
 // Browser tests of kanevas-carte-spatiale-systeme (E-23 text version, P-22 opening), written from the sheet, docs/parcours.md,
 // docs/ecrans.md (« E-23 — what kanevas-carte-spatiale-systeme builds first ») and the maquette — not from the code.
 // Complements systeme-liste-corps-ecran.test.ts. Stub world with the seed. Screenshots go to /tmp/cap-systeme-besoin (never into the workspace).

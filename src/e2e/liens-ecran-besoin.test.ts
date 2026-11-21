@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Black-box tests of kanevas-liens-ecran (exit criterion), real Chromium, real server in stub mode with the starting data.
 //
 // TEST PLAN
