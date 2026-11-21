@@ -428,3 +428,9 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/battlemap-distance-ecran-revue.test.ts` | `réseau coupé : « Reconnexion… » s’affiche chez Léa à la prochaine mise à jour, part seule au retour et la table est l’état courant` | affichage | — | gardé |
 | `src/e2e/battlemap-distance-ecran-revue.test.ts` | `E-20 : « Jeu à distance » est un interrupteur, coché par défaut` | affichage | — | gardé |
 | `src/e2e/battlemap-distance-ecran-revue.test.ts` | `réglage coupé en cours de partie : la tentative suivante de Léa ne bouge rien et ne dit rien, puis la ligne « Seul le MJ déplace les pions. » paraît ; au rechargement, plus de prise` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : Léa glisse Mira de 2 cases à droite, l’écran de Teo montre Mira plus à droite sans rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : Antor révèle un couloir dans la moitié cachée, les canevas de Léa et de Teo changent sans rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : Teo dont le seul pion est caché n’a ni « votre pion », ni prise, ni ligne, le jeu à distance étant actif` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : Teo sans pion visible, jeu à distance coupé, lit la ligne « Seul le MJ déplace les pions. » comme tout le monde` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : réglage coupé, Léa voit encore bouger les pions du MJ mais n’a plus de pion à saisir, avec la ligne` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : le MJ cache la carte, l’écran ouvert de Léa devient « Page introuvable. » au prochain événement, et au rechargement` | affichage | — | gardé |
