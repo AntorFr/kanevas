@@ -123,7 +123,7 @@ describe('B-85 (1) bonus de vitesse signé', () => {
     assert.equal(await vitesse(m, 'fregate-r', [def('rotors-neutres')]), 3);
   });
 
-  it('bords : −5 sur 3 → −2 (pas de plancher) ; deux unités de −2 → −1 ; −2 et +2 ensemble → 3', async () => {
+  it('bords : −5 sur 3 → 0 (plancher) ; deux unités de −2 → 0 ; −2 et +2 ensemble → 3', async () => {
     const m = await monde();
     assert.equal(await vitesse(m, 'fregate-r', [def('rotors-tres-lourds')]), -2);
     assert.equal(await vitesse(m, 'fregate-r', [def('rotors-lourds', 2)]), -1);
