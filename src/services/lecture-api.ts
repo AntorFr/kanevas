@@ -294,7 +294,7 @@ export function lireFicheApi(db: Db, acteur: Acteur, universId: number, referenc
 }
 
 /** `?depuis`: an ISO date or date-time, read as UTC without an offset; anything else is `invalide` (`champ: depuis`). */
-function depuisIso(depuis: string): string {
+export function depuisIso(depuis: string): string {
   const forme = /^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/.exec(depuis);
   const t = forme === null ? NaN : Date.parse(depuis.length > 10 && forme[1] === undefined ? `${depuis.replace(' ', 'T')}Z` : depuis);
   if (Number.isNaN(t)) throw new ErreurService('invalide', '« depuis » doit être une date ISO 8601.', undefined, 'depuis');
@@ -346,4 +346,43 @@ export function listerFichesApi(
     });
   }
   return { fiches: lignes, suivant };
+}
+
+/**
+ * The sheets of the universe the account reads whose `modifie_le` is at or after `depuis` (all of them without it), in id
+ * order, each in import form — the one read form of `lireFicheApi` (AD-export-1). `>=` and not `>`: a false alarm is allowed,
+ * a miss never. The role is read once; the rights are those of `composer`.
+ */
+export function parcourirFichesApi(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  depuis?: string,
+): { compte: number; fiches: () => Generator<FicheApi> } {
+  const l = lecteurDe(db, acteur, universId);
+  const borne = depuis === undefined ? null : depuisIso(depuis);
+  const cond = sqlFicheLisible(l.role, l.acteur, 'f');
+  const stmt = db.prepare(
+    `SELECT f.* FROM fiches f
+      WHERE f.univers_id = ?${borne === null ? '' : ' AND f.modifie_le >= ?'}${cond ? ` AND ${cond.sql}` : ''}
+      ORDER BY f.id`,
+  );
+  const params = [universId, ...(borne === null ? [] : [borne]), ...(cond?.params ?? [])];
+  const aUneSectionLisible = db.prepare('SELECT * FROM sections WHERE fiche_id = ?');
+  const compte = () => {
+    let n = 0;
+    for (const f of stmt.iterate(...params) as Iterable<LigneFiche>) {
+      if (l.mj || (aUneSectionLisible.all(f.id) as SectionRow[]).some((s) => peutLireSection(l.role, s, l.acteur))) n++;
+    }
+    return n;
+  };
+  return {
+    compte: compte(),
+    *fiches() {
+      for (const f of stmt.iterate(...params) as Iterable<LigneFiche>) {
+        const c = composer(l, f);
+        if (c !== null) yield c;
+      }
+    },
+  };
 }

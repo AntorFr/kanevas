@@ -17,6 +17,34 @@ const MIGRATIONS_DIR = fileURLToPath(new URL('./migrations/', import.meta.url));
 export function openDb(path: string): Db {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
   const db = new Database(path);
+  fonctionsSql(db);
+  db.pragma('foreign_keys = ON');
+  db.pragma('busy_timeout = 5000');
+  if (path !== ':memory:') db.pragma('journal_mode = WAL');
+  return db;
+}
+
+/**
+ * The read connection of one export (AD-export-1): a second connection, `readonly`, on the same WAL file, with
+ * `BEGIN` taken before the caller reads — it sees the state of its first read, never blocks nor is blocked by a
+ * writer. The caller closes it. Not for `:memory:` (no second connection exists there).
+ */
+export function ouvrirLecture(chemin: string): Db {
+  const db = new Database(chemin, { readonly: true, fileMustExist: true });
+  try {
+    fonctionsSql(db);
+    db.pragma('busy_timeout = 5000');
+    db.exec('BEGIN');
+    // A deferred transaction takes its snapshot at the first read: make it now.
+    db.prepare('SELECT 1 FROM sqlite_master LIMIT 1').get();
+    return db;
+  } catch (e) {
+    db.close();
+    throw e;
+  }
+}
+
+function fonctionsSql(db: Db): void {
   // Title order key, accent- and case-insensitive (« Léa » sorts with « Lea », before « Les »); better-sqlite3 has no collations.
   db.function('plier', { deterministic: true }, (t: unknown) =>
     typeof t === 'string' ? t.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase() : t,
@@ -32,10 +60,6 @@ export function openDb(path: string): Db {
     baseCleFiche(String(type), String(titre), Number(id)),
   );
   db.function('cle_base_univers', (nom: unknown, id: unknown) => baseCleUnivers(String(nom), Number(id)));
-  db.pragma('foreign_keys = ON');
-  db.pragma('busy_timeout = 5000');
-  if (path !== ':memory:') db.pragma('journal_mode = WAL');
-  return db;
 }
 
 /**

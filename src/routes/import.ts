@@ -24,6 +24,8 @@ import { assurerFichier, listerFichiersApi, MAX_FICHIERS_JOINTS, ouvrirFichierPa
 import { lireFicheApi, listerFichesApi } from '../services/lecture-api.js';
 import { estId } from '../services/cles-forme.js';
 import { listerCartesApi } from '../services/cartes.js';
+import { exporterUnivers, type LigneExport, type OptionsExport } from '../services/export.js';
+import { Readable } from 'node:stream';
 import { assurerCarte } from '../services/import-cartes.js';
 import { dispositionAttachement } from './fichiers.js';
 import { STATUT_AVENTURE, TYPES_FICHE, typeActif } from '../services/types-fiche.js';
@@ -292,6 +294,41 @@ export async function registerImportRoutes(app: FastifyInstance) {
           .type('application/octet-stream')
           .header('Content-Disposition', dispositionAttachement(f.nom))
           .send(f.flux);
+      });
+
+      // The whole universe in one call (B-92, AD-149): NDJSON, one line per object, streamed with back-pressure.
+      // The first line is pulled before any byte goes out, so a refusal (`depuis`) is still a JSON error.
+      scope.get(`${base}/export`, { config: { portee: 'contenu' } }, async (request, reply) => {
+        const j = jetonDe(request);
+        const q = request.query as { depuis?: unknown; empreintes?: unknown };
+        const options: OptionsExport = {};
+        if (q.depuis !== undefined) {
+          if (typeof q.depuis !== 'string') throw new ErreurService('invalide', '« depuis » doit être une date ISO 8601.', undefined, 'depuis');
+          options.depuis = q.depuis;
+        }
+        if (q.empreintes === '1') options.empreintes = true;
+        const lignes = exporterUnivers(app.db, { compteId: j.compteId }, j.universId, options);
+        let premiere: IteratorResult<LigneExport, void>;
+        try {
+          premiere = await lignes.next();
+        } catch (e) {
+          await lignes.return();
+          throw e;
+        }
+        const corps = Readable.from(
+          (async function* () {
+            if (premiere.done) return;
+            yield `${JSON.stringify(premiere.value)}\n`;
+            for await (const ligne of lignes) yield `${JSON.stringify(ligne)}\n`;
+          })(),
+          { objectMode: false },
+        );
+        // The client leaving or the response ending closes the generator (and its read connection).
+        reply.raw.on('close', () => corps.destroy());
+        return reply
+          .header('Cache-Control', 'private, no-store')
+          .type('application/x-ndjson; charset=utf-8')
+          .send(corps);
       });
 
       scope.get(`${base}/cartes`, { config: { portee: 'contenu' } }, async (request) => {
