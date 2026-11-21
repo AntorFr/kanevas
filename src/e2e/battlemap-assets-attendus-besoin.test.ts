@@ -489,14 +489,19 @@ describe('bibliothèque et direction — monde semé', () => {
     await second.screenshot({ path: join(CAPTURES, 'antor-texte-perime.png') });
   });
 
-  test('E-26 · « Demander à l’assistant » reste désactivé', opts, async () => {
+  test('E-26 · « Demander à l’assistant » est actif et préremplit une demande non envoyée', opts, async () => {
     await ouvrirBibliotheque(antor, uid, '?onglet=direction');
     const bouton = antor.getByRole('button', { name: 'Demander à l’assistant' });
     await bouton.waitFor();
-    assert.equal(await bouton.getAttribute('aria-disabled'), 'true', 'le bouton est désactivé jusqu’à la tranche assistant');
-    assert.equal(await antor.getByRole('dialog').count(), 0, 'il n’ouvre rien');
-    await bouton.click({ force: true });
-    assert.equal(await antor.getByRole('dialog').count(), 0, 'un clic sur le bouton désactivé n’ouvre rien');
+    assert.equal(await bouton.isDisabled(), false, 'le bouton est actif quand l’assistant répond');
+    const texte = await antor.getByRole('textbox', { name: 'Style', exact: true }).inputValue();
+    await bouton.click();
+    const champ = antor.getByRole('complementary', { name: /Kanevas — assistant/ }).getByRole('textbox', { name: 'Demander à Kanevas' });
+    await champ.waitFor();
+    assert.equal(
+      await champ.inputValue(),
+      texte.trim() === '' ? 'Propose une direction artistique pour cet univers.' : 'Améliore la direction artistique en gardant son esprit.',
+    );
   });
 
   // ---------------------------------------------------------------- droits de l'API

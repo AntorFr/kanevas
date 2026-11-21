@@ -66,12 +66,20 @@ describe('E-26 Direction artistique au navigateur', { skip: skipBrowser }, () =>
     return (await r.json()) as Any;
   };
 
-  it('vide : états vides et « Demander à l’assistant » désactivé', async () => {
+  it('vide : états vides ; « Demander à l’assistant » actif, il ouvre le panneau avec la demande préremplie, non envoyée', async () => {
     await ouvrir(antor);
     await antor.getByText('Aucune direction artistique. La génération et l’assistant travailleront sans style.').waitFor();
     await antor.getByText('Aucune image de référence.').waitFor();
     await antor.getByText(/^0 \/ 5\s?000$/).waitFor();
-    assert.equal(await antor.getByRole('button', { name: 'Demander à l’assistant' }).isDisabled(), true);
+    const demander = antor.getByRole('button', { name: 'Demander à l’assistant' });
+    await demander.waitFor();
+    assert.equal(await demander.isDisabled(), false);
+    await demander.click();
+    const panneau = antor.getByRole('complementary', { name: /Kanevas — assistant/ });
+    const champ = panneau.getByRole('textbox', { name: 'Demander à Kanevas' });
+    await champ.waitFor();
+    assert.equal(await champ.inputValue(), 'Propose une direction artistique pour cet univers.');
+    assert.equal(await panneau.getByText('Propose une direction artistique pour cet univers.', { exact: true }).count(), 0, 'non envoyée : aucun message dans le fil');
   });
 
   it('nominal : texte + image choisie dans la médiathèque (devenue MJ seul), enregistré, retrouvé au rechargement', async () => {
