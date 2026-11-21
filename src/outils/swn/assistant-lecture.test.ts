@@ -35,8 +35,8 @@ function monde() {
       .run(g, univers, z.nom, z.nom, z.densite, JSON.stringify(plagesDe(z.hexagones)));
   }
   const fiche = (titre: string, lisent: boolean) => {
-    const id = db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (?, 'lieu', ?, '{}', 1, 1)").run(univers, titre).lastInsertRowid as number;
-    db.prepare("INSERT INTO sections (fiche_id, titre, ordre, contenu, modifie_le, joueurs_lisent) VALUES (?, 'Texte', 1, '', '2026-01-01', ?)").run(id, lisent ? 1 : 0);
+    const id = db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', ?, '{}', 1, 1)").run(univers, titre).lastInsertRowid as number;
+    db.prepare("INSERT INTO sections (cle, fiche_id, titre, ordre, contenu, modifie_le, joueurs_lisent) VALUES ('k' || hex(randomblob(6)), ?, 'Texte', 1, '', '2026-01-01', ?)").run(id, lisent ? 1 : 0);
     return id;
   };
   const lisible = fiche('Port public', true);
