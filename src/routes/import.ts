@@ -24,6 +24,7 @@ import { assurerFichier, listerFichiersApi, MAX_FICHIERS_JOINTS, ouvrirFichierPa
 import { lireFicheApi, listerFichesApi } from '../services/lecture-api.js';
 import { estId } from '../services/cles-forme.js';
 import { listerCartesApi } from '../services/cartes.js';
+import { assurerCarte } from '../services/import-cartes.js';
 import { dispositionAttachement } from './fichiers.js';
 import { STATUT_AVENTURE, TYPES_FICHE, typeActif } from '../services/types-fiche.js';
 import { registerErreurs } from './erreurs.js';
@@ -89,7 +90,7 @@ export async function registerImportRoutes(app: FastifyInstance) {
     registerErreurs(scope);
     // The JSON cap does not cap streamed files (AD-7, AD-65).
     await scope.register(multipart, {
-      limits: { fileSize: Number.MAX_SAFE_INTEGER, files: 1, fields: 2, parts: 3 },
+      limits: { fileSize: Number.MAX_SAFE_INTEGER, files: 1, fields: 6, parts: 7 },
     });
     // JSON routes of this scope (including those of later slices) take up to 8 MiB.
     scope.addHook('onRoute', (route) => {
@@ -296,6 +297,36 @@ export async function registerImportRoutes(app: FastifyInstance) {
       scope.get(`${base}/cartes`, { config: { portee: 'contenu' } }, async (request) => {
         const j = jetonDe(request);
         return listerCartesApi(app.db, j.compteId, j.universId, (request.query as { apres?: unknown }).apres);
+      });
+
+      // The script sends its fields (`titre`, `visible`, `fiche`, `texte`) before the streamed `fond` part (B-87).
+      scope.put(`${base}/cartes/:cle`, { config: { portee: 'contenu' } }, async (request) => {
+        const { cle } = request.params as { cle: string };
+        const lot = lotDeRequete((request.query as { lot?: unknown }).lot);
+        const champs: Record<string, unknown> = {};
+        let flux: AsyncIterable<Buffer> | null = null;
+        let suite: (() => Promise<void>) | null = null;
+        if (request.isMultipart()) {
+          const parties = request.parts();
+          const it = parties[Symbol.asyncIterator]();
+          for (;;) {
+            const { value, done } = await it.next();
+            if (done) break;
+            if (value.type === 'field') { champs[value.fieldname] = value.value; continue; }
+            if (value.fieldname !== 'fond') { value.file.resume(); continue; }
+            const fichier = value.file;
+            flux = (async function* () {
+              for await (const morceau of fichier) yield morceau as Buffer;
+              if (fichier.truncated) throw new ErreurService('invalide', 'Envoi interrompu.', undefined, 'fond');
+            })();
+            suite = async () => { for await (const _ of parties) { /* drain */ } };
+            break;
+          }
+        }
+        const resultat = await assurerCarte(app.db, jetonDe(request), lot, cle, { ...champs, titre: champs.titre, flux },
+          app.horloge(), undefined, request.headers);
+        if (suite) await suite();
+        return resultat;
       });
 
       // The script sends `nom` and optional `visibilite` before the streamed `fichier` part.

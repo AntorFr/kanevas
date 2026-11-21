@@ -309,14 +309,24 @@ export function Avatar({ nom, joueur, petit }: { nom: string; joueur?: boolean; 
   );
 }
 
-/** A titled `section`; `reserveMj` adds the amber rule and the words « MJ seul ». */
-export function Panneau({ titre, reserveMj, danger, children }: { titre: string; reserveMj?: boolean; danger?: boolean; children: ReactNode }) {
+/** A titled `section`; `reserveMj` adds the amber rule and the words « MJ seul »; `actions` sit at the right of the title. */
+export function Panneau({ titre, reserveMj, danger, actions, children }: { titre: string; reserveMj?: boolean; danger?: boolean; actions?: ReactNode; children: ReactNode }) {
   const id = useId();
+  const titreH2 = (
+    <h2 id={id}>
+      {titre} {reserveMj && <Pastille sens="mj" icone={Lock}>MJ seul</Pastille>}
+    </h2>
+  );
   return (
     <section className={`panneau${reserveMj ? ' reserve-mj' : ''}${danger ? ' zone-danger' : ''}`} aria-labelledby={id}>
-      <h2 id={id}>
-        {titre} {reserveMj && <Pastille sens="mj" icone={Lock}>MJ seul</Pastille>}
-      </h2>
+      {actions ? (
+        <div className="panneau-tete">
+          {titreH2}
+          <div className="panneau-actions">{actions}</div>
+        </div>
+      ) : (
+        titreH2
+      )}
       {children}
     </section>
   );

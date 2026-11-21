@@ -466,13 +466,17 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       assert.ok((await texte(admin)).includes('Page introuvable.'));
     });
 
-    // Si la limite de 25 Mo est mal appliquée ou sans message.
-    test('bord : une image de plus de 25 Mo est refusée « Erreur : l\'image dépasse 25 Mo. »', async () => {
+    // Si la limite d'instance (B-89) est mal appliquée ou sans message.
+    test('bord : une image au-dessus du réglage (20 Mo) est refusée « Erreur : Image trop lourde : 20 Mo au plus. »', async () => {
+      const admin = (await connecte(browser, srv.base, 'Admin')).page;
+      const mis = await admin.request.fetch(`${srv.base}/api/instance/reglages`, { method: 'PUT', data: { fondCarteMaxMo: 20 } });
+      assert.equal(mis.status(), 200);
+      await admin.close();
       await ouvrirListe(m.antor, m);
-      const gros = Buffer.concat([PAYSAGE, Buffer.alloc(26 * 1024 * 1024)]);
+      const gros = Buffer.concat([PAYSAGE, Buffer.alloc(21 * 1024 * 1024)]);
       await remplirCreation(m.antor, 'Carte trop lourde', 'Carte illustrée', fichierPng(gros, 'gros.png'));
       await m.antor.getByRole('button', { name: rxExact('Créer') }).click();
-      await m.antor.getByText(rx("Erreur : l'image dépasse 25 Mo.")).waitFor({ timeout: 30000 });
+      await m.antor.getByText(rx('Erreur : Image trop lourde : 20 Mo au plus.')).waitFor({ timeout: 30000 });
     });
   });
 

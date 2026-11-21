@@ -91,14 +91,15 @@
   (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
   placeholder for hidden ones. The `cible` of a relation carries `charge: {pj}` for a personnage and no other charge key (the badge reads only that; more would leak data of the target sheet; `chargeDeCible`). Refusal codes: `auto_relation` and `nature_incompatible` (invalide), `relation_existante` and
   `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.
-- Maps (`kanevas-cartes-graphes`, migration 0007): `src/services/cartes.ts`. `lireCarte` is the only read
+- Maps (`kanevas-cartes-graphes`, migration 0007): `src/services/cartes.ts` (plus `src/services/import-cartes.ts`, the import `PUT /cartes/:cle`, which writes `cartes` itself inside `avecContexte`, origin `import`, with the same guards and `ecrireFond`/`stockage.ts` for the background). `lireCarte` is the only read
   of a map, elements and graph links included (AD-68); the browser filters nothing. Graph links are never
   stored (AD-41): they come from `lireRelations` per readable section, so the two guards of AD-64 apply.
   Reads: no role, unknown id and hidden map for a non-GM are the same `introuvable`; a GM in player mode on
   a hidden map gets `refuse` with `detail: 'mode_joueur'`. Writes (GM outside player mode only): `introuvable`
   if the caller cannot read the map, else `refuse`. Refusal codes in `ErreurService.detail`: `fond_invalide`,
   `fond_trop_lourd`, `position_invalide`, `fiche_inconnue` (invalide), `fiche_deja_placee`, `carte_pleine`
-  (conflit). The route answers `fond_trop_lourd` with 413. A background goes through `stockage.ts` only and `ouvrirFond` takes no mode.
+  (conflit); `champ: fiche` and `champ: texte` (invalide: unknown sheet, text over 5,000 characters), `carte_modifiee` (conflit: the text version moved).
+  Migration 0041 adds to a map its attached sheet (`cartes.fiche_id`), its text with a public copy (GM blocks removed) and its `version`; the import writes the text without a version check (AD-142). The route answers `fond_trop_lourd` with 413. A background goes through `stockage.ts` only and `ouvrirFond` takes no mode.
 
 - Assistant tools (`kanevas-assistant-membre`, `src/services/assistant/`): `catalogueDe(db, compteId,
   universId, {porte, niveau, images})` is the only door — for the assistant and for the MCP door (`routes/mcp.ts`, `outils-ecriture-mcp.ts`, `docs/mcp.md`) — the server picks the catalogue from the role read in `membres` (no role →

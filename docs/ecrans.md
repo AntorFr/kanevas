@@ -114,9 +114,9 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
 | E-8 | read, search, create; each sheet's thumbnail (its illustration, or the drawn fallback) ; *(kanevas-fiches-liees)* the mark on the thumbnail (Mort, Morte, Détruit, Détruite, Éteinte depending on the type), the type's filter (Vivants / Morts, Intacts / Détruits…) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | read, search; thumbnails of visible sheets ; *(kanevas-fiches-liees)* the « gone » mark and its filter, the same as the GM sees them (the « Marquer … » entry is on E-9 only, hidden from a player) ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**hidden**) | — |
-| E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) ; *(kanevas-taille-images)* the « Image » button (size, placement) in « Écrire », outside player mode — **hidden** in player mode | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) ; *(kanevas-taille-images)* the « Image » button in the sections he may write — **hidden** elsewhere | — |
+| E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-synchro)* the « Cartes » block: all the attached maps, « Cachée aux joueurs »; in Player mode, as a player ; *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) ; *(kanevas-taille-images)* the « Image » button (size, placement) in « Écrire », outside player mode — **hidden** in player mode | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-synchro)* the « Cartes » block: the visible attached maps ; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) ; *(kanevas-taille-images)* the « Image » button in the sections he may write — **hidden** elsewhere | — |
 | E-10 | everything, tool maps (the galaxy) included, with « MJ seul » on those not visible; « Nouvelle carte » ▸ « Carte de la galaxie », « Rendre visible » / « Cacher aux joueurs » | visible maps, tool maps included when visible and the tool is visible to their role (otherwise absent); « Nouvelle carte », « Carte de la galaxie » and « Rendre visible » / « Cacher aux joueurs » **hidden** | — |
-| E-11 | everything; Player mode; *(kanevas-synchro)* write the text, attach or detach a sheet | read a visible map, open a sheet; *(kanevas-synchro)* read the text without its GM blocks, open the attached sheet | — |
+| E-11 | everything; Player mode; *(kanevas-synchro)* write the text, attach or detach a sheet (outside player mode; **hidden** in player mode) | read a visible map, open a sheet; *(kanevas-synchro)* read the text without its GM blocks, open the attached sheet; never write the text nor attach (**hidden**) | — |
 | E-12 | GM catalogue (including image generation, if an image engine is available); proposals: only the requesting GM sees, applies, abandons them | Player catalogue (no image: the tool is absent, the assistant answers that it cannot); proposals: **hidden** (neither tool nor block; what is checked is the absence of a proposal and block, not the assistant's free text) | — |
 | E-13 | all session reports ; *(kanevas-scenarios)* the adventure of each, « Aventure supprimée » when it is gone | readable session reports ; the adventure column only for an adventure he reads (**hidden** otherwise, deleted or closed alike) | — |
 | E-14 | everything; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
@@ -4420,29 +4420,72 @@ The slices draw them; nothing here invents a component.
   fiche… » replaces it in one gesture. An attached sheet the
   reader cannot read is not named (AD-38): the line is absent for him.
 - Under the frame, the block **« Texte »**: rendered Markdown with its GM blocks (the shared renderer,
-  AD-96); GM: « Modifier » opens the section editor without the `[[` list — preview and GM block
+  AD-96); GM: « Modifier » and « Vider » (small neutral buttons with an icon) sit at the right of the block's title; « Modifier » opens the section editor without the `[[` list — preview and GM block
   only (links are not active in a map's text, AD-142) —, 5,000 characters at most (« 5 000 caractères
   au plus. »); « Vider » asks no confirmation and can be undone by « Modifier »; empty: GM « Ajouter
   un texte », player nothing. Two GMs saving the same version: the second sees « Le texte a changé
   depuis votre lecture. » with « Recharger » (409 `carte_modifiee`, AD-142), his draft kept.
-- GM, imported map: its origin key under the title, GM-only, as on E-9 (B-50).
-- States: text save failed → « Impossible d'enregistrer le texte. » with « Réessayer », the draft
-  kept; background over the limit → « Image trop lourde : <N> Mo au plus. » (N the current setting).
+- GM, imported map: its origin key under the title, GM-only, as on E-9 (B-50); the mock-up's « · MJ seul »
+  suffix, breadcrumb and reduced sidebar are the usual frame of E-11, not new elements.
+- A player sees « Rattachée à » only if he reads the sheet; a GM in player mode sees what a player sees
+  (no gesture: the buttons « Rattacher à une fiche… », « Changer de fiche… », « Détacher », « Modifier »,
+  « Ajouter un texte » and « Vider » are **hidden**, not refused). A GM whose attached sheet was deleted sees
+  « Rattacher à une fiche… » alone (the deletion detaches the map, AD-142). A text made only of GM blocks is
+  an empty text for a player: no « Texte » block.
+- « Vider » empties the text at once: the GM then sees « Ajouter un texte »; the previous text is not
+  restored (no history of a map's text, nothing promised).
+- States (the shared patterns of this document for the loading and the lost connection):
+
+| Where | State | What is read | Gestures |
+|---|---|---|---|
+| Text | loading | « Chargement… » in the block | — |
+| Text | save failed | « Impossible d'enregistrer le texte. », the draft kept | « Réessayer » |
+| Text | version changed (409) | « Le texte a changé depuis votre lecture. », the draft kept | « Recharger » |
+| Text | connection lost | the banner; « Enregistrer » inactive, the draft kept | — |
+| Text | extreme | 5,000 characters: the block scrolls inside the page, no cut | — |
+| Sheet line | attach, change or detach failed | « Impossible de rattacher la carte. » under the line, nothing changed | « Réessayer » |
+| Choice window | no sheet found | « Aucune fiche trouvée. » | the search field |
+| Choice window | list failed | « Impossible de charger les fiches. » | « Réessayer », « Annuler » |
+| Sheet line | very long title | wrapped on two lines at most, ellipsis, full title in the link's `title` | — |
+| Frame | background over the limit | « Image trop lourde : <N> Mo au plus. » (N the current setting), the background unchanged | choose another image |
 
 ### E-9 Fiche — the block « Cartes »
 A sheet block (registry AD-124), after « Relations »: the maps attached to the sheet that the reader
-may read (GM: all, with « Cachée aux joueurs » on a hidden one; player: the visible ones), each a
-line « <titre> · <forme> » opening E-11. Absent when there is none for this reader.
+may read (GM: all, with « Cachée aux joueurs » — `Pastille` `sens="mj"` with the `lock` icon — on a hidden
+one; player: the visible ones; GM in player mode: as a player), each a line « <titre> · <forme> » (the form
+in words: « Carte illustrée », « Graphe ») opening E-11. Absent when there is none for this reader; no
+count of hidden ones. Loading: the block's own « Chargement… » (the sheet does not wait for it); error:
+« Impossible de charger les cartes. » with « Réessayer », the other blocks untouched; many maps: the block lists them all, scrolling inside the page (a sheet carries few maps).
 
 ### E-5 Administration — the panel « Limites »
 Under « Jeton de l'assistant »: « Taille maximale d'un fond de carte » — a number in MB (1 to 500,
 75 by default), « Enregistrer »; the note « S'applique aux prochains envois ; les fonds déjà posés
-restent. » Refusal out of range: « Entre 1 et 500 Mo. »
+restent. » Refusal out of range: « Entre 1 et 500 Mo. » Seen by the instance admin only; for anyone
+else the panel does not exist (E-5 answers « Page introuvable. »).
+
+| State | What is read | Gestures |
+|---|---|---|
+| loading | « Chargement… » in the panel, « Enregistrer » inactive | — |
+| read failed | « Impossible de charger les limites. » | « Réessayer » |
+| saved | « Limite enregistrée. » beside the button, the field shows the saved value | — |
+| save failed | « L'action n'a pas abouti. Réessayez. » under the field, the entry kept | « Enregistrer » |
+| connection lost | the banner; « Enregistrer » inactive, the entry kept | — |
+| empty / extreme | a field cannot be empty (« Entre 1 et 500 Mo. »); 500 is the largest value | — |
 
 ### E-18 Accès par API — the batch report
 The counters gain the nature **« cartes »**; a write refused by its fingerprint appears among the
 refusals with its key and « modifiée depuis la lecture ». The warnings « modifié dans Kanevas : non
 écrasé » disappear with B-48.
+
+### Components of the maps slice (`kanevas-synchro-cartes`, verdict of the design-system keeper)
+Nothing new, no token. E-5 « Limites »: `Panneau`, `Champ` (the width goes in `administration.css`,
+not inline), `Bouton` primary, the refusal an inline message, after `jeton-assistant.tsx`. E-9 « Cartes »:
+`BlocSection` and `LigneRelation` in a variant « target then type, no arrow » (added to its spec; fallback
+a plain list of links); « Cachée aux joueurs » is the `Pastille` `sens="mj"` with the `lock` icon. E-11:
+`Bouton` small for « Rattacher… / Changer de fiche… / Détacher »; the choice is a `Fenetre` around
+`ListeRecherche` (`frontend/src/ecrans/fiche/liste-recherche.tsx`); « Texte » is a `Panneau`, `Markdown`
+and `Editeur`, the GM block a `Panneau reserveMj` (not a copied style). E-18: the existing batch counter,
+one more nature.
 
 ### Cross-check
 - Each need has a screen or its script: B-105 to B-112, B-90, B-91 → the import API (E-18 shows the batches);
