@@ -150,7 +150,7 @@ function charger(db: Db, universId: number, e: EntreeCalcul, porte: Porte | null
   if (r.inconnu) {
     throw new ErreurService('invalide', "Cet élément n'est pas disponible.", 'element_indisponible', r.inconnu.champ);
   }
-  controlerChoix(r);
+  controlerChoix(r, e);
   const s = { ...calculerResolu(db, universId, r), equipage: r.equipage };
   if (s.resultat === null) throw new ErreurConceptionBloquee(s.alertes);
   if (s.alertes.some((a) => a.niveau === 'bloquante')) throw new ErreurConceptionBloquee(s.alertes);

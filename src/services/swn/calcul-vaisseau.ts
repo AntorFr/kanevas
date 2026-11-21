@@ -149,18 +149,19 @@ export interface Resolution {
 }
 
 /** X-4: `points` and `vise` must belong to an element that has the effect; one above `points_max` is refused. */
-export function controlerChoix(r: Resolution): void {
-  r.lignes.forEach((l) => {
+export function controlerChoix(r: Resolution, e?: EntreeCalcul): void {
+  r.lignes.forEach((l, i) => {
     if (l === null) return;
-    const e = l.element;
+    const el = l.element;
     if (l.points !== undefined) {
-      if (e.effet !== 'echange') throw invalide('Points sur un élément sans échange.', 'points_invalides', 'points');
-      if (l.points > (e.points_max ?? 0)) throw invalide(`Points : ${e.points_max ?? 0} au plus.`, 'points_invalides', 'points');
+      if (el.effet !== 'echange') throw invalide('Points sur un élément sans échange.', 'points_invalides', 'points');
+      if (l.points > (el.points_max ?? 0)) throw invalide(`Points : ${el.points_max ?? 0} au plus.`, 'points_invalides', 'points');
     }
-    if (l.vise !== undefined && !accepteVise(e.effet)) {
+    if (l.vise !== undefined && !accepteVise(el.effet)) {
       throw invalide('Élément visé sur un élément sans effet ciblé.', 'vise_invalide', 'vise');
     }
-    if (l.cibles !== undefined && !aCibles(e.effet)) {
+    // `cibles` is read on the input: the resolved line has already dropped them for an effect that aims at nothing.
+    if (e?.choix[i]?.cibles !== undefined && !aCibles(el.effet)) {
       throw invalide('Cibles sur un élément sans effet ciblé.', 'cibles_invalide', 'cibles');
     }
   });
@@ -233,7 +234,7 @@ export function calculerDepuisChoix(db: Db, acteur: Acteur, universId: number, e
   const reparation = validerReparation(o.reparation);
   if (reparation !== undefined) e.reparation = reparation;
   const r = resoudreChoix(db, universId, e, porte);
-  controlerChoix(r);
+  controlerChoix(r, e);
   return calculerResolu(db, universId, r);
 }
 
