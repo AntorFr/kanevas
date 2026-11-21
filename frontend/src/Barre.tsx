@@ -1,6 +1,6 @@
-import { Check, ChevronDown, ChevronsUpDown, Dices, Library, LogOut, Monitor, Moon, Sun } from 'lucide-react';
+import { Check, ChevronDown, ChevronsUpDown, Dices, KeyRound, Library, LogOut, Monitor, Moon, Sun } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link, matchPath, useLocation } from 'react-router-dom';
+import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 import { appeler } from './api';
 import { useMoi, useUnivers, useVue } from './cadre-contexte';
@@ -10,23 +10,26 @@ import { outilClient } from './outils/registre';
 import { ecranEnregistre } from './registre';
 import { type ChoixTheme, useTheme } from './theme';
 import { typesActifs, useTypes } from './types-contexte';
+import { adresseUnivers, refUniversDeLAdresse, universDeLAdresse, universDeRef } from './adresse-univers';
 import { Avatar, Bouton, initialeUnivers, Menu, PastilleRole, type EntreeMenu } from './ui';
 
-/** Id of the universe in the address, or null outside a universe. */
-export function universDeLAdresse(chemin: string): number | null {
-  const m = matchPath({ path: '/univers/:id/*' }, chemin);
-  const id = m?.params.id;
-  return id && /^\d+$/.test(id) ? Number(id) : null;
-}
+export { adresseUnivers, refUniversDeLAdresse, universDeLAdresse, universDeRef };
 
 /**
  * An item is current on its own address and below it; a sheet's address is under no item, so the
  * sheet names its type (`section`, the label of the item it hangs under) and that item is current.
  */
-export function itemCourant(item: Item, id: number, pathname: string, section?: string): boolean {
-  if (section !== undefined && pathname.startsWith(`/univers/${id}/fiche/`)) return item.libelle === section;
+export function itemCourant(item: Item, id: number | string, pathname: string, section?: string, slugs: string[] = []): boolean {
+  if (section !== undefined && estAdresseFiche(pathname, id, slugs)) return item.libelle === section;
   const chemin = item.chemin(id);
   return pathname === chemin || (chemin !== `/univers/${id}` && pathname.startsWith(`${chemin}/`));
+}
+
+/** A sheet's address: `/fiche/<id or key>`, or `/<type>/<name>` (the type word, not the plural slug) for a key `type:name` whose type is registered (B-101). */
+export function estAdresseFiche(pathname: string, id: number | string, slugs: string[] = []): boolean {
+  if (pathname.startsWith(`/univers/${id}/fiche/`)) return true;
+  const m = matchPath({ path: '/univers/:u/:a/:b' }, pathname);
+  return m !== null && m.params.u === String(id) && slugs.includes(m.params.a!);
 }
 
 /** The seal of a universe: its initial on a quiet tile. */
@@ -38,12 +41,12 @@ export function Sceau({ nom, petit }: { nom: string; petit?: boolean }) {
   );
 }
 
-function Selecteur({ courant, onChoix }: { courant: number; onChoix: () => void }) {
+function Selecteur({ courant, onChoix }: { courant: string; onChoix: () => void }) {
   const { univers, recharger } = useUnivers();
   const [ouvert, setOuvert] = useState(false);
   const racine = useRef<HTMLDivElement>(null);
   const bouton = useRef<HTMLButtonElement>(null);
-  const actuel = univers.etat === 'ok' ? univers.valeur.find((u) => u.id === courant) : undefined;
+  const actuel = univers.etat === 'ok' ? universDeRef(univers.valeur, courant) : undefined;
   const etiquette = univers.etat === 'chargement' ? '…' : actuel ? actuel.nom : 'Univers';
 
   useEffect(() => {
@@ -100,11 +103,11 @@ function Selecteur({ courant, onChoix }: { courant: number; onChoix: () => void 
             <>
               <div className="menu-titre">Vos univers</div>
               {univers.valeur.map((u) => (
-                <Link key={u.id} to={`/univers/${u.id}`} className="menu-entree" title={u.nom} onClick={choisi}>
+                <Link key={u.id} to={`/univers/${adresseUnivers(u)}`} className="menu-entree" title={u.nom} onClick={choisi}>
                   <Sceau nom={u.nom} petit />
                   <span className="tronque">{u.nom}</span>
                   <PastilleRole role={u.role} />
-                  {u.id === courant && <Check size={14} strokeWidth={1.75} aria-hidden="true" />}
+                  {u.id === actuel?.id && <Check size={14} strokeWidth={1.75} aria-hidden="true" />}
                 </Link>
               ))}
               <div className="menu-separateur" role="separator" />
@@ -134,6 +137,7 @@ const THEMES: { choix: ChoixTheme; libelle: string; icone: typeof Sun }[] = [
 function Compte() {
   const moi = useMoi();
   const [theme, setTheme] = useTheme();
+  const navigate = useNavigate();
   const nom = moi.etat === 'ok' ? moi.valeur.username : undefined;
   const entrees: EntreeMenu[] = [
     ...(nom
@@ -159,6 +163,7 @@ function Compte() {
       options: THEMES.map((t) => ({ libelle: t.libelle, icone: t.icone, actif: theme === t.choix, onChoisir: () => setTheme(t.choix) })),
     },
     { separateur: true },
+    { libelle: 'Mes jetons d’API', icone: KeyRound, onChoisir: () => navigate('/compte/jetons') },
     {
       libelle: 'Se déconnecter',
       icone: LogOut,
@@ -196,27 +201,31 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
   const { univers } = useUnivers();
   const { section, mode } = useVue();
   const moi = useMoi();
-  const id = universDeLAdresse(pathname);
+  const ref = refUniversDeLAdresse(pathname);
+  const lu = univers.etat === 'ok' ? universDeRef(univers.valeur, ref) : undefined;
   // Inside a universe only if the account has it: an unknown universe, or one without a role,
   // gets the bar of a screen outside (no selector, no name) — the refusal state of docs/ecrans.md.
-  const connu = univers.etat !== 'ok' || univers.valeur.some((u) => u.id === id);
-  const dedans = id !== null && connu;
-  const role = univers.etat === 'ok' ? univers.valeur.find((u) => u.id === id)?.role : undefined;
+  const connu = univers.etat !== 'ok' || lu !== undefined;
+  const dedans = ref !== null && connu;
+  // The links carry the key when the list gave it, else the reference as typed.
+  const id: string = lu ? adresseUnivers(lu) : (ref ?? '');
+  const idNum = lu?.id ?? (ref !== null && /^\d+$/.test(ref) ? Number(ref) : null);
+  const role = lu?.role;
   const groupes = moi.etat === 'ok' ? moi.valeur.groups : [];
   const visible = (i: Item, chemin: string) => ecranEnregistre(chemin, undefined) && (!i.groupe || groupes.includes(i.groupe));
-  const items = dedans ? ITEMS_UNIVERS.filter((i) => visible(i, i.chemin(id)) && (!i.role || i.role === role)) : [];
+  const items = dedans ? ITEMS_UNIVERS.filter((i) => visible(i, i.chemin(id)) && (!i.role || i.role === role) && !(i.horsModeJoueur && mode === 'joueur')) : [];
   // « Lore » comes from the types the server sends, between the first group and « Univers ».
   const typesLu = useTypes();
   const lore = dedans ? itemsLore(typesActifs(typesLu.types)) : [];
   // « Outils » comes from the entries the server sends (AD-133), between the first group and « Lore »;
   // a GM in player mode asks as a player, so the bar shows what a player sees.
-  const entreesOutils = useEntreesOutils(dedans ? id : null, role === 'mj' && mode === 'joueur' ? 'joueur' : 'mj');
+  const entreesOutils = useEntreesOutils(dedans ? idNum : null, role === 'mj' && mode === 'joueur' ? 'joueur' : 'mj');
   const outils: Item[] = entreesOutils.map((e) => ({
     libelle: e.libelle,
     icone: outilClient(e.cle)!.icone,
     section: 'Outils',
     garderMode: true,
-    chemin: (u: number) => `/univers/${u}/outils/${e.cle}`,
+    chemin: (u: number | string) => `/univers/${u}/outils/${e.cle}`,
   }));
   const sections = [...new Set(items.map((i) => i.section ?? ''))];
   if (dedans) sections.splice(Math.min(1, sections.length), 0, 'Lore');
@@ -245,7 +254,7 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
   return (
     <>
       {dedans ? (
-        <Selecteur courant={id} onChoix={onNavigue} />
+        <Selecteur courant={ref!} onChoix={onNavigue} />
       ) : (
         <Link to="/" className="marque" aria-label="Kanevas — Mes univers">
           <img src="/favicon.svg" className="logo" alt="" width={30} height={30} />
@@ -303,7 +312,7 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
             )}
             {(s === 'Lore' ? lore : s === 'Outils' ? outils : items.filter((i) => (i.section ?? '') === s))
               .map((i) => (
-                <Link key={i.libelle} to={i.chemin(id!) + (i.garderMode && mode === 'joueur' ? '?mode=joueur' : '')} className="item" aria-current={itemCourant(i, id!, pathname, section) ? 'page' : undefined}>
+                <Link key={i.libelle} to={i.chemin(id) + (i.garderMode && mode === 'joueur' ? '?mode=joueur' : '')} className="item" aria-current={itemCourant(i, id, pathname, section, typesLu.types.map((t) => t.type)) ? 'page' : undefined}>
                   <i.icone size={16} strokeWidth={1.75} aria-hidden="true" />
                   {i.libelle}
                 </Link>

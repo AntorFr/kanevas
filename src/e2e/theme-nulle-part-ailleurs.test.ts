@@ -1,3 +1,4 @@
+// ecrans: cartes, comptes-rendus, fiche, fiches, membres, parametres, systemes, vue-ensemble
 // Black-box test of the exit criterion of `kanevas-refonte-visuelle`: « Le thème se règle depuis le menu
 // de l'avatar et nulle part ailleurs » (docs/ecrans.md « Détail de kanevas-refonte-visuelle », criteria).
 //
@@ -93,7 +94,8 @@ for (const [nom, vue] of [['bureau', { width: 1280, height: 900 }], ['téléphon
 
 test('un Joueur règle le thème au même endroit et nulle part ailleurs', opts, async () => {
   await lea.setViewportSize({ width: 1280, height: 900 });
-  for (const url of ['/', '/univers/1', '/univers/1/fiche/1', '/univers/1/fiches/personnages']) {
+  // (the sheet « fiche/1 » has no section for the players: the server answers its bare 404 to a numeric address, B-101)
+  for (const url of ['/', '/univers/1', '/univers/1/recherche', '/univers/1/fiches/personnages']) {
     await verifier(lea, url, /l[ée]a/i);
   }
 });

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { FileText, Plus } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { ErreurApi, appeler, lire, useConnexionPerdue } from '../api';
 import { useBasculeMode, useCharge, useTitreAriane } from '../cadre-contexte';
@@ -30,10 +30,19 @@ type Etat =
 
 /** E-9 Fiche: title, type badge, then the sections the caller may read (AD-39, AD-58, AD-59). */
 function PageFiche() {
-  const { id, fid } = useParams();
+  const params = useParams();
+  // `/univers/:id/fiche/:fid` or the readable `/univers/:id/:a/:b` (key `a:b`): references, never converted (B-101).
+  const navigate = useNavigate();
+  const { pathname, search, hash } = useLocation();
+  // After the address was replaced by the readable one the references stay those the sheet was read with:
+  // the same sheet is not read again for a new address (its own).
+  const remplace = useRef<{ vers: string; id: string; fid: string } | null>(null);
+  const courants = remplace.current?.vers === pathname ? remplace.current : null;
+  const id = courants?.id ?? params.id;
+  const fid = courants?.fid ?? params.fid ?? `${params.a}:${params.b}`;
   const perdue = useConnexionPerdue();
   const { toast } = useToasts();
-  const { types } = useTypes();
+  const { types, etat: typesEtat } = useTypes();
   const [univers, rechargerUnivers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const [etatLu, setEtatLu] = useState<{ cle: string; etat: Etat }>({ cle: '', etat: { k: 'chargement' } });
   const [essai, setEssai] = useState(0);
@@ -66,6 +75,18 @@ function PageFiche() {
   const ficheVue = etat.k === 'ok' || etat.k === 'aucune-visible' ? etat.fiche : undefined;
   useTitreAriane(ficheVue?.titre, ficheVue && typeParType(types, ficheVue.type)?.pluriel, ficheVue?.ancetres);
   const introuvable = useCallback(() => setEtat({ k: 'introuvable' }), [setEtat]);
+
+  // The address says the sheet by an id or a former key: replace it (no history entry) by the readable one.
+  // Only when the answer carries the keys: a player's body has no `cle` and keeps the address as typed.
+  const cleUnivers = univers.etat === 'ok' ? univers.valeur.cle : undefined;
+  const cleFiche = ficheVue?.cle;
+  useEffect(() => {
+    if (cleUnivers === undefined || cleFiche === undefined || typesEtat !== 'ok' || etat.k === 'chargement') return;
+    const cible = adresseFiche(cleUnivers, cleFiche, types.map((t) => t.type));
+    if (pathname === cible) return;
+    remplace.current = { vers: cible, id: id!, fid: fid };
+    navigate(`${cible}${search}${hash}`, { replace: true });
+  }, [cleUnivers, cleFiche, types, typesEtat, pathname, search, hash, navigate, etat.k, id, fid]);
 
   // The mode the payload in `etat` was read in: after a switch the old sections (GM-only ones included)
   // must not be drawn for even one frame, so a stale payload counts as loading.
@@ -139,6 +160,8 @@ function PageFiche() {
     }} />;
   }
 
+  // The children read and link by the numeric id, whatever the address says (id, key or former key).
+  const uid = String(univers.etat === 'ok' ? univers.valeur.id : id);
   const mj = role === 'mj';
   const fiche = etat.fiche;
   const sections = etat.k === 'ok' ? fiche.sections : [];
@@ -188,7 +211,7 @@ function PageFiche() {
     <article className="fiche" aria-labelledby="titre-fiche">
       <EnteteFiche
         key={`${id}/${fid}/${gestion}`}
-        universId={id!}
+        universId={uid}
         fiche={fiche}
         gestion={gestion && etat.k === 'ok'}
         modeJoueur={mj && modeEffectif === 'joueur'}
@@ -206,7 +229,7 @@ function PageFiche() {
       {etat.k === 'ok' && blocs.length > 0 && (
         <div className="blocs-fiche">
           {blocs.map((bloc) => (
-            <bloc.composant key={`${id}/${fid}/${modeEffectif}/${suffixe}/${bloc.id}`} universId={id!} fiche={fiche} role={modeEffectif} suffixeMode={suffixe} />
+            <bloc.composant key={`${id}/${fid}/${modeEffectif}/${suffixe}/${bloc.id}`} universId={uid} fiche={fiche} role={modeEffectif} suffixeMode={suffixe} />
           ))}
         </div>
       )}
@@ -232,7 +255,7 @@ function PageFiche() {
           {sections.map((s, i) => (
             <PanneauSection
               key={s.id}
-              universId={id!}
+              universId={uid}
               fiche={fiche}
               section={s}
               role={modeEffectif}
@@ -247,13 +270,13 @@ function PageFiche() {
           ))}
         </div>
       )}
-      <BlocContient universId={id!} ficheId={fiche.id} suffixeMode={suffixe} />
+      <BlocContient universId={uid} ficheId={fiche.id} suffixeMode={suffixe} />
       {etat.k === 'ok' && blocsBas.map((bloc) => (
-        <bloc.composant key={`${id}/${fid}/${modeEffectif}/${suffixe}/${bloc.id}`} universId={id!} fiche={fiche} role={modeEffectif} suffixeMode={suffixe} />
+        <bloc.composant key={`${id}/${fid}/${modeEffectif}/${suffixe}/${bloc.id}`} universId={uid} fiche={fiche} role={modeEffectif} suffixeMode={suffixe} />
       ))}
       {etat.k === 'ok' && (
         <BlocMentions
-          universId={id!}
+          universId={uid}
           ficheId={fiche.id}
           mentions={fiche.mentions ?? AUCUNE}
           suite={fiche.mentionsSuite ?? false}
@@ -295,4 +318,15 @@ function PageFiche() {
   );
 }
 
-export default { chemin: '/univers/:id/fiche/:fid', composant: PageFiche } satisfies Ecran;
+/** The readable address of a sheet (B-101): `/univers/<u>/<a>/<b>` for a key `a:b` of a registered type, else `/univers/<u>/fiche/<key>`. */
+export function adresseFiche(cleUnivers: string, cle: string, typesConnus: string[]): string {
+  const [a, b, ...reste] = cle.split(':');
+  return b !== undefined && reste.length === 0 && typesConnus.includes(a!)
+    ? `/univers/${cleUnivers}/${a}/${b}`
+    : `/univers/${cleUnivers}/fiche/${cle}`;
+}
+
+export default [
+  { chemin: '/univers/:id/fiche/:fid', composant: PageFiche },
+  { chemin: '/univers/:id/:a/:b', composant: PageFiche },
+] satisfies Ecran[];

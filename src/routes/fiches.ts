@@ -1,6 +1,7 @@
 import '@fastify/multipart';
 import type { FastifyInstance } from 'fastify';
 
+import { changerCleFiche } from '../services/cles.js';
 import { roleDe } from '../services/droits.js';
 import { ErreurService, invalide, refuse } from '../services/erreurs.js';
 import { proposerRecalcul, recalculerSection } from '../services/sections-gerees.js';
@@ -10,6 +11,7 @@ import {
   changerTypeFiche,
   creerFiche,
   deplacerFiche,
+  ficheEcrite,
   bilanSuppressionFiche,
   lireFiche,
   renommerFiche,
@@ -101,13 +103,13 @@ export function registerFichesRoutes(app: FastifyInstance) {
   app.patch(`${base}/:fid`, async (request) => {
     const i = ids(request);
     const b = corps(request);
-    if (Object.keys(b).some((k) => !['titre', 'sousType', 'parent', 'statut', 'disparu'].includes(k))) {
+    if (Object.keys(b).some((k) => !['titre', 'sousType', 'parent', 'statut', 'disparu', 'cle'].includes(k))) {
       throw invalide('Requête invalide.');
     }
     if (b.disparu !== undefined && typeof b.disparu !== 'boolean') throw invalide('Requête invalide.');
     if (
       b.titre === undefined && b.sousType === undefined && b.parent === undefined && b.statut === undefined &&
-      b.disparu === undefined
+      b.disparu === undefined && b.cle === undefined
     ) {
       throw invalide('Rien à modifier.');
     }
@@ -124,6 +126,11 @@ export function registerFichesRoutes(app: FastifyInstance) {
       if (b.sousType !== undefined) fiche = changerSousType(app.db, a.compteId, i.univers, i.fiche, b.sousType);
       if (b.parent !== undefined) fiche = deplacerFiche(app.db, a, i.univers, i.fiche, b.parent as number | null);
       if (b.disparu !== undefined) fiche = marquerDisparu(app.db, a, i.univers, i.fiche, b.disparu as boolean);
+      // The key (AD-146): the former one keeps resolving; refused, nothing of this request is kept.
+      if (b.cle !== undefined) {
+        changerCleFiche(app.db, a, i.univers, i.fiche, b.cle);
+        fiche = ficheEcrite(app.db, i.univers, i.fiche);
+      }
       return fiche;
     })();
   });

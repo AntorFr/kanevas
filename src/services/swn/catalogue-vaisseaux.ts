@@ -286,7 +286,7 @@ function verifierEffet(nature: 'modifications' | 'amenagements', d: Record<strin
       const v = d.vise as { nature?: unknown; cle?: unknown } | string | null | undefined;
       const ok = typeof v === 'string' ? v.length >= 1 && v.length <= 64
         : v !== null && typeof v === 'object' && !Array.isArray(v) && typeof v.cle === 'string' && v.cle.length >= 1 && v.cle.length <= 64;
-      if (!ok) return { champ: 'vise', raison: 'élément visé exigé.' };
+      if (!ok) return { champ: 'vise', raison: 'élément visé exigé' };
     } else if (d.vise !== undefined) return { champ: 'vise', raison: 'paramètre réservé à son effet.' };
   }
   if (d.effet_pct !== undefined && !entierDans(d.effet_pct, 1, 1000)) return { champ: 'effet_pct', raison: 'nombre entier de 1 à 1 000 attendu' };

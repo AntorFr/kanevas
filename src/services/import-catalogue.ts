@@ -1,7 +1,7 @@
 import type { Db } from '../db/db.js';
 import { appliquerCatalogue, previsualiserCatalogue, type RapportCatalogue } from './catalogues.js';
 import { ErreurService, introuvable } from './erreurs.js';
-import type { Jeton } from './jetons.js';
+import type { JetonRequete as Jeton } from './jetons.js';
 import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
 import type { CibleOutils } from './outils.js';
 

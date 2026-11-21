@@ -1,3 +1,4 @@
+// ecrans: acces-api
 // E-18 « Accès API »: the relation reference names `nature` and `qualificatif` and the deprecation of `type` (AD-134).
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';

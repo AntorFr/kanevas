@@ -163,7 +163,7 @@ test('GET sous-types : Port / port regroupés (graphie du premier), nb 2 pour L�
   assert.deepEqual(find(objets.json), []);
 });
 
-test('import : vaisseau + Frégate creee, rejeu inchangee, sous-type changé par Antor protégé, lot le dit', async () => {
+test('import : vaisseau + Frégate creee, rejeu inchangee, sous-type changé par Antor remis par le rejeu, sans avertissement', async () => {
   const w = await monde();
   const corps = { type: 'vaisseau', titre: 'Aube', sousType: 'Frégate', sections: [] };
   const a = await w.api('PUT', 'fiches/vaisseau%3Aaube', corps);
@@ -175,11 +175,16 @@ test('import : vaisseau + Frégate creee, rejeu inchangee, sous-type changé par
   assert.equal((await w.req('antor', 'PATCH', `${fiches(w.essai)}/${id}`, { sousType: 'Croiseur' })).status, 200);
   const lot = (await w.api('POST', 'lots')).json.lotId;
   const b = await w.api('PUT', `fiches/vaisseau%3Aaube?lot=${lot}`, corps);
-  assert.equal(b.json.etat, 'inchangee');
-  assert.equal((await w.req('antor', 'GET', `${fiches(w.essai)}/${id}`)).json.sousType, 'Croiseur');
+  assert.equal(b.json.etat, 'mise_a_jour');
+  assert.equal((await w.req('antor', 'GET', `${fiches(w.essai)}/${id}`)).json.sousType, 'Frégate');
   const l = await w.api('GET', `lots/${lot}`);
-  assert.ok(/sous-type/.test(JSON.stringify(l.json)), JSON.stringify(l.json));
-  assert.ok(l.json.avertissements >= 1);
+  assert.doesNotMatch(JSON.stringify(l.json), /sous-type modifié/);
+  assert.equal(l.json.avertissements, 0);
+  // a body without sousType leaves the one in place
+  assert.equal((await w.req('antor', 'PATCH', `${fiches(w.essai)}/${id}`, { sousType: 'Croiseur' })).status, 200);
+  const { sousType: _s, ...sans } = corps;
+  assert.equal((await w.api('PUT', 'fiches/vaisseau%3Aaube', sans)).json.etat, 'inchangee');
+  assert.equal((await w.req('antor', 'GET', `${fiches(w.essai)}/${id}`)).json.sousType, 'Croiseur');
 });
 
 test('import : compte_rendu sans campagne → 400 champ campagne, monde → 400 champ type ; sousType invalide → 400', async () => {

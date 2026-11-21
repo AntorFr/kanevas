@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Black-box test of kanevas-rv-accueil, E-1 cards at 1440 px (maquette e01: three cards of ~325 px, the
 // game system name is shown whole). Stub server WITH the starting data (« Les Cendres de Vaëlis » on
 // « Chroniques Oubliées Fantasy »).

@@ -105,7 +105,7 @@ test('lecture : une clé connue mais illisible est du texte pour Léa, jamais «
   // The sheet exists with the key, but its only section is GM-only.
   const cachee = creerFiche(app.db, a, kanka.id, { type: 'faction', titre: 'Cachée' });
   ajouterSection(app.db, a, kanka.id, cachee.id, { titre: 'Secret' });
-  app.db.prepare('UPDATE fiches SET cle_origine = ? WHERE id = ?').run('faction:cachee', cachee.id);
+  app.db.prepare('UPDATE fiches SET cle = ? WHERE id = ?').run('faction:cachee', cachee.id);
   const anse = (app.db.prepare("SELECT id FROM fiches WHERE titre = 'Anse-aux-Sels'").get() as { id: number }).id;
   const sid = section(anse, 'Description');
   const v = (app.db.prepare('SELECT version FROM sections WHERE id = ?').get(sid) as { version: number }).version;
@@ -254,14 +254,14 @@ test('assistant : Léa lit « Histoire » avec [Maître Aldric](fiche:id) et la 
   const port = fiche('Port-Sel');
   const ald = fiche('Maître Aldric');
   const guilde = fiche('La Guilde des Brumes');
-  const args = { ficheId: port, sectionId: section(port, 'Histoire') };
+  const args = { fiche: port, sectionId: section(port, 'Histoire') };
   const run = async (compte: string, nom: string, a: object) => {
     const cat = catalogueDe(app.db, idDe(compte), lame.id);
     const o = (cat.outils ?? cat).find((x: { nom: string }) => x.nom === nom);
     return JSON.stringify(await o.executer(a));
   };
   for (const nom of ['lire_section', 'lire_fiche']) {
-    const l = await run('lea', nom, nom === 'lire_fiche' ? { ficheId: port } : args);
+    const l = await run('lea', nom, nom === 'lire_fiche' ? { fiche: port } : args);
     assert.ok(l.includes(`[Maître Aldric](fiche:${ald})`), l);
     assert.ok(l.includes('La Guilde des Brumes'), l);
     assert.ok(!l.includes(`fiche:${guilde}`), l);

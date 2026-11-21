@@ -91,7 +91,7 @@ const FICHE = {
 };
 
 const sectionVersions = (app: App) =>
-  app.db.prepare('SELECT id, version, version_importee, modifie_le FROM sections ORDER BY id').all();
+  app.db.prepare('SELECT id, version, modifie_le FROM sections ORDER BY id').all();
 
 test('critère : fiche poussée avant ses fichiers, en attente, puis résolue sans bouger la version', async () => {
   const { app, putFichier, putFiche, lot, clore, lire, lea, antor, voir, attente } = await monter();
@@ -134,7 +134,7 @@ test('critère : fiche poussée avant ses fichiers, en attente, puis résolue sa
   assert.equal(attente(), 0);
   assert.deepEqual(sectionVersions(app), avant);
   assert.deepEqual(app.db.prepare('SELECT modifie_le FROM fiches').all(), ficheAvant);
-  const texte = (app.db.prepare('SELECT s.contenu FROM sections s JOIN fiches f ON f.id = s.fiche_id WHERE f.cle_origine = \'lieu:quais\'').get() as { contenu: string }).contenu;
+  const texte = (app.db.prepare('SELECT s.contenu FROM sections s JOIN fiches f ON f.id = s.fiche_id WHERE f.cle = \'lieu:quais\'').get() as { contenu: string }).contenu;
   const idq = (app.db.prepare("SELECT id FROM fichiers WHERE cle_origine = 'img:quais'").get() as { id: number }).id;
   assert.equal(texte, `Vue : ![](fichier:${idq})`);
   const vA2 = await voir(antor, id);
@@ -168,7 +168,7 @@ test('critère : l’illustration en attente s’affiche en tuile pour le MJ seu
   const vL = await voir(lea, id);
   assert.ok(!vL.body.includes('img:plan'));
   assert.equal((await putFichier('img:plan', PNG, { nom: 'plan.png' })).statusCode, 200);
-  assert.notEqual((app.db.prepare("SELECT illustration_fichier_id i FROM fiches WHERE cle_origine = 'lieu:quais'").get() as { i: number | null }).i, null);
+  assert.notEqual((app.db.prepare("SELECT illustration_fichier_id i FROM fiches WHERE cle = 'lieu:quais'").get() as { i: number | null }).i, null);
   assert.ok(!(await voir(antor, id)).body.includes('en attente'));
 });
 
@@ -179,7 +179,7 @@ test('illustration qui nomme un document : 400 pas_une_image, rien de la fiche �
   const r = await putFiche('lieu:quais', { ...FICHE, illustration: 'doc:tarifs', sections: [] }, l);
   assert.equal(r.statusCode, 400, r.body);
   assert.equal(r.json().code, 'pas_une_image');
-  assert.equal((app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE cle_origine = 'lieu:quais'").get() as { n: number }).n, 0);
+  assert.equal((app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE cle = 'lieu:quais'").get() as { n: number }).n, 0);
   await clore(l);
   assert.equal((await lire(l)).compteurs.fiches.refusees, 1);
 });
@@ -195,20 +195,26 @@ test('illustration qui nomme un document arrivé après l’attente : non posée
   assert.ok(a.json().avertissements.length >= 1, a.body);
 });
 
-test('illustration remplacée par Antor : non rétablie au rejeu, avertissement', async () => {
+test('illustration remplacée par Antor : le rejeu remet celle du script, sans avertissement ; sans illustration envoyée, il la laisse', async () => {
   const { app, putFichier, putFiche, lot, clore, lire } = await monter();
   await putFichier('img:plan', PNG, { nom: 'plan.png' });
   const r = await putFiche('lieu:quais', { ...FICHE, sections: [] });
   const id = r.json().id as number;
+  const plan = app.db.prepare('SELECT illustration_fichier_id i FROM fiches WHERE id = ?').get(id).i as number;
+  assert.ok(plan);
   const autre = (await putFichier('img:autre', PNG2, { nom: 'autre.png' })).json().id as number;
   app.db.prepare('UPDATE fiches SET illustration_fichier_id = ? WHERE id = ?').run(autre, id);
+  const { illustration: _i, ...sans } = FICHE;
+  const r1 = await putFiche('lieu:quais', { ...sans, sections: [] });
+  assert.equal(r1.json().etat, 'inchangee');
+  assert.equal(app.db.prepare('SELECT illustration_fichier_id i FROM fiches WHERE id = ?').get(id).i, autre);
   const l = await lot();
   const r2 = await putFiche('lieu:quais', { ...FICHE, sections: [] }, l);
-  assert.equal(r2.json().etat, 'inchangee');
-  assert.equal(r2.json().avertissements.length, 1);
-  assert.equal(app.db.prepare('SELECT illustration_fichier_id i FROM fiches WHERE id = ?').get(id).i, autre);
+  assert.equal(r2.json().etat, 'mise_a_jour');
+  assert.deepEqual(r2.json().avertissements, []);
+  assert.equal(app.db.prepare('SELECT illustration_fichier_id i FROM fiches WHERE id = ?').get(id).i, plan);
   await clore(l);
-  assert.equal((await lire(l)).avertissements, 1);
+  assert.equal((await lire(l)).avertissements, 0);
 });
 
 test('101 clés de fichiers : 400 invalide, champ fichiers, 1 refusée, rien d’écrit', async () => {
@@ -219,7 +225,7 @@ test('101 clés de fichiers : 400 invalide, champ fichiers, 1 refusée, rien d�
   assert.equal(r.statusCode, 400, r.body);
   assert.equal(r.json().code, 'invalide');
   assert.equal(r.json().champ, 'fichiers');
-  assert.equal((app.db.prepare('SELECT COUNT(*) n FROM fiches WHERE cle_origine IS NOT NULL').get() as { n: number }).n, 0);
+  assert.equal((app.db.prepare("SELECT COUNT(*) n FROM fiches WHERE creee_via = 'import'").get() as { n: number }).n, 0);
   assert.equal((app.db.prepare('SELECT COUNT(*) n FROM fichiers_attente').get() as { n: number }).n, 0);
   await clore(l);
   assert.equal((await lire(l)).compteurs.fiches.refusees, 1);
@@ -241,7 +247,7 @@ test('100 clés : acceptées (en attente) ; 100 jointures posées puis une 101e 
   const r2 = await putFiche('lieu:quais', { ...corps(cles), sections: [{ cle: 'd', titre: 'D', contenu: 'x', fichiers: cles }] }, l);
   assert.equal(r2.json().etat, 'inchangee');
   app.db
-    .prepare("INSERT INTO fichiers_attente (univers_id, cle, section_id, maniere) SELECT (SELECT id FROM univers WHERE nom = 'Essai Kanka'), 'doc:cent-un', s.id, 'joint' FROM sections s JOIN fiches f ON f.id = s.fiche_id WHERE f.cle_origine = 'lieu:quais'")
+    .prepare("INSERT INTO fichiers_attente (univers_id, cle, section_id, maniere) SELECT (SELECT id FROM univers WHERE nom = 'Essai Kanka'), 'doc:cent-un', s.id, 'joint' FROM sections s JOIN fiches f ON f.id = s.fiche_id WHERE f.cle = 'lieu:quais'")
     .run();
   const a = await putFichier('doc:cent-un', Buffer.from('%PDF-1.4 un'), { nom: 'un.pdf' }, l);
   assert.equal(a.statusCode, 200, a.body);
@@ -252,7 +258,7 @@ test('100 clés : acceptées (en attente) ; 100 jointures posées puis une 101e 
   assert.equal((await lire(l)).compteurs.fiches.refusees, 0);
 });
 
-test('clés jointes retirées à la main par Antor puis rejouées : non rétablies, avertissement', async () => {
+test('clés jointes retirées à la main par Antor puis rejouées : jointes de nouveau, sans avertissement', async () => {
   const { app, putFichier, putFiche } = await monter();
   await putFichier('doc:tarifs', PDF, { nom: 'tarifs.pdf' });
   const corps = { type: 'lieu', titre: 'Quais', sections: [{ cle: 'd', titre: 'D', contenu: 'x', joueursLisent: true, fichiers: ['doc:tarifs'] }] };
@@ -261,8 +267,11 @@ test('clés jointes retirées à la main par Antor puis rejouées : non rétabli
   assert.equal(joints(), 1);
   app.db.prepare('DELETE FROM fichiers_sections WHERE joint = 1').run();
   const r = await putFiche('lieu:quais', corps);
-  assert.equal(joints(), 0);
-  assert.equal(r.json().avertissements.length, 1, r.body);
+  assert.equal(joints(), 1);
+  assert.equal(r.json().etat, 'mise_a_jour');
+  assert.deepEqual(r.json().avertissements, []);
+  const r2 = await putFiche('lieu:quais', corps);
+  assert.equal(r2.json().etat, 'inchangee');
 });
 
 test('fichier mj joint dans une section lue des joueurs : Léa lit « Fichier réservé au MJ. », jamais son nom', async () => {

@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Review of kanevas-mediatheque-fiche, last reopening: « Joindre un fichier » takes the quiet add style of
 // « Relier à une fiche » (Plus icon, small ghost button) and keeps its two paths.
 //

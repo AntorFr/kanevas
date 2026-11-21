@@ -23,6 +23,7 @@ import {
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { matchPath, useLocation } from 'react-router-dom';
 
+import { universDeRef } from './adresse-univers';
 import { lire } from './api';
 import { useUnivers } from './cadre-contexte';
 
@@ -100,9 +101,9 @@ export function FournisseurTypes({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { univers } = useUnivers();
   const brut = matchPath({ path: '/univers/:id/*' }, pathname)?.params.id;
-  const id = brut && /^\d+$/.test(brut) ? Number(brut) : null;
-  const connu = id !== null && univers.etat === 'ok' && univers.valeur.some((u) => u.id === id);
-  const cible = connu ? id : null;
+  // The address names the universe by id, key or former key (B-101): only the list gives the id.
+  const lu = brut && brut !== 'nouveau' && univers.etat === 'ok' ? universDeRef(univers.valeur, brut) : undefined;
+  const cible = lu ? lu.id : null;
   const [etat, setEtat] = useState<{ univers: number | null; etat: EtatTypes['etat']; types: TypeVue[] }>({
     univers: null,
     etat: 'chargement',

@@ -124,7 +124,7 @@ export function liees(
       const e = etiquetageDe(db, premier.fiche_id);
       const row = chargerFiche(db, universId, premier.fiche_id, vueMJ(role, acteur));
       const ligne: FicheLiee = {
-        ...versFiche(row, (f) => lisiblePar(role, acteur, f)),
+        ...versFiche(row, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur)),
         ...visibiliteVue(row),
         alias: e.alias,
         etiquettes: e.etiquettes,
