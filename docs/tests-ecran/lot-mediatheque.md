@@ -434,3 +434,6 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : Teo sans pion visible, jeu à distance coupé, lit la ligne « Seul le MJ déplace les pions. » comme tout le monde` | affichage | — | gardé |
 | `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : réglage coupé, Léa voit encore bouger les pions du MJ mais n’a plus de pion à saisir, avec la ligne` | affichage | — | gardé |
 | `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : le MJ cache la carte, l’écran ouvert de Léa devient « Page introuvable. » au prochain événement, et au rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : Léa glisse la garde de 2 cases : « Ce pion n’est pas à vous. », la garde revient, la table et l’écran de Teo ne bougent pas` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : connexion de Léa coupée, « Reconnexion… » et plus de prise ; au retour la pastille part, la prise revient, la garde est où le MJ l’a mise` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : la carte cachée pendant que Léa tient sa prise : son écran devient « Page introuvable. », Mira n’a pas bougé` | affichage | — | gardé |

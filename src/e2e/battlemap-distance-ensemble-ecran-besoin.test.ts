@@ -199,3 +199,148 @@ describe('E-29 à distance : trois écrans sur la même table', { skip: skipBrow
     assert.equal(await lea.getByRole('button', { name: /votre pion/ }).count(), 0);
   });
 });
+
+// Second batch (same need): the refusal, the connection badge and a drop on a hidden map, seen from several screens.
+// TEST PLAN
+//   refus   : Léa drags the guard: « Ce pion n’est pas à vous. » shows, the guard is back on its cell on her screen, the table did not move, Teo's screen still shows it where it was
+//   pastille: Léa's connection cut: « Reconnexion… », her ring and grab withdrawn; back: the badge goes, the ring returns, the guard is where the GM put it meanwhile
+//   cachée  : the GM hides the map, Léa drops Mira meanwhile: her screen is « Page introuvable. », Mira did not move, no « Cette table a changé »
+describe('E-29 à distance : refus, pastille et carte cachée vus de plusieurs écrans', { skip: skipBrowser }, () => {
+  let srv: Server;
+  let browser: Any;
+  let antor: Any;
+  let lea: Any;
+  let teo: Any;
+  let uid = 0;
+  let api = '';
+  let cid = 0;
+
+  const table = async (): Promise<Any> => (await antor.request.get(`${api}/cartes/${cid}/table`)).json();
+  const pion = async (id: string): Promise<Any> => ((await table()).etat.pions as Any[]).find((p) => p.id === id);
+  const commande = async (commandes: Any[]) => {
+    const r = await antor.request.post(`${api}/cartes/${cid}/table/commandes`, { data: { version: (await table()).version, commandes } });
+    assert.equal(r.status(), 200, await r.text());
+  };
+  const ouvrir = async (page: Any) => {
+    await page.goto(`/univers/${uid}/outils/battlemap/cartes/${cid}/jeu`);
+    await attendre(page);
+    await page.locator('canvas').first().waitFor();
+  };
+  const centre = async (page: Any, nom: string) => {
+    const b = await page.getByRole('button', { name: nom, exact: true }).boundingBox();
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  };
+  // cell size read from two handles of known cells (Mira 3,3 and Garde 10,10 at the start: seven cells apart)
+  const cote = async (page: Any): Promise<number> => {
+    const m = await centre(page, 'Mira, votre pion');
+    const g = await centre(page, 'Garde');
+    return (g.x - m.x) / 7;
+  };
+  const glisser = async (page: Any, de: { x: number; y: number }, c: number, dx: number) => {
+    await page.mouse.move(de.x, de.y);
+    await page.mouse.down();
+    await page.mouse.move(de.x + (c * dx) / 2, de.y, { steps: 6 });
+    await page.mouse.move(de.x + c * dx, de.y, { steps: 6 });
+    await page.mouse.up();
+  };
+
+  before(async () => {
+    srv = await startServer({ KANEVAS_SANS_SEMIS: '', KANEVAS_SANS_SEMIS_BATTLEMAP: '1' });
+    browser = await launch();
+    antor = (await connecte(browser, srv.base, 'Antor')).page;
+    lea = (await connecte(browser, srv.base, 'Léa')).page;
+    teo = (await connecte(browser, srv.base, 'Teo')).page;
+    const u = ((await (await antor.request.get('/api/univers')).json()) as Any[]).find((x) => x.nom === "Éneria d'essai");
+    uid = u.id;
+    const sid = u.systemeId ?? u.systeme_id ?? u.systeme?.id;
+    for (const outil of ['assets', 'cartes']) {
+      for (const [c, d] of [['activation', { active: true }], ['visibilite', { mj: true, joueur: true }]] as const) {
+        assert.ok((await antor.request.put(`/api/systemes/${sid}/outils/battlemap/${outil}/${c}`, { data: d })).status() < 300);
+      }
+    }
+    api = `/api/univers/${uid}/outils/battlemap`;
+    const c = await antor.request.post(`${api}/cartes`, { data: { titre: 'Refus', largeur: 30, hauteur: 20 } });
+    assert.equal(c.status(), 201);
+    cid = ((await c.json()) as Any).id;
+    assert.equal((await antor.request.patch(`${api}/cartes/${cid}`, { data: { version: 1, visible: true } })).status(), 200);
+    assert.ok((await antor.request.post(`${api}/cartes/${cid}/table`)).status() < 300);
+    await commande([
+      { type: 'ajouter_pion', id: 'mira', nom: 'Mira', x: 3, y: 3 },
+      { type: 'ajouter_pion', id: 'vox', nom: 'Vox', x: 5, y: 8 },
+      { type: 'ajouter_pion', id: 'garde', nom: 'Garde', x: 10, y: 10 },
+      { type: 'reveler_rect', x: 0, y: 0, l: 30, h: 20 },
+    ]);
+    assert.ok((await antor.request.post(`/api/univers/${uid}/membres`, { data: { username: 'teo', role: 'joueur' } })).status() < 300);
+    const m = ((await (await antor.request.get(`/api/univers/${uid}/membres`)).json()) as Any);
+    const liste: Any[] = Array.isArray(m) ? m : m.membres;
+    for (const [p, re] of [['mira', /^l[ée]a$/i], ['vox', /^teo$/i]] as const) {
+      const id = liste.find((x) => re.test(x.username ?? x.nom))?.compteId;
+      assert.ok(id, `compte de ${p}`);
+      assert.equal((await antor.request.put(`${api}/cartes/${cid}/table/pions/${p}/proprietaire`, { data: { compte_id: id } })).status(), 200);
+    }
+  }, { timeout: 120000 });
+  after(async () => {
+    await browser?.close();
+    srv?.stop();
+  });
+
+  it('E-29 : Léa glisse la garde de 2 cases : « Ce pion n’est pas à vous. », la garde revient, la table et l’écran de Teo ne bougent pas', async () => {
+    await ouvrir(lea);
+    await ouvrir(teo);
+    const avantLea = await centre(lea, 'Garde');
+    const avantTeo = await centre(teo, 'Garde');
+    const versionAvant = (await table()).version;
+    const c = await cote(lea);
+    const rep = lea.waitForResponse((r: Any) => r.request().method() === 'POST' && /table\/commandes/.test(r.url()));
+    await glisser(lea, avantLea, c, 2);
+    assert.equal((await rep).status(), 403);
+    await lea.getByText('Ce pion n’est pas à vous.').waitFor();
+    await lea.screenshot({ path: '/tmp/cap/refus-lea.png' });
+    const apresLea = await centre(lea, 'Garde');
+    assert.ok(Math.abs(apresLea.x - avantLea.x) < 2 && Math.abs(apresLea.y - avantLea.y) < 2, 'la garde est revenue sur sa case chez Léa');
+    const g = await pion('garde');
+    assert.deepEqual([g.x, g.y], [10, 10]);
+    assert.equal((await table()).version, versionAvant, 'rien d’écrit');
+    const apresTeo = await centre(teo, 'Garde');
+    assert.ok(Math.abs(apresTeo.x - avantTeo.x) < 2, 'la garde n’a pas bougé chez Teo');
+    assert.equal(await teo.getByText('Ce pion n’est pas à vous.').count(), 0, 'le refus n’est dit qu’à Léa');
+  });
+
+  it('E-29 : connexion de Léa coupée, « Reconnexion… » et plus de prise ; au retour la pastille part, la prise revient, la garde est où le MJ l’a mise', async () => {
+    await ouvrir(lea);
+    assert.equal(await lea.getByText('Reconnexion…').count(), 0);
+    const motif = /cartes\/\d+\/table$/;
+    await lea.route(motif, (r: Any) => r.abort());
+    try {
+      await commande([{ type: 'deplacer_pion', id: 'garde', x: 12, y: 10 }]);
+      await lea.getByText('Reconnexion…').waitFor({ timeout: 30000 });
+      await lea.screenshot({ path: '/tmp/cap/pastille-lea.png' });
+      assert.equal(await lea.getByRole('button', { name: 'Mira, votre pion' }).count(), 0, 'prise retirée pendant la coupure');
+    } finally {
+      await lea.unroute(motif);
+    }
+    await commande([{ type: 'deplacer_pion', id: 'garde', x: 14, y: 10 }]);
+    await lea.getByText('Reconnexion…').waitFor({ state: 'detached', timeout: 30000 });
+    await lea.getByRole('button', { name: 'Mira, votre pion' }).waitFor();
+    const m = await centre(lea, 'Mira, votre pion');
+    const g = await centre(lea, 'Garde');
+    const c = (g.x - m.x) / (14 - 3);
+    assert.ok(c > 5, `la garde est affichée en 14 (case de ${c} px)`);
+  });
+
+  it('E-29 : la carte cachée pendant que Léa tient sa prise : son écran devient « Page introuvable. », Mira n’a pas bougé', async () => {
+    await commande([{ type: 'deplacer_pion', id: 'garde', x: 10, y: 10 }]);
+    await ouvrir(lea);
+    const c = await cote(lea);
+    const depart = await centre(lea, 'Mira, votre pion');
+    const carte = (await (await antor.request.get(`${api}/cartes/${cid}`)).json()) as Any;
+    const p = await antor.request.patch(`${api}/cartes/${cid}`, { data: { version: carte.version ?? carte.carte?.version, visible: false } });
+    assert.equal(p.status(), 200, await p.text());
+    await glisser(lea, depart, c, 2);
+    await lea.getByText('Page introuvable.').waitFor({ timeout: 30000 });
+    await lea.screenshot({ path: '/tmp/cap/cachee-lea.png' });
+    assert.equal(await lea.getByText('Cette table a changé').count(), 0);
+    const mira = await pion('mira');
+    assert.deepEqual([mira.x, mira.y], [3, 3]);
+  });
+});
