@@ -181,7 +181,7 @@ describe('B-80 calcul exact et alertes', () => {
     assert.equal(ok.json.resultat.masseLibre, 0);
   });
 
-  it('le facteur de coque multiplie exactement : coque de masse 7,5 facteur 3, élément x_masse de 0,5 pris trois fois → masse libre 3', async () => {
+  it('le dièse s'arrondit par installation : coque de masse 7,5 facteur 3, élément x_masse de 0,5 pris trois fois → 3 × ⌈1,5⌉ = 6, masse libre 1,5', async () => {
     const m = await monde();
     const r = await m.importer(fichier({
       coques: [{ cle: 'coque-x3', nom: 'Coque x3', classe: 1, cout: 1000, pv: 5, ca: 10, puissance: 10, masse: 7.5, emports: 1, facteur_cout: 1, facteur_puissance: 1, facteur_masse: 3 }],
@@ -189,7 +189,7 @@ describe('B-80 calcul exact et alertes', () => {
     }));
     assert.equal(r.json.refusTotal, 0, r.texte);
     const res = (await calcul(m, 3, 'coque-x3')).json.resultat;
-    assert.equal(res.masseLibre, 3);
+    assert.equal(res.masseLibre, 1.5);
   });
 
   it('exclusion : une masse entière reste entière (Éclaireur nu : masse libre 7)', async () => {

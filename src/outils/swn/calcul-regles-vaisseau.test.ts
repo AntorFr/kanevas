@@ -103,7 +103,7 @@ test('F-3 : équipage 6 et 20 ne lèvent rien (bornes exactes), 5 et 21 lèvent 
   assert.deepEqual((await w.ok({ coque: 'fregate-r', choix: [], equipage: 0 })).equipage, { choisi: 0, min: 6, max: 20 });
 });
 
-test("F-3 : classe_inadaptee bloquante, une par ligne, textes de F-3 ; une arme n'en lève jamais", async () => {
+test("F-3 : classe_inadaptee bloquante, une par ligne, textes de F-3 ; une arme bloquée sous sa classe_min", async () => {
   const w = await monde();
   const h2 = await w.ok({ coque: 'fregate-r', choix: [L('amenagements', 'hangar')] });
   const a = h2.alertes.find((x: any) => x.code === 'classe_inadaptee');
@@ -118,8 +118,10 @@ test("F-3 : classe_inadaptee bloquante, une par ligne, textes de F-3 ; une arme 
   // ceiling only (no classe_min)
   assert.equal((await w.ok({ coque: 'c4', choix: [L('amenagements', 'plafond')] })).alertes.find((x: any) => x.code === 'classe_inadaptee').texte,
     '« Plafond » : classe de coque 3 au plus.');
-  // a weapon with classe_min 4 on a class 2 hull: never classe_inadaptee
-  assert.ok(!codes(await w.ok({ coque: 'fregate-r', choix: [L('armes', 'canon-r')] })).includes('classe_inadaptee'));
+  // H-7: a weapon with classe_min 4 on a class 2 hull is blocked, on its own line
+  const arme = (await w.ok({ coque: 'fregate-r', choix: [L('armes', 'canon-r')] })).alertes.find((x: any) => x.code === 'classe_inadaptee');
+  assert.deepEqual([arme.niveau, arme.ligne], ['bloquante', 0]);
+  assert.match(arme.texte, /^« .+ » : classe de coque 4 au moins\.$/);
   // one alert per faulty line, indexed, and after moteur_multiple
   const m = await w.ok({ coque: 'fregate-r', choix: [L('moteurs', 'm1', 2), L('amenagements', 'salle'), L('amenagements', 'hangar')] });
   assert.deepEqual(m.alertes.filter((x: any) => x.niveau === 'bloquante').map((x: any) => [x.code, x.ligne ?? null]),
