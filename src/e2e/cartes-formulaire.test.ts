@@ -1,3 +1,4 @@
+// ecrans: cartes
 // Review tests of kanevas-cg-ecran-cartes: the creation form's « Forme » field and the
 // background-image label (docs/ecrans.md E-10). Real server in stub mode + real Chromium.
 import assert from 'node:assert/strict';
