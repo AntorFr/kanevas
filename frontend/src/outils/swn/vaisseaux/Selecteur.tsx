@@ -2,17 +2,19 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { lire } from '../../../api';
 import { Bouton, Pastille } from '../../../ui';
-import { exclutLaClasse, legende, requete } from './format';
+import { estMoteur, exclutLaClasse, legende, requete } from './format';
 import type { ElementCatalogue, PageCatalogue } from './types';
 
 /** The catalogue of one nature, 50 per page, with a filter above the long list (E-22). */
-export function Selecteur({ universId, suffixe, nature, titre, classeCoque, onChoisir, onFermer }: {
+export function Selecteur({ universId, suffixe, nature, titre, classeCoque, sansMoteur, onChoisir, onFermer }: {
   universId: number;
   suffixe: string;
   nature: string;
   titre: string;
   /** The class of the chosen hull: only to mark the elements its class excludes (the alert is the server's). */
   classeCoque?: number;
+  /** A station (H-2): no Spike drive and no system drive in the list. */
+  sansMoteur?: boolean;
   onChoisir: (e: ElementCatalogue) => void;
   onFermer: () => void;
 }) {
@@ -37,8 +39,8 @@ export function Selecteur({ universId, suffixe, nature, titre, classeCoque, onCh
 
   const visibles = useMemo(() => {
     const f = filtre.trim().toLowerCase();
-    return elements.filter((e) => !f || e.nom.toLowerCase().includes(f));
-  }, [elements, filtre]);
+    return elements.filter((e) => !(sansMoteur && estMoteur(e)) && (!f || e.nom.toLowerCase().includes(f)));
+  }, [elements, filtre, sansMoteur]);
 
   return (
     <div className="vx-selecteur" role="group" aria-label={titre}>
