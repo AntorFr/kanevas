@@ -2,8 +2,13 @@ import { z } from 'zod';
 
 import { ErreurService } from '../../services/erreurs.js';
 import {
-  ajouterAstre, ajouterZone, ancrer, delierAstre, lierAstre, modifierAstre, modifierZone, type ResultatEcriture,
+  ajouterAstre, ajouterZone, ancrer, delierAstre, lierAstre, masquerSysteme, modifierAstre, modifierZone, retirerAstre, retirerZone,
+  type ResultatEcriture,
 } from '../../services/swn/ecriture-systeme.js';
+import {
+  ajouterElement, delierElement, deplacerElement, elementsDuCorps, lierElement, modifierElement, reserverElement, retirerElement,
+} from '../../services/swn/ecriture-elements.js';
+import { lireInterieur } from '../../services/swn/interieur.js';
 import type { Evenement, Outil, Resultat } from '../../services/assistant/types.js';
 import type { ContexteOutil } from '../declaration.js';
 import { donneesDuSysteme, galaxieChoisie, INTROUVABLE } from './assistant.js';
@@ -26,7 +31,7 @@ const POSITION = {
 };
 const VERSION_LUE = z.number().int();
 
-type Geste = (galaxieId: number, args: Record<string, unknown>) => ResultatEcriture & { libelle: string };
+type Geste = (galaxieId: number, args: Record<string, unknown>) => ResultatEcriture & { libelle: string; extra?: Record<string, unknown> };
 
 /** The frame of the five tools: validate, pick the galaxy, run the gesture, answer the system and the event. */
 function outil(ctx: ContexteOutil, nom: string, description: string, forme: z.ZodRawShape, geste: Geste): Outil {
@@ -46,7 +51,7 @@ function outil(ctx: ContexteOutil, nom: string, description: string, forme: z.Zo
           type: 'systeme_modifie', libelle: r.libelle,
           cible: { type: 'systeme', galaxieId: id, q: r.interieur.q, r: r.interieur.r },
         };
-        return { ok: true, donnees: await donneesDuSysteme(db, acteur, universId, id, r.interieur, true), evenement };
+        return { ok: true, donnees: { ...(await donneesDuSysteme(db, acteur, universId, id, r.interieur, true)), ...(r.extra ?? {}) }, evenement };
       } catch (e) {
         if (!(e instanceof ErreurService)) throw e;
         return refus(e);
@@ -145,5 +150,90 @@ export function outilsEcriture(ctx: ContexteOutil): Outil[] {
       return { ...res, libelle: `Système « ${nomDuSysteme(res)} » ancré` };
     });
 
-  return [placer, deplacer, completer, tracer, ancrerOutil];
+  const PLACE = { sur: z.string().optional(), orbite: z.number().optional(), heure: z.number().optional() };
+  const aspectElement = z.record(z.string(), z.unknown());
+
+  const placerElement = outil(ctx, 'swn_placer_element',
+    "Place un élément (vaisseau, ville, station, base ou autre) dans un système : soit sur un corps (`sur`, la `cle` du corps : il le suit), soit à une `orbite` et une `heure` (0 incluse à 12 exclue). `secret: true` le réserve au MJ. Sur un système tiré, `version_systeme` est obligatoire et le système est ancré.",
+    {
+      genre: z.enum(['vaisseau', 'ville', 'station', 'base', 'autre']), nom: z.string(),
+      description: z.string().nullable().optional(), aspect: aspectElement.optional(), secret: z.boolean().optional(), ...PLACE,
+    },
+    (id, a) => {
+      const res = ajouterElement(db, acteur, universId, id, a.q as number, a.r as number, {
+        ...jeton(a), genre: a.genre, nom: a.nom, description: a.description, aspect: a.aspect, secret: a.secret,
+        sur: a.sur, orbite: a.orbite, heure: a.heure,
+      });
+      return { ...res, libelle: `Élément placé dans « ${nomDuSysteme(res)} »` };
+    });
+
+  const completerElement = outil(ctx, 'swn_completer_element',
+    "Complète un élément (sa `cle`) : nom, genre, description, aspect, place (`sur` un corps, ou `orbite` et `heure`), `lien` (l'id d'une fiche, ou null pour le retirer) et `secret` (réservé au MJ). `version_lue` : la version de l'élément lue. Sur un système tiré, `version_systeme` est obligatoire.",
+    {
+      cle: z.string(), version_lue: VERSION_LUE,
+      genre: z.enum(['vaisseau', 'ville', 'station', 'base', 'autre']).optional(), nom: z.string().optional(),
+      description: z.string().nullable().optional(), aspect: aspectElement.optional(),
+      lien: z.number().int().nullable().optional(), secret: z.boolean().optional(), ...PLACE,
+    },
+    (id, a) => ecrire(() => {
+      const q = a.q as number, r = a.r as number, cle = a.cle as string;
+      const modif = { genre: a.genre, nom: a.nom, description: a.description, aspect: a.aspect };
+      const champs = Object.values(modif).some((v) => v !== undefined);
+      const place = a.sur !== undefined || a.orbite !== undefined || a.heure !== undefined;
+      if (!champs && !place && a.lien === undefined && a.secret === undefined) {
+        throw new ErreurService('invalide', 'Rien à modifier.', undefined, 'nom');
+      }
+      let version = a.version_lue as number;
+      let res: ResultatEcriture | undefined;
+      // The first write anchors a drawn system and takes its token; the next ones find it defined.
+      const suite = <T extends object>(e: T): T & { version: number } => ({ ...e, version });
+      if (champs) { res = modifierElement(db, acteur, universId, id, q, r, cle, { ...jeton(a), ...suite(modif) }); version += 1; }
+      if (place) {
+        res = deplacerElement(db, acteur, universId, id, q, r, cle, { ...jeton(a), version, sur: a.sur, orbite: a.orbite, heure: a.heure });
+        version += 1;
+      }
+      if (a.lien !== undefined) {
+        res = a.lien === null
+          ? delierElement(db, acteur, universId, id, q, r, cle, { ...jeton(a), version })
+          : lierElement(db, acteur, universId, id, q, r, cle, { ...jeton(a), version, ficheId: a.lien });
+        version += 1;
+      }
+      if (a.secret !== undefined) {
+        res = reserverElement(db, acteur, universId, id, q, r, cle, { ...jeton(a), version, secret: a.secret });
+      }
+      return { ...res!, libelle: `Élément complété dans « ${nomDuSysteme(res!)} »` };
+    }));
+
+  const masquer = outil(ctx, 'swn_masquer_systeme',
+    "Masque un système aux joueurs (`secret: true`) ou le montre de nouveau (`secret: false`). Un système tiré est ancré. `version_systeme` (lue avec le système) est obligatoire. Aucun outil ne masque un corps.",
+    { secret: z.boolean(), nom: z.string().optional() },
+    (id, a) => {
+      const res = masquerSysteme(db, acteur, universId, id, a.q as number, a.r as number,
+        { ...jeton(a), secret: a.secret, nomAncrage: a.nom });
+      return { ...res, libelle: `Système « ${nomDuSysteme(res)} » ${a.secret ? 'masqué' : 'montré'}` };
+    });
+
+  const retirer = outil(ctx, 'swn_retirer',
+    "Retire un corps (avec ses lunes et les éléments posés dessus, cachés compris), une formation ou un élément, désigné par sa `cle`. `version_lue` : sa version lue. Répond le compte de ce qui est parti avec lui (`retire`). L'étoile principale ne se retire pas.",
+    { cle: z.string(), version_lue: VERSION_LUE },
+    (id, a) => ecrire(() => {
+      const q = a.q as number, r = a.r as number, cle = a.cle as string;
+      const jt = { ...jeton(a), version: a.version_lue };
+      const vue = lireInterieur(db, acteur, universId, id, q, r);
+      if (vue.astres.some((x) => x.cle === cle)) {
+        // Counted before the removal: the elements of the body and of its moons, the reserved ones included (a GM).
+        const elements = elementsDuCorps(db, acteur, universId, id, q, r, cle);
+        const res = retirerAstre(db, acteur, universId, id, q, r, cle, jt);
+        return { ...res, libelle: `Corps retiré de « ${nomDuSysteme(res)} »`,
+          extra: { retire: { type: 'corps', corps: res.retires ?? 1, lunes: res.lunesRetirees ?? 0, elements } } };
+      }
+      if (vue.formations.some((x) => x.cle === cle)) {
+        const res = retirerZone(db, acteur, universId, id, q, r, cle, jt);
+        return { ...res, libelle: `Formation retirée de « ${nomDuSysteme(res)} »`, extra: { retire: { type: 'formation' } } };
+      }
+      const res = retirerElement(db, acteur, universId, id, q, r, cle, jt);
+      return { ...res, libelle: `Élément retiré de « ${nomDuSysteme(res)} »`, extra: { retire: { type: 'element' } } };
+    }));
+
+  return [placer, deplacer, completer, tracer, ancrerOutil, placerElement, completerElement, masquer, retirer];
 }
