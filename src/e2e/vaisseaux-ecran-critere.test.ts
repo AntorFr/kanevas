@@ -235,10 +235,9 @@ describe('E-22 concepteur de vaisseaux et section « Caractéristiques » de E-9
     const sel = l2.page.getByRole('group', { name: /arme/i });
     await sel.getByRole('button', { name: /Ajouter Laser/ }).waitFor();
     assert.equal(await sel.getByText("Lance d'essai").count(), 0, 'masquée : plus proposée');
-    // saving without alert: change the laser's quantity then back is not needed — add then remove a cannon
-    await sel.getByRole('button', { name: /Canon léger/ }).click();
-    await l2.page.getByRole('button', { name: /Augmenter la quantité : Canon léger|Retirer : Canon léger/ }).first().waitFor();
-    await l2.page.waitForFunction(() => !(document.querySelector('main button.principal, button.principal') as Any)?.disabled);
+    // saving without alert: one more laser (the light cannon asks for a class 3 hull, H-7: blocking on this frigate)
+    await sel.getByRole('button', { name: /Ajouter Laser/ }).click();
+    await l2.page.waitForFunction(() => (document.querySelector('button.principal') as Any)?.getAttribute('aria-disabled') !== 'true', null, { timeout: 8000 });
     assert.equal(await l2.page.getByText(/Bloquante|BLOQUANTE/).count(), 0);
     await l2.page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await l2.page.getByText('Conception enregistrée.').waitFor();
@@ -256,7 +255,7 @@ describe('E-22 concepteur de vaisseaux et section « Caractéristiques » de E-9
       await p.getByRole('heading', { name: "Vent d'Orak" }).waitFor();
     }
     const modif = async (p: Any) => {
-      await p.getByRole('button', { name: /Retirer : Canon léger/ }).click();
+      await p.getByRole('button', { name: /Diminuer la quantité : Laser/ }).click();
       await p.waitForFunction(() => (document.querySelector('button.principal') as Any)?.getAttribute('aria-disabled') !== 'true', null, { timeout: 8000 }).catch(async () => { await hors(p, '12-debug'); throw new Error(await texte(p)); });
       await p.getByRole('button', { name: 'Enregistrer', exact: true }).click();
     };
