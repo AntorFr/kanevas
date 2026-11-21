@@ -82,6 +82,71 @@ describe('E-26 Direction artistique au navigateur', { skip: skipBrowser }, () =>
     await panneau.getByText(/^Demandez-moi de chercher/).waitFor(); // non envoyée : le fil n’a que son invitation
   });
 
+  it('assistant : demande envoyée → bannière (survit au rechargement) → Annuler ; sauvegarde à la main ; texte écrit ; hors connexion', async () => {
+    const panneau = antor.getByRole('complementary', { name: /Kanevas — assistant/ });
+    const champ = panneau.getByRole('textbox', { name: 'Demander à Kanevas' });
+    const bandeau = antor.getByRole('status').filter({ hasText: 'Texte modifié par l’assistant' });
+    const style = antor.getByRole('textbox', { name: 'Style' });
+    // texte vide : la direction est reposée à vide, puis la demande préremplie est envoyée
+    await antor.request.post(`${api}/annuler`, { data: { version: (await direction()).version } }).catch(() => undefined);
+    await ouvrir(antor);
+    await antor.getByRole('button', { name: 'Demander à l’assistant' }).click();
+    await champ.waitFor();
+    const avant = (await direction()).texte as string;
+    const demande = avant.trim() === '' ? 'Propose une direction artistique pour cet univers.' : 'Améliore la direction artistique en gardant son esprit.';
+    assert.equal(await champ.inputValue(), demande);
+    assert.equal((await direction()).source === 'assistant', false, 'la demande préremplie n’est pas envoyée');
+    await champ.fill('Propose une direction artistique pour cet univers.');
+    await panneau.getByRole('button', { name: 'Envoyer' }).click();
+    await bandeau.waitFor();
+    assert.match(await style.inputValue(), /Peinture à plat/);
+    assert.equal((await direction()).source, 'assistant');
+    await antor.reload();
+    await antor.getByRole('button', { name: 'Enregistrer' }).waitFor();
+    await bandeau.waitFor(); // survit au rechargement
+    // hors connexion : « Annuler » désactivé
+    await antor.context().setOffline(true);
+    await antor.getByText(/Connexion perdue : « Annuler » est désactivé\./).waitFor();
+    assert.equal(await bandeau.getByRole('button', { name: 'Annuler la modification de l’assistant' }).getAttribute('aria-disabled'), 'true');
+    await antor.context().setOffline(false);
+    await antor.getByText(/Connexion perdue : « Annuler » est désactivé\./).waitFor({ state: 'detached', timeout: 10000 });
+    // Annuler : l'ancien texte, bannière partie, ligne d'état
+    await bandeau.getByRole('button', { name: 'Annuler la modification de l’assistant' }).click();
+    await antor.getByText('Texte précédent rétabli.').waitFor();
+    await bandeau.waitFor({ state: 'detached' });
+    assert.equal(await style.inputValue(), avant);
+    assert.equal((await direction()).texte, avant);
+    // une version périmée : l'Annuler d'un autre onglet est refusé, « Recharger » remplace la bannière
+    await ouvrir(antor);
+    await antor.getByRole('button', { name: 'Demander à l’assistant' }).click();
+    await champ.fill('Propose une direction artistique pour cet univers.');
+    await panneau.getByRole('button', { name: 'Envoyer' }).click();
+    await bandeau.waitFor();
+    const lue = await direction();
+    const maj = await antor.request.put(api, { data: { texte: 'Écrit ailleurs', version: lue.version } });
+    assert.ok(maj.ok(), await maj.text());
+    await bandeau.getByRole('button', { name: 'Annuler la modification de l’assistant' }).click();
+    await antor.getByText('Ce texte a changé depuis que vous l’avez ouvert.').waitFor();
+    await bandeau.waitFor({ state: 'detached' });
+    assert.equal((await direction()).texte, 'Écrit ailleurs', 'rien n’est écrasé');
+    await antor.getByRole('button', { name: 'Recharger' }).click();
+    await antor.getByText('Ce texte a changé depuis que vous l’avez ouvert.').waitFor({ state: 'detached' });
+    // sauvegarde à la main : la bannière part, le serveur ne dit plus « assistant », elle ne revient pas
+    await champ.fill('Propose une direction artistique pour cet univers.');
+    await panneau.getByRole('button', { name: 'Envoyer' }).click();
+    await bandeau.waitFor();
+    await style.fill('Ma main');
+    await antor.getByRole('button', { name: 'Enregistrer' }).click();
+    await bandeau.waitFor({ state: 'detached' });
+    assert.equal((await direction()).source, 'mj');
+    await ouvrir(antor);
+    await bandeau.waitFor({ state: 'detached' });
+    // texte écrit : la demande préremplie change
+    assert.notEqual((await direction()).texte.trim(), '');
+    await antor.getByRole('button', { name: 'Demander à l’assistant' }).click();
+    assert.match(await champ.inputValue(), /Améliore la direction artistique en gardant son esprit\.$/);
+  });
+
   it('nominal : texte + image choisie dans la médiathèque (devenue MJ seul), enregistré, retrouvé au rechargement', async () => {
     await depose(1);
     await ouvrir(antor);
