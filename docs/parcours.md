@@ -1429,7 +1429,7 @@ is never deduced from a role in a universe, the admin grants it explicitly.
 - **B-119** — An element's sections follow the universe rules (AD-18, AD-19): the system's GMs read all of them; a
   reader of an attached universe reads only those the system marks readable by players. *(P-27)*
 
-- **B-120** — Deleting a system's element, or detaching a universe from its system, **keeps every customisation**: the copy
+- **B-120** — Deleting a system's element, detaching a universe from its system or moving it to another one, **keeps every customisation**: the copy
   becomes an ordinary sheet of its universe (no longer marked « customised », no pictogram, listed on its own); nothing is deleted
   in a universe by a gesture on a system. *(P-27)*
 
@@ -1445,7 +1445,7 @@ is never deduced from a role in a universe, the admin grants it explicitly.
 Léa (player of universe 3) reads the same original, only its player-readable sections, and sees no button to edit.
 
 ### P-28 — A key reads and writes a system (Monsieur, with his agent)
-He creates a token (token screen, E-18 of `kanevas-synchro`), gives it level « write » on the system (choice described in E-18 below), and the agent
+He creates a token (« Mes jetons d'API », E-23 of `kanevas-synchro`), gives it level « write » on the system (choice described in E-23's « Systems » block), and the agent
 lists and writes elements at `/api/v1/systemes/<id>/…`; the same token still opens his universes. — token screen, API.
 His agent, connected to the MCP door of one of his universes with that token, lists and edits the same elements with the `systeme_*`
 tools; the assistant of the universe does the same for a GM of the system (a mere GM of the universe reads only). — MCP door, assistant.
