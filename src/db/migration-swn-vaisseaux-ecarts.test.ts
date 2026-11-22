@@ -26,7 +26,7 @@ test('0034 : montée depuis 0033, les défenses gardent leurs valeurs, colonnes 
   const avant = db.prepare('SELECT * FROM swn_catalogue_defenses ORDER BY cle').all();
   assert.throws(() => ins('d', -2));
   assert.deepEqual(migrate(db), [34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47]);
-  assert.deepEqual(db.prepare('SELECT * FROM swn_catalogue_defenses ORDER BY cle').all(), avant);
+  assert.deepEqual(db.prepare('SELECT * FROM swn_catalogue_defenses ORDER BY cle').all(), avant.map((r) => ({ ...(r as object), effet_jeu: null }))); // 0047 adds effet_jeu, NULL
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   ins('d', -9); ins('e', -2);
   assert.throws(() => ins('f', -10)); assert.throws(() => ins('g', 10));
