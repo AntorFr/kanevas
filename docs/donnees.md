@@ -866,3 +866,43 @@ universe name without a letter gives `univers-<id>`), triggers created, the hist
 `better-sqlite3` runs triggers inside the write's transaction: a write and its history line are
 atomic.
 
+
+## `kanevas-carte-rendu` scope: the model
+
+The drawing of the spatial map is read from existing rows: **one migration, three nullable or defaulted columns, no table**; everything else is a
+vocabulary (what the core accepts in `aspect`) and a format (what the atlas import carries). Nothing of Éneria enters this repository (AD-131): the
+table below is written with neutral names; the script that converts Éneria's `astres.yaml` stays in its private repository.
+
+**Columns (migration of the slice, number assigned at merge, AD-51).**
+- `swn_zones.affichage_defaut` (boolean, default true): the zone is drawn when the map opens (B-118). It is the GM's choice for everyone; the choice « all / none / default »
+  of the map is a state of the screen, never stored. A hidden zone hides no route from the lists and no system from the search.
+- `swn_systemes.voile` (text, nullable, `#rrggbb`): the tint of the starfield of the system's map (B-115); null = the core's neutral sky.
+- `swn_zones` and `swn_routes` gain no colour column: a zone has its `couleur`, a route's colour and stroke come from its `type_lien` through a table of the core
+  (`public`, `private`, `pirate`… and one neutral for any other text), never stored (T-4 is amended by name, in the slice that draws it).
+- `swn_astres.aspect` keeps its bound (4,000 characters) and `swn_formations.etoile_rang` already exists: B-122's « the star a formation or a point turns round » is
+  a field of the **format**, not a column. A moon already carries an hour around its planet.
+
+**Vocabulary of `aspect` (the core, `valider_aspect`).** The GM's catalogue of settings keeps its names; the import converts an entry of the
+reference vocabulary into core keys through the table below, **a setting the table does not know is reported by name in the import report**
+(`non_rendu`, never silently dropped, B-114). Rules: a conversion is a formula of the core, tested on measured values; the same name does not mean the same thing
+(sea, clouds, caps, relief).
+
+| Reference setting | Core key | Conversion |
+|---|---|---|
+| sea level `mer` | `mer` | table by measurement (0.2→0.2·, never below the core's 5 % floor); « no sea » = a `mer` of 0 plus palette without water |
+| cloud cover `nuages` | `nuages` | table by measurement (0.9 of the reference is a covered sky; the core's curve reaches 57 %); the core's curve is widened to a full veil |
+| `calottes` (latitude where ice begins; 1.2 = none) | `calottes` (a quantity) | `calottes = clamp((1 − latitude) / 0.28, 0, 1)` |
+| `relief` | `relief` | ≈ 0.6 × reference, bound of the validator aligned on the engine's [0, 2] |
+| named palettes (`terre`, `ocean`, `glace`, `roche`, `couleurs`, `croute`, `jour`/`nuit`/`crepuscule`) | `palette` | sampled to 1–16 colours in the order the core reads (ice is read upside down) |
+| `crateres` (a count) | `cratere` (a depth) | ≈ count / 220; count and size law are new keys (`crateres_nombre`) |
+| `atmosphere`, `force_atmo` | `halo_couleur`, `halo` | direct, the type's default sent when absent |
+| `graine` | `graine` | **always sent**, one per body (`graine_de(id)`): two bodies never share a picture |
+| `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | new accepted key; absent means **no ring** (the engine's random ring at 28 % goes) |
+| `couleur_nuages`, `opacite_nuages`, `villes`, `lueur`, `force_lueur`, `terre_seche`, `etirement`, `eclairs`, `inclinaison`, `geysers`, `couleur_fissures`, `mers`, `canyons`, `lave`, `cristaux`, `activite`, `intensite`, `vue` | new keys of the same names | added to the core one by one, each with a bound and a test of the picture |
+| `voile` | `swn_systemes.voile` / `fond` | the system's, or a body's |
+
+**Atlas format (AD-atlas-2, extended).** Every addition is optional (an atlas of the former format stays valid, byte for byte): `lunes[].type` takes every type of the core
+(not only rocky/ice/lava); `zones[].etoile` and `points[].etoile` (a star's `cle`: the star it turns round, default the main one); `corps[].lunes[].heure` is the hour around the planet;
+`voile` (a colour) on the system; `zones[].affichage_defaut`; each body's `aspect` may carry the keys above. Refusals keep AD-atlas-3 (all or nothing, path of each refusal).
+
+**Rules kept.** A body has no secret of its own (the system's hides it); `lisibilite.ts` stays the only reader of `secret`; the import never overwrites what the GM changed (AD-atlas-3).
