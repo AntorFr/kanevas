@@ -1420,7 +1420,7 @@ is never deduced from a role in a universe, the admin grants it explicitly.
 - **B-116** — Within a universe, an element and its customisation are **one** entry: lists, search, links and the
   sheet show the customised one, marked as such; the system's element is never listed twice. *(P-27)*
 - **B-117** — Search (E-17) and lists carry a **pictogram** on every element that comes from a system, and a filter
-  « Hide the system's elements » (off by default); a customised element counts as the universe's own. *(P-27)*
+  « Masquer les éléments du système » (off by default); a customised element counts as the universe's own. *(P-27)*
 - **B-118** — The import API, the MCP door and the internal assistant **read and write a system's elements**, within the
   account's right on the system (B-114) and, for a token, its level on that system; a player's or a foreign GM's token or
   assistant reads, never writes. The API addresses the system on its own (`/systemes/<id>`); the MCP door and the assistant
@@ -1430,22 +1430,22 @@ is never deduced from a role in a universe, the admin grants it explicitly.
   reader of an attached universe reads only those the system marks readable by players. *(P-27)*
 
 - **B-120** — Deleting a system's element, detaching a universe from its system or moving it to another one, **keeps every customisation**: the copy
-  becomes an ordinary sheet of its universe (no longer marked « customised », no pictogram, listed on its own); nothing is deleted
+  becomes an ordinary sheet of its universe (no longer marked « Personnalisé », no pastille, listed on its own); nothing is deleted
   in a universe by a gesture on a system. *(P-27)*
 
 ### P-27 — One pistol, four universes (Antor, GM of four universes on Stars Without Number; the admin once)
 1. The admin opens the system (E-15), panel « GMs of the system », and adds Antor (B-114). — E-15.
 2. Antor opens the system, adds « Laser pistol » (type object) with its sections. — E-15, then E-9.
-3. In universe 1, he searches « pistol »: one hit with the system pastille (the « pictogram » of B-117); he opens it, read-only, under a banner « Element of
-   <system> ». — E-17, E-9.
-4. He presses « Customise for this universe », changes the damage, saves: universe 1 now lists his version marked
-   « customised »; universes 2 to 4 still show the original. — E-9.
-5. In universe 2, he turns on « Hide the system's elements »: the pistol disappears from the search, his own sheets stay and the address keeps the filter. — E-17.
+3. In universe 1, he searches « pistol »: one hit with the system pastille (the « pictogram » of B-117); he opens it, read-only, under a banner « Élément de
+   <système> — lecture seule ». — E-17, E-9.
+4. He presses « Personnaliser pour cet univers », changes the damage, saves: universe 1 now lists his version marked
+   « Personnalisé »; universes 2 to 4 still show the original. — E-9.
+5. In universe 2, he turns on « Masquer les éléments du système »: the pistol disappears from the search, his own sheets stay and the address keeps the filter. — E-17.
    *Same on a list*: on the « Objet » list (grid, list or tree) the box is in the filter bar; ticked, the tree gives way to the flat list, « Effacer les filtres » unticks it. — E-8.
    *Failure path*: searching « laser » with the box ticked finds nothing but the element: « Aucun résultat sans les éléments du système. » and the button « Afficher les éléments du système » brings the pistol back. — E-17.
-6. Back in universe 1 he presses « Go back to the system's element »: the copy goes after a confirmation. — E-9.
+6. Back in universe 1 he presses « Revenir à l'élément du système »: the copy goes after a confirmation. — E-9.
 7. Later Antor deletes « Laser pistol » from the system (confirmation naming the universes that customised it): universe 1's copy stays,
-   now an ordinary sheet of universe 1, no longer marked « customised » (B-120). — E-9, E-15.
+   now an ordinary sheet of universe 1, no longer marked « Personnalisé » (B-120). — E-9, E-15.
 8. Antor detaches universe 4 from the system in its settings (confirmation: « the customised sheets stay in the universe »), or moves it to
    another system: its copies stay as ordinary sheets (B-120). — E-14.
 9. The admin removes Antor from the GMs of the system (« Remove », B-114): nobody can edit the system any more, even if he was the last. — E-15.
