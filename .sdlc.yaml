@@ -21,8 +21,3 @@ tests:
   rapport: resultats.tap
   format: tap
   delai: 90m
-# design_system: the sources of the visual language (charte-graphique): the charte, the components folder, the tokens.
-design_system:
-  charte: docs/charte.md
-  composants: frontend/src/ui
-  tokens: frontend/src/ui/tokens.css
