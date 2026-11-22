@@ -1420,7 +1420,7 @@ is never deduced from a role in a universe, the admin grants it explicitly.
 - **B-116** — Within a universe, an element and its customisation are **one** entry: lists, search, links and the
   sheet show the customised one, marked as such; the system's element is never listed twice. *(P-27)*
 - **B-117** — Search (E-17) and lists carry a **pictogram** on every element that comes from a system, and a filter
-  « Hide the system's elements » (off by default); a customised element counts as the universe's own. *(P-27)*
+  « Masquer les éléments du système » (off by default); a customised element counts as the universe's own. *(P-27)*
 - **B-118** — The import API, the MCP door and the internal assistant **read and write a system's elements**, within the
   account's right on the system (B-114) and, for a token, its level on that system; a player's or a foreign GM's token or
   assistant reads, never writes. The API addresses the system on its own (`/systemes/<id>`); the MCP door and the assistant
@@ -1434,19 +1434,19 @@ is never deduced from a role in a universe, the admin grants it explicitly.
   in a universe by a gesture on a system. *(P-27)*
 
 ### P-27 — One pistol, four universes (Antor, GM of four universes on Stars Without Number; the admin once)
-1. The admin opens the system (E-15), panel « GMs of the system », and adds Antor (B-114). — E-15.
+1. The admin opens the system (E-15), panel « MJ du système », and adds Antor (B-114). — E-15.
 2. Antor opens the system, adds « Laser pistol » (type object) with its sections. — E-15, then E-9.
-3. In universe 1, he searches « pistol »: one hit with the system pictogram; he opens it, read-only, under a banner « Élément de
+3. In universe 1, he searches « pistol »: one hit with the system pictogram; he opens it, read-only, under the line « Élément de
    <system> ». — E-17, E-9.
 4. He presses « Personnaliser pour cet univers », changes the damage, saves: universe 1 now lists his version marked
    « Personnalisé »; universes 2 to 4 still show the original. — E-9.
-5. In universe 2, he turns on « Hide the system's elements »: the pistol disappears from the search, his own sheets stay. — E-17.
+5. In universe 2, he turns on « Masquer les éléments du système »: the pistol disappears from the search, his own sheets stay. — E-17.
 6. Back in universe 1 he presses « Revenir à l'élément du système »: the copy goes after a confirmation. — E-9.
 7. Later Antor deletes « Laser pistol » from the system (confirmation naming the universes that customised it): universe 1's copy stays,
    now an ordinary sheet of universe 1, no longer marked « Personnalisé » (B-120). — E-9, E-15.
-8. Antor detaches universe 4 from the system in its settings (confirmation: « the customised sheets stay in the universe »), or moves it to
+8. Antor detaches universe 4 from the system in its settings (confirmation: « N fiches personnalisées restent dans l'univers, comme fiches ordinaires »), or moves it to
    another system: its copies stay as ordinary sheets (B-120). — E-14.
-9. The admin removes Antor from the GMs of the system (« Remove », B-114): nobody can edit the system any more, even if he was the last. — E-15.
+9. The admin removes Antor from the GMs of the system (« Retirer », B-114): nobody can edit the system any more, even if he was the last. — E-15.
 Léa (player of universe 3) reads the same original, only its player-readable sections, and sees no button to edit.
 
 ### P-28 — A key reads and writes a system (Monsieur, with his agent)
@@ -1465,7 +1465,7 @@ several systems per universe; MCP tools or assistant tools beyond the sheet gest
 Steps 4, 6, 7 and 8 of P-27 (the rest belongs to `elements`, `recherche`). What the journey adds to them:
 
 - **Step 4** — pressing « Personnaliser pour cet univers » creates the copy and opens it in the same screen, with the mark « Personnalisé » and the editors a GM has on any sheet. Pressing it twice (two tabs, a second GM) opens the same copy, no second one (201 then 200). In the list, the search and every `[[…]]` of the universe, the entry is the copy; the system's element is never listed beside it. A link written before the customisation to the element's identifier opens the copy.
-- **Step 6** — « Revenir à l'élément du système » asks for a confirmation (« deletes this copy only ») and deletes the copy: the entry is the system's element again, read-only under its banner. The links written to the **copy's** identifier while it existed read as those of a deleted sheet, like any deleted sheet (AD-116); the confirmation says so.
+- **Step 6** — « Revenir à l'élément du système » asks for a confirmation (« La version de cet univers … sera supprimée ») and deletes the copy: the entry is the system's element again, read-only under its banner. The links written to the **copy's** identifier while it existed read as those of a deleted sheet, like any deleted sheet (AD-116); the confirmation says so.
 - **Step 7** — a GM of the system deletes the element: the window says how many universes hold a copy, names those the account belongs to (never the others), and says the copies stay; afterwards each copy is an ordinary sheet, its history reads « devenue fiche ordinaire », and the universe loses nothing.
 - **Step 8** — detaching the universe from its system, or choosing another system for it, asks for a confirmation **when the universe holds copies** (it states how many); with none, the gesture is the one of today, no window. Attaching an unattached universe to a system never touches a copy (a copy only exists under a system).
 - **Failure paths.** A player: no button, and 403 by the route. A GM in player mode: no button, 403 `mode_joueur` by the route. The original deleted while the GM was reading it: « Page introuvable. » on the next read; pressing « Personnaliser » on an element deleted meanwhile: « Cet élément n'existe plus. » (nothing created). The copy already gone (another GM reverted): « Cette fiche n'est plus personnalisée. » and the screen shows the system's element. The E-14 and E-15 windows fail as their screens say (unreadable counts: nothing is sent; right lost: « Vous ne pouvez plus modifier cet univers. »).
