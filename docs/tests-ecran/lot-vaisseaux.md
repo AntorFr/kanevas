@@ -383,9 +383,3 @@ The doors written by this lot are `src/routes/*-lot-vaisseaux.test.ts`, `src/rou
 | `src/e2e/vaisseaux-atelier-regles-review.test.ts` | `E-22 règles de calcul, 390 px > arme de classe 3 sur coque de classe 2 : bloquante, retirée on enregistre` | affichage | — | gardé |
 | `src/e2e/vaisseaux-atelier-regles-review.test.ts` | `E-22 règles de calcul, 390 px > auto-ciblage : deux pour une arme bloquent, une seconde arme lève l’alerte` | affichage | — | gardé |
 | `src/e2e/vaisseaux-atelier-regles-review.test.ts` | `E-22 règles de calcul, 390 px > conception d’avant la tranche : chiffres enregistrés, aucune alerte neuve sans changement` | affichage | — | gardé |
-| `src/e2e/vaisseaux-atelier-capacites-review.test.ts` | `E-22 capacités et équipage, 1280 px > Antor : bloc Capacités, coûts d’équipage, champs dont, effet_jeu sous l’élément` | affichage | — | gardé |
-| `src/e2e/vaisseaux-atelier-capacites-review.test.ts` | `E-22 capacités et équipage, 1280 px > sans automatisation : 1 robot donne l’alerte bloquante et refuse Enregistrer ; 0 la lève et grise le champ` | affichage | — | gardé |
-| `src/e2e/vaisseaux-atelier-capacites-review.test.ts` | `E-22 capacités et équipage, 1280 px > boîte de choix : effet_jeu lu, un élément sans effet_jeu n’a pas de ligne vide` | affichage | — | gardé |
-| `src/e2e/vaisseaux-atelier-capacites-review.test.ts` | `E-22 capacités et équipage, 1280 px > E-20 : les quatre réglages du concepteur ; cadence 0 refusée avec « Valeur hors limites. »` | affichage | — | gardé |
-| `src/e2e/vaisseaux-atelier-capacites-review.test.ts` | `E-22 capacités et équipage, 1280 px > Teo (joueur non auteur) lit bloc et coûts sans saisie ; E-20 reste « Page introuvable. »` | affichage | — | gardé |
-| `src/e2e/vaisseaux-atelier-capacites-review.test.ts` | `E-22 capacités et équipage, 390 px > équipage de 100 000 et ligne d’effet de 200 caractères sans débordement` | affichage | — | gardé |
