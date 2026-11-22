@@ -705,7 +705,9 @@ Nothing of Éneria enters this repository (AD-131): captures, atlas and comparis
 - **B-122** — *The atlas format says what the atlas knows.* Moon types beyond rocky/ice/lava, the star a formation or a point turns around, an hour around
   a planet, the veil of a system are fields of the format. *(P-30)*
 - **B-123** — *The atlas looks like the reference side by side.* The recipe plays at the same framing both maps (Lybrata, Clyra, Éneria, Gamma, Sol,
-  Ophyra; the illustrations of Clyra II, Clyra IV, Éneria Prime, Jupiter) and Monsieur judges. *(P-27, P-28, P-30)*
+  Ophyra, plus Alpha Centauri; the illustrations of Clyra II, Clyra IV, Éneria Prime, Jupiter) and Monsieur judges. The recipe adds three
+  sets at the same framing: 50 systems drawn on the trial galaxy (seed `eneria-1`, taken at a regular step, four per sheet), the default galaxy,
+  and the galaxy with its zones, in GM mode and in Player mode (the trial galaxy is made visible to players for the comparison). *(P-27, P-28, P-30)*
 
 ### Cross-cutting
 - **B-28** — Every page requires sign-in; no content is served without an account, and
