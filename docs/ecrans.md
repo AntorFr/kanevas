@@ -5097,7 +5097,7 @@ It adds to the screens `-elements` laid out (E-9 of the element opened from a un
 - *Two GMs*: a GM saves the copy while another goes back to the element: the save answers « Cette fiche n'est plus personnalisée. », the typed text stays in the editor (copyable) and the element is shown beside it; the reverse (the copy was edited when the other goes back) loses the copy as the confirmation said.
 - *Words*: counts are pluralised — « 1 univers l'a personnalisé » / « N univers l'ont personnalisé »; « 1 fiche personnalisée reste » / « N fiches personnalisées restent ». The sentence naming the account's universes is left out when the account has no role in any universe holding a copy (only the count shows); no bound on N, the list of names stops at five.
 
-**History line.** The sheet's history (the existing « Historique » of the sheet's menu, reading `historique`) shows, on the detached copy, the line « Devenue fiche ordinaire — <raison> » where <raison> is « élément supprimé », « univers détaché du système » or « univers passé à <système> », dated, authored by the account who deleted or detached; it needs no new screen. It is the only trace of a detachment, written once per copy.
+**History line.** The sheet's history (the existing « Historique » of the sheet's menu, reading `historique`) shows, on the detached copy, the line « Devenue fiche ordinaire », dated, authored by the account who deleted or detached (no reason is stored: the line is the same for the three causes); it needs no new screen. It is the only trace of a detachment, written once per copy.
 
 **Roles** (matrix; « — » means the control does not exist, hidden, never greyed):
 
