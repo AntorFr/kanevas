@@ -69,10 +69,10 @@ describe('tests d’écran hors écran (R25) : les 19 fichiers retirés et la du
   const readme = espaces(lire('README.md'));
   const retires = [...apres.split('## The 19 removed files')[1].split('## Per file')[0].matchAll(/^\| `(src\/e2e\/[^`]+)` \|/gm)].map((m) => m[1]);
 
-  test('19 fichiers retirés : absents de src/e2e, présents dans avant.md, toutes leurs lignes « retiré » ; 274 restent', () => {
+  test('19 fichiers retirés : absents de src/e2e, présents dans avant.md, toutes leurs lignes « retiré » ; 277 restent', () => {
     assert.equal(retires.length, 19);
     const ecrans = readdirSync('src/e2e').filter((f) => f.endsWith('.test.ts'));
-    assert.equal(ecrans.length, 275, "256 de kanevas-tests-hors-ecran + adresses-lisibles et cle-fiche-identifiant (kanevas-synchro-cles) + historique-ecran-critere et historique-ensemble-ecran (kanevas-synchro-historique) + carte-rattache-texte-ecran (kanevas-synchro-cartes-ecrans); plus les écrans de l'epic kanevas-carte-spatiale + vaisseaux-atelier-regles-review (kanevas-concepteur-vaisseaux-regles-calcul-atelier)");
+    assert.equal(ecrans.length, 277, "256 de kanevas-tests-hors-ecran + adresses-lisibles et cle-fiche-identifiant (kanevas-synchro-cles) + historique-ecran-critere et historique-ensemble-ecran (kanevas-synchro-historique) + carte-rattache-texte-ecran (kanevas-synchro-cartes-ecrans); plus les écrans de l'epic kanevas-carte-spatiale + vaisseaux-atelier-regles-review (kanevas-concepteur-vaisseaux-regles-calcul-atelier) + vaisseaux-atelier-capacites-review et vaisseaux-atelier-capacites-review-2 (kanevas-concepteur-vaisseaux-capacites-equipage)");
     for (const f of retires) {
       assert.equal(existsSync(f), false, `${f} existe encore`);
       assert.ok(avant.includes(`\`${f}\``), `${f} absent de avant.md`);
