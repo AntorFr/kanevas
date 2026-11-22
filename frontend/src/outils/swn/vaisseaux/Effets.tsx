@@ -124,10 +124,8 @@ export function Effets({ ligne, info, infos, lignes, resultat, alerte, alertes, 
     return <Visees ligne={ligne} effet={d.effet} lignes={lignes} alertes={alertes} ecriture={ecriture} verrou={verrou} i={indice} onRangee={onRangee} />;
   }
 
-  if (d.effet === 'soutes_doublees' || d.effet === 'magasins_doubles') {
-    const eligibles = lignes.filter((l) => d.effet === 'soutes_doublees'
-      ? l.nature === 'amenagements' && (() => { const x = infos[`${l.nature}/${l.cle}`]?.el.donnees; return x?.soute !== undefined || x?.soute_par_classe !== undefined; })()
-      : l.nature === 'armes');
+  if (d.effet === 'soutes_doublees') {
+    const eligibles = lignes.filter((l) => l.nature === 'amenagements' && (() => { const x = infos[`${l.nature}/${l.cle}`]?.el.donnees; return x?.soute !== undefined || x?.soute_par_classe !== undefined; })());
     const valeur = ligne.vise ? `${ligne.vise.nature}/${ligne.vise.cle}` : '';
     const choisi = eligibles.some((l) => `${l.nature}/${l.cle}` === valeur) ? valeur : '';
     if (!ecriture) {
