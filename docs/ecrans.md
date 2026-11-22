@@ -5073,7 +5073,7 @@ No new layout: the system's page and the sheet screens are reused in a « system
 
 Matrix: system GM — edits elements, customises in his universes; admin — grants and removes system GMs, does not edit unless granted;
 GM of an attached universe — reads, customises in his universe; player — reads player-readable sections.
-Mockups: none new; the E-9 banner and the E-17 pictogram are judged on captures by the guardian and the visual review.
+Mockups: `e15-systeme-de-jeu.html` is rewritten for this slice (three tabs by role, elements grouped by type, deletion window, GMs of the system; the states are listed at its head); no other new one: the E-9 banner and the E-17 pictogram are judged on captures by the guardian and the visual review.
 
 Design-system verdicts for `kanevas-systemes-jeu-elements` (guardian, decided under mandate): E-15 tabs → `Onglets` (`ui/onglets.tsx`), replacing the screen's own `role="tablist"` and its `.nb` counters; a tab shows only to who can use it. E-15 list of elements → E-8 list (`LigneFicheLiee`, `VignetteFiche`), replacing the `entree-ligne` rows. « New element » → `Button` primary with `Plus`, GM of the system only. Types switch → `Interrupteur`. « GMs of the system » panel → `ListeMembres` with a variant without role selector or pill (to be listed in the charte inventory). Deleting an element → `Fenetre`, danger button « Supprimer l'élément ». Administration list of systems → the instance `liste-instance` panel. E-16 card → the System card minus the per-type counts. Sections read by players only → `Panneau` (`reserveMj`). The E-9 banner is **new**: `BandeauElementSysteme`, specified in `docs/charte.md` (« System element banner »).
 
