@@ -431,7 +431,7 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
 - **B-cr-aventure-1** — *(`kanevas-cr-aventure`)* The GM **changes the adventure of an existing session
   report**, from the report's sheet (E-9), among the adventures of the universe, with the rules of its creation
   (B-19: an adventure he reads, of the same universe). The sheet keeps its id, its sections, its relations and the links that
-  aim at it; nothing is deleted and recreated. A member who is not a GM does not see the gesture. *(P-4b)*
+  aim at it; nothing is deleted and recreated. A member who is not a GM does not see the gesture. *(P-4, step 3)*
 - **B-cr-aventure-2** — *(`kanevas-cr-aventure`)* The **import** writes the adventure (`campagne`, an origin key)
   of a report that already exists, like the other header fields (B-47) and under the header fingerprint
   (AD-139); the batch counts it as a written sheet; it no longer answers « campagne non modifiable, ignorée ». A key that is not an
@@ -845,7 +845,10 @@ He first wants a disposable trial, then the real collection, without duplicates 
    **campaigns** first, then sheets, parents first (origin key, type, title, parent, aliases,
    labels, Markdown sections with their `[[…]]` links, GM blocks, images,
    audience) — session reports with their campaign key —, then relations, and closes the batch
-   (the order from AD-104).
+   (the order from AD-104). *(`kanevas-cr-aventure`)* A report already in Kanevas whose `campagne` key now names another adventure
+   (a scenario, say) is moved by the replay: the sheet is counted as written, its id, relations and links stay, and no
+   « campagne non modifiable » warning appears; a key that is not an adventure of the universe is a counted refusal « campagne inconnue ».
+   The next export gives the new adventure.
    Files, images and documents, first go into the **media library** (E-19), each with its
    permissions — « Réservée au MJ » for those Kanka only displays in GM content, « Visible des
    joueurs » otherwise —, including the 385 MB unused by any sheet; sheets reference them.
