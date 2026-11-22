@@ -33,16 +33,16 @@ function monde() {
 const ligne = (m: ReturnType<typeof monde>, u = m.u) =>
   m.db.prepare('SELECT texte, texte_precedent, source, version FROM bm_direction WHERE univers_id = ?').get(u) as any;
 
-test('migration 0041 sur une base au schéma 0040 : les lignes existantes prennent source = mj, rien d’autre ne bouge', () => {
+test('migration 0050 sur une base au schéma 0049 : les lignes existantes prennent source = mj, rien d’autre ne bouge', () => {
   const src = new URL('../db/migrations/', import.meta.url).pathname;
   const dir = join(mkdtempSync(join(tmpdir(), 'mig-')), 'm') + '/';
   mkdirSync(dir);
-  for (const f of readdirSync(src)) if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 40) copyFileSync(src + f, dir + f);
+  for (const f of readdirSync(src)) if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 49) copyFileSync(src + f, dir + f);
   const db = openDb(':memory:');
   migrate(db, dir);
-  db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', 'x')").run();
+  db.prepare("INSERT INTO univers (id, nom, cle, cree_le) VALUES (1, 'U', 'u1', 'x')").run();
   db.prepare("INSERT INTO bm_direction (univers_id, texte, texte_precedent, version, modifie_le) VALUES (1, 'Ancien', 'Avant', 4, 'x')").run();
-  assert.deepEqual(migrate(db), [41]);
+  assert.deepEqual(migrate(db), [50]);
   assert.deepEqual(db.prepare('SELECT texte, texte_precedent, version, source FROM bm_direction').all(),
     [{ texte: 'Ancien', texte_precedent: 'Avant', version: 4, source: 'mj' }]);
   assert.throws(() => db.prepare("UPDATE bm_direction SET source = 'autre'").run(), /CHECK/);
