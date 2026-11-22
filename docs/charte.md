@@ -514,6 +514,13 @@ rule, two sections). C: `role="status"`, « Chargement de la fiche… » read an
   line, lines separated by `--bord`; name 14 px `--texte`; the choice wraps under the name on a phone. C: one line = one
   radiogroup labelled by the universe name; a universe the account left keeps its line, followed by « (plus membre) » in `--texte-3`; a
   refusal (« Choisissez au moins un univers. ») in `--danger`, tied to the list by `aria-describedby`.
+- **`kanevas-systemes-jeu-api` — variants of the two above, no new component, no token (verdict of the design-system guardian, 2026-11-22).** *Liste d'accès*, used for the
+  block « Systèmes de jeu » of E-23: (1) the list takes **its own set of options per call** (« — » / « Lecture » / « Écriture » for a system, where `TOUS` is hard-wired to
+  « Lecture + écriture »); (2) a line carries `ecritureOfferte` (the third choice exists on that line only: two choices on a line where the account is a reader); (3) the suffix of a
+  line the account left is a prop (`libelleAbsent`: « (plus lecteur) » for a system, « (plus membre) » for a universe); (4) the role pill is passed by the caller (`Pastille`
+  `mj` / `table` with « MJ du système » / « Lecteur »; `PastilleRole` stays « MJ » / « Joueur »); (5) a refusal can be tied to **one line** (message under the line, `aria-describedby` on that
+  line's group) as well as to the whole list. Loading: two lines of the `.squelette` class; load error: the box's `.alerte` with a « Réessayer » `Bouton`. *Ligne de jeton*: the
+  accesses may be two lines, the second (« Systèmes : … ») in `--texte-3` 13 px. `liste-acces.tsx`, `choix-segmente.tsx`, `ligne-jeton.tsx` and `jetons.css` are the files concerned.
 - **Ligne de jeton** (`frontend/src/ui/ligne-jeton.tsx`, with `ListeJetons`; named object + meta + actions revealed on hover; class `ligne-jeton`, **not** `.jeton`, which is the relation-target pill
   of `ui.css`). V: frame `--rayon-panneau`, inner `--bord` line; line 60 px min, `--rayon-champ`, hover and focus-within `--surface-2`; icon disc
   28 px `--surface-2` (inactive: transparent, `--texte-3`); name 14 px 500 on one line, cut with a tooltip (inactive `--texte-2`); accesses 13 px

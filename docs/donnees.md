@@ -887,3 +887,21 @@ role; the instance admin writes `membres` of a space only. An element with no re
 Customisation: `personnaliser` copies the sheet and **the sections the universe's players read** (the only ones `lectureSysteme` hands to a universe, same visibility flags; the GM-only sections of the system's GMs are not copied and the customised sheet is therefore a player-level one) into the universe, GM outside player mode only;
 Deleting an element or detaching the universe from its system, or moving it to another system, sets `surcharge_de` to `NULL` on the copies (AD-158, B-120). `revenir` deletes the copy (`supprimerFiche`, AD-119). The universe's views substitute the copy for the original by `surcharge_de`.
 Migration: next free number when the slice merges (AD-51); existing systems get no GM until the admin grants one.
+
+### `jetons_systemes` (`kanevas-systemes-jeu-api`, AD-155, AD-systemes-api-3 and 4)
+
+| Column | Type | Rule |
+|---|---|---|
+| `jeton_id` | INTEGER NOT NULL | → `jetons_api(id)` ON DELETE CASCADE |
+| `systeme_id` | INTEGER NOT NULL | → `systemes_jeu(id)` ON DELETE CASCADE (no system is deleted today, the clause keeps the table clean the day one is) |
+| `niveau` | TEXT NOT NULL | `CHECK (niveau IN ('lecture', 'ecriture'))`; there is **no** `aucun` row: a system the token does not reach has no row |
+
+Primary key `(jeton_id, systeme_id)`; index on `systeme_id`. Written only by `services/jetons.ts` (creation, change of accesses), in the transaction that
+writes the token or replaces its rows; read only there (`accesSysteme`, `niveauSysteme`). A token revoked or expired keeps its rows, like `jetons_univers`.
+**Never stored: the account's right.** A row says what the token may reach; whether the account is a GM of the system or reads it is read from `membres` of the space and of the
+attached universes at each use (AD-144, AD-152) — removing a GM of a system, or an account from a universe, changes no `jetons_systemes` row.
+Rule (token and system): a row may be written only for a system the account **reads** at that moment, and `ecriture` only where it is a GM of the system; a row already carried
+for a system no longer read stays until the owner saves (it may be lowered or removed, never raised or added), as for a universe left.
+No existing token gets a row: after the migration every token reads nothing on `/api/v1/systemes/…`, and its universe door is unchanged.
+Migration: `CREATE TABLE jetons_systemes …`, no data to move; the number is the next free one when the slice merges (AD-51); a rise test plays it on a base of the previous schema
+holding a content token, a tool token and a revoked one, and finds the three unchanged and without a row.

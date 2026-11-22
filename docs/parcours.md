@@ -1455,6 +1455,18 @@ lists and writes elements at `/api/v1/systemes/<id>/…`; the same token still o
 His agent, connected to the MCP door of one of his universes with that token, lists and edits the same elements with the `systeme_*`
 tools; the assistant of the universe does the same for a GM of the system (a mere GM of the universe reads only). — MCP door, assistant.
 
+*The steps of the key (`kanevas-systemes-jeu-api`, the agent half is `kanevas-systemes-jeu-mcp-assistant`):*
+1. In « Mes jetons d'API » (E-23) Antor presses « Créer un jeton », names it, keeps « Tous mes univers », and in the block « Systèmes de jeu » sets « Stars Without Number »
+   (where the admin made him a GM, P-27 step 1) to « Écriture »; the value is shown once. — E-23.
+2. The agent calls `GET /api/v1/systemes/<id>/fiches` (the system's elements, all sections, because the account is a GM of the system), `POST …/fiches`
+   (« Pistolet laser », type `objet`) and `PUT …/fiches/<fid>/sections/<clé>` for its text; each answer carries the fingerprint of the next write (AD-140). — API.
+3. The same token reads, in universe 1, `GET /api/v1/univers/<clé>/fiches/id/<fid>` of that element: the player-readable sections only, with `origine`
+   and the system (the universe's door, whatever the token's rows on systems). — API.
+4. Later Antor opens « Modifier les accès » of the token and lowers the system to « Lecture »: the agent's next write answers 403 `lecture_seule`, its reads still work. If instead
+   the admin removes Antor from the GMs of the system (B-114), the token keeps « Écriture » on the list but the write answers 403 (the account's right wins, AD-144); the reads stay
+   if he still belongs to an attached universe, else the whole address answers 404. — E-23, API.
+5. A script whose token has no row on the system gets 404 on `/api/v1/systemes/<id>/…`, like an unknown system; it still reads the element from the universe's door at player level. — API.
+
 **Out of scope of `kanevas-systemes-jeu`:** importing a rules reference; typed relations between a universe's sheet and a
 system element (plain `[[…]]` links are resolved); propagating a later change of the system's element into its
 customisations (the copy is independent, and it outlives its original, B-120; a notice « the system's element changed since » is a later idea); deleting a system;
