@@ -20,16 +20,21 @@ interface Reponse {
 function Acces({ j, outils }: { j: JetonVue; outils: OutilOffrable[] }) {
   const morceaux = j.univers.map((u) => `${u.nom} : ${MOT_NIVEAU[u.niveau]}`);
   const perm = libelleOutils(j, outils);
-  const texte = [...morceaux, ...(perm ? [perm] : [])].join(' · ');
-  if (j.tous) {
-    return (
-      <span title={texte || undefined}>
-        <strong>Tous les univers du compte</strong> — {MOT_NIVEAU[j.niveauTous ?? 'lecture']}
-        {texte && <> · {texte}</>}
-      </span>
-    );
-  }
-  return <span title={texte}>{texte || '—'}</span>;
+  const texte = morceaux.join(' · ');
+  // The permissions sit on their own line, outside the clamp of the levels: never cut.
+  return (
+    <>
+      {j.tous ? (
+        <span className="acces-niveaux" title={texte || undefined}>
+          <strong>Tous les univers du compte</strong> — {MOT_NIVEAU[j.niveauTous ?? 'lecture']}
+          {texte && <> · {texte}</>}
+        </span>
+      ) : (
+        <span className="acces-niveaux" title={texte}>{texte || (perm ? '' : '—')}</span>
+      )}
+      {perm && <span className="acces-perm">{perm}</span>}
+    </>
+  );
 }
 
 function Etat({ j }: { j: JetonVue }) {
