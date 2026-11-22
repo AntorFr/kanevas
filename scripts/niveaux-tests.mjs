@@ -508,6 +508,106 @@ function nomsDuBarrel(fichiers, lire, lireBase) {
   }
 }
 
+
+const DOSSIER_UI = 'frontend/src/ui/';
+
+/** Binding of a top-level statement, for the declaration rule: `noms` bound (exported names for an export clause), `propage` (it can depend on a local name), `type` (erased by the build); null when it binds no name. */
+function liaisonDe(s) {
+  const K = ts.SyntaxKind;
+  const mods = ts.canHaveModifiers(s) ? ts.getModifiers(s) ?? [] : [];
+  const noms = new Set();
+  if (s.kind === K.ImportDeclaration) {
+    const c = s.importClause;
+    if (!c) return null;
+    if (c.name) noms.add(c.name.text);
+    if (c.namedBindings) { if (c.namedBindings.kind === K.NamespaceImport) noms.add(c.namedBindings.name.text); else c.namedBindings.elements.forEach((e) => noms.add(e.name.text)); }
+    return { noms, propage: false, type: false };
+  }
+  if (s.kind === K.ImportEqualsDeclaration) return { noms: new Set([s.name.text]), propage: true, type: false };
+  if (s.kind === K.ExportDeclaration) {
+    const c = s.exportClause;
+    if (s.moduleSpecifier && !c) return null;
+    if (c && c.kind === K.NamespaceExport) noms.add(nomDe(c.name));
+    else if (c) c.elements.forEach((e) => noms.add(nomDe(e.name)));
+    return { noms, propage: !s.moduleSpecifier, type: false };
+  }
+  if (s.kind === K.ExportAssignment) return s.isExportEquals ? null : { noms: new Set(['default']), propage: true, type: false };
+  if (mods.some((m) => m.kind === K.DeclareKeyword) && s.kind === K.ModuleDeclaration) return null;
+  if (s.kind === K.VariableStatement) s.declarationList.declarations.forEach((d) => nomsLies(d.name, noms));
+  else if (s.kind === K.InterfaceDeclaration || s.kind === K.TypeAliasDeclaration) return { noms: new Set([s.name.text]), propage: true, type: true };
+  else if ([K.FunctionDeclaration, K.ClassDeclaration, K.EnumDeclaration].includes(s.kind) || (s.kind === K.ModuleDeclaration && ts.isIdentifier(s.name))) {
+    if (s.name) noms.add(s.name.text);
+    if (mods.some((m) => m.kind === K.DefaultKeyword)) noms.add('default');
+  } else return null;
+  return noms.size ? { noms, propage: true, type: false } : null;
+}
+
+function identifiants(n, sortie) {
+  if (n.kind === ts.SyntaxKind.Identifier) sortie.add(n.text);
+  ts.forEachChild(n, (c) => { identifiants(c, sortie); });
+  return sortie;
+}
+
+/**
+ * AD-ecrans-ui-4: the exported names a touched module changes between `base` and `tete`, or null in any doubt
+ * (a file that does not parse, a changed statement that binds no name, `export =`, `export *`).
+ */
+function nomsDeclares(base, tete, fichier) {
+  try {
+    const genre = fichier.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+    const lire_ = (src) => ts.createSourceFile(fichier, src, ts.ScriptTarget.Latest, false, genre);
+    const sb = lire_(base), st = lire_(tete);
+    if ((sb.parseDiagnostics ?? []).length || (st.parseDiagnostics ?? []).length) return null;
+    const textes = (sf) => sf.statements.map((s) => ({ s, t: s.getText(sf) }));
+    const lb = textes(sb), lt = textes(st);
+    const compte = new Map();
+    for (const { t } of lt) compte.set(t, (compte.get(t) ?? 0) + 1);
+    for (const { t } of lb) compte.set(t, (compte.get(t) ?? 0) - 1);
+    const changes = new Set();
+    const types = new Map(); // name → true while every statement binding it is a type
+    const noter = (x) => { const l = liaisonDe(x.s); if (l) for (const n of l.noms) types.set(n, (types.get(n) ?? true) && l.type); return l; };
+    const restant = new Map(compte);
+    for (const x of lb) {
+      const l = noter(x);
+      if (compte.get(x.t) < 0 && restant.get(x.t) < 0) {
+        restant.set(x.t, restant.get(x.t) + 1);
+        if (!l) return null;
+        l.noms.forEach((n) => changes.add(n));
+      }
+    }
+    const reste2 = new Map(compte);
+    const entete = lt.map((x) => ({ ...x, l: noter(x), ids: null }));
+    const nouveaux = new Set();
+    for (const x of entete) {
+      if (compte.get(x.t) > 0 && reste2.get(x.t) > 0) {
+        reste2.set(x.t, reste2.get(x.t) - 1);
+        if (!x.l) return null;
+        x.l.noms.forEach((n) => changes.add(n));
+        nouveaux.add(x);
+      }
+    }
+    // Propagation: a declaration that mentions a changed name is changed too (transitively).
+    for (let bouge = true; bouge;) {
+      bouge = false;
+      for (const x of entete) {
+        if (nouveaux.has(x) || (x.l && !x.l.propage)) continue;
+        x.ids ??= identifiants(x.s, new Set());
+        if (![...x.ids].some((n) => changes.has(n))) continue;
+        if (!x.l) return null; // a statement with no name that uses a changed name
+        nouveaux.add(x);
+        x.l.noms.forEach((n) => changes.add(n));
+        bouge = true;
+      }
+    }
+    const exportes = new Set([...analyser(base, fichier).exportes, ...analyser(tete, fichier).exportes]);
+    if (analyser(base, fichier).doute || analyser(tete, fichier).doute) return null;
+    const noms = new Set([...changes].filter((n) => exportes.has(n) && !types.get(n)));
+    return { noms, declares: exportes };
+  } catch {
+    return null;
+  }
+}
+
 /** The screens touched by the changed files `touches` (AD-niveau-2 and 3): a Set of screen names. */
 export function ecransTouches(touches, fichiers, lire, lireBase = () => null) {
   const ecrans = ecransDe(fichiers);
@@ -523,6 +623,19 @@ export function ecransTouches(touches, fichiers, lire, lireBase = () => null) {
     }
     if (f === BARREL) {
       const lus = nomsDuBarrel(fichiers, lire, lireBase);
+      if (lus) {
+        for (const [nom, d] of demandes) {
+          const demande = d.get(f);
+          if (demande === undefined) continue;
+          if (demande === true || [...demande].some((n) => lus.noms.has(n) || !lus.declares.has(n))) atteints.add(nom);
+        }
+        continue;
+      }
+    }
+    if (f !== BARREL && f.startsWith(DOSSIER_UI) && /\.tsx?$/.test(f) && !f.endsWith('.test.ts')) {
+      const reçus = [...demandes.values()].filter((d) => d.has(f));
+      const avant = reçus.length ? lireBase(f) : null, apres = avant != null ? lire(f) : null;
+      const lus = apres != null ? nomsDeclares(avant, apres, f) : null;
       if (lus) {
         for (const [nom, d] of demandes) {
           const demande = d.get(f);
