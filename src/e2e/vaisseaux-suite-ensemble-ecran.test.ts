@@ -159,7 +159,7 @@ describe('B-86 · E-22 : base de la réduction, légendes des effets, élément 
     assert.equal(await points(p).count(), 1);
   });
 
-  it('élément visé : montage → armes et aménagements, surcharge → seulement les armes ; l’alerte tombe une fois la cible choisie', async () => {
+  it('élément visé : montage et surcharge → seulement les armes ; l’alerte tombe une fois la cible choisie', async () => {
     const m = await monde(true);
     await m.poser(m.etoile, { coque: 'fregate-r', choix: [] });
     const p = await ouvrir(m, 'Léa', m.etoile);
