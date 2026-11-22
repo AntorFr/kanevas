@@ -1,0 +1,379 @@
+{
+  "document": {
+    "calques": [
+      {
+        "id": "toit",
+        "mj_seul": false,
+        "nom": "Toits",
+        "type": "objet",
+        "verrouille": false,
+        "visible": false
+      },
+      {
+        "id": "sol",
+        "mj_seul": false,
+        "nom": "Sol",
+        "type": "sol",
+        "verrouille": false,
+        "visible": true
+      },
+      {
+        "id": "murs",
+        "mj_seul": false,
+        "nom": "Murs",
+        "type": "mur",
+        "verrouille": false,
+        "visible": true
+      },
+      {
+        "id": "objets",
+        "mj_seul": false,
+        "nom": "Objets",
+        "type": "objet",
+        "verrouille": false,
+        "visible": true
+      },
+      {
+        "id": "secret-objets",
+        "mj_seul": true,
+        "nom": "Pièges",
+        "type": "objet",
+        "verrouille": false,
+        "visible": true
+      }
+    ],
+    "elements": [
+      {
+        "asset_id": "table",
+        "calque": "objets",
+        "echelle": 1.5,
+        "fiche_id": "fiche-publique",
+        "id": "e1",
+        "miroir": true,
+        "rotation": 90,
+        "x": 1.5,
+        "y": 1.5
+      },
+      {
+        "asset_id": "tonneau",
+        "calque": "objets",
+        "echelle": 1.0,
+        "id": "e2",
+        "miroir": false,
+        "rotation": 0,
+        "x": 3.0,
+        "y": 2.25
+      },
+      {
+        "asset_id": "coffre-secret",
+        "calque": "objets",
+        "echelle": 1.0,
+        "fiche_id": "fiche-publique",
+        "id": "e3",
+        "miroir": false,
+        "rotation": 180,
+        "x": 2.0,
+        "y": 5.0
+      },
+      {
+        "asset_id": "statue",
+        "calque": "objets",
+        "echelle": 2.0,
+        "fiche_id": "fiche-mj",
+        "id": "e4",
+        "miroir": false,
+        "rotation": 0,
+        "x": 6.0,
+        "y": 3.0
+      },
+      {
+        "asset_id": "lit",
+        "calque": "objets",
+        "echelle": 2.0,
+        "fiche_id": "fiche-publique",
+        "id": "n1",
+        "miroir": true,
+        "rotation": 90,
+        "x": 6.5,
+        "y": 4.5
+      },
+      {
+        "asset_id": "lit",
+        "calque": "objets",
+        "echelle": 2.0,
+        "fiche_id": "fiche-publique",
+        "id": "n2",
+        "miroir": true,
+        "rotation": 90,
+        "x": 7.5,
+        "y": 4.5
+      },
+      {
+        "asset_id": "piege",
+        "calque": "secret-objets",
+        "echelle": 1.0,
+        "fiche_id": "fiche-publique",
+        "id": "e6",
+        "miroir": false,
+        "rotation": 0,
+        "x": 8.5,
+        "y": 6.5
+      }
+    ],
+    "hauteur": 9,
+    "largeur": 12,
+    "murs": [
+      {
+        "asset_id": "mur-pierre",
+        "calque": "murs",
+        "cote": "h",
+        "porte": false,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "asset_id": "mur-pierre",
+        "calque": "murs",
+        "cote": "h",
+        "porte": false,
+        "x": 1,
+        "y": 0
+      },
+      {
+        "asset_id": "mur-pierre",
+        "calque": "murs",
+        "cote": "v",
+        "porte": true,
+        "x": 4,
+        "y": 0
+      },
+      {
+        "asset_id": "mur-bois",
+        "calque": "murs",
+        "cote": "v",
+        "porte": false,
+        "x": 4,
+        "y": 1
+      },
+      {
+        "asset_id": "mur-bois",
+        "calque": "murs",
+        "cote": "h",
+        "porte": false,
+        "x": 2,
+        "y": 2
+      },
+      {
+        "asset_id": "mur-bois",
+        "calque": "murs",
+        "cote": "h",
+        "porte": true,
+        "x": 3,
+        "y": 2
+      }
+    ],
+    "schema": 1,
+    "sols": [
+      {
+        "asset_id": "dalle",
+        "calque": "sol",
+        "x": 1,
+        "y": 0
+      },
+      {
+        "asset_id": "dalle",
+        "calque": "sol",
+        "x": 2,
+        "y": 0
+      },
+      {
+        "asset_id": "dalle",
+        "calque": "sol",
+        "x": 3,
+        "y": 0
+      },
+      {
+        "asset_id": "herbe",
+        "calque": "sol",
+        "x": 4,
+        "y": 0
+      },
+      {
+        "asset_id": "dalle",
+        "calque": "sol",
+        "x": 0,
+        "y": 1
+      },
+      {
+        "asset_id": "dalle",
+        "calque": "sol",
+        "x": 1,
+        "y": 1
+      },
+      {
+        "asset_id": "dalle",
+        "calque": "sol",
+        "x": 2,
+        "y": 1
+      },
+      {
+        "asset_id": "dalle",
+        "calque": "sol",
+        "x": 3,
+        "y": 1
+      },
+      {
+        "asset_id": "herbe",
+        "calque": "sol",
+        "x": 4,
+        "y": 1
+      }
+    ]
+  },
+  "inverses": [
+    {
+      "contenu": {
+        "elements": [],
+        "murs": [],
+        "sols": [
+          {
+            "asset_id": "piege-sol",
+            "calque": "secret-sol",
+            "x": 8,
+            "y": 6
+          }
+        ]
+      },
+      "genre": "sol",
+      "id": "secret-sol",
+      "index": 4,
+      "mj_seul": true,
+      "nom": "Réservé au MJ",
+      "type": "creer_calque",
+      "verrouille": false,
+      "visible": true
+    },
+    {
+      "hauteur": 8,
+      "largeur": 10,
+      "type": "redimensionner"
+    },
+    {
+      "id": "toit",
+      "index": 5,
+      "type": "ordonner_calque"
+    },
+    {
+      "id": "toit",
+      "type": "regler_calque",
+      "visible": true
+    },
+    {
+      "id": "toit",
+      "nom": "Toit",
+      "type": "renommer_calque"
+    },
+    {
+      "id": "toit",
+      "type": "supprimer_calque"
+    },
+    {
+      "asset_id": "dalle",
+      "calque": "sol",
+      "cellules": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "type": "peindre_sol"
+    },
+    {
+      "asset_id": "vieille-lampe",
+      "calque": "objets",
+      "echelle": 1.0,
+      "id": "e5",
+      "index": 4,
+      "miroir": false,
+      "rotation": 270,
+      "type": "poser_element",
+      "x": 7.0,
+      "y": 7.0
+    },
+    {
+      "id": "n2",
+      "type": "supprimer_element"
+    },
+    {
+      "fiche_id": null,
+      "id": "n1",
+      "type": "lier_fiche"
+    },
+    {
+      "echelle": 1.0,
+      "id": "n1",
+      "type": "mettre_a_echelle"
+    },
+    {
+      "id": "n1",
+      "miroir": false,
+      "type": "retourner_element"
+    },
+    {
+      "id": "n1",
+      "rotation": 0,
+      "type": "pivoter_element"
+    },
+    {
+      "id": "n1",
+      "type": "deplacer_element",
+      "x": 5.5,
+      "y": 4.5
+    },
+    {
+      "id": "n1",
+      "type": "supprimer_element"
+    },
+    {
+      "calque": "murs",
+      "cote": "h",
+      "porte": false,
+      "type": "poser_porte",
+      "x": 3,
+      "y": 2
+    },
+    {
+      "calque": "murs",
+      "cellules": [],
+      "segments": [
+        {
+          "cote": "h",
+          "x": 2,
+          "y": 2
+        },
+        {
+          "cote": "h",
+          "x": 3,
+          "y": 2
+        }
+      ],
+      "type": "gommer"
+    },
+    {
+      "calque": "sol",
+      "cellules": [
+        {
+          "x": 4,
+          "y": 0
+        },
+        {
+          "x": 4,
+          "y": 1
+        }
+      ],
+      "segments": [],
+      "type": "gommer"
+    }
+  ],
+  "ok": true
+}
