@@ -123,7 +123,7 @@ describe('B-87 · E-22 : légendes des quatre règles du livre et ligne de cons�
     await attendreTexte(a, /masse −2/);
     await m.poser(m.etoile, { coque: 'fregate-r', choix: [l('armes', 'laser-z'), l('modifications', 'montage-z', viseLaser)] });
     const b = await ouvrir(m, 'Léa', m.etoile);
-    await attendreTexte(b, /masse \+1, puissance \+5/);
+    await attendreTexte(b, /puissance −5/);
     await m.poser(m.etoile, { coque: 'fregate-r', choix: [l('armes', 'laser-z'), { ...l('modifications', 'surcharge-z', viseLaser), quantite: 2 }] });
     const c = await ouvrir(m, 'Léa', m.etoile);
     await attendreTexte(c, /puissance \+10/);

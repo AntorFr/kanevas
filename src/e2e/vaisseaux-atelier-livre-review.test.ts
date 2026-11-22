@@ -138,7 +138,7 @@ describe('E-22 livre', { skip: skipBrowser, timeout: 240000 }, () => {
       await p.getByRole('button', { name: 'Retirer : Montage L' }).waitFor();
       assert.deepEqual((await visees(p, 'Montage L').locator('option').allInnerTexts()).map(norm), ['Choisir un élément', 'Laser Z']);
       await visees(p, 'Montage L').selectOption('armes/laser-z');
-      await attendre(p, /masse \+1, puissance \+5/);
+      await attendre(p, /puissance −5/);
       // surcharge, une puis deux fois
       const ls = await choisir(p, 'Surcharge L');
       assert.match(norm(await ls.innerText()), /puissance de l['’]arme \+50 % par installation/);
@@ -146,10 +146,11 @@ describe('E-22 livre', { skip: skipBrowser, timeout: 240000 }, () => {
       await p.getByRole('button', { name: 'Retirer : Surcharge L' }).waitFor();
       assert.deepEqual((await visees(p, 'Surcharge L').locator('option').allInnerTexts()).map(norm), ['Choisir un élément', 'Laser Z']);
       await visees(p, 'Surcharge L').selectOption('armes/laser-z');
-      await attendre(p, /puissance \+5/);
+      await attendre(p, /puissance \+3/);
       await p.getByRole('button', { name: 'Ajouter : Modifications' }).click();
       await p.locator('li').filter({ hasText: 'Surcharge L' }).getByRole('button', { name: /^Ajouter / }).click();
-      await attendre(p, /puissance \+10/);
+      await ligne(p, 'Surcharge L').getByRole('combobox', { name: 'Visée 2', exact: true }).selectOption('armes/laser-z');
+      await attendre(p, /puissance \+6\b/);
       const m = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: window.innerWidth }));
       assert.ok(m.sw <= m.iw + 1, `aucun défilement horizontal ${JSON.stringify(m)}`);
       await p.screenshot({ path: `/tmp/shots/l-${largeur}.png`, fullPage: true });

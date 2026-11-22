@@ -129,7 +129,8 @@ describe('E-22 suite Z, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => 
     await p.getByRole('button', { name: 'Ajouter : Modifications' }).click();
     await p.locator('li').filter({ hasText: 'Surcharge Z' }).last().getByRole('button').first().click();
     await p.getByRole('button', { name: 'Retirer : Surcharge Z' }).waitFor();
-    for (const n of ['Montage Z', 'Surcharge Z']) assert.deepEqual((await visees(p, n).locator('option').allInnerTexts()).map(norm), ['Choisir un élément', 'Laser Z'], n);
+    assert.deepEqual((await visees(p, 'Montage Z').locator('option').allInnerTexts()).map(norm), ['Choisir un élément', 'Laser Z', 'Soute Z'], 'montage : armes puis aménagements');
+    assert.deepEqual((await visees(p, 'Surcharge Z').locator('option').allInnerTexts()).map(norm), ['Choisir un élément', 'Laser Z'], 'surcharge : armes seulement');
     await visees(p, 'Montage Z').selectOption('armes/laser-z');
     await visees(p, 'Surcharge Z').selectOption('armes/laser-z');
     await p.screenshot({ path: '/tmp/shots/z-1280-armes.png', fullPage: true });
