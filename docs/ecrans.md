@@ -5055,6 +5055,7 @@ No new layout: the system's page and the sheet screens are reused in a « system
 - **E-17 Search and E-8 lists.** Pictogram on the system's elements (the component is the design-system guardian's verdict),
   filter « Hide the system's elements » beside the type filter, kept in the address (`?sans-systeme=1`). Empty result with the filter on says
   so and offers to turn it off.
+- **Reaching E-15 as the admin.** « Administration » lists the systems beside the universes (`GET /api/instance/systemes`: name, universes, number of GMs); a row opens E-15 on the « GMs of the system » tab, even for a system with no GM or no universe. Removing the last GM is allowed (B-114).
 - **E-15, GMs panel.** The admin types the account's identifier in one field and presses « Add » (same gesture as the
   admin's universe members, AD-86); each GM is a row with « Remove ». A system created by an account gives that account no GM
   row: the admin grants it. Enabling or disabling a type of the system is the GMs' switch only.
