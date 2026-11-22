@@ -6,7 +6,7 @@ import { EQUIPAGE_MAX } from './format';
 
 
 /** The crew stepper of the workshop (E-22, F-6): a whole number 0 to `EQUIPAGE_MAX`; a refused typed value stays in the field. */
-export function Equipage({ valeur, bornes, lecture, desactive, onChange, onInvalide, nom = 'Équipage', maximum = EQUIPAGE_MAX, ligne: ligneBornes, diminuer, augmenter, etiquette }: {
+export function Equipage({ valeur, bornes, lecture, desactive, onChange, onInvalide, nom = 'Équipage', maximum = EQUIPAGE_MAX, ligne: ligneBornes, diminuer, augmenter, etiquette, enAlerte }: {
   valeur: number | null;
   /** The field's own name (the refusal line, the labels) and its upper bound: the crew by default, the repair skill (0–20) or the points of an exchange. */
   nom?: string;
@@ -15,6 +15,8 @@ export function Equipage({ valeur, bornes, lecture, desactive, onChange, onInval
   ligne?: string;
   /** Accessible name when several steppers carry the same `nom` (one per line). */
   etiquette?: string;
+  /** A blocking server alert is on this field (H-capacites-1): the field is marked invalid, the alert text stays in the results. */
+  enAlerte?: boolean;
   diminuer?: string;
   augmenter?: string;
   /** « 6 à 20 »; empty when the hull states no bound. */
@@ -75,7 +77,7 @@ export function Equipage({ valeur, bornes, lecture, desactive, onChange, onInval
         <Bouton petit aria-label={moins} icone={Minus} disabled={desactive || !invalide && (valeur ?? 0) <= 0} onClick={() => pas(-1)} />
         <input
           className="vx-equipage-champ" type="number" inputMode="numeric" min={0} max={maximum} step={1}
-          aria-label={aria} aria-invalid={invalide || undefined} aria-describedby={decrit}
+          aria-label={aria} aria-invalid={invalide || enAlerte || undefined} aria-describedby={decrit}
           disabled={desactive} value={texte} onChange={(e) => saisir(e.target.value)}
         />
         <Bouton petit aria-label={plus} icone={Plus} disabled={desactive || !invalide && (valeur ?? 0) >= maximum} onClick={() => pas(1)} />
