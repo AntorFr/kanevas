@@ -5217,3 +5217,19 @@ stay for what is not yet loaded.
 Cross-check: B-99 → E-9 block, `PATCH /fiches/:fid {cle}`; B-100 → E-14 field (P-22 return of `eneria-v2`), `PATCH /univers/:id {cle}`; B-101 →
 router (above) + 302; admin who is not a GM of the universe: no E-9 block, and E-14 answers « Page introuvable. » (the GM guard, as a player); B-104 → the section key travels in the API (`cle` on a section's view); no screen edits it in
 this slice (the import and the MCP address by it).
+
+### E-9 — the adventure of a session report (`kanevas-cr-aventure`, B-cr-aventure-1 and 4)
+
+**The « Campagne : <nom> » line of a report** (header of E-9, registry of header lines) gains, **for the GM outside player mode only**, a
+button « Changer d'aventure… ». It opens a dialog built as « Déplacer sous… » (search field, list of the adventures of the universe
+the GM reads, current one marked and not selectable, « Déplacer » and « Annuler »); no player, nor GM in player mode, sees the button. On success the line
+shows the new adventure in place, without reloading the sheet; the sections, relations and « Mentionnée dans » stay. The line « Aventure
+supprimée » (adventure deleted) offers the same button. Failure: « L'action n'a pas abouti. Réessayez. » in the dialog, the line unchanged; offline: button disabled.
+No new component: the dialog reuses the picker of « Déplacer sous… ».
+
+**The block « Comptes-rendus » of an adventure's sheet** also lists the reports of its scenarios. A line of a scenario's report adds
+the scenario's name (a link to its sheet) beside the date; a line of the adventure's own report stays as it is. One list, newest first,
+100 then « Charger la suite ». On the sheet of a scenario, nothing changes. A scenario the reader does not read contributes nothing (no placeholder, no count).
+
+Cross-check: B-cr-aventure-1 → E-9 line « Campagne », `PATCH /fiches/:fid {campagne}`; B-cr-aventure-4 → E-9 block, `GET /comptes-rendus?campagne=` (same route, wider
+filter); B-cr-aventure-2 and 3 have no screen (import and export).

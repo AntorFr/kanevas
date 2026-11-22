@@ -906,3 +906,13 @@ universe name without a letter gives `univers-<id>`), triggers created, the hist
 `better-sqlite3` runs triggers inside the write's transaction: a write and its history line are
 atomic.
 
+
+## `kanevas-cr-aventure` scope: the model
+
+No new entity, no migration. A session report's adventure is `fiches.charge.campagne_id` (unchanged); it becomes **writable by the GM** after creation.
+
+Rules:
+1. `campagne_id` is written by `creerCompteRendu` and by one new service function of `services/comptes_rendus.ts`, `changerAventureDuCompteRendu`, run inside `ecrire` (history, AD-147, and `modifie_le` by the triggers). The target is read with `aventureLue` (same guard as the creation); GM outside player mode only; an id that is not a session report: `introuvable`; the same adventure: no write.
+2. Nothing else of the sheet moves (id, key, sections, relations, `liens`, `parent_id`).
+3. The list `listerComptesRendus({campagneId})` returns the reports whose adventure is that one **or a direct child of it of type `aventure` that the caller reads**; each line carries its own adventure (`campagneId`, `campagneNom`), from which the screen shows the scenario's name when it differs from the page's adventure. The deletion count of an adventure (AD-119) stays on direct reports.
+4. The import fingerprint of the header (AD-139) already holds `campagne_id` for a report: a change of adventure is a change of header.

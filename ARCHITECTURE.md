@@ -2399,3 +2399,16 @@ Kanevas declares, beside `ecrans:`, the command that **names** the screen tests 
 **Rejected.** A hand-kept map « class → screens » or « component → screens » (drifts from the code, AD-niveau-2). Reading the bundler's CSS graph (needs `build`, which `--liste` does not do). A rule « the design system touches every screen only on token files » by path: `ui.css` and `composants.tsx` do carry rules that every screen shows (`body`, `.bouton`), the content decides. Matching a class by its exact token only: a class built at run time (`bouton ${variante}`) would be missed, and a missed screen is a screen not played. Treating `package.json` as « no screen » whatever changed: a `build` script or an `engines` change does change what the screens run on.
 
 **Proof.** The three test files of AD-ecrans-ui-6, and the README rows of AD-ecrans-ui-7 measured on real diffs.
+
+### Decisions of `kanevas-cr-aventure`
+
+| ID | Decision |
+|---|---|
+| AD-cr-aventure-1 | **One writer for a report's adventure after creation: `changerAventureDuCompteRendu`** (`services/comptes_rendus.ts`), composed by the route (`PATCH /fiches/:fid {campagne}`, same body as `titre`/`parent`, one transaction) and by the import (`assurerFiche`, which today refuses). Guards: GM outside player mode, target read by `aventureLue`, same universe. No SQL elsewhere, no `UPDATE fiches SET charge` by a caller. |
+| AD-cr-aventure-2 | **The import compares and writes the adventure like a header field** (B-47): sent and different → written through AD-cr-aventure-1 and counted in the batch; not sent → left; unknown key or not an adventure → refusal before the transaction (as today). The warning « campagne non modifiable, ignorée » disappears. |
+| AD-cr-aventure-3 | **The page of an adventure widens the filter of `listerComptesRendus`, not a second function** (AD-63 spirit): reports of the adventure and of its direct scenarios, each scenario read under the reader's guard (`aventureLue`); one level only. |
+| AD-cr-aventure-4 | **No move to another universe, no assistant/MCP tool** in this epic (out of scope). |
+
+**Rejected.** Delete and recreate the report (breaks the links of other sheets, loses relations: the case that motivated the epic). A column `campagne_id` (migration for nothing: the payload already holds it). Recursion through all descendants of the adventure (scenarios of scenarios do not exist in the model of E-9; one level is the cost of a SQL join and is undoable).
+
+**Proof.** A service test per guard (player, foreign GM, player mode, unknown report, non-adventure target, same target), one import test (written, counted, fingerprint changed, unknown key refused), one export test, one list test (scenario of a campaign, unreadable scenario), one screen test for the Éneria criterion.
