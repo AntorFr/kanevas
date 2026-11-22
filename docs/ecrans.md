@@ -5047,9 +5047,9 @@ this slice (the import and the MCP address by it).
 
 No new layout: the system's page and the sheet screens are reused in a « system space ».
 
-- **E-15 Game system (rewritten).** Two panels: **Elements** (the E-8 list of the system's sheets, grouped by type, with
-  « Nouvel élément » for the system's GMs) and **GMs of the system** (admin only: add or remove an account), laid out as tabs of E-15 beside « Outils » (E-20, the system's responsible, unchanged): « Elements » (with, for the system's GMs, the types switch of the system), « MJ du système » (admin), « Outils ». A tab shows only to who may use it; the admin who is not a GM of the system sees the sole « MJ du système » tab, no element. Tabs
-  « Rules / Creatures / Objects » of the gabarits are replaced by the types filter of E-8. Readers who are not GMs of the system see
+- **E-15 Game system (rewritten).** Two panels: **Éléments** (the E-8 list of the system's sheets, grouped by type, with
+  « Nouvel élément » for the system's GMs) and **GMs of the system** (admin only: add or remove an account), laid out as tabs of E-15 beside « Outils » (E-20, the system's responsible, unchanged): « Éléments » (with, for the system's GMs, the types switch of the system), « MJ du système » (admin), « Outils ». A tab shows only to who may use it; the admin who is not a GM of the system sees the sole « MJ du système » tab, no element. Tabs
+  the former tabs « Règles / Créatures / Objets » of the gabarits are replaced by the types filter of E-8. Readers who are not GMs of the system see
   the list read-only. Element address: `/systemes/:sid/fiches/:fid`.
 - **E-9 Sheet, in a system space.** The ordinary sheet (sections, links) for the system's GMs; read-only for the rest.
 - **E-9 Sheet, a system element opened from a universe.** Reminder « Élément de <système> — lecture seule » and, for a GM
@@ -5101,14 +5101,14 @@ It adds to the screens `-elements` laid out (E-9 of the element opened from a un
 
 **Roles** (matrix; « — » means the control does not exist, hidden, never greyed):
 
-| Control | GM of the universe | GM in player mode | Player | System GM, no role in the universe | Admin, none of these |
+| Control | GM of the universe | GM in player mode | Player | System GM, no role in the universe (admin or not) | Admin, none of these |
 |---|---|---|---|---|---|
 | Personnaliser (E-9 element) | yes | — | — | — | — |
 | Revenir à l'élément (menu of the copy) | yes | — | — | — | — |
 | Mark « Personnalisé » (E-9, lists, search) | yes | yes | yes | — (does not read the universe) | — |
 | Link « Voir l'élément du système » on a copy | yes (player sections of the original) | yes, same | yes (a player of an attached universe always reads the system) | — | — |
 | E-14 confirmation | yes | — | — | — | — |
-| E-15 confirmation | yes if also a GM of the system (the account sees its own universes named, never others), else — | — | — | yes (the account sees the universes it has a role in named, never others) | — (the admin who is not a GM of the system does not delete elements) |
+| E-15 confirmation | yes if also a GM of the system (the account sees its own universes named, never others), else — | — | — | yes (the account sees the universes it has a role in named, never others) | — (the admin who is not a GM of the system does not delete elements; player mode does not exist on E-15, outside a universe) |
 
 In the system's space (E-9 and E-15 opened from `/systemes/:sid`) there is no « Personnaliser »: customising is a gesture of a universe.
 
