@@ -133,7 +133,7 @@ test('montée : un élément de masse 8 (semis) reste lisible et inchangé, comp
   // The seed writes `classe_min` (0028): the old schema gets a stand-in column for the seeding only, dropped before the climb.
   // The seed also writes the optional columns of 0029 (null): stand-ins on every catalogue table, same lifetime.
   const AJOUTS: Record<string, string[]> = {
-    coques: ['vitesse', 'armure', 'equipage_min', 'equipage_max', 'moteur_spike'], // 0042
+    coques: ['vitesse', 'armure', 'equipage_min', 'equipage_max', 'moteur_spike'], // 0046
     moteurs: ['classe_min', 'classe_max', 'condition'], amenagements: ['classe_min', 'classe_max', 'condition', 'effet', 'rend_puissance', 'rend_masse', 'soute', 'soute_par_classe', 'reduction_cout_pct', 'reduction_base'],
     modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse', 'reparation_min', 'effet_pct', 'echange_arrondi'], // 0032
     defenses: ['classe_min', 'classe_max', 'condition', 'bonus_vitesse'],

@@ -1,0 +1,4791 @@
+{
+ "graine": "kanevas-neutre-1",
+ "systemes": [
+  {
+   "entree": {
+    "q": -49,
+    "r": -48,
+    "taille": 0.8599839135993765,
+    "lettre": "K"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "-49,-48.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "orange",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "-49,-48.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "lave",
+      "nom": null,
+      "orbite": 1.03,
+      "heure": 0.6,
+      "taille": 0.123,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-49,-48.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": 2.06,
+      "heure": 5.18,
+      "taille": 0.098,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-49,-48.0-2-1",
+      "genre": "lune",
+      "parent_cle": "-49,-48.0-2",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.79,
+      "taille": 0.05,
+      "aspect": {}
+     },
+     {
+      "cle": "-49,-48.0-2-2",
+      "genre": "lune",
+      "parent_cle": "-49,-48.0-2",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 11.29,
+      "taille": 0.057,
+      "aspect": {}
+     },
+     {
+      "cle": "-49,-48.0-3",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 2.95,
+      "heure": 9.77,
+      "taille": 0.119,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-49,-48.0-3-1",
+      "genre": "lune",
+      "parent_cle": "-49,-48.0-3",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 0.96,
+      "taille": 0.051,
+      "aspect": {}
+     },
+     {
+      "cle": "-49,-48.0-3-2",
+      "genre": "lune",
+      "parent_cle": "-49,-48.0-3",
+      "etoile_rang": 0,
+      "type": "lave",
+      "nom": null,
+      "orbite": null,
+      "heure": 6.86,
+      "taille": 0.053,
+      "aspect": {}
+     },
+     {
+      "cle": "-49,-48.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 3.94,
+      "heure": 2.35,
+      "taille": 0.111,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-49,-48.0-4-1",
+      "genre": "lune",
+      "parent_cle": "-49,-48.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 4.94,
+      "taille": 0.047,
+      "aspect": {}
+     },
+     {
+      "cle": "-49,-48.0-4-2",
+      "genre": "lune",
+      "parent_cle": "-49,-48.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.67,
+      "taille": 0.043,
+      "aspect": {}
+     },
+     {
+      "cle": "-49,-48.0-4-3",
+      "genre": "lune",
+      "parent_cle": "-49,-48.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 0.94,
+      "taille": 0.043,
+      "aspect": {}
+     },
+     {
+      "cle": "-49,-48.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 4.89,
+      "heure": 6.94,
+      "taille": 0.094,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-49,-48.0-5-1",
+      "genre": "lune",
+      "parent_cle": "-49,-48.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 11.91,
+      "taille": 0.05,
+      "aspect": {}
+     },
+     {
+      "cle": "-49,-48.0-5-2",
+      "genre": "lune",
+      "parent_cle": "-49,-48.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.14,
+      "taille": 0.052,
+      "aspect": {}
+     },
+     {
+      "cle": "-49,-48.0-6",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": 5.89,
+      "heure": 11.52,
+      "taille": 0.122,
+      "aspect": {
+       "nature": "à atmosphère"
+      }
+     },
+     {
+      "cle": "-49,-48.0-6-1",
+      "genre": "lune",
+      "parent_cle": "-49,-48.0-6",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.43,
+      "taille": 0.049,
+      "aspect": {}
+     },
+     {
+      "cle": "-49,-48.0-6-2",
+      "genre": "lune",
+      "parent_cle": "-49,-48.0-6",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.3,
+      "taille": 0.043,
+      "aspect": {}
+     }
+    ],
+    "formations": [
+     {
+      "cle": "-49,-48.zone",
+      "forme": "nuage",
+      "nom": null,
+      "parametres": {
+       "orbite": 1.23,
+       "heure": 9.8,
+       "rochers": 0.12,
+       "brume": "#b0507a",
+       "materiaux": [
+        [
+         "roche",
+         2
+        ],
+        [
+         "glace",
+         1
+        ]
+       ],
+       "centres": [
+        [
+         1.23,
+         9.8,
+         1.21
+        ],
+        [
+         1.11,
+         8.3,
+         0.98
+        ],
+        [
+         1.88,
+         7.64,
+         0.74
+        ],
+        [
+         2.33,
+         7.5,
+         1.07
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 6.59
+   }
+  },
+  {
+   "entree": {
+    "q": -44,
+    "r": -47,
+    "taille": 1.183303157872838,
+    "lettre": "M"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "-44,-47.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "-44,-47.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 0.67,
+      "heure": 0.98,
+      "taille": 0.12,
+      "aspect": {
+       "nature": "habitable"
+      }
+     },
+     {
+      "cle": "-44,-47.0-3",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": 2.33,
+      "heure": 5.57,
+      "taille": 0.1,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-44,-47.0-3-1",
+      "genre": "lune",
+      "parent_cle": "-44,-47.0-3",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 6.64,
+      "taille": 0.053,
+      "aspect": {}
+     },
+     {
+      "cle": "-44,-47.comete",
+      "genre": "comete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "comete",
+      "nom": null,
+      "orbite": 2.07,
+      "heure": 3.94,
+      "taille": 0.738,
+      "aspect": {
+       "perihelie": 1.93,
+       "sens": 1,
+       "couleur": "#b8dcff",
+       "gaz": "#5a9cff",
+       "poussiere": "#b8c8e8",
+       "longueur": 0.326,
+       "ouverture": 0.129,
+       "tete": 0.738,
+       "courbure": 0.356,
+       "force_gaz": 0.629,
+       "force_poussiere": 0.897
+      }
+     }
+    ],
+    "formations": [
+     {
+      "cle": "-44,-47.ceinture-0-1",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 1.31,
+       "a": 1.69,
+       "rochers": 0.67,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 3.03
+   }
+  },
+  {
+   "entree": {
+    "q": -44,
+    "r": 38,
+    "taille": 0.7002823153401136,
+    "lettre": "G"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "-44,38.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "jaune",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "-44,38.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 0.97,
+      "heure": 5.55,
+      "taille": 0.096,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "-44,38.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 1.96,
+      "heure": 10.13,
+      "taille": 0.107,
+      "aspect": {
+       "nature": "habitable"
+      }
+     },
+     {
+      "cle": "-44,38.0-2-1",
+      "genre": "lune",
+      "parent_cle": "-44,38.0-2",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 5.7,
+      "taille": 0.057,
+      "aspect": {}
+     },
+     {
+      "cle": "-44,38.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 3.89,
+      "heure": 2.71,
+      "taille": 0.101,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-44,38.0-4-1",
+      "genre": "lune",
+      "parent_cle": "-44,38.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.44,
+      "taille": 0.054,
+      "aspect": {}
+     },
+     {
+      "cle": "-44,38.0-4-2",
+      "genre": "lune",
+      "parent_cle": "-44,38.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 8.94,
+      "taille": 0.052,
+      "aspect": {}
+     },
+     {
+      "cle": "-44,38.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": 5.09,
+      "heure": 7.3,
+      "taille": 0.115,
+      "aspect": {
+       "nature": "à atmosphère"
+      }
+     },
+     {
+      "cle": "-44,38.0-5-1",
+      "genre": "lune",
+      "parent_cle": "-44,38.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.31,
+      "taille": 0.043,
+      "aspect": {}
+     },
+     {
+      "cle": "-44,38.comete",
+      "genre": "comete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "comete",
+      "nom": null,
+      "orbite": 4.04,
+      "heure": 3.48,
+      "taille": 1.714,
+      "aspect": {
+       "perihelie": 0.61,
+       "sens": -1,
+       "couleur": "#fff0c8",
+       "gaz": "#9fc8ff",
+       "poussiere": "#ffcf6a",
+       "longueur": 0.383,
+       "ouverture": 0.204,
+       "tete": 1.714,
+       "courbure": 0.557,
+       "force_gaz": 0.574,
+       "force_poussiere": 0.787
+      }
+     }
+    ],
+    "formations": [
+     {
+      "cle": "-44,38.ceinture-0-2",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 2.71,
+       "a": 3.29,
+       "rochers": 0.78,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 5.79
+   }
+  },
+  {
+   "entree": {
+    "q": -43,
+    "r": -14,
+    "taille": 1.718082560793174,
+    "lettre": "G"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "-43,-14.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "jaune",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "-43,-14.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 1.04,
+      "heure": 10.61,
+      "taille": 0.089,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "-43,-14.0-1-1",
+      "genre": "lune",
+      "parent_cle": "-43,-14.0-1",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 10.62,
+      "taille": 0.057,
+      "aspect": {}
+     },
+     {
+      "cle": "-43,-14.0-1-2",
+      "genre": "lune",
+      "parent_cle": "-43,-14.0-1",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 8.35,
+      "taille": 0.052,
+      "aspect": {}
+     },
+     {
+      "cle": "-43,-14.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": 2.08,
+      "heure": 3.19,
+      "taille": 0.1,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-43,-14.0-2-1",
+      "genre": "lune",
+      "parent_cle": "-43,-14.0-2",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 7.28,
+      "taille": 0.048,
+      "aspect": {}
+     },
+     {
+      "cle": "-43,-14.0-3",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 2.99,
+      "heure": 7.78,
+      "taille": 0.116,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "-43,-14.0-3-1",
+      "genre": "lune",
+      "parent_cle": "-43,-14.0-3",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.29,
+      "taille": 0.058,
+      "aspect": {}
+     },
+     {
+      "cle": "-43,-14.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 4.91,
+      "heure": 0.36,
+      "taille": 0.118,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-43,-14.0-5-1",
+      "genre": "lune",
+      "parent_cle": "-43,-14.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 5.33,
+      "taille": 0.054,
+      "aspect": {}
+     },
+     {
+      "cle": "-43,-14.0-5-2",
+      "genre": "lune",
+      "parent_cle": "-43,-14.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 1.95,
+      "taille": 0.044,
+      "aspect": {}
+     },
+     {
+      "cle": "-43,-14.comete",
+      "genre": "comete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "comete",
+      "nom": null,
+      "orbite": 5.4,
+      "heure": 5.37,
+      "taille": 0.681,
+      "aspect": {
+       "perihelie": 1.88,
+       "sens": 1,
+       "couleur": "#e8f4ff",
+       "gaz": "#a8d0ff",
+       "poussiere": "#e8e8e8",
+       "longueur": 0.703,
+       "ouverture": 0.445,
+       "tete": 0.681,
+       "courbure": 0.268,
+       "force_gaz": 1.016,
+       "force_poussiere": 0.527
+      }
+     }
+    ],
+    "formations": [
+     {
+      "cle": "-43,-14.ceinture-0-3",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 3.86,
+       "a": 4.14,
+       "rochers": 1.06,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     },
+     {
+      "cle": "-43,-14.zone",
+      "forme": "nuage",
+      "nom": null,
+      "parametres": {
+       "orbite": 5.07,
+       "heure": 0.25,
+       "rochers": 0.05,
+       "brume": "#3a5ab0",
+       "materiaux": [
+        [
+         "roche",
+         2
+        ],
+        [
+         "glace",
+         1
+        ]
+       ],
+       "centres": [
+        [
+         5.07,
+         0.25,
+         1.21
+        ],
+        [
+         5.52,
+         0.53,
+         0.76
+        ],
+        [
+         5.85,
+         0.69,
+         1.04
+        ],
+        [
+         5,
+         0.4,
+         0.88
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 7.59
+   }
+  },
+  {
+   "entree": {
+    "q": -39,
+    "r": -49,
+    "taille": 1.1462896696284546,
+    "lettre": "G"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "-39,-49.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "jaune",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "-39,-49.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "lave",
+      "nom": null,
+      "orbite": 0.89,
+      "heure": 0.29,
+      "taille": 0.113,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-39,-49.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 1.89,
+      "heure": 4.87,
+      "taille": 0.125,
+      "aspect": {
+       "nature": "océanique"
+      }
+     },
+     {
+      "cle": "-39,-49.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 4.08,
+      "heure": 9.46,
+      "taille": 0.099,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-39,-49.0-4-1",
+      "genre": "lune",
+      "parent_cle": "-39,-49.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 8.15,
+      "taille": 0.042,
+      "aspect": {}
+     },
+     {
+      "cle": "-39,-49.0-4-2",
+      "genre": "lune",
+      "parent_cle": "-39,-49.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 4.37,
+      "taille": 0.055,
+      "aspect": {}
+     },
+     {
+      "cle": "-39,-49.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 4.97,
+      "heure": 2.04,
+      "taille": 0.096,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-39,-49.0-5-1",
+      "genre": "lune",
+      "parent_cle": "-39,-49.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 4.1,
+      "taille": 0.047,
+      "aspect": {}
+     },
+     {
+      "cle": "-39,-49.0-5-2",
+      "genre": "lune",
+      "parent_cle": "-39,-49.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 4.57,
+      "taille": 0.054,
+      "aspect": {}
+     },
+     {
+      "cle": "-39,-49.0-5-3",
+      "genre": "lune",
+      "parent_cle": "-39,-49.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 5.98,
+      "taille": 0.046,
+      "aspect": {}
+     },
+     {
+      "cle": "-39,-49.0-5-4",
+      "genre": "lune",
+      "parent_cle": "-39,-49.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 11.09,
+      "taille": 0.043,
+      "aspect": {}
+     },
+     {
+      "cle": "-39,-49.0-5-5",
+      "genre": "lune",
+      "parent_cle": "-39,-49.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.95,
+      "taille": 0.055,
+      "aspect": {}
+     }
+    ],
+    "formations": [
+     {
+      "cle": "-39,-49.ceinture-0-2",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 2.7,
+       "a": 3.3,
+       "rochers": 0.63,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 5.67
+   }
+  },
+  {
+   "entree": {
+    "q": -27,
+    "r": 12,
+    "taille": 0.6532475956123368,
+    "lettre": "K"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "-27,12.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "orange",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "-27,12.etoile-1",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 1,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 0.35,
+      "heure": 7.12,
+      "taille": 0.2,
+      "aspect": {
+       "serree": true
+      }
+     },
+     {
+      "cle": "-27,12.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "lave",
+      "nom": null,
+      "orbite": 1.52,
+      "heure": 1.92,
+      "taille": 0.108,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-27,12.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": 2.68,
+      "heure": 6.51,
+      "taille": 0.091,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-27,12.0-3",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 3.5,
+      "heure": 11.09,
+      "taille": 0.094,
+      "aspect": {
+       "nature": "habitable"
+      }
+     },
+     {
+      "cle": "-27,12.0-3-1",
+      "genre": "lune",
+      "parent_cle": "-27,12.0-3",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 11.02,
+      "taille": 0.056,
+      "aspect": {}
+     },
+     {
+      "cle": "-27,12.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 4.66,
+      "heure": 3.67,
+      "taille": 0.125,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-27,12.0-4-1",
+      "genre": "lune",
+      "parent_cle": "-27,12.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 10,
+      "taille": 0.056,
+      "aspect": {}
+     },
+     {
+      "cle": "-27,12.0-4-2",
+      "genre": "lune",
+      "parent_cle": "-27,12.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 1.22,
+      "taille": 0.056,
+      "aspect": {}
+     },
+     {
+      "cle": "-27,12.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 5.63,
+      "heure": 8.26,
+      "taille": 0.114,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-27,12.0-5-1",
+      "genre": "lune",
+      "parent_cle": "-27,12.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 8.86,
+      "taille": 0.046,
+      "aspect": {}
+     },
+     {
+      "cle": "-27,12.0-5-2",
+      "genre": "lune",
+      "parent_cle": "-27,12.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 6.1,
+      "taille": 0.043,
+      "aspect": {}
+     },
+     {
+      "cle": "-27,12.0-6",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 6.72,
+      "heure": 0.84,
+      "taille": 0.095,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-27,12.0-6-1",
+      "genre": "lune",
+      "parent_cle": "-27,12.0-6",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 1.9,
+      "taille": 0.055,
+      "aspect": {}
+     },
+     {
+      "cle": "-27,12.0-6-2",
+      "genre": "lune",
+      "parent_cle": "-27,12.0-6",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 7.63,
+      "taille": 0.055,
+      "aspect": {}
+     },
+     {
+      "cle": "-27,12.0-6-3",
+      "genre": "lune",
+      "parent_cle": "-27,12.0-6",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.97,
+      "taille": 0.056,
+      "aspect": {}
+     },
+     {
+      "cle": "-27,12.0-6-4",
+      "genre": "lune",
+      "parent_cle": "-27,12.0-6",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 7.24,
+      "taille": 0.049,
+      "aspect": {}
+     },
+     {
+      "cle": "-27,12.0-7",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": 7.65,
+      "heure": 5.42,
+      "taille": 0.131,
+      "aspect": {
+       "nature": "à atmosphère"
+      }
+     }
+    ],
+    "formations": [],
+    "transition": 8.35
+   }
+  },
+  {
+   "entree": {
+    "q": -17,
+    "r": -48,
+    "taille": 0.6577416769112184,
+    "lettre": "A"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "-17,-48.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "naine_blanche",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "-17,-48.etoile-1",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 1,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 4.46,
+      "heure": 10.87,
+      "taille": 0.2,
+      "aspect": {
+       "serree": false
+      }
+     },
+     {
+      "cle": "-17,-48.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": 1.34,
+      "heure": 4.45,
+      "taille": 0.124,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-17,-48.1-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 1,
+      "type": "verrouillee",
+      "nom": null,
+      "orbite": 0.65,
+      "heure": 9.03,
+      "taille": 0.117,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-17,-48.1-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 1,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 1.1,
+      "heure": 1.62,
+      "taille": 0.105,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-17,-48.1-2-1",
+      "genre": "lune",
+      "parent_cle": "-17,-48.1-2",
+      "etoile_rang": 1,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.88,
+      "taille": 0.049,
+      "aspect": {}
+     },
+     {
+      "cle": "-17,-48.1-2-2",
+      "genre": "lune",
+      "parent_cle": "-17,-48.1-2",
+      "etoile_rang": 1,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.73,
+      "taille": 0.052,
+      "aspect": {}
+     },
+     {
+      "cle": "-17,-48.1-2-3",
+      "genre": "lune",
+      "parent_cle": "-17,-48.1-2",
+      "etoile_rang": 1,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 0.78,
+      "taille": 0.05,
+      "aspect": {}
+     }
+    ],
+    "formations": [
+     {
+      "cle": "-17,-48.ceinture-0-1",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 2.29,
+       "a": 2.51,
+       "rochers": 0.74,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 6.51
+   }
+  },
+  {
+   "entree": {
+    "q": -13,
+    "r": -48,
+    "taille": 0.6963863598574845,
+    "lettre": "M"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "-13,-48.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "-13,-48.etoile-1",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 1,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 0.35,
+      "heure": 6.92,
+      "taille": 0.2,
+      "aspect": {
+       "serree": true
+      }
+     },
+     {
+      "cle": "-13,-48.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "verrouillee",
+      "nom": null,
+      "orbite": 1.6,
+      "heure": 8.03,
+      "taille": 0.113,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-13,-48.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "verrouillee",
+      "nom": null,
+      "orbite": 2.38,
+      "heure": 0.61,
+      "taille": 0.111,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-13,-48.0-3",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 3.14,
+      "heure": 5.2,
+      "taille": 0.125,
+      "aspect": {
+       "nature": "océanique"
+      }
+     },
+     {
+      "cle": "-13,-48.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 4.7,
+      "heure": 9.78,
+      "taille": 0.089,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-13,-48.0-5-1",
+      "genre": "lune",
+      "parent_cle": "-13,-48.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 8.71,
+      "taille": 0.049,
+      "aspect": {}
+     },
+     {
+      "cle": "-13,-48.0-5-2",
+      "genre": "lune",
+      "parent_cle": "-13,-48.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.01,
+      "taille": 0.052,
+      "aspect": {}
+     },
+     {
+      "cle": "-13,-48.0-5-3",
+      "genre": "lune",
+      "parent_cle": "-13,-48.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 8.92,
+      "taille": 0.044,
+      "aspect": {}
+     },
+     {
+      "cle": "-13,-48.0-5-4",
+      "genre": "lune",
+      "parent_cle": "-13,-48.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 5.89,
+      "taille": 0.058,
+      "aspect": {}
+     },
+     {
+      "cle": "-13,-48.0-6",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": 5.72,
+      "heure": 2.36,
+      "taille": 0.139,
+      "aspect": {
+       "nature": "à atmosphère"
+      }
+     },
+     {
+      "cle": "-13,-48.0-6-1",
+      "genre": "lune",
+      "parent_cle": "-13,-48.0-6",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 11.07,
+      "taille": 0.047,
+      "aspect": {}
+     }
+    ],
+    "formations": [
+     {
+      "cle": "-13,-48.ceinture-0-3",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 3.82,
+       "a": 4.18,
+       "rochers": 1.04,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     },
+     {
+      "cle": "-13,-48.zone",
+      "forme": "nuage",
+      "nom": null,
+      "parametres": {
+       "orbite": 5.47,
+       "heure": 1.44,
+       "rochers": 0.08,
+       "brume": "#4a8a6a",
+       "materiaux": [
+        [
+         "roche",
+         2
+        ],
+        [
+         "glace",
+         1
+        ]
+       ],
+       "centres": [
+        [
+         5.47,
+         1.44,
+         1.15
+        ],
+        [
+         4.61,
+         1.37,
+         0.83
+        ],
+        [
+         4.72,
+         1.48,
+         0.94
+        ],
+        [
+         5.46,
+         1.33,
+         0.79
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 7.32
+   }
+  },
+  {
+   "entree": {
+    "q": -7,
+    "r": -48,
+    "taille": 0.8098169872123309,
+    "lettre": "B"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "-7,-48.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "geante_bleue",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "-7,-48.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": 1.41,
+      "heure": 4.42,
+      "taille": 0.106,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-7,-48.0-1-1",
+      "genre": "lune",
+      "parent_cle": "-7,-48.0-1",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 4.6,
+      "taille": 0.056,
+      "aspect": {}
+     },
+     {
+      "cle": "-7,-48.0-1-2",
+      "genre": "lune",
+      "parent_cle": "-7,-48.0-1",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.42,
+      "taille": 0.044,
+      "aspect": {}
+     },
+     {
+      "cle": "-7,-48.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 2.68,
+      "heure": 9,
+      "taille": 0.103,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "-7,-48.0-2-1",
+      "genre": "lune",
+      "parent_cle": "-7,-48.0-2",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.04,
+      "taille": 0.054,
+      "aspect": {}
+     },
+     {
+      "cle": "-7,-48.0-3",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": 3.61,
+      "heure": 1.59,
+      "taille": 0.128,
+      "aspect": {
+       "nature": "à atmosphère"
+      }
+     },
+     {
+      "cle": "-7,-48.0-3-1",
+      "genre": "lune",
+      "parent_cle": "-7,-48.0-3",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 10.82,
+      "taille": 0.057,
+      "aspect": {}
+     }
+    ],
+    "formations": [
+     {
+      "cle": "-7,-48.zone",
+      "forme": "nuage",
+      "nom": null,
+      "parametres": {
+       "orbite": 4.21,
+       "heure": 5.26,
+       "rochers": 0.68,
+       "brume": "#8a7a66",
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "roche_sombre",
+         1
+        ],
+        [
+         "metal",
+         1
+        ]
+       ],
+       "centres": [
+        [
+         4.21,
+         5.26,
+         0.8
+        ],
+        [
+         4.79,
+         5.05,
+         0.47
+        ],
+        [
+         4.45,
+         5.15,
+         0.67
+        ],
+        [
+         4.32,
+         5.36,
+         0.44
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 5.96
+   }
+  },
+  {
+   "entree": {
+    "q": -2,
+    "r": -49,
+    "taille": 1.9383160957605097,
+    "lettre": "M"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "-2,-49.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "geante_rouge",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "-2,-49.etoile-1",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 1,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 0.35,
+      "heure": 3.13,
+      "taille": 0.2,
+      "aspect": {
+       "serree": true
+      }
+     },
+     {
+      "cle": "-2,-49.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 1.59,
+      "heure": 2.32,
+      "taille": 0.109,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "-2,-49.0-1-1",
+      "genre": "lune",
+      "parent_cle": "-2,-49.0-1",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 11.31,
+      "taille": 0.046,
+      "aspect": {}
+     },
+     {
+      "cle": "-2,-49.0-1-2",
+      "genre": "lune",
+      "parent_cle": "-2,-49.0-1",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 6.2,
+      "taille": 0.057,
+      "aspect": {}
+     },
+     {
+      "cle": "-2,-49.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": 2.51,
+      "heure": 6.9,
+      "taille": 0.103,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-2,-49.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 4.68,
+      "heure": 11.48,
+      "taille": 0.097,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "-2,-49.0-4-1",
+      "genre": "lune",
+      "parent_cle": "-2,-49.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.13,
+      "taille": 0.044,
+      "aspect": {}
+     },
+     {
+      "cle": "-2,-49.0-4-2",
+      "genre": "lune",
+      "parent_cle": "-2,-49.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.73,
+      "taille": 0.045,
+      "aspect": {}
+     },
+     {
+      "cle": "-2,-49.0-4-3",
+      "genre": "lune",
+      "parent_cle": "-2,-49.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 4.37,
+      "taille": 0.049,
+      "aspect": {}
+     },
+     {
+      "cle": "-2,-49.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": 5.64,
+      "heure": 4.07,
+      "taille": 0.115,
+      "aspect": {
+       "nature": "à atmosphère"
+      }
+     },
+     {
+      "cle": "-2,-49.0-5-1",
+      "genre": "lune",
+      "parent_cle": "-2,-49.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.29,
+      "taille": 0.045,
+      "aspect": {}
+     },
+     {
+      "cle": "-2,-49.0-5-2",
+      "genre": "lune",
+      "parent_cle": "-2,-49.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 5.84,
+      "taille": 0.054,
+      "aspect": {}
+     }
+    ],
+    "formations": [
+     {
+      "cle": "-2,-49.ceinture-0-2",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 3.49,
+       "a": 3.71,
+       "rochers": 0.66,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     },
+     {
+      "cle": "-2,-49.ceinture-0-5",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 6.62,
+       "a": 7.18,
+       "rochers": 0.28,
+       "materiaux": [
+        [
+         "glace",
+         3
+        ],
+        [
+         "roche",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     },
+     {
+      "cle": "-2,-49.zone",
+      "forme": "nuage",
+      "nom": null,
+      "parametres": {
+       "orbite": 2.97,
+       "heure": 5.62,
+       "rochers": 0.03,
+       "brume": "#b0507a",
+       "materiaux": [
+        [
+         "roche",
+         2
+        ],
+        [
+         "glace",
+         1
+        ]
+       ],
+       "centres": [
+        [
+         2.97,
+         5.62,
+         1.2
+        ],
+        [
+         1.97,
+         5.49,
+         0.77
+        ],
+        [
+         1.61,
+         5.86,
+         0.89
+        ],
+        [
+         3.98,
+         5.69,
+         0.69
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 7.88
+   }
+  },
+  {
+   "entree": {
+    "q": 7,
+    "r": 18,
+    "taille": 0.7306123858005589,
+    "lettre": "K"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "7,18.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "orange",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "7,18.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 1.11,
+      "heure": 6.88,
+      "taille": 0.096,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "7,18.0-1-1",
+      "genre": "lune",
+      "parent_cle": "7,18.0-1",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.17,
+      "taille": 0.055,
+      "aspect": {}
+     },
+     {
+      "cle": "7,18.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 2.06,
+      "heure": 11.46,
+      "taille": 0.114,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "7,18.0-2-1",
+      "genre": "lune",
+      "parent_cle": "7,18.0-2",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 6.3,
+      "taille": 0.048,
+      "aspect": {}
+     },
+     {
+      "cle": "7,18.0-2-2",
+      "genre": "lune",
+      "parent_cle": "7,18.0-2",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 10.99,
+      "taille": 0.043,
+      "aspect": {}
+     },
+     {
+      "cle": "7,18.0-3",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 2.92,
+      "heure": 4.04,
+      "taille": 0.102,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "7,18.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 3.89,
+      "heure": 8.63,
+      "taille": 0.095,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "7,18.0-4-1",
+      "genre": "lune",
+      "parent_cle": "7,18.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 4.13,
+      "taille": 0.054,
+      "aspect": {}
+     },
+     {
+      "cle": "7,18.0-4-2",
+      "genre": "lune",
+      "parent_cle": "7,18.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 0.8,
+      "taille": 0.045,
+      "aspect": {}
+     },
+     {
+      "cle": "7,18.0-4-3",
+      "genre": "lune",
+      "parent_cle": "7,18.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.66,
+      "taille": 0.055,
+      "aspect": {}
+     },
+     {
+      "cle": "7,18.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 5.09,
+      "heure": 1.21,
+      "taille": 0.114,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "7,18.0-5-1",
+      "genre": "lune",
+      "parent_cle": "7,18.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.86,
+      "taille": 0.046,
+      "aspect": {}
+     },
+     {
+      "cle": "7,18.0-5-2",
+      "genre": "lune",
+      "parent_cle": "7,18.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 11.79,
+      "taille": 0.046,
+      "aspect": {}
+     },
+     {
+      "cle": "7,18.0-5-3",
+      "genre": "lune",
+      "parent_cle": "7,18.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 7.18,
+      "taille": 0.052,
+      "aspect": {}
+     },
+     {
+      "cle": "7,18.0-5-4",
+      "genre": "lune",
+      "parent_cle": "7,18.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 10.35,
+      "taille": 0.054,
+      "aspect": {}
+     },
+     {
+      "cle": "7,18.comete",
+      "genre": "comete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "comete",
+      "nom": null,
+      "orbite": 4.7,
+      "heure": 3.39,
+      "taille": 1.028,
+      "aspect": {
+       "perihelie": 1.38,
+       "sens": -1,
+       "couleur": "#b8dcff",
+       "gaz": "#5a9cff",
+       "poussiere": "#b8c8e8",
+       "longueur": 0.392,
+       "ouverture": 0.275,
+       "tete": 1.028,
+       "courbure": 0.626,
+       "force_gaz": 0.944,
+       "force_poussiere": 0.515
+      }
+     }
+    ],
+    "formations": [],
+    "transition": 5.79
+   }
+  },
+  {
+   "entree": {
+    "q": 11,
+    "r": -7,
+    "taille": 1.819181971400226,
+    "lettre": "K"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "11,-7.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "orange",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "11,-7.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 0.97,
+      "heure": 7.63,
+      "taille": 0.098,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "11,-7.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 2.07,
+      "heure": 0.22,
+      "taille": 0.118,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "11,-7.0-3",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 2.9,
+      "heure": 4.8,
+      "taille": 0.096,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "11,-7.0-3-1",
+      "genre": "lune",
+      "parent_cle": "11,-7.0-3",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 4.62,
+      "taille": 0.044,
+      "aspect": {}
+     },
+     {
+      "cle": "11,-7.0-3-2",
+      "genre": "lune",
+      "parent_cle": "11,-7.0-3",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 8.86,
+      "taille": 0.05,
+      "aspect": {}
+     },
+     {
+      "cle": "11,-7.0-3-3",
+      "genre": "lune",
+      "parent_cle": "11,-7.0-3",
+      "etoile_rang": 0,
+      "type": "lave",
+      "nom": null,
+      "orbite": null,
+      "heure": 7.7,
+      "taille": 0.055,
+      "aspect": {}
+     },
+     {
+      "cle": "11,-7.0-3-4",
+      "genre": "lune",
+      "parent_cle": "11,-7.0-3",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 1.74,
+      "taille": 0.048,
+      "aspect": {}
+     },
+     {
+      "cle": "11,-7.0-3-5",
+      "genre": "lune",
+      "parent_cle": "11,-7.0-3",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 6.91,
+      "taille": 0.053,
+      "aspect": {}
+     },
+     {
+      "cle": "11,-7.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 4.02,
+      "heure": 9.39,
+      "taille": 0.091,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "11,-7.0-4-1",
+      "genre": "lune",
+      "parent_cle": "11,-7.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.17,
+      "taille": 0.053,
+      "aspect": {}
+     },
+     {
+      "cle": "11,-7.0-4-2",
+      "genre": "lune",
+      "parent_cle": "11,-7.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 10.08,
+      "taille": 0.048,
+      "aspect": {}
+     },
+     {
+      "cle": "11,-7.0-4-3",
+      "genre": "lune",
+      "parent_cle": "11,-7.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 1.05,
+      "taille": 0.047,
+      "aspect": {}
+     },
+     {
+      "cle": "11,-7.0-4-4",
+      "genre": "lune",
+      "parent_cle": "11,-7.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 4.89,
+      "taille": 0.046,
+      "aspect": {}
+     },
+     {
+      "cle": "11,-7.0-4-5",
+      "genre": "lune",
+      "parent_cle": "11,-7.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.33,
+      "taille": 0.051,
+      "aspect": {}
+     }
+    ],
+    "formations": [
+     {
+      "cle": "11,-7.zone",
+      "forme": "nuage",
+      "nom": null,
+      "parametres": {
+       "orbite": 1.58,
+       "heure": 3.44,
+       "rochers": 0.09,
+       "brume": "#3a5ab0",
+       "materiaux": [
+        [
+         "roche",
+         2
+        ],
+        [
+         "glace",
+         1
+        ]
+       ],
+       "centres": [
+        [
+         1.58,
+         3.44,
+         1.05
+        ],
+        [
+         1.85,
+         2.42,
+         0.82
+        ],
+        [
+         1.29,
+         2.28,
+         0.84
+        ],
+        [
+         1.53,
+         1.65,
+         0.72
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 4.72
+   }
+  },
+  {
+   "entree": {
+    "q": 12,
+    "r": -34,
+    "taille": 0.8456284700804003,
+    "lettre": "A"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "12,-34.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "blanche",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-34.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "lave",
+      "nom": null,
+      "orbite": 1.03,
+      "heure": 1.85,
+      "taille": 0.098,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "12,-34.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 1.92,
+      "heure": 6.43,
+      "taille": 0.103,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "12,-34.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 3.92,
+      "heure": 11.01,
+      "taille": 0.095,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "12,-34.0-4-1",
+      "genre": "lune",
+      "parent_cle": "12,-34.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 0.45,
+      "taille": 0.053,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-34.0-4-2",
+      "genre": "lune",
+      "parent_cle": "12,-34.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 6.12,
+      "taille": 0.057,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-34.0-4-3",
+      "genre": "lune",
+      "parent_cle": "12,-34.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.85,
+      "taille": 0.046,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-34.0-4-4",
+      "genre": "lune",
+      "parent_cle": "12,-34.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.09,
+      "taille": 0.055,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-34.0-4-5",
+      "genre": "lune",
+      "parent_cle": "12,-34.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.74,
+      "taille": 0.055,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-34.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 4.93,
+      "heure": 3.6,
+      "taille": 0.097,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "12,-34.0-5-1",
+      "genre": "lune",
+      "parent_cle": "12,-34.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 7.33,
+      "taille": 0.049,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-34.0-5-2",
+      "genre": "lune",
+      "parent_cle": "12,-34.0-5",
+      "etoile_rang": 0,
+      "type": "lave",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.96,
+      "taille": 0.044,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-34.0-5-3",
+      "genre": "lune",
+      "parent_cle": "12,-34.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.78,
+      "taille": 0.055,
+      "aspect": {}
+     }
+    ],
+    "formations": [
+     {
+      "cle": "12,-34.ceinture-0-2",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 2.85,
+       "a": 3.15,
+       "rochers": 0.63,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     },
+     {
+      "cle": "12,-34.ceinture-0-5",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 5.93,
+       "a": 6.67,
+       "rochers": 0.33,
+       "materiaux": [
+        [
+         "glace",
+         3
+        ],
+        [
+         "roche",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     },
+     {
+      "cle": "12,-34.zone",
+      "forme": "nuage",
+      "nom": null,
+      "parametres": {
+       "orbite": 7.27,
+       "heure": 4.64,
+       "rochers": 0.86,
+       "brume": null,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "roche_sombre",
+         1
+        ],
+        [
+         "metal",
+         1
+        ]
+       ],
+       "centres": [
+        [
+         7.27,
+         4.64,
+         0.85
+        ],
+        [
+         6.51,
+         4.56,
+         0.61
+        ],
+        [
+         7.1,
+         4.59,
+         0.6
+        ],
+        [
+         6.65,
+         4.53,
+         0.66
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 8.82
+   }
+  },
+  {
+   "entree": {
+    "q": 12,
+    "r": -24,
+    "taille": 1.2375299630903984,
+    "lettre": "F"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "12,-24.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "blanche",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-24.etoile-1",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 1,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 8.33,
+      "heure": 8.98,
+      "taille": 0.2,
+      "aspect": {
+       "serree": false
+      }
+     },
+     {
+      "cle": "12,-24.etoile-2",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 2,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 8.33,
+      "heure": 2.98,
+      "taille": 0.2,
+      "aspect": {
+       "serree": false
+      }
+     },
+     {
+      "cle": "12,-24.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "lave",
+      "nom": null,
+      "orbite": 1.11,
+      "heure": 5.27,
+      "taille": 0.098,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "12,-24.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 1.92,
+      "heure": 9.86,
+      "taille": 0.123,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "12,-24.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 4.04,
+      "heure": 2.44,
+      "taille": 0.095,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "12,-24.0-4-1",
+      "genre": "lune",
+      "parent_cle": "12,-24.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 8.88,
+      "taille": 0.043,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-24.0-4-2",
+      "genre": "lune",
+      "parent_cle": "12,-24.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.31,
+      "taille": 0.047,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-24.0-4-3",
+      "genre": "lune",
+      "parent_cle": "12,-24.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.58,
+      "taille": 0.049,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-24.1-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 1,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 0.65,
+      "heure": 7.02,
+      "taille": 0.091,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "12,-24.1-1-1",
+      "genre": "lune",
+      "parent_cle": "12,-24.1-1",
+      "etoile_rang": 1,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 10.08,
+      "taille": 0.047,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-24.2-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 2,
+      "type": "lave",
+      "nom": null,
+      "orbite": 0.65,
+      "heure": 11.61,
+      "taille": 0.12,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "12,-24.2-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 2,
+      "type": "verrouillee",
+      "nom": null,
+      "orbite": 1.1,
+      "heure": 4.19,
+      "taille": 0.108,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "12,-24.2-2-1",
+      "genre": "lune",
+      "parent_cle": "12,-24.2-2",
+      "etoile_rang": 2,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.08,
+      "taille": 0.056,
+      "aspect": {}
+     },
+     {
+      "cle": "12,-24.2-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 2,
+      "type": "glace",
+      "nom": null,
+      "orbite": 2,
+      "heure": 8.78,
+      "taille": 0.099,
+      "aspect": {
+       "nature": "à atmosphère"
+      }
+     },
+     {
+      "cle": "12,-24.comete",
+      "genre": "comete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "comete",
+      "nom": null,
+      "orbite": 7.37,
+      "heure": 4.51,
+      "taille": 1.195,
+      "aspect": {
+       "perihelie": 1.05,
+       "sens": -1,
+       "couleur": "#b8dcff",
+       "gaz": "#5a9cff",
+       "poussiere": "#b8c8e8",
+       "longueur": 0.315,
+       "ouverture": 0.165,
+       "tete": 1.195,
+       "courbure": 0.445,
+       "force_gaz": 0.477,
+       "force_poussiere": 0.616
+      }
+     }
+    ],
+    "formations": [
+     {
+      "cle": "12,-24.ceinture-0-2",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 2.68,
+       "a": 3.32,
+       "rochers": 0.91,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     },
+     {
+      "cle": "12,-24.ceinture-0-4",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 5.12,
+       "a": 5.48,
+       "rochers": 0.36,
+       "materiaux": [
+        [
+         "glace",
+         3
+        ],
+        [
+         "roche",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     },
+     {
+      "cle": "12,-24.ceinture-1-1",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 1,
+       "a": 1.2,
+       "rochers": 0.86,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 1
+     },
+     {
+      "cle": "12,-24.ceinture-2-2",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 1.41,
+       "a": 1.69,
+       "rochers": 1.18,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 2
+     }
+    ],
+    "transition": 11.28
+   }
+  },
+  {
+   "entree": {
+    "q": 18,
+    "r": -47,
+    "taille": 0.7354554191169097,
+    "lettre": "F"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "18,-47.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "blanche",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "18,-47.etoile-1",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 1,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 6.94,
+      "heure": 3.45,
+      "taille": 0.2,
+      "aspect": {
+       "serree": false
+      }
+     },
+     {
+      "cle": "18,-47.etoile-2",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 2,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 6.94,
+      "heure": 9.45,
+      "taille": 0.2,
+      "aspect": {
+       "serree": false
+      }
+     },
+     {
+      "cle": "18,-47.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "lave",
+      "nom": null,
+      "orbite": 1.12,
+      "heure": 2.12,
+      "taille": 0.115,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "18,-47.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": 1.93,
+      "heure": 6.71,
+      "taille": 0.098,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "18,-47.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 4.08,
+      "heure": 11.29,
+      "taille": 0.093,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "18,-47.0-4-1",
+      "genre": "lune",
+      "parent_cle": "18,-47.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 8.68,
+      "taille": 0.05,
+      "aspect": {}
+     },
+     {
+      "cle": "18,-47.0-4-2",
+      "genre": "lune",
+      "parent_cle": "18,-47.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.34,
+      "taille": 0.046,
+      "aspect": {}
+     },
+     {
+      "cle": "18,-47.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": 4.99,
+      "heure": 3.88,
+      "taille": 0.104,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "18,-47.0-5-1",
+      "genre": "lune",
+      "parent_cle": "18,-47.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.8,
+      "taille": 0.054,
+      "aspect": {}
+     },
+     {
+      "cle": "18,-47.1-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 1,
+      "type": "verrouillee",
+      "nom": null,
+      "orbite": 0.65,
+      "heure": 8.46,
+      "taille": 0.109,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "18,-47.1-1-1",
+      "genre": "lune",
+      "parent_cle": "18,-47.1-1",
+      "etoile_rang": 1,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.55,
+      "taille": 0.046,
+      "aspect": {}
+     },
+     {
+      "cle": "18,-47.1-1-2",
+      "genre": "lune",
+      "parent_cle": "18,-47.1-1",
+      "etoile_rang": 1,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 0.39,
+      "taille": 0.042,
+      "aspect": {}
+     },
+     {
+      "cle": "18,-47.2-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 2,
+      "type": "verrouillee",
+      "nom": null,
+      "orbite": 0.65,
+      "heure": 1.04,
+      "taille": 0.123,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "18,-47.2-1-1",
+      "genre": "lune",
+      "parent_cle": "18,-47.2-1",
+      "etoile_rang": 2,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.72,
+      "taille": 0.047,
+      "aspect": {}
+     },
+     {
+      "cle": "18,-47.2-1-2",
+      "genre": "lune",
+      "parent_cle": "18,-47.2-1",
+      "etoile_rang": 2,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 8.9,
+      "taille": 0.048,
+      "aspect": {}
+     },
+     {
+      "cle": "18,-47.2-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 2,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 1.1,
+      "heure": 5.63,
+      "taille": 0.09,
+      "aspect": {
+       "nature": "habitable"
+      }
+     }
+    ],
+    "formations": [
+     {
+      "cle": "18,-47.ceinture-0-2",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 2.87,
+       "a": 3.13,
+       "rochers": 0.89,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 8.99
+   }
+  },
+  {
+   "entree": {
+    "q": 26,
+    "r": 22,
+    "taille": 0.944137117167858,
+    "lettre": "K"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "26,22.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "orange",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "26,22.etoile-1",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 1,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 0.35,
+      "heure": 6.95,
+      "taille": 0.2,
+      "aspect": {
+       "serree": true
+      }
+     },
+     {
+      "cle": "26,22.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "lave",
+      "nom": null,
+      "orbite": 1.7,
+      "heure": 9.18,
+      "taille": 0.092,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "26,22.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 2.7,
+      "heure": 1.76,
+      "taille": 0.102,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "26,22.0-2-1",
+      "genre": "lune",
+      "parent_cle": "26,22.0-2",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 11.99,
+      "taille": 0.045,
+      "aspect": {}
+     },
+     {
+      "cle": "26,22.0-3",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 3.5,
+      "heure": 6.35,
+      "taille": 0.092,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "26,22.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 4.67,
+      "heure": 10.93,
+      "taille": 0.117,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "26,22.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": 5.7,
+      "heure": 3.51,
+      "taille": 0.111,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "26,22.0-5-1",
+      "genre": "lune",
+      "parent_cle": "26,22.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 0.47,
+      "taille": 0.054,
+      "aspect": {}
+     },
+     {
+      "cle": "26,22.0-5-2",
+      "genre": "lune",
+      "parent_cle": "26,22.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 10.55,
+      "taille": 0.055,
+      "aspect": {}
+     },
+     {
+      "cle": "26,22.0-6",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 6.71,
+      "heure": 8.1,
+      "taille": 0.104,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "26,22.0-6-1",
+      "genre": "lune",
+      "parent_cle": "26,22.0-6",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 0.7,
+      "taille": 0.055,
+      "aspect": {}
+     },
+     {
+      "cle": "26,22.0-6-2",
+      "genre": "lune",
+      "parent_cle": "26,22.0-6",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 7.58,
+      "taille": 0.046,
+      "aspect": {}
+     },
+     {
+      "cle": "26,22.0-7",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 7.56,
+      "heure": 0.68,
+      "taille": 0.105,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "26,22.0-7-1",
+      "genre": "lune",
+      "parent_cle": "26,22.0-7",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 7.66,
+      "taille": 0.056,
+      "aspect": {}
+     },
+     {
+      "cle": "26,22.0-7-2",
+      "genre": "lune",
+      "parent_cle": "26,22.0-7",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 0.05,
+      "taille": 0.056,
+      "aspect": {}
+     },
+     {
+      "cle": "26,22.0-7-3",
+      "genre": "lune",
+      "parent_cle": "26,22.0-7",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 6.84,
+      "taille": 0.054,
+      "aspect": {}
+     },
+     {
+      "cle": "26,22.0-8",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": 8.68,
+      "heure": 5.26,
+      "taille": 0.12,
+      "aspect": {
+       "nature": "à atmosphère"
+      }
+     }
+    ],
+    "formations": [
+     {
+      "cle": "26,22.zone",
+      "forme": "nuage",
+      "nom": null,
+      "parametres": {
+       "orbite": 9.28,
+       "heure": 6.18,
+       "rochers": 0.67,
+       "brume": "#8a7a66",
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "roche_sombre",
+         1
+        ],
+        [
+         "metal",
+         1
+        ]
+       ],
+       "centres": [
+        [
+         9.28,
+         6.18,
+         0.94
+        ],
+        [
+         10.02,
+         6.15,
+         0.68
+        ],
+        [
+         9.51,
+         6.22,
+         0.62
+        ],
+        [
+         10.02,
+         6.25,
+         0.71
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 11.43
+   }
+  },
+  {
+   "entree": {
+    "q": 33,
+    "r": -2,
+    "taille": 1.4909033959901343,
+    "lettre": "G"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "33,-2.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "jaune",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "33,-2.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 1.04,
+      "heure": 8.38,
+      "taille": 0.096,
+      "aspect": {
+       "nature": "aride"
+      }
+     },
+     {
+      "cle": "33,-2.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": 1.97,
+      "heure": 0.97,
+      "taille": 0.103,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "33,-2.0-3",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 2.99,
+      "heure": 5.55,
+      "taille": 0.113,
+      "aspect": {
+       "nature": "habitable"
+      }
+     },
+     {
+      "cle": "33,-2.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 5.09,
+      "heure": 10.14,
+      "taille": 0.106,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "33,-2.0-5-1",
+      "genre": "lune",
+      "parent_cle": "33,-2.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 5.19,
+      "taille": 0.045,
+      "aspect": {}
+     },
+     {
+      "cle": "33,-2.0-5-2",
+      "genre": "lune",
+      "parent_cle": "33,-2.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 6.54,
+      "taille": 0.047,
+      "aspect": {}
+     },
+     {
+      "cle": "33,-2.0-6",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 6.09,
+      "heure": 2.72,
+      "taille": 0.111,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "33,-2.0-6-1",
+      "genre": "lune",
+      "parent_cle": "33,-2.0-6",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 10.9,
+      "taille": 0.056,
+      "aspect": {}
+     },
+     {
+      "cle": "33,-2.0-6-2",
+      "genre": "lune",
+      "parent_cle": "33,-2.0-6",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 10.2,
+      "taille": 0.044,
+      "aspect": {}
+     },
+     {
+      "cle": "33,-2.0-7",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 6.98,
+      "heure": 7.3,
+      "taille": 0.105,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "33,-2.0-7-1",
+      "genre": "lune",
+      "parent_cle": "33,-2.0-7",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 7.33,
+      "taille": 0.043,
+      "aspect": {}
+     },
+     {
+      "cle": "33,-2.0-7-2",
+      "genre": "lune",
+      "parent_cle": "33,-2.0-7",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.67,
+      "taille": 0.051,
+      "aspect": {}
+     },
+     {
+      "cle": "33,-2.0-8",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": 7.93,
+      "heure": 11.89,
+      "taille": 0.126,
+      "aspect": {
+       "nature": "à atmosphère"
+      }
+     },
+     {
+      "cle": "33,-2.0-8-1",
+      "genre": "lune",
+      "parent_cle": "33,-2.0-8",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 8.23,
+      "taille": 0.045,
+      "aspect": {}
+     }
+    ],
+    "formations": [
+     {
+      "cle": "33,-2.ceinture-0-3",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 3.69,
+       "a": 4.31,
+       "rochers": 0.88,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     },
+     {
+      "cle": "33,-2.zone",
+      "forme": "nuage",
+      "nom": null,
+      "parametres": {
+       "orbite": 8.53,
+       "heure": 5.66,
+       "rochers": 0.97,
+       "brume": null,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "roche_sombre",
+         1
+        ],
+        [
+         "metal",
+         1
+        ]
+       ],
+       "centres": [
+        [
+         8.53,
+         5.66,
+         0.99
+        ],
+        [
+         8.4,
+         5.48,
+         0.73
+        ],
+        [
+         8.25,
+         5.54,
+         0.84
+        ],
+        [
+         8.69,
+         5.85,
+         0.74
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 10.22
+   }
+  },
+  {
+   "entree": {
+    "q": 37,
+    "r": -44,
+    "taille": 0.6972626886865851,
+    "lettre": "M"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "37,-44.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "37,-44.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "verrouillee",
+      "nom": null,
+      "orbite": 0.6,
+      "heure": 6.54,
+      "taille": 0.102,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "37,-44.0-1-1",
+      "genre": "lune",
+      "parent_cle": "37,-44.0-1",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 1.94,
+      "taille": 0.058,
+      "aspect": {}
+     },
+     {
+      "cle": "37,-44.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": 1.49,
+      "heure": 11.12,
+      "taille": 0.121,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "37,-44.0-2-1",
+      "genre": "lune",
+      "parent_cle": "37,-44.0-2",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 0.58,
+      "taille": 0.042,
+      "aspect": {}
+     },
+     {
+      "cle": "37,-44.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 3.14,
+      "heure": 3.7,
+      "taille": 0.119,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "37,-44.0-4-1",
+      "genre": "lune",
+      "parent_cle": "37,-44.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 7.38,
+      "taille": 0.044,
+      "aspect": {}
+     },
+     {
+      "cle": "37,-44.0-4-2",
+      "genre": "lune",
+      "parent_cle": "37,-44.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 5.48,
+      "taille": 0.043,
+      "aspect": {}
+     },
+     {
+      "cle": "37,-44.0-4-3",
+      "genre": "lune",
+      "parent_cle": "37,-44.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.22,
+      "taille": 0.053,
+      "aspect": {}
+     },
+     {
+      "cle": "37,-44.comete",
+      "genre": "comete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "comete",
+      "nom": null,
+      "orbite": 0.7,
+      "heure": 1.38,
+      "taille": 1.941,
+      "aspect": {
+       "perihelie": 0.51,
+       "sens": 1,
+       "couleur": "#e0f0ff",
+       "gaz": "#90b8ff",
+       "poussiere": "#f0dcb8",
+       "longueur": 0.708,
+       "ouverture": 0.211,
+       "tete": 1.941,
+       "courbure": 0.299,
+       "force_gaz": 1.058,
+       "force_poussiere": 0.739
+      }
+     }
+    ],
+    "formations": [
+     {
+      "cle": "37,-44.ceinture-0-2",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 1.99,
+       "a": 2.61,
+       "rochers": 0.92,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 3.84
+   }
+  },
+  {
+   "entree": {
+    "q": 38,
+    "r": 3,
+    "taille": 0.8047407317774802,
+    "lettre": "M"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "38,3.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "naine_rouge",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "38,3.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "verrouillee",
+      "nom": null,
+      "orbite": 0.59,
+      "heure": 8.14,
+      "taille": 0.102,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "38,3.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 1.44,
+      "heure": 0.72,
+      "taille": 0.096,
+      "aspect": {
+       "nature": "habitable"
+      }
+     },
+     {
+      "cle": "38,3.0-2-1",
+      "genre": "lune",
+      "parent_cle": "38,3.0-2",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 0.09,
+      "taille": 0.051,
+      "aspect": {}
+     },
+     {
+      "cle": "38,3.0-3",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 2.34,
+      "heure": 5.31,
+      "taille": 0.102,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "38,3.0-3-1",
+      "genre": "lune",
+      "parent_cle": "38,3.0-3",
+      "etoile_rang": 0,
+      "type": "lave",
+      "nom": null,
+      "orbite": null,
+      "heure": 8.72,
+      "taille": 0.055,
+      "aspect": {}
+     },
+     {
+      "cle": "38,3.0-3-2",
+      "genre": "lune",
+      "parent_cle": "38,3.0-3",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 10.02,
+      "taille": 0.051,
+      "aspect": {}
+     },
+     {
+      "cle": "38,3.0-3-3",
+      "genre": "lune",
+      "parent_cle": "38,3.0-3",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 11.36,
+      "taille": 0.055,
+      "aspect": {}
+     },
+     {
+      "cle": "38,3.0-3-4",
+      "genre": "lune",
+      "parent_cle": "38,3.0-3",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.54,
+      "taille": 0.053,
+      "aspect": {}
+     },
+     {
+      "cle": "38,3.0-3-5",
+      "genre": "lune",
+      "parent_cle": "38,3.0-3",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 1.45,
+      "taille": 0.054,
+      "aspect": {}
+     },
+     {
+      "cle": "38,3.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": 3.21,
+      "heure": 9.89,
+      "taille": 0.126,
+      "aspect": {
+       "nature": "à atmosphère"
+      }
+     }
+    ],
+    "formations": [
+     {
+      "cle": "38,3.zone",
+      "forme": "nuage",
+      "nom": null,
+      "parametres": {
+       "orbite": 1.69,
+       "heure": 0.16,
+       "rochers": 0.29,
+       "brume": "#a07a3a",
+       "materiaux": [
+        [
+         "roche",
+         2
+        ],
+        [
+         "glace",
+         1
+        ]
+       ],
+       "centres": [
+        [
+         1.69,
+         0.16,
+         0.87
+        ],
+        [
+         0.99,
+         0.49,
+         0.55
+        ],
+        [
+         1.14,
+         1.23,
+         0.49
+        ],
+        [
+         1.26,
+         0.67,
+         0.7
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 3.91
+   }
+  },
+  {
+   "entree": {
+    "q": 48,
+    "r": 27,
+    "taille": 1.668825955470561,
+    "lettre": "G"
+   },
+   "sortie": {
+    "astres": [
+     {
+      "cle": "48,27.etoile-0",
+      "genre": "etoile",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "jaune",
+      "nom": null,
+      "orbite": 0,
+      "heure": 0,
+      "taille": 0.2,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-1",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": 0.89,
+      "heure": 6.3,
+      "taille": 0.095,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "48,27.0-2",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "tellurique",
+      "nom": null,
+      "orbite": 1.93,
+      "heure": 10.88,
+      "taille": 0.115,
+      "aspect": {
+       "nature": "habitable"
+      }
+     },
+     {
+      "cle": "48,27.0-4",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 4.02,
+      "heure": 3.47,
+      "taille": 0.097,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "48,27.0-4-1",
+      "genre": "lune",
+      "parent_cle": "48,27.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 5.18,
+      "taille": 0.048,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-4-2",
+      "genre": "lune",
+      "parent_cle": "48,27.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.66,
+      "taille": 0.044,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-4-3",
+      "genre": "lune",
+      "parent_cle": "48,27.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 4.44,
+      "taille": 0.048,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-4-4",
+      "genre": "lune",
+      "parent_cle": "48,27.0-4",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 1.94,
+      "taille": 0.057,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-4-5",
+      "genre": "lune",
+      "parent_cle": "48,27.0-4",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.03,
+      "taille": 0.047,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-5",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 5.07,
+      "heure": 8.05,
+      "taille": 0.12,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "48,27.0-5-1",
+      "genre": "lune",
+      "parent_cle": "48,27.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 2.54,
+      "taille": 0.044,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-5-2",
+      "genre": "lune",
+      "parent_cle": "48,27.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.49,
+      "taille": 0.051,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-5-3",
+      "genre": "lune",
+      "parent_cle": "48,27.0-5",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 4.38,
+      "taille": 0.046,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-5-4",
+      "genre": "lune",
+      "parent_cle": "48,27.0-5",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.57,
+      "taille": 0.049,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-6",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "gazeuse",
+      "nom": null,
+      "orbite": 6.12,
+      "heure": 0.63,
+      "taille": 0.096,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "48,27.0-6-1",
+      "genre": "lune",
+      "parent_cle": "48,27.0-6",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.7,
+      "taille": 0.048,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-6-2",
+      "genre": "lune",
+      "parent_cle": "48,27.0-6",
+      "etoile_rang": 0,
+      "type": "rocheux",
+      "nom": null,
+      "orbite": null,
+      "heure": 11.31,
+      "taille": 0.053,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-6-3",
+      "genre": "lune",
+      "parent_cle": "48,27.0-6",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 5.98,
+      "taille": 0.048,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-6-4",
+      "genre": "lune",
+      "parent_cle": "48,27.0-6",
+      "etoile_rang": 0,
+      "type": "lave",
+      "nom": null,
+      "orbite": null,
+      "heure": 10.22,
+      "taille": 0.053,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-7",
+      "genre": "planete",
+      "parent_cle": null,
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": 7.11,
+      "heure": 5.22,
+      "taille": 0.083,
+      "aspect": {
+       "nature": null
+      }
+     },
+     {
+      "cle": "48,27.0-7-1",
+      "genre": "lune",
+      "parent_cle": "48,27.0-7",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 9.18,
+      "taille": 0.046,
+      "aspect": {}
+     },
+     {
+      "cle": "48,27.0-7-2",
+      "genre": "lune",
+      "parent_cle": "48,27.0-7",
+      "etoile_rang": 0,
+      "type": "glace",
+      "nom": null,
+      "orbite": null,
+      "heure": 3.06,
+      "taille": 0.057,
+      "aspect": {}
+     }
+    ],
+    "formations": [
+     {
+      "cle": "48,27.ceinture-0-2",
+      "forme": "anneau",
+      "nom": null,
+      "parametres": {
+       "de": 2.79,
+       "a": 3.21,
+       "rochers": 0.68,
+       "materiaux": [
+        [
+         "roche",
+         3
+        ],
+        [
+         "metal",
+         1
+        ],
+        [
+         "fer",
+         1
+        ]
+       ]
+      },
+      "etoile_rang": 0
+     }
+    ],
+    "transition": 7.81
+   }
+  }
+ ],
+ "litteraux": {
+  "tirage": [
+   {
+    "cle": "-49,-48",
+    "aspect": "etoiles",
+    "suite": [
+     0.5606433863285929,
+     0.793637013528496,
+     0.51497061108239,
+     0.9991817597765476,
+     0.04175885859876871
+    ]
+   },
+   {
+    "cle": "-49,-48",
+    "aspect": "plages",
+    "suite": [
+     0.7281099120154977,
+     0.335728254634887,
+     0.5594147532247007,
+     0.8153579835779965,
+     0.25499023986048996
+    ]
+   },
+   {
+    "cle": "-44,-47",
+    "aspect": "orbites",
+    "suite": [
+     0.38541137776337564,
+     0.8248785852920264,
+     0.6221381609793752,
+     0.5289308996871114,
+     0.3445370316039771
+    ]
+   },
+   {
+    "cle": "-44,38",
+    "aspect": "lunes",
+    "suite": [
+     0.5467107004951686,
+     0.8458711931016296,
+     0.6172926458530128,
+     0.924253876786679,
+     0.4751778310164809
+    ]
+   },
+   {
+    "cle": "-43,-14",
+    "aspect": "zone",
+    "suite": [
+     0.4474821414332837,
+     0.1045880380552262,
+     0.9186396410223097,
+     0.020832255017012358,
+     0.16241136495955288
+    ]
+   },
+   {
+    "cle": "-39,-49",
+    "aspect": "types",
+    "suite": [
+     0.08964354451745749,
+     0.6074565961025655,
+     0.06915864069014788,
+     0.49282378936186433,
+     0.03472608607262373
+    ]
+   }
+  ]
+ }
+}

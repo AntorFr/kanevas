@@ -52,3 +52,85 @@ export function erreurNom(nom: string): string | undefined {
 /** The seed of the stub used older colour names; they map onto the six of the server. */
 const ANCIENNES: Record<string, string> = { bleu: 'accent', vert: 'table', rouge: 'danger' };
 export const couleurServeur = (c: string): string => (COULEURS.some((x) => x.nom === c) ? c : ANCIENNES[c] ?? 'accent');
+
+// ---- Writes of the interior of a system (AD-edition-5): each call answers the system as the read gives it.
+import { appeler } from '../../../api';
+import type { InterieurSysteme as Interieur } from './types';
+
+/** The token every write carries: the system's own `versionSysteme`, read with the interior (GM only). */
+/** `nomAncrage`: the name typed in the anchoring dialog, taken only if this write anchors a drawn system. */
+export interface JetonSysteme { versionSysteme?: number; nomAncrage?: string }
+export type CorpsAstre = JetonSysteme & {
+  genre?: string; nom?: string; description?: string; type?: string; taille?: number; aspect?: unknown; etoile_rang?: number;
+  parent_cle?: string; orbite?: number; heure?: number; plan?: { x: number; y: number }; galactique?: { q: number; r: number };
+  version?: number;
+};
+export type CorpsZone = JetonSysteme & {
+  forme?: 'anneau' | 'nuage'; nom?: string; description?: string; parametres?: unknown; etoile_rang?: number; version?: number;
+};
+
+const chemin = (galaxieId: number, q: number, r: number, universId: number, suite: string) =>
+  `/api/univers/${universId}/outils/swn/galaxie/galaxies/${galaxieId}/interieur/${q}/${r}/${suite}`;
+const requete = (v: { version: number } & JetonSysteme) =>
+  `?version=${v.version}${v.versionSysteme === undefined ? '' : `&versionSysteme=${v.versionSysteme}`}${v.nomAncrage === undefined ? '' : `&nomAncrage=${encodeURIComponent(v.nomAncrage)}`}`;
+
+export interface Place { universId: number; galaxieId: number; q: number; r: number }
+const url = (p: Place, suite: string) => chemin(p.galaxieId, p.q, p.r, p.universId, suite);
+
+export const ancrerSysteme = (p: Place, corps: { versionSysteme?: number; nom?: string } = {}) => appeler<Interieur>('POST', url(p, 'ancrage'), corps);
+export const ajouterAstreSysteme = (p: Place, corps: CorpsAstre) => appeler<Interieur>('POST', url(p, 'astres'), corps);
+export const modifierAstreSysteme = (p: Place, cle: string, corps: CorpsAstre) =>
+  appeler<Interieur>('PATCH', url(p, `astres/${encodeURIComponent(cle)}`), corps);
+export const retirerAstreSysteme = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
+  appeler<Interieur>('DELETE', url(p, `astres/${encodeURIComponent(cle)}${requete(jeton)}`));
+export const ajouterZoneSysteme = (p: Place, corps: CorpsZone) => appeler<Interieur>('POST', url(p, 'zones'), corps);
+export const modifierZoneSysteme = (p: Place, cle: string, corps: CorpsZone) =>
+  appeler<Interieur>('PATCH', url(p, `zones/${encodeURIComponent(cle)}`), corps);
+export const retirerZoneSysteme = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
+  appeler<Interieur>('DELETE', url(p, `zones/${encodeURIComponent(cle)}${requete(jeton)}`));
+export const lierAstreFiche = (p: Place, cle: string, corps: JetonSysteme & { ficheId: number; version: number }) =>
+  appeler<Interieur>('PUT', url(p, `astres/${encodeURIComponent(cle)}/fiche`), corps);
+export const lierZoneFiche = (p: Place, cle: string, corps: JetonSysteme & { ficheId: number; version: number }) =>
+  appeler<Interieur>('PUT', url(p, `zones/${encodeURIComponent(cle)}/fiche`), corps);
+export const delierAstreFiche = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
+  appeler<Interieur>('DELETE', url(p, `astres/${encodeURIComponent(cle)}/fiche${requete(jeton)}`));
+export const delierZoneFiche = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
+  appeler<Interieur>('DELETE', url(p, `zones/${encodeURIComponent(cle)}/fiche${requete(jeton)}`));
+export const poserTransitionSysteme = (p: Place, corps: JetonSysteme & { transition: number | null }) =>
+  appeler<Interieur>('PUT', url(p, 'transition'), corps);
+
+/** « Secret (MJ seul) » (B-97): hides or shows a whole system; a drawn one is anchored by the same call. */
+export const masquerSysteme = (p: Place, corps: JetonSysteme & { secret: boolean }) => appeler<Interieur>('PUT', url(p, 'secret'), corps);
+/** The GM's own read of the flag (the badge of E-23): never sent to a player. */
+export const lireEtatMasque = (p: Place, suffixe = '') =>
+  appeler<{ secret: boolean; promu: boolean; versionSysteme: number }>('GET', `${url(p, 'secret')}${suffixe}`);
+
+/** « Illustrer la fiche » (AD-liens-4): adds the body's picture, at `cote` px, to the linked sheet's illustration. Writes no `swn_*`. */
+export const illustrerFicheAstre = (p: Place, cle: string, cote: number) =>
+  appeler<{ fichierId: number; ficheId: number; titre: string }>('POST', url(p, `astres/${encodeURIComponent(cle)}/illustrer-fiche`), { cote });
+
+// ---- The elements (B-96, AD-elements-1): the same door, the same answer (the system as the read gives it).
+export type CorpsElement = JetonSysteme & {
+  genre?: string; nom?: string; description?: string; aspect?: { icone?: string; couleur?: string }; secret?: boolean;
+  sur?: string; orbite?: number; heure?: number; plan?: { x: number; y: number }; galactique?: { q: number; r: number };
+  version?: number;
+};
+const cleEl = (cle: string) => encodeURIComponent(cle);
+export const ajouterElementSysteme = (p: Place, corps: CorpsElement) => appeler<Interieur>('POST', url(p, 'elements'), corps);
+export const modifierElementSysteme = (p: Place, cle: string, corps: CorpsElement) => appeler<Interieur>('PATCH', url(p, `elements/${cleEl(cle)}`), corps);
+export const deplacerElementSysteme = (p: Place, cle: string, corps: CorpsElement) => appeler<Interieur>('PUT', url(p, `elements/${cleEl(cle)}/place`), corps);
+export const reserverElementSysteme = (p: Place, cle: string, corps: JetonSysteme & { secret: boolean; version: number }) =>
+  appeler<Interieur>('PUT', url(p, `elements/${cleEl(cle)}/secret`), corps);
+export const lierElementFiche = (p: Place, cle: string, corps: JetonSysteme & { ficheId: number; version: number }) =>
+  appeler<Interieur>('PUT', url(p, `elements/${cleEl(cle)}/fiche`), corps);
+export const delierElementFiche = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
+  appeler<Interieur>('DELETE', url(p, `elements/${cleEl(cle)}/fiche${requete(jeton)}`));
+export const retirerElementSysteme = (p: Place, cle: string, jeton: { version: number } & JetonSysteme) =>
+  appeler<Interieur>('DELETE', url(p, `elements/${cleEl(cle)}${requete(jeton)}`));
+/** What the removal dialog of a body counts (GM outside Player mode): its elements and those of its moons, the reserved ones included. */
+export const compterElementsDuCorps = (p: Place, cle: string) =>
+  appeler<{ elements: number }>('GET', url(p, `astres/${cleEl(cle)}/elements`)).then((r) => r.elements);
+/** The icons and colours the server accepts for an element (`catalogueElements`). */
+export interface CatalogueElements { genres: string[]; icones: string[]; couleurs: string[] }
+export const lireCatalogueElements = (universId: number, galaxieId: number) =>
+  appeler<CatalogueElements>('GET', `/api/univers/${universId}/outils/swn/galaxie/galaxies/${galaxieId}/elements/aspects`);
