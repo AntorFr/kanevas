@@ -689,21 +689,44 @@ Nothing of Éneria enters this repository (AD-131): captures, atlas and comparis
 - **B-115** — *Dressing of a system.* The map shows the name of every body and of every jump point (a name is never hidden by a corona),
   each jump point with an arrow toward the neighbour, its distance and the colour of its route by type, the transition zone as a legended
   halo, hour marks, belts as grains of rock along the ring, clouds as soft gas of their own colour with rocks drawn as asteroids,
-  a starfield background. Companions: the planets of a companion star turn around **it**. *(P-27)*
+  a starfield background. Companions: the planets of a companion star turn around **it**. The orbit of **each** body is traced at its own
+  distance (a ring per body, not regular rings; a moon's distance follows its rank around the planet; amends AD-carte-3's regular rings); a
+  station or any body round a planet sits at its **hour** around it (B-122), as a small mark, never a fixed angle. Sites in orbit are not
+  a drawing of their own (the atlas sends them as bodies). *(P-27)*
 - **B-116** — *Comets.* A comet is drawn with its tail turned away from the star (longer near it) and its **trajectory** (a very long ellipse from its
   perihelion, the star at a focus, in the sense of its settings), the chosen one highlighted. *(P-27)*
-- **B-117** — *The galaxy drawn.* Defined systems differ by size and colour (those of their record), a drawn star by its class and size; the opening
-  view shows the whole known galaxy, with names; background starfield and region tints; grid limited to the known zone; readable in both themes. *(P-28)*
-- **B-118** — *Zones and routes.* Each zone has a colour and is shown or hidden from the map (all, none, default); a route is drawn in the colour and
-  stroke of its type (public, private, pirate…). *(P-28)*
+- **B-124** — *The night side.* A body that sets them shows its **cities** (lights on the night side) and its **glow** (the bioluminescence of
+  a living world: Clyra II, Méridia-7, Ithara-8, Zeltrux III in the reference) with a strength setting (`force_lueur`); both are drawn by the core
+  from the body's settings, on the side turned away from the star, in the illustration and on the map. *(P-27, P-30)*
+- **B-117** — *The galaxy drawn.* A drawn star shows its class and size. A **defined system** carries a **star class** (those of the drawn
+  stars and of the reference) and a **continuous size**, and is drawn like a drawn star of that class; with no class given, it is drawn from
+  its key and its size, never one default for all (the variety of the systems is the point). An optional **free colour**, as data (the GM's
+  sheet or the atlas), takes precedence over the class: « if the lore says a star is violet, it can be drawn ». Vortexis is its class and
+  its colour, not a class of its own. The opening view shows the whole known galaxy, with names; grid limited to the known zone; readable
+  in both themes. **The background aggregates with the zoom**: dust tiles of 700 px; detail veils (three per tile, then two, then one as the
+  zoom goes out); large tinted regions in tiles of 3200 px fading in under the middle zoom (eight tints); the ambience of a zone from its
+  colour, never from a hidden system. *(P-28)*
+- **B-118** — *Zones and routes.* Each zone has a colour and a switch **« Displayed when the map opens »** (`affichage_defaut`, the GM's, with the
+  reference's values for the atlas: the asteroid belt and the pirates shown, Vael'Korr and the Ancients hidden); the map offers « all / none /
+  default » (a screen state). A route is drawn in the colour and stroke of its type (public, private, pirate…); the labels of the types
+  keep « Private » and « GM only » apart (the reference confuses them). Touching the **void** of a zone selects nothing (it opens no form);
+  on a system map, a click on a zone (ring, cloud) opens its panel, with its illustration (B-119). *(P-28)*
 - **B-119** — *Navigate by previews.* From the galaxy panel, the portrait of a system opens it (« Enter the system »), as does a double click; from
   a system, a jump point shows the neighbour's portrait and enters it; « Galaxy » and « Another system » leave it; a body shows its illustration
-  and its text. A body or a system has an address that can be shared (deep link). *(P-28, P-29)*
-- **B-120** — *Full screen.* Both maps open in the whole window; controls and panel float over the map. *(P-27, P-28, P-29)*
+  and its text. A body or a system has an address that can be shared (deep link). The **portrait** of a system is the reference's painted
+  thumbnail (the star's edge on the left, the bodies in a row), composed from the guarded read so that no hidden body leaks. The panel of a
+  **zone** (belt, nebula, anomaly) shows the **illustration** of its family, the engine's families bound to the zone and their settings
+  (veils, the lens of anomalies). The distance shown is from the system that is open (not from a fixed one). A player reads the public text
+  of what she reads (the reference withholds it: a defect, not kept). *(P-28, P-29)*
+- **B-120** — *Full screen.* Both maps open in the whole window; controls and panel float over the map. The zoom is not capped at 0.5×–4×: it
+  goes from the fit of the known zone to the detail of a body. *(P-27, P-28, P-29)*
 - **B-121** — *Modes.* The controls sit **inside the map** and the list shown depends on the **mode**: consult (default: search, names, routes, zones,
-  recentre), travel simulation, and create / edit (place, route, zone, move bodies). The modes are those of the map of a system and of the galaxy. *(P-28, P-30)*
+  recentre), travel simulation (the reach of a jump is Kanevas's: 5 + 5 × engine), and create / edit (GM outside Player mode: place, route, zone,
+  move bodies). The mode « factions » stays with `kanevas-factions`. The display choices (names, orbits, hours, the mode) are remembered **by
+  browser**, never in a datum of the game. *(P-28, P-30)*
 - **B-122** — *The atlas format says what the atlas knows.* Moon types beyond rocky/ice/lava, the star a formation or a point turns around, an hour around
-  a planet, the veil of a system are fields of the format. *(P-30)*
+  a planet, the veil of a system, the class, size and free colour of a defined system, a star's state « vanished » (a star gone, as Arkhan,
+  drawn as such, not as an ordinary star) are fields of the format. *(P-30)*
 - **B-123** — *The atlas looks like the reference side by side.* The recipe plays at the same framing both maps (Lybrata, Clyra, Éneria, Gamma, Sol,
   Ophyra, plus Alpha Centauri; the illustrations of Clyra II, Clyra IV, Éneria Prime, Jupiter) and Monsieur judges. The recipe adds three
   sets at the same framing: 50 systems drawn on the trial galaxy (seed `eneria-1`, taken at a regular step, four per sheet), the default galaxy,
@@ -1437,13 +1460,15 @@ and not the station. Antor can cancel the hiding dialogue (nothing is written), 
 - Editing the generator's algorithm, a 3D surface, real-time movement or a scale-true map: unchanged (see above).
 - A route-finding calculation of Éneria's « off-route » trip: Kanevas keeps its own trip calculation.
 
-### To decide (`[TO DECIDE]`, for Monsieur's review of the framing)
+### Decided by Monsieur (2026-11-23, review of the framing)
 
-- **Reach of a jump**: 5 × engine in the reference panel, 5 × (engine + 1) in Kanevas (`portee_saut`). *Recommendation:* keep Kanevas's rule; it changes if Monsieur wants the reference's.
-- **List of modes** (B-121): consult, travel, create / edit. *Recommendation:* these three; « factions » stays out.
-- **Zones hidden by default**: the territories hidden, the belt and the pirates shown, as the reference does. *Recommendation:* the reference's default.
-- **Class and size of a defined system** on the galaxy: those of its record. *Recommendation:* the record's.
-- **Written rules the parity contradicts**: sky colours as tokens only (E-23), regular rings (AD-carte-3), zoom 0,5×–4×, T-4 (no colour per route type) and T-10 (controls outside the map, E-21; the rule of the `mj` level is kept), AD-etoiles-6. *Recommendation:* the cadrage amends each by name, in the tranche that needs it.
+- **Modes** (B-121): consult (default), travel, create / edit (GM); « factions » stays with `kanevas-factions`.
+- **Reach of a jump**: Kanevas's, 5 + 5 × engine; the reference panel (5 × engine) is corrected on its side.
+- **Zones**: a switch per zone, « Displayed when the map opens » (`affichage_defaut`), with the reference's values (belt and pirates shown, Vael'Korr and the Ancients hidden) (B-118).
+- **A defined system**: a star class and a continuous size, a drawn star of that class; with no class, drawn from its key and its size; an optional free colour (data) over the class; Vortexis = its class and colour (B-117). Replaces « one colour of six, three sizes ».
+- **Night side**: Kanevas draws cities and glow with `force_lueur` (B-124); the earlier « lights of the night side stay out » is lifted.
+- **Proposed-out lines**: dropped are CS-8 (sites in orbit, now sent as bodies), CG-18 (Factions), CG-19 (travellers off route), CG-28 (a fixed halo, no setting). **Kept against the proposal**: the portraits of systems (the reference's painted thumbnail, composed on the guarded read) and the illustrations of zones in the zone panel (B-119), with every illustration setting.
+- **Written rules the parity contradicts**: sky colours as tokens only (E-23), regular rings (AD-carte-3), zoom 0.5×–4×, T-4 (no colour per route type), T-10 (controls outside the map; the rule of the `mj` level is kept), AD-etoiles-6: the cadrage amends each by name, in the tranche that needs it (table of `ARCHITECTURE.md`).
 
 ## Cross-check of the `kanevas-import` scoping
 

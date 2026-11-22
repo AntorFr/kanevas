@@ -5049,8 +5049,8 @@ this slice (the import and the MCP address by it).
 
 | Screen | Reached from | What changes |
 |---|---|---|
-| E-21 Galaxy | the tool, a shared link | whole window; opening view on the known zone; drawn stars by class, defined systems by their record's size and colour; starfield and tints; modes; zone control; previews; double click opens a system |
-| E-23 System | E-21 (panel « Enter the system », double click, a jump point's preview), a shared link, a sheet's block | whole window over a starfield; bodies at the scale of the orbits; names, jump points with arrow, distance, route colour; belts, clouds; comets with tail and trajectory; modes; the body and jump-point previews; deep link to a body |
+| E-21 Galaxy | the tool, a shared link | whole window; opening view on the known zone; drawn stars by class and size, defined systems by their class, continuous size and free colour (B-117); starfield and tints; modes; zone control; previews; double click opens a system |
+| E-23 System | E-21 (panel « Enter the system », double click, a jump point's preview), a shared link, a sheet's block | whole window over a starfield; bodies at the scale of the orbits, each with its own orbit traced, cities and glow on the night side (B-124); a click on a zone opens its panel with its illustration; names, jump points with arrow, distance, route colour; belts, clouds; comets with tail and trajectory; modes; the body and jump-point previews; deep link to a body |
 
 ### Modes (B-121)
 
@@ -5059,16 +5059,20 @@ The controls leave the page header and sit **inside the map**, floating. One mod
 | Mode | Who | Controls |
 |---|---|---|
 | Consult (default) | everyone who reads the map | search, names, orbits, hours, routes, zones (all / none / default), recentre, « Full screen » / « Leave full screen » |
-| Travel | everyone | pick a start and an arrival, read the duration by engine (Kanevas's own calculation, AD of `kanevas-carte-spatiale`) |
+| Travel | everyone | pick a start and an arrival, read the duration by engine (Kanevas's own calculation; the reach of a jump is 5 + 5 × engine; no « factions » mode, `kanevas-factions`) |
 | Create / edit | GM outside Player mode only (not offered otherwise, not refused) | place a system, draw a route, draw a zone, move a body or an element, anchor, remove; each existing write of E-21 / E-23 keeps its dialogue and its refusals |
 
-Closing the full screen (Escape, the button) returns to the page as it was. The mode is a view state, kept in the address (`?mode=`) so a link opens in the mode it was copied from; a Player opening `?mode=edition` gets the Consult mode.
+Closing the full screen (Escape, the button) returns to the page as it was. The display choices (names, orbits, hours) and the last mode are remembered **by browser** (local storage), never in a datum of the game; the mode is a view state, kept in the address (`?mode=`) so a link opens in the mode it was copied from; a Player opening `?mode=edition` gets the Consult mode.
 
 The zone form (« Nouvelle zone » and its edit) gains one switch, « Affichée à l'ouverture de la carte » (on by default, B-118; `affichage_defaut`, written by the existing galaxy zone routes and the tool import, GM guard unchanged; a Player reads the result as the default of the « Zones » control, never the switch). The `voile` of a system has **no control**: it comes from the atlas import (AD-rendu-2).
 
+The system's existing dialogue gains three fields for a defined system (B-117): star class (the core's list, « Drawn from the key » by default), size (a slider) and a free colour (optional, over the class). The galaxy's panel of a system shows its star as the map draws it.
+
+Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud opens its panel with the **illustration of its family** (belt, nebula, anomaly) and its text; on the galaxy, a click in the **void** of a zone selects nothing and opens no form; the labels of the route types keep « Private » and « GM only » apart.
+
 ### Previews and navigation (B-119)
 
-- E-21: the panel of a system shows its **portrait** (the map of the system drawn small) and « Enter the system »; a double click on a system does the same.
+- E-21: the panel of a system shows its **portrait** (the reference's painted thumbnail: the star's edge on the left, the bodies in a row, composed from the guarded read so a hidden body never shows) and « Enter the system »; a double click on a system does the same.
 - E-23: a jump point shows its arrow, the neighbour's name, the distance (« 3 cases ») and the colour of its route; a click opens a card with the neighbour's portrait and « Enter the system ». « Galaxy » returns to the place left; « Another system » opens the search of systems.
 - A body: panel with its illustration, its text and « Copy the address »; the address `…/systeme/<q>/<r>/astre/<cle>` opens the system with the body chosen and the panel open (P-29). A system or a body the reader may not read: « Page introuvable. », byte for byte like an unknown one.
 
@@ -5102,6 +5106,10 @@ The zone form (« Nouvelle zone » and its edit) gains one switch, « Affichée 
 - Given a double click on a system, it opens on its map, and « Galaxy » returns to the same view (B-119).
 - Given Léa on a phone, the map takes the whole window, the controls float and stay reachable by thumb (44 px targets), no horizontal scroll (B-120).
 - Given Léa (Player), the mode switch offers « Consult » and « Travel » only, and a link in `?mode=edition` opens Consult (B-121).
+- Given a defined system with a class and a free colour, the galaxy draws it as a star of that class tinted by the colour; with no class, two systems of different keys differ (B-117).
+- Given a galaxy opened, the zones marked « Displayed when the map opens » are drawn and the others hidden until « all » (B-118).
+- Given a world with cities or glow, the night side shows them and `force_lueur` changes the strength (B-124).
+- Given a click on a belt of a system, its panel shows the illustration of its family (B-119).
 - Given a secret system, neither its portrait, nor its jump point, nor its name is reachable by a Player through any preview or address.
 
 Cross-check: B-113 to B-116 → E-23; B-117, B-118 → E-21; B-119 → E-21, E-23 and their routes (the portrait is the existing read `lireInterieur` of a readable system only; the distance and colour come from `lireSorties`, which gains two fields); B-120, B-121 → both; B-122 → the import API (no screen, P-30); B-123 → the recette (P-30).

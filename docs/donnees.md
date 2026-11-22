@@ -874,7 +874,14 @@ vocabulary (what the core accepts in `aspect`) and a format (what the atlas impo
 table below is written with neutral names; the script that converts Éneria's `astres.yaml` stays in its private repository.
 
 **Columns (migration of the slice, number assigned at merge, AD-51).**
-- `swn_zones.affichage_defaut` (boolean, default true): the zone is drawn when the map opens (B-118). It is the GM's choice for everyone; the choice « all / none / default »
+- `swn_systemes` — **a defined system carries its star** (B-117, Monsieur 2026-11-23): `classe` (text, nullable: a star class of the core, the ones the drawn stars
+  and the reference use; null = drawn from the key and the size, never one default), `taille` (real in [0, 1], continuous; replaces `petite`/`moyenne`/`grande`)
+  and `couleur` (text, nullable, `#rrggbb`: a free colour, which takes precedence over the class; replaces the six palette names). Vortexis is a class and a colour.
+  The migration rebuilds the table (`-- migrate: sans-cles-etrangeres`): each old size and each of the six names maps to a value fixed and tested in the slice,
+  a replay of an old atlas gives the same drawing as the migrated row. Written by the existing writers (`ecriture-systeme.ts`, the atlas import) and the
+  system's existing dialogue (three fields), never by a screen of its own.
+- `swn_zones.affichage_defaut` (boolean, default true): the zone is drawn when the map opens (B-118); the atlas and the import carry the reference's values
+  (the asteroid belt and the pirates `true`, Vael'Korr and the Ancients `false`). It is the GM's choice for everyone; the choice « all / none / default »
   of the map is a state of the screen, never stored. A hidden zone hides no route from the lists and no system from the search.
 - `swn_systemes.voile` (text, nullable, `#rrggbb`): the tint of the starfield of the system's map (B-115); null = the core's neutral sky.
 - `swn_zones` and `swn_routes` gain no colour column: a zone has its `couleur`, a route's colour and stroke come from its `type_lien` through a table of the core
@@ -898,11 +905,11 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | `atmosphere`, `force_atmo` | `halo_couleur`, `halo` | direct, the type's default sent when absent |
 | `graine` | `graine` | **always sent**, one per body (`graine_de(id)`): two bodies never share a picture |
 | `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | new accepted key; absent means **no ring** (the engine's random ring at 28 % goes) |
-| `couleur_nuages`, `opacite_nuages`, `villes`, `lueur`, `force_lueur`, `terre_seche`, `etirement`, `eclairs`, `inclinaison`, `geysers`, `couleur_fissures`, `mers`, `canyons`, `lave`, `cristaux`, `activite`, `intensite`, `vue` | new keys of the same names | added to the core one by one, each with a bound and a test of the picture |
+| `couleur_nuages`, `opacite_nuages`, `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124), `terre_seche`, `etirement`, `eclairs`, `inclinaison`, `geysers`, `couleur_fissures`, `mers`, `canyons`, `lave`, `cristaux`, `activite`, `intensite`, `vue` | new keys of the same names | added to the core one by one, each with a bound and a test of the picture |
 | `voile` | `swn_systemes.voile` / `fond` | the system's, or a body's |
 
 **Atlas format (AD-atlas-2, extended).** Every addition is optional (an atlas of the former format stays valid, byte for byte): `lunes[].type` takes every type of the core
 (not only rocky/ice/lava); `zones[].etoile` and `points[].etoile` (a star's `cle`, default the main one; `zones[].etoile` written to `swn_formations.etoile_rang` and `points[].etoile` to `swn_astres.etoile_rang` (a comet's star), both columns existing; AD-atlas-2 gives `etoile` to `corps[]` only) `corps[].lunes[].heure` is the hour around the planet;
-`voile` (a colour) on the system; each body's `aspect` may carry the keys above. Refusals keep AD-atlas-3 (all or nothing, path of each refusal).
+`voile` (a colour) on the system; `classe`, `taille` (continuous) and `couleur` (free) on a defined system; a star's state `disparue` (B-122); each body's `aspect` may carry the keys above. Refusals keep AD-atlas-3 (all or nothing, path of each refusal).
 
 **Rules kept.** A body has no secret of its own (the system's hides it); `lisibilite.ts` stays the only reader of `secret`; the import never overwrites what the GM changed (AD-atlas-3).
