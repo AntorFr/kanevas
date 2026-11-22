@@ -24,8 +24,8 @@ test('AD-rust-9 the hashed .wasm asset is served as application/wasm with the ma
     logLevel: 'silent',
   });
   const wasms = readdirSync(join(racine, 'assets')).filter((f) => f.endsWith('.wasm'));
-  // One hashed .wasm per module the page loads: `exemple` and `coeur` (the page was extended by kanevas-carte-spatiale-etoiles-liaisons).
-  assert.equal(wasms.length, 2, 'one hashed .wasm per module under assets/');
+  // One hashed .wasm per module the page loads through the loader table (AD-rust-4): `exemple`, `coeur` and `battlemap_core`.
+  assert.equal(wasms.length, 3, 'one hashed .wasm per module under assets/');
 
   const { buildApp } = await import('../app.js');
   const app = await buildApp();

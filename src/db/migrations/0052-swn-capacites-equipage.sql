@@ -1,5 +1,5 @@
 -- migrate: sans-cles-etrangeres
--- B-88, B-91, B-92, B-94, H-4, H-5 (kanevas-concepteur-vaisseaux-capacites-equipage; number 0047 taken at merge, AD-51).
+-- B-88, B-91, B-92, B-94, H-4, H-5 (kanevas-concepteur-vaisseaux-capacites-equipage; number 0052 taken (0047 before the catch-up of main) at merge, AD-51).
 -- `swn_catalogue_amenagements` is rebuilt (procedure of 0036): the CHECK of `effet` (only 'moteur_systeme' since 0032) takes
 -- 'support_automatisation', and SQLite does not widen a CHECK by ALTER. The new column `capacite` (NULL or a code of the closed
 -- list of H-4, kept in code and checked by the import) comes with the copy.
