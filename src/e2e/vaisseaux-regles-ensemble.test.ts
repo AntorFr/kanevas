@@ -237,7 +237,8 @@ describe('B-77 : le MJ génère les fiches de règles', { skip: skipBrowser, tim
     const t = await txt(page);
     assert.match(t, /Lance d.essai/);
     assert.equal(await page.locator('textarea').count(), 0);
-    assert.equal(await page.getByRole('button', { name: /Modifier/ }).count(), 0);
+    // the GM's key block (« Modifier la clé… », E-9) is not a section editor
+    assert.equal(await page.getByRole('button', { name: /Modifier/ }).filter({ hasNotText: /clé/ }).count(), 0);
     assert.ok(await page.locator('table').count() >= 1, 'text version rendered as a table');
     await page.screenshot({ path: `${SHOTS}-e9-armes.png`, fullPage: true });
   });

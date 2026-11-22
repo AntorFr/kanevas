@@ -302,16 +302,16 @@ test('outil cartes : liste (adresse au MJ seul), création avec taille, suppress
   assert.equal(rows(m.db), 1);
 });
 
-test('montée de la migration 0038 depuis 0037 : table créée, contraintes tenues, rien d’autre ne bouge', () => {
+test('montée de la migration 0047 depuis 0046 : table créée, contraintes tenues, rien d’autre ne bouge', () => {
   const SRC = new URL('../db/migrations/', import.meta.url).pathname;
   const dir = join(mkdtempSync(join(tmpdir(), 'mig-')), 'm') + '/';
   mkdirSync(dir);
-  for (const f of readdirSync(SRC)) if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 37) copyFileSync(SRC + f, dir + f);
+  for (const f of readdirSync(SRC)) if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 46) copyFileSync(SRC + f, dir + f);
   const db = openDb(':memory:');
   migrate(db, dir);
   assert.equal(db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'bm_cartes'").get(), undefined);
   db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', '2026-11-01T00:00:00.000Z')").run();
-  assert.deepEqual(migrate(db), [38, 39, 40]);
+  assert.deepEqual(migrate(db), [47, 48, 49]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const ins = (titre: string, l: unknown, h: unknown, doc: string) => db.prepare(
     "INSERT INTO bm_cartes (univers_id, titre, largeur, hauteur, document, cree_le, modifie_le) VALUES (1, ?, ?, ?, ?, 'a', 'a')").run(titre, l, h, doc);

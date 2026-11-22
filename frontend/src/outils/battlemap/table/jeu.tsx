@@ -628,7 +628,7 @@ function Partie({
         </div>
         {gm && (
           <aside className="editeur-panneau jeu-panneau" hidden={!panneauVisible} aria-label="Panneau latéral">
-            <Onglets legende="Panneau de la table" onglets={[{ valeur: 'pions', libelle: 'Pions' }, { valeur: 'calques', libelle: 'Calques' }]} actif={onglet} onChange={setOnglet} />
+            <Onglets etiquette="Panneau de la table" onglets={[{ id: 'pions', libelle: 'Pions' }, { id: 'calques', libelle: 'Calques' }]} actif={onglet} onChange={setOnglet} />
             {onglet === 'pions' && (
               <section className="jeu-pions" aria-label="Pions">
                 <Bouton variante="principal" icone={Plus} disabled={perdue || plein} onClick={() => setAjout(true)}>Ajouter un pion</Bouton>

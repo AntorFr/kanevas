@@ -1,3 +1,4 @@
+import { blocsDeFiche } from '../outils/blocs.js';
 import type { Db } from '../db/db.js';
 import {
   exigerMJ,
@@ -10,6 +11,7 @@ import {
   vueMJ,
   vueSection,
 } from './droits.js';
+import { ecrire } from './historique.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { etiquetageDe } from './etiquettes.js';
 import { mentionsDe } from './mentions.js';
@@ -18,6 +20,7 @@ import { illustrationEnAttente, lireLignes, lisiblePar, type FichierRow } from '
 import { supprimerFichier } from './stockage.js';
 import { IMAGE_RESERVEE } from './markdown.js';
 import { CHARGES, TYPES, STATUT_AVENTURE, estTypeFiche, porteMarqueDisparu, typeActif } from './types-fiche.js';
+import { tirerCleFiche } from './cles.js';
 import { ajouterSection, changerAudience } from './sections.js';
 import {
   TYPES_FICHE,
@@ -31,6 +34,7 @@ import {
   type FicheVue,
   type IllustrationVue,
   type PageMentions,
+  type Passage,
   type SectionRow,
   type TypeFiche,
 } from './types.js';
@@ -49,7 +53,8 @@ interface FicheRow {
   illustration_disque: string | null;
   illustration_visibilite: 'joueurs' | 'mj' | null;
   illustration_ajoute_par: number | null;
-  cle_origine: string | null;
+  cle: string;
+  creee_via: string;
   sous_type: string | null;
   parent_id: number | null;
   /** Read projection of the linked-list condition, never a stored column. */
@@ -70,8 +75,14 @@ export const visibiliteVue = (r: FicheRow): { visibleJoueurs?: boolean } =>
  * The sheet as a reader sees it. Without `lecteur` (the GM's own writes) the illustration is the file; with
  * one, a closed illustration is the « illustration fermée » state (AD-117, E-8, E-9), never its address.
  */
-export const versFiche = (r: FicheRow, lecteur?: (f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>) => boolean): Fiche => ({
+export const versFiche = (
+  r: FicheRow,
+  lecteur?: (f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>) => boolean,
+  /** The key goes to the GM outside player mode only; the GM's own writes (no `lecteur`) carry it. */
+  avecCle: boolean = lecteur === undefined,
+): Fiche => ({
   id: r.id,
+  ...(avecCle ? { cle: r.cle } : {}),
   universId: r.univers_id,
   type: r.type,
   titre: r.titre,
@@ -123,6 +134,11 @@ export function chargerFiche(db: Db, universId: number, ficheId: number, avecVis
   return row;
 }
 
+/** The sheet as the GM's own write returns it (AD-146: with its key), read after the write. */
+export function ficheEcrite(db: Db, universId: number, ficheId: number): Fiche {
+  return versFiche(chargerFiche(db, universId, ficheId));
+}
+
 function sectionsDe(db: Db, ficheId: number): SectionRow[] {
   return db
     .prepare('SELECT * FROM sections WHERE fiche_id = ? ORDER BY ordre')
@@ -146,7 +162,9 @@ export function creerFiche(
     parent?: number | null;
     sections?: { titre: string; joueursLisent?: boolean }[];
     /** Import only (B-50, AD-107): the origin key and dates of the sheet, and what the import wrote. */
-    origine?: { cle: string; creeLe?: string; modifieLe?: string; dernierImport: unknown };
+    origine?: { cle: string; creeLe?: string; modifieLe?: string };
+    /** Where the sheet is created from (`creee_via`); the import is `import`, else `ecran` by default. */
+    via?: 'ecran' | 'assistant' | 'mcp';
   },
 ): Fiche {
   exigerMJ(db, universId, compteId);
@@ -174,13 +192,13 @@ export function creerFiche(
       throw invalide('Réglage d’audience invalide.');
     }
   }
-  return db.transaction(() => {
+  return ecrire(db, compteId, () => {
     const now = new Date().toISOString();
     const o = entree.origine;
     const cree = o?.creeLe ?? now;
     const info = db
       .prepare(
-        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, dernier_import)
+        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle, creee_via)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
@@ -190,8 +208,8 @@ export function creerFiche(
         JSON.stringify(charge.data),
         cree,
         o?.modifieLe ?? (cree > now ? cree : now),
-        o?.cle ?? null,
-        o ? JSON.stringify(o.dernierImport) : null,
+        o?.cle ?? tirerCleFiche(db, universId, type, titre),
+        o ? 'import' : (entree.via ?? 'ecran'),
       );
     const id = Number(info.lastInsertRowid);
     // A separate write: a base short of 0013 (the migration test seeds one through the services) has no column.
@@ -202,7 +220,7 @@ export function creerFiche(
       if (section.joueursLisent === true) changerAudience(db, compteId, universId, id, s.id, { joueursLisent: true });
     }
     return versFiche(chargerFiche(db, universId, id));
-  })();
+  });
 }
 
 /** Play state, GM outside player mode only; changing it does not modify the text date (AD-123). */
@@ -222,14 +240,15 @@ export function changerStatutFiche(
     throw invalide('Statut invalide pour ce type de fiche.');
   }
   const charge = CHARGES[fiche.type].parse({ v: 1, statut });
-  db.prepare('UPDATE fiches SET charge = ? WHERE id = ?').run(JSON.stringify(charge), ficheId);
+  ecrire(db, acteur.compteId, () =>
+    db.prepare('UPDATE fiches SET charge = ? WHERE id = ?').run(JSON.stringify(charge), ficheId),
+  );
   return versFiche(chargerFiche(db, universId, ficheId));
 }
 
 /**
  * The GM renames a sheet, a session report included (AD-119 (1)): the one write of the title from the
- * screen. `dernier_import` is left alone, so a title that now differs from the one the import wrote is
- * protected at the next replay (B-48). A bare account id (the import) is a GM outside player mode.
+ * screen; the import replays through it too, and its next replay writes the title it carries (AD-138). A bare account id (the import) is a GM outside player mode.
  */
 export function renommerFiche(
   db: Db,
@@ -243,10 +262,8 @@ export function renommerFiche(
   if (a.modeJoueur) throw refuse();
   chargerFiche(db, universId, ficheId);
   const t = validerTitre(titre, 120, 'Le titre');
-  db.prepare('UPDATE fiches SET titre = ?, modifie_le = ? WHERE id = ?').run(
-    t,
-    new Date().toISOString(),
-    ficheId,
+  ecrire(db, a.compteId, () =>
+    db.prepare('UPDATE fiches SET titre = ?, modifie_le = ? WHERE id = ?').run(t, new Date().toISOString(), ficheId),
   );
   return versFiche(chargerFiche(db, universId, ficheId));
 }
@@ -262,17 +279,28 @@ export function changerSousType(
   exigerMJ(db, universId, compteId);
   chargerFiche(db, universId, ficheId);
   const valeur = sousType === null ? null : validerSousType(sousType);
-  db.prepare('UPDATE fiches SET sous_type = ?, modifie_le = ? WHERE id = ?').run(
-    valeur,
-    new Date().toISOString(),
-    ficheId,
+  ecrire(db, compteId, () =>
+    db.prepare('UPDATE fiches SET sous_type = ?, modifie_le = ? WHERE id = ?').run(valeur, new Date().toISOString(), ficheId),
   );
   return versFiche(chargerFiche(db, universId, ficheId));
 }
 
 /**
- * The GM sets the public gone mark outside player mode (AD-132). Like a title, this
- * leaves `dernier_import` alone: the import compares its last write before replaying.
+ * The GM sets the creation date of origin of a sheet (the import carries it, B-82). The history triggers do not
+ * watch this column, so the sheet is dated here: a script reading `?depuis=` sees the change.
+ */
+export function poserCreeLe(db: Db, compteId: number, universId: number, ficheId: number, creeLe: string): void {
+  exigerMJ(db, universId, compteId);
+  chargerFiche(db, universId, ficheId);
+  ecrire(db, compteId, () =>
+    db
+      .prepare('UPDATE fiches SET cree_le = ?, modifie_le = ? WHERE id = ?')
+      .run(creeLe, new Date().toISOString(), ficheId),
+  );
+}
+
+/**
+ * The GM sets the public gone mark outside player mode (AD-132).
  */
 export function marquerDisparu(
   db: Db,
@@ -287,10 +315,10 @@ export function marquerDisparu(
   if (!porteMarqueDisparu(fiche.type)) throw invalide('Cette fiche ne peut pas être marquée disparue.');
   if (typeof disparu !== 'boolean') throw invalide('Requête invalide.');
   const charge = { ...(JSON.parse(fiche.charge) as Record<string, unknown>), disparu };
-  db.prepare('UPDATE fiches SET charge = ?, modifie_le = ? WHERE id = ?').run(
-    JSON.stringify(charge),
-    new Date().toISOString(),
-    ficheId,
+  ecrire(db, acteur.compteId, () =>
+    db
+      .prepare('UPDATE fiches SET charge = ?, modifie_le = ? WHERE id = ?')
+      .run(JSON.stringify(charge), new Date().toISOString(), ficheId),
   );
   return versFiche(chargerFiche(db, universId, ficheId));
 }
@@ -328,12 +356,10 @@ export function changerTypeFiche(
   const c = CHARGES[type].safeParse({ v: 1, ...base, ...charge, ...marque });
   if (!c.success) throw invalide('Charge utile invalide pour ce type de fiche.');
   const garde = type === actuelle.type ? actuelle.sous_type : null;
-  db.prepare('UPDATE fiches SET type = ?, charge = ?, sous_type = ?, modifie_le = ? WHERE id = ?').run(
-    type,
-    JSON.stringify(c.data),
-    voulu ?? garde,
-    new Date().toISOString(),
-    ficheId,
+  ecrire(db, compteId, () =>
+    db
+      .prepare('UPDATE fiches SET type = ?, charge = ?, sous_type = ?, modifie_le = ? WHERE id = ?')
+      .run(type, JSON.stringify(c.data), voulu ?? garde, new Date().toISOString(), ficheId),
   );
   return versFiche(chargerFiche(db, universId, ficheId));
 }
@@ -426,16 +452,19 @@ export function bilanSuppressionFiche(db: Db, acteur: Acteur, universId: number,
  */
 export function supprimerFiche(db: Db, acteur: Acteur, universId: number, ficheId: number): void {
   const f = porteSuppression(db, acteur, universId, ficheId, true);
-  const { disques } = db.transaction(() => {
+  const { disques } = ecrire(db, acteur.compteId, () => {
     const bilan = recenser(db, f);
     db.prepare('UPDATE fiches SET parent_id = ? WHERE parent_id = ?').run(f.parent_id, f.id);
     db.prepare('DELETE FROM relations WHERE cible_fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM elements_carte WHERE fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM taches_preparation WHERE fiche_id = ?').run(f.id);
-    db.prepare('DELETE FROM sections WHERE fiche_id = ?').run(f.id);
+    // The sheet goes first so that its history line keeps its sections (AD-147, trigger BEFORE DELETE);
+    // the sections then go without a line of their own, their sheet being gone. The check waits for the commit.
+    db.pragma('defer_foreign_keys = ON');
     db.prepare('DELETE FROM fiches WHERE id = ?').run(f.id);
+    db.prepare('DELETE FROM sections WHERE fiche_id = ?').run(f.id);
     return bilan;
-  })();
+  });
   for (const d of disques) supprimerFichier(d);
 }
 
@@ -499,7 +528,7 @@ export function deplacerFiche(
       ).parent_id;
     }
   }
-  db.prepare('UPDATE fiches SET parent_id = ? WHERE id = ?').run(parentId, ficheId);
+  ecrire(db, acteur.compteId, () => db.prepare('UPDATE fiches SET parent_id = ? WHERE id = ?').run(parentId, ficheId));
   return versFiche(chargerFiche(db, universId, ficheId));
 }
 
@@ -679,7 +708,7 @@ export function lireFiche(
   const lisibles = sectionsDe(db, ficheId).filter((s) => peutLireSection(role, s, acteur));
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
   const mentions = mentionsDe(db, role, acteur, universId, ficheId);
-  const vueFiche = versFiche(fiche, (f) => lisiblePar(role, acteur, f));
+  const vueFiche = versFiche(fiche, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur));
   // An illustration the import has not delivered yet: a tile for the GM outside player mode, nothing for anyone else.
   const attendue = vueFiche.illustration === null && vueMJ(role, acteur) ? illustrationEnAttente(db, ficheId) : null;
   // A report names its adventure only to a reader who reads it (AD-124 (4)): the id leaves `charge` for
@@ -697,9 +726,10 @@ export function lireFiche(
     mentions: mentions.mentions,
     mentionsSuite: mentions.suite,
     mentionsRestantes: mentions.restantes,
+    blocs: blocsDeFiche(db, acteur, universId, ficheId),
     ...etiquetageDe(db, ficheId),
     // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
-    ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
+    ...(vueMJ(role, acteur) && fiche.creee_via === 'import' ? { cleOrigine: fiche.cle } : {}),
     sections: lisibles.map((s) => ({
       ...vueSection(db, universId, role, s, acteur, formeLiens),
       piecesJointes: lireLignes(db, acteur, universId, role, s.id),
@@ -803,6 +833,8 @@ export function listerFiches(
     parent?: 'racine' | number;
     /** Leaves out this sheet and all its descendants (AD-129); needs `recherche`, GM outside player mode. */
     horsDe?: number;
+    /** With `recherche`: each sheet carries the passages of its readable sections that match (AD-145). */
+    extraits?: boolean;
   } = {},
 ): PageFiches {
   const role = exigerRole(db, universId, acteur.compteId);
@@ -972,9 +1004,12 @@ export function listerFiches(
       ? Buffer.from(JSON.stringify({ t: dernier.titre, i: dernier.id })).toString('base64url')
       : null;
   const mots = options.recherche === undefined ? null : motsDe(options.recherche);
+  const passages = options.extraits === true && options.recherche !== undefined
+    ? passagesDe(db, role, acteur, page.map((r) => r.id), options.recherche)
+    : null;
   const enrichie = (r: FicheRow): Fiche => {
     const e = etiquetageDe(db, r.id);
-    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f)), ...visibiliteVue(r), alias: e.alias, etiquettes: e.etiquettes };
+    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur)), ...visibiliteVue(r), alias: e.alias, etiquettes: e.etiquettes };
     if (r.lien_via) {
       const via = JSON.parse(r.lien_via) as { id: number; titre: string };
       if (via.id !== options.lie) f.via = via;
@@ -989,10 +1024,55 @@ export function listerFiches(
       const trouve = mots.length > 0 && !repond(r.titre, mots) ? e.alias.find((a) => repond(a, mots)) : undefined;
       if (trouve !== undefined) f.aliasTrouve = trouve;
     }
+    if (passages !== null) f.passages = passages.get(r.id) ?? [];
     return f;
   };
   if (options.parent === undefined) return { fiches: page.map(enrichie), suivant };
   return { fiches: page.map((r) => versArbre(db, role, acteur, r, enrichie(r))), suivant };
+}
+
+/**
+ * The passages of the matching sections the caller reads, per sheet (AD-145, AD-mcp-4): `snippet` of the
+ * FTS5 index over the one text column the caller already reads (`contenu_public`, or `contenu` for the GM
+ * outside player mode) — never the other, so a `:::mj` block never reaches a player. Same two guards as
+ * the search itself; the index is only read.
+ */
+function passagesDe(
+  db: Db,
+  role: Role,
+  acteur: Acteur,
+  ficheIds: number[],
+  recherche: string,
+): Map<number, Passage[]> {
+  const sortie = new Map<number, Passage[]>();
+  const match = motsRecherche(recherche);
+  if (match === null || ficheIds.length === 0) return sortie;
+  const mj = role === 'mj' && !acteur.modeJoueur;
+  const colonne = mj ? 'contenu' : 'contenu_public';
+  const indice = mj ? 2 : 1;
+  const lue = sqlSectionLisible(role, acteur, 's');
+  const coupe = (c: number) => `snippet(recherche_sections, ${c}, '**', '**', '…', 24)`;
+  const rows = db
+    .prepare(
+      `SELECT s.fiche_id AS fiche, s.id AS section, s.titre AS titre,
+              ${coupe(indice)} AS extrait, ${coupe(0)} AS extraitTitre
+         FROM recherche_sections JOIN sections s ON s.id = recherche_sections.rowid
+        WHERE recherche_sections MATCH ? AND s.fiche_id IN (SELECT value FROM json_each(?))
+          ${lue ? `AND ${lue.sql}` : ''}
+        ORDER BY s.fiche_id, s.ordre`,
+    )
+    .all(`{titre ${colonne}} : (${match})`, JSON.stringify(ficheIds), ...(lue?.params ?? [])) as {
+    fiche: number; section: number; titre: string; extrait: string; extraitTitre: string;
+  }[];
+  const plat = (t: string) => t.replace(/\s+/g, ' ').trim();
+  for (const r of rows) {
+    // The match may sit in the section title only: then the excerpt is the title, marked.
+    const extrait = r.extrait.includes('**') || !r.extraitTitre.includes('**') ? r.extrait : r.extraitTitre;
+    const liste = sortie.get(r.fiche) ?? [];
+    liste.push({ section: r.section, titre: r.titre, extrait: plat(extrait) });
+    sortie.set(r.fiche, liste);
+  }
+  return sortie;
 }
 
 /** A row of the tree: `aDesEnfants` and `dans` are computed under the caller's own reading (AD-115 (3)). */

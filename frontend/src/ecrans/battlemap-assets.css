@@ -91,4 +91,4 @@ body:has(.bm-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .bm-brouillon-actions { display: flex; gap: var(--e-2); margin-top: var(--e-2); }
 @media (max-width: 1024px) { .bm-gen-colonnes { grid-template-columns: minmax(0, 1fr); } .bm-gen-lot { max-height: none; } }
 @media (max-width: 760px) { .bm-gen .bouton, .bm-brouillon-actions .bouton { min-height: 44px; } .bm-gen-saisie > .champ:first-child { grid-column: 1 / -1; } .bm-gen-saisie { grid-template-columns: minmax(0, 1fr) auto 28px; } .bm-gen-saisie > .bm-gen-empreinte { grid-column: 2; } .bm-gen-actions > .bouton.principal { margin-left: 0; } .bm-gen-ligne-tete { flex-wrap: wrap; }
-  .bm-page .onglets { display: flex; max-width: 100%; } .bm-page .onglets button { white-space: normal; flex: 1 1 auto; padding-inline: var(--e-2); } }
+  .bm-page .onglets-liste { display: flex; max-width: 100%; } .bm-page .onglets-liste button { white-space: normal; flex: 1 1 auto; padding-inline: var(--e-2); } }

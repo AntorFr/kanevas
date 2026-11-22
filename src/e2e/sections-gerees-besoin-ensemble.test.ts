@@ -126,9 +126,9 @@ describe('sections gérées par un outil — le besoin, de bout en bout', { skip
     const secret = ((await f.json()) as Any).id;
     const r = await generer(antor, { ficheId: secret, type: 'notes' });
     await statut(r, 201, 'section MJ');
-    const lue = lea.page.waitForResponse((x: Any) => x.url().endsWith(`/fiches/${secret}`));
-    await lea.page.goto(`/univers/${U}/fiche/${secret}`);
-    await lue;
+    // B-101: the numeric address of a sheet Léa cannot read answers like an unknown one, at the server, before any screen
+    const rep = await lea.page.goto(`/univers/${U}/fiche/${secret}`);
+    assert.equal(rep.status(), 404);
     await lea.page.getByRole('main').waitFor();
     assert.equal(await lea.page.getByText(rx('Générée par')).count(), 0, 'aucun bandeau pour Léa');
     assert.equal(await lea.page.getByText(rx('Notes — marge')).count(), 0);

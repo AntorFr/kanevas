@@ -66,7 +66,7 @@ async function monde(): Promise<Monde> {
     try { json = JSON.parse(texte); } catch { /* not JSON */ }
     return { status: r.status, json, texte };
   };
-  const jeton = async () => (await api('antor', 'POST', `/api/univers/${E}/jetons`, { nom: 'Script galaxie', dureeJours: 30, outils: ['swn/galaxie'] })).json.valeur as string;
+  const jeton = async () => await srv.jetonOutils('antor', E, 'Script galaxie', ['swn/galaxie']);
   const mo: Monde = { base: srv.base, E, G, gid, api, imp, jeton };
   const h = await api('antor', 'POST', `${G}/systemes`, { nom: 'Havre', q: 3, r: 2 });
   assert.equal(h.status, 201, h.texte);

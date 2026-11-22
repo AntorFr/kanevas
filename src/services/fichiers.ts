@@ -1,10 +1,11 @@
 import { typeParSignature } from './signature.js';
+import { avecContexte, ecrire, ecrireSysteme } from './historique.js';
 import type { Readable } from 'node:stream';
 
 import { attachmentsDir } from '../config/env.js';
 import type { Db } from '../db/db.js';
 import { cleValide } from './import.js';
-import type { Jeton } from './jetons.js';
+import type { JetonRequete as Jeton } from './jetons.js';
 import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
 import {
   exigerRole,
@@ -34,8 +35,11 @@ import {
   ecrireFlux,
   lireFichier,
   promouvoir,
+  sha256Stocke,
   supprimerFichier,
 } from './stockage.js';
+import { empreinteFichier } from './empreintes.js';
+import { lirePrecondition, RAISON_EMPREINTE_PERIMEE, verifierPrecondition } from './precondition.js';
 import type { Acteur, PieceJointeVue, Role, SectionRow } from './types.js';
 
 /**
@@ -97,11 +101,13 @@ export interface ResultatFichierImport {
   id: number;
   etat: 'creee' | 'mise_a_jour' | 'inchangee';
   avertissements: string[];
+  /** Fingerprint of the file after the write (name, visibility, bytes; AD-139). */
+  empreinte: string;
 }
 
 /**
- * Ensures an imported library file (AD-104, B-48). Unlike an interactive upload, the import
- * explicitly chooses its visibility. The origin key, never the name, identifies the file.
+ * Ensures an imported library file (AD-104). Unlike an interactive upload, the import
+ * may send its visibility (omitted: « joueurs » at creation, untouched on a replay, B-91). The origin key, never the name, identifies the file.
  * Bytes, metadata and batch outcome are committed together; an unchanged upload keeps its disk token.
  */
 export async function assurerFichier(
@@ -112,6 +118,7 @@ export async function assurerFichier(
   entree: { nom: unknown; visibilite?: unknown; flux: FluxEntrant | null },
   maintenant: Date = new Date(),
   racine: string = attachmentsDir,
+  entetes: Record<string, string | string[] | undefined> = {},
 ): Promise<ResultatFichierImport> {
   const acteur = { compteId: jeton.compteId };
   const autoriserImport = () => {
@@ -129,23 +136,44 @@ export async function assurerFichier(
   let ancienDisque: string | null = null;
   let valide = false;
   try {
+    const precondition = lirePrecondition(entetes, { creation: true });
     if (!cleValide(cle)) invalider('cle', "Clé d'origine invalide.");
     if (typeof entree.nom !== 'string') invalider('nom', 'Nom du fichier manquant.');
     const nom = nomPropre(entree.nom as string);
-    const visibilite = entree.visibilite ?? 'joueurs';
+    // B-91: an omitted visibility is not sent — « joueurs » at creation only, never on a replay.
+    const envoyee = entree.visibilite !== undefined && entree.visibilite !== null;
+    const visibilite = envoyee ? entree.visibilite : 'joueurs';
     if (visibilite !== 'joueurs' && visibilite !== 'mj') {
       invalider('visibilite', 'La visibilité doit être « joueurs » ou « mj ».');
     }
     if (!entree.flux) invalider('fichier', 'Champ « fichier » manquant.');
+    // The precondition is held before a byte is stored; it is checked again in the transaction (the upload yields).
+    const empreinteCourante = async (): Promise<string | null> => {
+      const c = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND cle_origine = ?')
+        .get(jeton.universId, cle) as FichierRow | undefined;
+      if (!c) return null;
+      const sha256 = await sha256De(c);
+      return sha256 === null ? null : empreinteFichier({ nom: c.nom, visibilite: c.visibilite, sha256 });
+    };
+    if (precondition.siEmpreinte !== undefined || precondition.siAbsent) {
+      verifierPrecondition(precondition, await empreinteCourante());
+    }
     const ecrit = await ecrireFlux(entree.flux!, racine);
     temporaire = ecrit.temporaire;
     if (ecrit.taille === 0) invalider('fichier', 'fichier vide : 0 octet, refusé');
     const type = typeParSignature(ecrit.debut);
-    const resultat = db.transaction((): ResultatFichierImport => {
+    const resultat = avecContexte(db, { compteId: jeton.compteId, jetonId: jeton.id, origine: 'import', lotId }, (): ResultatFichierImport => {
       // Uploading yields to other requests: check the role and the batch again before writing.
       autoriserImport();
       const courant = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND cle_origine = ?')
-        .get(jeton.universId, cle) as (FichierRow & { dernier_import: string | null }) | undefined;
+        .get(jeton.universId, cle) as FichierRow | undefined;
+      // Same fingerprint as the read: the stored bytes' SHA-256 is the column (set at each write).
+      if (!courant || courant.empreinte !== null) {
+        verifierPrecondition(
+          precondition,
+          courant ? empreinteFichier({ nom: courant.nom, visibilite: courant.visibilite, sha256: courant.empreinte! }) : null,
+        );
+      }
       const avertissements: string[] = [];
       let id: number;
       let etat: ResultatFichierImport['etat'];
@@ -153,38 +181,27 @@ export async function assurerFichier(
         nouveauDisque = promouvoir(ecrit.temporaire, racine);
         const info = db.prepare(
           `INSERT INTO fichiers (univers_id, nom, type, taille, disque, empreinte, visibilite,
-             cle_origine, ajoute_par, ajoute_le, dernier_import) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             cle_origine, ajoute_par, ajoute_le) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         ).run(jeton.universId, nom, type, ecrit.taille, nouveauDisque, ecrit.empreinte, visibilite,
-          cle, jeton.compteId, maintenant.toISOString(), JSON.stringify({ nom, visibilite }));
+          cle, jeton.compteId, maintenant.toISOString());
         id = Number(info.lastInsertRowid);
         etat = 'creee';
         // The sheets that waited for this key now point at the file, in this transaction (AD-111).
         avertissements.push(...resoudreFichierEnAttente(db, jeton.universId, cle, { id, type }));
       } else {
         id = courant.id;
-        const marque = courant.dernier_import
-          ? JSON.parse(courant.dernier_import) as { nom?: string; visibilite?: Visibilite }
-          : {};
-        const noms = courant.nom === nom || marque.nom === courant.nom;
-        const visibilites = courant.visibilite === visibilite || marque.visibilite === courant.visibilite;
-        const nomEcrit = noms ? nom : courant.nom;
-        const visibiliteEcrite = visibilites ? visibilite as Visibilite : courant.visibilite;
-        if (noms) marque.nom = nom;
-        else avertissements.push('nom modifié dans Kanevas : non écrasé');
-        if (visibilites) marque.visibilite = visibilite as Visibilite;
-        else avertissements.push('visibilité modifiée dans Kanevas : non écrasée');
+        // The script's name wins; its visibility too when it sends one (B-47, B-91), else Kanevas's stays.
+        const visibiliteEcrite = envoyee ? visibilite as Visibilite : courant.visibilite;
         const octetsChanges = courant.empreinte !== ecrit.empreinte;
         if (octetsChanges) {
           nouveauDisque = promouvoir(ecrit.temporaire, racine);
           ancienDisque = courant.disque;
         }
-        const change = octetsChanges || nomEcrit !== courant.nom || visibiliteEcrite !== courant.visibilite;
-        const json = JSON.stringify(marque);
-        if (change || json !== courant.dernier_import) {
+        const change = octetsChanges || nom !== courant.nom || visibiliteEcrite !== courant.visibilite;
+        if (change) {
           db.prepare(`UPDATE fichiers SET nom = ?, visibilite = ?, type = ?, taille = ?, disque = ?,
-            empreinte = ?, dernier_import = ? WHERE id = ?`)
-            .run(nomEcrit, visibiliteEcrite, type, ecrit.taille, nouveauDisque ?? courant.disque,
-              ecrit.empreinte, json, id);
+            empreinte = ? WHERE id = ?`)
+            .run(nom, visibiliteEcrite, type, ecrit.taille, nouveauDisque ?? courant.disque, ecrit.empreinte, id);
         }
         etat = change ? 'mise_a_jour' : 'inchangee';
       }
@@ -197,12 +214,25 @@ export async function assurerFichier(
         }));
         noterDansLot(db, lotId, 'fichiers', issues[etat], rapport, maintenant);
       }
-      return { id, etat, avertissements };
-    })();
+      const f = db.prepare('SELECT nom, visibilite, empreinte FROM fichiers WHERE id = ?').get(id) as
+        { nom: string; visibilite: Visibilite; empreinte: string };
+      return {
+        id, etat, avertissements,
+        empreinte: empreinteFichier({ nom: f.nom, visibilite: f.visibilite, sha256: f.empreinte }),
+      };
+    });
     valide = true;
     if (ancienDisque) supprimerFichier(ancienDisque, racine);
     return resultat;
   } catch (e) {
+    if (e instanceof ErreurService && e.detail === 'empreinte_perimee') {
+      if (lotId !== null) {
+        noterDansLot(db, lotId, 'fichiers', 'refusees', [
+          { cle, objet: 'fichier', raison: RAISON_EMPREINTE_PERIMEE, gravite: 'refus', code: 'empreinte_perimee' },
+        ], maintenant);
+      }
+      throw e;
+    }
     if (e instanceof ErreurService && e.code === 'invalide') {
       const erreur = e.champ ? e : new ErreurService('invalide', e.message, undefined, 'nom');
       if (lotId !== null) {
@@ -423,7 +453,7 @@ export async function ajouterFichier(
         'pas_une_image',
       );
     }
-    const id = db.transaction(() => {
+    const id = ecrire(db, acteur.compteId, () => {
       const { visibilite } = autoriser(db, acteur, universId, cible);
       disque = promouvoir(ecrit.temporaire, racine);
       const info = db
@@ -438,7 +468,7 @@ export async function ajouterFichier(
         db.prepare('UPDATE fiches SET illustration_fichier_id = ? WHERE id = ?').run(fichierId, cible.ficheId);
       }
       return fichierId;
-    })();
+    });
     const v = vue(chargerFichier(db, universId, id));
     if (cible.ou === 'section' && cible.maniere === 'texte') v.reference = `fichier:${id}`;
     return v;
@@ -458,7 +488,7 @@ export function joindreFichier(
   sectionId: number,
   fichierId: number,
 ): FichierVue {
-  return db.transaction(() => {
+  return ecrire(db, acteur.compteId, () => {
     const { role, s } = contexteSection(db, acteur, universId, ficheId, sectionId);
     exigerEcritureSection(role, s, acteur);
     const f = fichierVisible(db, acteur, universId, fichierId);
@@ -470,7 +500,7 @@ export function joindreFichier(
       poserJointure(db, f.id, s.id);
     }
     return vue(f);
-  })();
+  });
 }
 
 /** Removes the reference of a joined file (the file stays in the library); who writes the section may. */
@@ -482,7 +512,7 @@ export function retirerJointure(
   sectionId: number,
   fichierId: number,
 ): void {
-  db.transaction(() => {
+  ecrire(db, acteur.compteId, () => {
     const { role, s } = contexteSection(db, acteur, universId, ficheId, sectionId);
     exigerEcritureSection(role, s, acteur);
     const ligne = db
@@ -496,7 +526,7 @@ export function retirerJointure(
     } else {
       db.prepare('DELETE FROM fichiers_sections WHERE fichier_id = ? AND section_id = ?').run(fichierId, s.id);
     }
-  })();
+  });
 }
 
 /** The GM sets an existing image of the library as the illustration of a sheet. */
@@ -507,7 +537,7 @@ export function choisirIllustration(
   ficheId: number,
   fichierId: number,
 ): FichierVue {
-  return db.transaction(() => {
+  return ecrire(db, acteur.compteId, () => {
     exigerMJDeFiche(db, universId, acteur, ficheId);
     const f = chargerFichier(db, universId, fichierId);
     if (!estImage(f.type)) {
@@ -519,15 +549,15 @@ export function choisirIllustration(
     }
     db.prepare('UPDATE fiches SET illustration_fichier_id = ? WHERE id = ?').run(f.id, ficheId);
     return vue(f);
-  })();
+  });
 }
 
 /** Removes the illustration of a sheet (a no-op when there is none); the file stays in the library. */
 export function retirerIllustration(db: Db, acteur: Acteur, universId: number, ficheId: number): void {
-  db.transaction(() => {
+  ecrire(db, acteur.compteId, () => {
     exigerMJDeFiche(db, universId, acteur, ficheId);
     db.prepare('UPDATE fiches SET illustration_fichier_id = NULL WHERE id = ?').run(ficheId);
-  })();
+  });
 }
 
 /** The GM renames a file and/or changes its visibility. */
@@ -565,7 +595,7 @@ export function effacerFichier(
   fichierId: number,
   racine: string = attachmentsDir,
 ): void {
-  const disque = db.transaction(() => {
+  const disque = ecrire(db, acteur.compteId, () => {
     exigerMJReel(db, universId, acteur);
     const f = chargerFichier(db, universId, fichierId);
     if (db.prepare('SELECT 1 AS ok FROM bm_assets WHERE fichier_id = ?').get(f.id)) {
@@ -575,7 +605,7 @@ export function effacerFichier(
     db.prepare('DELETE FROM fichiers_sections WHERE fichier_id = ?').run(f.id);
     db.prepare('DELETE FROM fichiers WHERE id = ?').run(f.id);
     return f.disque;
-  })();
+  });
   supprimerFichier(disque, racine);
 }
 
@@ -991,13 +1021,10 @@ export function joindreParImport(db: Db, sectionId: number, fichierId: number): 
   return true;
 }
 
-const lireJsonObjet = (brut: string | null): Record<string, unknown> =>
-  brut === null ? {} : (JSON.parse(brut) as Record<string, unknown>);
-
 /**
  * The file of `cle` has just arrived (AD-111, AD-104): the texts that carried its key get `fichier:<id>`, the
  * joined references and the illustration that waited are set, and the rows go — all in the caller's
- * transaction, with neither `version`, nor `version_importee`, nor `modifie_le` moving. Returns the warnings.
+ * transaction, with neither `version` nor `modifie_le` moving. Returns the warnings.
  */
 export function resoudreFichierEnAttente(
   db: Db,
@@ -1014,31 +1041,28 @@ export function resoudreFichierEnAttente(
   for (const sid of textes) {
     const { contenu } = db.prepare('SELECT contenu FROM sections WHERE id = ?').get(sid) as { contenu: string };
     const neuf = reecrireClesFichier(contenu, (k) => (k === cle ? fichier.id : null));
-    if (neuf !== contenu) poserContenu(db, sid, neuf, null);
+    // The text only resolves a waiting key: nothing a reader sees changes (`systeme`, AD-147).
+    if (neuf !== contenu) ecrireSysteme(db, () => poserContenu(db, sid, neuf, null));
     recalculerFichiersSection(db, sid, neuf, contenuPublic(neuf));
   }
   for (const l of lignes) {
     if (l.maniere === 'texte') {
       supprimer.run(l.id);
     } else if (l.maniere === 'joint') {
-      const s = db.prepare('SELECT titre, dernier_import FROM sections WHERE id = ?').get(l.section_id) as
-        | { titre: string; dernier_import: string | null }
+      const s = db.prepare('SELECT titre FROM sections WHERE id = ?').get(l.section_id) as
+        | { titre: string }
         | undefined;
       if (!s) continue;
-      if (!joindreParImport(db, l.section_id!, fichier.id)) {
+      // The reference was already pushed with the sheet: resolving it changes nothing a reader sees (`systeme`, AD-147).
+      if (!ecrireSysteme(db, () => joindreParImport(db, l.section_id!, fichier.id))) {
         avertissements.push(`section « ${s.titre} » : ${MAX_FICHIERS_JOINTS} fichiers joints au plus, « ${cle} » reste en attente`);
         continue;
       }
-      const marque = lireJsonObjet(s.dernier_import);
-      const fichiers = (marque.fichiers ?? { ecrits: [] }) as { ecrits: number[] };
-      if (!fichiers.ecrits.includes(fichier.id)) fichiers.ecrits.push(fichier.id);
-      marque.fichiers = fichiers;
-      db.prepare('UPDATE sections SET dernier_import = ? WHERE id = ?').run(JSON.stringify(marque), l.section_id);
       supprimer.run(l.id);
     } else {
       supprimer.run(l.id);
-      const f = db.prepare('SELECT illustration_fichier_id AS ill, dernier_import FROM fiches WHERE id = ?').get(l.fiche_id) as
-        | { ill: number | null; dernier_import: string | null }
+      const f = db.prepare('SELECT illustration_fichier_id AS ill FROM fiches WHERE id = ?').get(l.fiche_id) as
+        | { ill: number | null }
         | undefined;
       if (!f) continue;
       if (!estImage(fichier.type)) {
@@ -1047,9 +1071,6 @@ export function resoudreFichierEnAttente(
         avertissements.push(`illustration modifiée dans Kanevas : « ${cle} » non posée`);
       } else {
         db.prepare('UPDATE fiches SET illustration_fichier_id = ? WHERE id = ?').run(fichier.id, l.fiche_id);
-        const marque = lireJsonObjet(f.dernier_import);
-        marque.illustration = { demande: cle, ecrit: fichier.id };
-        db.prepare('UPDATE fiches SET dernier_import = ? WHERE id = ?').run(JSON.stringify(marque), l.fiche_id);
       }
     }
   }
@@ -1064,3 +1085,95 @@ export function illustrationEnAttente(db: Db, ficheId: number): string | null {
   return r?.cle ?? null;
 }
 
+
+/** Page size of the token reads of the library and of the maps (B-90). */
+export const PAGE_LECTURE_API = 1000;
+
+export interface FichierApi {
+  id: number;
+  cle: string | null;
+  nom: string;
+  visibilite: Visibilite;
+  taille: number;
+  sha256: string | null;
+  empreinte: string | null;
+}
+
+/** The cursor of a token read: an id, nothing else. */
+export function curseurApi(apres: unknown): number {
+  if (apres === undefined) return 0;
+  const n = typeof apres === 'string' && /^\d+$/.test(apres) ? Number(apres) : NaN;
+  if (!Number.isSafeInteger(n)) throw new ErreurService('invalide', 'Le curseur est invalide.', undefined, 'apres');
+  return n;
+}
+
+async function sha256De(f: FichierRow): Promise<string | null> {
+  return f.empreinte ?? (await sha256Stocke(f.disque));
+}
+
+/**
+ * The files the caller reads, in id order, a thousand per page (B-90, AD-149). The one read rule
+ * decides; a closed file is neither listed nor counted. `suivant` is the cursor of the next page.
+ * The fingerprint is the one of the file's name, visibility and bytes (AD-139).
+ */
+export async function listerFichiersApi(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  apres: unknown,
+): Promise<{ fichiers: FichierApi[]; suivant: number | null }> {
+  const role = exigerRole(db, universId, acteur.compteId);
+  let curseur = curseurApi(apres);
+  const lus: FichierRow[] = [];
+  const requete = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND id > ? ORDER BY id LIMIT ?');
+  for (let fini = false; !fini && lus.length <= PAGE_LECTURE_API; ) {
+    const lot = requete.all(universId, curseur, PAGE_LECTURE_API) as FichierRow[];
+    for (const f of lot) {
+      curseur = f.id;
+      if (lisiblePar(role, acteur, f)) lus.push(f);
+      if (lus.length > PAGE_LECTURE_API) break;
+    }
+    fini = lot.length < PAGE_LECTURE_API;
+  }
+  const page = lus.slice(0, PAGE_LECTURE_API);
+  const fichiers: FichierApi[] = [];
+  for (const f of page) {
+    const sha256 = await sha256De(f);
+    fichiers.push({
+      id: f.id,
+      cle: f.cle_origine,
+      nom: f.nom,
+      visibilite: f.visibilite,
+      taille: f.taille,
+      sha256,
+      empreinte: sha256 === null ? null : empreinteFichier({ nom: f.nom, visibilite: f.visibilite, sha256 }),
+    });
+  }
+  return { fichiers, suivant: lus.length > PAGE_LECTURE_API ? page[page.length - 1]!.id : null };
+}
+
+/**
+ * The bytes of a file by origin key or id, under the one read rule with the caller's real rights.
+ * A key wins over an id; a file the caller does not read is the same `introuvable` as an unknown one (AD-66).
+ */
+export async function ouvrirFichierParReference(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  reference: string,
+  racine: string = attachmentsDir,
+): Promise<{ flux: Readable; nom: string; type: string; taille: number }> {
+  exigerRole(db, universId, acteur.compteId);
+  let f = db
+    .prepare('SELECT * FROM fichiers WHERE univers_id = ? AND cle_origine = ?')
+    .get(universId, reference) as FichierRow | undefined;
+  if (!f && /^\d+$/.test(reference)) {
+    f = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND id = ?').get(universId, Number(reference)) as
+      | FichierRow
+      | undefined;
+  }
+  if (!f || !fichierLisible(db, { compteId: acteur.compteId }, f)) throw introuvable();
+  const o = await lireFichier(f.disque, racine);
+  if (!o) throw introuvable();
+  return { flux: o.flux, nom: f.nom, type: f.type, taille: o.taille };
+}

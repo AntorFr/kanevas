@@ -70,7 +70,7 @@ test('critère E-13 : les trois comptes-rendus sont rangés par date d’origine
 });
 
 test('critère : le lien vers la clé tardive est résolu, celui vers la clé qui n’arrive jamais reste en attente', () => {
-  const id = (app.db.prepare("SELECT id FROM fiches WHERE cle_origine = 'lieu:eneria-prime'").get() as { id: number }).id;
+  const id = (app.db.prepare("SELECT id FROM fiches WHERE cle = 'lieu:eneria-prime'").get() as { id: number }).id;
   const html = lireFiche(app.db, { compteId: antor }, univers, id).sections.map((x) => x.html).join('\n');
   assert.match(html, /<a [^>]*href="\/univers\/\d+\/fiche\/\d+"[^>]*>Base Éneria-1<\/a>/);
   assert.match(html, /<span class="lien-attente"[^>]*>Nyx<\/span>/);
@@ -107,13 +107,13 @@ test('critère : une fiche de plus dans le JSON → 1 créée, 15 inchangées', 
 const campagneEneria = () =>
   app.db.prepare("SELECT id, json_extract(charge, '$.statut') AS statut FROM fiches WHERE type = 'aventure' AND titre = 'Éneria'").get() as { id: number; statut: string };
 
-test('critère : un statut d’aventure changé à la main n’est pas écrasé au rejeu suivant', async () => {
+test('critère : un statut d’aventure changé à la main revient à celui du script au rejeu suivant', async () => {
   const c = campagneEneria();
   assert.equal(c.statut, 'en_preparation');
   changerStatutFiche(app.db, { compteId: antor }, univers, c.id, 'terminee');
   const r = await pousser();
   assert.equal(r.code, 0, r.err + r.out);
-  assert.equal(campagneEneria().statut, 'terminee');
+  assert.equal(campagneEneria().statut, 'en_preparation');
 });
 
 test('critère : le scénario de 60 000 caractères est importé en entier, sous sa campagne, avec son lien par clé', () => {
@@ -169,7 +169,7 @@ test('échec : arguments manquants ou invalides → usage, sortie non nulle', as
 });
 
 test('critère : univers neuf et jeton neuf → mêmes comptes ; le Jeton du bouchon n’y ouvre rien', async () => {
-  const nouveau = Number(app.db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('Neuf', '2026-01-01')").run().lastInsertRowid);
+  const nouveau = Number(app.db.prepare("INSERT INTO univers (cle, nom, cree_le) VALUES ('u-' || lower(hex(randomblob(6))), 'Neuf', '2026-01-01')").run().lastInsertRowid);
   app.db.prepare("INSERT INTO membres (univers_id, compte_id, role) VALUES (?, ?, 'mj')").run(nouveau, antor);
   const refuse = await pousser([], nouveau);
   assert.notEqual(refuse.code, 0);

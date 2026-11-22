@@ -352,12 +352,12 @@ test('références : asset ou fiche inconnus, ou d’un autre univers, refusés 
   assert.equal((T.lireTable(m.db, m.mj, m.u, id) as any).version, 1);
 });
 
-test('0040 : une base au schéma 0039 (carte, univers) monte sans perte ; contraintes des deux tables vivantes', async () => {
+test('0049 : une base au schéma 0048 (carte, univers) monte sans perte ; contraintes des deux tables vivantes', async () => {
   const { copyFileSync, mkdirSync, readdirSync } = await import('node:fs');
   const src = new URL('../db/migrations/', import.meta.url).pathname;
   const dir = join(mkdtempSync(join(tmpdir(), 'mig-')), 'm') + '/';
   mkdirSync(dir);
-  for (const f of readdirSync(src)) if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 39) copyFileSync(src + f, dir + f);
+  for (const f of readdirSync(src)) if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 48) copyFileSync(src + f, dir + f);
   const db = openDb(':memory:');
   migrate(db, dir);
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'a', 'x')").run();
@@ -365,7 +365,7 @@ test('0040 : une base au schéma 0039 (carte, univers) monte sans perte ; contra
   const doc = '{"schema":1}';
   db.prepare("INSERT INTO bm_cartes (id, univers_id, titre, visible, largeur, hauteur, taille_case, document, version, cree_le, modifie_le) VALUES (1, 1, 'C', 1, 4, 4, 70, ?, 3, 'x', 'x')").run(doc);
   const avant = db.prepare('SELECT * FROM bm_cartes').all();
-  assert.deepEqual(migrate(db), [40]);
+  assert.deepEqual(migrate(db), [49]);
   assert.deepEqual(db.prepare('SELECT * FROM bm_cartes').all(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const t = (etat: string, v = 1, c = 1) => db.prepare("INSERT INTO bm_tables (carte_id, etat, version, cree_le, modifie_le) VALUES (?, ?, ?, 'x', 'x')").run(c, etat, v);

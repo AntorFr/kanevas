@@ -2,6 +2,7 @@ import type { Db } from '../../db/db.js';
 import { TAILLE_BLOC } from '../../outils/swn/regles/generation.js';
 import { boiteDePlages, compterPlages, lirePlages, type Plage } from '../../outils/swn/regles/forme.js';
 import type { Point } from '../../outils/swn/regles/hex.js';
+import { estMasque, hexagonesMasques } from './lisibilite.js';
 import { introuvable } from '../erreurs.js';
 import type { Acteur } from '../types.js';
 import { lireBlocsGeneres, validerRectangle, type BlocGenere, type CoordonneesBloc } from './cache-blocs.js';
@@ -22,7 +23,7 @@ export interface VueBlocs { blocs: BlocGenere[]; systemes: SystemeVue[]; routes:
 
 function systemeVue(s: LigneSysteme, niveau: NiveauLecture): SystemeVue {
   const vue: SystemeVue = { id: s.id, cle: s.cle, nom: s.nom, q: s.q, r: s.r, taille: s.taille, couleur: s.couleur };
-  if (niveau === 'mj') { vue.secret = s.secret === 1; vue.version = s.version; }
+  if (niveau === 'mj') { vue.secret = estMasque(s); vue.version = s.version; }
   return vue;
 }
 
@@ -40,8 +41,10 @@ export function lireBlocs(
   const parId = new Map(lisibles.map((s) => [s.id, s]));
   const dansVue = lisibles.filter(dedans);
   const definis = new Set(dansVue.map((s) => `${s.q},${s.r}`));
+  // A hidden system is an empty hexagon: its anchored row is not read, so its drawn star must not show either (B-97).
+  const masques = hexagonesMasques(db, galaxie.id, niveau);
   const blocs = lireBlocsGeneres(db, acteur, universId, galaxie.id, de, a).map((b) => ({
-    ...b, generes: b.generes.filter(([q, r]) => !definis.has(`${q},${r}`)),
+    ...b, generes: b.generes.filter(([q, r]) => !definis.has(`${q},${r}`) && !masques.has(`${q},${r}`)),
   }));
   const routes: RouteVue[] = [];
   for (const ro of routesLisibles(db, galaxie.id, niveau)) {
@@ -96,7 +99,7 @@ export function lireSysteme(db: Db, acteur: Acteur, universId: number, galaxieId
   }
   const panneau: PanneauSysteme = { nom: s.nom, q: s.q, r: s.r, taille: s.taille, couleur: s.couleur, notes: s.notes, routes,
     lien: `/univers/${universId}/outils/swn/galaxie/${galaxie.id}?systeme=${encodeURIComponent(s.cle)}` };
-  if (niveau === 'mj') Object.assign(panneau, { id: s.id, secret: s.secret === 1, promu: s.promu === 1, version: s.version });
+  if (niveau === 'mj') Object.assign(panneau, { id: s.id, secret: estMasque(s), promu: s.promu === 1, version: s.version });
   return panneau;
 }
 

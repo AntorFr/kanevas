@@ -6,9 +6,11 @@
  *  - introuvable : 404 — also what a caller without a role gets (B-4, AD-22)
  *  - refuse      : 403 — the caller can see the thing but may not do this
  *  - invalide    : 400/422 — bad input or a rule broken by the request
- *  - conflit     : 409 — stale version (`section_modifiee`, AD-59), `relation_existante`, `limite_relations`, `fiche_deja_placee`, `carte_pleine`
+ *  - indisponible : 503 — a derived result could not be produced (an illustration render), fixed message, never the cause
+ *  - conflit     : 409 (`section_modifiee` AD-59, `relation_existante`, `limite_relations`,
+ *                  `fiche_deja_placee`, `carte_pleine`), except `empreinte_perimee` (AD-140): 412
  */
-export type CodeErreur = 'introuvable' | 'refuse' | 'invalide' | 'conflit';
+export type CodeErreur = 'introuvable' | 'refuse' | 'invalide' | 'conflit' | 'indisponible';
 
 export class ErreurService extends Error {
   constructor(

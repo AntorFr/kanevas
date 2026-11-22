@@ -37,7 +37,7 @@ main.principal:has(> .editeur-carte), body.asst-present main.principal:has(> .ed
 .editeur-titre { flex: 1 1 160px; }
 
 /* Calques, Propriétés, pose d'assets (E-28, tâche objets). */
-.editeur-panneau > .onglets { flex: none; }
+.editeur-panneau > .onglets-liste { flex: none; }
 .editeur-calques, .editeur-proprietes { display: flex; flex-direction: column; gap: var(--e-3); }
 .editeur-calques-tete { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
 .editeur-calques-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-1); }
@@ -64,8 +64,8 @@ main.principal:has(> .editeur-carte), body.asst-present main.principal:has(> .ed
 .editeur-choix-fiche-ligne { width: 100%; text-align: left; padding: var(--e-2) var(--e-3); background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-item); color: var(--texte); font: inherit; cursor: pointer; }
 .editeur-choix-fiche-ligne:hover { background: var(--surface-2); }
 .editeur-choix-fiche-ligne small { color: var(--texte-3); }
-.editeur-panneau > .onglets { display: flex; margin: 0; }
-.editeur-panneau > .onglets button { flex: 1 1 0; min-width: 0; padding: 0 var(--e-1); font-size: var(--t-13); white-space: nowrap; }
+.editeur-panneau > .onglets-liste { display: flex; margin: 0; }
+.editeur-panneau > .onglets-liste button { flex: 1 1 0; min-width: 0; padding: 0 var(--e-1); font-size: var(--t-13); white-space: nowrap; }
 
 /* Library: the category bar wraps instead of being cut in the 296 px panel; the top bar stays within 390 px. */
 .editeur-bibliotheque .segments { flex-wrap: wrap; }

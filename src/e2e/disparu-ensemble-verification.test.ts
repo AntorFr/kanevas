@@ -185,7 +185,7 @@ describe('B-67 à l’écran, en Antor', { skip: skipBrowser }, () => {
 
   test('une_ecriture_refusee_montre_le_message_sous_l_en_tete_et_la_fiche_reste_vivante', async () => {
     await ouvrir(antor, 'Maître Aldric');
-    await antor.route(/\/api\/univers\/\d+\/fiches\/\d+$/, (route: Any) =>
+    await antor.route(/\/api\/univers\/[^/]+\/fiches\/[^/]+$/, (route: Any) =>
       route.request().method() === 'PATCH' ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"x"}' }) : route.continue(),
     );
     await ouvrirMenu(antor, 'Maître Aldric');
@@ -193,7 +193,7 @@ describe('B-67 à l’écran, en Antor', { skip: skipBrowser }, () => {
     await antor.getByRole('alert').filter({ hasText: 'Impossible de modifier la fiche. Réessayez.' }).waitFor();
     assert.equal(await pastille(antor, 'Mort').count(), 0);
     await photo(antor, 'echec-marque');
-    await antor.unroute(/\/api\/univers\/\d+\/fiches\/\d+$/);
+    await antor.unroute(/\/api\/univers\/[^/]+\/fiches\/[^/]+$/);
   });
 
   test('le_portrait_d_un_lieu_illustre_est_desature_et_porte_la_pastille', async () => {

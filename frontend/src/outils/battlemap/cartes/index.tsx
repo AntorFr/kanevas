@@ -38,10 +38,10 @@ const RACCOURCIS: readonly [string, string][] = [
 const MESSAGE_TELEPHONE = 'Le dessin demande un pointeur : utilisez un écran plus large.';
 
 type OngletPanneau = 'bibliotheque' | 'calques' | 'proprietes';
-const ONGLETS: readonly { valeur: OngletPanneau; libelle: string }[] = [
-  { valeur: 'bibliotheque', libelle: 'Bibliothèque' },
-  { valeur: 'calques', libelle: 'Calques' },
-  { valeur: 'proprietes', libelle: 'Propriétés' },
+const ONGLETS: readonly { id: OngletPanneau; libelle: string }[] = [
+  { id: 'bibliotheque', libelle: 'Bibliothèque' },
+  { id: 'calques', libelle: 'Calques' },
+  { id: 'proprietes', libelle: 'Propriétés' },
 ];
 
 function useMedia(requete: string): boolean {
@@ -484,7 +484,7 @@ function Ecran({ universId, base, initiale, pret, rafraichir }: { universId: num
         />
         {!lecture && (
           <aside className="editeur-panneau" hidden={!panneauVisible} aria-label="Panneau latéral">
-            <Onglets legende="Panneau de la carte" onglets={ONGLETS} actif={onglet} onChange={setOnglet} />
+            <Onglets etiquette="Panneau de la carte" onglets={ONGLETS} actif={onglet} onChange={setOnglet} />
             {onglet === 'bibliotheque' && (
               <Bibliotheque
                 universId={universId}

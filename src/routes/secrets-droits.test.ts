@@ -194,17 +194,17 @@ test('assistant : Léa ne lit pas le bloc, modifiable faux, écritures refusées
   const cat = (n: string) => catalogueDe(app.db, compte(n), u.id);
   const run = (n: string, outil: string, args: unknown) => cat(n).outils.find((o) => o.nom === outil)!.executer(args) as any;
   const avant = app.db.prepare('SELECT contenu, version FROM sections WHERE id = ?').get(s) as { contenu: string; version: number };
-  const l = await run('lea', 'lire_section', { ficheId: port.id, sectionId: s });
+  const l = await run('lea', 'lire_section', { fiche: port.id, sectionId: s });
   assert.equal(l.ok, true, JSON.stringify(l));
   assert.ok(!JSON.stringify(l).includes('sous-main') && !JSON.stringify(l).includes('bloc-mj'));
   assert.ok(l.donnees.contenu.includes('sauniers'));
   assert.equal(l.donnees.modifiable, false);
-  const lf = await run('lea', 'lire_fiche', { ficheId: port.id });
+  const lf = await run('lea', 'lire_fiche', { fiche: port.id });
   assert.ok(!JSON.stringify(lf).includes('sous-main'));
   assert.equal(lf.donnees.sections.find((x: any) => x.titre === 'Histoire').modifiable, false);
   for (const [outil, args] of [
-    ['modifier_section', { ficheId: port.id, sectionId: s, contenu: 'x', version: avant.version }],
-    ['ajouter_a_section', { ficheId: port.id, sectionId: s, texte: 'x', version: avant.version }],
+    ['modifier_section', { fiche: port.id, sectionId: s, contenu: 'x', version: avant.version }],
+    ['ajouter_a_section', { fiche: port.id, sectionId: s, texte: 'x', version: avant.version }],
   ] as [string, object][]) {
     const r = await run('lea', outil, args);
     assert.equal(r.ok, false, outil);
@@ -212,11 +212,11 @@ test('assistant : Léa ne lit pas le bloc, modifiable faux, écritures refusées
     assert.equal(r.evenement, undefined, outil);
   }
   assert.deepEqual(app.db.prepare('SELECT contenu, version FROM sections WHERE id = ?').get(s), avant);
-  const a = await run('antor', 'lire_section', { ficheId: port.id, sectionId: s });
+  const a = await run('antor', 'lire_section', { fiche: port.id, sectionId: s });
   assert.ok(a.donnees.contenu.includes(':::mj') && a.donnees.contenu.includes('sous-main'));
   assert.equal(a.donnees.modifiable, true);
   // the GM completes a section with a block: the source is kept whole
-  const c = await run('antor', 'ajouter_a_section', { ficheId: port.id, sectionId: s, texte: 'Fin.', version: avant.version });
+  const c = await run('antor', 'ajouter_a_section', { fiche: port.id, sectionId: s, texte: 'Fin.', version: avant.version });
   assert.equal(c.ok, true, JSON.stringify(c));
   const apres = (app.db.prepare('SELECT contenu c FROM sections WHERE id = ?').get(s) as { c: string }).c;
   assert.equal(apres, avant.contenu + '\n\nFin.');

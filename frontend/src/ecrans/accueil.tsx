@@ -39,7 +39,7 @@ function SqueletteListe() {
 function CarteUnivers({ u }: { u: UniversListe }) {
   const membres = u.nbMembres ?? 0;
   return (
-    <Link className="carte-dessin" to={`/univers/${u.id}`}>
+    <Link className="carte-dessin" to={`/univers/${u.cle ?? u.id}`}>
       {/* The text comes first in the source (read first, the link's name starts with the universe); CSS puts the header on top. */}
       <div className="pied-dessin">
         <span className="lien-carte une-ligne nom-u" title={u.nom}>

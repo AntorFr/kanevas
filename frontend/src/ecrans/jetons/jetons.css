@@ -1,0 +1,14 @@
+.page-jetons .intro { margin-top: var(--e-3); color: var(--texte-2); font-size: var(--t-14); }
+.page-jetons .bloc-jetons { margin-top: var(--e-6); }
+.page-jetons .tete-panneau { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); margin-bottom: var(--e-3); }
+.page-jetons .tete-panneau h2 { font: 500 var(--t-22)/1.25 var(--police-titre); }
+.liste-jetons-vide { padding: var(--e-6) var(--e-4); text-align: center; color: var(--texte-2); border-radius: var(--rayon-panneau); box-shadow: inset 0 0 0 1px var(--bord); }
+.liste-jetons-vide p { margin: 0; }
+.erreur-boite { color: var(--danger); font-size: var(--t-13); }
+.fenetre .form-jeton { display: flex; flex-direction: column; gap: var(--e-3); }
+.fenetre .form-jeton .champ { margin: 0; }
+.fenetre .note-jeton { margin: 0; color: var(--texte-2); font-size: var(--t-13); }
+.fenetre .titre-liste-acces { font-size: var(--t-12); font-weight: 500; color: var(--texte-2); margin-bottom: calc(-1 * var(--e-2)); }
+.fenetre .jeton-montre-nom { margin: 0 0 var(--e-2); color: var(--texte-2); font-size: var(--t-13); }
+.fenetre-actions { display: flex; justify-content: flex-end; gap: var(--e-2); margin-top: var(--e-4); }
+.fenetre .cases-outils { display: flex; flex-direction: column; gap: var(--e-2); }

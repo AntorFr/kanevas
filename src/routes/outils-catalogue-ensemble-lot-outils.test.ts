@@ -12,15 +12,29 @@ process.env.KANEVAS_STUB = '1';
 delete process.env.DB_PATH;
 const { buildApp } = await import('../app.js');
 const { semerBouchon } = await import('../bouchon/depart.js');
+const { creerJeton, listerOutilsProposables } = await import('../services/jetons.js');
+const { trouverCompte } = await import('../services/comptes.js');
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Any = any;
-type Server = { base: string; stop: () => void };
+type Server = {
+  base: string;
+  stop: () => void;
+  /** The service door, as the account: the tools of a token are no longer chosen by a session route (E-23 will offer them). */
+  jeton: (compte: string, universId: number, corps: Any) => string;
+  offerts: (compte: string, universId: number) => Any[];
+};
 async function startServer(_env?: Record<string, string>): Promise<Server> {
   const app = await buildApp();
   semerBouchon(app.db);
   await app.listen({ port: 0, host: '127.0.0.1' });
   const port = (app.server.address() as { port: number }).port;
-  return { base: `http://127.0.0.1:${port}`, stop: () => void app.close() };
+  const idDe = (c: string) => trouverCompte(app.db, c)!.id;
+  return {
+    base: `http://127.0.0.1:${port}`,
+    stop: () => void app.close(),
+    jeton: (compte, universId, corps) => creerJeton(app.db, idDe(compte), universId, corps).valeur,
+    offerts: (compte, universId) => listerOutilsProposables(app.db, idDe(compte), universId),
+  };
 }
 
 const servers: Server[] = [];
@@ -87,6 +101,7 @@ const SYS = (s: number) => `/api/systemes/${s}/outils/essai/g/catalogue`;
 interface Monde {
   base: string; E: number; V: number; S: number;
   antor: Client; lea: Client; mira: Client;
+  srv: Server;
 }
 
 /** A fresh seeded world, the trial tool enabled in both universes of the system. */
@@ -102,7 +117,7 @@ async function monde(): Promise<Monde> {
   const V = id('Univers voisin');
   const S = us.find((u) => u.nom === "Éneria d'essai").systeme.id as number;
   for (const u of [E, V]) assert.equal((await antor('PUT', `/api/univers/${u}/outils/essai/g/activation`, { active: true })).status, 204);
-  return { base: srv.base, E, V, S, antor, lea, mira };
+  return { base: srv.base, E, V, S, antor, lea, mira, srv };
 }
 
 const cles = (r: Rep): string[] => (r.json.elements as Any[]).map((e) => `${e.nature}/${e.cle}`).sort();
@@ -423,7 +438,11 @@ describe('B-64 version contre l’écriture concurrente', () => {
 
 describe('B-65 jeton à portée d’outil', () => {
   async function creer(m: Monde, corps: Any, qui: Client = m.antor): Promise<string> {
-    const r = await qui('POST', `/api/univers/${m.E}/jetons`, corps);
+    const compte = qui === m.mira ? 'mira' : 'antor';
+    if (corps.outils !== undefined) return m.srv.jeton(compte, m.E, corps);
+    const r = await qui('POST', '/api/compte/jetons', {
+      nom: corps.nom, dureeJours: corps.dureeJours, acces: { tous: false, univers: [{ universId: m.E, niveau: 'ecriture' }] },
+    });
     assert.equal(r.status, 201, r.texte);
     return r.json.valeur as string;
   }
@@ -465,9 +484,9 @@ describe('B-65 jeton à portée d’outil', () => {
     const outil = await creer(m, { nom: 'script', dureeJours: 7, outils: ['essai/g'] });
     const autre = await jeton(m.base, 'PUT', `/api/import/v1/univers/${m.V}/outils/essai/g/catalogue?niveau=univers`, outil, fu);
     assert.equal(autre.status, 404);
-    const liste = (await m.antor('GET', `/api/univers/${m.E}/jetons`)).json as Any[];
+    const liste = (await m.antor('GET', '/api/compte/jetons')).json.jetons as Any[];
     const id = liste.find((j) => j.nom === 'script').id;
-    assert.equal((await m.antor('POST', `/api/univers/${m.E}/jetons/${id}/revoquer`)).status < 300, true);
+    assert.equal((await m.antor('DELETE', `/api/compte/jetons/${id}`)).status, 200);
     const r = await jeton(m.base, 'PUT', `${IMP(m)}?niveau=univers`, outil, fu);
     assert.equal(r.status, 401);
     assert.deepEqual(await tout(m.antor, CAT(m.E)), []);
@@ -475,16 +494,12 @@ describe('B-65 jeton à portée d’outil', () => {
 
   it('création d’un jeton d’outil: au moins un outil exigé, un outil sans catalogue refusé', async () => {
     const m = await monde();
-    for (const outils of [[], ['essai/a'], ['essai/inconnu']]) {
-      const r = await m.antor('POST', `/api/univers/${m.E}/jetons`, { nom: 'x', dureeJours: 7, outils });
-      if (outils.length === 0) continue; // an empty list is a content token: see « Trous »
-      assert.ok(r.status >= 400 && r.status < 500, `outils=${outils} → ${r.status}`);
+    for (const outils of [['essai/a'], ['essai/inconnu']]) {
+      assert.throws(() => m.srv.jeton('antor', m.E, { nom: 'x', dureeJours: 7, outils }), (e: Any) => e.champ === 'outils', outils.join());
     }
-    const offerts = await m.antor('GET', `/api/univers/${m.E}/jetons/outils`);
-    assert.equal(offerts.status, 200);
-    assert.deepEqual((offerts.json as Any[]).map((o) => o.cle), ['essai/g', 'swn/galaxie', 'swn/vaisseaux']);
+    assert.deepEqual(m.srv.offerts('antor', m.E).map((o) => o.cle), ['essai/g', 'swn/galaxie', 'swn/vaisseaux']);
     const kanka = (await m.antor('GET', '/api/univers')).json.find((u: Any) => u.nom === 'Essai Kanka').id;
-    assert.deepEqual((await m.antor('GET', `/api/univers/${kanka}/jetons/outils`)).json, [], 'no system, nothing offered');
+    assert.deepEqual(m.srv.offerts('antor', kanka), [], 'no system, nothing offered');
   });
 
   it('lot d’outil nommé par l’outil, compteurs par nature, refus avec le champ', async () => {
@@ -530,16 +545,19 @@ describe('B-65 jeton à portée d’outil', () => {
     assert.equal((await sys(miraJeton, 'm2')).status, 200);
   });
 
+  // Title kept (the screen inventory cites it): since B-46 revised the token is no longer a 401, see the body.
   it('Antor devenu Joueur: son jeton reçoit 401 sur le catalogue du système comme de l’univers', async () => {
     const m = await monde();
     const antorJeton = await creer(m, { nom: 'antor', dureeJours: 7, outils: ['essai/g'] });
     const antorId = (await m.antor('GET', `/api/univers/${m.E}/membres`)).json.find((x: Any) => x.username === 'antor').compteId;
     const r = await m.mira('PATCH', `/api/univers/${m.E}/membres/${antorId}`, { role: 'joueur' });
     assert.ok(r.status < 300, `demotion ${r.status} ${r.texte}`);
-    for (const niveau of ['systeme', 'univers']) {
-      const x = await jeton(m.base, 'PUT', `${IMP(m)}?niveau=${niveau}`, antorJeton, fichier12());
-      assert.equal(x.status, 401, niveau);
-    }
-    assert.deepEqual(await tout(m.mira, CAT(m.E)), []);
+    // The universe level needs a GM of that universe: the player's token is refused, never a 401.
+    const u = await jeton(m.base, 'PUT', `${IMP(m)}?niveau=univers`, antorJeton, fichier12());
+    assert.ok([403, 404].includes(u.status), `univers ${u.status}`);
+    // The system level is its responsible's, who is still a GM of another universe attached to it: the account's right.
+    const s = await jeton(m.base, 'PUT', `${IMP(m)}?niveau=systeme`, antorJeton, fichier12());
+    assert.equal(s.status, 200);
+    assert.deepEqual((await tout(m.mira, CAT(m.E))).filter((e: Any) => e.origine === 'univers'), [], 'nothing written at the universe level');
   });
 });

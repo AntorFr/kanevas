@@ -9,6 +9,19 @@ import {
 import {
   changerGraine, contenuGalaxie, creerGalaxie, exigerEcritureGalaxie, lireGalaxie, lireGraine, renommerGalaxie, rendreVisibleGalaxie, supprimerGalaxie,
 } from '../../services/swn/galaxies.js';
+import { illustrationAstre, illustrerFiche } from '../../services/swn/illustration.js';
+import {
+  ajouterAstre, ajouterZone, ancrer, delierAstre, delierZone, etatMasque, lierAstre, lierZone, masquerSysteme, modifierAstre, modifierZone as modifierZoneSysteme, poserTransition, retirerAstre, retirerZone as retirerZoneSysteme,
+  type ResultatEcriture,
+} from '../../services/swn/ecriture-systeme.js';
+import { apercuReglages, lireReglages, poserReglages } from '../../services/swn/reglages.js';
+import { poserAspect } from '../../services/swn/catalogue-aspects.js';
+import {
+  ajouterElement, delierElement, deplacerElement, elementsDuCorps, lierElement, modifierElement, reserverElement, retirerElement,
+} from '../../services/swn/ecriture-elements.js';
+import { catalogueElements } from '../../services/swn/elements-aspect.js';
+import { lireInterieur } from '../../services/swn/interieur.js';
+import { lireSorties } from '../../services/swn/sorties.js';
 import { lireBlocs, lireRoute, lireSysteme, lireZone, rechercherSystemes } from '../../services/swn/lecture-carte.js';
 import { calculerTrajet } from '../../services/swn/trajet.js';
 
@@ -64,6 +77,55 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
     const i = ids(request);
     return lireSysteme(app.db, a, i.univers, i.galaxie, i.cle!);
   }));
+
+  // The interior of a system, addressed by its hexagon; a non-integer coordinate is `introuvable`, never a 400.
+  app.get(`${BASE}/interieur/:q/:r`, opts, lire((request, a) => {
+    const i = ids(request);
+    const p = request.params as { q: string; r: string };
+    const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
+    return lireInterieur(app.db, a, i.univers, i.galaxie, ent(p.q), ent(p.r));
+  }));
+
+  // The exits of a system: same guards as the interior, composed from the readable routes (AD-carte-3).
+  app.get(`${BASE}/interieur/:q/:r/sorties`, opts, lire((request, a) => {
+    const i = ids(request);
+    const p = request.params as { q: string; r: string };
+    const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
+    return lireSorties(app.db, a, i.univers, i.galaxie, ent(p.q), ent(p.r));
+  }));
+
+  // The picture of a body: the guards of the interior, then a cached WebP drawn off the request thread (AD-carte-2).
+  app.get(`${BASE}/interieur/:q/:r/astres/:cle/illustration`, opts, async (request, reply) => {
+    const i = ids(request);
+    const p = request.params as { q: string; r: string };
+    const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
+    const cote = (request.query as Record<string, unknown>).cote;
+    try {
+      const vue = await illustrationAstre(app.db, acteur(request as never), i.univers, i.galaxie, ent(p.q), ent(p.r), i.cle!,
+        typeof cote === 'string' && /^\d{1,15}$/.test(cote) ? Number(cote) : NaN, { siEtag: request.headers['if-none-match'] });
+      reply.header('Cache-Control', 'private, no-cache').header('ETag', vue.etag);
+      if (vue.octets === null) return reply.code(304).send();
+      return reply.type(vue.type).send(vue.octets);
+    } catch (e) {
+      if (e instanceof ErreurService && e.code === 'introuvable') return reply.callNotFound();
+      throw e;
+    }
+  });
+
+  // « Illustrer la fiche » (AD-liens-4): the GM only; the dialog's `cote` rides in the body. Anchors nothing, writes no `swn_*`.
+  app.post(`${BASE}/interieur/:q/:r/astres/:cle/illustrer-fiche`, opts, async (request, reply) => {
+    const i = ids(request);
+    const p = request.params as { q: string; r: string };
+    const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
+    const cote = corps(request as { body?: unknown }).cote;
+    try {
+      return reply.code(200).send(await illustrerFiche(app.db, acteur(request as never), i.univers, i.galaxie, ent(p.q), ent(p.r), i.cle!,
+        typeof cote === 'number' ? cote : NaN));
+    } catch (e) {
+      if (e instanceof ErreurService && e.code === 'introuvable') return reply.callNotFound();
+      throw e;
+    }
+  });
 
   app.get(`${BASE}/recherche`, opts, lire((request, a) => {
     const i = ids(request);
@@ -197,6 +259,97 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
     const i = ids(request);
     retirerZone(app.db, a, i.univers, i.galaxie, i.cle!, nombre((request.query as Record<string, unknown>).version));
     return { statut: 204 };
+  }));
+
+  // ---- Writes of the interior of a system (AD-edition-5), thin over `ecriture-systeme.ts`. The cookie alone opens them
+  // (no `Authorization` is read); an unreadable hexagon is the same 404 as the read, an unknown body keeps its `astre_inconnu`.
+  const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
+  const interieur = (fn: (request: Req, a: ReturnType<typeof acteur>, i: ReturnType<typeof ids>, q: number, r: number) => ResultatEcriture, statut = 200) =>
+    async (request: Req, reply: FastifyReply) => {
+      try {
+        const p = request.params as { q: string; r: string };
+        const res = fn(request, acteur(request as never), ids(request), ent(p.q), ent(p.r));
+        return reply.code(statut).send(res.interieur);
+      } catch (e) {
+        if (e instanceof ErreurService && e.code === 'introuvable' && e.detail !== 'astre_inconnu' && e.detail !== 'systeme_inconnu') return reply.callNotFound();
+        throw e;
+      }
+    };
+  const INT = `${BASE}/interieur/:q/:r`;
+  /** The tokens of a DELETE ride in the query: `version` of the body or zone, `versionSysteme` of the system. */
+  const jetons = (request: Req) => {
+    const q = request.query as Record<string, unknown>;
+    return {
+      version: nombre(q.version), versionSysteme: q.versionSysteme === undefined ? undefined : nombre(q.versionSysteme),
+      ...(typeof q.nomAncrage === 'string' ? { nomAncrage: q.nomAncrage } : {}),
+    };
+  };
+
+  app.post(`${INT}/ancrage`, opts, interieur((request, a, i, q, r) => ancrer(app.db, a, i.univers, i.galaxie, q, r, corps(request))));
+  app.post(`${INT}/astres`, opts, interieur((request, a, i, q, r) => ajouterAstre(app.db, a, i.univers, i.galaxie, q, r, corps(request)), 201));
+  app.patch(`${INT}/astres/:cle`, opts, interieur((request, a, i, q, r) => modifierAstre(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.delete(`${INT}/astres/:cle`, opts, interieur((request, a, i, q, r) => retirerAstre(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
+  app.post(`${INT}/zones`, opts, interieur((request, a, i, q, r) => ajouterZone(app.db, a, i.univers, i.galaxie, q, r, corps(request)), 201));
+  app.patch(`${INT}/zones/:cle`, opts, interieur((request, a, i, q, r) => modifierZoneSysteme(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.delete(`${INT}/zones/:cle`, opts, interieur((request, a, i, q, r) => retirerZoneSysteme(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
+  // The link to a sheet (AD-liens-1): the same guard and cookie as the writes above; the body is the interior as the read gives it.
+  app.put(`${INT}/astres/:cle/fiche`, opts, interieur((request, a, i, q, r) => lierAstre(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.put(`${INT}/zones/:cle/fiche`, opts, interieur((request, a, i, q, r) => lierZone(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.delete(`${INT}/astres/:cle/fiche`, opts, interieur((request, a, i, q, r) => delierAstre(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
+  app.delete(`${INT}/zones/:cle/fiche`, opts, interieur((request, a, i, q, r) => delierZone(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
+  // The elements (AD-elements-1), thin over `ecriture-elements.ts`; a hidden or unknown system is the same 404 as the read.
+  app.post(`${INT}/elements`, opts, interieur((request, a, i, q, r) => ajouterElement(app.db, a, i.univers, i.galaxie, q, r, corps(request)), 201));
+  app.patch(`${INT}/elements/:cle`, opts, interieur((request, a, i, q, r) => modifierElement(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.put(`${INT}/elements/:cle/place`, opts, interieur((request, a, i, q, r) => deplacerElement(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.put(`${INT}/elements/:cle/secret`, opts, interieur((request, a, i, q, r) => reserverElement(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.put(`${INT}/elements/:cle/fiche`, opts, interieur((request, a, i, q, r) => lierElement(app.db, a, i.univers, i.galaxie, q, r, i.cle!, corps(request))));
+  app.delete(`${INT}/elements/:cle/fiche`, opts, interieur((request, a, i, q, r) => delierElement(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
+  app.delete(`${INT}/elements/:cle`, opts, interieur((request, a, i, q, r) => retirerElement(app.db, a, i.univers, i.galaxie, q, r, i.cle!, jetons(request))));
+  // What the removal dialog of a body counts besides its moons (GM outside Player mode only).
+  app.get(`${INT}/astres/:cle/elements`, opts, async (request: Req, reply: FastifyReply) => {
+    try {
+      const p = request.params as { q: string; r: string };
+      const i = ids(request);
+      return reply.send({ elements: elementsDuCorps(app.db, acteur(request as never), i.univers, i.galaxie, ent(p.q), ent(p.r), i.cle!) });
+    } catch (e) {
+      if (e instanceof ErreurService && e.code === 'introuvable' && e.detail !== 'astre_inconnu') return reply.callNotFound();
+      throw e;
+    }
+  });
+  app.get(`${BASE}/elements/aspects`, opts, ecrire(() => ({ statut: 200, corps: catalogueElements() })));
+  app.put(`${INT}/secret`, opts, interieur((request, a, i, q, r) => masquerSysteme(app.db, a, i.univers, i.galaxie, q, r, corps(request))));
+  app.get(`${INT}/secret`, opts, async (request: Req, reply: FastifyReply) => {
+    try {
+      const p = request.params as { q: string; r: string };
+      const i = ids(request);
+      return reply.send(etatMasque(app.db, acteur(request as never), i.univers, i.galaxie, ent(p.q), ent(p.r)));
+    } catch (e) {
+      if (e instanceof ErreurService && e.code === 'introuvable' && e.detail !== 'systeme_inconnu') return reply.callNotFound();
+      throw e;
+    }
+  });
+  app.put(`${INT}/transition`, opts, interieur((request, a, i, q, r) => poserTransition(app.db, a, i.univers, i.galaxie, q, r, corps(request))));
+
+  // ---- Settings of the generator and catalogue of aspects (AD-reglages-8), thin over `reglages.ts` and `catalogue-aspects.ts`.
+  // The cookie alone opens them; a role other than GM is the 404 of an unknown galaxy; Player mode reads and refuses writes.
+  app.get(`${BASE}/reglages`, opts, ecrire((request, a) => {
+    const i = ids(request);
+    return { statut: 200, corps: lireReglages(app.db, a, i.univers, i.galaxie) };
+  }));
+  app.post(`${BASE}/reglages/apercu`, opts, ecrire((request, a) => {
+    const i = ids(request);
+    return { statut: 200, corps: apercuReglages(app.db, a, i.univers, i.galaxie, corps(request)) };
+  }));
+  app.put(`${BASE}/reglages`, opts, ecrire((request, a) => {
+    const i = ids(request);
+    const b = corps(request);
+    return { statut: 200, corps: poserReglages(app.db, a, i.univers, i.galaxie, { ...b, version: b.version }) };
+  }));
+  app.put(`${BASE}/aspects/:type`, opts, ecrire((request, a) => {
+    const i = ids(request);
+    const b = corps(request);
+    poserAspect(app.db, a, i.univers, i.galaxie, (request.params as { type: string }).type, { version: b.version, parametres: b.parametres });
+    return { statut: 200, corps: lireReglages(app.db, a, i.univers, i.galaxie) };
   }));
 
   app.get(`${BASE}/document`, opts, ecrire((request, a) => {

@@ -48,21 +48,21 @@ function monde() {
 
 test('migration: tables, types sans CHECK, clés étrangères, idempotente', () => {
   const db = openDb(':memory:');
-  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]);
+  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]);
   assert.deepEqual(migrate(db), []);
   const tables = (
     db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != 'migrations' AND name NOT LIKE 'recherche!_%' ESCAPE '!' ORDER BY name").all() as { name: string }[]
   ).map((r) => r.name);
-  assert.deepEqual(tables, ['bm_assets', 'bm_cartes', 'bm_direction', 'bm_direction_images', 'bm_lots', 'bm_lots_lignes', 'bm_pions_proprietaires', 'bm_tables', 'cartes', 'comptes', 'elements_carte', 'essai_catalogue_elements', 'essai_catalogue_retraits', 'etiquettes', 'fiche_alias', 'fiche_etiquettes', 'fiches', 'fichiers', 'fichiers_attente', 'fichiers_sections', 'gabarits', 'jetons_api', 'jetons_outils', 'liens', 'lots_import', 'membres', 'outils_systeme', 'outils_univers', 'pieces_jointes', 'propositions', 'relations', 'sections', 'swn_catalogue_amenagements', 'swn_catalogue_armes', 'swn_catalogue_coques', 'swn_catalogue_defenses', 'swn_catalogue_exemples', 'swn_catalogue_modifications', 'swn_catalogue_moteurs', 'swn_catalogue_retraits', 'swn_conceptions', 'swn_fiches_generees', 'swn_galaxies', 'swn_routes', 'swn_systemes', 'swn_zones', 'systemes_jeu', 'taches_preparation', 'types_systeme', 'types_univers', 'univers']);
+  assert.deepEqual(tables, ['bm_assets', 'bm_cartes', 'bm_direction', 'bm_direction_images', 'bm_lots', 'bm_lots_lignes', 'bm_pions_proprietaires', 'bm_tables', 'cartes', 'cles_anciennes', 'comptes', 'contexte_ecriture', 'elements_carte', 'essai_catalogue_elements', 'essai_catalogue_retraits', 'etiquettes', 'fiche_alias', 'fiche_etiquettes', 'fiches', 'fichiers', 'fichiers_attente', 'fichiers_sections', 'gabarits', 'historique', 'jetons_api', 'jetons_outils', 'jetons_univers', 'liens', 'lots_import', 'membres', 'outils_systeme', 'outils_univers', 'pieces_jointes', 'propositions', 'reglages_instance', 'relations', 'sections', 'swn_aspects', 'swn_astres', 'swn_catalogue_amenagements', 'swn_catalogue_armes', 'swn_catalogue_coques', 'swn_catalogue_defenses', 'swn_catalogue_exemples', 'swn_catalogue_modifications', 'swn_catalogue_moteurs', 'swn_catalogue_retraits', 'swn_conceptions', 'swn_elements', 'swn_fiches_generees', 'swn_formations', 'swn_galaxies', 'swn_reglages', 'swn_routes', 'swn_systemes', 'swn_zones', 'systemes_jeu', 'taches_preparation', 'types_systeme', 'types_univers', 'univers', 'univers_cles_anciennes']);
   assert.equal(db.pragma('foreign_keys', { simple: true }), 1);
-  assert.equal((db.prepare('SELECT count(*) n FROM migrations').get() as { n: number }).n, 40);
+  assert.equal((db.prepare('SELECT count(*) n FROM migrations').get() as { n: number }).n, 49);
   assert.throws(() => db.prepare("INSERT INTO membres VALUES (99, 99, 'mj')").run());
-  db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('u', 'x')").run();
+  db.prepare("INSERT INTO univers (cle, nom, cree_le) VALUES ('u-' || lower(hex(randomblob(6))), 'u', 'x')").run();
   for (const t of ['personnage', 'lieu', 'faction', 'objet', 'evenement', 'quete', 'compte_rendu']) {
-    db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, ?, 't', '{\"v\":1}', 'x', 'x')").run(t);
+    db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', 1, ?, 't', '{\"v\":1}', 'x', 'x')").run(t);
   }
   // AD-102: the type is guarded by creerFiche, no longer by a CHECK (0011).
-  db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 'carte', 't', '{}', 'x', 'x')").run();
+  db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', 1, 'carte', 't', '{}', 'x', 'x')").run();
 });
 
 test('migration: seconde exécution ne change pas les données', () => {
