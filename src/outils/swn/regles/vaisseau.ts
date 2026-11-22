@@ -1,4 +1,5 @@
 // Ship calculation (V-2, B-75): pure, no database, no clock, no file read.
+import { EFFETS, type CodeEffet } from './effets.js'
 import { texteMasse } from './masse.js'
 
 /** Credits of ship price built per day of construction (book mechanics, not catalogue data). */
@@ -145,8 +146,19 @@ const souteDe = (e: ElementResolu, classe: number): number | null => e.soute_par
 /** Y-3: the repair skill an element asks for, by the field or by the effect, `null` when none. */
 const exigence = (e: ElementResolu): number | null => e.reparation_min ?? (e.effet === 'reparation_min' ? (e.valeur ?? 0) : null)
 
-/** Z-3/Z-4: the effects that aim at one line of the design, and what the target must be. */
-const EFFETS_CIBLES = ['soutes_doublees', 'magasins_doubles', 'montages_specialises', 'surcharge_cumulable']
+/** The one rounding of the halving of `montages_specialises` (W-3, decided 15/11): down, to a whole unit, at least 1. */
+const ARRONDI_MOITIE = Math.floor
+/** The rank cap of a Spike drive (`moteur_niveau`). */
+const RANG_MAX = 6
+
+/** H-8: the effects whose line carries `cibles` (the natures they may aim at come from their declaration). */
+const naturesVisees = (effet: string | undefined): readonly string[] | undefined =>
+  effet !== undefined && Object.hasOwn(EFFETS, effet) ? EFFETS[effet as CodeEffet].cible : undefined
+
+/** H-8 (3): the half a mounting leaves of a unit value: never raises it, never below 1, a value of 0 stays. */
+function moitie(v: number): number {
+  return v <= 0 ? v : Math.min(v, Math.max(1, ARRONDI_MOITIE(v / 2 + 1e-9)))
+}
 
 function moins(n: number): string {
   return n < 0 ? `−${-n}` : String(n)
@@ -161,9 +173,9 @@ function parInstallation(base: number, diese: boolean, facteur: number): number 
  * Order of `calculer` (H-10 (1)):
  *   1. per line: cost, per-installation power and mass (diesis rounded before the quantity, H-1), hit points, armour class,
  *      munitions and magazines, engines;
- *   2. [slot: effects of modifications on elements — next slices];
+ *   2. effects of modifications on elements (halving, overcharge, class lift, drive rank, magazines doubled) — computed with step 4;
  *   3. system engine returns, then the exchange of points;
- *   4. targeted adjustments, then the optimised holds (last mass step);
+ *   4. targeted adjustments (halving, then overcharge), then the optimised holds (last mass step);
  *   5. [slot: capacities and crew costs — next slices];
  *   6. alerts: blocking (power, mass, emports, limits, engine, class incl. weapons' `classe_min`, targets), then watch
  *      (reserves, crew, repair, negative speed);
@@ -192,11 +204,17 @@ export function calculer(
   const coutsLigne = new Map<number, number>()
   const echanges = new Map<number, { puissance: number; masse: number }>()
   const cibleDe = (l: LigneResolue) => l.vise === undefined ? undefined : lignes.find((m) => m.nature === l.vise!.nature && m.cle === l.vise!.cle)
+  const trouver = (c: { nature: string; cle: string }) => lignes.find((m) => m.nature === c.nature && m.cle === c.cle)
+  // H-cibles-1 (1): the pairs of a line; an old single `vise` is one pair holding every installation.
+  const ciblesDe = (l: LigneResolue): { nature: NatureVaisseau; cle: string; quantite: number }[] =>
+    l.cibles ?? (l.vise ? [{ nature: l.vise.nature, cle: l.vise.cle, quantite: l.quantite }] : [])
   const masseDeLigne = (l: LigneResolue) => parInstallation(l.element.masse, l.element.x_masse, coque.facteur_masse) * l.quantite
   const puissanceDeLigne = (l: LigneResolue) => parInstallation(l.element.puissance, l.element.x_puissance, coque.facteur_puissance) * l.quantite
   // X-2: a doubling aims at one line of the design, named by its pair.
   const visee = (cible: LigneResolue | undefined, nature: NatureVaisseau, effet: string) =>
     cible !== undefined && cible.nature === nature && lignes.some((m) => m.element.effet === effet && m.vise?.nature === cible.nature && m.vise.cle === cible.cle)
+  // H-8 (4): the doubling of the magazines has no target: every ammunition weapon, the magazines' mass unchanged.
+  const munitionsDoublees = lignes.some((m) => m.element.effet === 'magasins_doubles' && m.quantite > 0)
 
   lignes.forEach((l, i) => {
     const e = l.element
@@ -227,9 +245,9 @@ export function calculer(
       const doublements = e.classe_min === undefined ? 0 : Math.max(0, coque.classe - e.classe_min)
       const munitions = (e.munitions ?? 0) * (e.cout_munition ?? 0) * 2 ** doublements
       const magasins = l.magasins ?? 0
-      const double = visee(l, 'armes', 'magasins_doubles') ? 2 : 1
+      const double = munitionsDoublees && (e.munitions ?? 0) > 0 ? 2 : 1
       prix += munitions * (1 + magasins) * q * double
-      masseUsee += MASSE_MAGASIN * magasins * q * double
+      masseUsee += MASSE_MAGASIN * magasins * q
       emportsUtilises += (e.emport ?? 0) * q
     }
     if (l.nature === 'moteurs' && q > 0) {
@@ -263,28 +281,56 @@ export function calculer(
     masseLibre += delta.masse
     echanges.set(i, delta)
   })
-  // W-2: the targeted adjustments read the target line's totals before any adjustment, so two of them never feed each other.
+  // H-10 (1), step 2: the effects of the modifications on elements, read on the unit of the target before any of them (W-2).
+  // Halving first (per installation, on ONE unit of the target), then the overcharge on the halved unit.
   const ajustes = new Map<number, { masse?: number; puissance?: number; armure?: number }>()
+  const sansObjet = new Map<number, string>()
+  const cleDe = (c: { nature: string; cle: string }) => `${c.nature}/${c.cle}`
+  const uniteP = (c: LigneResolue) => parInstallation(c.element.puissance, c.element.x_puissance, coque.facteur_puissance)
+  const uniteM = (c: LigneResolue) => parInstallation(c.element.masse, c.element.x_masse, coque.facteur_masse)
+  // A pair counts when its element is in the design and of a nature the effect may aim at (the others are `cible_invalide`).
+  const pairesValides = (l: LigneResolue) => ciblesDe(l).flatMap((c) => {
+    const t = trouver(c)
+    return t !== undefined && c.quantite >= 1 && (naturesVisees(l.element.effet)?.includes(t.nature) ?? false) ? [{ c, t }] : []
+  })
+  const moities = new Map<string, { p: number; m: number }>()
+  lignes.forEach((l, i) => {
+    if (l.element.effet !== 'montages_specialises' || l.quantite <= 0) return
+    let dP = 0
+    let dM = 0
+    const valides = pairesValides(l)
+    if (valides.length === 0) return
+    for (const { c, t } of valides) {
+      const cle = cleDe(c)
+      if (moities.has(cle)) continue // aimed twice: refused (`cible_deja_visee`), halved once all the same
+      const p = moitie(uniteP(t))
+      const m = moitie(uniteM(t))
+      moities.set(cle, { p, m })
+      // A second installation on the element is refused (`cible_deja_visee`) and never halves it twice (never below its floor).
+      dP += uniteP(t) - p
+      dM += uniteM(t) - m
+    }
+    puissanceLibre += dP
+    masseLibre += dM
+    ajustes.set(i, { masse: 0 - dM, puissance: 0 - dP })
+    if (dP === 0 && dM === 0) sansObjet.set(i, 'ce montage ne change rien.')
+  })
   let blindage = 0
   let blindageVu = false
   lignes.forEach((l, i) => {
     const e = l.element
     if (l.quantite <= 0) return
-    if (e.effet === 'montages_specialises' || e.effet === 'surcharge_cumulable') {
-      const cible = cibleDe(l)
-      if (cible === undefined || cible.nature !== 'armes') return
-      const p = puissanceDeLigne(cible)
-      if (e.effet === 'surcharge_cumulable') {
-        const plus = l.quantite * Math.floor((p * (e.effet_pct ?? 0) + 50) / 100)
-        puissanceLibre -= plus
-        ajustes.set(i, { puissance: plus })
-      } else {
-        const plusP = Math.max(1, Math.ceil(p / 2))
-        const plusM = Math.max(1, Math.ceil(masseDeLigne(cible)) / 2)
-        puissanceLibre -= plusP
-        masseLibre -= plusM
-        ajustes.set(i, { masse: plusM, puissance: plusP })
+    if (e.effet === 'surcharge_cumulable') {
+      let plus = 0
+      const valides = pairesValides(l)
+      if (valides.length === 0) return
+      for (const { c, t } of valides) {
+        const p = moities.get(cleDe(c))?.p ?? uniteP(t)
+        plus += c.quantite * Math.floor((p * (e.effet_pct ?? 0) + 50) / 100 + 1e-9)
       }
+      puissanceLibre -= plus
+      ajustes.set(i, { puissance: plus })
+      if (plus === 0) sansObjet.set(i, 'cette surcharge ne change rien.')
     } else if (e.effet === 'blindage_renforce' && !blindageVu) {
       blindageVu = true
       blindage = (e.valeur ?? 0) + reparation
@@ -334,36 +380,70 @@ export function calculer(
   if (uniteMoteur > 1) {
     bloquantes.push({ niveau: 'bloquante', code: 'moteur_multiple', texte: 'Un seul moteur par vaisseau.' })
   }
+  // H-cibles-1 (4): `surdimensionne` lifts the minimum class bar by one class for the element it aims at, never the maximum.
+  const levees = new Set<string>()
+  lignes.forEach((l) => {
+    if (l.element.effet === 'surdimensionne' && l.quantite > 0) pairesValides(l).forEach(({ c }) => levees.add(cleDe(c)))
+  })
   lignes.forEach((l, i) => {
     const { classe_min: mini, classe_max: maxi } = l.element
-    if (l.nature === 'armes') {
-      if (mini !== undefined && coque.classe < mini) {
-        bloquantes.push({ niveau: 'bloquante', code: 'classe_inadaptee', texte: `« ${l.nom} » : classe de coque ${mini} au moins.`, ligne: i })
-      }
-      return
-    }
-    let borne: string | null = null
-    if (mini !== undefined && maxi !== undefined && mini === maxi && coque.classe !== mini) borne = `${mini} seulement`
-    else if (mini !== undefined && coque.classe < mini) borne = `${mini} au moins`
-    else if (maxi !== undefined && coque.classe > maxi) borne = `${maxi} au plus`
-    if (borne !== null) {
-      bloquantes.push({ niveau: 'bloquante', code: 'classe_inadaptee', texte: `« ${l.nom} » : classe de coque ${borne}.`, ligne: i })
-    }
+    const petite = mini !== undefined && coque.classe < (levees.has(cleDe(l)) ? mini - 1 : mini)
+    const grande = maxi !== undefined && coque.classe > maxi
+    if (!petite && !grande) return
+    const borne = mini !== undefined && maxi !== undefined && mini === maxi ? `${mini} seulement` : petite ? `${mini} au moins` : `${maxi} au plus`
+    bloquantes.push({ niveau: 'bloquante', code: 'classe_inadaptee', texte: `« ${l.nom} » : classe de coque ${borne}.`, ligne: i })
   })
   if (unitesSysteme > 1) {
     bloquantes.push({ niveau: 'bloquante', code: 'moteur_systeme_multiple', texte: 'Un seul moteur système par vaisseau.' })
   }
   lignes.forEach((l, i) => {
     const effet = l.element.effet
-    if (effet === undefined || !EFFETS_CIBLES.includes(effet)) return
+    if (effet !== 'soutes_doublees') return
     let raison: string
     const cible = cibleDe(l)
     if (l.vise === undefined) raison = 'choisissez l\'élément visé.'
     else if (cible === undefined) raison = 'l\'élément visé n\'est pas dans cette conception.'
-    else if (effet === 'soutes_doublees' ? !(cible.nature === 'amenagements' && souteDe(cible.element, coque.classe) !== null) : cible.nature !== 'armes') {
-      raison = 'cet élément ne peut pas être visé.'
-    } else return
+    else if (!(cible.nature === 'amenagements' && souteDe(cible.element, coque.classe) !== null)) raison = 'cet élément ne peut pas être visé.'
+    else return
     bloquantes.push({ niveau: 'bloquante', code: 'cible_invalide', texte: `« ${l.nom} » : ${raison}`, ligne: i })
+  })
+  // H-cibles-1 (2): one `cible_invalide` per line, then `cible_deja_visee` on the line that comes second.
+  const montees = new Set<string>()
+  lignes.forEach((l, i) => {
+    const natures = naturesVisees(l.element.effet)
+    if (natures === undefined) return
+    const paires = ciblesDe(l)
+    let raison: string | null = null
+    if (l.quantite > 0 && paires.length === 0) raison = 'choisissez l\'élément visé.'
+    else if (paires.some((c) => !(c.quantite >= 1))) raison = 'quantité visée invalide.'
+    else if (new Set(paires.map(cleDe)).size !== paires.length) raison = 'un même élément ne peut être visé qu\'une fois par ligne.'
+    else if (paires.some((c) => trouver(c) === undefined)) raison = 'l\'élément visé n\'est pas dans cette conception.'
+    else if (paires.some((c) => !natures.includes(c.nature))) raison = 'cet élément ne peut pas être visé.'
+    else if (paires.reduce((n, c) => n + c.quantite, 0) !== l.quantite) raison = 'choisissez l\'élément visé.'
+    if (raison !== null) bloquantes.push({ niveau: 'bloquante', code: 'cible_invalide', texte: `« ${l.nom} » : ${raison}`, ligne: i })
+    if (l.element.effet === 'montages_specialises' && l.quantite > 0) {
+      const deja = paires.some((c) => c.quantite > 1 || montees.has(cleDe(c)))
+      paires.forEach((c) => montees.add(cleDe(c)))
+      if (deja) bloquantes.push({ niveau: 'bloquante', code: 'cible_deja_visee', texte: `« ${l.nom} » : un seul montage spécialisé par élément.`, ligne: i })
+    }
+  })
+  // H-cibles-1 (5): the drive counts one rank higher (cap 6) for the jump range; nothing to raise = `effet_sans_objet`.
+  const rangMoteur = niveauMoteur
+  const rehausse = rangMoteur !== null && !station && unitesSysteme === 0 && rangMoteur < RANG_MAX
+  lignes.forEach((l, i) => {
+    if (l.quantite <= 0) return
+    const e = l.element
+    let raison: string | undefined = sansObjet.get(i)
+    if (e.effet === 'moteur_niveau' && !rehausse) {
+      raison = station ? 'une station n\'a pas de moteur de saut.' : unitesSysteme > 0 ? 'le moteur est un moteur système.'
+        : rangMoteur === null ? 'aucun moteur de saut à relever.' : 'le moteur est déjà de rang 6.'
+    }
+    if (e.effet === 'surdimensionne') {
+      const paires = pairesValides(l)
+      const besoin = paires.some(({ t }) => t.element.classe_min !== undefined && coque.classe < t.element.classe_min)
+      if (!besoin) raison = 'cet élément n\'a pas besoin d\'une coque plus grande.'
+    }
+    if (raison !== undefined) surveiller.push({ niveau: 'a_surveiller', code: 'effet_sans_objet', texte: `« ${l.nom} » : ${raison}`, ligne: i })
   })
   if (uniteMoteur === 0 && !station) {
     surveiller.push({ niveau: 'a_surveiller', code: 'moteur_absent', texte: 'Aucun moteur de saut : ce vaisseau ne peut pas voyager.' })
@@ -413,7 +493,7 @@ export function calculer(
     emports,
     chantierJours: Math.ceil(prix / CADENCE_CHANTIER),
     entretien: Math.floor(prix * TAUX_ENTRETIEN + 0.5 + 1e-9),
-    porteeSaut: station || niveauMoteur === null ? null : reglages.porteeSaut * (niveauMoteur + 1),
+    porteeSaut: station || niveauMoteur === null ? null : reglages.porteeSaut * (niveauMoteur + (rehausse && lignes.some((l) => l.element.effet === 'moteur_niveau' && l.quantite > 0) ? 1 : 0) + 1),
     vitesse: vitesseBase,
     armure: armureBase,
     equipage: equipage === null ? null : { choisi: equipage, min, max },

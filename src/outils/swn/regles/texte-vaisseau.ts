@@ -45,7 +45,7 @@ export function listeChoix(r: ResultatVaisseau): string {
     .map(({ l }) => {
       const nomDe = (c: { nature: string; cle: string }) => r.lignes.find((m) => m.nature === c.nature && m.cle === c.cle)?.nom ?? c.cle
       // « → Laser ×2 · Canon ×1 » with several targets (E-22); one target holds every installation and is named alone, as an old `vise` was.
-      const vise = l.cibles?.length ? l.cibles.map((c) => `${nomDe(c)}${l.cibles!.length > 1 ? ` ×${c.quantite}` : ''}`).join(' · ')
+      const vise = l.cibles?.length ? l.cibles.map((c) => `${nomDe(c)}${c.quantite > 1 ? ` ×${c.quantite}` : ''}`).join(' · ')
         : l.vise ? nomDe(l.vise) : null
       return `- ${l.quantite} × ${l.nom}${l.magasins ? ` (+${l.magasins} ${l.magasins < 2 ? 'magasin' : 'magasins'})` : ''}`
         + (l.points ? ` (${l.points} ${l.points < 2 ? 'point' : 'points'})` : '')
