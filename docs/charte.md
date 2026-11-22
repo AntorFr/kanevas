@@ -528,6 +528,7 @@ rule, two sections). C: `role="status"`, « Chargement de la fiche… » read an
   `danger`, « Expiré » `neutre`. Contrast of `--danger` on `--danger-fond` and of `--accent-texte` on `--accent-fond` in a 22 px pill measured in both themes (`contraste.py`, § 5).
 - **Fenêtre** (`Fenetre` in `frontend/src/ui/composants.tsx`) gains a *large* variant (560 px, scrolling inside itself) and a *locked* property (neither Esc nor the veil closes it while a value is
   shown — E-23).
+- **Customisation mark** (`kanevas-systemes-jeu-surcharge`, `MarquePersonnalise` under `frontend/src/ecrans/fiche/`, no new component of `ui/`): the `Pastille` of *sens* `accent` « Personnalisé » with a 12 px Lucide icon beside the sheet's title; the confirmations of a return or a detachment are `BoiteDialogue` danger with the 36 px icon pastille and a body that scrolls under 760 px; no new token.
 
 ## 5. Thresholds
 
