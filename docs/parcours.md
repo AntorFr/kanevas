@@ -1421,9 +1421,11 @@ is never deduced from a role in a universe, the admin grants it explicitly.
   sheet show the customised one, marked as such; the system's element is never listed twice. *(P-27)*
 - **B-117** — Search (E-17) and lists carry a **pictogram** on every element that comes from a system, and a filter
   « Hide the system's elements » (off by default); a customised element counts as the universe's own. *(P-27)*
-- **B-118** — The import API **reads and writes a system's elements** at the system's own address, by
-  a token that carries a level on that system; the effective access is the lesser of the token's level and the
-  account's right on the system (B-114); a player's or a foreign GM's token reads, never writes. *(P-28)*
+- **B-118** — The import API, the MCP door and the internal assistant **read and write a system's elements**, within the
+  account's right on the system (B-114) and, for a token, its level on that system; a player's or a foreign GM's token or
+  assistant reads, never writes. The API addresses the system on its own (`/systemes/<id>`); the MCP door and the assistant
+  act from a universe and see the elements of **its** system (the one attached), with the same gestures as the API:
+  search, read, create, edit, write a section, delete, customise a copy and go back to the original. *(P-28)*
 - **B-119** — An element's sections follow the universe rules (AD-18, AD-19): the system's GMs read all of them; a
   reader of an attached universe reads only those the system marks readable by players. *(P-27)*
 
@@ -1445,8 +1447,10 @@ Léa (player of universe 3) reads the same original, only its player-readable se
 ### P-28 — A key reads and writes a system (Monsieur, with his agent)
 He creates a token (token screen, E-18 of `kanevas-synchro`), gives it level « write » on the system (choice described in E-18 below), and the agent
 lists and writes elements at `/api/v1/systemes/<id>/…`; the same token still opens his universes. — token screen, API.
+His agent, connected to the MCP door of one of his universes with that token, lists and edits the same elements with the `systeme_*`
+tools; the assistant of the universe does the same for a GM of the system (a mere GM of the universe reads only). — MCP door, assistant.
 
 **Out of scope of `kanevas-systemes-jeu`:** importing a rules reference; typed relations between a universe's sheet and a
 system element (plain `[[…]]` links are resolved); propagating a later change of the system's element into its
 customisations (the copy is independent, and it outlives its original, B-120; a notice « the system's element changed since » is a later idea); deleting a system;
-assistant tools and the MCP door reading or writing system elements (`catalogueDe` is untouched: B-118 is the import API only); several systems per universe.
+several systems per universe; MCP tools or assistant tools beyond the sheet gestures of B-118 (types and tools of a system, catalogue, members).
