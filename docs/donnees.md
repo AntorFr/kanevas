@@ -869,7 +869,7 @@ atomic.
 
 ## `kanevas-carte-rendu` scope: the model
 
-The drawing of the spatial map is read from existing rows: **one migration, three nullable or defaulted columns, no table**; everything else is a
+The drawing of the spatial map is read from existing rows: **one migration, two columns (one defaulted, one nullable), no table**; everything else is a
 vocabulary (what the core accepts in `aspect`) and a format (what the atlas import carries). Nothing of Éneria enters this repository (AD-131): the
 table below is written with neutral names; the script that converts Éneria's `astres.yaml` stays in its private repository.
 
@@ -889,7 +889,7 @@ reference vocabulary into core keys through the table below, **a setting the tab
 
 | Reference setting | Core key | Conversion |
 |---|---|---|
-| sea level `mer` | `mer` | table by measurement (0.2→0.2·, never below the core's 5 % floor); « no sea » = a `mer` of 0 plus palette without water |
+| sea level `mer` | `mer` | table by measurement (a measured correspondence, never below the core's 5 % floor); « no sea » = a `mer` of 0 plus palette without water |
 | cloud cover `nuages` | `nuages` | table by measurement (0.9 of the reference is a covered sky; the core's curve reaches 57 %); the core's curve is widened to a full veil |
 | `calottes` (latitude where ice begins; 1.2 = none) | `calottes` (a quantity) | `calottes = clamp((1 − latitude) / 0.28, 0, 1)` |
 | `relief` | `relief` | ≈ 0.6 × reference, bound of the validator aligned on the engine's [0, 2] |
