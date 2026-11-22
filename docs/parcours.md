@@ -1441,7 +1441,7 @@ and not the station. Antor can cancel the hiding dialogue (nothing is written), 
 - **List of modes** (B-121): consult, travel, create / edit. *Recommendation:* these three; « factions » stays out.
 - **Zones hidden by default**: the territories hidden, the belt and the pirates shown, as the reference does. *Recommendation:* the reference's default.
 - **Class and size of a defined system** on the galaxy: those of its record. *Recommendation:* the record's.
-- **Written rules the parity contradicts**: sky colours as tokens only (E-23), regular rings (AD-carte-3), zoom 0,5×–4×, T-4 (no colour per route type) and T-10 / AD-133 (controls outside the map, E-21; the rule of the `mj` level is kept), AD-etoiles-6. *Recommendation:* the cadrage amends each by name, in the tranche that needs it.
+- **Written rules the parity contradicts**: sky colours as tokens only (E-23), regular rings (AD-carte-3), zoom 0,5×–4×, T-4 (no colour per route type) and T-10 (controls outside the map, E-21; the rule of the `mj` level is kept), AD-etoiles-6. *Recommendation:* the cadrage amends each by name, in the tranche that needs it.
 
 ## Cross-check of the `kanevas-import` scoping
 

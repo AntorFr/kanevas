@@ -5064,7 +5064,7 @@ The controls leave the page header and sit **inside the map**, floating. One mod
 
 Closing the full screen (Escape, the button) returns to the page as it was. The mode is a view state, kept in the address (`?mode=`) so a link opens in the mode it was copied from; a Player opening `?mode=edition` gets the Consult mode.
 
-The zone form (« Nouvelle zone » and its edit) gains one switch, « Affichée à l'ouverture de la carte » (on by default, B-118; `affichage_defaut`, written by the existing zone route, GM guard unchanged; a Player reads the result as the default of the « Zones » control, never the switch). The `voile` of a system has **no control**: it comes from the atlas import (AD-rendu-2).
+The zone form (« Nouvelle zone » and its edit) gains one switch, « Affichée à l'ouverture de la carte » (on by default, B-118; `affichage_defaut`, written by the existing galaxy zone routes and the tool import, GM guard unchanged; a Player reads the result as the default of the « Zones » control, never the switch). The `voile` of a system has **no control**: it comes from the atlas import (AD-rendu-2).
 
 ### Previews and navigation (B-119)
 

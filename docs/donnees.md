@@ -902,7 +902,7 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | `voile` | `swn_systemes.voile` / `fond` | the system's, or a body's |
 
 **Atlas format (AD-atlas-2, extended).** Every addition is optional (an atlas of the former format stays valid, byte for byte): `lunes[].type` takes every type of the core
-(not only rocky/ice/lava); (`etoile` of a zone or a point — a star's `cle`, the star it turns round — already exists, AD-atlas-2; it is drawn, not added) `corps[].lunes[].heure` is the hour around the planet;
-`voile` (a colour) on the system; `zones[].affichage_defaut`; each body's `aspect` may carry the keys above. Refusals keep AD-atlas-3 (all or nothing, path of each refusal).
+(not only rocky/ice/lava); `zones[].etoile` and `points[].etoile` (a star's `cle`, default the main one, written to `swn_formations.etoile_rang`, which exists; AD-atlas-2 gives `etoile` to `corps[]` only) `corps[].lunes[].heure` is the hour around the planet;
+`voile` (a colour) on the system; each body's `aspect` may carry the keys above. Refusals keep AD-atlas-3 (all or nothing, path of each refusal).
 
 **Rules kept.** A body has no secret of its own (the system's hides it); `lisibilite.ts` stays the only reader of `secret`; the import never overwrites what the GM changed (AD-atlas-3).
