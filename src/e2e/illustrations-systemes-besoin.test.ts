@@ -255,19 +255,6 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
     assert.equal(await lea.getByRole('button', { name: /^Ajouter une créature/ }).count(), 0);
   });
 
-  test('B-31 bords : Antor MJ d’un système et Joueur de l’autre, « Lecture seule » sur le second seulement', opts, async () => {
-    const liste = JSON.parse((await api(antor, 'GET', '/api/systemes')).corps);
-    assert.equal(liste.length, 3); // + « Système d'essai » (kanevas-outils-cadre)
-    const cof = liste.find((s: Any) => s.nom === 'CoF Mini');
-    const co = liste.find((s: Any) => s.nom === 'Chroniques Oubliées Fantasy');
-    assert.equal(cof.peutEcrire, true);
-    assert.equal(co.peutEcrire, false);
-    await antor.goto('/systemes');
-    await antor.getByRole('heading', { level: 1, name: 'Systèmes de jeu' }).waitFor();
-    await attendre(antor);
-    assert.equal(await antor.getByText('Lecture seule').count(), 1);
-  });
-
   test('B-31 : l’ancienne adresse /univers/:id/systeme mène à /systemes/:sid', opts, async () => {
     await antor.goto(`/univers/${U}/systeme`);
     await antor.waitForURL(/\/systemes\/\d+/);

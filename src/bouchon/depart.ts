@@ -21,7 +21,7 @@ import { changerStatutFiche, creerFiche, deplacerFiche, lireFiche, marquerDispar
 import { creerCompteRendu } from '../services/comptes_rendus.js';
 import { ajouterTache } from '../services/preparation.js';
 import { assurerCompte } from '../services/comptes.js';
-import { creerEtRattacherSysteme, rattacherSysteme } from '../services/systemes.js';
+import { creerEspacesManquants, creerEtRattacherSysteme, differerEspaces, rattacherSysteme } from '../services/systemes.js';
 import { creerJetonDeValeur } from '../services/jetons.js';
 import { creerUnivers } from '../services/univers.js';
 import { modulesActifs } from '../outils/registre.js';
@@ -53,7 +53,7 @@ export function semerBouchon(db: Db): boolean {
     (c) => c.name === 'parent_id',
   );
 
-  db.transaction(() => {
+  differerEspaces(() => db.transaction(() => {
     const lame = creerUnivers(db, id.antor, {
       nom: "Lame d'Ébène",
       description: 'Une cité marchande rongée par les secrets.',
@@ -331,8 +331,9 @@ export function semerBouchon(db: Db): boolean {
         titre: 'Séance 12', texte: 'La compagnie poursuit la piste du sceau brisé.',
       });
     }
+    creerEspacesManquants(db);
     for (const ecrire of elements) ecrire();
-  })();
+  })());
   return true;
 }
 

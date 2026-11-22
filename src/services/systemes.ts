@@ -55,15 +55,50 @@ function insererSysteme(db: Db, nom: string, compteId: number): SystemeCatalogue
   return { id, nom };
 }
 
+const aColonneEspace = (db: Db): boolean =>
+  (db.prepare('PRAGMA table_info(univers)').all() as { name: string }[]).some((c) => c.name === 'espace_systeme_id');
+
+let espacesDifferes = false;
+
+/**
+ * Seed only: runs `fn` without creating the spaces of the systems it makes, so that the universes keep the ids the
+ * starting data have always had; `creerEspacesManquants` then gives each system its space.
+ */
+export function differerEspaces<T>(fn: () => T): T {
+  espacesDifferes = true;
+  try {
+    return fn();
+  } finally {
+    espacesDifferes = false;
+  }
+}
+
+/** Gives a space to every system that has none (the seed's end; the migration does the same in SQL). */
+export function creerEspacesManquants(db: Db): void {
+  if (!aColonneEspace(db)) return;
+  const rows = db
+    .prepare(
+      'SELECT id, nom FROM systemes_jeu WHERE id NOT IN (SELECT espace_systeme_id FROM univers WHERE espace_systeme_id IS NOT NULL) ORDER BY id',
+    )
+    .all() as { id: number; nom: string }[];
+  const sauve = espacesDifferes;
+  espacesDifferes = false;
+  try {
+    for (const r of rows) creerEspaceSysteme(db, r.id, r.nom);
+  } finally {
+    espacesDifferes = sauve;
+  }
+}
+
 /**
  * The hidden space of a system (AD-151): a technical `univers` row, never listed, with no member until the admin
  * names the system's GMs (AD-152). The key is technical and never drawn for a real universe.
  */
 export function creerEspaceSysteme(db: Db, systemeId: number, nom: string): number | null {
+  if (espacesDifferes) return null;
   // A base held short of 0046 (the migration tests seed an old schema, then climb) has no space column: the migration
   // creates the spaces of the systems already there.
-  const colonnes = db.prepare('PRAGMA table_info(univers)').all() as { name: string }[];
-  if (!colonnes.some((c) => c.name === 'espace_systeme_id')) return null;
+  if (!aColonneEspace(db)) return null;
   const info = db
     .prepare('INSERT INTO univers (nom, description, cree_le, cle, espace_systeme_id) VALUES (?, ?, ?, ?, ?)')
     .run(nom, '', new Date().toISOString(), `espace-systeme-${systemeId}-x`, systemeId);

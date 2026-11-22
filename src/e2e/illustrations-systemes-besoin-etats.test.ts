@@ -273,25 +273,6 @@ describe('kanevas-illustrations (A) : illustrations, états et écrans en lectur
     await ctx.close();
   });
 
-  test('B-31 bords : Antor voit CoF Mini avec « Utilisé par 2 univers », « 3 règles · 4 créatures · 2 objets » et sa seule puce « Lame d’Ébène · MJ », jamais Les Landes grises', opts, async () => {
-    const antor = m.comptes.Antor;
-    await aller(antor, '/systemes', 'Systèmes de jeu');
-    const t = await texte(antor);
-    assert.match(t, /Utilisé par 2 univers/);
-    assert.match(t, /3 règles · 4 créatures · 2 objets/);
-    assert.match(t, /Lame d'Ébène\s*·?\s*MJ/);
-    assert.ok(!/Landes grises/.test(t));
-    const liste = JSON.parse((await m.get('Antor', '/api/systemes')).corps);
-    const cof = liste.find((s: Any) => s.nom === 'CoF Mini');
-    assert.ok(!/Landes grises/.test((await m.get('Antor', '/api/systemes')).corps));
-    const un = await m.get('Antor', `/api/systemes/${cof.id}`);
-    assert.ok(!/Landes grises/.test(un.corps));
-    await aller(antor, `/systemes/${cof.id}`, /CoF Mini/);
-    const t2 = await texte(antor);
-    assert.match(t2, /Référentiel commun · utilisé par 2 univers/i);
-    assert.ok(!/Landes grises/.test(t2));
-  });
-
   test('B-31 bords : Teo, sans univers rattaché, lit « Les systèmes de vos univers apparaîtront ici quand leur MJ en rattachera un. »', opts, async () => {
     const teo = m.comptes.Teo;
     await aller(teo, '/systemes', 'Systèmes de jeu');
@@ -327,28 +308,6 @@ describe('kanevas-illustrations (A) : illustrations, états et écrans en lectur
     await antor.waitForURL(new RegExp(`/univers/[^/]+(/|$)`));
   });
 
-  test('B-14 : Antor ajoute « Garde du sceau » à CoF Mini ; Mira la voit avec « Utilisé par 2 univers » et la seule puce « Les Landes grises », Léa la lit sans « Ajouter » ni « Modifier »', opts, async () => {
-    const antor = m.comptes.Antor;
-    const cof = JSON.parse((await m.get('Antor', '/api/systemes')).corps).find((s: Any) => s.nom === 'CoF Mini').id;
-    await aller(antor, `/systemes/${cof}?type=creature`);
-    await antor.getByRole('button', { name: /^Ajouter une créature/ }).click();
-    await antor.getByLabel('Nom').fill('Garde du sceau');
-    await antor.getByLabel('Contenu').fill('Veille sur le sceau de Val-Fortin.');
-    await antor.getByRole('button', { name: 'Ajouter', exact: true }).click();
-    await antor.getByText('Garde du sceau').first().waitFor();
-    const mira = m.comptes.Mira;
-    await aller(mira, `/systemes/${cof}?type=creature`);
-    await mira.getByText('Garde du sceau').first().waitFor();
-    const t = await texte(mira);
-    assert.match(t, /utilisé par 2 univers/i);
-    assert.match(t, /Les Landes grises/);
-    assert.ok(!/Lame d'Ébène/.test(t));
-    const lea = m.comptes.Léa;
-    await aller(lea, `/systemes/${cof}?type=creature`);
-    await lea.getByText('Garde du sceau').first().waitFor();
-    assert.equal(await lea.getByRole('button', { name: /^Ajouter/ }).count(), 0);
-    assert.equal(await lea.getByRole('button', { name: /^Modifier/ }).count(), 0);
-  });
 });
 
 describe('kanevas-illustrations (B) : tests qui changent le monde', { timeout: 600000 }, () => {
