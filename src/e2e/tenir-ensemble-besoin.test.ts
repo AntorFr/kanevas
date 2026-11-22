@@ -160,7 +160,7 @@ describe('kanevas-import-tenir · B-39, renommer une fiche en place (E-9)', { sk
   // Échec : le serveur répond une erreur.
   test('B-39 échec : l’enregistrement échoue, « L’action n’a pas abouti. Réessayez. » sous le titre, le champ reste ouvert avec la saisie', async () => {
     await ouvrirFiche(antor, U, port, 'Port-Sel-sur-Brume bis');
-    await antor.route(`**/api/univers/${U}/fiches/${port}`, (route: Any) =>
+    await antor.route(`**/api/univers/*/fiches/${port}`, (route: Any) =>
       route.request().method() === 'PATCH' ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"boom"}' }) : route.continue());
     const champ = await editer(antor, 'Port-Sel-sur-Brume bis');
     await champ.fill('Nouveau nom');
@@ -168,7 +168,7 @@ describe('kanevas-import-tenir · B-39, renommer une fiche en place (E-9)', { sk
     await antor.getByText(/L.action n.a pas abouti\. Réessayez\./).first().waitFor();
     assert.equal(await champ.inputValue(), 'Nouveau nom');
     await antor.screenshot({ path: `${SHOTS}/renommer-echec.png` });
-    await antor.unroute(`**/api/univers/${U}/fiches/${port}`);
+    await antor.unroute(`**/api/univers/*/fiches/${port}`);
     assert.equal((await api(srv, antor, 'GET', `/api/univers/${U}/fiches/${port}`)).titre, 'Port-Sel-sur-Brume bis');
   });
 
@@ -364,7 +364,7 @@ describe('kanevas-import-tenir · B-40, supprimer une fiche (E-9)', { skip: skip
     await bilanTexte(antor);
     await boite(antor).getByRole('button', { name: 'Supprimer la fiche' }).click();
     await antor.getByText('Fiche supprimée.').first().waitFor();
-    await antor.waitForURL(new RegExp(`/univers/${U}/fiches/lieux`));
+    await antor.waitForURL(new RegExp(`/univers/[^/]+/fiches/lieux`));
     await antor.getByRole('heading', { level: 1, name: 'Lieux' }).waitFor();
     await attendre(antor);
     await antor.screenshot({ path: `${SHOTS}/apres-suppression.png` });
@@ -553,14 +553,14 @@ describe('kanevas-import-tenir · B-41, supprimer un univers d’essai (E-14) et
 
   test('B-41 échec : la suppression échoue, « L’action n’a pas abouti. Réessayez. » dans la boîte qui reste ouverte, l’univers est intact', async () => {
     await ouvrirBoiteUnivers(antor, E);
-    await antor.route(`**/api/univers/${E}`, (route: Any) =>
+    await antor.route('**/api/univers/*', (route: Any) =>
       route.request().method() === 'DELETE' ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"x"}' }) : route.continue());
     await champNom(antor).fill('Essai Kanka');
     await confirmer(antor).click();
     await boite(antor).getByText(/L.action n.a pas abouti\. Réessayez\./).waitFor();
     await antor.screenshot({ path: `${SHOTS}/univers-echec.png` });
     assert.equal(await boite(antor).isVisible(), true);
-    await antor.unroute(`**/api/univers/${E}`);
+    await antor.unroute('**/api/univers/*');
     assert.ok((await api(srv, antor, 'GET', '/api/univers')).some((u: Any) => u.nom === 'Essai Kanka'));
     await boite(antor).getByRole('button', { name: 'Annuler' }).click();
   });
@@ -568,7 +568,7 @@ describe('kanevas-import-tenir · B-41, supprimer un univers d’essai (E-14) et
   // Le critère : taper le nom exact supprime l'univers.
   test('B-41 nominal : avec « Essai Kanka » exact, « Suppression… » inactif pendant l’attente, puis accueil, « Univers supprimé. », l’univers n’y est plus', async () => {
     await ouvrirBoiteUnivers(antor, E);
-    await antor.route(`**/api/univers/${E}`, async (route: Any) => {
+    await antor.route('**/api/univers/*', async (route: Any) => {
       if (route.request().method() !== 'DELETE') return route.continue();
       await new Promise((r) => setTimeout(r, 2000));
       return route.continue();
@@ -599,7 +599,8 @@ describe('kanevas-import-tenir · B-41, supprimer un univers d’essai (E-14) et
     assert.equal((await brut(srv, lea, 'GET', `/api/univers/${E}`)).status, 404);
     assert.equal((await brut(srv, antor, 'GET', `/api/univers/${E}/fiches`)).status, 404);
     const j = await imp('GET', '');
-    assert.equal(j.status, 401, 'le jeton du bouchon est parti avec l’univers');
+    // The token belongs to an account (AD-144) and stays; its line for the deleted universe left with it: the address is unknown.
+    assert.equal(j.status, 404, 'le jeton n’atteint plus l’univers supprimé');
   });
 
   test('B-41 exclusion : « Lame d’Ébène » (autre univers) est intacte, avec ses fiches', async () => {

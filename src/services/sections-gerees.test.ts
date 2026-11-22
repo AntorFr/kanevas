@@ -107,8 +107,8 @@ test('verrou : l\'assistant (modifier_section, ajouter_a_section) et creerPropos
 test('verrou : l\'import refuse (champ sections[i], code section_geree) avant la transaction', () => {
   const { db, antor, u, fiche, pose } = monde();
   const s = pose();
-  db.prepare("UPDATE fiches SET cle_origine = 'f:aldric' WHERE id = ?").run(fiche);
-  db.prepare("UPDATE sections SET cle_origine = 's:car' WHERE id = ?").run(s.id);
+  db.prepare("UPDATE fiches SET cle = 'f:aldric' WHERE id = ?").run(fiche);
+  db.prepare("UPDATE sections SET cle = 's:car' WHERE id = ?").run(s.id);
   const { jeton } = creerJeton(db, antor, u, { nom: 't', dureeJours: 7 });
   const avant = db.prepare('SELECT contenu, version FROM sections WHERE id = ?').get(s.id);
   let r: any;
@@ -303,6 +303,9 @@ test('migration 0020 sur une base au schéma 0019 : sections et propositions con
     for (const f of tous.filter((x) => x < f20)) copyFileSync(join(dir, f), join(t, f));
     const db = openDb(':memory:');
     migrate(db, t);
+    // The services draw keys (0037): stand-in columns and tables, the test ends before 0037.
+    db.exec('ALTER TABLE univers ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN creee_via TEXT; ALTER TABLE sections ADD COLUMN cle TEXT');
+    db.exec('CREATE TABLE cles_anciennes (univers_id, cle, fiche_id); CREATE TABLE univers_cles_anciennes (cle, univers_id)');
     const antor = assurerCompte(db, 'antor').id;
     const u = creerUnivers(db, antor, { nom: 'U' }).id;
     const fiche = creerFiche(db, antor, u, { type: 'personnage', titre: 'A', charge: { pj: false } }).id;

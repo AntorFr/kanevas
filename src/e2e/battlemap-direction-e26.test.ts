@@ -261,7 +261,7 @@ describe('E-26 Direction artistique au navigateur', { skip: skipBrowser }, () =>
   it('erreur : lecture en échec → message + Réessayer', async () => {
     const page = await antor.context().newPage();
     let casse = true;
-    await page.route(`**${api}`, (route: Any) => (casse && route.request().method() === 'GET'
+    await page.route(`**${api.replace(`/${uid}/`, "/*/")}`, (route: Any) => (casse && route.request().method() === 'GET'
       ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"erreur":"x"}' }) : route.continue()));
     await page.goto(adresse);
     await page.getByText('Impossible de charger la direction artistique.').waitFor();
@@ -275,7 +275,7 @@ describe('E-26 Direction artistique au navigateur', { skip: skipBrowser }, () =>
     const page = await antor.context().newPage();
     let lache: () => void = () => {};
     const porte = new Promise<void>((r) => { lache = r; });
-    await page.route(`**${api}`, async (route: Any) => {
+    await page.route(`**${api.replace(`/${uid}/`, "/*/")}`, async (route: Any) => {
       if (route.request().method() === 'GET') await porte;
       return route.continue();
     });

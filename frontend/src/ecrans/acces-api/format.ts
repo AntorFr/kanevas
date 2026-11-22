@@ -1,7 +1,7 @@
 /** Pure wording of E-18 (docs/ecrans.md): dates, counters of a batch, state of a token. */
 
 export type Issue = 'creees' | 'mises_a_jour' | 'inchangees' | 'refusees' | 'supprimees';
-export type Nature = 'fiches' | 'fichiers' | 'relations';
+export type Nature = 'fiches' | 'fichiers' | 'relations' | 'cartes';
 /** `supprimees` exists on the `fiches` nature only (AD-119 (4)); absent elsewhere and in older batches. */
 export type Compteurs = Record<string, Partial<Record<Issue, number>>>;
 
@@ -85,6 +85,7 @@ const NATURES: { cle: Nature; libelle: string; feminin: boolean }[] = [
   { cle: 'fiches', libelle: 'Fiches', feminin: true },
   { cle: 'fichiers', libelle: 'Fichiers', feminin: false },
   { cle: 'relations', libelle: 'Relations', feminin: true },
+  { cle: 'cartes', libelle: 'Cartes', feminin: true },
 ];
 
 function forme(issue: Issue, n: number, feminin: boolean): string {

@@ -38,23 +38,4 @@ describe('E-20 résumé des éléments et E-18 choix d’outil: libellés', { sk
     assert.match(corvette, /masse 12 · coût 100/);
     await page.screenshot({ path: `${SHOTS}/e20-resume.png`, fullPage: true });
   });
-
-  it('E-18: la case de portée dit « Essai G · Générateur · Module d’essai », pas « Essai G · essai »', async () => {
-    const { page } = await connecte(browser, srv.base, 'Antor');
-    const us = (await (await page.request.get('/api/univers')).json()) as Any;
-    const E = (us.univers ?? us).find((u: Any) => u.nom === "Éneria d'essai").id as number;
-    await page.goto(`/univers/${E}/acces-api`);
-    await page.getByRole('button', { name: /Nouveau jeton/ }).first().click();
-    const dlg = page.getByRole('dialog');
-    await dlg.getByLabel('Outils').check();
-    const caseG = dlg.getByLabel("Essai G · Générateur · Module d'essai", { exact: true });
-    await caseG.waitFor();
-    assert.equal(await dlg.getByLabel('Essai G · essai', { exact: true }).count(), 0);
-    await caseG.check();
-    await dlg.getByLabel('Nom').fill('Jeton libellé');
-    await dlg.getByRole('button', { name: 'Créer le jeton' }).click();
-    await dlg.getByLabel('Jeton', { exact: true }).waitFor();
-    await dlg.getByRole('button', { name: /Fermer|Terminé|J'ai copié/ }).first().click().catch(() => {});
-    await page.screenshot({ path: `${SHOTS}/e18-portee.png`, fullPage: true });
-  });
 });

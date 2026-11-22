@@ -1,19 +1,21 @@
 import cookie from '@fastify/cookie';
 import Fastify from 'fastify';
 
-import { dbPath, env } from './config/env.js';
+import { cacheAstresDir, dbPath, env } from './config/env.js';
 import { brancherExecuteur } from './services/battlemap-generation.js';
 import { interrompreLotsEnCours } from './services/battlemap-lots.js';
 import { comptesDuPivot, migrate, openDb, type Db } from './db/db.js';
-import { viderTmp } from './services/stockage.js';
+import { viderTemporaires, viderTmp } from './services/stockage.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerBouchonRoutes } from './routes/bouchon.js';
 import { registerImportRoutes } from './routes/import.js';
+import { registerMcpRoutes } from './routes/mcp.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerSessionRoutes } from './routes/session.js';
 import { ConnexionClaude } from './services/assistant/connexion-claude.js';
 import type { ConfigAssistant } from './services/assistant/disponibilite.js';
 import type { DepsRepondre } from './services/assistant/repondre.js';
+import { purgerHistorique } from './services/historique.js';
 import { chargerCleSession } from './services/session.js';
 import { verifierRegistre } from './outils/registre.js';
 
@@ -48,6 +50,8 @@ export async function buildApp() {
   if (aConvertir) app.log.info(aConvertir, 'Migration 0017: campaigns and scenarios converted to adventure sheets.');
   // Uploads cut short by a restart leave files in tmp/ (AD-65); in memory (tests) the dir is shared, leave it.
   if (dbPath !== ':memory:') await viderTmp();
+  // Same for the derived illustration cache: a render cut short leaves `*.tmp` (AD-carte-2).
+  if (dbPath !== ':memory:') await viderTemporaires(cacheAstresDir);
   if (dbPath === ':memory:' && env.NODE_ENV !== 'test') {
     app.log.warn('No /data volume: the database lives in memory and is lost at shutdown.');
   }
@@ -70,6 +74,13 @@ export async function buildApp() {
   await registerAuthRoutes(app);
   await registerBouchonRoutes(app);
   await registerImportRoutes(app);
+  await registerMcpRoutes(app);
+
+  // The history keeps 30 days of values and 90 of lines (B-93): purged at mount, then every 24 hours.
+  purgerHistorique(db, app.horloge());
+  const minuterie = setInterval(() => purgerHistorique(db, app.horloge()), 24 * 60 * 60 * 1000);
+  minuterie.unref();
+  app.addHook('onClose', async () => clearInterval(minuterie));
   await registerSessionRoutes(app);
 
   return app;

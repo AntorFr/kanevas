@@ -206,10 +206,10 @@ describe('kanevas-fiches-liees-recherche-ecran, E-17 recherche avancée', { skip
 
   test('erreur du serveur sur la liste : message et « Réessayer » rétablit le résultat', async () => {
     await ouvrir(antor, '');
-    await antor.route(`**/api/univers/${U}/fiches?*lie=*`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
+    await antor.route(`**/api/univers/*/fiches?*lie=*`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
     await antor.goto(`/univers/${U}/recherche?lie=${ids['Port-Sel']}`);
     await antor.getByText('La recherche n’a pas abouti.').waitFor();
-    await antor.unroute(`**/api/univers/${U}/fiches?*lie=*`);
+    await antor.unroute(`**/api/univers/*/fiches?*lie=*`);
     await antor.getByRole('button', { name: 'Réessayer' }).first().click();
     await antor.getByRole('link', { name: /Aldric/ }).waitFor();
   });

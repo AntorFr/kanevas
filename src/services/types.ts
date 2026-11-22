@@ -1,3 +1,4 @@
+import type { BlocFiche } from '../outils/declaration.js';
 export type Role = 'mj' | 'joueur';
 
 export { TYPES_FICHE, type TypeFiche } from './types-fiche.js';
@@ -21,6 +22,8 @@ export interface Compte {
 
 export interface Univers {
   id: number;
+  /** Readable identifier, the address of the universe (AD-146); a member reads it. */
+  cle: string;
   nom: string;
   description: string;
   creeLe: string;
@@ -37,6 +40,7 @@ export interface SectionRow {
   fiche_id: number;
   titre: string;
   ordre: number;
+  cle: string;
   contenu: string;
   /** `contenu` without the GM blocks (AD-114), kept by `sections.ts` at each write. */
   contenu_public: string;
@@ -63,6 +67,8 @@ export interface Audience {
 
 export interface SectionVue {
   id: number;
+  /** Key of the section (B-104): the GM outside player mode only, like the sheet's. */
+  cle?: string;
   titre: string;
   ordre: number;
   /** Markdown source: only when the caller may write the section (AD-113). */
@@ -94,8 +100,17 @@ export interface PieceJointeVue {
   attente?: string;
 }
 
+/** A passage of a readable section that matches a search (AD-145). */
+export interface Passage {
+  section: number;
+  titre: string;
+  extrait: string;
+}
+
 export interface Fiche {
   id: number;
+  /** Key of the sheet (AD-146): the GM outside player mode only; a reader's body never carries it. */
+  cle?: string;
   universId: number;
   type: TypeFiche;
   titre: string;
@@ -113,6 +128,8 @@ export interface Fiche {
   etiquettes?: string[];
   /** With a search: the first alias that answers when the title does not (AD-118 (3)). */
   aliasTrouve?: string;
+  /** With `extraits` (AD-145): the matching readable sections with their excerpt. */
+  passages?: Passage[];
   /** With a linked search including descendants: the readable other end, absent for a direct link. */
   via?: { id: number; titre: string };
 }
@@ -189,6 +206,8 @@ export interface FicheVue extends Fiche {
   mentionsSuite: boolean;
   /** The sources beyond the first page, as this reader sees them. */
   mentionsRestantes: number;
+  /** Blocks the accessible tools add (AD-liens-3, E-9); empty for most sheets, no count of what is hidden. */
+  blocs: BlocFiche[];
   /** Import origin key (B-50): only in the GM view (outside player mode), never in a reader's answer. */
   cleOrigine?: string;
   /** A report only (AD-124 (4)): the adventure it names, for a reader of that adventure; `campagneSupprimee` for a GM when it is gone. */

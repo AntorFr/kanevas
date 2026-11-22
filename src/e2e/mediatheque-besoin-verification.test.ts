@@ -30,6 +30,7 @@ import {
   allerMembres,
   attendre,
   attendreAbsent,
+  attendreVisible,
   connecte,
   creerUnivers,
   launch,
@@ -292,7 +293,8 @@ test('E-19 contenu long · 102 fichiers : 100 puis « Charger la suite », le de
   assert.equal(await tuiles(), 100);
   await a2.getByRole('button', { name: 'Charger la suite' }).click();
   await attendreAbsent(a2.getByRole('button', { name: 'Charger la suite' }));
-  await lesTuiles.nth(101).waitFor({ state: 'visible' });
+  // The count is read once the next page is drawn, not at the instant the button goes (rouge sous charge, vert seul).
+  await attendreVisible(a2.locator('main').getByRole('button', { name: /f\d{3}\.pdf/ }).nth(101));
   await a2.locator('main').getByRole('button', { name: /f000\.pdf/ }).first().waitFor({ state: 'visible' });
   assert.equal(await tuiles(), 102);
   assert.equal(await a2.getByRole('button', { name: 'Charger la suite' }).count(), 0);

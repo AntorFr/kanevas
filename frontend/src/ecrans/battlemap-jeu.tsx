@@ -17,11 +17,12 @@ function JeuEcran() {
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const mj = univers.etat === 'ok' && univers.valeur.role === 'mj';
   const mode = useBasculeMode(mj);
+  // The address may name the universe by its key: the screen takes the id the answer carries.
   if (univers.etat === 'chargement') return <Chargement texte="Chargement de la partie…" />;
   const suffixe = mj && mode === 'joueur' ? '?mode=joueur' : '';
   return (
     <Suspense fallback={<Chargement texte="Chargement de la partie…" />}>
-      <Jeu key={`${id}/${cid}${suffixe}`} universId={Number(id)} cid={String(cid)} suffixe={suffixe} />
+      <Jeu key={`${id}/${cid}${suffixe}`} universId={univers.etat === 'ok' ? univers.valeur.id : Number(id)} cid={String(cid)} suffixe={suffixe} />
     </Suspense>
   );
 }

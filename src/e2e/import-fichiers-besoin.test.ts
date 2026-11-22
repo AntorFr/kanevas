@@ -263,7 +263,7 @@ test('critère · fiche poussée avant ses fichiers : Antor voit 2 tuiles « en 
 });
 
 // ------------------------------------------------------------------ B-56 mj / B-48 visibilité
-test('B-56 exclusion + B-48 · un fichier envoyé mj n’est pas dans la médiathèque de Léa ; Antor le passe « Visible des joueurs » sur E-19 : Léa l’a, et E-18 dit « 1 avertissement » au rejeu', opts, async () => {
+test('B-56 exclusion · un fichier envoyé mj n’est pas dans la médiathèque de Léa ; Antor le passe « Visible des joueurs » sur E-19 : Léa l’a', opts, async () => {
   const m = await monde();
   const antor = await session(m, 'antor');
   const lea = await session(m, 'lea');
@@ -283,19 +283,18 @@ test('B-56 exclusion + B-48 · un fichier envoyé mj n’est pas dans la médiat
     // Antor, on E-19: « Visible des joueurs ».
     await aller(antor.page, `/univers/${m.essai}/mediatheque`);
     await antor.page.getByText('Plan du Repaire').first().click();
-    await antor.page.getByText('Visible des joueurs', { exact: true }).first().click();
+    // Wait for the detail panel (the radio group), then for the effect of the click: the PATCH answer.
+    const visible = antor.page.getByText('Visible des joueurs', { exact: true }).first();
+    await visible.waitFor({ state: 'visible' });
+    const patch = antor.page.waitForResponse((r) => r.request().method() === 'PATCH' && /\/fichiers\/\d+$/.test(r.url()));
+    await visible.click();
+    assert.equal((await patch).status(), 200, 'the visibility PATCH is accepted');
     await attendre(antor.page);
     await capture(antor.page, 'b48-visibilite-e19');
     const apresReglage = await rest(m, cLea, 'GET', `/api/univers/${m.essai}/fichiers`);
     assert.ok(apresReglage.txt.includes('Plan du Repaire'), 'Léa now has the file: the setting was made');
-
-    // The replay still says mj: not restored, named in the batch.
-    await lotComplet(m, async (lot) => putFichier(m, 'img:plan', { nom: 'Plan du Repaire', visibilite: 'mj', octets: BLEU, lot }));
-    // The lot says so on E-18.
-    await aller(antor.page, `/univers/${m.essai}/acces-api`);
-    const t = await lire(antor.page);
-    await capture(antor.page, 'b48-lot-e18');
-    assert.match(t, /1 avertissement/);
+    // The replay-in-mj / E-18 « 1 avertissement » tail is gone: B-48 is retired (B-110), a replay without
+    // visibility leaves the file's, and B-91 no longer warns.
   } finally {
     await antor.ctx.close();
     await lea.ctx.close();

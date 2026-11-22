@@ -1,0 +1,29 @@
+/* Components of E-24 (docs/charte.md, « Ligne d'historique », « Comparaison »). Colours only through tokens. */
+
+.liste-historique { list-style: none; margin: var(--e-4) 0 0; padding: 0; }
+.ligne-historique { position: relative; display: flex; gap: var(--e-3); min-height: 40px; padding: var(--e-2) var(--e-2); border-radius: var(--rayon-champ); }
+.ligne-historique + .ligne-historique { border-top: 1px solid var(--bord); border-top-left-radius: 0; border-top-right-radius: 0; }
+.ligne-historique:hover, .ligne-historique:focus-within { background: var(--surface-2); }
+.ligne-historique-date { flex: none; width: 96px; font-size: var(--t-12); color: var(--texte-3); padding-top: 2px; }
+.ligne-historique-corps { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ligne-historique-qui, .ligne-historique-quoi { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); min-width: 0; font-size: var(--t-14); }
+.ligne-historique-qui b { font-weight: 500; color: var(--texte); }
+.ligne-historique-via { color: var(--texte-2); font-size: var(--t-13); }
+.ligne-historique-quoi { color: var(--texte-2); font-size: var(--t-13); }
+.ligne-historique-fiche, .ligne-historique-detail { display: inline-flex; align-items: center; min-height: 24px; color: var(--texte); overflow-wrap: anywhere; }
+.ligne-historique-detail[aria-current="true"] { font-weight: 500; }
+.ligne-historique-supprimee { display: inline-flex; align-items: center; gap: var(--e-2); color: var(--texte-2); }
+@media (max-width: 760px) {
+  .ligne-historique { flex-direction: column; gap: 2px; min-height: 48px; }
+  .ligne-historique-date { width: auto; padding-top: 0; }
+}
+
+.comparaison { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); margin: var(--e-3) 0; }
+.comparaison.seule { grid-template-columns: 1fr; }
+.comparaison-zone { min-width: 0; padding: var(--e-3); border-radius: var(--rayon-champ); background: var(--surface); box-shadow: inset 0 0 0 1px var(--bord); }
+.comparaison-zone.avant { background: var(--accent-fond); box-shadow: inset 0 0 0 1px var(--accent); }
+.comparaison-zone:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.comparaison-etiquette { display: block; margin-bottom: var(--e-1); font-size: var(--t-12); color: var(--texte-3); }
+.comparaison-texte { margin: 0; max-height: calc(15 * 1.5em); overflow: auto; font: inherit; font-size: var(--t-14); line-height: 1.5; color: var(--texte);
+  white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 760px) { .comparaison { grid-template-columns: 1fr; } }

@@ -595,12 +595,12 @@ function BibliothequeEcran() {
       </header>
       {ecriture && (
         <Onglets
-          legende="Bibliothèque"
+          etiquette="Bibliothèque"
           actif={onglet}
           onglets={[
-            { valeur: 'assets', libelle: 'Assets' },
-            { valeur: 'direction', libelle: 'Direction artistique' },
-            ...(generationVisible ? [{ valeur: 'generation' as const, libelle: 'Génération' }] : []),
+            { id: 'assets', libelle: 'Assets' },
+            { id: 'direction', libelle: 'Direction artistique' },
+            ...(generationVisible ? [{ id: 'generation' as const, libelle: 'Génération' }] : []),
           ]}
           onChange={(v) => setParams(v === 'assets' ? {} : { onglet: v }, { replace: true })}
         />

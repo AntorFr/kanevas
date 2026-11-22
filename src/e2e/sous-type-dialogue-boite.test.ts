@@ -160,7 +160,7 @@ describe('kanevas-sous-type-dialogue-boite, au navigateur', { skip: skipBrowser 
     const { page } = await connecte(browser, srv.base, 'Antor');
     let liberer: () => void = () => {};
     const attente = new Promise<void>((ok) => (liberer = ok));
-    await page.route(/\/api\/univers\/\d+\/types(\?.*)?$/, async (r: Any) => {
+    await page.route(/\/api\/univers\/[^/]+\/types(\?.*)?$/, async (r: Any) => {
       await attente;
       await r.continue();
     });

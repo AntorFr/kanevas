@@ -94,3 +94,6 @@ body.asst-ouvert .zone-principale { margin-right: 380px; }
 @media (min-width: 760px) {
   .asst-prop-zones { grid-template-columns: 1fr 1fr; }
 }
+
+/* The floating button sits over the bottom-right corner: an application bar keeps its controls above it. */
+body.asst-present .barre-application { padding-bottom: calc(var(--e-5) + 48px + var(--e-3)); }

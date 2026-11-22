@@ -442,6 +442,12 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
               {mesure?.cle === s.cle && <circle className="gx-depart" cx={p.x} cy={p.y} r={rr + 3} />}
               <circle className="gx-point" cx={p.x} cy={p.y} r={rr} />
               {(vue.s >= SEUIL_ETIQUETTES || choisi) && <text x={p.x} y={p.y + Math.max(rr, 22) - 6 + 14} textAnchor="middle">{abreger(s.nom)}</text>}
+              {s.secret && (vue.s >= SEUIL_ETIQUETTES || choisi) && (
+                <g className="gx-marque-mj" aria-hidden="true">
+                  <rect x={p.x - 26} y={p.y + Math.max(rr, 22) + 13} width={52} height={16} rx={8} />
+                  <text x={p.x} y={p.y + Math.max(rr, 22) + 25} textAnchor="middle">MJ seul</text>
+                </g>
+              )}
             </g>
           );
         })}

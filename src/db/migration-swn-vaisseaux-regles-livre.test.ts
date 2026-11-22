@@ -32,7 +32,7 @@ test('0036 : montée depuis 0035, valeurs gardées, surcharge_arme devient surch
   ins('mon', 'montage_specialise', { valeur: -1 });
   ins('nu', null);
   const avant = Object.fromEntries((db.prepare('SELECT * FROM swn_catalogue_modifications').all() as any[]).map((r) => [r.cle, r]));
-  assert.deepEqual(migrate(db, dossierJusqua(36)), [36]);
+  assert.deepEqual(migrate(db), [36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const apres = Object.fromEntries((db.prepare('SELECT * FROM swn_catalogue_modifications').all() as any[]).map((r) => [r.cle, r]));
   assert.equal(Object.keys(apres).length, 7);

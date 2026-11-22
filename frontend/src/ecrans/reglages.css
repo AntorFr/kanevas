@@ -68,3 +68,5 @@
 .entree-contenu { max-width: 70ch; }
 .entree-formulaire .champ textarea { max-width: 70ch; }
 @media (max-width: 760px) { .entree-apercu { display: none; } .entree-nom { max-width: none; flex: 1; } }
+
+.parametres-univers .aide-champ { margin: calc(-1 * var(--e-2)) 0 var(--e-3); font-size: var(--t-12); color: var(--texte-3); overflow-wrap: anywhere; }

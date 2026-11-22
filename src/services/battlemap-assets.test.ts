@@ -392,7 +392,7 @@ test('suppression des données de l’outil par le chemin D : compte puis efface
   assert.equal(compte(m.db, 'fichiers'), 2);
 });
 
-// --- montée de la migration 0037 sur une base au schéma 0036 ---
+// --- montée de la migration 0046 sur une base au schéma 0045 ---
 const SRC = new URL('../db/migrations/', import.meta.url).pathname;
 function dossierJusqua(max: number): string {
   const dir = join(mkdtempSync(join(tmpdir(), 'mig-')), 'm') + '/';
@@ -401,15 +401,15 @@ function dossierJusqua(max: number): string {
   return dir;
 }
 
-test('0037 : montée depuis 0036, données gardées, contraintes vivantes, RESTRICT / CASCADE', () => {
+test('0046 : montée depuis 0045, données gardées, contraintes vivantes, RESTRICT / CASCADE', () => {
   const db = openDb(':memory:');
-  migrate(db, dossierJusqua(36));
+  migrate(db, dossierJusqua(45));
   const tables = () => (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'bm_%'").all() as { name: string }[]).map((t) => t.name).sort();
   assert.deepEqual(tables(), []);
-  db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', '2026-11-01T00:00:00.000Z')").run();
+  db.prepare("INSERT INTO univers (id, cle, nom, cree_le) VALUES (1, 'un', 'U', '2026-11-01T00:00:00.000Z')").run();
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'a', 'x')").run();
   const avant = db.prepare('SELECT * FROM univers').all();
-  assert.deepEqual(migrate(db), [37, 38, 39, 40, 41]);
+  assert.deepEqual(migrate(db), [46, 47, 48, 49, 50]);
   assert.deepEqual(tables(), ['bm_assets', 'bm_cartes', 'bm_direction', 'bm_direction_images', 'bm_lots', 'bm_lots_lignes', 'bm_pions_proprietaires', 'bm_tables']);
   assert.deepEqual(db.prepare('SELECT * FROM univers').all(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);

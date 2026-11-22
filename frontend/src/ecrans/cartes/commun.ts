@@ -6,6 +6,15 @@ export interface Carte {
   forme: 'illustree' | 'graphe';
   visible?: boolean;
   fond: boolean;
+  /** HTML of the text for this reader (AD-142); empty for a player when only GM blocks were written. */
+  html?: string;
+  /** The source and its version, the GM outside player mode only. */
+  texte?: string;
+  version?: number;
+  /** Origin key of an imported map, the GM outside player mode only (B-50). */
+  cleOrigine?: string | null;
+  /** The attached sheet: `null` for the GM when none; absent for a reader who does not read it (AD-38). */
+  fiche?: { id: number; titre: string; type: string } | null;
 }
 
 /** A map that belongs to a tool (E-10, G-8): listed after the illustrated maps, opened at its own address. */

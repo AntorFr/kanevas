@@ -193,7 +193,7 @@ describe('kanevas-import-recherche, E-17 en bouchon (B-37, B-52, P-12 étape 4)'
     assert.equal(liens[0].trim(), 'Rechercher');
     // « / » outside a field opens the search...
     await page.locator('body').press('/');
-    await page.waitForURL(/\/univers\/1\/recherche/);
+    await page.waitForURL(/\/univers\/[^/]+\/recherche/);
     // ...and inside the field it only types the character.
     const champ = page.getByRole('textbox').first();
     await champ.click();

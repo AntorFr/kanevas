@@ -8,8 +8,8 @@
 //   B-61 nominal   : PUT campagne:couronne (aventure, Campagne, en_cours) then scenario:acte-2 (parent, prete)
 //                    -> both « creee », statuses kept, the scenario sits under the campaign
 //   B-61 bords     : status omitted -> en_preparation ; identical replay -> « inchangee » ; unknown status -> 400
-//   B-61 B-48      : after Antor sets the scenario « En cours », replay (prete) keeps « en_cours » and warns
-//                    « statut modifié dans Kanevas » ; same for a sub-type and a parent changed in Kanevas
+//   B-61 B-48      : withdrawn (kanevas-synchro-ecriture-retrait-fiches), no screen test left
+//                    (a status, sub-type or parent changed in Kanevas goes back at the replay)
 //   B-61 CR        : a compte_rendu with campagne:campagne:couronne reads « Campagne : La Couronne brisée »;
 //                    an unknown campagne key is refused 400
 //   B-61 GET base  : names « aventure » among the types, no campagne/scenario type, lists the statuts
@@ -126,7 +126,7 @@ test('B-62 critère : Antor crée une campagne puis un scénario dans E-12, « O
   await demander(antor, 'Crée une campagne « Les Cendres »');
   await panneau(antor).getByText('Fiche « Les Cendres » créée').waitFor();
   await panneau(antor).getByRole('link', { name: /^Ouvrir/ }).first().click();
-  await antor.waitForURL(/\/univers\/\d+\/fiche\/\d+$/);
+  await antor.waitForURL(/\/univers\/[^/]+\/fiche\/\d+$/);
   await antor.getByRole('heading', { name: 'Les Cendres' }).first().waitFor();
   await antor.getByText('En préparation').first().waitFor();
   await antor.screenshot({ path: '/tmp/captures-import-assistant-campagne.png' });
@@ -135,7 +135,7 @@ test('B-62 critère : Antor crée une campagne puis un scénario dans E-12, « O
   await demander(antor, 'Crée un scénario « Le Creuset » dans « Les Cendres »');
   await panneau(antor).getByText('Fiche « Le Creuset » créée').waitFor();
   await panneau(antor).getByRole('link', { name: /^Ouvrir/ }).last().click();
-  await antor.waitForURL(/\/univers\/\d+\/fiche\/\d+$/);
+  await antor.waitForURL(/\/univers\/[^/]+\/fiche\/\d+$/);
   await antor.getByRole('heading', { name: 'Le Creuset' }).first().waitFor();
   await antor.screenshot({ path: '/tmp/captures-import-assistant-scenario.png' });
 });

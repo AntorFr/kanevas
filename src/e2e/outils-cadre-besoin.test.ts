@@ -120,7 +120,7 @@ async function ouvrirUnivers(p: Any, id = ENERIA): Promise<void> {
 
 /** What the bar of a universe offers under « Outils », once the entries answered. */
 async function entreesBarre(p: Any, id = ENERIA): Promise<string[]> {
-  const reponse = p.waitForResponse((r: Any) => new URL(r.url()).pathname === `/api/univers/${id}/outils/entrees`);
+  const reponse = p.waitForResponse((r: Any) => new URL(r.url()).pathname === `/api/univers/${id}/outils/entrees` || /^\/api\/univers\/[^/]+\/outils\/entrees$/.test(new URL(r.url()).pathname));
   await p.goto(`/univers/${id}`);
   await reponse;
   await attendre(p);
@@ -226,7 +226,7 @@ test('visibilite : « MJ et joueurs » → Léa a l’entrée et l’écran de l
   await lea.getByRole('heading', { name: 'Essai A' }).waitFor();
   await lea.getByText('Une carte pour éprouver le cadre des outils.').waitFor();
   assert.match(await lea.locator('main').innerText(), /Pas de charges de carburant[\s:]*Non/);
-  assert.equal(new URL(lea.url()).pathname, `/univers/${ENERIA}/outils/essai/a`);
+  assert.match(new URL(lea.url()).pathname, /^\/univers\/[^/]+\/outils\/essai\/a$/);
   await photo(lea, 'lea-ecran-outil');
 });
 
@@ -235,7 +235,7 @@ test('visibilite : la barre d’Antor se rafraîchit sans recharger quand il dé
   const barreAvant = await barre(antor).getByRole('link', { name: 'Essai A' }).count();
   assert.equal(barreAvant, 1);
   const A = carte(antor, 'Essai A');
-  await ecrire(antor, /\/univers\/5\/outils\/essai\/a\/activation$/, () => A.getByRole('radio', { name: 'Désactivé', exact: true }).click());
+  await ecrire(antor, /\/univers\/[^/]+\/outils\/essai\/a\/activation$/, () => A.getByRole('radio', { name: 'Désactivé', exact: true }).click());
   try {
     await barre(antor).getByRole('link', { name: 'Essai A' }).waitFor({ state: 'detached' });
     await photo(antor, 'univers-desactive');
@@ -264,7 +264,7 @@ test('reglage : « Système · Oui » puis « Univers · Non », l’autre unive
   await U.getByText(rx('Système · Oui')).waitFor();
   await U.getByRole('button', { name: /Remplacer pour l.univers/ }).click();
   await U.getByLabel(rx('Pas de charges de carburant')).selectOption({ label: 'Non' });
-  await ecrire(antor, /\/univers\/5\/outils\/essai\/a\/reglages$/, () => U.getByRole('button', { name: 'Enregistrer' }).click());
+  await ecrire(antor, /\/univers\/[^/]+\/outils\/essai\/a\/reglages$/, () => U.getByRole('button', { name: 'Enregistrer' }).click());
   await U.getByText(rx('Univers · Non')).waitFor();
   await U.getByRole('button', { name: 'Revenir à la valeur du système' }).waitFor();
   await photo(antor, 'reglage-univers-non');
@@ -296,7 +296,7 @@ test('reglage : l’écran d’Essai A dit « Pas de charges de carburant : Non 
 
 test('forcer : « Activé » pour Univers voisin puis éteint au système : Éneria perd entrée et adresse, Univers voisin les garde', opts, async () => {
   await ouvrirUnivers(antor, VOISIN);
-  await ecrire(antor, /\/univers\/6\/outils\/essai\/a\/activation$/, () =>
+  await ecrire(antor, /\/univers\/[^/]+\/outils\/essai\/a\/activation$/, () =>
     carte(antor, 'Essai A').getByRole('radio', { name: 'Activé', exact: true }).click(),
   );
   assert.equal(await carte(antor, 'Essai A').getByRole('radio', { name: 'Activé', exact: true }).isChecked(), true);

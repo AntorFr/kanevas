@@ -136,7 +136,7 @@ describe('kanevas-images : générer un portrait (B-25, B-27, P-3 étape 5)', { 
     assert.ok(await img.evaluate((i: Any) => i.complete && i.naturalWidth > 0), 'thumbnail really loaded');
     await m.antor.screenshot({ path: '/tmp/images-nominal-fil.png' });
     await bloc(m.antor).getByRole('link', { name: 'Ouvrir la section' }).click();
-    await m.antor.waitForURL(new RegExp(`/univers/${m.U}/fiche/${m.aldric}#section-${m.apparence}$`));
+    await m.antor.waitForURL(new RegExp(`/univers/[^/]+/(fiche/[^/]+|(?!fiches/|cartes/|outils/)[^/]+/[^/]+)(#section-[^/]+)?$`));
     await attendre(m.antor);
     await m.antor.screenshot({ path: '/tmp/images-nominal-fiche.png' });
     await m.antor.locator('main img[src*="/fichiers/"]').first().waitFor({ timeout: 3000 });

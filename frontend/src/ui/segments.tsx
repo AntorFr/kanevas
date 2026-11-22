@@ -11,12 +11,15 @@ export function Segments<T extends string>({
   valeur,
   onChange,
   disabled,
+  variante = 'neutre',
 }: {
   legende: string;
   options: readonly { valeur: T; libelle: string; /** Variant « compte »: a number after the label. */ compte?: number }[];
   valeur: T;
   onChange: (valeur: T) => void;
   disabled?: boolean;
+  /** `mj`: the checked segment is amber (GM writing gesture), else the accent. */
+  variante?: 'neutre' | 'mj';
 }) {
   const racine = useRef<HTMLDivElement>(null);
   const courant = Math.max(0, options.findIndex((o) => o.valeur === valeur));
@@ -33,7 +36,7 @@ export function Segments<T extends string>({
   return (
     <fieldset className="segments-groupe">
       <legend>{legende}</legend>
-      <div ref={racine} className="segments" role="radiogroup" aria-label={legende} onKeyDown={touche}>
+      <div ref={racine} className={`segments${variante === 'mj' ? ' mj' : ''}`} role="radiogroup" aria-label={legende} onKeyDown={touche}>
         {options.map((o, i) => (
           <button
             key={o.valeur}

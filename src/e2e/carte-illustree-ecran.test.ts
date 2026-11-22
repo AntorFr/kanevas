@@ -3,6 +3,7 @@
 // docs/ecrans.md « E-11 Carte ». Real server in stub mode + real Chromium; expected texts are literals.
 import assert from 'node:assert/strict';
 import { deflateSync } from 'node:zlib';
+import { setTimeout as pause } from 'node:timers/promises';
 import { after, before, test } from 'node:test';
 import {
   type Any,
@@ -210,14 +211,18 @@ test('type sans fiche : « Aucune fiche de ce type. »', opts, async () => {
 });
 
 test('token : zone ≥ 44 px, glisser puis recharger, clavier 1 % puis 5 %', opts, async () => {
-  // Own state through the API: exactly one « Maître Aldric » at (50, 50), whatever earlier tests left.
-  const deja = (await elements()).filter((el: Any) => el.ficheId === aldric);
-  for (const extra of deja.slice(1)) await api(antor, 'DELETE', `${base()}/elements/${extra.id}`);
+  // Own state through the API: « Maître Aldric » alone, at (50, 50), whatever earlier tests left.
+  // Every other token goes too: one left at the centre by an earlier test would cover Aldric and take the drag.
+  const tous = await elements();
+  const deja = tous.filter((el: Any) => el.ficheId === aldric);
+  for (const extra of [...tous.filter((el: Any) => el.ficheId !== aldric), ...deja.slice(1)]) await api(antor, 'DELETE', `${base()}/elements/${extra.id}`);
   if (deja.length === 0) await api(antor, 'POST', `${base()}/elements`, { ficheId: aldric, x: 50, y: 50 });
   else await api(antor, 'PATCH', `${base()}/elements/${deja[0].id}`, { x: 50, y: 50 });
   await ouvrir(antor);
   await token(antor, 'Maître Aldric').first().waitFor();
   await miseEnPagePosee(antor, 'Maître Aldric');
+  // The map is taller than the window: the mouse only reaches a token that is in view.
+  await token(antor, 'Maître Aldric').first().scrollIntoViewIfNeeded();
   const { b, c } = await pos(antor, 'Maître Aldric');
   assert.ok(b.width >= 44 && b.height >= 44, `zone ${b.width}x${b.height}`);
   const cx = b.x + b.width / 2;

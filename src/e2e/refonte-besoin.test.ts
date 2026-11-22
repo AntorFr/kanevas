@@ -777,6 +777,8 @@ describe('B-29 : les états des écrans refaits', () => {
     await attendre(antor);
     await nav(antor).getByRole('link', { name: /Paramètres/ }).click();
     await attendre(antor);
+    // E-14: « Enregistrer » is inactive while Nom, Identifiant and Description are unchanged
+    await antor.getByLabel('Description').fill('Une description changée.');
     await antor.locator('main').getByRole('button', { name: rxExact('Enregistrer') }).first().click();
     await antor.getByText('Enregistré.').first().waitFor();
   });
