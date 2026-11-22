@@ -5055,6 +5055,12 @@ No new layout: the system's page and the sheet screens are reused in a « system
 - **E-17 Search and E-8 lists.** Pictogram on the system's elements (the component is the design-system guardian's verdict),
   filter « Hide the system's elements » beside the type filter, kept in the address (`?sans-systeme=1`). Empty result with the filter on says
   so and offers to turn it off.
+- **E-15, GMs panel.** The admin types the account's identifier in one field and presses « Add » (same gesture as the
+  admin's universe members, AD-86); each GM is a row with « Remove ». A system created by an account gives that account no GM
+  row: the admin grants it. Enabling or disabling a type of the system is the GMs' switch only.
+- **E-18 Tokens (block « Systems », added after `kanevas-jeton-unique`).** One row per system the account reads, with a level
+  « None / Read / Write »; « Write » is offered only where the account is a GM of the system. Saved with the token; a token with
+  « None » everywhere reads no system.
 - **E-14** unchanged (attach/detach); « Create a system » stays.
 
 Matrix: system GM — edits elements, customises in his universes; admin — grants and removes system GMs, does not edit unless granted;

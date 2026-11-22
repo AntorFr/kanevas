@@ -1415,7 +1415,7 @@ is never deduced from a role in a universe, the admin grants it explicitly.
   GM or a player of an attached universe gives the **read** right only, never the right to edit; a system with no GM
   can be edited by nobody. *(P-27)*
 - **B-115** — In a universe, a GM can **customise** a system element: the universe then holds its own copy of the
-  sheet (same sections, same type), which he edits or completes; the system and the other universes keep the original.
+  sheet (same type, with the sections the players of the universe read), which he edits or completes; the system and the other universes keep the original.
   He can **go back** to the system's element, which deletes only the copy. *(P-27)*
 - **B-116** — Within a universe, an element and its customisation are **one** entry: lists, search, links and the
   sheet show the customised one, marked as such; the system's element is never listed twice. *(P-27)*
@@ -1439,7 +1439,7 @@ is never deduced from a role in a universe, the admin grants it explicitly.
 Léa (player of universe 3) reads the same original, only its player-readable sections, and sees no button to edit.
 
 ### P-28 — A key reads and writes a system (Monsieur, with his agent)
-He creates a token (token screen, E-18 of `kanevas-synchro`), gives it level « write » on the system, and the agent
+He creates a token (token screen, E-18 of `kanevas-synchro`), gives it level « write » on the system (choice described in E-18 below), and the agent
 lists and writes elements at `/api/v1/systemes/<id|key>/…`; the same token still opens his universes. — token screen, API.
 
 **Out of scope of `kanevas-systemes-jeu`:** importing a rules reference; typed relations between a universe's sheet and a
