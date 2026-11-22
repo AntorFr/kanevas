@@ -671,6 +671,42 @@ becomes the source of the map and Éneria keeps none (decision 3). Nothing in th
 - **B-95** — The map of Éneria is **taken over once**: its defined systems, atlas bodies and aspects enter Kanevas by the import API, from a
   script of the private Éneria repository (AD-131); Éneria keeps no map afterwards. *Done when:* the exit criterion of the epic holds on the taken-over galaxy.
 
+### Spatial map rendering (`kanevas-carte-rendu`, Monsieur's request of 2026-11-22)
+
+After the atlas of Éneria entered Kanevas 0.44, the drawing of the map is « very far » from the reference map of Éneria
+(« Clyra does not look like our Clyra »). The bar is Monsieur's: **the same allure, and more beautiful**, judged side by side
+(AD-149 of the epic's reference document). First **parity** with the reference map, then « more beautiful ». The data are right
+(same bodies, orbits, hours, same drawn stars for the seed): what is wrong is the **drawing**, the **use** and a few **formats**.
+Nothing of Éneria enters this repository (AD-131): captures, atlas and comparison tables stay in its private repository; fixtures stay neutral.
+
+- **B-113** — *Scale.* A body of a system map is drawn at a size proportional to the orbit spacing (the reference scale: a body is about half
+  an orbit at most, a star far less than today), with a minimum that stays readable and **no growth with the zoom**; a star's corona
+  does not swallow its neighbours. *(P-27)*
+- **B-114** — *Each body its own look.* A body is drawn from **its own settings**: the core accepts the vocabulary of the GM's catalogue of
+  settings through a **correspondence table** (same name and another meaning are converted, never copied: sea, clouds, caps, relief),
+  named palettes, a seed per body (no two clones), rings only when set, the lit side turned toward the star and the picture tinted by its light.
+  A setting the core cannot render is reported by the import, never silently dropped. *(P-27, P-30)*
+- **B-115** — *Dressing of a system.* The map shows the name of every body and of every jump point (a name is never hidden by a corona),
+  each jump point with an arrow toward the neighbour, its distance and the colour of its route by type, the transition zone as a legended
+  halo, hour marks, belts as grains of rock along the ring, clouds as soft gas of their own colour with rocks drawn as asteroids,
+  a starfield background. Companions: the planets of a companion star turn around **it**. *(P-27)*
+- **B-116** — *Comets.* A comet is drawn with its tail turned away from the star (longer near it) and its **trajectory** (a very long ellipse from its
+  perihelion, the star at a focus, in the sense of its settings), the chosen one highlighted. *(P-27)*
+- **B-117** — *The galaxy drawn.* Defined systems differ by size and colour (those of their record), a drawn star by its class and size; the opening
+  view shows the whole known galaxy, with names; background starfield and region tints; grid limited to the known zone; readable in both themes. *(P-28)*
+- **B-118** — *Zones and routes.* Each zone has a colour and is shown or hidden from the map (all, none, default); a route is drawn in the colour and
+  stroke of its type (public, private, pirate…). *(P-28)*
+- **B-119** — *Navigate by previews.* From the galaxy panel, the portrait of a system opens it (« Enter the system »), as does a double click; from
+  a system, a jump point shows the neighbour's portrait and enters it; « Galaxy » and « Another system » leave it; a body shows its illustration
+  and its text. A body or a system has an address that can be shared (deep link). *(P-28, P-29)*
+- **B-120** — *Full screen.* Both maps open in the whole window; controls and panel float over the map. *(P-27, P-28, P-29)*
+- **B-121** — *Modes.* The controls sit **inside the map** and the list shown depends on the **mode**: consult (default: search, names, routes, zones,
+  recentre), travel simulation, and create / edit (place, route, zone, move bodies). The modes are those of the map of a system and of the galaxy. *(P-28, P-30)*
+- **B-122** — *The atlas format says what the atlas knows.* Moon types beyond rocky/ice/lava, the star a formation or a point turns around, an hour around
+  a planet, the veil of a system are fields of the format. *(P-30)*
+- **B-123** — *The atlas looks like the reference side by side.* The recipe plays at the same framing both maps (Lybrata, Clyra, Éneria, Gamma, Sol,
+  Ophyra; the illustrations of Clyra II, Clyra IV, Éneria Prime, Jupiter) and Monsieur judges. *(P-27, P-28, P-30)*
+
 ### Cross-cutting
 - **B-28** — Every page requires sign-in; no content is served without an account, and
   `/healthz` only states the name and version. *(P-1)*
@@ -1281,6 +1317,33 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
 3. He changes the key `lieu:tenebria-2` to `lieu:tenebria-la-noire` on E-9 (B-99), and the universe's
    identifier `eneria-v2` back to `eneria` on E-14 (B-100); the former addresses still open the sheet.
 
+### P-27 — Read a system as a map (Antor, GM; Léa, Player — `kanevas-carte-rendu`)
+
+Antor opens Clyra from the galaxy: the map takes the whole window over a starfield (B-120). The star is a modest disc with its halo; the
+bodies are at the scale of the orbits (B-113), each with its allure: a violet world with turquoise glow, a giant with its rings turned toward the
+sun, a belt as grains of rock, a nebula as a soft orange gas with asteroids. The names are there, never hidden by the corona. *Moment fort:* the
+comet of the system crosses the transition zone on a long ellipse, tail away from the star; he chooses it, its trajectory turns gold, its illustration
+and text open in the panel. A jump point shows an arrow, « 3 cases » and the colour of its route; he clicks it: the neighbour's portrait, « Enter the system ». Léa, on her
+phone, sees the same map with what she may read. *Failure path:* a setting the core does not render is named in the import report; a secret body is
+absent for Léa, and so are its name and its route.
+
+### P-28 — Cross the galaxy (Antor, GM; Léa, Player — `kanevas-carte-rendu`)
+
+The galaxy opens on the whole known zone, centred, with the names of the defined systems, differing in size and colour; the drawn stars show their class.
+In the map, Antor chooses « Zones » (all, none, default) and sees the Pirates zone in red, routes in the colour of their type; he types « Lyb » in the
+search and the map goes there. *Moment fort:* he double-clicks a system: it opens on its map; « Galaxy » brings him back to where he was. In « travel » mode he
+picks two systems and reads the duration by engine. Léa sees only what the GM lets her see (B-97). *Failure path:* a hidden zone does not hide the routes that cross it from the list; no system → the empty sky says so.
+
+### P-29 — Share a place (Léa, Player; Antor, GM — `kanevas-carte-rendu`)
+
+Antor copies the address of Clyra II and sends it to Léa, who opens it from the link: the system, the body chosen, the panel open. *Failure path:* an address toward a
+secret body gives « Page introuvable. », byte for byte like an unknown one.
+
+### P-30 — Prepare and correct the map (Antor, GM; his script)
+
+In « create / edit » mode Antor places a system, draws a route, moves a body by hand (B-121) and exports the placements. His atlas script pushes the new
+format (B-122) and the bodies' settings; the report names the settings that stay unrendered. *Moment fort:* the recipe: both maps side by side at the same framing, and Monsieur judges (B-123).
+
 ## Out of scope
 
 - *(`kanevas-synchro`)* **A list of the keys deleted since the import**, as such: refused — a script
@@ -1365,6 +1428,20 @@ and not the station. Antor can cancel the hiding dialogue (nothing is written), 
 - The overlay of factions (`kanevas-factions`).
 - Real-time movement of bodies, orbital mechanics, or a scale-true system map: the map is by orbit and hour, as Éneria's.
 - Editing the generator's algorithm from the interface: its settings change, not its code (AD-148).
+
+### Out of scope of `kanevas-carte-rendu`
+
+- The **Factions** menu and overlay (control, bases, assets, turn by turn): `kanevas-factions`.
+- Editing the generator's algorithm, a 3D surface, real-time movement or a scale-true map: unchanged (see above).
+- A route-finding calculation of Éneria's « off-route » trip: Kanevas keeps its own trip calculation.
+
+### To decide (`[TO DECIDE]`, for Monsieur's review of the framing)
+
+- **Reach of a jump**: 5 × engine in the reference panel, 5 × (engine + 1) in Kanevas (`portee_saut`). *Recommendation:* keep Kanevas's rule; it changes if Monsieur wants the reference's.
+- **List of modes** (B-121): consult, travel, create / edit. *Recommendation:* these three; « factions » stays out.
+- **Zones hidden by default**: the territories hidden, the belt and the pirates shown, as the reference does. *Recommendation:* the reference's default.
+- **Class and size of a defined system** on the galaxy: those of its record. *Recommendation:* the record's.
+- **Written rules the parity contradicts**: sky colours as tokens only (E-23), regular rings (AD-carte-3), zoom 0,5×–4×, AD-133, T-4 (no colour per route type), T-10 / E-21 (controls outside the map), AD-etoiles-6. *Recommendation:* the cadrage amends each by name, in the tranche that needs it.
 
 ## Cross-check of the `kanevas-import` scoping
 
