@@ -323,7 +323,8 @@ export function grapheDesPages(fichiers, lire = (f) => readFileSync(f, 'utf8')) 
  * The graph and the `ecartes`: files a page sees only through a link the build erases or a symbol it does not
  * import (type-only import, unused member of a barrel). They touch no screen, instead of the « unknown path » default.
  */
-export function lireGraphe(fichiers, lire) {
+/** Parse, resolution and export enumeration over a reader (shared by the graph and by the barrel rule, AD-ecrans-ui-3). */
+function outilsModules(fichiers, lire) {
   const existants = new Set(fichiers);
   const analyses = new Map();
   const analyse = (f) => {
@@ -351,8 +352,14 @@ export function lireGraphe(fichiers, lire) {
     }
     return res;
   };
+  return { analyse, cible, exportsDe };
+}
+
+export function lireGraphe(fichiers, lire) {
+  const { analyse, cible, exportsDe } = outilsModules(fichiers, lire);
   const modulesConnus = new Set(fichiers.map((f) => MODULE_RUST.exec(f)?.[1]).filter(Boolean).map(nomDeModule));
   const graphe = new Map();
+  const demandes = new Map(); // screen → (file → Set of names demanded, or true), AD-ecrans-ui-1
   for (const [nom, page] of ecransDe(fichiers)) {
     const demande = new Map(); // file → Set of names demanded, or true (all)
     const demander = (f, noms) => {
@@ -378,7 +385,12 @@ export function lireGraphe(fichiers, lire) {
         const t = cible(r.spec, f);
         if (!t) continue;
         if (r.star) {
-          if (tous || doute || dispo.doute || [...delta].some((n) => exportsDe(t).noms.has(n) || exportsDe(t).doute)) demander(t, delta);
+          const et = exportsDe(t);
+          if (tous || doute || dispo.doute || et.doute) { if (tous || doute || dispo.doute || [...delta].some((n) => et.noms.has(n) || et.doute)) demander(t, delta); }
+          else { // AD-ecrans-ui-1: only the names this module exports are demanded of it (the others are another module's)
+            const siens = [...delta].filter((n) => et.noms.has(n));
+            if (siens.length) demander(t, new Set(siens));
+          }
         } else if (r.ns !== undefined) {
           if (tous || doute || delta.has(r.ns)) demander(t, true);
         } else {
@@ -389,6 +401,7 @@ export function lireGraphe(fichiers, lire) {
     };
     demander(page, true);
     graphe.set(nom, new Set(demande.keys()));
+    demandes.set(nom, demande);
   }
   // Everything the pages see with no filter: every import, type-only ones and every re-export included.
   const vusTous = new Set();
@@ -406,7 +419,7 @@ export function lireGraphe(fichiers, lire) {
   const utiles = new Set();
   for (const v of graphe.values()) v.forEach((f) => utiles.add(f));
   const ecartes = new Set([...vusTous].filter((f) => !utiles.has(f)));
-  return { graphe, ecartes };
+  return { graphe, ecartes, demandes };
 }
 
 /** AD-niveau-4: the screens a screen test names in its leading `// ecrans: a, b` line; null when it has none. */
@@ -426,15 +439,361 @@ export function ecransDeclares(source, ecransConnus, fichier = '') {
   return null;
 }
 
+
+const SURS_PACKAGE = new Set(['name', 'description', 'keywords', 'license', 'author', 'repository', 'homepage', 'bugs', 'private']);
+const SURS_SCRIPTS = (n) => ['test', 'typecheck', 'controle-langue'].includes(n) || n.startsWith('tests:') || n.startsWith('import:');
+
+/** AD-ecrans-ui-2: true when only whitelisted keys of `package.json` differ between the two texts; false in any doubt. */
+function packageSans(base, tete) {
+  let a, b;
+  try { a = JSON.parse(base); b = JSON.parse(tete); } catch { return false; }
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || Array.isArray(a) || Array.isArray(b)) return false;
+  for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    if (JSON.stringify(a[k]) === JSON.stringify(b[k])) continue;
+    if (k === 'scripts') {
+      const sa = a.scripts ?? {}, sb = b.scripts ?? {};
+      if (typeof sa !== 'object' || typeof sb !== 'object' || Array.isArray(sa) || Array.isArray(sb)) return false;
+      for (const n of new Set([...Object.keys(sa), ...Object.keys(sb)])) {
+        if (sa[n] !== sb[n] && !SURS_SCRIPTS(n)) return false;
+      }
+    } else if (!SURS_PACKAGE.has(k)) return false;
+  }
+  return true;
+}
+
+const BARREL = 'frontend/src/ui/index.ts';
+
+/** Top-level statements of a source, split into `export … from` statements (texts) and the rest (texts, in order). */
+function instructions(source, fichier) {
+  const sf = ts.createSourceFile(fichier, source, ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
+  const exports = [], reste = [];
+  for (const s of sf.statements) {
+    if (s.kind === ts.SyntaxKind.ExportDeclaration && s.moduleSpecifier) exports.push(s.getText(sf)); else reste.push(s.getText(sf));
+  }
+  return { exports, reste };
+}
+
+/**
+ * AD-ecrans-ui-3: the names touched by a barrel whose only change is `export … from` statements, or null in any doubt
+ * (another statement changed, a module that cannot be enumerated or read).
+ */
+function nomsDuBarrel(fichiers, lire, lireBase) {
+  try {
+    const base = lireBase(BARREL), tete = lire(BARREL);
+    if (base == null || tete == null) return null;
+    const b = instructions(base, BARREL), t = instructions(tete, BARREL);
+    if (b.reste.length !== t.reste.length || b.reste.some((x, i) => x !== t.reste[i])) return null;
+    // A reordering of the statements both versions hold is not an addition or a removal: in doubt, every screen.
+    const dansB = new Set(b.exports), dansT = new Set(t.exports);
+    const ordreB = b.exports.filter((x) => dansT.has(x)), ordreT = t.exports.filter((x) => dansB.has(x));
+    if (ordreB.length !== ordreT.length || ordreB.some((x, i) => x !== ordreT[i])) return null;
+    const compte = new Map();
+    for (const x of t.exports) compte.set(x, (compte.get(x) ?? 0) + 1);
+    for (const x of b.exports) compte.set(x, (compte.get(x) ?? 0) - 1);
+    const outilsTete = outilsModules(fichiers, lire);
+    const outilsBase = outilsModules(fichiers, (f) => { const c = lireBase(f); if (c == null) throw new Error('unreadable'); return c; });
+    const noms = new Set();
+    for (const [texte, n] of compte) {
+      if (n === 0) continue;
+      const outils = n > 0 ? outilsTete : outilsBase;
+      const r = analyser(texte, BARREL).reexports[0];
+      if (!r) return null;
+      if (r.ns !== undefined) { noms.add(r.ns); continue; }
+      if (r.paires) { r.paires.forEach((p) => noms.add(p[1])); continue; }
+      const cib = outils.cible(r.spec, BARREL);
+      if (!cib || !outils.analyse(cib)) return null;
+      const e = outils.exportsDe(cib);
+      if (e.doute) return null;
+      e.noms.forEach((x) => { if (x !== 'default') noms.add(x); });
+    }
+    const declares = new Set([...outilsTete.exportsDe(BARREL).noms, ...outilsBase.exportsDe(BARREL).noms]);
+    return { noms, declares };
+  } catch {
+    return null;
+  }
+}
+
+
+const DOSSIER_UI = 'frontend/src/ui/';
+
+/** Binding of a top-level statement, for the declaration rule: `noms` bound (exported names for an export clause), `propage` (it can depend on a local name), `type` (erased by the build); null when it binds no name. */
+function liaisonDe(s) {
+  const K = ts.SyntaxKind;
+  const mods = ts.canHaveModifiers(s) ? ts.getModifiers(s) ?? [] : [];
+  const noms = new Set();
+  if (s.kind === K.ImportDeclaration) {
+    const c = s.importClause;
+    if (!c) return null;
+    if (c.name) noms.add(c.name.text);
+    if (c.namedBindings) { if (c.namedBindings.kind === K.NamespaceImport) noms.add(c.namedBindings.name.text); else c.namedBindings.elements.forEach((e) => noms.add(e.name.text)); }
+    return { noms, propage: false, type: false };
+  }
+  if (s.kind === K.ImportEqualsDeclaration) return { noms: new Set([s.name.text]), propage: true, type: false };
+  if (s.kind === K.ExportDeclaration) {
+    const c = s.exportClause;
+    if (s.moduleSpecifier && !c) return null;
+    if (c && c.kind === K.NamespaceExport) noms.add(nomDe(c.name));
+    else if (c) c.elements.forEach((e) => noms.add(nomDe(e.name)));
+    return { noms, propage: !s.moduleSpecifier, type: false };
+  }
+  if (s.kind === K.ExportAssignment) return s.isExportEquals ? null : { noms: new Set(['default']), propage: true, type: false };
+  if (mods.some((m) => m.kind === K.DeclareKeyword) && s.kind === K.ModuleDeclaration) return null;
+  if (s.kind === K.VariableStatement) s.declarationList.declarations.forEach((d) => nomsLies(d.name, noms));
+  else if (s.kind === K.InterfaceDeclaration || s.kind === K.TypeAliasDeclaration) return { noms: new Set([s.name.text]), propage: true, type: true };
+  else if ([K.FunctionDeclaration, K.ClassDeclaration, K.EnumDeclaration].includes(s.kind) || (s.kind === K.ModuleDeclaration && ts.isIdentifier(s.name))) {
+    if (s.name) noms.add(s.name.text);
+    if (mods.some((m) => m.kind === K.DefaultKeyword)) noms.add('default');
+  } else return null;
+  return noms.size ? { noms, propage: true, type: false } : null;
+}
+
+function identifiants(n, sortie) {
+  if (n.kind === ts.SyntaxKind.Identifier) sortie.add(n.text);
+  ts.forEachChild(n, (c) => { identifiants(c, sortie); });
+  return sortie;
+}
+
+/**
+ * AD-ecrans-ui-4: the exported names a touched module changes between `base` and `tete`, or null in any doubt
+ * (a file that does not parse, a changed statement that binds no name, `export =`, `export *`).
+ */
+function nomsDeclares(base, tete, fichier) {
+  try {
+    const genre = fichier.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+    const lire_ = (src) => ts.createSourceFile(fichier, src, ts.ScriptTarget.Latest, false, genre);
+    const sb = lire_(base), st = lire_(tete);
+    if ((sb.parseDiagnostics ?? []).length || (st.parseDiagnostics ?? []).length) return null;
+    const textes = (sf) => sf.statements.map((s) => ({ s, t: s.getText(sf) }));
+    const lb = textes(sb), lt = textes(st);
+    const compte = new Map();
+    for (const { t } of lt) compte.set(t, (compte.get(t) ?? 0) + 1);
+    for (const { t } of lb) compte.set(t, (compte.get(t) ?? 0) - 1);
+    const changes = new Set();
+    const types = new Map(); // name → true while every statement binding it is a type
+    const noter = (x) => { const l = liaisonDe(x.s); if (l) for (const n of l.noms) types.set(n, (types.get(n) ?? true) && l.type); return l; };
+    const restant = new Map(compte);
+    for (const x of lb) {
+      const l = noter(x);
+      if (compte.get(x.t) < 0 && restant.get(x.t) < 0) {
+        restant.set(x.t, restant.get(x.t) + 1);
+        if (!l) return null;
+        l.noms.forEach((n) => changes.add(n));
+      }
+    }
+    const reste2 = new Map(compte);
+    const entete = lt.map((x) => ({ ...x, l: noter(x), ids: null }));
+    const nouveaux = new Set();
+    for (const x of entete) {
+      if (compte.get(x.t) > 0 && reste2.get(x.t) > 0) {
+        reste2.set(x.t, reste2.get(x.t) - 1);
+        if (!x.l) return null;
+        x.l.noms.forEach((n) => changes.add(n));
+        nouveaux.add(x);
+      }
+    }
+    // Propagation: a declaration that mentions a changed name is changed too (transitively).
+    for (let bouge = true; bouge;) {
+      bouge = false;
+      for (const x of entete) {
+        if (nouveaux.has(x) || (x.l && !x.l.propage)) continue;
+        x.ids ??= identifiants(x.s, new Set());
+        if (![...x.ids].some((n) => changes.has(n))) continue;
+        if (!x.l) return null; // a statement with no name that uses a changed name
+        nouveaux.add(x);
+        x.l.noms.forEach((n) => changes.add(n));
+        bouge = true;
+      }
+    }
+    const exportes = new Set([...analyser(base, fichier).exportes, ...analyser(tete, fichier).exportes]);
+    if (analyser(base, fichier).doute || analyser(tete, fichier).doute) return null;
+    const noms = new Set([...changes].filter((n) => exportes.has(n) && !types.get(n)));
+    return { noms, declares: exportes };
+  } catch {
+    return null;
+  }
+}
+
+const UI_CSS = 'frontend/src/ui/ui.css';
+
+/** AD-ecrans-ui-5: a source text cut into rules `{ cle, selecteurs }` (`selecteurs` null = unbounded), throws on anything it cannot read. */
+function lireRegles(texte) {
+  const sans = texte.replace(/\/\*[\s\S]*?\*\//g, ' ');
+  const regles = [];
+  const fin = (s, i) => { // index of the `}` closing the `{` at i, strings skipped
+    let prof = 0;
+    for (let j = i; j < s.length; j++) {
+      const c = s[j];
+      if (c === '"' || c === "'") { const q = c; for (j++; j < s.length && s[j] !== q; j++) if (s[j] === '\\') j++; if (j >= s.length) throw new Error('string'); }
+      else if (c === '{') prof++;
+      else if (c === '}') { prof--; if (prof === 0) return j; if (prof < 0) throw new Error('brace'); }
+    }
+    throw new Error('unbalanced');
+  };
+  const corps = (b) => b.replace(/\s+/g, ' ').trim().replace(/\s*([;:{},])\s*/g, '$1').replace(/;(?=\})|;$/g, '');
+  const lire = (s, prelude) => {
+    let i = 0;
+    for (;;) {
+      while (i < s.length && /\s/.test(s[i])) i++;
+      if (i >= s.length) return;
+      let j = i, par = 0;
+      for (; j < s.length; j++) {
+        const c = s[j];
+        if (c === '"' || c === "'") { const q = c; for (j++; j < s.length && s[j] !== q; j++) if (s[j] === '\\') j++; }
+        else if (c === '(') par++;
+        else if (c === ')') par--;
+        else if (par <= 0 && (c === '{' || c === ';')) break;
+        else if (c === '}') throw new Error('brace');
+      }
+      if (j >= s.length) throw new Error('unterminated');
+      const tete = s.slice(i, j).replace(/\s+/g, ' ').trim();
+      if (s[j] === ';') { regles.push({ cle: `${prelude}${tete};`, selecteurs: null }); i = j + 1; continue; }
+      const f = fin(s, j);
+      const interieur = s.slice(j + 1, f);
+      i = f + 1;
+      if (tete === '') throw new Error('empty prelude');
+      if (/^@(media|supports)\b/i.test(tete)) { lire(interieur, `${prelude}${tete} | `); continue; }
+      const cle = `${prelude}${tete}{${corps(interieur)}}`;
+      if (tete.startsWith('@') || interieur.includes('{')) { regles.push({ cle, selecteurs: null }); continue; }
+      const sels = [];
+      let prof = 0, debut = 0;
+      for (let k = 0; k <= tete.length; k++) {
+        const c = tete[k];
+        if (c === '(' || c === '[') prof++;
+        else if (c === ')' || c === ']') prof--;
+        else if (k === tete.length || (c === ',' && prof === 0)) { sels.push(tete.slice(debut, k).trim()); debut = k + 1; }
+      }
+      regles.push({ cle, selecteurs: sels });
+    }
+  };
+  lire(sans, '');
+  return regles;
+}
+
+/** The classes a selector requires (those inside `:not(`, `:has(`, `:is(`, `:where(` ignored), or null when it holds a form read in doubt. */
+function classesDe(selecteur) {
+  if (/[\\&]|\[\s*class\b/i.test(selecteur)) return null;
+  let s = selecteur.replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, '""').replace(/\[[^\]]*\]/g, '');
+  for (;;) {
+    const m = /:(?:not|has|is|where|matches)\(/i.exec(s);
+    if (!m) break;
+    let prof = 1, k = m.index + m[0].length;
+    for (; k < s.length && prof; k++) { if (s[k] === '(') prof++; else if (s[k] === ')') prof--; }
+    s = s.slice(0, m.index) + ' ' + s.slice(k);
+  }
+  return new Set([...s.matchAll(/\.(-?[A-Za-z_][\w-]*)/g)].map((m) => m[1]));
+}
+
+const echapper = (t) => t.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
+/** « Possibly used »: the class as a whole token, or one of its hyphen prefixes ending with `-` (a name built at run time). */
+function peutEtreEmployee(classe, texte) {
+  if (new RegExp(`(?<![\\w-])${echapper(classe)}(?![\\w-])`).test(texte)) return true;
+  const parts = classe.split('-');
+  for (let n = 1; n < parts.length; n++) {
+    const prefixe = parts.slice(0, n).join('-') + '-';
+    if (prefixe.length > 1 && new RegExp(`(?<![\\w-])${echapper(prefixe)}(?![\\w])`).test(texte)) return true;
+  }
+  return false;
+}
+
+/** Items of `a` and `b` outside their longest common subsequence: `{ retires, ajoutes }`. */
+function differences(a, b) {
+  const n = a.length, m = b.length;
+  const t = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) t[i][j] = a[i] === b[j] ? t[i + 1][j + 1] + 1 : Math.max(t[i + 1][j], t[i][j + 1]);
+  const retires = [], ajoutes = [];
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { i++; j++; } else if (t[i + 1][j] >= t[i][j + 1]) retires.push(a[i++]); else ajoutes.push(b[j++]);
+  }
+  while (i < n) retires.push(a[i++]);
+  while (j < m) ajoutes.push(b[j++]);
+  return { retires, ajoutes };
+}
+
+/**
+ * AD-ecrans-ui-5: the screens (among those reaching `ui.css`) touched by the rules that changed between the two
+ * versions, or null in any doubt (every screen reaching the sheet).
+ */
+function ecransDuCss(base, tete, fichiers, lire, graphe) {
+  try {
+    const rb = lireRegles(base), rt = lireRegles(tete);
+    const { retires, ajoutes } = differences(rb.map((r) => r.cle), rt.map((r) => r.cle));
+    const dejaRetires = new Set(retires);
+    if (ajoutes.some((c) => dejaRetires.has(c))) return null; // a move changes the cascade
+    const changees = [...rb.filter((r) => retires.includes(r.cle)), ...rt.filter((r) => ajoutes.includes(r.cle))];
+    const alternatives = []; // each: the classes one selector requires
+    for (const r of changees) {
+      if (!r.selecteurs) return null;
+      for (const sel of r.selecteurs) {
+        const c = classesDe(sel);
+        if (!c || !c.size) return null;
+        alternatives.push(c);
+      }
+    }
+    if (!alternatives.length) return new Set();
+    const frontend = fichiers.filter((f) => f.startsWith('frontend/src/') && SOURCE.test(f) && !f.endsWith('.test.ts'));
+    const serveur = fichiers.filter((f) => f.startsWith('src/') && f.endsWith('.ts') && !f.endsWith('.test.ts') && !f.startsWith('src/e2e/'));
+    const textes = new Map();
+    const texte = (f) => { if (!textes.has(f)) textes.set(f, lire(f) ?? ''); return textes.get(f); };
+    const tousFront = frontend.map(texte).join('\n');
+    const tousServeur = serveur.map(texte).join('\n');
+    for (const classe of new Set(alternatives.flatMap((c) => [...c]))) {
+      if (!peutEtreEmployee(classe, tousFront) || peutEtreEmployee(classe, tousServeur)) return null;
+    }
+    const atteints = new Set();
+    for (const [nom, vus] of graphe) {
+      if (!vus.has(UI_CSS)) continue;
+      const sources = [...vus].filter((f) => SOURCE.test(f)).map(texte).join('\n');
+      if (alternatives.some((c) => [...c].every((x) => peutEtreEmployee(x, sources)))) atteints.add(nom);
+    }
+    return atteints;
+  } catch {
+    return null;
+  }
+}
+
 /** The screens touched by the changed files `touches` (AD-niveau-2 and 3): a Set of screen names. */
-export function ecransTouches(touches, fichiers, lire) {
+export function ecransTouches(touches, fichiers, lire, lireBase = () => null) {
   const ecrans = ecransDe(fichiers);
-  const { graphe, ecartes } = lireGraphe(fichiers, lire);
+  const { graphe, ecartes, demandes } = lireGraphe(fichiers, lire);
   const touchesTous = new Set(ecrans.keys());
   const atteints = new Set();
   for (const f of touches) {
     if (HARNAIS.test(f)) { touchesTous.forEach((n) => atteints.add(n)); continue; }
     if (TEST_ECRAN.test(f)) continue; // selected itself, touches no screen
+    if (f === 'package.json') {
+      const avant = lireBase(f), apres = lire(f);
+      if (avant != null && apres != null && packageSans(avant, apres)) continue; // AD-ecrans-ui-2
+    }
+    if (f === BARREL) {
+      const lus = nomsDuBarrel(fichiers, lire, lireBase);
+      if (lus) {
+        for (const [nom, d] of demandes) {
+          const demande = d.get(f);
+          if (demande === undefined) continue;
+          if (demande === true || [...demande].some((n) => lus.noms.has(n) || !lus.declares.has(n))) atteints.add(nom);
+        }
+        continue;
+      }
+    }
+    if (f === UI_CSS && [...graphe.values()].some((vus) => vus.has(f))) {
+      const avant = lireBase(f), apres = lire(f);
+      const lus = avant != null && apres != null ? ecransDuCss(avant, apres, fichiers, lire, graphe) : null;
+      if (lus) { lus.forEach((n) => atteints.add(n)); continue; }
+    }
+    if (f !== BARREL && f.startsWith(DOSSIER_UI) && /\.tsx?$/.test(f) && !f.endsWith('.test.ts')) {
+      const reçus = [...demandes.values()].filter((d) => d.has(f));
+      const avant = reçus.length ? lireBase(f) : null, apres = avant != null ? lire(f) : null;
+      const lus = apres != null ? nomsDeclares(avant, apres, f) : null;
+      if (lus) {
+        for (const [nom, d] of demandes) {
+          const demande = d.get(f);
+          if (demande === undefined) continue;
+          if (demande === true || [...demande].some((n) => lus.noms.has(n) || !lus.declares.has(n))) atteints.add(nom);
+        }
+        continue;
+      }
+    }
     const noeud = MODULE_RUST.exec(f);
     const atteint = (vus) => (noeud ? vus.has(`wasm:${nomDeModule(noeud[1])}`) : CARGO.includes(f) ? [...vus].some((v) => v.startsWith('wasm:')) : vus.has(f));
     const lies = [...graphe].filter(([, vus]) => atteint(vus)).map(([n]) => n);
@@ -449,9 +808,9 @@ export function ecransTouches(touches, fichiers, lire) {
 }
 
 /** AD-niveau-4 and 5: the screen test files to play for `touches`, sorted. */
-export function choisirTestsEcran(touches, fichiers, lire = (f) => readFileSync(f, 'utf8')) {
+export function choisirTestsEcran(touches, fichiers, lire = (f) => readFileSync(f, 'utf8'), lireBase = () => null) {
   const connus = ecransDe(fichiers);
-  const atteints = ecransTouches(touches, fichiers, lire);
+  const atteints = ecransTouches(touches, fichiers, lire, lireBase);
   const modifies = new Set(touches);
   return fichiers
     .map((f) => f.split('\\').join('/'))
@@ -467,8 +826,8 @@ export function choisirTestsEcran(touches, fichiers, lire = (f) => readFileSync(
 }
 
 /** Files of a level: `ecrans` = the chosen screen tests; `fiche` = the suite minus the screen tests not chosen. */
-export function choisirNiveau(niveau, touches, fichiers, lire) {
-  const ecrans = choisirTestsEcran(touches, fichiers, lire);
+export function choisirNiveau(niveau, touches, fichiers, lire, lireBase = () => null) {
+  const ecrans = choisirTestsEcran(touches, fichiers, lire, lireBase);
   if (niveau === 'ecrans') return ecrans;
   const gardes = new Set(ecrans);
   return choisirFichiers(fichiers.filter((f) => f.startsWith('src/') || f.startsWith('frontend/src/')))
@@ -490,7 +849,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const touches = git('diff', '--name-only', base, 'HEAD');
   const fichiers = git('ls-files');
   try {
-    const choisis = choisirNiveau(niveau, touches, fichiers, (f) => readFileSync(f, 'utf8'));
+    const choisis = choisirNiveau(niveau, touches, fichiers, (f) => readFileSync(f, 'utf8'), (f) => {
+      const r = spawnSync('git', ['show', `${base}:${f}`], { encoding: 'utf8', maxBuffer: 1 << 28 });
+      return r.status === 0 ? r.stdout : null;
+    });
     if (choisis.length) console.log(choisis.join('\n'));
   } catch (e) {
     console.error(e.message);
