@@ -197,6 +197,12 @@ export function DirectionArtistique({ id }: { id: string }) {
   return (
     <div className="bm-direction" {...survol.props}>
       {survol.survol && <VoileDepot texte="Déposez les images pour les ajouter." />}
+      <div className="bm-direction-tete">
+        <h2>Direction artistique</h2>
+        {assistant && (
+          <Bouton petit icone={Sparkles} onClick={() => ouvrirAssistant({ message: demandeDirection(texte.trim() !== '') })}>Demander à l’assistant</Bouton>
+        )}
+      </div>
       {dir.source === 'assistant' && dir.peutAnnuler && !perime && (
         <BandeauAnnulable onAnnuler={() => void annuler()} enCours={annulation.enCours} horsConnexion={perdue} erreur={annulation.erreur}>
           Texte modifié par l’assistant
@@ -244,9 +250,6 @@ export function DirectionArtistique({ id }: { id: string }) {
       {echec && <Alerte action={echec.reessayer ? <Bouton petit icone={RotateCw} onClick={echec.reessayer}>Réessayer</Bouton> : undefined}>{echec.texte}</Alerte>}
       <div className="actions">
         <Bouton variante="principal" icone={Save} ecrit enCours={enCours} disabled={!modifie && !perime} onClick={() => void enregistrer()}>Enregistrer</Bouton>
-        {assistant && (
-          <Bouton icone={Sparkles} onClick={() => ouvrirAssistant({ message: demandeDirection(texte.trim() !== '') })}>Demander à l’assistant</Bouton>
-        )}
       </div>
       {mediatheque && <ChoixImage id={id} base={base} deja={images.map((i) => i.fichierId)} pleine={pleines} onChoisir={choisir} onFermer={() => setMediatheque(false)} />}
     </div>
