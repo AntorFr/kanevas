@@ -93,8 +93,8 @@ test('registre : le module d\'essai n\'existe qu\'en test ou sous KANEVAS_STUB',
     assert.equal(r.status, 0, r.stderr);
     return JSON.parse(r.stdout.trim().split('\n').pop()!);
   };
-  assert.deepEqual(lancer({ NODE_ENV: 'production' }), []);
-  assert.deepEqual(lancer({ NODE_ENV: 'development' }), []);
+  assert.deepEqual(lancer({ NODE_ENV: 'production' }), ['swn']);
+  assert.deepEqual(lancer({ NODE_ENV: 'development' }), ['swn']);
   assert.deepEqual(lancer({ NODE_ENV: 'development', KANEVAS_STUB: '1' }), ['essai', 'swn', 'battlemap']);
   assert.deepEqual(lancer({ NODE_ENV: 'test' }), ['essai', 'swn', 'battlemap']);
 });
