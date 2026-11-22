@@ -123,6 +123,7 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-15 (outside a universe; columns describe the role in a universe **attached to the system**; *amended by `kanevas-systemes-jeu`, AD-152*: the write right is the **system's GM**, never the universe's role) | read; the GM of the universe reads only (« Lecture seule »); « New element », edit and delete only if also a GM **of the system** | read (« Lecture seule »); no write control | « Page introuvable. », unless also a member of an attached universe (that column applies) or a GM of the system; the admin who is none of those sees the sole « GMs of the system » tab (add, remove), no element; an admin who is a GM of the system also edits |
 | E-16 (outside a universe) | own systems, with own universes and role | own systems, « Lecture seule » | list of own systems (as GM or Player if a member of an attached universe); otherwise empty — the screen is offered to every account |
 | E-17 *(kanevas-import)* | search all sheets in the universe, including GM blocks; in **Player mode**, as a player (no GM blocks or sheets unreadable by a player); filters: enabled types; sheets of disabled types remain results under « Tous » | search readable content, excluding GM blocks; type and label filters from visible sheets only; mode toggle: absent (hidden); GM blocks: excluded from search (never read); « Alias et étiquettes… » on E-9: hidden | — |
+| E-8 and E-17 *(amended by `kanevas-systemes-jeu-recherche`)* | the `Pastille` of the system / « Personnalisé » and the checkbox « Masquer les éléments du système » (only in a universe attached to a system; absent otherwise; same in Player mode) | the same, for what he reads | — |
 | E-19 *(kanevas-import)* | everything: add, rename, visibility, delete; complete « Utilisé dans » | files visible to players and files they added; « Utilisé dans » restricted to readable sheets; no adding from E-19 (**hidden**; they add a file through a section they write, E-9), no settings or deletion (**hidden**) | — |
 | E-18 *(kanevas-import)* | *(kanevas-synchro: batches only; tokens move to E-23, and to E-5 for the admin)* create a token; see and revoke all the universe's tokens (including another GM's); see batches | — (**hidden**: absent from the sidebar, « Page introuvable. » by address) | — |
 | E-23 *(kanevas-synchro)* | its tokens: create, change accesses, revoke | its tokens: create, change accesses, revoke | its tokens |
@@ -5087,9 +5088,28 @@ by the guardian and the visual review (the epic's decision above). Details of th
 - **Empty result with the filter on.** When the result is empty and `sans-systeme` is on, the text is « Aucun résultat sans les éléments du système. » (`role="status"`) and under it a ghost
   button with the `eye` icon « Afficher les éléments du système », which removes `sans-systeme` from the address and gives the focus back to the checkbox. With the filter off, the screen's own empty state stays
   (« Aucune fiche ne correspond. »). A label chip or a type chip in place does not change this: it is the filter that is offered off.
-- **States added to E-17 and E-8.** *filter on, results*: the elements at the original are absent, the copies and the universe's sheets stay; *filter on, empty*: the message above; *no system attached*: no checkbox,
-  no pastille anywhere; *Player mode* and *player*: same pastille and filter (the system's name is public to the universe's members), the GM-only things stay GM-only; *loading* and *error* are the screens' own.
+- **Words.** One word per object: the **pastille** is what is drawn on a row or a card; « pictogram » in B-117 and P-27 is that pastille (icon `Dices` + system name). A copy
+  wears the word « Personnalisé » everywhere (E-9 mark, E-17, E-8); the English « Customised » of the E-9 notes above is only their gloss, the screen text is French.
+- **States added to E-17 and E-8.** *filter on, results*: the elements at the original are absent, the copies and the universe's sheets stay; *no system attached*: no checkbox,
+  no pastille anywhere; *Player mode* and *player*: same pastille and filter (the system's name is public to the universe's members), the GM-only things stay GM-only.
+  - *E-17, box ticked alone* (no word, no other filter): the box **counts as a filter**, so the screen lists the readable sheets of the universe that are not elements left at the
+    original (no « Cherchez un nom… » prompt); if there are none, the filtered-empty message. Unticked with nothing else, the initial state stays.
+  - *E-17, « Lié à » and the box together*: the most specific text wins, in this order: « Aucune fiche liée à « <nom> » pour ces critères. » (then the button is still
+    offered under it), then « Aucun résultat sans les éléments du système. », then « Aucune fiche ne correspond. ».
+  - *E-8, list empty*: with the box off, the list's own text (« Aucun personnage pour l'instant. », « Aucune fiche dans cet univers. ») and the GM's « Nouveau … » stay;
+    with the box on and the unfiltered list non-empty (only elements of the system there), the filtered-empty message **and** the GM's « Nouveau … » (creating is not
+    filtered), plus the button. E-8 « Aventures » is the same list with the same box. In the space of a system (E-15) the lists carry neither box nor pastille.
+  - *loading*: toggling the box keeps the previous rows greyed (`aria-busy`, as the other filters of E-8 and E-17) until the new page comes, then replaces them; the box
+    stays enabled. *error / offline with the filter on*: the screens' own texts (« Impossible de charger les fiches. », the offline banner), the box and the address unchanged,
+    « Réessayer » replays the same request with `origine=univers`.
+  - *extreme content*: a long system name is cut with « … » (tooltip with the whole name) on both screens; at 390 px the box goes on its own line under the type filter
+    (E-17) or wraps in the filter bar of E-8 (never a horizontal scroll), 44 px touch height like « sous-lieux compris ».
 - **Roles.** Everyone who reads the universe sees the pastille and the filter; the filter changes only what is shown to that reader, never what he may read (AD-63 holds: no counter, no « N hidden »).
-- **Criteria.** Given « Pistolet laser » (element left at the original), « Fusil à pompe » (customised in the universe) and « Le Pistolero » (sheet of the universe): when Léa searches « pisto »,
+- **Criteria (E-17, Léa, universe attached).** Given « Pistolet laser » (element left at the original), « Fusil à pompe » (customised in the universe) and « Le Pistolero » (sheet of the universe): when Léa searches « pisto »,
   three rows, the first with the pastille « Dices · <system> », the second « Personnalisé », the third none; with the box ticked, two rows and `?sans-systeme=1` in the address; with « laser » and the box ticked,
   the message and the button « Afficher les éléments du système », which brings the row back and removes the parameter; reloading the page with the parameter keeps the box ticked.
+- **Criteria (other cases).** *No system attached*: the search « pisto » shows no checkbox and no pastille. *Player mode* (Antor GM): the same rows, pastille and box as Léa's.
+  *E-8*: on the list of « Objet », the box ticked removes « Pistolet laser », keeps « Fusil à pompe » (« Personnalisé »), « Effacer les filtres » unticks it and clears the parameter,
+  and the tree view gives way to the flat list while it is on. *Box ticked in a universe whose only objects are elements*: the message, the button and (GM) « Nouveau objet ».
+  *Offline or error with the box ticked*: the screen's own text, the box stays ticked, « Réessayer » replays with the filter. *System name of 60 characters*: cut with « … », tooltip complete.
+  *390 px*: the pastille wraps under the title, the box does not overflow.
