@@ -1,7 +1,9 @@
 import { lazy, Suspense } from 'react';
 import { useParams } from 'react-router-dom';
 
+import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
+import type { UniversListe } from '../types';
 
 const Affichage = lazy(() => import('../outils/battlemap/table/affichage').then((m) => ({ default: m.Affichage })));
 
@@ -11,9 +13,12 @@ const Affichage = lazy(() => import('../outils/battlemap/table/affichage').then(
  */
 function AffichageEcran() {
   const { id, cid } = useParams();
+  // The address may name the universe by its key: the display takes the id the answer carries, and waits for it.
+  const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
+  if (univers.etat === 'chargement') return <div className="affichage" />;
   return (
     <Suspense fallback={<div className="affichage" />}>
-      <Affichage key={`${id}/${cid}`} universId={Number(id)} cid={String(cid)} />
+      <Affichage key={`${id}/${cid}`} universId={univers.etat === 'ok' ? univers.valeur.id : Number(id)} cid={String(cid)} />
     </Suspense>
   );
 }
