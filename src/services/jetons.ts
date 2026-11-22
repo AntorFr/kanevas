@@ -382,14 +382,16 @@ function inserer(
   return db.transaction(() => {
     const { lastInsertRowid } = db
       .prepare(
-        `INSERT INTO jetons_api (compte_id, nom, empreinte, cree_le, expire_le, tous, niveau_tous, contenu)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO jetons_api (compte_id, nom, empreinte, cree_le, expire_le, tous, niveau_tous)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
       )
-      .run(compteId, nom, empreinteDe(valeur), creeLe, expireLe, acces.tous ? 1 : 0, acces.niveauTous, outils.length > 0 ? 0 : 1);
+      .run(compteId, nom, empreinteDe(valeur), creeLe, expireLe, acces.tous ? 1 : 0, acces.niveauTous);
     poserLignes(db, Number(lastInsertRowid), acces.lignes);
     for (const outil of outils) {
       db.prepare('INSERT INTO jetons_outils (jeton_id, outil) VALUES (?, ?)').run(lastInsertRowid, outil);
     }
+    // A tool token carries no content yet (the creation of both comes with the guards task); the column defaults to 1.
+    if (outils.length > 0) db.prepare('UPDATE jetons_api SET contenu = 0 WHERE id = ?').run(lastInsertRowid);
     return versJeton(db, ligne(db, Number(lastInsertRowid))!);
   })();
 }
