@@ -39,9 +39,9 @@
      #etat-revoquer       boîte « Révoquer « Script Kanka — Mac » ? »
      #etat-erreur         « Impossible d'enregistrer. » avec « Réessayer », saisie gardée
      #etat-vide           « Aucun jeton. »
-     #etat-systemes       (kanevas-systemes-jeu-api) la boîte « Créer un jeton » ouverte sur le bloc « Systèmes » : un système où le compte est MJ (« Écriture » offerte), un où il est lecteur (« — / Lecture »)
+     #etat-systemes       (kanevas-systemes-jeu-api) la boîte « Créer un jeton » ouverte sur le bloc « Systèmes de jeu » : un système où le compte est MJ (« Écriture » offerte), un où il est lecteur (« — / Lecture »)
      #etat-sans-systeme   le même formulaire pour un compte qui ne lit aucun système : le bloc n'existe pas
-     #etat-systemes-erreur le bloc « Systèmes » : « Impossible de charger les systèmes. » + « Réessayer », le reste du formulaire utilisable
+     #etat-systemes-erreur le bloc « Systèmes de jeu » : « Impossible de charger les systèmes. » + « Réessayer », le reste du formulaire utilisable
      #etat-perdue         bandeau « Connexion perdue » ; « Créer un jeton », « Modifier », « Révoquer » désactivés
    Et ceux du cadre : #etat-menu, #etat-tiroir.
    ===================================================================================== */
@@ -644,8 +644,8 @@ body.etat-perdue .actions-ligne .bouton { opacity: .45; }
           <span class="ic-ligne" aria-hidden="true"><svg class="i p"><use href="#i-key-round"/></svg></span>
           <span class="corps">
             <span class="nom" title="Script Kanka — Mac">Script Kanka — Mac</span>
-            <span class="acces"><b>Tous mes univers</b> — lecture + écriture · Les Cendres de Vaëlis (règles maison) : lecture</span>
-            <span class="acces systemes">Systèmes : Stars Without Number : écriture · Cendres de Vaëlis (règles maison) : lecture</span>
+            <span class="acces"><b>Tous mes univers</b> — lecture + écriture · Chroniques Oubliées Fantasy : lecture</span>
+            <span class="acces systemes">Systèmes : Stars Without Number : écriture · Chroniques Oubliées Fantasy : lecture</span>
             <span class="meta"><span>créé le 11 oct. 2026</span><span class="recent">dernier usage il y a 3 min</span><span data-fin>expire le 10 nov. 2026</span></span>
           </span>
           <span class="actions-ligne"><button class="bouton petit fantome" data-ecrit data-modifier aria-label="Modifier les accès de « Script Kanka — Mac »"><svg class="i p" aria-hidden="true"><use href="#i-sliders-horizontal"/></svg>Modifier les accès</button><button class="bouton petit fantome revoquer" data-ecrit data-revoquer aria-label="Révoquer « Script Kanka — Mac »"><svg class="i p" aria-hidden="true"><use href="#i-ban"/></svg>Révoquer</button></span>
@@ -736,7 +736,7 @@ body.etat-perdue .actions-ligne .bouton { opacity: .45; }
       </div>
       <div class="champ" id="bloc-systemes" data-bloc-systemes>
         <span id="lib-systemes">Systèmes de jeu</span>
-        <ul class="acces-liste" data-liste="sys" aria-labelledby="lib-systemes"><li><span class="u">Stars Without Number<span class="pastille mj">MJ du système</span></span><div class="genre petit" role="radiogroup" aria-label="Accès au système Stars Without Number"><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="aucun">—</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="lecture">Lecture</button><button type="button" role="radio" aria-checked="true" tabindex="0" data-v="ecriture">Écriture</button></div></li><li><span class="u">Cendres de Vaëlis (règles maison)<span class="pastille table">Lecteur</span></span><div class="genre petit" role="radiogroup" aria-label="Accès au système Cendres de Vaëlis (règles maison)"><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="aucun">—</button><button type="button" role="radio" aria-checked="true" tabindex="0" data-v="lecture">Lecture</button></div></li></ul>
+        <ul class="acces-liste" data-liste="sys" aria-labelledby="lib-systemes"><li><span class="u">Stars Without Number<span class="pastille mj">MJ du système</span></span><div class="genre petit" role="radiogroup" aria-label="Accès au système Stars Without Number"><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="aucun">—</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="lecture">Lecture</button><button type="button" role="radio" aria-checked="true" tabindex="0" data-v="ecriture">Écriture</button></div></li><li><span class="u">Chroniques Oubliées Fantasy<span class="pastille table">Lecteur</span></span><div class="genre petit" role="radiogroup" aria-label="Accès au système Chroniques Oubliées Fantasy"><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="aucun">—</button><button type="button" role="radio" aria-checked="true" tabindex="0" data-v="lecture">Lecture</button></div></li></ul>
         <span class="aide-genre" id="aide-systemes">Un système n'est jamais compris dans « Tous mes univers » : choisissez-le ici. « Écriture » n'est offerte que là où vous êtes MJ du système.</span>
         <div class="alerte erreur-systemes" id="err-systemes" role="alert" hidden><svg class="i p" aria-hidden="true"><use href="#i-circle-alert"/></svg><span>Impossible de charger les systèmes.</span><button type="button" class="bouton petit" id="reessayer-systemes">Réessayer</button></div>
       </div>

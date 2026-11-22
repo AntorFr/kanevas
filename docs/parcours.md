@@ -1450,8 +1450,9 @@ is never deduced from a role in a universe, the admin grants it explicitly.
 Léa (player of universe 3) reads the same original, only its player-readable sections, and sees no button to edit.
 
 ### P-28 — A key reads and writes a system (Monsieur, with his agent)
-He creates a token (« Mes jetons d'API », E-23 of `kanevas-synchro`), gives it level « write » on the system (choice described in E-23's « Systems » block), and the agent
+He creates a token (« Mes jetons d'API », E-23 of `kanevas-synchro`), gives it « Écriture » on the system (choice described in E-23's « Systèmes de jeu » block), and the agent
 lists and writes elements at `/api/v1/systemes/<id>/…`; the same token still opens his universes. — token screen, API.
+On the screen, the block shows only the systems the account reads, « Écriture » only where he is a GM of the system (Léa, who reads none, sees no block; Marc, a player, sees « Lecture » only); when the list fails to load, the form stays usable and « Modifier les accès » touches no row; the admin opening Antor's token on E-5 sees Antor's systems, not his own. — token screen (E-23 « Mes jetons d'API », E-5 administration).
 His agent, connected to the MCP door of one of his universes with that token, lists and edits the same elements with the `systeme_*`
 tools; the assistant of the universe does the same for a GM of the system (a mere GM of the universe reads only). — MCP door, assistant.
 
