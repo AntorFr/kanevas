@@ -675,7 +675,7 @@ becomes the source of the map and Éneria keeps none (decision 3). Nothing in th
 
 After the atlas of Éneria entered Kanevas 0.44, the drawing of the map is « very far » from the reference map of Éneria
 (« Clyra does not look like our Clyra »). The bar is Monsieur's: **the same allure, and more beautiful**, judged side by side
-(AD-149 of the epic's reference document). First **parity** with the reference map, then « more beautiful ». The data are right
+(the reference document's own bar, kept outside this repository). First **parity** with the reference map, then « more beautiful ». The data are right
 (same bodies, orbits, hours, same drawn stars for the seed): what is wrong is the **drawing**, the **use** and a few **formats**.
 Nothing of Éneria enters this repository (AD-131): captures, atlas and comparison tables stay in its private repository; fixtures stay neutral.
 

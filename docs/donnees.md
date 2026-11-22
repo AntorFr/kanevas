@@ -882,7 +882,7 @@ table below is written with neutral names; the script that converts Éneria's `a
 - `swn_astres.aspect` keeps its bound (4,000 characters) and `swn_formations.etoile_rang` already exists: B-122's « the star a formation or a point turns round » is
   a field of the **format**, not a column. A moon already carries an hour around its planet.
 
-**Vocabulary of `aspect` (the core, `valider_aspect`).** The GM's catalogue of settings keeps its names; the import converts an entry of the
+**Vocabulary of `aspect` (the core, `valider_aspect`).** The GM's catalogue of settings keeps its names; the conversion of an entry of the
 reference vocabulary into core keys through the table below, **a setting the table does not know is reported by name in the import report**
 (`non_rendu`, never silently dropped, B-114). Rules: a conversion is a formula of the core, tested on measured values; the same name does not mean the same thing
 (sea, clouds, caps, relief).
