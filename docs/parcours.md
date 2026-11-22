@@ -1421,11 +1421,15 @@ is never deduced from a role in a universe, the admin grants it explicitly.
   sheet show the customised one, marked as such; the system's element is never listed twice. *(P-27)*
 - **B-117** — Search (E-17) and lists carry a **pictogram** on every element that comes from a system, and a filter
   « Hide the system's elements » (off by default); a customised element counts as the universe's own. *(P-27)*
-- **B-118** — The import API and the MCP door **read and write a system's elements** at the system's own address, by
+- **B-118** — The import API **reads and writes a system's elements** at the system's own address, by
   a token that carries a level on that system; the effective access is the lesser of the token's level and the
   account's right on the system (B-114); a player's or a foreign GM's token reads, never writes. *(P-28)*
 - **B-119** — An element's sections follow the universe rules (AD-18, AD-19): the system's GMs read all of them; a
   reader of an attached universe reads only those the system marks readable by players. *(P-27)*
+
+- **B-120** — Deleting a system's element, or detaching a universe from its system, **keeps every customisation**: the copy
+  becomes an ordinary sheet of its universe (no longer marked « customised », no pictogram, listed on its own); nothing is deleted
+  in a universe by a gesture on a system. *(P-27)*
 
 ### P-27 — One pistol, four universes (Antor, GM of four universes on Stars Without Number; the admin once)
 1. The admin opens the system (E-15), panel « GMs of the system », and adds Antor (B-114). — E-15.
@@ -1444,5 +1448,5 @@ lists and writes elements at `/api/v1/systemes/<id|key>/…`; the same token sti
 
 **Out of scope of `kanevas-systemes-jeu`:** importing a rules reference; typed relations between a universe's sheet and a
 system element (plain `[[…]]` links are resolved); propagating a later change of the system's element into its
-customisations (the copy is independent; a notice « the system's element changed since » is a later idea); deleting a system;
-assistant tools writing system elements; several systems per universe.
+customisations (the copy is independent, and it outlives its original, B-120; a notice « the system's element changed since » is a later idea); deleting a system;
+assistant tools and the MCP door reading or writing system elements (`catalogueDe` is untouched: B-118 is the import API only); several systems per universe.
