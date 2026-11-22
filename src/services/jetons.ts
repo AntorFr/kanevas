@@ -286,7 +286,7 @@ export function creerJeton(
     // Compatibility: an absent `contenu` is « content unless tools are asked » (B-jeton-1).
     if (a.contenu !== undefined && typeof a.contenu !== 'boolean') throw champ('Erreur : les permissions sont invalides.', 'permissions');
     const contenu = a.contenu ?? a.outils === undefined;
-    const outils = a.outils === undefined ? [] : outilsChoisis(db, compteId, acces, a.outils, contenu);
+    const outils = a.outils === undefined ? [] : outilsChoisis(db, compteId, acces, a.outils);
     if (!contenu && outils.length === 0) throw champ('Cochez au moins une permission.', 'permissions');
     return { jeton: inserer(db, compteId, nom, duree, valeur, b instanceof Date ? b : new Date(), acces, outils, contenu), valeur };
   }
@@ -316,10 +316,9 @@ function outilsChoisis(
   compteId: number,
   acces: { tous: boolean; niveauTous: NiveauPose | null; lignes: { universId: number; niveau: NiveauAcces }[] },
   brut: unknown,
-  contenuAussi: boolean,
 ): string[] {
   const faux = () => champ('Erreur : un outil ne reçoit pas de catalogue dans cet univers.', 'outils');
-  if (!Array.isArray(brut) || (brut.length === 0 && !contenuAussi) || brut.some((o) => typeof o !== 'string')) throw faux();
+  if (!Array.isArray(brut) || brut.some((o) => typeof o !== 'string')) throw faux();
   const offerts = new Set(
     outilsOffrables(db, compteId)
       .filter((o) => o.univers.some((u) => {
