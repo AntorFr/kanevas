@@ -685,7 +685,7 @@ function peutEtreEmployee(classe, texte) {
   const parts = classe.split('-');
   for (let n = 1; n < parts.length; n++) {
     const prefixe = parts.slice(0, n).join('-') + '-';
-    if (prefixe.length > 1 && new RegExp(`(?<![\\w-])${echapper(prefixe)}`).test(texte)) return true;
+    if (prefixe.length > 1 && new RegExp(`(?<![\\w-])${echapper(prefixe)}(?![\\w])`).test(texte)) return true;
   }
   return false;
 }
