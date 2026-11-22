@@ -64,7 +64,7 @@ const E2E = 'src/e2e/';
 
 describe('écrans touchés : le barrel de frontend/src/ui/index.ts (E-ecrans, Livre : barrel)', () => {
   test('Segments, que seule la galaxie importe : seuls les tests des écrans outil et outil-cible, pas les 256', () => {
-    const l = choisir('frontend/src/ui/segments.tsx');
+    const l = choisir('frontend/src/ui/segments.tsx', {}, ['if (!pas || disabled) return;', 'if (!pas || disabled) return; void pas;']); // AD-ecrans-ui-4: a body, not a comment
     assert.ok(l.includes(`${E2E}vaisseaux-atelier-livre-review.test.ts`), 'un test de l’écran outil');
     for (const exclu of ['administration-badge-entete', 'membres-pastille-largeur', 'accueil-refonte', 'alias-etiquettes-e9', 'recherche-avancee-ecran']) {
       assert.ok(!l.includes(`${E2E}${exclu}.test.ts`), `${exclu} ne dépend pas de Segments`);
@@ -75,7 +75,7 @@ describe('écrans touchés : le barrel de frontend/src/ui/index.ts (E-ecrans, Li
   });
 
   test('LigneFicheLiee et VignetteFiche : les écrans fiche et recherche, aucun autre', () => {
-    const l = choisir('frontend/src/ui/ligne-fiche-liee.tsx');
+    const l = choisir('frontend/src/ui/ligne-fiche-liee.tsx', {}, ['export function LigneFicheLiee(', 'void 0;\nexport function LigneFicheLiee(']); // a statement of the module changes, so does its demand
     assert.ok(l.includes(`${E2E}alias-etiquettes-e9.test.ts`), 'un test fiche');
     assert.ok(l.includes(`${E2E}recherche-avancee-ecran.test.ts`), 'un test recherche');
     for (const exclu of ['administration-badge-entete', 'membres-pastille-largeur', 'accueil-refonte', 'vaisseaux-atelier-livre-review']) {
