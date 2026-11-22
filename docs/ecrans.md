@@ -5064,11 +5064,13 @@ The controls leave the page header and sit **inside the map**, floating. One mod
 
 Closing the full screen (Escape, the button) returns to the page as it was. The mode is a view state, kept in the address (`?mode=`) so a link opens in the mode it was copied from; a Player opening `?mode=edition` gets the Consult mode.
 
+The zone form (« Nouvelle zone » and its edit) gains one switch, « Affichée à l'ouverture de la carte » (on by default, B-118; `affichage_defaut`, written by the existing zone route, GM guard unchanged; a Player reads the result as the default of the « Zones » control, never the switch). The `voile` of a system has **no control**: it comes from the atlas import (AD-rendu-2).
+
 ### Previews and navigation (B-119)
 
 - E-21: the panel of a system shows its **portrait** (the map of the system drawn small) and « Enter the system »; a double click on a system does the same.
 - E-23: a jump point shows its arrow, the neighbour's name, the distance (« 3 cases ») and the colour of its route; a click opens a card with the neighbour's portrait and « Enter the system ». « Galaxy » returns to the place left; « Another system » opens the search of systems.
-- A body: panel with its illustration, its text and « Copy the address »; the address `…/systeme/<q>/<r>/astre/<id>` opens the system with the body chosen and the panel open (P-29). A system or a body the reader may not read: « Page introuvable. », byte for byte like an unknown one.
+- A body: panel with its illustration, its text and « Copy the address »; the address `…/systeme/<q>/<r>/astre/<cle>` opens the system with the body chosen and the panel open (P-29). A system or a body the reader may not read: « Page introuvable. », byte for byte like an unknown one.
 
 ### Roles × screens
 
@@ -5102,4 +5104,4 @@ Closing the full screen (Escape, the button) returns to the page as it was. The 
 - Given Léa (Player), the mode switch offers « Consult » and « Travel » only, and a link in `?mode=edition` opens Consult (B-121).
 - Given a secret system, neither its portrait, nor its jump point, nor its name is reachable by a Player through any preview or address.
 
-Cross-check: B-113 to B-116 → E-23; B-117, B-118 → E-21; B-119 → E-21, E-23 and their routes (the portrait is read by `lireCarte`-like read of a readable system only); B-120, B-121 → both; B-122 → the import API (no screen, P-30); B-123 → the recette (P-30).
+Cross-check: B-113 to B-116 → E-23; B-117, B-118 → E-21; B-119 → E-21, E-23 and their routes (the portrait is the existing read `lireInterieur` of a readable system only; the distance and colour come from `lireSorties`, which gains two fields); B-120, B-121 → both; B-122 → the import API (no screen, P-30); B-123 → the recette (P-30).
