@@ -8,7 +8,7 @@ import { accessible, peutUsage } from '../outils.js';
 import { poserSectionGeree } from '../sections-gerees.js';
 import { etatGere } from '../sections-gerees-etat.js';
 import type { Acteur, SectionRow } from '../types.js';
-import { calculerDepuisChoix, calculerResolu, OUTIL_VAISSEAUX, resoudreChoix, TYPE_CARACTERISTIQUES, validerChoix, validerEquipage, validerReparation, controlerChoix, versionSourceVaisseaux,
+import { calculerDepuisChoix, calculerResolu, OUTIL_VAISSEAUX, resoudreChoix, TYPE_CARACTERISTIQUES, validerChoix, validerEffectif, validerEquipage, validerReparation, controlerChoix, versionSourceVaisseaux,
   versionsSource, ciblesDeLigne, ligneAEnregistrer, type EntreeCalcul, type LigneChoix, type Porte } from './calcul-vaisseau.js';
 import { ligneDe, porteDe, type ChargeConception, type LigneConception } from './section-vaisseaux.js';
 
@@ -29,6 +29,9 @@ export interface VueConception {
   coque: { cle: string; nom: string; classe: number };
   lignes: { nature: string; cle: string; nom: string; quantite: number }[];
   resultat: ResultatVaisseau;
+  /** H-5: of the crew, the player characters and the robots (as stored, `0` for a design from before). */
+  pj: number;
+  robots: number;
   alertes: AlerteVaisseau[];
   version: number;
   /** The core's `etatGere` (S-4), read at each call, never stored (R-8). */
@@ -74,7 +77,8 @@ function vue(db: Db, acteur: Acteur, universId: number, l: Lue): VueConception {
   const stocke = JSON.parse(l.ligne.resultat) as ResultatVaisseau;
   // A result stored before the slice has no vitesse / armure / equipage: read as `null` (F-3).
   const resultat: ResultatVaisseau = { ...stocke, vitesse: stocke.vitesse ?? null, armure: stocke.armure ?? null, equipage: stocke.equipage ?? null,
-    soutes: stocke.soutes ?? null, reparation: stocke.reparation ?? null };
+    soutes: stocke.soutes ?? null, reparation: stocke.reparation ?? null,
+    capacites: stocke.capacites ?? null, effetsJeu: stocke.effetsJeu ?? null, fraisEquipage: stocke.fraisEquipage ?? null };
   const choix = JSON.parse(l.ligne.choix) as LigneChoix[];
   // The elements the design carries that no longer resolve: computed now, never stored (V-3).
   const r = resoudreChoix(db, universId, { coque: l.ligne.coque_cle, choix }, porteDe(l.ligne));
@@ -96,6 +100,7 @@ function vue(db: Db, acteur: Acteur, universId: number, l: Lue): VueConception {
   });
   return {
     ficheId: l.ligne.fiche_id, titre: l.titre, coque: resultat.coque, lignes, resultat,
+    pj: l.ligne.pj ?? 0, robots: l.ligne.robots ?? 0,
     alertes: [...bloquantes, ...r.retirees, ...surveiller],
     version: l.ligne.version,
     perime: geree?.etat === 'perime',
@@ -158,21 +163,23 @@ function charger(db: Db, universId: number, e: EntreeCalcul, porte: Porte | null
   const lignes = e.choix.map((l, i) => ligneAEnregistrer(l, r.lignes[i]?.element.effet));
   const charge: ChargeConception = { coque: e.coque, lignes, resultat: s.resultat,
     versionReglages: versionsSource(db, universId).reglages, versionCatalogue: versionsSource(db, universId).catalogue,
-    equipage: s.equipage, reparation: r.reparation };
+    equipage: s.equipage, reparation: r.reparation, pj: r.pj, robots: r.robots };
   return charge;
 }
 
 export function creerConception(db: Db, acteur: Acteur, universId: number,
-  entree: { ficheId: number; coque: string; auteurId?: number | null }): VueConception {
+  entree: { ficheId: number; coque: string; auteurId?: number | null; pj?: unknown; robots?: unknown }): VueConception {
   exigerRole(db, universId, acteur.compteId);
   if (!accessible(db, acteur, universId, OUTIL_VAISSEAUX)) throw introuvable();
   if (!peutUsage(db, acteur, universId, OUTIL_VAISSEAUX, 'creer')) throw refuse();
   const fiche = chargerFiche(db, universId, entree.ficheId);
   if (fiche.type !== 'vaisseau') throw invalide('Cette fiche n\'est pas un vaisseau.');
   const { coque } = validerChoix(entree.coque, []);
+  const pj = validerEffectif(entree.pj, 'pj') ?? 0;
+  const robots = validerEffectif(entree.robots, 'robots') ?? 0;
   return db.transaction(() => {
     if (ligneDe(db, fiche.id)) throw new ErreurService('conflit', 'Cette fiche a déjà une conception.', 'deja_concue');
-    const charge = charger(db, universId, { coque, choix: [] }, null);
+    const charge = charger(db, universId, { coque, choix: [], pj, robots }, null);
     poserSectionGeree(db, acteur.compteId, universId, {
       ficheId: fiche.id, outil: OUTIL_VAISSEAUX, type: TYPE_CARACTERISTIQUES,
       audience: { auteurId: entree.auteurId ?? null, auteurLit: true, auteurEcrit: true },
@@ -183,13 +190,15 @@ export function creerConception(db: Db, acteur: Acteur, universId: number,
 }
 
 export function enregistrerConception(db: Db, acteur: Acteur, universId: number, ficheId: number,
-  entree: { coque: unknown; choix: unknown; version: unknown; equipage?: unknown; reparation?: unknown }): VueConception {
+  entree: { coque: unknown; choix: unknown; version: unknown; equipage?: unknown; reparation?: unknown; pj?: unknown; robots?: unknown }): VueConception {
   const l = lire(db, acteur, universId, ficheId);
   if (!peutEcrire(db, acteur, universId, l.role, l.section)) throw refuse('Vous ne pouvez pas modifier cette conception.');
   const e = validerChoix(entree?.coque, entree?.choix);
   const equipage = validerEquipage(entree?.equipage);
   if (equipage !== undefined) e.equipage = equipage;
   e.reparation = validerReparation(entree?.reparation) ?? 0;
+  e.pj = validerEffectif(entree?.pj, 'pj') ?? 0;
+  e.robots = validerEffectif(entree?.robots, 'robots') ?? 0;
   if (!Number.isInteger(entree.version) || (entree.version as number) < 1) throw invalide('La version lue est requise.');
   return db.transaction(() => {
     const cur = lire(db, acteur, universId, ficheId);
@@ -211,11 +220,11 @@ export function enregistrerConception(db: Db, acteur: Acteur, universId: number,
  * design is readable under both guards; an unreadable or unknown one is `introuvable`.
  */
 export function calculerConception(db: Db, acteur: Acteur, universId: number, entree: unknown) {
-  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown; ficheId?: unknown; equipage?: unknown; reparation?: unknown };
+  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown; ficheId?: unknown; equipage?: unknown; reparation?: unknown; pj?: unknown; robots?: unknown };
   let porte: Porte | null = null;
   if (o.ficheId !== undefined && o.ficheId !== null) {
     if (!Number.isInteger(o.ficheId)) throw new ErreurService('invalide', 'Fiche invalide.', 'fiche_invalide', 'ficheId');
     porte = porteDe(lire(db, acteur, universId, o.ficheId as number).ligne);
   }
-  return calculerDepuisChoix(db, acteur, universId, { coque: o.coque, choix: o.choix, equipage: o.equipage, reparation: o.reparation }, porte);
+  return calculerDepuisChoix(db, acteur, universId, { coque: o.coque, choix: o.choix, equipage: o.equipage, reparation: o.reparation, pj: o.pj, robots: o.robots }, porte);
 }

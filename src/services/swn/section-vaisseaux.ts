@@ -12,7 +12,7 @@ import { calculerResolu, resoudreChoix, versionSourceVaisseaux, versionsSource, 
 
 export interface LigneConception {
   id: number; univers_id: number; fiche_id: number; section_id: number | null; coque_cle: string; choix: string;
-  version_reglages: string; version_catalogue: string; resultat: string; version: number; equipage: number | null; reparation: number;
+  version_reglages: string; version_catalogue: string; resultat: string; version: number; equipage: number | null; reparation: number; pj: number; robots: number;
 }
 /** Everything the hook stores; the opaque `charge` of V-4. */
 export interface ChargeConception {
@@ -21,6 +21,9 @@ export interface ChargeConception {
   equipage: number | null;
   /** The repair skill, 0 to 20 (X-4). */
   reparation: number;
+  /** H-5: player characters and robots among the crew. */
+  pj: number;
+  robots: number;
 }
 
 export const ligneDe = (db: Db, ficheId: number): LigneConception | undefined =>
@@ -43,7 +46,7 @@ export function produire(ctx: ContexteSection): { contenu: string; sourceVersion
   const l = ligneDe(ctx.db, ctx.ficheId);
   if (!l) throw introuvable();
   const choix = JSON.parse(l.choix) as LigneChoix[];
-  const r = resoudreChoix(ctx.db, ctx.universId, { coque: l.coque_cle, choix, equipage: l.equipage, reparation: l.reparation }, porteDe(l));
+  const r = resoudreChoix(ctx.db, ctx.universId, { coque: l.coque_cle, choix, equipage: l.equipage, reparation: l.reparation, pj: l.pj ?? 0, robots: l.robots ?? 0 }, porteDe(l));
   const s = calculerResolu(ctx.db, ctx.universId, r);
   if (s.resultat === null) {
     throw new ErreurService('invalide', `Élément retiré de cet univers : ${r.nomsRetires[0] ?? ''}. Remplacez-le dans le concepteur.`,
@@ -51,7 +54,7 @@ export function produire(ctx: ContexteSection): { contenu: string; sourceVersion
   }
   const v = versionsSource(ctx.db, ctx.universId);
   const charge: ChargeConception = { coque: l.coque_cle, lignes: choix, resultat: s.resultat,
-    versionReglages: v.reglages, versionCatalogue: v.catalogue, equipage: l.equipage, reparation: l.reparation };
+    versionReglages: v.reglages, versionCatalogue: v.catalogue, equipage: l.equipage, reparation: l.reparation, pj: l.pj ?? 0, robots: l.robots ?? 0 };
   return { contenu: texteVaisseau(s.resultat), sourceVersion: versionSourceVaisseaux(ctx.db, ctx.universId), charge };
 }
 
@@ -66,16 +69,18 @@ export function apresEcriture(ctx: ContexteSection, ecrit: EcritSection): void {
   if (existante) {
     // The skill is written only when it moves: the column (NOT NULL DEFAULT 0, migration 0033) is absent from a base
     // still at 0030, which older montée tests seed through this very function, so an unchanged value is never written.
-    const change = (existante.reparation ?? 0) !== c.reparation;
+    // `pj` and `robots` (migration 0043) follow the same rule.
+    const optionnelles = ([['reparation', c.reparation], ['pj', c.pj ?? 0], ['robots', c.robots ?? 0]] as const)
+      .filter(([nom, v]) => ((existante as unknown as Record<string, number | undefined>)[nom] ?? 0) !== v);
     ctx.db.prepare(`UPDATE swn_conceptions SET section_id = ?, coque_cle = ?, choix = ?, version_reglages = ?,
-      version_catalogue = ?, resultat = ?, equipage = ?${change ? ', reparation = ?' : ''}, version = version + 1 WHERE fiche_id = ?`)
-      .run(...valeurs, ...(change ? [c.reparation] : []), ctx.ficheId);
+      version_catalogue = ?, resultat = ?, equipage = ?${optionnelles.map(([n]) => `, ${n} = ?`).join('')}, version = version + 1 WHERE fiche_id = ?`)
+      .run(...valeurs, ...optionnelles.map(([, v]) => v), ctx.ficheId);
   } else {
     // A new design has the column's default (0, X-4) unless the charge says otherwise.
-    const avecReparation = c.reparation !== 0;
+    const posees = ([['reparation', c.reparation], ['pj', c.pj ?? 0], ['robots', c.robots ?? 0]] as const).filter(([, v]) => v !== 0);
     ctx.db.prepare(`INSERT INTO swn_conceptions (univers_id, fiche_id, section_id, coque_cle, choix, version_reglages,
-      version_catalogue, resultat, equipage${avecReparation ? ', reparation' : ''}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?${avecReparation ? ', ?' : ''})`)
-      .run(ctx.universId, ctx.ficheId, ...valeurs, ...(avecReparation ? [c.reparation] : []));
+      version_catalogue, resultat, equipage${posees.map(([n]) => `, ${n}`).join('')}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?${posees.map(() => ', ?').join('')})`)
+      .run(ctx.universId, ctx.ficheId, ...valeurs, ...posees.map(([, v]) => v));
   }
 }
 

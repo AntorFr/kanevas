@@ -35,11 +35,13 @@ export function ciblesDeRangees(rangees: string[] | undefined): { nature: string
   });
 }
 
-export const brouillonDe = (c: Pick<Conception, 'coque' | 'lignes' | 'resultat'>): Brouillon => ({
+export const brouillonDe = (c: Pick<Conception, 'coque' | 'lignes' | 'resultat' | 'pj' | 'robots'>): Brouillon => ({
   coque: { cle: c.coque.cle, nom: c.coque.nom },
   lignes: c.lignes.map(ligneDeBrouillon),
   equipage: c.resultat.equipage?.choisi ?? null,
   reparation: c.resultat.reparation?.choisie ?? 0,
+  pj: c.pj ?? 0,
+  robots: c.robots ?? 0,
 });
 
 export const EQUIPAGE_MAX = 100_000;
@@ -52,6 +54,8 @@ export const choixDe = (b: Brouillon) => ({
   coque: b.coque.cle,
   ...(b.equipage === null ? {} : { equipage: b.equipage }),
   ...(b.reparation > 0 ? { reparation: b.reparation } : {}),
+  ...(b.pj > 0 ? { pj: b.pj } : {}),
+  ...(b.robots > 0 ? { robots: b.robots } : {}),
   choix: b.lignes.map((l) => ({
     nature: l.nature, cle: l.cle, quantite: l.quantite,
     ...(l.points === undefined ? {} : { points: l.points }),
@@ -176,3 +180,23 @@ export function ligneAjuste(a: { masse?: number; puissance?: number; emports?: n
     .filter((k) => a[k] !== undefined && a[k] !== 0)
     .map((k) => `${k} ${delta(a[k]!)}`).join(', ');
 }
+
+/** « Fret caché 4 t », « Équipage maximum 12 », « Colons de l'exode 1 000 »: one line of the « Capacités » block (H-4), from the server's figure. */
+export function ligneCapacite(c: { code: string; libelle: string; valeur: number; unite: string }): string {
+  const v = masse(c.valeur);
+  switch (c.code) {
+    case 'fret_cache': return `Fret caché ${v} t`;
+    case 'equipage_max_pct': return `Équipage maximum ${v}`;
+    case 'provisions': return `Provisions ${v} mois`;
+    case 'hydroponie': return `Hydroponie ${v} personnes`;
+    case 'sommeil_froid': return `Sommeil froid ${v} personnes`;
+    case 'soute_exode': return `Colons de l'exode ${v}`;
+    case 'canots': return `Canots de sauvetage ${v}`;
+    case 'cabines_luxe': return `Cabines de luxe ${v}`;
+    case 'colonie': return `Colonie ${v} personnes`;
+    default: return `${c.libelle} ${v}${c.unite ? ` ${c.unite}` : ''}`;
+  }
+}
+
+/** True when a chosen fitting is the automation system (display only: « dont robots » is disabled without one; the alert is the server's). */
+export const estAutomatisation = (d: Donnees | undefined) => d?.effet === 'support_automatisation';

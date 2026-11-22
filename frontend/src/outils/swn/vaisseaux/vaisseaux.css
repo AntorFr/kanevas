@@ -118,3 +118,13 @@
 .vx-visees { gap: var(--e-2); }
 .vx-visees .champ { margin: 0; }
 .vx-visees .vx-alerte { margin: 0; overflow-wrap: anywhere; }
+
+/* Capacities, crew costs and « dont » fields (E-22, H-4, H-5): the existing tokens only. */
+.vx-couts { list-style: none; margin: var(--e-3) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-1); font-variant-numeric: tabular-nums; }
+.vx-couts li { overflow-wrap: anywhere; }
+.vx-capacites { margin-top: var(--e-3); }
+.vx-capacites h3 { margin: 0 0 var(--e-1); font-size: var(--t-12); font-weight: 500; color: var(--texte-2); }
+.vx-capacites ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-1); font-variant-numeric: tabular-nums; }
+.vx-capacites li { overflow-wrap: anywhere; }
+.vx-dont { display: flex; flex-direction: column; gap: var(--e-1); margin-top: var(--e-3); }
+.vx-dont-nom { color: var(--texte-2); font-size: var(--t-13); }

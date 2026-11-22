@@ -3,7 +3,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { calculer, CADENCE_CHANTIER, TAUX_ENTRETIEN } from './vaisseau.js'
+import { calculer, CADENCE_CHANTIER_DEFAUT, TAUX_ENTRETIEN } from './vaisseau.js'
 import type { CoqueResolue, ElementResolu, LigneResolue, NatureVaisseau } from './vaisseau.js'
 import { texteVaisseau } from './texte-vaisseau.js'
 import { rendreMarkdown } from '../../../services/markdown.js'
@@ -129,7 +129,7 @@ test('chantier : 700 000 cr = 28 jours exactement, 954 000 cr = 39, bord 25 000 
   assert.equal(r.chantierJours, 39)
   assert.equal(calculer({ ...c, cout: 949000 }, [], { porteeSaut: 5 }).chantierJours, 38)
   assert.equal(calculer({ ...c, cout: 25001 }, [], { porteeSaut: 5 }).chantierJours, 2)
-  assert.equal(CADENCE_CHANTIER, 25000)
+  assert.equal(CADENCE_CHANTIER_DEFAUT, 25000)
   assert.equal(TAUX_ENTRETIEN, 0.05)
 })
 

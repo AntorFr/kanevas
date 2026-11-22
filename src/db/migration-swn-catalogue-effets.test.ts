@@ -35,7 +35,7 @@ test('0032 : montée depuis 0031, les lignes restent, colonnes nouvelles nulles,
     const apres = avant(t);
     assert.equal(apres.length, 1);
     for (const c of cs) { assert.equal(apres[0]![c], null, `${t}.${c}`); delete apres[0]![c]; }
-    for (const c of ['reparation_min', 'soute_par_classe', 'reduction_cout_pct', 'effet_pct', 'echange_arrondi', 'reduction_base', 'limite_par']) delete apres[0]![c]; // 0034, 0035 and 0046 columns, not the subject here
+    for (const c of ['reparation_min', 'soute_par_classe', 'reduction_cout_pct', 'effet_pct', 'echange_arrondi', 'reduction_base', 'limite_par', 'effet_jeu', 'capacite']) delete apres[0]![c]; // 0034, 0035, 0046 and 0047 columns, not the subject here
     assert.deepEqual(apres, a);
   }
   assert.deepEqual(db.pragma('foreign_key_check'), []);

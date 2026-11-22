@@ -39,10 +39,11 @@ export function tableMesures(r: ResultatVaisseau, avecRegles = true): string {
 
 /** The « Choix » list of V-6, ordered by nature then name. */
 export function listeChoix(r: ResultatVaisseau): string {
+  const effet = new Map((r.effetsJeu ?? []).map((e) => [e.ligne, e.texte]))
   const choix = r.lignes
     .map((l, i) => ({ l, i }))
     .sort((a, b) => ORDRE.indexOf(a.l.nature) - ORDRE.indexOf(b.l.nature) || a.l.nom.localeCompare(b.l.nom, 'fr') || a.i - b.i)
-    .map(({ l }) => {
+    .map(({ l, i }) => {
       const nomDe = (c: { nature: string; cle: string }) => r.lignes.find((m) => m.nature === c.nature && m.cle === c.cle)?.nom ?? c.cle
       // « → Laser ×2 · Canon ×1 » with several targets (E-22); one target holds every installation and is named alone, as an old `vise` was.
       const vise = l.cibles?.length ? l.cibles.map((c) => `${nomDe(c)}${c.quantite > 1 ? ` ×${c.quantite}` : ''}`).join(' · ')
@@ -51,12 +52,16 @@ export function listeChoix(r: ResultatVaisseau): string {
         + (l.points ? ` (${l.points} ${l.points < 2 ? 'point' : 'points'})` : '')
         + (vise === null ? '' : ` (→ ${vise})`)
         + (l.cout === undefined ? '' : ` — ${credits(l.cout)}`)
+        + (effet.has(i) ? `\n  - ${effet.get(i)}` : '')
     })
   return ['**Choix**', ...choix].join('\n')
 }
 
 export function texteVaisseau(r: ResultatVaisseau): string {
   const blocs = [`**${r.coque.nom}** — classe ${r.coque.classe}`, tableMesures(r), listeChoix(r)]
+  if (r.capacites && r.capacites.length > 0) {
+    blocs.push(['**Capacités**', ...r.capacites.map((c) => `- ${c.libelle} : ${Number.isInteger(c.valeur) ? entier(c.valeur) : String(c.valeur).replace('.', ',')} ${c.unite}`)].join('\n'))
+  }
   if (r.alertes.length > 0) {
     blocs.push(
       ['**Alertes**', ...r.alertes.map((a) => `- **${a.niveau === 'bloquante' ? 'Bloquante' : 'À surveiller'}** : ${a.texte}`)].join('\n'),

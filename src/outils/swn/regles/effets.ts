@@ -3,7 +3,7 @@
 // is a code change with its test, never a data change.
 // Pure: no database. No formula or code ever travels in the data.
 
-export type CodeEffet = 'vitesse' | 'armure' | 'echange' | 'soutes_doublees' | 'magasins_doubles' | 'reparation_min' | 'moteur_systeme'
+export type CodeEffet = 'vitesse' | 'armure' | 'echange' | 'soutes_doublees' | 'magasins_doubles' | 'reparation_min' | 'moteur_systeme' | 'support_automatisation'
   | 'soutes_optimisees_livre' | 'blindage_renforce' | 'montages_specialises' | 'surcharge_cumulable'
   | 'surdimensionne' | 'moteur_niveau'
 export type ParametreEffet =
@@ -40,6 +40,7 @@ export const EFFETS: Readonly<Record<CodeEffet, DeclarationEffet>> = {
   surcharge_cumulable: { nature: 'modifications', libelle: "Surcharge d'arme", parametres: ['effet_pct'], cible: ['armes'] },
   surdimensionne: { nature: 'modifications', libelle: 'Surdimensionné', parametres: [], limiteUne: true, cible: ['armes', 'amenagements'] },
   moteur_niveau: { nature: 'modifications', libelle: 'Moteur de rang supérieur', parametres: [], limiteUne: true },
+  support_automatisation: { nature: 'amenagements', libelle: "Système d'automatisation", parametres: [], limiteUne: true },
   moteur_systeme: { nature: 'amenagements', libelle: 'Moteur système', parametres: ['rend_puissance', 'rend_masse'] },
 }
 

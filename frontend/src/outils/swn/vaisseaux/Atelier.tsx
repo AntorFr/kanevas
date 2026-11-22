@@ -6,7 +6,7 @@ import { appeler, ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { useTitreAriane } from '../../../cadre-contexte';
 import { Bouton, BoiteDialogue, Chargement, ErreurChargement, PageIntrouvable, Pastille } from '../../../ui';
 import { Equipage } from './Equipage';
-import { bornesEquipage, brouillonDe, choixDe, credits, exigeReparation, legende, ligneAjuste, memeBrouillon, motifDe, requete } from './format';
+import { bornesEquipage, brouillonDe, choixDe, credits, estAutomatisation, exigeReparation, legende, ligneAjuste, memeBrouillon, motifDe, requete } from './format';
 import { Effets } from './Effets';
 import { Alertes, Chiffres, ErreurCalcul } from './Resultats';
 import { Selecteur } from './Selecteur';
@@ -208,6 +208,10 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   const demandeReparation = brouillon.lignes.some((l) => exigeReparation(infos[`${l.nature}/${l.cle}`]?.el.donnees));
   const blocReparation = demandeReparation || resultat.reparation != null || brouillon.reparation > 0;
   const reparationAffichee = brouillon.reparation;
+  // « dont robots » (H-5): disabled with its muted line while no chosen line is the automation system and no robot is set (display only; the alert is the server's).
+  const automatisation = brouillon.lignes.some((l) => l.quantite > 0 && estAutomatisation(infos[`${l.nature}/${l.cle}`]?.el.donnees));
+  const robotsFige = !automatisation && brouillon.robots === 0;
+  const alerteEquipage = alertes.some((a) => a.code === 'equipage_robots');
   const invalide = equipageInvalide || Object.values(invalides).some(Boolean);
 
   async function enregistrer() {
@@ -390,7 +394,25 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                 key={cleEquipage} valeur={equipageAffiche} bornes={bornes} lecture={!ecriture} desactive={verrou}
                 onChange={(n) => { setEquipageTouche(true); change((b) => ({ ...b, equipage: n })); }}
                 onInvalide={(v) => { setEquipageTouche(true); setEquipageInvalide(v); }}
+                enAlerte={alerteEquipage}
               />
+              <div className="vx-dont">
+                <span className="vx-dont-nom">dont joueurs</span>
+                <Equipage
+                  key={`pj-${cleEquipage}`} nom="dont joueurs" maximum={equipageAffiche ?? 0} valeur={brouillon.pj} bornes="" lecture={!ecriture} desactive={verrou}
+                  diminuer="Diminuer : dont joueurs" augmenter="Augmenter : dont joueurs" enAlerte={alerteEquipage}
+                  onChange={(n) => change((b) => ({ ...b, pj: n }))} onInvalide={(v) => marquer('pj', v)}
+                />
+              </div>
+              <div className="vx-dont">
+                <span className="vx-dont-nom">dont robots</span>
+                <Equipage
+                  key={`robots-${cleEquipage}`} nom="dont robots" maximum={equipageAffiche ?? 0} valeur={brouillon.robots} bornes="" lecture={!ecriture}
+                  desactive={verrou || robotsFige} ligne={robotsFige && ecriture ? 'Aucun système d’automatisation sur cette conception.' : undefined}
+                  diminuer="Diminuer : dont robots" augmenter="Augmenter : dont robots" enAlerte={alerteEquipage}
+                  onChange={(n) => change((b) => ({ ...b, robots: n }))} onInvalide={(v) => marquer('robots', v)}
+                />
+              </div>
             </div>
           )}
           {blocReparation && (
@@ -438,6 +460,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                             <span className="vx-sous">{ligneAjuste(resultat.lignes.find((r) => r.nature === l.nature && r.cle === l.cle)?.ajuste)}</span>
                           )}
                           {infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition && <span className="vx-sous vx-condition">{infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition}</span>}
+                          {infos[`${l.nature}/${l.cle}`]?.el.donnees?.effet_jeu && <span className="vx-sous vx-condition vx-effet-jeu">{infos[`${l.nature}/${l.cle}`]?.el.donnees?.effet_jeu}</span>}
                         </div>
                         {infos[`${l.nature}/${l.cle}`]?.univers && <Pastille sens="neutre">Univers</Pastille>}
                         {retirees.has(i) && <Pastille sens="danger">Élément retiré de cet univers</Pastille>}

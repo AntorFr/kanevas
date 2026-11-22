@@ -73,6 +73,7 @@ export function Selecteur({ universId, suffixe, nature, titre, classeCoque, sans
                 </span>
                 <span className="vx-sous">{[e.resume, legende(e, classeCoque)].filter(Boolean).join(' · ')}</span>
                 {e.donnees?.condition && <span className="vx-sous vx-condition">{e.donnees.condition}</span>}
+                {e.donnees?.effet_jeu && <span className="vx-sous vx-condition vx-effet-jeu">{e.donnees.effet_jeu}</span>}
               </div>
               <span className="vx-etiquettes">
                 {(e.univers || e.origine === 'univers' || e.origine === 'remplace') && <Pastille sens="neutre">Univers</Pastille>}

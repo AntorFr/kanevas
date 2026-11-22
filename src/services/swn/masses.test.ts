@@ -154,7 +154,7 @@ test('montée : un élément de masse 8 (semis) reste lisible et inchangé, comp
   db.exec('ALTER TABLE swn_conceptions DROP COLUMN equipage');
   stub('DROP COLUMN');
   // 0028 adds `classe_min` to the weapons: the rows are compared without it, which is checked apart below.
-  const snap = () => TABLES.map((t) => (db.prepare(`SELECT * FROM swn_catalogue_${t} ORDER BY rowid`).all() as any[]).map(({ cout_pct, effet, valeur, points_max, sens, echange_puissance, echange_masse, rend_puissance, rend_masse, soute, classe_min, vitesse, armure, equipage_min, equipage_max, classe_max, condition, bonus_vitesse, degats, perforation, qualites, niveau_tech, equipage, reparation_min, soute_par_classe, reduction_cout_pct, effet_pct, echange_arrondi, reduction_base, moteur_spike, limite_par, ...r }) => r));
+  const snap = () => TABLES.map((t) => (db.prepare(`SELECT * FROM swn_catalogue_${t} ORDER BY rowid`).all() as any[]).map(({ cout_pct, effet, valeur, points_max, sens, echange_puissance, echange_masse, rend_puissance, rend_masse, soute, classe_min, vitesse, armure, equipage_min, equipage_max, classe_max, condition, bonus_vitesse, degats, perforation, qualites, niveau_tech, equipage, reparation_min, soute_par_classe, reduction_cout_pct, effet_pct, echange_arrondi, reduction_base, moteur_spike, limite_par, effet_jeu, capacite, ...r }) => r));
   const idx = () => db.prepare("SELECT name, tbl_name FROM sqlite_master WHERE type = 'index' AND name LIKE 'swn_catalogue_%' ORDER BY name").all();
   const avant = snap();
   const indexAvant = idx();
