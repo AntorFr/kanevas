@@ -25,7 +25,7 @@ test('0022 crée les quatre tables sans toucher les lignes existantes', () => {
   db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 'lieu', 'F', '{}', 'x', 'x')").run();
   const snap = () => ['comptes', 'univers', 'fiches'].map((t) => (db.prepare(`SELECT * FROM ${t}`).all() as any[]).map(({ cle, creee_via, cle_origine, dernier_import, ...r }) => r)); // 0037 turns cle_origine into cle
   const avant = snap();
-  assert.deepEqual(migrate(db), [20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]);
+  assert.deepEqual(migrate(db), [20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]);
   assert.deepEqual(snap(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const tables = db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'swn_%' AND name NOT LIKE 'swn_catalogue_%' AND name NOT IN ('swn_conceptions', 'swn_fiches_generees') AND type='table' ORDER BY name").all().map((r: any) => r.name);

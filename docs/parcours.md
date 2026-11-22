@@ -1343,17 +1343,18 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
 
 ### P-26 — Fill a library in the universe's style (Antor, GM, Sunday evening, office)
 *« Éneria » is dark science-fiction, painted, worn metal; he wants a library for his ship interiors.*
-1. **E-26**: he writes the art direction (or asks the assistant, which proposes a text from the universe's sheets, he
-   corrects it) and adds three reference images from the media library.
+1. **E-26**: he writes the art direction (or asks the assistant — « Demander à l'assistant » opens E-12 with the request —
+   which writes a text from the universe's sheets; E-26 shows « Texte modifié par l'assistant » with « Annuler », he corrects
+   the text or cancels it) and adds three reference images from the media library.
 2. **E-25**: he drops fifteen images he already owns (Dungeonfog assets he bought, if any): each lands with the category
    of the drop, he fixes footprints in a selection (« 2×1 » for the bunks).
 3. For what is missing he opens **E-27**: twelve lines (« Couchette », « Console de commande »…), « Lancer » — twelve drafts
    arrive one by one, each shown on a neutral grid; he accepts nine, regenerates two with a remark (« plus usé »), discards one.
-4. The next day the assistant, asked for « dix décors de station abandonnée », drafts the list through the dedicated skill; he
-   starts the batch from E-27.
+4. The next day the assistant, asked for « dix décors de station abandonnée », drafts the list through the dedicated skill: the
+   answer carries « Lot préparé : 10 assets » and « Ouvrir »; in E-27 the batch waits as « Préparé », he starts it there.
 5. Léa (player) opens **E-25** and finds the assets Antor left visible; nothing to write, no art direction. If the library loads badly she reads « Impossible de charger la bibliothèque. » and « Réessayer »; if it is empty, « La bibliothèque est vide. ».
 *Highlight*: step 3, the drafts that appear one by one in his style.
-*Failure*: no image engine — the generation entry is absent, steps 1 and 2 stand; one asset fails — its line says « Échec »
+*Failure*: no image engine — the generation entry is absent, steps 1 and 2 stand; a batch is already prepared or running — the assistant answers « Un lot est déjà préparé ou en cours. Ouvrez-le dans la génération. »; « Annuler » after a hand edit elsewhere — « Ce texte a changé depuis que vous l'avez ouvert. » and « Recharger »; offline — « Annuler » is disabled; the cancellation fails — « L'annulation a échoué. Réessayez. »; the assistant is unavailable (no token) — the button « Demander à l'assistant » is absent, steps 1 to 3 stand by hand; one asset fails — its line says « Échec »
 with « Réessayer », the others go on; the batch is interrupted by a restart — the running line is marked
 « Interrompu » and « Reprendre » restarts it; a file that is not an image — refused with its name; removing an asset says on how many maps it is placed; the art direction was changed elsewhere — « Ce texte a changé… » and « Recharger »; a ninth reference — refused; the library holds 5 000 assets — « Bibliothèque pleine ».
 
@@ -1366,7 +1367,7 @@ with « Réessayer », the others go on; the batch is interrupted by a restart �
    *Detail of `kanevas-battlemap-editeur` (steps 1, 2 and 4).* Step 1: the dialog's « Créer » opens E-28 on a map with the layers « Sol », « Murs », « Objets », the Sol tool armed and the hint of the empty map. Step 2: Antor chooses a floor card in the Bibliothèque tab, paints a rectangle (shift-drag), picks Mur and drags the outline of the first room, then the second, Porte and clicks one segment; he picks two console cards, places them (the editor moved the active layer to « Objets »); « Nouveau calque » ▸ « Réservé au MJ » (type Objet, « MJ seul » on) takes the trap room's elements; a wrong wall is undone with Ctrl+Z; the saving indicator reads « Enregistré » a second after each gesture. Step 4: he selects a console, « Lier une fiche… », types « Terminal », picks the sheet; « Ouvrir la fiche » opens it. He closes the tab and reopens the map from E-10: everything is there (a floor, six walls and a door, two objects, the GM-only layer). Failure paths: a second tab writing first — « Cette carte a changé » + « Recharger »; a network cut — « Enregistrement impossible, nouvelle tentative… » and the work kept; a resize that leaves an element out — « Des éléments sont hors des nouvelles limites. ».
 4. On the console **element** (E-28, Properties) he links the sheet « Terminal de la passerelle »; at the table a player will open it from the map (E-29). A token is linked in E-29.
 *Highlight*: step 3, the assistant's map that he keeps by hand.
-*Failure*: the library lacks a kitchen asset — the answer names it and builds the rest; two writes at once — the second says
+*Failure*: a player asks the assistant for a map — it answers that this is the GM's, nothing is written; the library lacks a kitchen asset — the answer names it and builds the rest; the assistant is unavailable — no panel, the map is made by hand (step 1); two writes at once — the second says
 « Cette carte a changé » and « Recharger »; the map is full (limits of AD-163) — « Carte pleine »; an asset removed meanwhile — a
 placeholder « Asset retiré » for the GM, absent for players. Removed assets are counted on confirmation (« Utilisé sur 3 cartes »).
 

@@ -2,7 +2,7 @@ import { BookOpen, Images, Map as Carte, Rocket, WandSparkles, type LucideIcon }
 import type { ComponentType } from 'react';
 
 import { ErreurApi, lire } from '../api';
-import type { PropsOutil } from './types';
+import type { PropsOutil, PropsSection } from './types';
 
 /**
  * The client side of the tools (AD-133): `module/outil` → its icon and a lazy `import()` of its

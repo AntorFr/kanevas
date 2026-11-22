@@ -24,6 +24,7 @@ export * from './vignette-reference';
 export * from './colonne-outils';
 export * from './canevas-carte';
 export * from './canevas-jeu';
+export * from './bandeau-annulable';
 export * from './pion-table';
 export * from './pastille-connexion';
 export * from './curseur';

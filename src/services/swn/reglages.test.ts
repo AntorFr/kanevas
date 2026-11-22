@@ -264,7 +264,7 @@ test('0045 : montée depuis 0044 avec le semis, galaxies inchangées, défauts e
   const galaxies = () => db.prepare('SELECT * FROM swn_galaxies ORDER BY id').all();
   const avant = galaxies();
   assert.ok(avant.length > 0);
-  assert.deepEqual(migrate(db), [45, 46, 47, 48, 49]);
+  assert.deepEqual(migrate(db), [45, 46, 47, 48, 49, 50]);
   assert.deepEqual(galaxies(), avant);
   for (const t of ['swn_reglages', 'swn_aspects']) assert.equal((db.prepare(`SELECT count(*) n FROM ${t}`).get() as any).n, 0);
   assert.deepEqual(db.pragma('foreign_key_check'), []);

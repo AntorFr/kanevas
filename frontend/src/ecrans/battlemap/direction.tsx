@@ -2,8 +2,10 @@ import { Library, Plus, RefreshCw, RotateCw, Save, Sparkles, X } from 'lucide-re
 import { useCallback, useEffect, useState } from 'react';
 
 import { appeler, envoyerFichier, ErreurApi, lire, useConnexionPerdue } from '../../api';
+import { ouvrirAssistant, demandeDirection } from '../assistant/ouverture';
+import { surDirectionEcrite } from '../assistant/fil';
 import {
-  Alerte, Bouton, Champ, Chargement, ErreurChargement, Fenetre, Panneau, useSurvolPage, useToasts, VignetteReference, VoileDepot, ZoneDepot,
+  Alerte, BandeauAnnulable, Bouton, Champ, Chargement, ErreurChargement, Fenetre, Panneau, useSurvolPage, useToasts, VignetteReference, VoileDepot, ZoneDepot,
 } from '../../ui';
 
 const MAX_TEXTE = 5000;
@@ -12,7 +14,7 @@ export const MESSAGE_LIMITE = '8 images au plus.';
 export const PHRASE_MJ = 'Une image de référence est un fichier MJ seul : un fichier choisi dans la médiathèque le devient, et les joueurs ne le voient plus.';
 
 interface Reference { fichierId: number; nom: string; legende: string; rang: number; jeton: string }
-interface Direction { texte: string; textePrecedent: string | null; version: number; modifieLe: string | null; images: Reference[] }
+interface Direction { texte: string; textePrecedent: string | null; source: 'mj' | 'assistant'; peutAnnuler: boolean; version: number; modifieLe: string | null; images: Reference[] }
 interface FichierDisponible { id: number; nom: string; jeton: string }
 
 const src = (universId: string, f: { fichierId?: number; id?: number; jeton: string }) =>
@@ -38,6 +40,9 @@ export function DirectionArtistique({ id }: { id: string }) {
   const [depot, setDepot] = useState(false);
   const [enCours, setEnCours] = useState(false);
   const [mediatheque, setMediatheque] = useState(false);
+  const [assistant, setAssistant] = useState(false);
+  const [annulation, setAnnulation] = useState<{ enCours: boolean; erreur?: string }>({ enCours: false });
+  const [retabli, setRetabli] = useState(false);
 
   const charger = useCallback(() => {
     let actif = true;
@@ -57,6 +62,19 @@ export function DirectionArtistique({ id }: { id: string }) {
   }, [base]);
   useEffect(() => charger(), [charger, essai]);
 
+  // The button exists only where the assistant answers (no role, no token: absent, like E-12).
+  useEffect(() => {
+    let actif = true;
+    lire<{ disponible: boolean }>(`/api/univers/${id}/assistant`).then(
+      (r) => actif && setAssistant(r.disponible),
+      () => actif && setAssistant(false),
+    );
+    return () => { actif = false; };
+  }, [id]);
+
+  // An answer that wrote the direction: read it again, the banner comes from the server's `source`.
+  useEffect(() => surDirectionEcrite(() => { setRetabli(false); setEssai((n) => n + 1); }), []);
+
   const pleines = images.length >= MAX_IMAGES;
   const modifie = dir !== null && texte !== dir.texte;
 
@@ -68,6 +86,7 @@ export function DirectionArtistique({ id }: { id: string }) {
       setDir(d);
       setVersion(d.version);
       setPerime(false);
+      setRetabli(false);
       toast('Direction artistique enregistrée.');
     } catch (e) {
       if (e instanceof ErreurApi && e.statut === 409) setPerime(true);
@@ -75,6 +94,26 @@ export function DirectionArtistique({ id }: { id: string }) {
       else setEchec({ texte: 'Impossible d’enregistrer.', reessayer: () => void enregistrer() });
     } finally {
       setEnCours(false);
+    }
+  }
+
+  async function annuler() {
+    setAnnulation({ enCours: true });
+    try {
+      const d = await appeler<Direction>('POST', `${base}/annuler`, { version });
+      setDir(d);
+      setTexte(d.texte);
+      setVersion(d.version);
+      setPerime(false);
+      setRetabli(true);
+      setAnnulation({ enCours: false });
+    } catch (e) {
+      if (e instanceof ErreurApi && e.statut === 409) {
+        setPerime(true);
+        setAnnulation({ enCours: false });
+      } else {
+        setAnnulation({ enCours: false, erreur: 'L’annulation a échoué. Réessayez.' });
+      }
     }
   }
 
@@ -158,6 +197,18 @@ export function DirectionArtistique({ id }: { id: string }) {
   return (
     <div className="bm-direction" {...survol.props}>
       {survol.survol && <VoileDepot texte="Déposez les images pour les ajouter." />}
+      <div className="bm-direction-tete">
+        <h2>Direction artistique</h2>
+        {assistant && (
+          <Bouton petit icone={Sparkles} onClick={() => ouvrirAssistant({ message: demandeDirection(texte.trim() !== '') })}>Demander à l’assistant</Bouton>
+        )}
+      </div>
+      {dir.source === 'assistant' && dir.peutAnnuler && !perime && (
+        <BandeauAnnulable onAnnuler={() => void annuler()} enCours={annulation.enCours} horsConnexion={perdue} erreur={annulation.erreur}>
+          Texte modifié par l’assistant
+        </BandeauAnnulable>
+      )}
+      {retabli && <p className="bm-note" role="status">Texte précédent rétabli.</p>}
       {perime && (
         <Alerte sens="avertissement" action={<Bouton petit icone={RefreshCw} onClick={() => setEssai((n) => n + 1)}>Recharger</Bouton>}>
           Ce texte a changé depuis que vous l’avez ouvert.
@@ -199,7 +250,6 @@ export function DirectionArtistique({ id }: { id: string }) {
       {echec && <Alerte action={echec.reessayer ? <Bouton petit icone={RotateCw} onClick={echec.reessayer}>Réessayer</Bouton> : undefined}>{echec.texte}</Alerte>}
       <div className="actions">
         <Bouton variante="principal" icone={Save} ecrit enCours={enCours} disabled={!modifie && !perime} onClick={() => void enregistrer()}>Enregistrer</Bouton>
-        <Bouton icone={Sparkles} disabled title="Disponible avec l’assistant">Demander à l’assistant</Bouton>
       </div>
       {mediatheque && <ChoixImage id={id} base={base} deja={images.map((i) => i.fichierId)} pleine={pleines} onChoisir={choisir} onFermer={() => setMediatheque(false)} />}
     </div>
