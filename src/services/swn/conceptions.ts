@@ -90,7 +90,7 @@ function vue(db: Db, acteur: Acteur, universId: number, l: Lue): VueConception {
     if (effet === undefined) return x;
     const { vise, cibles: _stockees, ...reste } = x;
     const cibles = ciblesDeLigne({ quantite: x.quantite, ...(vise ? { vise } : {}), ...(_stockees ? { cibles: _stockees } : {}) }, effet);
-    // Until the workshop reads the pairs (E-22, next slice) a single pair is also given as `vise`, the one thing the screen reads.
+    // A single pair is also given as `vise`, kept for readers of the old shape; the workshop reads `cibles` (only `soutes_doublees` still reads `vise`).
     const unique = cibles?.length === 1 ? { nature: cibles[0]!.nature, cle: cibles[0]!.cle } : undefined;
     return { ...reste, ...(cibles ? { cibles } : {}), ...(effet === 'soutes_doublees' && vise ? { vise } : unique ? { vise: unique } : {}) };
   });
