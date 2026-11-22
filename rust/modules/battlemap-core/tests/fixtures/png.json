@@ -1,0 +1,50 @@
+{
+  "sans_alpha": "iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAIAAABvrngfAAAAG0lEQVR4nGM4ISeHhhhwComI3BERuUNIiIBZADcaJJG3PzKuAAAAAElFTkSuQmCC",
+  "avec_alpha": "iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAYAAADgzO9IAAAAIElEQVR4nGM4ISfHcEJO7j86xiqIIiEicgeMiZcg2g4AlpZHblxAW6kAAAAASUVORK5CYII=",
+  "rgba_opaque": "iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAYAAADgzO9IAAAAG0lEQVR4nGM4ISf3HxtmICghInIHjImXINoOACgTSG28Do9zAAAAAElFTkSuQmCC",
+  "fond_uni": "iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAIAAABvrngfAAAAG0lEQVR4nGM4ISeHhhhwComI3BERuUNIiIBZADcaJJG3PzKuAAAAAElFTkSuQmCC",
+  "transparents": [
+    [
+      0,
+      0
+    ],
+    [
+      5,
+      0
+    ],
+    [
+      0,
+      5
+    ],
+    [
+      5,
+      5
+    ],
+    [
+      1,
+      1
+    ],
+    [
+      4,
+      4
+    ]
+  ],
+  "conserves": [
+    [
+      2,
+      2
+    ],
+    [
+      3,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      2
+    ]
+  ]
+}

@@ -75,12 +75,6 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .med-envois li { display: flex; align-items: center; gap: var(--e-2); flex-wrap: wrap; color: var(--texte-2); }
 .med-envoi-nom { color: var(--texte); overflow-wrap: anywhere; }
 .med-vide { color: var(--danger); margin: var(--e-2) 0; }
-.med-depot { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: var(--e-3); background: var(--voile); color: var(--texte); border: 2px dashed var(--accent); font-size: var(--t-18); pointer-events: none; }
-.med-panneau { position: fixed; top: 0; right: 0; bottom: 0; z-index: 30; width: min(400px, 100%); overflow-y: auto;
-  background: var(--surface); border-left: 1px solid var(--bord-fort); box-shadow: var(--ombre-flottant); padding: var(--e-4) var(--e-4) 96px; }  /* room below for the floating assistant button */
-.med-panneau-tete { display: flex; align-items: center; gap: var(--e-2); margin-bottom: var(--e-3); }
-.med-panneau-libelle { flex: 1; display: flex; align-items: center; gap: var(--e-2); color: var(--texte-3); font-size: var(--t-13); }
 /* The file name is the editable title itself, with a field outline only while editing. */
 .med-titre-fichier { width: 100%; display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--e-2); }
 .med-nom-en-place { flex: 1; min-width: 0; margin: 0; padding: 0; border-radius: var(--rayon-item);
@@ -123,7 +117,6 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .med-corps h3 { font-size: var(--t-12); font-weight: 500; color: var(--texte-3); margin: 0 0 var(--e-2); }
 @media (max-width: 760px) {
   .zone-principale:has(.med-panneau-ouvert) { margin-right: 0; }
-  .med-panneau { width: 100%; z-index: 35; }
   .med-corps > .med-apercu-document { height: 260px; }
   .med-apercu-document .bouton { min-height: 40px; }
   body:has(.med-panneau-ouvert) .asst-bouton { visibility: hidden; }

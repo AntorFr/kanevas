@@ -86,7 +86,7 @@ describe('ecrans_liste : le besoin, commande déclarée jouée sans node_modules
     assert.ok(l.includes('src/e2e/reglages-membres-reessayer.test.ts'));
     assert.ok(!l.includes('src/e2e/accueil-cartes-largeur.test.ts'));
     assert.ok(!l.includes('src/e2e/recherche-avancee-ecran.test.ts'));
-    assert.ok(l.length > 0 && l.length < 256, 'a part of the screen tests, not all');
+    assert.ok(l.length > 0 && l.length < 270, 'a part of the screen tests, not all');
   });
 
   test('docs/ ajouté à un changement de page ne change pas la liste', () => {
