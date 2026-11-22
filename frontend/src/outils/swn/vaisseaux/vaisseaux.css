@@ -116,4 +116,5 @@
 }
 /* B-94: the « Visée » rows, one per installation; a long element name wraps inside its row. */
 .vx-visees { gap: var(--e-2); }
+.vx-visees .champ { margin: 0; }
 .vx-visees .vx-alerte { margin: 0; overflow-wrap: anywhere; }
