@@ -36,13 +36,14 @@ CREATE TABLE swn_catalogue_modifications_new (
   reparation_min INTEGER CHECK (reparation_min IS NULL OR (typeof(reparation_min) = 'integer' AND reparation_min BETWEEN 1 AND 20)),
   effet_pct INTEGER CHECK (effet_pct IS NULL OR (typeof(effet_pct) = 'integer' AND effet_pct BETWEEN 1 AND 1000)),
   echange_arrondi TEXT CHECK (echange_arrondi IS NULL OR echange_arrondi IN ('installation')),
+  effet_jeu TEXT CHECK (effet_jeu IS NULL OR (typeof(effet_jeu) = 'text' AND length(effet_jeu) BETWEEN 1 AND 200)),
   CHECK ((proprietaire = 'systeme' AND systeme_id IS NOT NULL AND univers_id IS NULL)
       OR (proprietaire = 'univers' AND univers_id IS NOT NULL AND systeme_id IS NULL)),
   CHECK (proprietaire = 'univers' OR masque = 0)
 );
 
-INSERT INTO swn_catalogue_modifications_new (proprietaire, systeme_id, univers_id, cle, nom, nom_en, description, source, cout, puissance, masse, pv, ca, limite, x_cout, x_puissance, x_masse, masque, version, version_catalogue, cout_pct, effet, valeur, points_max, sens, echange_puissance, echange_masse, reparation_min, effet_pct, echange_arrondi)
-SELECT proprietaire, systeme_id, univers_id, cle, nom, nom_en, description, source, cout, puissance, masse, pv, ca, limite, x_cout, x_puissance, x_masse, masque, version, version_catalogue, cout_pct, effet, valeur, points_max, sens, echange_puissance, echange_masse, reparation_min, effet_pct, echange_arrondi
+INSERT INTO swn_catalogue_modifications_new (proprietaire, systeme_id, univers_id, cle, nom, nom_en, description, source, cout, puissance, masse, pv, ca, limite, x_cout, x_puissance, x_masse, masque, version, version_catalogue, cout_pct, effet, valeur, points_max, sens, echange_puissance, echange_masse, reparation_min, effet_pct, echange_arrondi, effet_jeu)
+SELECT proprietaire, systeme_id, univers_id, cle, nom, nom_en, description, source, cout, puissance, masse, pv, ca, limite, x_cout, x_puissance, x_masse, masque, version, version_catalogue, cout_pct, effet, valeur, points_max, sens, echange_puissance, echange_masse, reparation_min, effet_pct, echange_arrondi, effet_jeu
 FROM swn_catalogue_modifications;
 DROP TABLE swn_catalogue_modifications;
 ALTER TABLE swn_catalogue_modifications_new RENAME TO swn_catalogue_modifications;

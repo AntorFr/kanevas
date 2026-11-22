@@ -64,7 +64,7 @@ test('0040 : les quatre colonnes disparaissent, les lignes, la recherche et les 
     });
     const etat = lire();
 
-    assert.deepEqual(migrate(db, new URL('./migrations/', import.meta.url).pathname), [40, 41, 42, 43, 44, 45, 46, 47]);
+    assert.deepEqual(migrate(db, new URL('./migrations/', import.meta.url).pathname), [40, 41, 42, 43, 44, 45, 46, 47, 48]);
 
     assert.ok(!colonnes(db, 'fiches').includes('dernier_import'));
     assert.ok(!colonnes(db, 'sections').includes('dernier_import'));
