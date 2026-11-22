@@ -171,12 +171,13 @@ function ancienne(w: any, choix: unknown[]) {
 const rangee = (db: any, f: number) => JSON.stringify(db.prepare('SELECT * FROM swn_conceptions WHERE fiche_id = ?').get(f));
 const sectionG = (db: any, f: number) => JSON.stringify(db.prepare('SELECT * FROM sections WHERE fiche_id = ? AND gere_par IS NOT NULL').get(f));
 
+// A mounting aimed twice at one element is refused (H-10 (2)): the quantity-2 pair is read and saved on the overcharge, which is repeatable.
 test("conception d'avant : un vise sur une ligne de quantité 2 se relit en une paire de quantité 2, sans écriture ; magasins_doubles l'ignore ; soutes_doublees le garde", () => {
   const w = monde();
   w.appliquer(fichier('c1'));
   ancienne(w, [
     { nature: 'armes', cle: 'la', quantite: 1 },
-    { nature: 'modifications', cle: 'mont', quantite: 2, cibles: [{ nature: 'armes', cle: 'la', quantite: 2 }] },
+    { nature: 'modifications', cle: 'surch', quantite: 2, cibles: [{ nature: 'armes', cle: 'la', quantite: 2 }] },
     { nature: 'modifications', cle: 'mag', quantite: 1, vise: { nature: 'armes', cle: 'la' } },
     { nature: 'amenagements', cle: 'cargo', quantite: 1 },
     { nature: 'modifications', cle: 'sou', quantite: 1, vise: { nature: 'amenagements', cle: 'cargo' } },
@@ -186,7 +187,7 @@ test("conception d'avant : un vise sur une ligne de quantité 2 se relit en une 
   const r0 = rangee(w.db, w.orak), s0 = sectionG(w.db, w.orak);
   const v: any = k.lireConception(w.db, w.lea, w.u, w.orak);
   const ligne = (cle: string) => v.lignes.find((l: any) => l.cle === cle);
-  assert.deepEqual(ligne('mont').cibles, [{ nature: 'armes', cle: 'la', quantite: 2 }]);
+  assert.deepEqual(ligne('surch').cibles, [{ nature: 'armes', cle: 'la', quantite: 2 }]);
   assert.equal(ligne('mag').cibles, undefined);
   assert.equal(ligne('sou').cibles, undefined);
   assert.deepEqual(ligne('sou').vise, { nature: 'amenagements', cle: 'cargo' });
@@ -205,7 +206,7 @@ test("l'enregistrement écrit cibles et plus de vise pour les trois effets visan
   ancienne(w, [
     { nature: 'armes', cle: 'la', quantite: 1 },
     { nature: 'armes', cle: 'lb', quantite: 1 },
-    { nature: 'modifications', cle: 'mont', quantite: 2, cibles: [{ nature: 'armes', cle: 'la', quantite: 2 }] },
+    { nature: 'modifications', cle: 'surch', quantite: 2, cibles: [{ nature: 'armes', cle: 'la', quantite: 2 }] },
     { nature: 'amenagements', cle: 'cargo', quantite: 1 },
     { nature: 'modifications', cle: 'sou', quantite: 1, vise: { nature: 'amenagements', cle: 'cargo' } },
   ]);
@@ -214,8 +215,8 @@ test("l'enregistrement écrit cibles et plus de vise pour les trois effets visan
   const v2: any = k.enregistrerConception(w.db, w.lea, w.u, w.orak, { coque: 'fr', choix: entree, version: v1.version });
   const stocke = JSON.parse((w.db.prepare('SELECT choix FROM swn_conceptions WHERE fiche_id = ?').get(w.orak) as any).choix);
   const s = (cle: string) => stocke.find((l: any) => l.cle === cle);
-  assert.deepEqual(s('mont').cibles, [{ nature: 'armes', cle: 'la', quantite: 2 }]);
-  assert.equal(s('mont').vise, undefined);
+  assert.deepEqual(s('surch').cibles, [{ nature: 'armes', cle: 'la', quantite: 2 }]);
+  assert.equal(s('surch').vise, undefined);
   assert.deepEqual(s('sou').vise, { nature: 'amenagements', cle: 'cargo' });
   assert.equal(s('sou').cibles, undefined);
   assert.equal(v2.version, v1.version + 1);
