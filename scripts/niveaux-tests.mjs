@@ -608,6 +608,145 @@ function nomsDeclares(base, tete, fichier) {
   }
 }
 
+const UI_CSS = 'frontend/src/ui/ui.css';
+
+/** AD-ecrans-ui-5: a source text cut into rules `{ cle, selecteurs }` (`selecteurs` null = unbounded), throws on anything it cannot read. */
+function lireRegles(texte) {
+  const sans = texte.replace(/\/\*[\s\S]*?\*\//g, ' ');
+  const regles = [];
+  const fin = (s, i) => { // index of the `}` closing the `{` at i, strings skipped
+    let prof = 0;
+    for (let j = i; j < s.length; j++) {
+      const c = s[j];
+      if (c === '"' || c === "'") { const q = c; for (j++; j < s.length && s[j] !== q; j++) if (s[j] === '\\') j++; if (j >= s.length) throw new Error('string'); }
+      else if (c === '{') prof++;
+      else if (c === '}') { prof--; if (prof === 0) return j; if (prof < 0) throw new Error('brace'); }
+    }
+    throw new Error('unbalanced');
+  };
+  const corps = (b) => b.replace(/\s+/g, ' ').trim().replace(/\s*([;:{},])\s*/g, '$1').replace(/;(?=\})|;$/g, '');
+  const lire = (s, prelude) => {
+    let i = 0;
+    for (;;) {
+      while (i < s.length && /\s/.test(s[i])) i++;
+      if (i >= s.length) return;
+      let j = i, par = 0;
+      for (; j < s.length; j++) {
+        const c = s[j];
+        if (c === '"' || c === "'") { const q = c; for (j++; j < s.length && s[j] !== q; j++) if (s[j] === '\\') j++; }
+        else if (c === '(') par++;
+        else if (c === ')') par--;
+        else if (par <= 0 && (c === '{' || c === ';')) break;
+        else if (c === '}') throw new Error('brace');
+      }
+      if (j >= s.length) throw new Error('unterminated');
+      const tete = s.slice(i, j).replace(/\s+/g, ' ').trim();
+      if (s[j] === ';') { regles.push({ cle: `${prelude}${tete};`, selecteurs: null }); i = j + 1; continue; }
+      const f = fin(s, j);
+      const interieur = s.slice(j + 1, f);
+      i = f + 1;
+      if (tete === '') throw new Error('empty prelude');
+      if (/^@(media|supports)\b/i.test(tete)) { lire(interieur, `${prelude}${tete} | `); continue; }
+      const cle = `${prelude}${tete}{${corps(interieur)}}`;
+      if (tete.startsWith('@') || interieur.includes('{')) { regles.push({ cle, selecteurs: null }); continue; }
+      const sels = [];
+      let prof = 0, debut = 0;
+      for (let k = 0; k <= tete.length; k++) {
+        const c = tete[k];
+        if (c === '(' || c === '[') prof++;
+        else if (c === ')' || c === ']') prof--;
+        else if (k === tete.length || (c === ',' && prof === 0)) { sels.push(tete.slice(debut, k).trim()); debut = k + 1; }
+      }
+      regles.push({ cle, selecteurs: sels });
+    }
+  };
+  lire(sans, '');
+  return regles;
+}
+
+/** The classes a selector requires (those inside `:not(`, `:has(`, `:is(`, `:where(` ignored), or null when it holds a form read in doubt. */
+function classesDe(selecteur) {
+  if (/[\\&]|\[\s*class\b/i.test(selecteur)) return null;
+  let s = selecteur.replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, '""').replace(/\[[^\]]*\]/g, '');
+  for (;;) {
+    const m = /:(?:not|has|is|where|matches)\(/i.exec(s);
+    if (!m) break;
+    let prof = 1, k = m.index + m[0].length;
+    for (; k < s.length && prof; k++) { if (s[k] === '(') prof++; else if (s[k] === ')') prof--; }
+    s = s.slice(0, m.index) + ' ' + s.slice(k);
+  }
+  return new Set([...s.matchAll(/\.(-?[A-Za-z_][\w-]*)/g)].map((m) => m[1]));
+}
+
+const echapper = (t) => t.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&');
+/** « Possibly used »: the class as a whole token, or one of its hyphen prefixes ending with `-` (a name built at run time). */
+function peutEtreEmployee(classe, texte) {
+  if (new RegExp(`(?<![\\w-])${echapper(classe)}(?![\\w-])`).test(texte)) return true;
+  const parts = classe.split('-');
+  for (let n = 1; n < parts.length; n++) {
+    const prefixe = parts.slice(0, n).join('-') + '-';
+    if (prefixe.length > 1 && new RegExp(`(?<![\\w-])${echapper(prefixe)}`).test(texte)) return true;
+  }
+  return false;
+}
+
+/** Items of `a` and `b` outside their longest common subsequence: `{ retires, ajoutes }`. */
+function differences(a, b) {
+  const n = a.length, m = b.length;
+  const t = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) t[i][j] = a[i] === b[j] ? t[i + 1][j + 1] + 1 : Math.max(t[i + 1][j], t[i][j + 1]);
+  const retires = [], ajoutes = [];
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { i++; j++; } else if (t[i + 1][j] >= t[i][j + 1]) retires.push(a[i++]); else ajoutes.push(b[j++]);
+  }
+  while (i < n) retires.push(a[i++]);
+  while (j < m) ajoutes.push(b[j++]);
+  return { retires, ajoutes };
+}
+
+/**
+ * AD-ecrans-ui-5: the screens (among those reaching `ui.css`) touched by the rules that changed between the two
+ * versions, or null in any doubt (every screen reaching the sheet).
+ */
+function ecransDuCss(base, tete, fichiers, lire, graphe) {
+  try {
+    const rb = lireRegles(base), rt = lireRegles(tete);
+    const { retires, ajoutes } = differences(rb.map((r) => r.cle), rt.map((r) => r.cle));
+    const dejaRetires = new Set(retires);
+    if (ajoutes.some((c) => dejaRetires.has(c))) return null; // a move changes the cascade
+    const changees = [...rb.filter((r) => retires.includes(r.cle)), ...rt.filter((r) => ajoutes.includes(r.cle))];
+    const alternatives = []; // each: the classes one selector requires
+    for (const r of changees) {
+      if (!r.selecteurs) return null;
+      for (const sel of r.selecteurs) {
+        const c = classesDe(sel);
+        if (!c || !c.size) return null;
+        alternatives.push(c);
+      }
+    }
+    if (!alternatives.length) return new Set();
+    const frontend = fichiers.filter((f) => f.startsWith('frontend/src/') && SOURCE.test(f) && !f.endsWith('.test.ts'));
+    const serveur = fichiers.filter((f) => f.startsWith('src/') && f.endsWith('.ts') && !f.endsWith('.test.ts') && !f.startsWith('src/e2e/'));
+    const textes = new Map();
+    const texte = (f) => { if (!textes.has(f)) textes.set(f, lire(f) ?? ''); return textes.get(f); };
+    const tousFront = frontend.map(texte).join('\n');
+    const tousServeur = serveur.map(texte).join('\n');
+    for (const classe of new Set(alternatives.flatMap((c) => [...c]))) {
+      if (!peutEtreEmployee(classe, tousFront) || peutEtreEmployee(classe, tousServeur)) return null;
+    }
+    const atteints = new Set();
+    for (const [nom, vus] of graphe) {
+      if (!vus.has(UI_CSS)) continue;
+      const sources = [...vus].filter((f) => SOURCE.test(f)).map(texte).join('\n');
+      if (alternatives.some((c) => [...c].every((x) => peutEtreEmployee(x, sources)))) atteints.add(nom);
+    }
+    return atteints;
+  } catch {
+    return null;
+  }
+}
+
 /** The screens touched by the changed files `touches` (AD-niveau-2 and 3): a Set of screen names. */
 export function ecransTouches(touches, fichiers, lire, lireBase = () => null) {
   const ecrans = ecransDe(fichiers);
@@ -631,6 +770,11 @@ export function ecransTouches(touches, fichiers, lire, lireBase = () => null) {
         }
         continue;
       }
+    }
+    if (f === UI_CSS && [...graphe.values()].some((vus) => vus.has(f))) {
+      const avant = lireBase(f), apres = lire(f);
+      const lus = avant != null && apres != null ? ecransDuCss(avant, apres, fichiers, lire, graphe) : null;
+      if (lus) { lus.forEach((n) => atteints.add(n)); continue; }
     }
     if (f !== BARREL && f.startsWith(DOSSIER_UI) && /\.tsx?$/.test(f) && !f.endsWith('.test.ts')) {
       const reçus = [...demandes.values()].filter((d) => d.has(f));
