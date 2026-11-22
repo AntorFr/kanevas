@@ -1442,6 +1442,11 @@ is never deduced from a role in a universe, the admin grants it explicitly.
    « customised »; universes 2 to 4 still show the original. — E-9.
 5. In universe 2, he turns on « Hide the system's elements »: the pistol disappears from the search, his own sheets stay. — E-17.
 6. Back in universe 1 he presses « Go back to the system's element »: the copy goes after a confirmation. — E-9.
+7. Later Antor deletes « Laser pistol » from the system (confirmation naming the universes that customised it): universe 1's copy stays,
+   now an ordinary sheet of universe 1, no longer marked « customised » (B-120). — E-9, E-15.
+8. Antor detaches universe 4 from the system in its settings (confirmation: « the customised sheets stay in the universe »), or moves it to
+   another system: its copies stay as ordinary sheets (B-120). — E-14.
+9. The admin removes Antor from the GMs of the system (« Remove », B-114): nobody can edit the system any more, even if he was the last. — E-15.
 Léa (player of universe 3) reads the same original, only its player-readable sections, and sees no button to edit.
 
 ### P-28 — A key reads and writes a system (Monsieur, with his agent)
