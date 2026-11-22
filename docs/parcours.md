@@ -1459,3 +1459,13 @@ tools; the assistant of the universe does the same for a GM of the system (a mer
 system element (plain `[[…]]` links are resolved); propagating a later change of the system's element into its
 customisations (the copy is independent, and it outlives its original, B-120; a notice « the system's element changed since » is a later idea); deleting a system;
 several systems per universe; MCP tools or assistant tools beyond the sheet gestures of B-118 (types and tools of a system, catalogue, members).
+
+### `kanevas-systemes-jeu-surcharge` — the steps of P-27 it builds (2026-11-22)
+
+Steps 4, 6, 7 and 8 of P-27 (the rest belongs to `elements`, `recherche`). What the journey adds to them:
+
+- **Step 4** — pressing « Personnaliser pour cet univers » creates the copy and opens it in the same screen, with the mark « Personnalisé » and the editors a GM has on any sheet. Pressing it twice (two tabs, a second GM) opens the same copy, no second one (201 then 200). In the list, the search and every `[[…]]` of the universe, the entry is the copy; the system's element is never listed beside it. A link written before the customisation to the element's identifier opens the copy.
+- **Step 6** — « Revenir à l'élément du système » asks for a confirmation (« deletes this copy only ») and deletes the copy: the entry is the system's element again, read-only under its banner. The links written to the **copy's** identifier while it existed read as those of a deleted sheet, like any deleted sheet (AD-116); the confirmation says so.
+- **Step 7** — a GM of the system deletes the element: the window says how many universes hold a copy, names those the account belongs to (never the others), and says the copies stay; afterwards each copy is an ordinary sheet, its history reads « devenue fiche ordinaire », and the universe loses nothing.
+- **Step 8** — detaching the universe from its system, or choosing another system for it, asks for a confirmation **when the universe holds copies** (it states how many); with none, the gesture is the one of today, no window. Attaching an unattached universe to a system never touches a copy (a copy only exists under a system).
+- **Failure paths.** A player: no button, and 403 by the route. A GM in player mode: no button, 403 `mode_joueur` by the route. The original deleted while the GM was reading it: « Page introuvable. » on the next read; pressing « Personnaliser » on an element deleted meanwhile: « Cet élément n'existe plus. » (nothing created). The copy already gone (another GM reverted): « Cette fiche n'est plus personnalisée. » and the screen shows the system's element.
