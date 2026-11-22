@@ -90,6 +90,7 @@ for (const largeur of [1280, 390]) {
     it('station : « Vitesse : N/A », aucun moteur proposé, pas d’alerte moteur absent', async () => {
       await poser({ coque: 'station', choix: [] });
       const p = await ouvrir(largeur);
+      await textePresent(p, /Vitesse\s*:?\s*N\/A/);
       assert.match(await res(p), /Vitesse\s*:?\s*N\/A/);
       assert.doesNotMatch(await corps(p), /Aucun moteur de saut/);
       await p.getByRole('button', { name: 'Ajouter un moteur' }).first().click();
@@ -146,6 +147,7 @@ for (const largeur of [1280, 390]) {
     it('conception d’avant la tranche : chiffres enregistrés, aucune alerte neuve sans changement', async () => {
       await poser({ coque: 'ancienne', choix: [] });
       const p = await ouvrir(largeur);
+      await textePresent(p, /Vitesse\s*3/);
       assert.match(await res(p), /Vitesse\s*3/);
       assert.doesNotMatch(await corps(p), /Vitesse négative|N\/A|Limite dépassée/);
     });
