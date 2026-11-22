@@ -203,7 +203,7 @@ const LIBELLES_CAPACITE: Record<string, [string, string]> = {
 export function calculer(
   coque: CoqueResolue,
   lignes: LigneResolue[],
-  reglages: ReglagesVaisseau,
+  reglages: ReglagesVaisseau = { porteeSaut: 5 },
   equipage: number | null = null,
   reparation = 0,
   pj = 0,
@@ -433,7 +433,8 @@ export function calculer(
     if (robots > 0 && !lignes.some((l) => l.element.effet === 'support_automatisation' && l.quantite > 0)) {
       alerteEquipage('Des robots exigent un système d\'automatisation.')
     }
-    if (vivants < 1) alerteEquipage('Au moins un membre d\'équipage doit rester vivant.')
+    // A crew of 0 with no robot is only « insuffisant » (B-82, existing behaviour): the living-member check starts with robots.
+    if (robots > 0 && vivants < 1) alerteEquipage('Au moins un membre d\'équipage doit rester vivant.')
     else if (pj > vivants) alerteEquipage('Plus de personnages-joueurs que de membres d\'équipage vivants.')
     fraisEquipage = {
       jour: (reglages.soldeJour ?? SOLDE_JOUR_DEFAUT) * Math.max(0, vivants - pj) + (reglages.vivresJour ?? VIVRES_JOUR_DEFAUT) * Math.max(0, vivants),
