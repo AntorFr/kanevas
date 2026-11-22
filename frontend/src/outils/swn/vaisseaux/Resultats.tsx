@@ -3,7 +3,7 @@ import { AIDES, vitesseLue, credits, entretien, jours, masse, nombre } from './f
 import type { Alerte, Resultat } from './types';
 
 /** The figures of a result, with the labels of the text version (V-6). */
-export function Chiffres({ r, station = false }: { r: Resultat; station?: boolean }) {
+export function Chiffres({ r, station = false }: { r: Resultat; station?: boolean | null }) {
   const lignes: [string, string][] = [
     ['Prix', credits(r.prix)],
     ['Chantier', jours(r.chantierJours)],
@@ -11,7 +11,8 @@ export function Chiffres({ r, station = false }: { r: Resultat; station?: boolea
     ['PV', nombre(r.pv)],
     ['CA', nombre(r.ca)],
     ['Portée de saut', r.porteeSaut === null ? '—' : `${r.porteeSaut} cases`],
-    ...(station ? [['Vitesse', 'N/A'] as [string, string]] : r.vitesse != null ? [['Vitesse', vitesseLue(r.vitesse)] as [string, string]] : []),
+    // station === null: the hull's catalogue figures are not read yet, so the speed is not shown (no flash of a wrong « 0 »)
+    ...(station ? [['Vitesse', 'N/A'] as [string, string]] : station === false && r.vitesse != null ? [['Vitesse', vitesseLue(r.vitesse)] as [string, string]] : []),
     ...(r.armure != null ? [['Armure', String(r.armure)] as [string, string]] : []),
     ...(r.equipage != null ? [['Équipage', String(r.equipage.choisi)] as [string, string]] : []),
     ...(r.soutes != null ? [['Soutes', nombre(r.soutes)] as [string, string]] : []),

@@ -338,7 +338,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
           </h2>
           <div className="vx-defile">
           <div className={estompe ? 'vx-estompe' : undefined} data-estompe={estompe || undefined}>
-            <Chiffres r={resultat} station={donneesCoque?.moteur_spike === 0} />
+            <Chiffres r={resultat} station={donneesCoque ? donneesCoque.moteur_spike === 0 : null} />
           </div>
           {etatCalcul === 'erreur' && <ErreurCalcul onReessayer={() => setEssaiCalcul((n) => n + 1)} />}
           <div className="vx-alertes-zone"><Alertes alertes={alertes} /></div>
