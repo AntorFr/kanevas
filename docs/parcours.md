@@ -1430,20 +1430,20 @@ is never deduced from a role in a universe, the admin grants it explicitly.
   reader of an attached universe reads only those the system marks readable by players. *(P-27)*
 
 - **B-120** — Deleting a system's element, detaching a universe from its system or moving it to another one, **keeps every customisation**: the copy
-  becomes an ordinary sheet of its universe (no longer marked « customised », no pictogram, listed on its own); nothing is deleted
+  becomes an ordinary sheet of its universe (no longer marked « Personnalisé », no pictogram, listed on its own); nothing is deleted
   in a universe by a gesture on a system. *(P-27)*
 
 ### P-27 — One pistol, four universes (Antor, GM of four universes on Stars Without Number; the admin once)
 1. The admin opens the system (E-15), panel « GMs of the system », and adds Antor (B-114). — E-15.
 2. Antor opens the system, adds « Laser pistol » (type object) with its sections. — E-15, then E-9.
-3. In universe 1, he searches « pistol »: one hit with the system pictogram; he opens it, read-only, under a banner « Element of
+3. In universe 1, he searches « pistol »: one hit with the system pictogram; he opens it, read-only, under a banner « Élément de
    <system> ». — E-17, E-9.
-4. He presses « Customise for this universe », changes the damage, saves: universe 1 now lists his version marked
-   « customised »; universes 2 to 4 still show the original. — E-9.
+4. He presses « Personnaliser pour cet univers », changes the damage, saves: universe 1 now lists his version marked
+   « Personnalisé »; universes 2 to 4 still show the original. — E-9.
 5. In universe 2, he turns on « Hide the system's elements »: the pistol disappears from the search, his own sheets stay. — E-17.
-6. Back in universe 1 he presses « Go back to the system's element »: the copy goes after a confirmation. — E-9.
+6. Back in universe 1 he presses « Revenir à l'élément du système »: the copy goes after a confirmation. — E-9.
 7. Later Antor deletes « Laser pistol » from the system (confirmation naming the universes that customised it): universe 1's copy stays,
-   now an ordinary sheet of universe 1, no longer marked « customised » (B-120). — E-9, E-15.
+   now an ordinary sheet of universe 1, no longer marked « Personnalisé » (B-120). — E-9, E-15.
 8. Antor detaches universe 4 from the system in its settings (confirmation: « the customised sheets stay in the universe »), or moves it to
    another system: its copies stay as ordinary sheets (B-120). — E-14.
 9. The admin removes Antor from the GMs of the system (« Remove », B-114): nobody can edit the system any more, even if he was the last. — E-15.
@@ -1468,4 +1468,4 @@ Steps 4, 6, 7 and 8 of P-27 (the rest belongs to `elements`, `recherche`). What 
 - **Step 6** — « Revenir à l'élément du système » asks for a confirmation (« deletes this copy only ») and deletes the copy: the entry is the system's element again, read-only under its banner. The links written to the **copy's** identifier while it existed read as those of a deleted sheet, like any deleted sheet (AD-116); the confirmation says so.
 - **Step 7** — a GM of the system deletes the element: the window says how many universes hold a copy, names those the account belongs to (never the others), and says the copies stay; afterwards each copy is an ordinary sheet, its history reads « devenue fiche ordinaire », and the universe loses nothing.
 - **Step 8** — detaching the universe from its system, or choosing another system for it, asks for a confirmation **when the universe holds copies** (it states how many); with none, the gesture is the one of today, no window. Attaching an unattached universe to a system never touches a copy (a copy only exists under a system).
-- **Failure paths.** A player: no button, and 403 by the route. A GM in player mode: no button, 403 `mode_joueur` by the route. The original deleted while the GM was reading it: « Page introuvable. » on the next read; pressing « Personnaliser » on an element deleted meanwhile: « Cet élément n'existe plus. » (nothing created). The copy already gone (another GM reverted): « Cette fiche n'est plus personnalisée. » and the screen shows the system's element.
+- **Failure paths.** A player: no button, and 403 by the route. A GM in player mode: no button, 403 `mode_joueur` by the route. The original deleted while the GM was reading it: « Page introuvable. » on the next read; pressing « Personnaliser » on an element deleted meanwhile: « Cet élément n'existe plus. » (nothing created). The copy already gone (another GM reverted): « Cette fiche n'est plus personnalisée. » and the screen shows the system's element. The E-14 and E-15 windows fail as their screens say (unreadable counts: nothing is sent; right lost: « Vous ne pouvez plus modifier cet univers. »).
