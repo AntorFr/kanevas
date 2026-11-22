@@ -349,7 +349,7 @@ export function calculer(
     const m = max ?? 0
     const valeur = code === 'fret_cache' ? Math.round(FRET_CACHE[coque.classe - 1]! * n * 10) / 10
       : code === 'equipage_max_pct' ? m
-      : code === 'provisions' ? 2 ** n
+      : code === 'provisions' ? 2 * 2 ** n
       : code === 'hydroponie' ? m * 2 ** (n - 1)
       : code === 'sommeil_froid' ? m * n
       : code === 'soute_exode' ? SOUTE_EXODE[coque.classe - 1]! * 2 ** (n - 1)
