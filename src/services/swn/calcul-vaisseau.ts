@@ -1,6 +1,6 @@
 import type { Db } from '../../db/db.js';
 import { calculer, type AlerteVaisseau, type CoqueResolue, type LigneResolue, type NatureVaisseau,
-  type ElementResolu as ElementCalcul, type ResultatVaisseau } from '../../outils/swn/regles/vaisseau.js';
+  type ElementResolu as ElementCalcul, type ReglagesVaisseau, type ResultatVaisseau } from '../../outils/swn/regles/vaisseau.js';
 import { lireElement, type ElementResolu } from '../catalogues.js';
 import { ErreurService, introuvable } from '../erreurs.js';
 import { accessible, lireLigneOutil, resoudreOutil } from '../outils.js';
@@ -15,7 +15,9 @@ export interface LigneChoix { nature: NatureVaisseau; cle: string; quantite: num
   /** X-4: points of an exchange line and the line a doubling aims at. */
   points?: number; vise?: { nature: NatureVaisseau; cle: string } }
 /** `equipage`: `undefined` = the hull's minimum (F-2); `null` = no crew, kept as such. */
-export interface EntreeCalcul { coque: string; choix: LigneChoix[]; equipage?: number | null; reparation?: number }
+export interface EntreeCalcul { coque: string; choix: LigneChoix[]; equipage?: number | null; reparation?: number;
+  /** H-5: of the crew, how many are player characters and how many robots (stored; read by the calculation). */
+  pj?: number; robots?: number }
 export interface SortieCalcul { resultat: ResultatVaisseau | null; alertes: AlerteVaisseau[] }
 /** What the stored design already carries: the keys that may still resolve although masked (V-3). */
 export interface Porte {
@@ -76,14 +78,29 @@ export function validerReparation(v: unknown): number | undefined {
   return v;
 }
 
+/** The `pj` / `robots` of a request (H-5): absent or `null` = 0, else a non-negative integer, refused with its `champ`. */
+export function validerEffectif(v: unknown, champ: 'pj' | 'robots'): number | undefined {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 100000) {
+    throw invalide(champ === 'pj' ? 'Personnages-joueurs invalides.' : 'Robots invalides.', `${champ}_invalide`, champ);
+  }
+  return v;
+}
+
 const texteRetire = (nom: string) => `Élément retiré de cet univers : ${nom}. Remplacez-le pour enregistrer.`;
 export const alerteRetiree = (nom: string, ligne: number): AlerteVaisseau =>
   ({ niveau: 'bloquante', code: 'element_retire', texte: texteRetire(nom), ligne });
 
-/** The `portee_saut` of the module, resolved for the universe (G-5). */
-function porteeSaut(db: Db, universId: number): number {
-  const v = resoudreOutil(db, universId, OUTIL_VAISSEAUX).communs.reglages['portee_saut']?.valeur;
-  return typeof v === 'number' ? v : 5;
+/** The settings of the calculation, resolved for the universe: the module's `portee_saut` (G-5) and the tool's four (H-capacites-1 (4)). */
+function reglagesDe(db: Db, universId: number): ReglagesVaisseau {
+  const r = resoudreOutil(db, universId, OUTIL_VAISSEAUX);
+  const v = r.communs.reglages['portee_saut']?.valeur;
+  const nombre = (nom: string, defaut: number) => {
+    const x = Number(r.reglages[nom]?.valeur);
+    return Number.isFinite(x) ? x : defaut;
+  };
+  return { porteeSaut: typeof v === 'number' ? v : 5, diviseurPrix: nombre('diviseur_prix', 1), cadenceChantier: nombre('cadence_chantier', 25000),
+    soldeJour: nombre('solde_jour', 100), vivresJour: nombre('vivres_jour', 20) };
 }
 
 function resoudre(db: Db, universId: number, nature: string, cle: string, masque: boolean): ElementResolu | null {
@@ -109,6 +126,9 @@ export interface Resolution {
   inconnu: { champ: 'coque' | 'choix' } | null;
   /** The repair skill of the design (X-4). */
   reparation: number;
+  /** H-5. */
+  pj: number;
+  robots: number;
 }
 
 /** X-4: `points` and `vise` must belong to an element that has the effect; one above `points_max` is refused. */
@@ -158,13 +178,13 @@ export function resoudreChoix(db: Db, universId: number, e: EntreeCalcul, porte:
       ...(l.points === undefined ? {} : { points: l.points }), ...(l.vise === undefined ? {} : { vise: l.vise }), element: el.donnees as unknown as ElementCalcul };
   });
   const equipage = e.equipage === undefined ? (coque?.equipage_min ?? null) : e.equipage;
-  return { coque, lignes, equipage, reparation: e.reparation ?? 0, retirees, nomsRetires, inconnu };
+  return { coque, lignes, equipage, reparation: e.reparation ?? 0, pj: e.pj ?? 0, robots: e.robots ?? 0, retirees, nomsRetires, inconnu };
 }
 
 /** Calculates from resolved elements; `null` result and the alerts alone when one does not resolve. */
 export function calculerResolu(db: Db, universId: number, r: Resolution): SortieCalcul {
   if (r.retirees.length > 0 || !r.coque || r.lignes.some((l) => l === null)) return { resultat: null, alertes: r.retirees };
-  const resultat = calculer(r.coque, r.lignes as LigneResolue[], { porteeSaut: porteeSaut(db, universId) }, r.equipage, r.reparation);
+  const resultat = calculer(r.coque, r.lignes as LigneResolue[], reglagesDe(db, universId), r.equipage, r.reparation, r.pj, r.robots);
   return { resultat, alertes: resultat.alertes };
 }
 
@@ -175,12 +195,14 @@ export function calculerResolu(db: Db, universId: number, r: Resolution): Sortie
 export function calculerDepuisChoix(db: Db, acteur: Acteur, universId: number, entree: unknown,
   porte: Porte | null = null): SortieCalcul {
   if (!accessible(db, acteur, universId, OUTIL_VAISSEAUX)) throw introuvable();
-  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown; equipage?: unknown; reparation?: unknown };
+  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown; equipage?: unknown; reparation?: unknown; pj?: unknown; robots?: unknown };
   const e = validerChoix(o.coque, o.choix);
   const equipage = validerEquipage(o.equipage);
   if (equipage !== undefined) e.equipage = equipage;
   const reparation = validerReparation(o.reparation);
   if (reparation !== undefined) e.reparation = reparation;
+  e.pj = validerEffectif(o.pj, 'pj') ?? 0;
+  e.robots = validerEffectif(o.robots, 'robots') ?? 0;
   const r = resoudreChoix(db, universId, e, porte);
   controlerChoix(r);
   return calculerResolu(db, universId, r);

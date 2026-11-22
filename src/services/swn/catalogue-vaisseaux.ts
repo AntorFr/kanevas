@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { Db } from '../../db/db.js';
 import type { CibleCatalogue, DeclarationCatalogue, LigneCatalogue, StockageCatalogue } from '../../outils/declaration.js';
 import { EFFETS, PARAMETRES_EFFET, SENS_ECHANGE, estEffet, type ParametreEffet } from '../../outils/swn/regles/effets.js';
+import { estCapacite } from '../../outils/swn/regles/capacites.js';
 import { texteMasse } from '../../outils/swn/regles/masse.js';
 import { ErreurService, introuvable } from '../erreurs.js';
 
@@ -40,6 +41,9 @@ const libre = (nom: string, valide: (v: unknown) => boolean, phrase: string, jso
 const masse = (): Champ => ({ nom: 'masse', type: 'masse' });
 const ouiNon = (nom: string): Champ => ({ nom, type: 'oui-non' });
 
+/** H-4: the « effect » line of the book, on every element but an example: 1 to 200 characters, shown and never evaluated. */
+const EFFET_JEU: Champ = texteLibre('effet_jeu', 200);
+
 /** Element fields, shared by engines, fittings, defences, weapons and modifications. */
 const ELEMENT: Champ[] = [
   entier('cout'), entier('puissance'), masse(), entier('pv'), entier('ca'),
@@ -57,20 +61,21 @@ const CHAMPS: Record<NatureCatalogueVaisseau, Champ[]> = {
   coques: [entier('classe', 1, 4), entier('cout'), entier('pv'), entier('ca'), entier('puissance'), masse(),
     entier('emports'), entier('facteur_cout', 1), entier('facteur_puissance', 1), entier('facteur_masse', 1),
     facultatif('vitesse', 0, 99), facultatif('armure', 0, 99), facultatif('equipage_min', 0, 100_000), facultatif('equipage_max', 0, 100_000),
-    entier('moteur_spike', 0, 1, 1)], // H-2: 0 for a station
-  moteurs: [entier('niveau', 1, 6), ...ELEMENT, ...PLAGE_CLASSES],
+    entier('moteur_spike', 0, 1, 1), EFFET_JEU], // H-2: 0 for a station
+  moteurs: [entier('niveau', 1, 6), ...ELEMENT, ...PLAGE_CLASSES, EFFET_JEU],
   amenagements: [...ELEMENT, ...PLAGE_CLASSES, code('effet'), liste4('rend_puissance'), liste4('rend_masse'), facultatif('soute', 0, 1_000_000),
     liste4('soute_par_classe'), verifie('reduction_cout_pct', 1, 100, 'nombre entier de 1 à 100 attendu'),
     libre('reduction_base', (v) => v === 'coque' || v === 'amenagement', '« coque » ou « amenagement » attendu'),
-    libre('limite_par', (v) => v === 'armes', '« armes » attendu')], // H-3
-  defenses: [...ELEMENT, ...PLAGE_CLASSES, verifie('bonus_vitesse', -9, 9, 'nombre entier de −9 à 9 attendu')],
+    libre('limite_par', (v) => v === 'armes', '« armes » attendu'), // H-3
+    libre('capacite', estCapacite, 'capacité inconnue'), EFFET_JEU], // H-4
+  defenses: [...ELEMENT, ...PLAGE_CLASSES, verifie('bonus_vitesse', -9, 9, 'nombre entier de −9 à 9 attendu'), EFFET_JEU],
   armes: [entier('emport'), entier('munitions'), entier('cout_munition'), entier('classe_min', 1, 4, 1), ...ELEMENT,
-    texteLibre('degats', 40), facultatif('perforation', 0, 99), texteLibre('qualites', 120), facultatif('niveau_tech', 0, 9)],
+    texteLibre('degats', 40), facultatif('perforation', 0, 99), texteLibre('qualites', 120), facultatif('niveau_tech', 0, 9), EFFET_JEU],
   modifications: [...ELEMENT, facultatif('cout_pct', 1, 1000), code('effet'), facultatif('valeur', -9, 20), facultatif('points_max', 1, 99),
     code('sens'), facultatif('echange_puissance', 1, 99), reel('echange_masse', 0.5, 99),
     verifie('reparation_min', 1, 20, 'nombre entier de 1 à 20 attendu'),
     libre('effet_pct', () => true, ''), // range by effect, in `verifierEffet`
-    libre('echange_arrondi', (v) => v === 'installation', '« installation » attendu')],
+    libre('echange_arrondi', (v) => v === 'installation', '« installation » attendu'), EFFET_JEU],
   exemples: [{ nom: 'coque', type: 'texte' }, { nom: 'choix', type: 'choix' }, facultatif('equipage', 0, 100_000)],
 };
 

@@ -1,8 +1,15 @@
 // Ship calculation (V-2, B-75): pure, no database, no clock, no file read.
 import { texteMasse } from './masse.js'
 
-/** Credits of ship price built per day of construction (book mechanics, not catalogue data). */
-export const CADENCE_CHANTIER = 25000
+/** Credits of ship price built per day of construction, the default of the `cadence_chantier` setting (H-capacites-1 (3)). */
+export const CADENCE_CHANTIER_DEFAUT = 25000
+/** H-5: the defaults of the crew settings, and the one-off cost of a robot. */
+export const SOLDE_JOUR_DEFAUT = 100
+export const VIVRES_JOUR_DEFAUT = 20
+export const COUT_ROBOT = 1000
+/** H-4: hidden hold in tonnes, and the exodus bay's hold, by hull class 1 to 4. */
+const FRET_CACHE = [0.2, 2, 20, 200]
+const SOUTE_EXODE = [0, 0, 1000, 5000]
 /** Yearly upkeep as a share of the price. */
 export const TAUX_ENTRETIEN = 0.05
 /** Mass of one extra magazine of a launcher (book mechanics, E-3). */
@@ -79,6 +86,9 @@ export interface ElementResolu {
   effet_pct?: number
   echange_arrondi?: string
   reduction_base?: string
+  /** H-4/H-5: a code of `CODES_CAPACITE`, and the book's « Effect » text, never evaluated. */
+  capacite?: string
+  effet_jeu?: string
 }
 
 export interface LigneResolue {
@@ -96,7 +106,15 @@ export interface LigneResolue {
 
 export interface ReglagesVaisseau {
   porteeSaut: number
+  /** H-capacites-1 (3)/(4): absent = the defaults, so a caller that does not pass them computes as before. */
+  cadenceChantier?: number
+  diviseurPrix?: number
+  soldeJour?: number
+  vivresJour?: number
 }
+
+/** H-4: a capacity of the result, in the order of `CODES_CAPACITE`. */
+export interface CapaciteVaisseau { code: string; libelle: string; valeur: number; unite: string }
 
 export interface AlerteVaisseau {
   niveau: 'bloquante' | 'a_surveiller'
@@ -133,6 +151,14 @@ export interface ResultatVaisseau {
   /** X-3: absent in a result stored before the slice, read as `null`. */
   soutes?: number | null
   reparation?: { choisie: number; min: number | null } | null
+  /** H-4: absent in a result stored before the slice, read as `null`. */
+  capacites?: CapaciteVaisseau[] | null
+  /** H-4: the `effet_jeu` of each chosen element, by line index, in the order of the lines; absent before the slice. */
+  effetsJeu?: { ligne: number; nature: NatureVaisseau; cle: string; nom: string; texte: string }[] | null
+  /** H-5: `null` without a chosen crew, absent before the slice. `jour` is credits per day; `robots` one-off, not divided, outside the price. */
+  fraisEquipage?: { jour: number; robots: number } | null
+  /** H-capacites-1 (3): the divisor the price was divided by; absent before the slice (read as 1). */
+  diviseurPrix?: number
   alertes: AlerteVaisseau[]
 }
 
@@ -154,6 +180,12 @@ function parInstallation(base: number, diese: boolean, facteur: number): number 
   return diese ? Math.ceil(base * facteur - 1e-9) : base
 }
 
+const LIBELLES_CAPACITE: Record<string, [string, string]> = {
+  fret_cache: ['Fret caché', 't'], equipage_max_pct: ['Équipage maximum', 'personnes'], provisions: ['Provisions', 'mois'],
+  hydroponie: ['Hydroponie', 'personnes'], sommeil_froid: ['Sommeil froid', 'personnes'], soute_exode: ['Soute d\'exode', 'personnes'],
+  canots: ['Canots de sauvetage', 'canots'], cabines_luxe: ['Cabines de luxe', 'cabines'], colonie: ['Colonie', 'personnes'],
+}
+
 /*
  * Order of `calculer` (H-10 (1)):
  *   1. per line: cost, per-installation power and mass (diesis rounded before the quantity, H-1), hit points, armour class,
@@ -161,17 +193,21 @@ function parInstallation(base: number, diese: boolean, facteur: number): number 
  *   2. [slot: effects of modifications on elements — next slices];
  *   3. system engine returns, then the exchange of points;
  *   4. targeted adjustments, then the optimised holds (last mass step);
- *   5. [slot: capacities and crew costs — next slices];
+ *   5. maximum crew (`equipage_max_pct`, H-4), then the capacities (H-4, reading that maximum), then the crew cost and its
+ *      blocking checks (H-5, only with a chosen crew);
  *   6. alerts: blocking (power, mass, emports, limits, engine, class incl. weapons' `classe_min`, targets), then watch
  *      (reserves, crew, repair, negative speed);
- *   7. speed (simple sum, may be negative, H-6; `null` without a hull speed) and armour (floored at 0).
+ *   7. speed (simple sum, may be negative, H-6; `null` without a hull speed) and armour (floored at 0);
+ *   8. last, the price divisor on the totals (H-capacites-1 (3)): displayed price, upkeep and build days follow it.
  */
 export function calculer(
   coque: CoqueResolue,
   lignes: LigneResolue[],
-  reglages: ReglagesVaisseau,
+  reglages: ReglagesVaisseau = { porteeSaut: 5 },
   equipage: number | null = null,
   reparation = 0,
+  pj = 0,
+  robots = 0,
 ): ResultatVaisseau {
   let prix = coque.cout
   let pv = coque.pv
@@ -300,6 +336,33 @@ export function calculer(
   }
   const emports = { utilises: emportsUtilises, total: coque.emports }
 
+  // H-4: the maximum crew first (`equipage_max_pct`: +100 % of the hull's own per installation), the capacities read it.
+  const installations = (code: string) => lignes.reduce((n, l) => n + (l.element.capacite === code && l.quantite > 0 ? l.quantite : 0), 0)
+  const maxCoque = coque.equipage_max ?? null
+  const max = maxCoque === null ? null : maxCoque + maxCoque * installations('equipage_max_pct')
+  const capacites: CapaciteVaisseau[] = []
+  for (const code of Object.keys(LIBELLES_CAPACITE)) {
+    const n = installations(code)
+    if (n === 0) continue
+    const lecture = code !== 'fret_cache' && code !== 'provisions' && code !== 'soute_exode'
+    if (lecture && max === null) continue
+    const m = max ?? 0
+    const valeur = code === 'fret_cache' ? Math.round(FRET_CACHE[coque.classe - 1]! * n * 10) / 10
+      : code === 'equipage_max_pct' ? m
+      : code === 'provisions' ? 2 * 2 ** n
+      : code === 'hydroponie' ? m * 2 ** (n - 1)
+      : code === 'sommeil_froid' ? m * n
+      : code === 'soute_exode' ? SOUTE_EXODE[coque.classe - 1]! * 2 ** (n - 1)
+      : code === 'canots' ? Math.ceil(m / 20) * n
+      : code === 'cabines_luxe' ? Math.ceil(m / 10) * n
+      : 5 * m * n
+    if (valeur === 0) continue
+    const [libelle, unite] = LIBELLES_CAPACITE[code]!
+    capacites.push({ code, libelle, valeur, unite })
+  }
+  const effetsJeu = lignes.flatMap((l, i) => l.element.effet_jeu === undefined ? []
+    : [{ ligne: i, nature: l.nature, cle: l.cle, nom: l.nom, texte: l.element.effet_jeu }])
+
   const bloquantes: AlerteVaisseau[] = []
   const surveiller: AlerteVaisseau[] = []
   if (puissanceLibre < 0) {
@@ -362,6 +425,22 @@ export function calculer(
     } else return
     bloquantes.push({ niveau: 'bloquante', code: 'cible_invalide', texte: `« ${l.nom} » : ${raison}`, ligne: i })
   })
+  // H-5: with no chosen crew, none of the crew checks runs.
+  let fraisEquipage: { jour: number; robots: number } | null = null
+  if (equipage !== null) {
+    const vivants = equipage - robots
+    const alerteEquipage = (texte: string) => bloquantes.push({ niveau: 'bloquante', code: 'equipage_robots', texte })
+    if (robots > 0 && !lignes.some((l) => l.element.effet === 'support_automatisation' && l.quantite > 0)) {
+      alerteEquipage('Des robots exigent un système d\'automatisation.')
+    }
+    // A crew of 0 with no robot is only « insuffisant » (B-82, existing behaviour): the living-member check starts with robots.
+    if (robots > 0 && vivants < 1) alerteEquipage('Au moins un membre d\'équipage doit rester vivant.')
+    else if (pj > vivants) alerteEquipage('Plus de personnages-joueurs que de membres d\'équipage vivants.')
+    fraisEquipage = {
+      jour: (reglages.soldeJour ?? SOLDE_JOUR_DEFAUT) * Math.max(0, vivants - pj) + (reglages.vivresJour ?? VIVRES_JOUR_DEFAUT) * Math.max(0, vivants),
+      robots: COUT_ROBOT * robots,
+    }
+  }
   if (uniteMoteur === 0 && !station) {
     surveiller.push({ niveau: 'a_surveiller', code: 'moteur_absent', texte: 'Aucun moteur de saut : ce vaisseau ne peut pas voyager.' })
   }
@@ -376,7 +455,6 @@ export function calculer(
     surveiller.push({ niveau: 'a_surveiller', code: 'vitesse_negative', texte: 'Vitesse négative : malus aux jets de Pilotage' })
   }
   const min = coque.equipage_min ?? null
-  const max = coque.equipage_max ?? null
   if (equipage !== null && min !== null && equipage < min) {
     surveiller.push({ niveau: 'a_surveiller', code: 'equipage_insuffisant', texte: `Équipage insuffisant : ${equipage} sur ${min} au moins.` })
   }
@@ -393,6 +471,10 @@ export function calculer(
   const vitesseBase = vitesseSimple
   const armureBase = coque.armure === undefined ? null : Math.max(0, coque.armure + effetArmure) + blindage
 
+  // H-capacites-1 (3): the divisor comes last, on the totals only; the line part prices above stay whole.
+  const diviseur = reglages.diviseurPrix ?? 1
+  const prixAffiche = Math.ceil(prix / diviseur)
+
   return {
     coque: { cle: coque.cle, nom: coque.nom, classe: coque.classe },
     lignes: lignes.map((l, i) => ({
@@ -402,19 +484,23 @@ export function calculer(
       ...(l.vise ? { vise: { nature: l.vise.nature, cle: l.vise.cle } } : {}),
       ...(ajustes.has(i) ? { ajuste: ajustes.get(i)! } : {}),
     })),
-    prix,
+    prix: prixAffiche,
     pv,
     ca,
     puissanceLibre,
     masseLibre,
     emports,
-    chantierJours: Math.ceil(prix / CADENCE_CHANTIER),
-    entretien: Math.floor(prix * TAUX_ENTRETIEN + 0.5 + 1e-9),
+    chantierJours: Math.max(1, Math.ceil(prixAffiche / (reglages.cadenceChantier ?? CADENCE_CHANTIER_DEFAUT))),
+    entretien: Math.floor(prixAffiche * TAUX_ENTRETIEN + 0.5 + 1e-9),
     porteeSaut: station || niveauMoteur === null ? null : reglages.porteeSaut * (niveauMoteur + 1),
     vitesse: vitesseBase,
     armure: armureBase,
     equipage: equipage === null ? null : { choisi: equipage, min, max },
     soutes,
+    capacites,
+    effetsJeu,
+    fraisEquipage,
+    diviseurPrix: diviseur,
     reparation: reparationMin === null && reparation === 0 ? null : { choisie: reparation, min: reparationMin },
     alertes: [...bloquantes, ...surveiller],
   }

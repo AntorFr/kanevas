@@ -36,7 +36,7 @@ test('0046 : montée depuis 0045, coque à moteur_spike 1, aménagement à limit
   const avantA = db.prepare('SELECT * FROM swn_catalogue_amenagements').get() as any;
   const avantK = db.prepare('SELECT * FROM swn_conceptions').get();
 
-  assert.deepEqual(migrate(db), [46]);
+  assert.deepEqual(migrate(db), [46, 47]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
 
   const c = db.prepare('SELECT * FROM swn_catalogue_coques').get() as any;
@@ -45,7 +45,7 @@ test('0046 : montée depuis 0045, coque à moteur_spike 1, aménagement à limit
   assert.equal(a.limite_par, null);
   for (const [k, x] of Object.entries(avantC)) assert.deepEqual(c[k], x, `coque.${k}`);
   for (const [k, x] of Object.entries(avantA)) assert.deepEqual(a[k], x, `amenagement.${k}`);
-  assert.deepEqual(db.prepare('SELECT * FROM swn_conceptions').get(), avantK);
+  assert.deepEqual(db.prepare('SELECT * FROM swn_conceptions').get(), { ...(avantK as object), pj: 0, robots: 0 }); // 0043 adds pj and robots, at 0
   assert.deepEqual(v(), avantV);
   assert.equal(c.version, avantC.version); assert.equal(c.version_catalogue, 'v7');
 

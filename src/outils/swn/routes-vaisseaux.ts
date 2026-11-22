@@ -38,13 +38,13 @@ export function routesVaisseaux(app: FastifyInstance, garde: (cle: string) => pr
   app.post(`${BASE}/conceptions`, opts, async (request, reply) => {
     const b = objet(request.body);
     const creee = creerConception(app.db, acteur(request), univers(request), {
-      ficheId: b.ficheId as number, coque: b.coque as string, auteurId: (b.auteurId ?? null) as number | null,
+      ficheId: b.ficheId as number, coque: b.coque as string, auteurId: (b.auteurId ?? null) as number | null, pj: b.pj, robots: b.robots,
     });
     return reply.code(201).send(creee);
   });
   app.put(`${BASE}/conceptions/:fid`, opts, async (request) => {
     const b = objet(request.body);
     return enregistrerConception(app.db, acteur(request), univers(request), fiche(request),
-      { coque: b.coque, choix: b.choix, version: b.version, equipage: b.equipage, reparation: b.reparation });
+      { coque: b.coque, choix: b.choix, version: b.version, equipage: b.equipage, reparation: b.reparation, pj: b.pj, robots: b.robots });
   });
 }
