@@ -1400,3 +1400,49 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 | Each human gesture has a screen | open, move, name, link, illustrate, anchor, place an element: E-23 · hide a system: E-21 · tune: E-24 · take over: no screen, the import script and its batch report (E-18 reports, P-20) · agent gestures: no screen, the catalogue — chosen. |
 | Each screen has its data | E-23: `swn_astres`, `swn_formations`, `swn_elements`, `swn_systemes`, `swn_routes` (the exits) · E-24: `swn_reglages`, `swn_aspects`, `swn_galaxies` (seed, default density), `swn_zones` (density per zone, read) · E-9: the block of the sheet reads `swn_astres`, `swn_formations`, `swn_elements` — **holds**. |
 | Each entity serves a journey | `swn_astres` P-22, P-24, P-25 · `swn_formations` P-22, P-24, P-25 · `swn_elements` P-22, P-26 · `swn_reglages`, `swn_aspects` P-23 — **holds**. |
+
+## Framing of `kanevas-systemes-jeu` (2026-11-22)
+
+The elements of a game system (rules, creatures, objects: today the « gabarits » of E-15, raw Markdown without
+sections, search, relations or API) become **real sheets**, written once in the system and seen from every universe
+attached to it. Owner's decisions (22/11): no existing Markdown content is kept (nothing to migrate); a system has its
+own list of people allowed to edit it; every player or GM of an attached universe always reads it; the right to edit
+is never deduced from a role in a universe, the admin grants it explicitly.
+
+- **B-113** — An element of a game system is a **sheet** with sections, a type, links and a title, like a universe's
+  sheet; it exists **once**, in the system, and an attached universe reads it without a copy. *(P-27)*
+- **B-114** — A game system has **its own GMs**: the instance admin adds or removes them, one account at a time. Being a
+  GM or a player of an attached universe gives the **read** right only, never the right to edit; a system with no GM
+  can be edited by nobody. *(P-27)*
+- **B-115** — In a universe, a GM can **customise** a system element: the universe then holds its own copy of the
+  sheet (same sections, same type), which he edits or completes; the system and the other universes keep the original.
+  He can **go back** to the system's element, which deletes only the copy. *(P-27)*
+- **B-116** — Within a universe, an element and its customisation are **one** entry: lists, search, links and the
+  sheet show the customised one, marked as such; the system's element is never listed twice. *(P-27)*
+- **B-117** — Search (E-17) and lists carry a **pictogram** on every element that comes from a system, and a filter
+  « Hide the system's elements » (off by default); a customised element counts as the universe's own. *(P-27)*
+- **B-118** — The import API and the MCP door **read and write a system's elements** at the system's own address, by
+  a token that carries a level on that system; the effective access is the lesser of the token's level and the
+  account's right on the system (B-114); a player's or a foreign GM's token reads, never writes. *(P-28)*
+- **B-119** — An element's sections follow the universe rules (AD-18, AD-19): the system's GMs read all of them; a
+  reader of an attached universe reads only those the system marks readable by players. *(P-27)*
+
+### P-27 — One pistol, four universes (Antor, GM of four universes on Stars Without Number; the admin once)
+1. The admin opens the system (E-15), panel « GMs of the system », and adds Antor (B-114). — E-15.
+2. Antor opens the system, adds « Laser pistol » (type object) with its sections. — E-15, then E-9.
+3. In universe 1, he searches « pistol »: one hit with the system pictogram; he opens it, read-only, under a banner « Element of
+   <system> ». — E-17, E-9.
+4. He presses « Customise for this universe », changes the damage, saves: universe 1 now lists his version marked
+   « customised »; universes 2 to 4 still show the original. — E-9.
+5. In universe 2, he turns on « Hide the system's elements »: the pistol disappears from the search, his own sheets stay. — E-17.
+6. Back in universe 1 he presses « Go back to the system's element »: the copy goes after a confirmation. — E-9.
+Léa (player of universe 3) reads the same original, only its player-readable sections, and sees no button to edit.
+
+### P-28 — A key reads and writes a system (Monsieur, with his agent)
+He creates a token (token screen, E-18 of `kanevas-synchro`), gives it level « write » on the system, and the agent
+lists and writes elements at `/api/v1/systemes/<id|key>/…`; the same token still opens his universes. — token screen, API.
+
+**Out of scope of `kanevas-systemes-jeu`:** importing a rules reference; typed relations between a universe's sheet and a
+system element (plain `[[…]]` links are resolved); propagating a later change of the system's element into its
+customisations (the copy is independent; a notice « the system's element changed since » is a later idea); deleting a system;
+assistant tools writing system elements; several systems per universe.

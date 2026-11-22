@@ -5038,3 +5038,25 @@ stay for what is not yet loaded.
 Cross-check: B-99 → E-9 block, `PATCH /fiches/:fid {cle}`; B-100 → E-14 field (P-22 return of `eneria-v2`), `PATCH /univers/:id {cle}`; B-101 →
 router (above) + 302; admin who is not a GM of the universe: no E-9 block, and E-14 answers « Page introuvable. » (the GM guard, as a player); B-104 → the section key travels in the API (`cle` on a section's view); no screen edits it in
 this slice (the import and the MCP address by it).
+
+## `kanevas-systemes-jeu` — the system's elements as sheets (2026-11-22)
+
+No new layout: the system's page and the sheet screens are reused in a « system space ».
+
+- **E-15 Game system (rewritten).** Two panels: **Elements** (the E-8 list of the system's sheets, grouped by type, with
+  « New element » for the system's GMs) and **GMs of the system** (admin only: add or remove an account). Tabs
+  « Rules / Creatures / Objects » of the gabarits are replaced by the types filter of E-8. Readers who are not GMs of the system see
+  the list read-only. Element address: `/systemes/:sid/fiches/:fid`.
+- **E-9 Sheet, in a system space.** The ordinary sheet (sections, links) for the system's GMs; read-only for the rest.
+- **E-9 Sheet, a system element opened from a universe.** Banner « Element of <system> — read-only » and, for a GM
+  outside player mode, the button « Customise for this universe » (creates the copy and opens it). On a customisation: mark
+  « Customised », link « See the system's element » and the button « Go back to the system's element » (confirmation: deletes this
+  copy only). States: loading, unknown or unreadable element → « Page introuvable. », customisation conflict (copy already exists → opens it).
+- **E-17 Search and E-8 lists.** Pictogram on the system's elements (the component is the design-system guardian's verdict),
+  filter « Hide the system's elements » beside the type filter, kept in the address (`?sans-systeme=1`). Empty result with the filter on says
+  so and offers to turn it off.
+- **E-14** unchanged (attach/detach); « Create a system » stays.
+
+Matrix: system GM — edits elements, customises in his universes; admin — grants and removes system GMs, does not edit unless granted;
+GM of an attached universe — reads, customises in his universe; player — reads player-readable sections.
+Mockups: none new; the E-9 banner and the E-17 pictogram are judged on captures by the guardian and the visual review.

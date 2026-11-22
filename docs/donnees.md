@@ -866,3 +866,24 @@ universe name without a letter gives `univers-<id>`), triggers created, the hist
 `better-sqlite3` runs triggers inside the write's transaction: a write and its history line are
 atomic.
 
+
+## `kanevas-systemes-jeu` scope: the model (2026-11-22)
+
+**A system owns a space**: a technical row of `univers` (`univers.espace_systeme_id` → `systemes_jeu`, unique, `NULL` for a
+real universe) that holds the system's element sheets. It is never listed (selector, E-1, admin counts), has no key in the
+URL and cannot be entered as a universe. This reuses `fiches`, `sections`, FTS5, links, history, keys and the import without a second
+sheet table. Its `membres` rows (role `mj`) are **the GMs of the system** (B-114): written only by the admin.
+
+| Entity | Change |
+|---|---|
+| `univers` | + `espace_systeme_id` (nullable, unique) |
+| `fiches` | + `surcharge_de` (nullable, → a sheet of the system's space): set only on the universe's copy; at most one per (universe, element); the copy's `type` equals the original's |
+| `gabarits` | **dropped** (no data kept, owner's decision); `systemes_jeu.nom` stays |
+| `jetons_systemes` | `jeton_id`, `systeme_id`, `niveau` (`lecture` \| `ecriture`), like `jetons_univers` (AD-144) |
+
+**Rights** (rule 12, new): read of a system's sheet = member of an attached universe (any role) or GM of the system, to the sections
+`joueurs_lisent` for the first, all for the second; write = GM of the system (a `membres` row of the space), never deduced from a universe
+role; the instance admin writes `membres` of a space only. An element with no readable section is « Page introuvable. » (AD-22).
+Customisation: `personnaliser` copies the sheet and its sections (same visibility flags) into the universe, GM outside player mode only;
+`revenir` deletes the copy (`supprimerFiche`, AD-119). The universe's views substitute the copy for the original by `surcharge_de`.
+Migration: next free number when the slice merges (AD-51); existing systems get no GM until the admin grants one.
