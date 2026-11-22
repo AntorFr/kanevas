@@ -73,7 +73,7 @@ have it (sheet, map and, since `kanevas-import`, search E-17).
 | **E-17 Search** *(kanevas-import)* | « Rechercher » in the sidebar; `/`; a label tapped on E-9 ; *(kanevas-fiches-liees)* « Chercher parmi » of a « Fiches liées » block | search all types, titles, aliases and readable sections; filter by type; *(kanevas-fiches-liees)* advanced search: linked to a sheet, by nature, sub-places included, alive / dead and by label; *(kanevas-scenarios)* the status badge of an adventure result | P-12, P-10, P-17 |
 | **E-19 Media library** *(kanevas-import)* | « Médiathèque » navigation; « Choisir dans la médiathèque » in the editor and illustration (E-9) | see files (images, documents) accessible to the account and where they are used; GM: add, rename, set visibility, delete | P-16, P-10 |
 | **E-18 API access** *(kanevas-import)* | « Univers » ▸ « Accès par API » navigation (GM) | create, list, revoke the universe's API tokens; see import batches and their refusals *(`kanevas-synchro`: batches only; tokens move to E-23 and E-5)* | P-10 *(P-11 replaced by P-25)* |
-| **E-23 My API tokens** *(kanevas-synchro)* | account menu (every account) | create, change the accesses of, revoke one's API tokens; the value shown once (B-94) | P-25 |
+| **E-23 My API tokens** *(kanevas-synchro)* | account menu (every account) | create, change the accesses of, revoke one's API tokens, systems included (« Systèmes de jeu » block); the value shown once (B-94) | P-25, P-28 |
 | **E-20 Tools** *(kanevas-outils)* | « Outils » tab of E-15 (system) and E-14 (universe) | enable a tool, set its visibility per role and its settings (system value, universe value), import a catalogue (preview then confirmation), see dependencies, disable, delete data; the system's responsible | P-17, P-21 |
 | **E-21 Galaxy map** *(kanevas-outils)* | E-10 (a tool map); E-3; a shareable link | explore the grid, measure, calculate a route; GM: place, promote, plot, draw, Player mode, GM document | P-18, P-20 |
 | **E-22 Ship designer** *(kanevas-outils)* | « Outils » sidebar; a ship sheet's managed section (E-9); a shareable link | readable designs list and a design's workshop: choices, budgets, warnings, save, recalculate | P-19 |
@@ -125,7 +125,7 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-17 *(kanevas-import)* | search all sheets in the universe, including GM blocks; in **Player mode**, as a player (no GM blocks or sheets unreadable by a player); filters: enabled types; sheets of disabled types remain results under « Tous » | search readable content, excluding GM blocks; type and label filters from visible sheets only; mode toggle: absent (hidden); GM blocks: excluded from search (never read); « Alias et étiquettes… » on E-9: hidden | — |
 | E-19 *(kanevas-import)* | everything: add, rename, visibility, delete; complete « Utilisé dans » | files visible to players and files they added; « Utilisé dans » restricted to readable sheets; no adding from E-19 (**hidden**; they add a file through a section they write, E-9), no settings or deletion (**hidden**) | — |
 | E-18 *(kanevas-import)* | *(kanevas-synchro: batches only; tokens move to E-23, and to E-5 for the admin)* create a token; see and revoke all the universe's tokens (including another GM's); see batches | — (**hidden**: absent from the sidebar, « Page introuvable. » by address) | — |
-| E-23 *(kanevas-synchro)* | its tokens: create, change accesses, revoke | its tokens: create, change accesses, revoke | its tokens |
+| E-23 *(kanevas-synchro)* | its tokens: create, change accesses, revoke | its tokens: create, change accesses, revoke | its tokens ; the block « Systèmes de jeu » lists the systems the account reads (GM of a system: « Écriture » offered; member of an attached universe, player included: « Lecture »; neither: no block) |
 | E-24 *(kanevas-synchro)* | read the universe's history, filter, restore a value under 30 days old | — | — |
 
 What `kanevas-scenarios` adds to the lines above: **E-17** — the status badge on the result card of an adventure, for every role that reads the sheet; **E-12** — the GM creates sheets through `creer_fiche` (AD-126), with a « Fiche « X » créée » writing block and « Ouvrir » leading to E-9; the player has no creation tool; **E-18** — no « Campagnes » or « Scénarios » counter in a lot: adventures count among « Fiches ».
@@ -5063,16 +5063,14 @@ No new layout: the system's page and the sheet screens are reused in a « system
 - **E-15, GMs panel.** The admin types the account's identifier in one field and presses « Add » (same gesture as the
   admin's universe members, AD-86); each GM is a row with « Remove ». A system created by an account gives that account no GM
   row: the admin grants it. Enabling or disabling a type of the system is the GMs' switch only.
-- **E-23 My API tokens (block « Systems », added after `kanevas-jeton-unique`; the creation and the change of accesses live on E-23, E-18 keeps the batches only).** One row per system the account reads, with a level
-  « None / Read / Write »; « Write » is offered only where the account is a GM of the system. Saved with the token (at creation: `systemes` of `POST /api/compte/jetons`; later: `PATCH /api/compte/jetons/:jid`, AD-155); a token with
-  « None » everywhere reads no system.
+- **E-23 My API tokens (block « Systèmes de jeu »; superseded by the section « E-23 — the « Systèmes de jeu » block » below, which is the text to build from; the creation and the change of accesses live on E-23, E-18 keeps the batches only).** *Superseded wording:* « None / Read / Write » is « — / Lecture / Écriture » there.
 - **E-14** unchanged (attach/detach); « Create a system » stays.
 
 Matrix: system GM — edits elements, customises in his universes; admin — grants and removes system GMs, does not edit unless granted;
 GM of an attached universe — reads, customises in his universe; player — reads player-readable sections.
 Mockups: none new; the E-9 banner and the E-17 pictogram are judged on captures by the guardian and the visual review.
 
-### E-23 — the « Systèmes de jeu » block (`kanevas-systemes-jeu-api`, B-118, P-28, AD-155, AD-systemes-api-1 to 4)
+### E-23 (My API tokens) — the « Systèmes de jeu » block (`kanevas-systemes-jeu-api`, B-118, P-28, AD-155, AD-systemes-api-1 to 4)
 
 *Mockup*: `docs/maquettes/e23-jetons.html`, states `#etat-systemes`, `#etat-sans-systeme`, `#etat-systemes-erreur`, and the second line of the first
 token of the list. The block lands in the box « Créer un jeton » and in « Modifier les accès », **after** « Univers atteints » and before the note of the
@@ -5090,16 +5088,17 @@ block is added to the form `kanevas-jeton-unique` leaves, it is not a rewrite of
 - **Absent when there is nothing to choose.** An account that reads no system (no attached universe, GM of no system) sees **no block and no label**: the form
   is the one of `kanevas-jeton-unique`, unchanged. The block is also hidden, with its values kept, while the permission « Contenu » of `kanevas-jeton-unique` is
   unchecked (a tool-only token opens no system route, AD-systemes-api-2); checking « Contenu » again shows it as it was.
-- **The line of a token** (second line of its accesses, after the universes): « Systèmes : Stars Without Number : écriture · Cendres de Vaëlis : lecture »,
+- **The line of a token** (second line of its accesses, after the universes): « Systèmes : Stars Without Number : écriture · Cendres de Vaëlis (règles maison) : lecture »,
   only the lines off « — »; a token with no system row shows nothing more. A system the account no longer reads keeps its entry, followed by
   « (plus lecteur) » (as « (plus membre) » for a universe); a system where the account is no longer a GM and the token says « écriture »
   reads « Stars Without Number : écriture (lecture seule, vous n'êtes plus MJ du système) » — the level shown is the one **chosen**, the effective one is the lesser (as for a player's universe, E-23 above).
 - **« Modifier les accès »** opens with the token's current lines (the same entries as above, kept even for a system no longer read: the line is shown and its choice can only be lowered or set to « — », never raised). Saving replaces the rows of the token in
   `jetons_systemes` with the lines off « — »; the token's universes, value, name and expiry do not change. The admin's box on E-5 shows the **owner's** lines.
-- **States of the block.** *Loading*: the block's label and a skeleton of two lines while `GET /api/systemes` runs (the rest of the form is usable; « Créer le jeton » waits for it only when the block is
+- **States of the block.** *Loading* (in « Créer un jeton » **and** in « Modifier les accès »): the block's label and a skeleton of two lines while `GET /api/systemes` runs (the rest of the form is usable; the save button waits for it only when the block is
   shown). *Load error*: « Impossible de charger les systèmes. » with « Réessayer » in the block (alert style of the box's save error), the list absent, the rest of the form usable; creating then sends
   no `systemes` (nothing to lose), while « Modifier les accès » keeps the token's existing rows untouched (no `systemes` key is sent). *Save error*: the box's own « Impossible d'enregistrer. ».
   *A refusal* (`ecriture` on a system the account is no longer a GM of by then, 422 `invalide`, `champ: systemes`): « Vous n'êtes plus MJ de ce système. » under the line, the box reloaded with the real choices, nothing created. *Connection lost*: as the rest of the box.
+- **Place of the block.** After « Univers atteints » in the creation box, after the list « Accès par univers » in « Modifier les accès », and in the same place in E-5's box. **Vocabulary**: « Systèmes de jeu » is the label, the second line of a token reads « Systèmes : … »; levels are « Lecture » / « Écriture » (a system has no « Lecture + écriture »: its one writable level is the elements').
 - **Roles.** Every account that reads a system sees the block; a player of an attached universe reads the system, so he may give a token « Lecture » on it (the
   elements come back at player level, AD-152) — he never gets « Écriture ». The instance admin who is neither GM of a system nor member of an attached universe reads
   none: his block is absent.
@@ -5111,10 +5110,14 @@ block is added to the form `kanevas-jeton-unique` leaves, it is not a rewrite of
 | load error | « Impossible de charger les systèmes. » + « Réessayer » | « Réessayer »; the rest of the form |
 | long names | a system name cut at 80 characters with a tooltip, the pill stays visible | — |
 | 390 px | the choice of a line wraps under the name, 36 px targets (as the universes' lines) | — |
-| refused on save | « Vous n'êtes plus MJ de ce système. » under the line | change the line, « Enregistrer » |
+| refused on save | « Vous n'êtes plus MJ de ce système. » under the line; the box is reloaded with the real choices of the block, **the name, the expiry and every other choice already typed are kept** | change the line, « Enregistrer » |
+| level saved but not offered (the account is no longer a GM, or no longer reads the system) | the line is shown with the **chosen** level checked, and « Écriture » disabled (not removed) with the suffix of the line; for a system no longer read, « (plus lecteur) » | lower it or set « — », never raise it |
+| save error, offline, connection lost | the box's own states (« Impossible d'enregistrer. », the offline banner): the block's choices are disabled with the rest of the box, nothing is lost | as the box |
+| load error on creation | « Impossible de charger les systèmes. » + « Réessayer »; a line under it: « Sans cette liste, le jeton sera créé sans accès à un système. » | « Réessayer », or create anyway |
+| many systems | the list scrolls inside the box after eight lines, the label stays | — |
 
 *Components* (verdict of the gardien, `docs/charte.md`): **Liste d'accès** (with five variants written there: its own options per call, the third choice per line, the suffix « (plus lecteur) », the role pill passed by the caller, a refusal under one line), **Choix segmenté** (`petit`, unchanged), `Pastille` (`mj` / `table`), `.squelette`, the box's `.alerte` and **Ligne de jeton** (a second line of accesses); no new component, no new token.
 
-*Acceptance.* Given Antor, GM of « Stars Without Number » and reader of « Cendres de Vaëlis (règles maison) », when he opens « Créer un jeton », then the block lists the two with « — », « Écriture » exists on the first only;
-after « Créer le jeton » with « Écriture » on the first, the line of the token reads « Systèmes : Stars Without Number : écriture ». Given Léa, whose universes have no attached system and who is a GM of no system, when she opens the box, then the block is
+*Acceptance.* (The stub's seed of `kanevas-systemes-jeu-api-ecran` carries these two systems, Antor being a GM of the first and a member of a universe attached to the second; « Cendres de Vaëlis (règles maison) » is a system, distinct from the universe « Les Cendres de Vaëlis ».) Given Antor, GM of « Stars Without Number » and reader of « Cendres de Vaëlis (règles maison) », when he opens « Créer un jeton », then the block lists the two with « — », « Écriture » exists on the first only;
+after « Créer le jeton » with « Écriture » on the first, the line of the token reads « Systèmes : Stars Without Number : écriture ». Given a token that says « écriture » on a system whose GM Antor was removed from, when he opens « Modifier les accès », then the line reads « lecture seule, vous n'êtes plus MJ du système » and « Écriture » is disabled. Given the admin on E-5 opening the box of Antor's token, the block lists Antor's systems, not the admin's. Given Léa, whose universes have no attached system and who is a GM of no system, when she opens the box, then the block is
 absent; when the admin adds her as a GM of a system and she reloads, then it appears with that system, « Écriture » offered. Given Marc, a player of a universe attached to a system, the block lists it with « — » and « Lecture » only.
