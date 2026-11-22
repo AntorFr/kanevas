@@ -20,17 +20,10 @@
 <style>
 /* =====================================================================================
    MAQUETTE FINIE — E-15 Système de jeu, hors du cadre d'un univers.
-   Illustre docs/ecrans.md : « Détail des écrans de kanevas-systemes » › « E-15 Système de jeu »
-   (onglets, entrées ouvertes sur place, ajouter, modifier, textes, six états) et « Détail des écrans
-   de kanevas-illustrations » › « Systèmes de jeu, hors des univers » › « E-15 hors de l'univers »
-   (barre réduite, fil « Systèmes de jeu › CoF Mini », « Dans vos univers », « Lecture seule »,
-   refus), « Qui voit quoi (systèmes) ». Décisions : AD-94, AD-84, AD-85.
-   Remplace la maquette d'avant, faite dans le cadre de l'univers. Le document prime sur la maquette.
-
-   Compte par défaut : antor, MJ de Lame d'Ébène (rattachée à CoF Mini) : il lit et modifie.
-   Réécriture de `kanevas-systemes-jeu-elements` : les éléments du système sont des fiches (liste E-8 groupée
-   par type, ouverture sur E-9 de l'espace système), trois onglets selon le compte (Éléments / MJ du système /
-   Outils), suppression d'un élément (fenêtre), liste des MJ du système pour l'admin. Le document prime.
+   Illustre docs/ecrans.md : « Détail des écrans de kanevas-systemes-jeu-elements » (onglets Éléments /
+   MJ du système / Outils, liste E-8 groupée par type, formulaire « Nouvel élément », fenêtre de suppression,
+   liste des MJ du système, états et textes), avec « Qui voit quoi (systèmes) ». Décisions : AD-152, AD-157.
+   Le document prime sur la maquette.
 
    Compte par défaut : antor, MJ DU SYSTÈME CoF Mini (statut posé par l'admin) : Éléments + Outils.
    États à ouvrir par l'adresse (combinables : #etat-joueur,perdue) :
@@ -45,7 +38,6 @@
      #etat-mj-long     200 MJ : la liste défile, un identifiant tronqué
      #etat-outils      onglet « Outils » (E-20, inchangé) — renvoi
      #etat-ajout       formulaire « Nouvel élément »
-     #etat-nom-pris    « Un élément porte déjà ce nom. »
      #etat-suppression fenêtre « Supprimer l'élément » (sans copie) ; avec ,copies : nombre d'univers concernés
      #etat-vide        « Ce système n'a encore aucun élément. » (avec ,joueur : « … à voir. »)
      #etat-chargement  « Chargement du système… »
@@ -902,7 +894,7 @@ body.etat-perdue .membres-sys [data-ecrit], body.etat-perdue .ajout-mj [data-ecr
       li.innerHTML = '<span class="sceau" aria-hidden="true" style="width:28px;height:28px"></span><span class="ident"></span><button class="bouton petit" data-ecrit>Retirer</button>';
       li.querySelector('.sceau').textContent = initiale(m); li.querySelector('.ident').textContent = m; li.querySelector('.ident').title = m;
       li.querySelector('button').setAttribute('aria-label', 'Retirer ' + m + ' des MJ du système');
-      li.querySelector('button').onclick = function () { if (etat.perdue) return; MJS.splice(i, 1); membres(); toast(m + ' n\'est plus MJ du système'); };
+      li.querySelector('button').onclick = function () { if (etat.perdue) return; MJS.splice(i, 1); membres(); toast(m + ' n\'est plus MJ du système.'); };
       ul.appendChild(li);
     });
   }
@@ -923,8 +915,7 @@ body.etat-perdue .membres-sys [data-ecrit], body.etat-perdue .ajout-mj [data-ecr
       ev.preventDefault();
       var n = f.nom.value.trim(), err = f.querySelector('.erreur');
       if (!n) { err.hidden = false; err.textContent = 'Erreur : le nom est obligatoire.'; f.nom.setAttribute('aria-invalid', 'true'); return; }
-      if (ELEMENTS.some(function (e) { return e[1].toLowerCase() === n.toLowerCase(); })) { err.hidden = false; err.textContent = 'Un élément porte déjà ce nom.'; return; }
-      ELEMENTS.push([f.type.value, n, '']); $('#zone-ajout').innerHTML = ''; rendre();
+            ELEMENTS.push([f.type.value, n, '']); $('#zone-ajout').innerHTML = ''; rendre();
       toast('« ' + n + ' » créé');
     };
     setTimeout(function () { f.nom.focus(); }, 0);
@@ -932,7 +923,7 @@ body.etat-perdue .membres-sys [data-ecrit], body.etat-perdue .ajout-mj [data-ecr
   }
   function fenetre(copies) {
     $('#titre-fenetre').textContent = 'Supprimer « Loup des brumes » ?';
-    $('#texte-fenetre').textContent = 'Elle disparaît du système pour tous les univers.' + (copies ? ' ' + copies + ' univers en ont une copie personnalisée. Leurs copies restent, comme fiches ordinaires.' : '');
+    $('#texte-fenetre').textContent = 'Cet élément disparaît du système pour tous les univers.' + (copies ? ' ' + copies + ' univers en ont une copie personnalisée. Leurs copies restent, comme fiches ordinaires.' : '');
     $('#voile-fenetre').hidden = false; $('#annuler-fenetre').focus();
   }
   $('#annuler-fenetre').onclick = function () { $('#voile-fenetre').hidden = true; };
@@ -972,7 +963,7 @@ body.etat-perdue .membres-sys [data-ecrit], body.etat-perdue .ajout-mj [data-ecr
   if (a('perdue')) { etat.perdue = true; document.body.classList.add('etat-perdue'); $('#bouton-ajouter').setAttribute('aria-disabled', 'true'); }
   vue('systeme');
   rendre();
-  if (a('ajout') || a('nom-pris')) { var fa = ajouter(); if (a('nom-pris')) { fa.nom.value = 'Loup des brumes'; var er = fa.querySelector('.erreur'); er.hidden = false; er.textContent = 'Un élément porte déjà ce nom.'; } }
+  if (a('ajout')) ajouter();
   if (a('echec')) { var za = a('mj-onglet') ? $('#alerte-mj') : $('#message-sys'); za.innerHTML = '<div class="alerte" role="alert"><svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg><div class="corps-alerte"><span>L\'action n\'a pas abouti. Réessayez.</span></div></div>'; }
   if (a('mj-inconnu') || a('mj-deja')) { var fm = $('#form-mj'), em = fm.querySelector('.erreur'); fm.ident.value = a('mj-deja') ? 'mira' : 'inconnu42'; em.hidden = false; em.textContent = a('mj-deja') ? 'Ce compte est déjà MJ de ce système.' : 'Aucun compte ne porte cet identifiant.'; fm.ident.setAttribute('aria-invalid', 'true'); }
   if (a('suppression')) fenetre(a('copies') ? 3 : 0);
