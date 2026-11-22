@@ -1,4 +1,4 @@
-// ecrans: assistant, battlemap-assets, battlemap-cartes
+// ecrans: accueil, assistant, battlemap-assets, cartes, outil
 // Ensemble screen tests of kanevas-battlemap-assistant written from the need (fiche exit criterion, P-26 step 4, P-27 step 3,
 // docs/ecrans.md « E-12, E-26, E-27, E-28 — detail of kanevas-battlemap-assistant »), not from the code. Real server in stub
 // mode (the assistant's AD-78 script), real Chromium. Effects have their door tests in
