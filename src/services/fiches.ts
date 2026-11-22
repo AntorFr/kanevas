@@ -1,3 +1,4 @@
+import { blocsDeFiche } from '../outils/blocs.js';
 import type { Db } from '../db/db.js';
 import {
   exigerMJ,
@@ -725,6 +726,7 @@ export function lireFiche(
     mentions: mentions.mentions,
     mentionsSuite: mentions.suite,
     mentionsRestantes: mentions.restantes,
+    blocs: blocsDeFiche(db, acteur, universId, ficheId),
     ...etiquetageDe(db, ficheId),
     // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
     ...(vueMJ(role, acteur) && fiche.creee_via === 'import' ? { cleOrigine: fiche.cle } : {}),

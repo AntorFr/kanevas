@@ -24,7 +24,8 @@ test('AD-rust-9 the hashed .wasm asset is served as application/wasm with the ma
     logLevel: 'silent',
   });
   const wasms = readdirSync(join(racine, 'assets')).filter((f) => f.endsWith('.wasm'));
-  assert.equal(wasms.length, 1, 'one hashed .wasm under assets/');
+  // One hashed .wasm per module the page loads: `exemple` and `coeur` (the page was extended by kanevas-carte-spatiale-etoiles-liaisons).
+  assert.equal(wasms.length, 2, 'one hashed .wasm per module under assets/');
 
   const { buildApp } = await import('../app.js');
   const app = await buildApp();
@@ -37,10 +38,12 @@ test('AD-rust-9 the hashed .wasm asset is served as application/wasm with the ma
     });
     const cookie = login.cookies.find((c) => c.name === 'kanevas_session');
     assert.ok(cookie);
-    const res = await app.inject({ url: `/assets/${wasms[0]}`, headers: { cookie: `kanevas_session=${cookie.value}` } });
-    assert.equal(res.statusCode, 200);
-    assert.match(res.headers['content-type'] as string, /^application\/wasm/);
-    assert.deepEqual([...res.rawPayload.subarray(0, 4)], [0x00, 0x61, 0x73, 0x6d]);
+    for (const wasm of wasms) {
+      const res = await app.inject({ url: `/assets/${wasm}`, headers: { cookie: `kanevas_session=${cookie.value}` } });
+      assert.equal(res.statusCode, 200);
+      assert.match(res.headers['content-type'] as string, /^application\/wasm/);
+      assert.deepEqual([...res.rawPayload.subarray(0, 4)], [0x00, 0x61, 0x73, 0x6d]);
+    }
   } finally {
     await app.close();
   }

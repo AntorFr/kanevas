@@ -13,7 +13,7 @@ import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import {
   appliquerCatalogueParJeton, apercuCatalogueParJeton, niveauDeRequete,
 } from '../services/import-catalogue.js';
-import { importerGalaxieParJeton } from '../services/swn/import-galaxie-lot.js';
+import { importerAtlasParJeton, importerGalaxieParJeton } from '../services/swn/import-galaxie-lot.js';
 import { listerGalaxiesImport } from '../services/swn/import-galaxie.js';
 import { OUTIL_GALAXIE } from '../services/swn/galaxies.js';
 import { lireContexteImport } from '../services/import.js';
@@ -440,6 +440,16 @@ export async function registerImportRoutes(app: FastifyInstance) {
         const { gid } = request.params as { gid: string };
         const { lot } = request.query as { lot?: unknown };
         return importerGalaxieParJeton(app.db, jetonDe(request), lotDeRequete(lot), entier(gid), request.body, app.horloge());
+      });
+
+      // The atlas of one system of the galaxy (AD-atlas-1): one request, one transaction.
+      scope.put(`${base}/outils/:module/:outil/galaxies/:gid/systemes/:cle/atlas`, {
+        config: { portee: 'outil' }, errorHandler: erreurFichier,
+      }, async (request) => {
+        if (cleOutil(request) !== OUTIL_GALAXIE) throw introuvable();
+        const { gid, cle } = request.params as { gid: string; cle: string };
+        const { lot } = request.query as { lot?: unknown };
+        return importerAtlasParJeton(app.db, jetonDe(request), lotDeRequete(lot), entier(gid), cle, request.body, app.horloge());
       });
 
       scope.post(`${base}/lots/:lid/clore`, { config: { portee: 'lot' } }, async (request) => {

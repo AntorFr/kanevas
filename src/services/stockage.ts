@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
-import { mkdir, readdir, rm, stat } from 'node:fs/promises';
+import { mkdir, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { renameSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { Transform, type Readable } from 'node:stream';
@@ -126,3 +126,26 @@ export async function viderTmp(racine: string = attachmentsDir): Promise<void> {
   for (const f of await readdir(tmp)) await rm(join(tmp, f), { recursive: true, force: true });
 }
 
+
+/**
+ * Writes a derived file `<racine>/<nom>` (a cache, AD-carte-2): the bytes go to `<nom>.<uuid>.tmp` beside it, then one rename,
+ * so a reader never sees half a file. On any failure nothing is left behind.
+ */
+export async function ecrireDerive(racine: string, nom: string, octets: Uint8Array): Promise<void> {
+  if (!/^[0-9a-f]{64}\.webp$/.test(nom)) throw new Error('Invalid cache name.');
+  await mkdir(racine, { recursive: true });
+  const temporaire = join(racine, `${nom}.${randomUUID()}.tmp`);
+  try {
+    await writeFile(temporaire, octets, { flag: 'wx' });
+    await rename(temporaire, join(racine, nom));
+  } catch (e) {
+    await rm(temporaire, { force: true }).catch(() => undefined);
+    throw e;
+  }
+}
+
+/** Removes the `*.tmp` of a derived directory (startup: a write cut short left them). */
+export async function viderTemporaires(racine: string): Promise<void> {
+  await mkdir(racine, { recursive: true });
+  for (const f of await readdir(racine)) if (f.endsWith('.tmp')) await rm(join(racine, f), { force: true });
+}
