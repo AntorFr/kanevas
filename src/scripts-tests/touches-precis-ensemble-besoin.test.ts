@@ -34,7 +34,7 @@ function lister(base: string) {
  * `preparation` is committed first (the base); then `fichier` gets a comment, is committed, and the screens tests
  * chosen between the two are returned. The clone goes back to where it was.
  */
-function choisir(fichier: string, preparation: Record<string, string> = {}): string[] {
+function choisir(fichier: string, preparation: Record<string, string> = {}, remplacement?: [string, string]): string[] {
   const depart = git('rev-parse', 'HEAD');
   try {
     for (const [f, c] of Object.entries(preparation)) {
@@ -43,7 +43,11 @@ function choisir(fichier: string, preparation: Record<string, string> = {}): str
     }
     if (Object.keys(preparation).length) { git('add', '-A'); git('commit', '-qm', 'preparation'); }
     const base = git('rev-parse', 'HEAD');
-    appendFileSync(join(copie, fichier), '\n// touched by a test\n');
+    if (remplacement) {
+      const source = readFileSync(join(copie, fichier), 'utf8');
+      assert.ok(source.includes(remplacement[0]), `${fichier} : ${remplacement[0]}`);
+      writeFileSync(join(copie, fichier), source.replace(remplacement[0], remplacement[1]));
+    } else appendFileSync(join(copie, fichier), '\n// touched by a test\n');
     git('commit', '-qam', 'change');
     const r = lister(base);
     assert.equal(r.status, 0, r.stderr);
@@ -80,7 +84,8 @@ describe('écrans touchés : le barrel de frontend/src/ui/index.ts (E-ecrans, Li
   });
 
   test('Interrupteur : fiche, outil, parametres le reçoivent ; administration, accueil, membres non', () => {
-    const l = choisir('frontend/src/ui/interrupteur.tsx');
+    // AD-ecrans-ui-4: a trailing comment is no declaration; the body of Interrupteur is.
+    const l = choisir('frontend/src/ui/interrupteur.tsx', {}, ['const perdue = useConnexionPerdue();', 'const perdue = useConnexionPerdue(); void perdue;']);
     assert.ok(l.includes(`${E2E}alias-etiquettes-e9.test.ts`));
     assert.ok(l.includes(`${E2E}vaisseaux-atelier-livre-review.test.ts`));
     for (const exclu of ['administration-badge-entete', 'membres-pastille-largeur', 'recherche-avancee-ecran']) {
