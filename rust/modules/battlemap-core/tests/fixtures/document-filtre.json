@@ -1,0 +1,148 @@
+{
+  "calques": [
+    {
+      "id": "sol",
+      "mj_seul": false,
+      "nom": "Sol",
+      "type": "sol",
+      "verrouille": false,
+      "visible": true
+    },
+    {
+      "id": "murs",
+      "mj_seul": false,
+      "nom": "Murs",
+      "type": "mur",
+      "verrouille": false,
+      "visible": true
+    },
+    {
+      "id": "objets",
+      "mj_seul": false,
+      "nom": "Objets",
+      "type": "objet",
+      "verrouille": false,
+      "visible": true
+    }
+  ],
+  "elements": [
+    {
+      "asset_id": "table",
+      "calque": "objets",
+      "echelle": 1.5,
+      "fiche_id": "fiche-publique",
+      "id": "e1",
+      "miroir": true,
+      "rotation": 90,
+      "x": 1.5,
+      "y": 1.5
+    },
+    {
+      "asset_id": "tonneau",
+      "calque": "objets",
+      "echelle": 1.0,
+      "id": "e2",
+      "miroir": false,
+      "rotation": 0,
+      "x": 3.0,
+      "y": 2.25
+    },
+    {
+      "asset_id": "statue",
+      "calque": "objets",
+      "echelle": 2.0,
+      "id": "e4",
+      "miroir": false,
+      "rotation": 0,
+      "x": 6.0,
+      "y": 3.0
+    }
+  ],
+  "hauteur": 8,
+  "largeur": 10,
+  "murs": [
+    {
+      "asset_id": "mur-pierre",
+      "calque": "murs",
+      "cote": "h",
+      "porte": false,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "asset_id": "mur-pierre",
+      "calque": "murs",
+      "cote": "h",
+      "porte": false,
+      "x": 1,
+      "y": 0
+    },
+    {
+      "asset_id": "mur-pierre",
+      "calque": "murs",
+      "cote": "v",
+      "porte": true,
+      "x": 4,
+      "y": 0
+    },
+    {
+      "asset_id": "mur-bois",
+      "calque": "murs",
+      "cote": "v",
+      "porte": false,
+      "x": 4,
+      "y": 1
+    }
+  ],
+  "schema": 1,
+  "sols": [
+    {
+      "asset_id": "dalle",
+      "calque": "sol",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "asset_id": "dalle",
+      "calque": "sol",
+      "x": 1,
+      "y": 0
+    },
+    {
+      "asset_id": "dalle",
+      "calque": "sol",
+      "x": 2,
+      "y": 0
+    },
+    {
+      "asset_id": "dalle",
+      "calque": "sol",
+      "x": 3,
+      "y": 0
+    },
+    {
+      "asset_id": "dalle",
+      "calque": "sol",
+      "x": 0,
+      "y": 1
+    },
+    {
+      "asset_id": "dalle",
+      "calque": "sol",
+      "x": 1,
+      "y": 1
+    },
+    {
+      "asset_id": "dalle",
+      "calque": "sol",
+      "x": 2,
+      "y": 1
+    },
+    {
+      "asset_id": "dalle",
+      "calque": "sol",
+      "x": 3,
+      "y": 1
+    }
+  ]
+}
