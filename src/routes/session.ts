@@ -5,6 +5,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { env } from '../config/env.js';
 import { assurerCompte, lireCompte } from '../services/comptes.js';
 import { resoudreFiche, resoudreUnivers } from '../services/cles.js';
+import { introuvable } from '../services/erreurs.js';
 import { invalide } from '../services/erreurs.js';
 import { contenuPublic, rendreApercu } from '../services/markdown.js';
 import { exigerRole, resolveurLiens } from '../services/droits.js';
@@ -146,6 +147,10 @@ export async function registerSessionRoutes(app: FastifyInstance) {
       const p = request.params as Record<string, string> | undefined;
       const modele = request.routeOptions.url ?? '';
       if (!p || !modele.startsWith('/api/univers/:id')) return;
+      // A system's space is no universe: its id answers « not found » (AD-151).
+      if (/^\d+$/.test(p.id!) && app.db.prepare('SELECT 1 FROM univers WHERE id = ? AND espace_systeme_id IS NOT NULL').get(Number(p.id))) {
+        throw introuvable();
+      }
       const u = resoudreUnivers(app.db, p.id!);
       if (!u) return;
       p.id = String(u.id);

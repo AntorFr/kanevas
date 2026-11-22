@@ -5,7 +5,7 @@ import type { Db } from '../db/db.js';
 import { tirerCleUnivers } from './cles.js';
 import { effacerDonneesUniversComplet } from './outils-donnees.js';
 import { exigerMJ, exigerRole } from './droits.js';
-import { ErreurService, invalide, refuse } from './erreurs.js';
+import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { supprimerFichier } from './stockage.js';
 import { retirerUniversDesJetons } from './jetons.js';
 import type { Acteur, Role, Univers } from './types.js';
@@ -74,7 +74,7 @@ export function listerUnivers(
       `SELECT u.*, m.role,
               (SELECT COUNT(*) FROM membres x WHERE x.univers_id = u.id) AS nb_membres
        FROM univers u JOIN membres m ON m.univers_id = u.id
-       WHERE m.compte_id = ? ORDER BY u.nom COLLATE NOCASE, u.id`,
+       WHERE m.compte_id = ? AND u.espace_systeme_id IS NULL ORDER BY u.nom COLLATE NOCASE, u.id`,
     )
     .all(compteId) as (UniversRow & { role: Role; nb_membres: number })[];
   return rows.map((r) => ({
@@ -107,7 +107,10 @@ export function lireUnivers(
   universId: number,
 ): Univers & { role: Role; systeme: SystemeRef | null } {
   const role = exigerRole(db, universId, compteId);
-  const row = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as UniversRow;
+  const row = db.prepare('SELECT * FROM univers WHERE id = ? AND espace_systeme_id IS NULL').get(universId) as
+    | UniversRow
+    | undefined;
+  if (!row) throw introuvable(); // a system's space is never entered as a universe (AD-151)
   return { ...versUnivers(row), role, systeme: systemeRef(db, universId) };
 }
 

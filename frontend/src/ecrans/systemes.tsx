@@ -6,7 +6,7 @@ import type { SystemeCompte } from '../types';
 import { ErreurChargement, Pastille } from '../ui';
 import { VisuelSysteme } from '../ui/dessins';
 import type { Ecran } from '../registre';
-import { PucesUnivers, resumeEntrees, utilisePar } from './systeme/puces';
+import { PucesUnivers, utilisePar } from './systeme/puces';
 import './ecrans.css';
 import './cartes.css';
 
@@ -87,7 +87,6 @@ function Systemes() {
                     {s.nom}
                   </Link>
                   <span className="meta-carte">{utilisePar(s.nbUnivers)}</span>
-                  <span className="meta-carte">{resumeEntrees(s.entrees)}</span>
                   <PucesUnivers univers={s.mesUnivers} />
                 </div>
               </article>

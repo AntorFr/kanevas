@@ -1,13 +1,7 @@
-import { rendreMarkdown } from './markdown.js';
-import { validerContenu } from './sections.js';
 import type { Db } from '../db/db.js';
-import { exigerMJ } from './droits.js';
+import { exigerMJ, lectureSysteme } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
-import { LIMITE_LISTE } from './fiches.js';
 import type { Role } from './types.js';
-
-export const TYPES_GABARIT = ['regle', 'creature', 'objet'] as const;
-export type TypeGabarit = (typeof TYPES_GABARIT)[number];
 
 export interface SystemeCatalogue {
   id: number;
@@ -26,56 +20,12 @@ export interface SystemeVue {
   id: number;
   nom: string;
   nbUnivers: number;
-  entrees: { regle: number; creature: number; objet: number };
   mesUnivers: UniversDuCompte[];
-  /** Whether the caller is GM of at least one universe using the system (AD-94). */
+  /** Whether the caller is a GM of the system itself (a `membres` row of its space, AD-152). */
   peutEcrire: boolean;
 }
 
-export interface Gabarit {
-  id: number;
-  systemeId: number;
-  type: TypeGabarit;
-  nom: string;
-  /** Markdown source: only for who may write templates (AD-113). */
-  contenu?: string;
-  /** The source rendered by `rendreMarkdown`, for every reader. */
-  html: string;
-  version: number;
-  creeLe: string;
-  modifieLe: string;
-}
-
-interface GabaritRow {
-  id: number;
-  systeme_id: number;
-  type: TypeGabarit;
-  nom: string;
-  contenu: string;
-  version: number;
-  cree_le: string;
-  modifie_le: string;
-}
-
-const versGabarit = (r: GabaritRow, avecSource = true): Gabarit => ({
-  id: r.id,
-  systemeId: r.systeme_id,
-  type: r.type,
-  nom: r.nom,
-  ...(avecSource ? { contenu: r.contenu } : {}),
-  html: rendreMarkdown(r.contenu),
-  version: r.version,
-  creeLe: r.cree_le,
-  modifieLe: r.modifie_le,
-});
-
 const nomPris = () => new ErreurService('conflit', 'Un système porte déjà ce nom.', 'nom_pris');
-const gabaritPris = (type: TypeGabarit) =>
-  new ErreurService(
-    'conflit',
-    `${{ regle: 'Une règle', creature: 'Une créature', objet: 'Un objet' }[type]} porte déjà ce nom.`,
-    'nom_pris',
-  );
 
 function validerNomSysteme(nom: string): string {
   const n = nom.trim();
@@ -84,7 +34,13 @@ function validerNomSysteme(nom: string): string {
 }
 
 function estMJQuelquePart(db: Db, compteId: number): boolean {
-  return !!db.prepare("SELECT 1 FROM membres WHERE compte_id = ? AND role = 'mj' LIMIT 1").get(compteId);
+  // A GM of a system's space is not a GM of a universe (AD-152).
+  return !!db
+    .prepare(
+      `SELECT 1 FROM membres m JOIN univers u ON u.id = m.univers_id
+       WHERE m.compte_id = ? AND m.role = 'mj' AND u.espace_systeme_id IS NULL LIMIT 1`,
+    )
+    .get(compteId);
 }
 
 /** Inserts a system; the NOCASE unique index is the final arbiter of "name taken". */
@@ -94,7 +50,24 @@ function insererSysteme(db: Db, nom: string, compteId: number): SystemeCatalogue
   const info = db
     .prepare('INSERT INTO systemes_jeu (nom, cree_le, responsable_id) VALUES (?, ?, ?)')
     .run(nom, new Date().toISOString(), compteId);
-  return { id: Number(info.lastInsertRowid), nom };
+  const id = Number(info.lastInsertRowid);
+  creerEspaceSysteme(db, id, nom);
+  return { id, nom };
+}
+
+/**
+ * The hidden space of a system (AD-151): a technical `univers` row, never listed, with no member until the admin
+ * names the system's GMs (AD-152). The key is technical and never drawn for a real universe.
+ */
+export function creerEspaceSysteme(db: Db, systemeId: number, nom: string): number | null {
+  // A base held short of 0046 (the migration tests seed an old schema, then climb) has no space column: the migration
+  // creates the spaces of the systems already there.
+  const colonnes = db.prepare('PRAGMA table_info(univers)').all() as { name: string }[];
+  if (!colonnes.some((c) => c.name === 'espace_systeme_id')) return null;
+  const info = db
+    .prepare('INSERT INTO univers (nom, description, cree_le, cle, espace_systeme_id) VALUES (?, ?, ?, ?, ?)')
+    .run(nom, '', new Date().toISOString(), `espace-systeme-${systemeId}-x`, systemeId);
+  return Number(info.lastInsertRowid);
 }
 
 /** The catalogue (id, name only), for an account that is GM of at least one universe (AD-25). */
@@ -153,165 +126,42 @@ function vueDe(db: Db, compteId: number, systeme: SystemeCatalogue): SystemeVue 
   const n = db.prepare('SELECT COUNT(*) AS n FROM univers WHERE systeme_id = ?').get(systeme.id) as {
     n: number;
   };
-  const entrees = { regle: 0, creature: 0, objet: 0 };
-  const lignes = db
-    .prepare('SELECT type, COUNT(*) AS n FROM gabarits WHERE systeme_id = ? GROUP BY type')
-    .all(systeme.id) as { type: TypeGabarit; n: number }[];
-  for (const l of lignes) entrees[l.type] = l.n;
   return {
     id: systeme.id,
     nom: systeme.nom,
     nbUnivers: n.n,
-    entrees,
     mesUnivers,
-    peutEcrire: mesUnivers.some((u) => u.role === 'mj'),
+    peutEcrire: lectureSysteme(db, compteId, systeme.id)?.role === 'mj',
   };
 }
 
-/** The systems attached to a universe the caller is a member of, by name (AD-94). */
+/** The systems the caller reads: a member of an attached universe or a GM of the system (AD-152), by name. */
 export function listerSystemes(db: Db, compteId: number): SystemeVue[] {
   const rows = db
     .prepare(
       `SELECT DISTINCT s.id, s.nom FROM systemes_jeu s
-       JOIN univers u ON u.systeme_id = s.id
-       JOIN membres m ON m.univers_id = u.id
-       WHERE m.compte_id = ? ORDER BY s.nom COLLATE NOCASE, s.id`,
+       WHERE EXISTS (SELECT 1 FROM univers u JOIN membres m ON m.univers_id = u.id
+                     WHERE u.systeme_id = s.id AND m.compte_id = ?)
+          OR EXISTS (SELECT 1 FROM univers e JOIN membres m ON m.univers_id = e.id
+                     WHERE e.espace_systeme_id = s.id AND m.compte_id = ? AND m.role = 'mj')
+       ORDER BY s.nom COLLATE NOCASE, s.id`,
     )
-    .all(compteId) as SystemeCatalogue[];
+    .all(compteId, compteId) as SystemeCatalogue[];
   return rows.map((r) => vueDe(db, compteId, r));
 }
 
-/** Unknown system or none of the caller's universes uses it: the same "not found" (AD-22, AD-94). */
+/** Unknown system, or the caller neither GM of it nor member of an attached universe: the same "not found" (AD-22, AD-152). */
 function systemeVisible(db: Db, compteId: number, systemeId: number): SystemeVue {
   const s = db.prepare('SELECT id, nom FROM systemes_jeu WHERE id = ?').get(systemeId) as
     | SystemeCatalogue
     | undefined;
   if (!s) throw introuvable();
   const vue = vueDe(db, compteId, s);
-  if (vue.mesUnivers.length === 0) throw introuvable();
+  if (lectureSysteme(db, compteId, systemeId) === null) throw introuvable();
   return vue;
 }
 
 /** The system seen from its own address: name, counts, the caller's universes only (AD-84, AD-94). */
 export function lireSysteme(db: Db, compteId: number, systemeId: number): SystemeVue {
   return systemeVisible(db, compteId, systemeId);
-}
-
-export interface PageGabarits {
-  gabarits: Gabarit[];
-  suivant: string | null;
-}
-
-/** Templates of one type, by name without case, 100 per page with an opaque cursor; any member reads. */
-export function listerGabarits(
-  db: Db,
-  compteId: number,
-  systemeId: number,
-  options: { type: string; curseur?: string; limite?: number },
-): PageGabarits {
-  const peutEcrire = systemeVisible(db, compteId, systemeId).peutEcrire;
-  if (!(TYPES_GABARIT as readonly string[]).includes(options.type)) {
-    throw invalide('Type de gabarit inconnu.');
-  }
-  const limite = Math.min(Math.max(Math.trunc(options.limite ?? LIMITE_LISTE), 1), LIMITE_LISTE);
-  const where = ['systeme_id = ?', 'type = ?'];
-  const params: (string | number)[] = [systemeId, options.type];
-  if (options.curseur !== undefined) {
-    let c: { t: string; i: number };
-    try {
-      c = JSON.parse(Buffer.from(options.curseur, 'base64url').toString('utf8'));
-      if (typeof c.t !== 'string' || !Number.isInteger(c.i)) throw new Error();
-    } catch {
-      throw invalide('Curseur invalide.');
-    }
-    where.push('(nom COLLATE NOCASE > ? OR (nom COLLATE NOCASE = ? AND id > ?))');
-    params.push(c.t, c.t, c.i);
-  }
-  const rows = db
-    .prepare(`SELECT * FROM gabarits WHERE ${where.join(' AND ')} ORDER BY nom COLLATE NOCASE, id LIMIT ?`)
-    .all(...params, limite + 1) as GabaritRow[];
-  const page = rows.slice(0, limite);
-  const dernier = page[page.length - 1];
-  const suivant =
-    rows.length > limite && dernier
-      ? Buffer.from(JSON.stringify({ t: dernier.nom, i: dernier.id })).toString('base64url')
-      : null;
-  return { gabarits: page.map((g) => versGabarit(g, peutEcrire)), suivant };
-}
-
-function validerGabarit(nom: string, contenu: string): string {
-  const n = nom.trim();
-  if (n.length < 1 || n.length > 120) throw invalide('Le nom doit faire de 1 à 120 caractères.');
-  validerContenu(contenu);
-  return n;
-}
-
-/** Write access: GM of at least one universe using the system; a reader only is refused (AD-94). */
-function exigerEcritureGabarits(db: Db, compteId: number, systemeId: number): number {
-  if (!systemeVisible(db, compteId, systemeId).peutEcrire) throw refuse();
-  return systemeId;
-}
-
-/** The GM of an attached universe adds a template; its type is fixed from now on. Version starts at 1. */
-export function creerGabarit(
-  db: Db,
-  compteId: number,
-  sid: number,
-  entree: { type: string; nom: string; contenu?: string },
-): Gabarit {
-  const systemeId = exigerEcritureGabarits(db, compteId, sid);
-  if (!(TYPES_GABARIT as readonly string[]).includes(entree.type)) {
-    throw invalide('Type de gabarit inconnu.');
-  }
-  const type = entree.type as TypeGabarit;
-  const contenu = entree.contenu ?? '';
-  const nom = validerGabarit(entree.nom, contenu);
-  return db.transaction(() => {
-    if (db.prepare('SELECT 1 FROM gabarits WHERE systeme_id = ? AND type = ? AND nom = ?').get(systemeId, type, nom)) {
-      throw gabaritPris(type);
-    }
-    const now = new Date().toISOString();
-    const info = db
-      .prepare(
-        `INSERT INTO gabarits (systeme_id, type, nom, contenu, version, cree_le, modifie_le)
-         VALUES (?, ?, ?, ?, 1, ?, ?)`,
-      )
-      .run(systemeId, type, nom, contenu, now, now);
-    return versGabarit(
-      db.prepare('SELECT * FROM gabarits WHERE id = ?').get(Number(info.lastInsertRowid)) as GabaritRow,
-    );
-  })();
-}
-
-/**
- * Rewrites name and content with the version the caller read (AD-85). A stale
- * version is a conflict `gabarit_modifie` and nothing is written. The type
- * never changes; a template of a system the universe does not use is not found.
- */
-export function modifierGabarit(
-  db: Db,
-  compteId: number,
-  sid: number,
-  gabaritId: number,
-  entree: { nom: string; contenu: string; version: number },
-): Gabarit {
-  const systemeId = exigerEcritureGabarits(db, compteId, sid);
-  const nom = validerGabarit(entree.nom, entree.contenu);
-  return db.transaction(() => {
-    const g = db
-      .prepare('SELECT * FROM gabarits WHERE id = ? AND systeme_id = ?')
-      .get(gabaritId, systemeId) as GabaritRow | undefined;
-    if (!g) throw introuvable();
-    if (g.version !== entree.version) {
-      throw new ErreurService('conflit', 'Le gabarit a changé.', 'gabarit_modifie');
-    }
-    const autre = db
-      .prepare('SELECT 1 FROM gabarits WHERE systeme_id = ? AND type = ? AND nom = ? AND id <> ?')
-      .get(systemeId, g.type, nom, gabaritId);
-    if (autre) throw gabaritPris(g.type);
-    db.prepare(
-      'UPDATE gabarits SET nom = ?, contenu = ?, version = version + 1, modifie_le = ? WHERE id = ?',
-    ).run(nom, entree.contenu, new Date().toISOString(), gabaritId);
-    return versGabarit(db.prepare('SELECT * FROM gabarits WHERE id = ?').get(gabaritId) as GabaritRow);
-  })();
 }

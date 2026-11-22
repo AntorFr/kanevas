@@ -150,12 +150,12 @@ export function resoudreFiche(db: Db, universId: number, reference: string): Res
 /** A universe from an id (digits only), its key, or a former key; `null` if none. */
 export function resoudreUnivers(db: Db, reference: string): Resolution | null {
   if (estId(reference)) {
-    const u = db.prepare('SELECT id, cle FROM univers WHERE id = ?').get(Number(reference)) as
+    const u = db.prepare('SELECT id, cle FROM univers WHERE id = ? AND espace_systeme_id IS NULL').get(Number(reference)) as
       | { id: number; cle: string }
       | undefined;
     return u ? { ...u, ancienne: false } : null;
   }
-  const u = db.prepare('SELECT id, cle FROM univers WHERE cle = ?').get(reference) as { id: number; cle: string } | undefined;
+  const u = db.prepare('SELECT id, cle FROM univers WHERE cle = ? AND espace_systeme_id IS NULL').get(reference) as { id: number; cle: string } | undefined;
   if (u) return { ...u, ancienne: false };
   const a = db
     .prepare(

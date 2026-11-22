@@ -35,14 +35,14 @@ export function listerUniversInstance(
   const rows = db
     .prepare(
       `SELECT u.id, u.nom, (SELECT count(*) FROM membres m WHERE m.univers_id = u.id) AS n
-       FROM univers u ORDER BY u.nom COLLATE NOCASE, u.id`,
+       FROM univers u WHERE u.espace_systeme_id IS NULL ORDER BY u.nom COLLATE NOCASE, u.id`,
     )
     .all() as { id: number; nom: string; n: number }[];
   return rows.map((r) => ({ id: r.id, nom: r.nom, nbMembres: r.n }));
 }
 
 function exigerUnivers(db: Db, universId: number): void {
-  if (!db.prepare('SELECT 1 FROM univers WHERE id = ?').get(universId)) throw introuvable();
+  if (!db.prepare('SELECT 1 FROM univers WHERE id = ? AND espace_systeme_id IS NULL').get(universId)) throw introuvable();
 }
 
 export function listerMembresInstance(db: Db, acteur: ActeurInstance, universId: number): Membre[] {

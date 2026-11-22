@@ -331,7 +331,7 @@ export interface OutilOffrable extends OutilProposable {
 /** The tools offered in the universes where the account is a GM, in registry order. */
 export function outilsOffrables(db: Db, compteId: number): OutilOffrable[] {
   const parCle = new Map<string, OutilOffrable>();
-  const mj = db.prepare("SELECT univers_id AS id FROM membres WHERE compte_id = ? AND role = 'mj' ORDER BY univers_id").all(compteId) as { id: number }[];
+  const mj = db.prepare("SELECT m.univers_id AS id FROM membres m JOIN univers u ON u.id = m.univers_id WHERE m.compte_id = ? AND m.role = 'mj' AND u.espace_systeme_id IS NULL ORDER BY m.univers_id").all(compteId) as { id: number }[];
   for (const { id } of mj) {
     for (const o of proposables(db, id)) {
       const e = parCle.get(o.cle) ?? { ...o, univers: [] };
@@ -554,7 +554,7 @@ export function universChoisissables(db: Db, compteId: number): UniversChoisissa
   return db
     .prepare(
       `SELECT u.id, u.cle, u.nom, m.role FROM membres m JOIN univers u ON u.id = m.univers_id
-        WHERE m.compte_id = ? ORDER BY u.nom COLLATE NOCASE, u.id`,
+        WHERE m.compte_id = ? AND u.espace_systeme_id IS NULL ORDER BY u.nom COLLATE NOCASE, u.id`,
     )
     .all(compteId) as UniversChoisissable[];
 }
@@ -574,7 +574,7 @@ export function universDuJeton(
   const lignes = db
     .prepare(
       `SELECT u.id, u.cle, u.nom FROM membres m JOIN univers u ON u.id = m.univers_id
-        WHERE m.compte_id = ? AND u.cle > ? ORDER BY u.cle`,
+        WHERE m.compte_id = ? AND u.espace_systeme_id IS NULL AND u.cle > ? ORDER BY u.cle`,
     )
     .all(jeton.compteId, apres ?? '') as { id: number; cle: string; nom: string }[];
   const atteints = lignes.flatMap((u) => {

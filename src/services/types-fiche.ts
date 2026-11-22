@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import type { Db } from '../db/db.js';
-import { exigerMJ, exigerRole } from './droits.js';
+import { exigerMJ, exigerRole, lectureSysteme } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 
 /**
@@ -311,8 +311,8 @@ export function typesDuSysteme(db: Db, systemeId: number): { type: TypeFiche; ac
 }
 
 /**
- * Sets a type for a system. Same right as its templates (AD-94): GM of at least one attached
- * universe; a system none of the caller's universes uses → not found, reader only → refused.
+ * Sets a type for a system. GM of the system only (AD-152); a reader of it (member of an attached universe)
+ * → refused, an account that reads nothing of it → not found.
  */
 export function reglerTypeSysteme(
   db: Db,
@@ -321,14 +321,9 @@ export function reglerTypeSysteme(
   type: string,
   active: unknown,
 ): { type: string; active: boolean } {
-  const roles = db
-    .prepare(
-      `SELECT m.role FROM univers u JOIN membres m ON m.univers_id = u.id
-       WHERE u.systeme_id = ? AND m.compte_id = ?`,
-    )
-    .all(systemeId, compteId) as { role: string }[];
-  if (roles.length === 0) throw introuvable();
-  if (!roles.some((r) => r.role === 'mj')) throw refuse();
+  const droit = lectureSysteme(db, compteId, systemeId);
+  if (!droit) throw introuvable();
+  if (droit.role !== 'mj') throw refuse();
   typeReglable(type);
   if (typeof active !== 'boolean') throw invalide('État inconnu.');
   db.prepare(
