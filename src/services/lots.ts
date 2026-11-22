@@ -13,9 +13,11 @@ export const NATURES = ['fiches', 'fichiers', 'relations', 'cartes'] as const;
 export type Nature = (typeof NATURES)[number];
 export type Issue = 'creees' | 'mises_a_jour' | 'inchangees' | 'refusees';
 
-/** Only the sheets can be deleted by the import (`DELETE /fiches/:cle`, AD-119 (4)): `supprimees` is theirs. */
-export type Compteurs = Record<Exclude<Nature, 'fiches'>, Record<Issue, number>> & {
+/** Only sheets and files can be deleted by the import (`DELETE /fiches/:cle`, AD-119 (4); `DELETE /fichiers/:cle`, AD-fichiers-suppr-1): `supprimees` is theirs. */
+export type Compteurs = Record<Exclude<Nature, 'fiches' | 'fichiers'>, Record<Issue, number>> & {
   fiches: Record<Issue | 'supprimees', number>;
+  /** `supprimees` appears with the first deletion of the batch (an existing report keeps its shape). */
+  fichiers: Record<Issue, number> & { supprimees?: number };
 };
 
 export interface EntreeRapport {
@@ -187,7 +189,7 @@ export function noterDansLot(
     throw new Error(`Nature « ${nature} » non déclarée par ${row.outil}.`);
   }
   // A skipped entry warns without counting as a created, unchanged or refused object.
-  if (issue !== null) (lot.compteurs as unknown as Record<string, Record<string, number>>)[nature]![issue]! += nombre;
+  if (issue !== null) (lot.compteurs as unknown as Record<string, Record<string, number>>)[nature]![issue] = ((lot.compteurs as unknown as Record<string, Record<string, number>>)[nature]![issue] ?? 0) + nombre;
   const rapport = [...lot.rapport, ...entrees].slice(0, MAX_RAPPORT);
   const avert = entrees.filter((e) => e.gravite === 'avertissement').length;
   db.prepare(
