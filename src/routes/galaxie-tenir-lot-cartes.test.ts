@@ -237,11 +237,11 @@ test('B-64 bords : une zone et une route retirées avec une version périmée so
   assert.deepEqual([c.json.systemes, c.json.routes, c.json.zones], [3, 1, 0]);
 });
 
-test('B-64 / P-18 étape 4 : « Relais » promu sur un hexagone généré (2,0) garde sa place quand la graine change ; les systèmes non définis changent ; sans confirme : refusé', async () => {
+test('B-64 / P-18 étape 4 : « Relais » promu sur un hexagone généré (1,3) garde sa place quand la graine change ; les systèmes non définis changent ; sans confirme : refusé', async () => {
   const m = await monde();
   const initial = await blocs(m, 'antor');
-  assert.ok(initial.json.blocs.find((b: Any) => b.bx === 0 && b.by === 0).generes.some((p: number[]) => p[0] === 2 && p[1] === 0), '(2,0) est un système généré');
-  const relais = await appel(m, 'antor', 'POST', galerie(m, m.gid, '/systemes'), { nom: 'Relais', q: 2, r: 0 });
+  assert.ok(initial.json.blocs.find((b: Any) => b.bx === 0 && b.by === 0).generes.some((p: number[]) => p[0] === 1 && p[1] === 3), '(1,3) est un système généré');
+  const relais = await appel(m, 'antor', 'POST', galerie(m, m.gid, '/systemes'), { nom: 'Relais', q: 1, r: 3 });
   assert.equal(relais.status, 201);
   assert.equal(relais.json.promu, true);
   const avant = await blocs(m, 'antor');
