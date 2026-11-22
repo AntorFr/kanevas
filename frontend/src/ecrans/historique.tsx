@@ -253,7 +253,7 @@ function Detail({ base, hid, retour, onRestauree }: { base: string; hid: string;
           action="Restaurer cette version"
           icone={RotateCcw}
           iconeAction={RotateCcw}
-          variante="neutre"
+          variante="restauration"
           enCours={enCours}
           onConfirmer={() => void restaurer()}
           onFermer={() => setConfirmer(false)}

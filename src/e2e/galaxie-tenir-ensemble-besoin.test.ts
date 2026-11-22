@@ -273,7 +273,7 @@ test('B-64 / E-21 : Mira ouvre « Vael », Antor le déplace d’un hexagone, Mi
 
 test('B-64 / P-18 : « Graine… » dit que les non définis changent de place, demande confirmation (focus sur « Annuler »), et « Relais » promu garde sa place', opts, async () => {
   const m = await monde();
-  assert.equal((await appel(m, 'antor', 'POST', galerie(m, m.gid, '/systemes'), { nom: 'Relais', q: 2, r: 0 })).status, 201);
+  assert.equal((await appel(m, 'antor', 'POST', galerie(m, m.gid, '/systemes'), { nom: 'Relais', q: 1, r: 3 })).status, 201);
   assert.equal((await appel(m, 'antor', 'POST', galerie(m, m.gid, '/systemes'), { nom: 'Port Noir', q: 1, r: 1 })).status, 201);
   const avant = await blocs(m, 'antor');
   const { page } = await session(m, 'antor');
@@ -291,7 +291,7 @@ test('B-64 / P-18 : « Graine… » dit que les non définis changent de place, 
   assert.equal((await rep).status(), 200);
   const apres = await blocs(m, 'antor');
   assert.equal((await lire(m, 'antor', galerie(m, m.gid, '/graine'))).json.graine, 'nouvelle-graine');
-  assert.ok(apres.json.systemes.some((s: Any) => s.nom === 'Relais' && s.q === 2 && s.r === 0));
+  assert.ok(apres.json.systemes.some((s: Any) => s.nom === 'Relais' && s.q === 1 && s.r === 3));
   assert.notDeepEqual(apres.json.blocs.map((b: Any) => b.generes), avant.json.blocs.map((b: Any) => b.generes));
 });
 

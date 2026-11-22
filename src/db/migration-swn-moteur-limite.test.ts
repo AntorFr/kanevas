@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { migrate, openDb } from './db.js';
 import { versionsSource } from '../services/swn/calcul-vaisseau.js';
 
-// 0042 (B-94, H-2, H-3): `moteur_spike` (0/1, default 1) on the hulls, `limite_par` (NULL or 'armes') on the fittings; no row rewritten, no version moved.
+// 0046 (B-94, H-2, H-3): `moteur_spike` (0/1, default 1) on the hulls, `limite_par` (NULL or 'armes') on the fittings; no row rewritten, no version moved.
 const SRC = new URL('./migrations/', import.meta.url).pathname;
 function dossierJusqua(max: number): string {
   const dir = join(mkdtempSync(join(tmpdir(), 'mig-')), 'm') + '/';
@@ -16,9 +16,9 @@ function dossierJusqua(max: number): string {
   return dir;
 }
 
-test('0042 : montée depuis 0041, coque à moteur_spike 1, aménagement à limite_par NULL, conception et versions inchangées, CHECK posés', () => {
+test('0046 : montée depuis 0045, coque à moteur_spike 1, aménagement à limite_par NULL, conception et versions inchangées, CHECK posés', () => {
   const db = openDb(':memory:');
-  migrate(db, dossierJusqua(41));
+  migrate(db, dossierJusqua(45));
   const noms = (t: string) => (db.pragma(`table_info(${t})`) as { name: string }[]).map((c) => c.name);
   assert.ok(!noms('swn_catalogue_coques').includes('moteur_spike'));
   assert.ok(!noms('swn_catalogue_amenagements').includes('limite_par'));
