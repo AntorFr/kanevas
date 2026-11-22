@@ -5038,3 +5038,68 @@ stay for what is not yet loaded.
 Cross-check: B-99 → E-9 block, `PATCH /fiches/:fid {cle}`; B-100 → E-14 field (P-22 return of `eneria-v2`), `PATCH /univers/:id {cle}`; B-101 →
 router (above) + 302; admin who is not a GM of the universe: no E-9 block, and E-14 answers « Page introuvable. » (the GM guard, as a player); B-104 → the section key travels in the API (`cle` on a section's view); no screen edits it in
 this slice (the import and the MCP address by it).
+
+## Screen details for `kanevas-carte-rendu`
+
+> Scoping proposed on 2026-11-22 (`epic/kanevas-carte-rendu`), from Monsieur's request: the two maps at the level of the reference map, then above it
+> (B-113 to B-123, P-27 to P-30). **No new screen**: E-21 (galaxy) and E-23 (system) are amended; E-24 (settings) and E-9 are unchanged. The visual bar is the
+> reference map drawn side by side (B-123); the reference captures stay in the private repository, never here (AD-131).
+
+### Information architecture
+
+| Screen | Reached from | What changes |
+|---|---|---|
+| E-21 Galaxy | the tool, a shared link | whole window; opening view on the known zone; drawn stars by class, defined systems by their record's size and colour; starfield and tints; modes; zone control; previews; double click opens a system |
+| E-23 System | E-21 (panel « Enter the system », double click, a jump point's preview), a shared link, a sheet's block | whole window over a starfield; bodies at the scale of the orbits; names, jump points with arrow, distance, route colour; belts, clouds; comets with tail and trajectory; modes; the body and jump-point previews; deep link to a body |
+
+### Modes (B-121)
+
+The controls leave the page header and sit **inside the map**, floating. One mode at a time, shown by a segmented switch at the top left of the map; the list of controls depends on it.
+
+| Mode | Who | Controls |
+|---|---|---|
+| Consult (default) | everyone who reads the map | search, names, orbits, hours, routes, zones (all / none / default), recentre, « Full screen » / « Leave full screen » |
+| Travel | everyone | pick a start and an arrival, read the duration by engine (Kanevas's own calculation, AD of `kanevas-carte-spatiale`) |
+| Create / edit | GM outside Player mode only (not offered otherwise, not refused) | place a system, draw a route, draw a zone, move a body or an element, anchor, remove; each existing write of E-21 / E-23 keeps its dialogue and its refusals |
+
+Closing the full screen (Escape, the button) returns to the page as it was. The mode is a view state, kept in the address (`?mode=`) so a link opens in the mode it was copied from; a Player opening `?mode=edition` gets the Consult mode.
+
+### Previews and navigation (B-119)
+
+- E-21: the panel of a system shows its **portrait** (the map of the system drawn small) and « Enter the system »; a double click on a system does the same.
+- E-23: a jump point shows its arrow, the neighbour's name, the distance (« 3 cases ») and the colour of its route; a click opens a card with the neighbour's portrait and « Enter the system ». « Galaxy » returns to the place left; « Another system » opens the search of systems.
+- A body: panel with its illustration, its text and « Copy the address »; the address `…/systeme/<q>/<r>/astre/<id>` opens the system with the body chosen and the panel open (P-29). A system or a body the reader may not read: « Page introuvable. », byte for byte like an unknown one.
+
+### Roles × screens
+
+| Screen | Player | GM | GM in Player mode | No role |
+|---|---|---|---|---|
+| E-21 | consult and travel modes; zones control; previews of the systems she reads | all modes | as Player | « Page introuvable. » |
+| E-23 | consult and travel; preview of readable neighbours only (a secret neighbour draws no jump point, as today) | all modes | as Player | « Page introuvable. » |
+
+### States (E-21 and E-23)
+
+| State | Text |
+|---|---|
+| empty | E-21 with no system in the zone: « Le ciel est vide ici. » (the map centres on the origin); E-23 unchanged |
+| loading | the starfield first, then the bodies with their low-resolution illustration (« Chargement du système… », as E-23) |
+| error | the core not loading: the list of bodies / systems replaces the canvas (unchanged); a portrait not arriving: the card shows the name and the distance only |
+| offline | unchanged (« Connexion perdue. », writes disabled) |
+| refusal | not readable: « Page introuvable. »; the mode « Create / edit » is simply absent for a non-GM |
+| full screen refused | the browser refuses (iPhone): the map takes the whole viewport by layout, same controls |
+| long content | a galaxy of hundreds of systems: names collapse at the zoom-out by priority (defined first), clouds aggregate; 12 bodies with 4 moons: no label overlaps a body |
+
+### Criteria
+
+- Given the same system as the reference, the captures of E-23 at the framings of B-123, in light and dark theme, desktop and 390 px, are laid side by side with the reference's and Monsieur judges the allure the same or better.
+- Given Clyra, a body is at most about half an orbit wide, a star is far smaller than before, and zooming does not grow a body (B-113).
+- Given a planet set with a sea level, clouds, caps and relief, the core receives the converted values of the correspondence table; a setting it cannot render appears in the import report (B-114).
+- Given a comet, its tail turns away from the star and is longer near it; choosing it draws its whole trajectory in gold (B-116).
+- Given a jump point towards a neighbour 3 hexagons away by a pirate route, the map shows the arrow, « 3 cases » and the pirate colour (B-115).
+- Given the galaxy opened, the whole known zone is in view with the names of the defined systems; « Zones » set to « none » hides every tint and keeps the routes in the list (B-117, B-118).
+- Given a double click on a system, it opens on its map, and « Galaxy » returns to the same view (B-119).
+- Given Léa on a phone, the map takes the whole window, the controls float and stay reachable by thumb (44 px targets), no horizontal scroll (B-120).
+- Given Léa (Player), the mode switch offers « Consult » and « Travel » only, and a link in `?mode=edition` opens Consult (B-121).
+- Given a secret system, neither its portrait, nor its jump point, nor its name is reachable by a Player through any preview or address.
+
+Cross-check: B-113 to B-116 → E-23; B-117, B-118 → E-21; B-119 → E-21, E-23 and their routes (the portrait is read by `lireCarte`-like read of a readable system only); B-120, B-121 → both; B-122 → the import API (no screen, P-30); B-123 → the recette (P-30).
