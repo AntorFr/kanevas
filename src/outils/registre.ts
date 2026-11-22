@@ -3,9 +3,9 @@ import { verifierDeclaration, type DeclarationModule } from './declaration.js';
 import { essai } from './essai/index.js';
 import { swn } from './swn/index.js';
 
-/** The only module list; the trial module never registers in a real deployment. */
+/** The only module list; `swn` is always registered, the trial module never in a real deployment. */
 export function modulesActifs(): DeclarationModule[] {
-  return env.KANEVAS_STUB === '1' || env.NODE_ENV === 'test' ? [essai, swn] : [];
+  return env.KANEVAS_STUB === '1' || env.NODE_ENV === 'test' ? [essai, swn] : [swn];
 }
 
 export function verifierRegistre(modules: DeclarationModule[] = modulesActifs()): void {

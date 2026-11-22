@@ -115,13 +115,16 @@ describe('B-85 · E-22 : légendes du bonus de vitesse, de la réparation, de la
     assert.match(await ligneTexte(p, 'Rotors lourds'), /vitesse −2/);
     assert.match(await ligneTexte(p, 'Rotors vifs'), /vitesse \+2/);
     assert.match(await ligneTexte(p, 'Rotors neutres'), /vitesse 0/);
+    await attendreResultat(p, /Vitesse\s*3/);
     assert.match(await resultats(p), /Vitesse\s*3/);
     await p.screenshot({ path: `${SHOTS}-vitesse.png`, fullPage: true });
     await m.poser(m.etoile, { coque: 'fregate-r', choix: [l('defenses', 'rotors-lourds')] });
     const q = await ouvrir(m, 'Léa', m.etoile);
+    await attendreResultat(q, /Vitesse\s*1/);
     assert.match(await resultats(q), /Vitesse\s*1/);
     await m.poser(m.etoile, { coque: 'fregate-r', choix: [l('defenses', 'rotors-tres-lourds')] });
     const r = await ouvrir(m, 'Léa', m.etoile);
+    await attendreResultat(r, /Vitesse\s*−2/);
     assert.match(await resultats(r), /Vitesse\s*−2/);
   });
 
