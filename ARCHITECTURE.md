@@ -2117,8 +2117,8 @@ epic, the base's own work). `AntorFr/k8s-home-lab`: nothing (AD-143).
 
 **Order.** The epic waits for `kanevas-fiches-liees` (relations with natures, AD-134) and
 `kanevas-outils` (managed sections AD-127, token scopes): both reach `main`, then this branch by
-the catch-up. Every new route accepts the universe's **content token** (a token with no tool scope, `jetons_outils`
-in `kanevas-outils`) and refuses a tool-scoped one, like the existing sheet routes. `/mcp` does the same. E-23 keeps the optional « Outils » choice of `kanevas-outils` (`jetons` carries it once `jetons_outils` is in the tree).
+the catch-up. Every new route accepts the universe's **content token** (a token with the `contenu` permission, `jetons_api.contenu`,
+AD-jeton-unique-1; it was « no `jetons_outils` row » in `kanevas-outils`) and refuses a tool-only one, like the existing sheet routes. `/mcp` does the same. E-23 keeps the optional « Outils » choice of `kanevas-outils` (`jetons` carries it once `jetons_outils` is in the tree).
 
 **Components and state.** Unchanged: one server, one SQLite base. New: the fingerprint module
 (`services/empreintes.ts`, pure functions over what the services read), `reglages_instance`. Removed:
