@@ -258,7 +258,7 @@ function verifierSaisie(entree: { nom: unknown; dureeJours: unknown }): { nom: s
   return { nom, duree: entree.dureeJours as number };
 }
 
-type EntreeJeton = { nom: unknown; dureeJours: unknown; acces: unknown; outils?: unknown };
+type EntreeJeton = { nom: unknown; dureeJours: unknown; acces: unknown; outils?: unknown; contenu?: unknown };
 type EntreeJetonUnivers = { nom: unknown; dureeJours: unknown; outils?: unknown };
 
 /**
@@ -283,8 +283,12 @@ export function creerJeton(
   if (typeof a !== 'number') {
     const { nom, duree } = verifierSaisie(a);
     const acces = normaliser(db, compteId, a.acces, new Set());
-    const outils = a.outils === undefined ? [] : outilsChoisis(db, compteId, acces, a.outils);
-    return { jeton: inserer(db, compteId, nom, duree, valeur, b instanceof Date ? b : new Date(), acces, outils), valeur };
+    // Compatibility: an absent `contenu` is « content unless tools are asked » (B-jeton-1).
+    if (a.contenu !== undefined && typeof a.contenu !== 'boolean') throw champ('Erreur : les permissions sont invalides.', 'permissions');
+    const contenu = a.contenu ?? a.outils === undefined;
+    const outils = a.outils === undefined ? [] : outilsChoisis(db, compteId, acces, a.outils, contenu);
+    if (!contenu && outils.length === 0) throw champ('Cochez au moins une permission.', 'permissions');
+    return { jeton: inserer(db, compteId, nom, duree, valeur, b instanceof Date ? b : new Date(), acces, outils, contenu), valeur };
   }
   const universId = a;
   const entree = b as EntreeJetonUnivers;
@@ -312,9 +316,10 @@ function outilsChoisis(
   compteId: number,
   acces: { tous: boolean; niveauTous: NiveauPose | null; lignes: { universId: number; niveau: NiveauAcces }[] },
   brut: unknown,
+  contenuAussi: boolean,
 ): string[] {
   const faux = () => champ('Erreur : un outil ne reçoit pas de catalogue dans cet univers.', 'outils');
-  if (!Array.isArray(brut) || brut.length === 0 || brut.some((o) => typeof o !== 'string')) throw faux();
+  if (!Array.isArray(brut) || (brut.length === 0 && !contenuAussi) || brut.some((o) => typeof o !== 'string')) throw faux();
   const offerts = new Set(
     outilsOffrables(db, compteId)
       .filter((o) => o.univers.some((u) => {
@@ -376,6 +381,7 @@ function inserer(
   maintenant: Date,
   acces: { tous: boolean; niveauTous: NiveauPose | null; lignes: { universId: number; niveau: NiveauAcces }[] },
   outils: string[],
+  contenu: boolean = outils.length === 0,
 ): Jeton {
   const creeLe = maintenant.toISOString();
   const expireLe = new Date(maintenant.getTime() + duree * JOUR_MS).toISOString();
@@ -390,8 +396,8 @@ function inserer(
     for (const outil of outils) {
       db.prepare('INSERT INTO jetons_outils (jeton_id, outil) VALUES (?, ?)').run(lastInsertRowid, outil);
     }
-    // A tool token carries no content yet (the creation of both comes with the guards task); the column defaults to 1.
-    if (outils.length > 0) db.prepare('UPDATE jetons_api SET contenu = 0 WHERE id = ?').run(lastInsertRowid);
+    // The column defaults to 1: only a token without content says so.
+    if (!contenu) db.prepare('UPDATE jetons_api SET contenu = 0 WHERE id = ?').run(lastInsertRowid);
     return versJeton(db, ligne(db, Number(lastInsertRowid))!);
   })();
 }
