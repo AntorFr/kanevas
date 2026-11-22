@@ -347,6 +347,10 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/battlemap-direction-e26.test.ts` | `erreur : lecture en échec → message + Réessayer` | affichage | — | gardé |
 | `src/e2e/battlemap-direction-e26.test.ts` | `chargement : le texte s’affiche tant que la lecture n’a pas répondu` | affichage | — | gardé |
 | `src/e2e/battlemap-direction-e26.test.ts` | `captures : deux thèmes, 1440 / 768 / 390` | affichage | — | gardé |
+| `src/e2e/battlemap-assistant-ensemble-besoin.test.ts` | `E-12 → E-28 : la cantine — réponse qui nomme « cuisine », un seul bloc, « Ouvrir » mène à la carte « Cantine »` | affichage | — | gardé |
+| `src/e2e/battlemap-assistant-ensemble-besoin.test.ts` | `E-12 → E-27 : « dix décors » — bloc « Lot préparé : 10 assets » et « À lancer par vous. », E-27 montre « Préparé »` | affichage | — | gardé |
+| `src/e2e/battlemap-assistant-ensemble-besoin.test.ts` | `E-12 → E-26 : la direction — bloc « Direction artistique modifiée », bannière « Texte modifié par l’assistant », « Annuler » rétablit` | affichage | — | gardé |
+| `src/e2e/battlemap-assistant-ensemble-besoin.test.ts` | `joueuse : Léa demande une carte, un lot, une direction — aucun bloc ; E-26, E-27 et E-28 lui sont « Page introuvable. »` | affichage | — | gardé |
 | `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > nominal : sol, deux salles, un mur défait, fermer et rouvrir` | affichage | — | gardé |
 | `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > deux onglets : le second qui écrit donne « Cette carte a changé » au premier` | affichage | — | gardé |
 | `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > carte pleine : le serveur répond 409 carte_pleine, « Carte pleine » et le geste est annulé` | affichage | — | gardé |
