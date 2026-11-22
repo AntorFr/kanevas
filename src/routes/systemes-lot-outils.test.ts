@@ -11,11 +11,9 @@ test('P-8: a universe attached then detached leaves the system, its entries and 
   const landes = await m.univers('Landes');
   const brume = await m.univers('Brume');
   const sys = (await m.dire(m.antor, 'POST', `${lame.base}/systeme-nouveau`, { nom: 'CoF Mini' })).corps;
-  assert.equal((await m.dire(m.antor, 'POST', `/api/systemes/${sys.id}/gabarits`, { type: 'creature', nom: 'Garde du sceau', contenu: '' })).status, 201);
   assert.equal((await m.dire(m.antor, 'PUT', `${landes.base}/systeme`, { systemeId: sys.id })).status, 204);
   const lire = (h: Parameters<typeof m.dire>[0], q = '?type=creature') => m.dire(h, 'GET', `/api/systemes/${sys.id}${q}`);
   assert.equal((await lire(m.admin)).status, 404, 'a GM of an unattached universe reads nothing');
-  assert.equal((await lire(m.admin)).corps.gabarits, undefined);
   assert.equal((await m.dire(m.antor, 'PUT', `${brume.base}/systeme`, { systemeId: sys.id })).status, 204);
   assert.equal((await lire(m.antor)).corps.nbUnivers, 3);
 
@@ -24,20 +22,18 @@ test('P-8: a universe attached then detached leaves the system, its entries and 
   assert.equal((await lire(m.lea)).status, 404, 'the player’s next read says introuvable');
   assert.equal((await lire(m.antor)).status, 200, 'the other universes still read it (Brume)');
   assert.equal((await lire(m.antor)).corps.nbUnivers, 2);
-  assert.deepEqual(((await lire(m.antor)).corps.gabarits as { nom: string }[]).map((g) => g.nom), ['Garde du sceau']);
   assert.ok(((await m.dire(m.antor, 'GET', '/api/systemes/catalogue')).corps as { nom: string }[]).some((s) => s.nom === 'CoF Mini'), 'the system stays in the catalogue');
   assert.equal((await m.dire(m.antor, 'PUT', `${lame.base}/systeme`, { systemeId: sys.id })).status, 204);
-  assert.equal((await lire(m.antor)).corps.gabarits.length, 1, 'attached again: the content is back');
+  assert.equal((await lire(m.antor)).corps.nbUnivers, 3, 'attached again');
 });
 
-test('B-14: a player cannot write an entry of the system (4xx) and the same body is valid for a GM; the player then reads only the GM’s entry', async () => {
+test('B-14: a player cannot set the types of the system (4xx), nor a GM of an attached universe who is not a GM of the system (AD-152)', async () => {
   const m = await monter();
   const lame = await m.univers('Lame', ['lea']);
   const sys = (await m.dire(m.antor, 'POST', `${lame.base}/systeme-nouveau`, { nom: 'CoF Mini' })).corps;
-  const corps = { type: 'creature', nom: 'Intrus', contenu: '' };
-  const refus = await m.dire(m.lea, 'POST', `/api/systemes/${sys.id}/gabarits`, corps);
+  const corps = { active: false };
+  const refus = await m.dire(m.lea, 'PUT', `/api/systemes/${sys.id}/types/objet`, corps);
   assert.ok(refus.status >= 400 && refus.status < 500, `status ${refus.status}`);
-  assert.equal((await m.dire(m.antor, 'POST', `/api/systemes/${sys.id}/gabarits`, { ...corps, nom: 'Intrus MJ' })).status, 201);
-  const noms = ((await m.dire(m.lea, 'GET', `/api/systemes/${sys.id}?type=creature`)).corps.gabarits as { nom: string }[]).map((g) => g.nom);
-  assert.deepEqual(noms, ['Intrus MJ']);
+  assert.equal((await m.dire(m.antor, 'PUT', `/api/systemes/${sys.id}/types/objet`, corps)).status, 403);
+  assert.equal((await m.dire(m.antor, 'POST', `/api/systemes/${sys.id}/gabarits`, { type: 'creature', nom: 'x' })).status, 404);
 });

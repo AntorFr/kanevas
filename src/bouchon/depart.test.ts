@@ -31,7 +31,7 @@ test('semis : univers, rôles et systèmes des critères ; Teo n’a rien ; Mira
   assert.equal(mira[0]!.nom, 'CoF Mini');
   assert.equal(mira[0]!.nbUnivers, 2);
   assert.deepEqual(mira[0]!.mesUnivers.map((u) => u.nom), ['Les Landes grises']);
-  assert.deepEqual(mira[0]!.entrees, { regle: 3, creature: 4, objet: 2 });
+  assert.equal(mira[0]!.peutEcrire, false);
 });
 
 test('semis : fiches sans illustration, une seule fois, jamais sur une base qui a un univers', () => {
@@ -43,7 +43,7 @@ test('semis : fiches sans illustration, une seule fois, jamais sur une base qui 
   }
   assert.equal((db.prepare('SELECT COUNT(*) n FROM pieces_jointes').get() as { n: number }).n, 0);
   assert.equal(semerBouchon(db), false);
-  assert.equal((db.prepare('SELECT COUNT(*) n FROM univers').get() as { n: number }).n, 4);
+  assert.equal((db.prepare('SELECT COUNT(*) n FROM univers WHERE espace_systeme_id IS NULL').get() as { n: number }).n, 4);
 });
 
 // ---- AD-126: la campagne « La Couronne brisée » et « Acte II » ----

@@ -44,8 +44,6 @@ test('sans session, chaque route répond 401', async () => {
     ['GET', '/api/systemes/catalogue'],
     ['GET', '/api/systemes/1'],
     ['POST', '/api/systemes'],
-    ['POST', '/api/systemes/1/gabarits'],
-    ['PUT', '/api/systemes/1/gabarits/1'],
     ['PATCH', '/api/univers/1'],
     ['PUT', '/api/univers/1/systeme'],
     ['POST', '/api/univers/1/systeme-nouveau'],
@@ -63,6 +61,9 @@ test('routes retirées : 404 pour un compte connecté', async () => {
     ['GET', `/api/univers/${w.lame.id}/systeme`],
     ['POST', `/api/univers/${w.lame.id}/systeme/gabarits`],
     ['PUT', `/api/univers/${w.lame.id}/systeme/gabarits/1`],
+    ['GET', '/api/systemes/1/gabarits'],
+    ['POST', '/api/systemes/1/gabarits'],
+    ['PUT', '/api/systemes/1/gabarits/1'],
   ] as const) {
     assert.equal((await appel(app, w.antor, m, u, { type: 'regle', nom: 'x', contenu: '', version: 1 })).statusCode, 404, `${m} ${u}`);
   }
@@ -100,8 +101,6 @@ test('GET /api/systemes : systèmes visibles, forme exacte, Teo vide, Mira son s
   const cof = (await appel(app, w.antor, 'POST', `/api/univers/${w.lame.id}/systeme-nouveau`, { nom: 'CoF Mini' })).json();
   await appel(app, w.mira, 'PUT', `/api/univers/${w.mirU.id}/systeme`, { systemeId: cof.id });
   const cof2 = (await appel(app, w.admin, 'POST', `/api/univers/${w.brume.id}/systeme-nouveau`, { nom: 'Chroniques' })).json();
-  await appel(app, w.antor, 'POST', `/api/systemes/${cof.id}/gabarits`, { type: 'regle', nom: 'Repos' });
-  await appel(app, w.antor, 'POST', `/api/systemes/${cof.id}/gabarits`, { type: 'objet', nom: 'Lame' });
   await appel(app, w.antor, 'POST', '/api/systemes', { nom: 'Détaché' });
 
   const teo = await appel(app, w.teo, 'GET', '/api/systemes');
@@ -114,9 +113,8 @@ test('GET /api/systemes : systèmes visibles, forme exacte, Teo vide, Mira son s
       id: cof.id,
       nom: 'CoF Mini',
       nbUnivers: 2,
-      entrees: { regle: 1, creature: 0, objet: 1 },
       mesUnivers: [{ id: w.mirU.id, nom: 'Aube Secrète', role: 'mj' }],
-      peutEcrire: true,
+      peutEcrire: false, // a GM of an attached universe is not a GM of the system (AD-152)
     },
   ]);
   assert.ok(!mira.body.includes('"nom":"Lame"'));
@@ -206,7 +204,6 @@ test('lecture : 404 de corps identique (inconnu, sans rôle, non rattaché, non 
   const sys = (await appel(app, w.antor, 'POST', '/api/systemes', { nom: 'Commun' })).json();
   await appel(app, w.antor, 'PUT', `/api/univers/${w.lame.id}/systeme`, { systemeId: sys.id });
   await appel(app, w.mira, 'PUT', `/api/univers/${w.mirU.id}/systeme`, { systemeId: sys.id });
-  await appel(app, w.antor, 'POST', `/api/systemes/${sys.id}/gabarits`, { type: 'regle', nom: 'Initiative', contenu: 'd20' });
   const url = `/api/systemes/${sys.id}`;
 
   const inconnu = await appel(app, w.antor, 'GET', '/api/systemes/99999');
@@ -216,90 +213,33 @@ test('lecture : 404 de corps identique (inconnu, sans rôle, non rattaché, non 
   for (const r of [teo, admin]) assert.equal(r.body, inconnu.body);
   assert.equal((await appel(app, w.teo, 'GET', '/api/systemes/abc')).statusCode, 404);
 
-  const vu = await appel(app, w.antor, 'GET', `${url}?type=regle`);
+  const vu = await appel(app, w.antor, 'GET', url);
   assert.equal(vu.json().nbUnivers, 2);
-  assert.equal(vu.json().peutEcrire, true);
+  assert.equal(vu.json().peutEcrire, false);
   assert.deepEqual(vu.json().mesUnivers, [{ id: w.lame.id, nom: 'Lame', role: 'mj' }]);
-  assert.equal(vu.json().gabarits[0].nom, 'Initiative');
-  const mira = await appel(app, w.mira, 'GET', `${url}?type=regle`);
+  assert.equal(vu.json().gabarits, undefined);
+  const mira = await appel(app, w.mira, 'GET', url);
   assert.equal(mira.statusCode, 200);
-  assert.equal(mira.json().gabarits.length, 1);
   assert.ok(!vu.body.includes('Aube Secrète'));
   assert.ok(!mira.body.includes('"Lame"'));
-  assert.equal((await appel(app, w.antor, 'GET', `${url}?type=dragon`)).statusCode, 400);
-  assert.equal((await appel(app, w.antor, 'GET', `${url}?curseur=%25%25`)).statusCode, 400);
 });
 
-test('gabarits : pagination par cent et curseur', async () => {
+test('PUT types : réservé aux MJ du système ; un MJ d’univers rattaché reçoit 403, un étranger 404', async () => {
   const app = await buildApp();
   const w = await monde(app);
-  const s = (await appel(app, w.antor, 'POST', `/api/univers/${w.lame.id}/systeme-nouveau`, { nom: 'Gros' })).json();
-  const post = `/api/systemes/${s.id}/gabarits`;
-  for (let i = 0; i < 101; i++) {
-    const r = await appel(app, w.antor, 'POST', post, { type: 'creature', nom: `Bête ${String(i).padStart(3, '0')}` });
-    assert.equal(r.statusCode, 201);
-  }
-  const url = `/api/systemes/${s.id}?type=creature`;
-  const p1 = (await appel(app, w.lea, 'GET', url)).json();
-  assert.equal(p1.gabarits.length, 100);
-  assert.ok(p1.suivant);
-  assert.equal(p1.gabarits[0].nom, 'Bête 000');
-  const p2 = (await appel(app, w.lea, 'GET', `${url}&curseur=${p1.suivant}`)).json();
-  assert.equal(p2.gabarits.length, 1);
-  assert.equal(p2.gabarits[0].nom, 'Bête 100');
-  assert.equal(p2.suivant, null);
-  assert.equal((await appel(app, w.lea, 'GET', `/api/systemes/${s.id}?type=objet`)).json().gabarits.length, 0);
-});
-
-test('gabarits : écriture, droits, version périmée, autre système, MJ d’un second univers', async () => {
-  const app = await buildApp();
-  const w = await monde(app);
-  const sA = (await appel(app, w.antor, 'POST', `/api/univers/${w.lame.id}/systeme-nouveau`, { nom: 'A' })).json();
-  const sB = (await appel(app, w.mira, 'POST', `/api/univers/${w.mirU.id}/systeme-nouveau`, { nom: 'B' })).json();
-  const post = `/api/systemes/${sA.id}/gabarits`;
-
-  const g = await appel(app, w.antor, 'POST', post, { type: 'regle', nom: 'Soin', contenu: 'v1' });
-  assert.equal(g.statusCode, 201);
-  assert.equal(g.json().version, 1);
-  assert.equal((await appel(app, w.lea, 'POST', post, { type: 'regle', nom: 'L' })).statusCode, 403);
-  assert.equal((await appel(app, w.teo, 'POST', post, { type: 'regle', nom: 'T' })).statusCode, 404);
-  assert.equal((await appel(app, w.mira, 'POST', post, { type: 'regle', nom: 'M' })).statusCode, 404);
-  assert.equal((await appel(app, w.antor, 'POST', post, { type: 'regle', nom: 'soin' })).statusCode, 409);
-  assert.equal((await appel(app, w.antor, 'POST', post, { type: 'monstre', nom: 'M' })).statusCode, 400);
-
-  const put = `${post}/${g.json().id}`;
-  const m = await appel(app, w.antor, 'PUT', put, { nom: 'Soin+', contenu: 'v2', version: 1 });
-  assert.equal(m.statusCode, 200);
-  assert.equal(m.json().version, 2);
-  const perime = await appel(app, w.antor, 'PUT', put, { nom: 'X', contenu: 'v3', version: 1 });
-  assert.equal(perime.statusCode, 409);
-  assert.equal(perime.json().code, 'gabarit_modifie');
-  assert.equal((await appel(app, w.lea, 'PUT', put, { nom: 'X', contenu: 'x', version: 2 })).statusCode, 403);
-  assert.equal((await appel(app, w.teo, 'PUT', put, { nom: 'X', contenu: 'x', version: 2 })).statusCode, 404);
-  assert.equal((await appel(app, w.antor, 'PUT', put, { nom: 'X', contenu: 'x' })).statusCode, 400);
-
-  // Mira, MJ of B, aims at A's template through B's address: not found, nothing written
-  const mur = `/api/systemes/${sB.id}/gabarits/${g.json().id}`;
-  assert.equal((await appel(app, w.mira, 'PUT', mur, { nom: 'Pirate', contenu: 'x', version: 2 })).statusCode, 404);
-  assert.equal((await appel(app, w.antor, 'PUT', `${post}/99999`, { nom: 'X', contenu: 'x', version: 1 })).statusCode, 404);
-  assert.equal((await appel(app, w.antor, 'PUT', `${post}/abc`, { nom: 'X', contenu: 'x', version: 1 })).statusCode, 404);
-  const apres = (await appel(app, w.antor, 'GET', `/api/systemes/${sA.id}?type=regle`)).json().gabarits[0];
-  assert.equal(apres.nom, 'Soin+');
-  assert.equal(apres.version, 2);
-
-  // AD-94: Mira's second universe, attached to A, makes her GM of A
-  const m2 = (await appel(app, w.mira, 'POST', '/api/univers', { nom: 'Second' })).json();
-  await appel(app, w.mira, 'PUT', `/api/univers/${m2.id}/systeme`, { systemeId: sA.id });
-  assert.equal((await appel(app, w.mira, 'POST', post, { type: 'objet', nom: 'Par Mira' })).statusCode, 201);
+  const s = (await appel(app, w.antor, 'POST', `/api/univers/${w.lame.id}/systeme-nouveau`, { nom: 'A' })).json();
+  const url = `/api/systemes/${s.id}/types/objet`;
+  assert.equal((await appel(app, w.antor, 'PUT', url, { active: false })).statusCode, 403);
+  assert.equal((await appel(app, w.lea, 'PUT', url, { active: false })).statusCode, 403);
+  assert.equal((await appel(app, w.teo, 'PUT', url, { active: false })).statusCode, 404);
 });
 
 test('aucune route ne supprime', async () => {
   const app = await buildApp();
   const w = await monde(app);
   const s = (await appel(app, w.antor, 'POST', `/api/univers/${w.lame.id}/systeme-nouveau`, { nom: 'S' })).json();
-  const g = (await appel(app, w.antor, 'POST', `/api/systemes/${s.id}/gabarits`, { type: 'objet', nom: 'Épée' })).json();
-  for (const u of ['/api/systemes', `/api/systemes/${s.id}`, `/api/systemes/${s.id}/gabarits/${g.id}`]) {
+  for (const u of ['/api/systemes', `/api/systemes/${s.id}`]) {
     assert.ok((await appel(app, w.antor, 'DELETE', u)).statusCode >= 400, u);
   }
-  assert.equal((await appel(app, w.antor, 'GET', `/api/systemes/${s.id}?type=objet`)).json().gabarits.length, 1);
+  assert.equal((await appel(app, w.antor, 'GET', `/api/systemes/${s.id}`)).statusCode, 200);
 });

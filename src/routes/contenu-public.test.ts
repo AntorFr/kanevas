@@ -193,14 +193,6 @@ test('entrée de système : :::mj reste du texte ; le texte d’un scénario (se
   assert.equal(ecr.statusCode, 200, ecr.body);
   const lu = await app.inject({ method: 'GET', url: `${base}/fiches/${sc.json().id}`, headers: lea });
   assert.ok(lu.body.includes('vu') && !lu.body.includes('secret'), lu.body);
-  // system entry (template)
-  const sy = await app.inject({ method: 'POST', url: '/api/systemes', headers: antor, payload: { nom: 'Sys' } });
-  assert.equal(sy.statusCode, 201, sy.body);
-  const at = await app.inject({ method: 'PUT', url: `${base}/systeme`, headers: antor, payload: { systemeId: sy.json().id } });
-  assert.equal(at.statusCode, 204, at.body);
-  const g = await app.inject({ method: 'POST', url: `/api/systemes/${sy.json().id}/gabarits`, headers: antor, payload: { type: 'regle', nom: 'G', contenu: src } });
-  assert.ok(g.statusCode === 201, g.body);
-  assert.equal(g.json().html, attendu);
 });
 
 test('migration 0011 : contenu_public = contenu pour les sections existantes, comptées avant et après', () => {
@@ -217,7 +209,7 @@ test('migration 0011 : contenu_public = contenu pour les sections existantes, co
   textes.forEach((t, i) => db.prepare('INSERT INTO sections (fiche_id, titre, ordre, contenu, modifie_le) VALUES (1, ?, ?, ?, ?)').run('S' + i, i + 1, t, 't'));
   const avant = (db.prepare('SELECT COUNT(*) AS n FROM sections').get() as { n: number }).n;
   assert.equal(avant, 4);
-  assert.deepEqual(migrate(db), [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]);
+  assert.deepEqual(migrate(db), [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]);
   const apres = db.prepare('SELECT contenu, contenu_public AS p FROM sections ORDER BY id').all() as { contenu: string; p: string }[];
   assert.equal(apres.length, 4);
   assert.deepEqual(apres.map((r) => r.p), textes);
