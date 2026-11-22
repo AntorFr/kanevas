@@ -96,7 +96,7 @@ const sauver = async (p: Any) => {
 
 
 const opts = async (p: Any) => (await p.getByRole('combobox', { name: 'Élément visé' }).last().locator('option').allInnerTexts()).map(norm);
-const visees = (p: Any, nom: string) => ligne(p, nom).getByRole('combobox', { name: 'Élément visé' });
+const visees = (p: Any, nom: string) => ligne(p, nom).getByRole('combobox', { name: /^Visée/ });
 async function modif(p: Any, nom: string) {
   await p.getByRole('button', { name: AJ_MOD }).first().click();
   await p.locator('li').filter({ hasText: nom }).last().getByRole('button').first().click();
@@ -174,7 +174,7 @@ describe('E-22 suite Z, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => 
     await api('antor', 'POST', `/api/univers/${E}/membres`, { username: 'teo', role: 'joueur' });
     const p = await ouvrir('teo', etoile, 1280);
     await p.getByText('Lecture seule.').waitFor();
-    await p.getByText('Élément visé : Laser Z').waitFor();
+    await p.getByText('Visée : Laser Z').first().waitFor();
     const t = norm(await p.locator('body').innerText());
     assert.match(t, /3 points : −3 puissance, \+1 masse/);
     assert.equal(await p.locator('input[type="number"]').count(), 0);

@@ -88,7 +88,7 @@ const sauver = async (p: Any) => {
 
 
 const opts = async (p: Any) => (await p.getByRole('combobox', { name: 'Élément visé' }).last().locator('option').allInnerTexts()).map(norm);
-const visees = (p: Any, nom: string) => ligne(p, nom).getByRole('combobox', { name: 'Élément visé' });
+const visees = (p: Any, nom: string) => ligne(p, nom).getByRole('combobox', { name: 'Visée' });
 async function modif(p: Any, nom: string) {
   await p.getByRole('button', { name: AJ_MOD }).first().click();
   await p.locator('li').filter({ hasText: nom }).last().getByRole('button').first().click();
@@ -173,9 +173,9 @@ describe('E-22 livre', { skip: skipBrowser, timeout: 240000 }, () => {
     await api('antor', 'POST', `/api/univers/${E}/membres`, { username: 'teo', role: 'joueur' });
     const p = await ouvrir('teo', etoile, 1280);
     await p.getByText('Lecture seule.').waitFor();
-    await attendre(p, /Élément visé : Laser Z/);
+    await attendre(p, /Visée : Laser Z/);
     const t = await texte(p);
-    for (const re of [/soutes −10 % de masse libre, fret ×2/, /armure \+2 et réparation/, /puissance et masse de l['’]arme visée ÷ 2/, /puissance de l['’]arme \+50 % par installation/, /Élément visé : Laser Z/]) assert.match(t, re);
+    for (const re of [/soutes −10 % de masse libre, fret ×2/, /armure \+2 et réparation/, /puissance et masse de l['’]arme visée ÷ 2/, /puissance de l['’]arme \+50 % par installation/, /Visée : Laser Z/]) assert.match(t, re);
     assert.equal(await p.locator('input[type="number"]').count(), 0);
     assert.equal(await p.getByRole('combobox').count(), 0);
   });
@@ -190,6 +190,6 @@ describe('E-22 livre', { skip: skipBrowser, timeout: 240000 }, () => {
     await p.locator('li').filter({ hasText: 'Blindage L' }).last().getByRole('button').first().click();
     await p.getByRole('button', { name: 'Retirer : Blindage L' }).waitFor();
     assert.equal(await p.getByRole('heading', { name: 'Compétence de réparation' }).count(), 0);
-    assert.equal(await p.getByRole('combobox', { name: 'Élément visé' }).count(), 0);
+    assert.equal(await p.getByRole('combobox', { name: /Visée|Élément visé/ }).count(), 0);
   });
 });
