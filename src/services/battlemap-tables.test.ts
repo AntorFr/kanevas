@@ -361,7 +361,7 @@ test('0049 : une base au schéma 0048 (carte, univers) monte sans perte ; contra
   const db = openDb(':memory:');
   migrate(db, dir);
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'a', 'x')").run();
-  db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', 'x')").run();
+  db.prepare("INSERT INTO univers (id, cle, nom, cree_le) VALUES (1, 'un', 'U', 'x')").run();
   const doc = '{"schema":1}';
   db.prepare("INSERT INTO bm_cartes (id, univers_id, titre, visible, largeur, hauteur, taille_case, document, version, cree_le, modifie_le) VALUES (1, 1, 'C', 1, 4, 4, 70, ?, 3, 'x', 'x')").run(doc);
   const avant = db.prepare('SELECT * FROM bm_cartes').all();

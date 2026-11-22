@@ -406,7 +406,7 @@ test('0046 : montée depuis 0045, données gardées, contraintes vivantes, RESTR
   migrate(db, dossierJusqua(45));
   const tables = () => (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'bm_%'").all() as { name: string }[]).map((t) => t.name).sort();
   assert.deepEqual(tables(), []);
-  db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', '2026-11-01T00:00:00.000Z')").run();
+  db.prepare("INSERT INTO univers (id, cle, nom, cree_le) VALUES (1, 'un', 'U', '2026-11-01T00:00:00.000Z')").run();
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'a', 'x')").run();
   const avant = db.prepare('SELECT * FROM univers').all();
   assert.deepEqual(migrate(db), [46, 47, 48, 49]);
