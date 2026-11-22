@@ -4107,7 +4107,7 @@ n'est visible des joueurs. » and no « Préparation » block.
   for that CR and the « Campagne » line of its sheet (E-9) is absent: the title of a scenario
   closed to the players never leaks through a CR (rule 3 of `docs/donnees.md`), the CR itself stays
   readable. The filter by adventure of the route stays (`?campagne=<fiche id>`), for an adventure
-  the caller reads (404 otherwise, like the sheet).
+  the caller reads (404 otherwise, like the sheet); *(`kanevas-cr-aventure`)* filtering by an adventure also returns the reports of its scenarios (same filter as the block of E-9), the column of each row naming its own adventure.
 - **Type deactivated** (E-14/E-15, AD-122): exactly what deactivating any type does, nothing
   more — the « Aventures » entry leaves the bar, creating an adventure is refused (E-8; the import warns `type_desactive`); existing adventures stay readable and writable by their
   address and in the search, with their blocks « Préparation » and « Comptes-rendus » and their
@@ -5221,11 +5221,10 @@ this slice (the import and the MCP address by it).
 ### E-9 — the adventure of a session report (`kanevas-cr-aventure`, B-cr-aventure-1 and 4)
 
 **The « Campagne : <nom> » line of a report** (header of E-9, registry of header lines) gains, **for the GM outside player mode only**, a
-button « Changer d'aventure… ». It opens a dialog built as « Déplacer sous… » (search field, list of the adventures of the universe
-the GM reads, current one marked and not selectable, « Déplacer » and « Annuler »); no player, nor GM in player mode, sees the button. On success the line
+button « Changer d'aventure… ». It opens its own dialog « Changer l'aventure de « <titre> » » : a field « Chercher une aventure » (300 ms, 1 to 100 characters, as the « Recherche » view of « Déplacer sous… »), a `radiogroup` « Nouvelle aventure » of the adventures of the universe the GM reads (rows: icon, title, sub-type; read with `GET …/fiches?type=aventure`, `?q=` only once something is typed, 100 then « Charger la suite »; the browser filters nothing), the current one marked « (aventure actuelle) » and not selectable, a summary line « Nouvelle aventure : … », footer « Annuler » / « Changer d'aventure » (inactive until a different row is chosen). No tree view, no « Aucun parent » row (a report always has an adventure); no player, nor GM in player mode, sees the button. On success the line
 shows the new adventure in place, without reloading the sheet; the sections, relations and « Mentionnée dans » stay. The line « Aventure
 supprimée » (adventure deleted) offers the same button. Failure: « L'action n'a pas abouti. Réessayez. » in the dialog, the line unchanged; offline: button disabled.
-No new component: the dialog reuses the picker of « Déplacer sous… ».
+No new component or token: the dialog assembles the dialog frame, search field, radio rows and footer of « Déplacer sous… » (gardien du design system to confirm at the slice).
 
 **The block « Comptes-rendus » of an adventure's sheet** also lists the reports of its scenarios. A line of a scenario's report adds
 the scenario's name (a link to its sheet) beside the date; a line of the adventure's own report stays as it is. One list, newest first,

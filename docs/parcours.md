@@ -437,11 +437,11 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   (AD-139); the batch counts it as a written sheet; it no longer answers « campagne non modifiable, ignorée ». A key that is not an
   adventure of the universe stays refused (« campagne inconnue »). *(P-10)*
 - **B-cr-aventure-3** — *(`kanevas-cr-aventure`)* The **export** gives the new adventure of a moved report, with no
-  work of its own once B-cr-aventure-1 and 2 are delivered (it reads the adventure at export time): verified, not built. *(P-10)*
+  work of its own once B-cr-aventure-1 and 2 are delivered (`GET /export`, AD-export-1, gives each sheet in its read form, at the instant of the snapshot): verified, not built. *(P-10)*
 - **B-cr-aventure-4** — *(`kanevas-cr-aventure`)* The block « Comptes-rendus » of an **adventure's sheet** (B-60) also lists
   the reports of its scenarios (its direct children of type adventure that the reader reads), each with the **name of its scenario**;
   the sheet of a scenario lists its own, as before. Without it, filing a report under its scenario would make it disappear from its
-  campaign's page. *(P-4, P-6)*
+  campaign's page. *(P-4)*
 
 ### Maps
 - **B-22** — A GM creates an illustrated map (a background image dropped onto the map, freely
