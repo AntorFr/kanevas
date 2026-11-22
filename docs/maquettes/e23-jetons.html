@@ -371,7 +371,7 @@ body.etat-perdue [data-ecrit-recherche] { opacity: .45; pointer-events: none; }
 .genre button .i { color: var(--texte-3); }
 .genre button[aria-checked="true"] .i { color: var(--accent-texte); }
 .dialogue .aide-genre { font-size: var(--t-12); color: var(--texte-3); }
-.dialogue .case-perm { display: flex; gap: 8px; align-items: flex-start; font-size: var(--t-14); }
+.dialogue .case-perm { display: flex; gap: 8px; align-items: flex-start; font-size: var(--t-13); }
 .dialogue .case-perm small { display: block; font-size: var(--t-12); color: var(--texte-3); }
 .dialogue .actions { margin-top: var(--e-2); }
 @media (max-width: 1080px) {
@@ -711,7 +711,7 @@ body.etat-perdue .actions-ligne .bouton { opacity: .45; }
       <div class="champ" id="champ-permissions" role="group" aria-labelledby="lib-perm">
         <span id="lib-perm">Ce que le jeton peut faire</span>
         <label class="case-perm"><input type="checkbox" checked> <span>Contenu <small>fiches, sections, relations, fichiers, cartes, export</small></span></label>
-        <label class="case-perm"><input type="checkbox" checked> <span>Galaxie <small>Systèmes de jeu · Stars Without Number — import de la galaxie</small></span></label>
+        <label class="case-perm"><input type="checkbox"> <span>Galaxie <small>Systèmes de jeu · Stars Without Number — import de la galaxie</small></span></label>
         <label class="case-perm"><input type="checkbox"> <span>Catalogue d'essai <small>Essai · catalogue d'équipement</small></span></label>
         <span class="aide-genre">Un seul jeton peut tout faire, ou créez-en un par script : les accès ci-dessous valent pour tout ce que vous cochez.</span>
         <span class="erreur" id="err-perm" hidden>Cochez au moins une permission.</span>
