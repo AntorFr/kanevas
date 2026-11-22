@@ -68,8 +68,8 @@ have it (sheet, map and, since `kanevas-import`, search E-17).
 | **E-12 Assistant** | floating button, on every universe screen | converse; see what the assistant has written, with a link; GM: update proposals (current/proposed, **« Appliquer »**, **« Abandonner »**) | P-3, P-5, P-6, P-7 |
 | **E-13 Session reports** | « Comptes-rendus » navigation; E-3 | all readable session reports in the universe, newest first, with their campaign (*`kanevas-scenarios`*: the adventure it names, campaign or scenario) | P-4, P-5 |
 | **E-14 Universe settings** | « Univers » navigation (GM) | name, description, game system (choose from the catalogue, create one) | P-8 |
-| **E-15 Game system** | E-16; link from E-3 and E-14 | *(amended, `kanevas-systemes-jeu`)* the system's elements as sheets (list, read; add, edit, delete: GM of the system) and « GMs of the system » (admin); readers of an attached universe read only; outside a universe's frame | P-8 |
-| **E-16 Game systems** | reduced sidebar; universe selector menu | systems attached to the account's universes, each with those of its universes using it | P-8 |
+| **E-15 Game system** | E-16; link from E-3 and E-14; E-5 (admin) | *(amended, `kanevas-systemes-jeu`)* the system's elements as sheets (list, read; add, edit, delete: GM of the system) and the tab « MJ du système » (admin); readers of an attached universe read only; outside a universe's frame | P-8 |
+| **E-16 Game systems** | reduced sidebar; universe selector menu | systems attached to the account's universes, each with those of its universes using it; *(amended, `kanevas-systemes-jeu`)* plus the systems the account is a GM of, even with no universe (`GET /api/systemes`, AD-155) | P-8 |
 | **E-17 Search** *(kanevas-import)* | « Rechercher » in the sidebar; `/`; a label tapped on E-9 ; *(kanevas-fiches-liees)* « Chercher parmi » of a « Fiches liées » block | search all types, titles, aliases and readable sections; filter by type; *(kanevas-fiches-liees)* advanced search: linked to a sheet, by nature, sub-places included, alive / dead and by label; *(kanevas-scenarios)* the status badge of an adventure result | P-12, P-10, P-17 |
 | **E-19 Media library** *(kanevas-import)* | « Médiathèque » navigation; « Choisir dans la médiathèque » in the editor and illustration (E-9) | see files (images, documents) accessible to the account and where they are used; GM: add, rename, set visibility, delete | P-16, P-10 |
 | **E-18 API access** *(kanevas-import)* | « Univers » ▸ « Accès par API » navigation (GM) | create, list, revoke the universe's API tokens; see import batches and their refusals *(`kanevas-synchro`: batches only; tokens move to E-23 and E-5)* | P-10 *(P-11 replaced by P-25)* |
@@ -110,7 +110,7 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-2 | create | create | create |
 | E-3 | everything | no preparation or scenarios ; *(kanevas-scenarios)* « Campagnes en cours »: those he reads, with their status | — |
 | E-4 | everything | — | — (through E-5) |
-| E-5 | — | — | list universes and their members; add, change a role, remove a member; see assistant token status, connect or reconnect the subscription; *(kanevas-synchro)* set the maximum size of a map background (B-89); see all tokens, change their accesses, revoke them (B-95) |
+| E-5 | — | — | list universes and their members; add, change a role, remove a member; see assistant token status, connect or reconnect the subscription; *(kanevas-synchro)* set the maximum size of a map background (B-89); see all tokens, change their accesses, revoke them (B-95); *(kanevas-systemes-jeu)* list the systems (name, universes, number of GMs) and open one on its « MJ du système » tab |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
 | E-8 | read, search, create; each sheet's thumbnail (its illustration, or the drawn fallback) ; *(kanevas-fiches-liees)* the mark on the thumbnail (Mort, Morte, Détruit, Détruite, Éteinte depending on the type), the type's filter (Vivants / Morts, Intacts / Détruits…) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | read, search; thumbnails of visible sheets ; *(kanevas-fiches-liees)* the « gone » mark and its filter, the same as the GM sees them (the « Marquer … » entry is on E-9 only, hidden from a player) ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**hidden**) | — |
@@ -120,8 +120,12 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-12 | GM catalogue (including image generation, if an image engine is available); proposals: only the requesting GM sees, applies, abandons them | Player catalogue (no image: the tool is absent, the assistant answers that it cannot); proposals: **hidden** (neither tool nor block; what is checked is the absence of a proposal and block, not the assistant's free text) | — |
 | E-13 | all session reports ; *(kanevas-scenarios)* the adventure of each, « Aventure supprimée » when it is gone | readable session reports ; the adventure column only for an adventure he reads (**hidden** otherwise, deleted or closed alike) | — |
 | E-14 | everything; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
-| E-15 (outside a universe; columns describe the role in a universe **attached to the system**; *amended by `kanevas-systemes-jeu`, AD-152*: the write right is the **system's GM**, never the universe's role) | read; the GM of the universe reads only (« Lecture seule »); « New element », edit and delete only if also a GM **of the system** | read (« Lecture seule »); no write control | « Page introuvable. », unless also a member of an attached universe (that column applies) or a GM of the system; the admin who is none of those sees the sole « GMs of the system » tab (add, remove), no element; an admin who is a GM of the system also edits |
-| E-16 (outside a universe) | own systems, with own universes and role | own systems, « Lecture seule » | list of own systems (as GM or Player if a member of an attached universe); otherwise empty — the screen is offered to every account |
+| E-15 (outside a universe; columns describe the role in a universe **attached to the system**; *amended by `kanevas-systemes-jeu`, AD-152*: the write right is the **system's GM**, never the universe's role) | read; « Lecture seule » badge; « Nouvel élément », edit, « Supprimer l'élément » only if also a GM **of the system**; tab « MJ du système » absent | read (« Lecture seule »); no write control, no « MJ du système » tab | « Page introuvable. », unless a member of an attached universe (that column applies) or a GM of the system |
+| E-15, GM **of the system** (any role in a universe, or none) | elements: read, « Nouvel élément », edit, delete; tab « MJ du système » absent | same | same; no universe needed |
+| E-15, **instance admin** | tab « MJ du système » (« Ajouter », « Retirer »), plus the other columns' rights if also member of an attached universe or GM of the system; the admin who is neither sees that sole tab, no element, no « Nouvel élément » | — | — |
+| E-9 in a system space (`/systemes/:sid/fiches/:fid`) | read-only unless GM of the system (full editor, « Supprimer l'élément »); a section reserved to GMs of the system is absent for a reader | read-only, player-readable sections | « Page introuvable. » unless GM of the system |
+| E-9 of a system element opened from a universe | banner « Élément de <système> — lecture seule »; the button « Personnaliser pour cet univers » (slice `surcharge`) only for a GM outside player mode | banner, no button | — |
+| E-16 (outside a universe) | own systems, with own universes and role; *(amended)* also the systems it is a GM of, with no universe of the account | own systems, « Lecture seule » | the systems it is a GM of (the admin reaches the others through E-5); otherwise empty — the screen is offered to every account |
 | E-17 *(kanevas-import)* | search all sheets in the universe, including GM blocks; in **Player mode**, as a player (no GM blocks or sheets unreadable by a player); filters: enabled types; sheets of disabled types remain results under « Tous » | search readable content, excluding GM blocks; type and label filters from visible sheets only; mode toggle: absent (hidden); GM blocks: excluded from search (never read); « Alias et étiquettes… » on E-9: hidden | — |
 | E-19 *(kanevas-import)* | everything: add, rename, visibility, delete; complete « Utilisé dans » | files visible to players and files they added; « Utilisé dans » restricted to readable sheets; no adding from E-19 (**hidden**; they add a file through a section they write, E-9), no settings or deletion (**hidden**) | — |
 | E-18 *(kanevas-import)* | *(kanevas-synchro: batches only; tokens move to E-23, and to E-5 for the admin)* create a token; see and revoke all the universe's tokens (including another GM's); see batches | — (**hidden**: absent from the sidebar, « Page introuvable. » by address) | — |
@@ -1541,12 +1545,12 @@ tooltip and in the chip's accessible label.
 | Matrix row | GM of an attached universe | Player of an attached universe (and GM of none) | Account without an attached universe (Teo; instance admin without a role) |
 |---|---|---|---|
 | « Systèmes de jeu » in the reduced sidebar and selector menu | yes | yes | yes (empty E-16) |
-| system in E-16 | yes, with their universes and role | yes, « Lecture seule » | absent |
-| E-15: read | yes | yes | « Page introuvable. » |
-| E-15: « Ajouter … », « Modifier » | yes | **absent** | — |
+| system in E-16 | yes, with their universes and role | yes, « Lecture seule » | absent, unless GM of the system (then listed, « MJ du système », even with no universe of the account) |
+| E-15: read | yes | yes | « Page introuvable. » (GM of the system: reads and edits) |
+| E-15: « Nouvel élément », edit, « Supprimer l'élément » *(amended, AD-152)* | **absent**, unless also a GM **of the system** (the universe's role gives no write) | **absent** | GM of the system only |
 | names of other accounts' universes | never | never | never |
 | `GET /api/systemes/:sid` | 200 | 200 | **404**, same body as an unknown identifier |
-| entry `POST`/`PUT` | 201 / 200 | **403** | **404** |
+| element `POST`/`PATCH`/`DELETE` on `/api/systemes/:sid/fiches` *(amended, AD-157)* | 403, unless GM of the system (201 / 200 / 204) | **403** | **404** (GM of the system: 201 / 200 / 204) |
 
 #### Criteria (systems)
 
@@ -5047,21 +5051,20 @@ this slice (the import and the MCP address by it).
 
 No new layout: the system's page and the sheet screens are reused in a « system space ».
 
-- **E-15 Game system (rewritten).** Two panels: **Elements** (the E-8 list of the system's sheets, grouped by type, with
-  « New element » for the system's GMs) and **GMs of the system** (admin only: add or remove an account), laid out as tabs of E-15 beside « Outils » (E-20, the system's responsible, unchanged): « Elements » (with, for the system's GMs, the types switch of the system), « GMs of the system » (admin), « Outils ». A tab shows only to who may use it; the admin who is not a GM of the system sees the sole « GMs of the system » tab, no element. Tabs
-  « Rules / Creatures / Objects » of the gabarits are replaced by the types filter of E-8. Readers who are not GMs of the system see
+- **E-15 Game system (rewritten).** Tabs of E-15 (`Onglets`), each shown only to who may use it: **« Éléments »** (the E-8 list of the system's sheets, grouped by type; for the system's GMs the button « Nouvel élément » and the types switch of the system), **« MJ du système »** (admin only) and **« Outils »** (E-20, the system's responsible, unchanged). The admin who is not a GM of the system sees the sole « MJ du système » tab, no element. Tabs
+  « Règles / Créatures / Objets » of the gabarits are replaced by the types filter of E-8. Readers who are not GMs of the system see
   the list read-only. Element address: `/systemes/:sid/fiches/:fid`.
-- **E-9 Sheet, in a system space.** The ordinary sheet (sections, links) for the system's GMs; read-only for the rest.
-- **E-9 Sheet, a system element opened from a universe.** Banner « Element of <system> — read-only » and, for a GM
-  outside player mode, the button « Customise for this universe » (creates the copy and opens it). On a customisation: mark
-  « Customised », link « See the system's element » and the button « Go back to the system's element » (confirmation: deletes this
-  copy only). The view of a sheet carries what these show: `origine` (`systeme`, `univers`, `surcharge`), `systeme: {id, nom}` for an element or a customisation, and `surchargeDe` (the id of the original, only for a copy, read by who reads the system) which the link « See the system's element » opens (AD-157). States: loading, unknown or unreadable element → « Page introuvable. », customisation conflict (copy already exists → opens it).
-- **E-17 Search and E-8 lists.** Pictogram on the system's elements (the component is the design-system guardian's verdict),
-  filter « Hide the system's elements » beside the type filter, kept in the address (`?sans-systeme=1`). Empty result with the filter on says
+- **E-9 Sheet, in a system space.** The ordinary sheet (sections, links) for the system's GMs, with the breadcrumb « <système> › <élément> » and, for them, « Supprimer l'élément » in the sheet's menu; read-only for the rest (no editing control at all, the section reserved to the GM of the system is simply absent for a reader: hidden, never disabled).
+- **E-9 Sheet, a system element opened from a universe.** Banner « Élément de <système> — lecture seule » and, for a GM
+  outside player mode, the button « Personnaliser pour cet univers » (creates the copy and opens it). On a customisation: mark
+  « Personnalisé », link « Voir l'élément du système » and the button « Revenir à l'élément du système » (confirmation: deletes this
+  copy only). The view of a sheet carries what these show: `origine` (`systeme`, `univers`, `surcharge`), `systeme: {id, nom}` for an element or a customisation, and `surchargeDe` (the id of the original, only for a copy, read by who reads the system) which the link « Voir l'élément du système » opens (AD-157). The customisation and the return belong to `kanevas-systemes-jeu-surcharge`; this slice (`-elements`) shows the banner only.
+- - **E-17 Search and E-8 lists.** Pictogram on the system's elements (the component is the design-system guardian's verdict),
+  filter « Masquer les éléments du système » beside the type filter, kept in the address (`?sans-systeme=1`). Empty result with the filter on says
   so and offers to turn it off.
-- **Reaching E-15 as the admin.** « Administration » lists the systems beside the universes (`GET /api/instance/systemes`: name, universes, number of GMs); a row opens E-15 on the « GMs of the system » tab, even for a system with no GM or no universe. Removing the last GM is allowed (B-114).
-- **E-15, GMs panel.** The admin types the account's identifier in one field and presses « Add » (same gesture as the
-  admin's universe members, AD-86); each GM is a row with « Remove ». A system created by an account gives that account no GM
+- **Reaching E-15 as the admin.** « Administration » (E-5) lists the systems beside the universes (`GET /api/instance/systemes`: name, universes, number of GMs); a row opens E-15 on the « MJ du système » tab, even for a system with no GM or no universe. Removing the last GM is allowed (B-114).
+- **E-15, « MJ du système » tab.** The admin types the account's identifier in one field and presses « Ajouter » (same gesture as the
+  admin's universe members, AD-86); each GM is a row with « Retirer ». A system created by an account gives that account no GM
   row: the admin grants it. Enabling or disabling a type of the system is the GMs' switch only.
 - **E-23 My API tokens (block « Systems », added after `kanevas-jeton-unique`; the creation and the change of accesses live on E-23, E-18 keeps the batches only).** One row per system the account reads, with a level
   « None / Read / Write »; « Write » is offered only where the account is a GM of the system. Saved with the token (at creation: `systemes` of `POST /api/compte/jetons`; later: `PATCH /api/compte/jetons/:jid`, AD-155); a token with
@@ -5073,3 +5076,40 @@ GM of an attached universe — reads, customises in his universe; player — rea
 Mockups: none new; the E-9 banner and the E-17 pictogram are judged on captures by the guardian and the visual review.
 
 Design-system verdicts for `kanevas-systemes-jeu-elements` (guardian, decided under mandate): E-15 tabs → `Onglets` (`ui/onglets.tsx`), replacing the screen's own `role="tablist"` and its `.nb` counters; a tab shows only to who can use it. E-15 list of elements → E-8 list (`LigneFicheLiee`, `VignetteFiche`), replacing the `entree-ligne` rows. « New element » → `Button` primary with `Plus`, GM of the system only. Types switch → `Interrupteur`. « GMs of the system » panel → `ListeMembres` with a variant without role selector or pill (to be listed in the charte inventory). Deleting an element → `Fenetre`, danger button « Supprimer l'élément ». Administration list of systems → the instance `liste-instance` panel. E-16 card → the System card minus the per-type counts. Sections read by players only → `Panneau` (`reserveMj`). The E-9 banner is **new**: `BandeauElementSysteme`, specified in `docs/charte.md` (« System element banner »).
+
+**States and texts of `kanevas-systemes-jeu-elements`** (shared text: that of « Screen details for `kanevas-premiere-fiche` »).
+
+*E-15, tab « Éléments ».*
+
+| State | What is shown | Available actions |
+|---|---|---|
+| vide | GM of the system: « Ce système n'a encore aucun élément. » and « Nouvel élément »; reader: « Ce système n'a encore aucun élément à voir. » | GM: « Nouvel élément » |
+| chargement | no title, « Chargement du système… » | — |
+| erreur | « Impossible de charger ce système. »; write failure: « L'action n'a pas abouti. Réessayez. », input kept | « Réessayer » |
+| connexion perdue | the banner; « Nouvel élément » and the editors disabled, text in progress kept | read |
+| refus | no right to read: « Page introuvable. » with the link « Systèmes de jeu »; GM right removed while open: « Vous ne pouvez plus modifier ce système. » on the next write | « Systèmes de jeu » |
+| contenu long | 100 elements per page, then « Charger la suite »; a title is truncated with « … » and a tooltip | same |
+
+*E-15, tab « MJ du système » (admin).*
+
+| State | What is shown | Available actions |
+|---|---|---|
+| vide | « Ce système n'a aucun MJ. Personne ne peut le modifier tant que vous n'en ajoutez pas. » | « Ajouter » |
+| chargement | « Chargement… » | — |
+| erreur | « Impossible de charger cette page. »; write failure: « L'action n'a pas abouti. Réessayez. » above the list | « Réessayer » |
+| connexion perdue | the banner; « Ajouter » and « Retirer » disabled | read |
+| refus | unknown identifier: « Aucun compte ne porte cet identifiant. » below the field; account already a GM: « Ce compte est déjà MJ de ce système. »; a non-admin: the tab is absent | correct the field |
+| contenu long | 200 GMs: the list scrolls; an identifier truncated with « … » and a tooltip | same |
+
+*E-9 (system space, and element opened from a universe).* States: loading (« Chargement de la fiche… »), error (« Impossible de charger cette fiche. », « Réessayer »), lost connection (banner, editors disabled), unknown or unreadable element (« Page introuvable. »), permission lost while editing (« Vous ne pouvez plus modifier ce système. » on the next write, text kept), long system name in the banner (truncated with « … », tooltip, the banner never wraps over the title). **Deleting an element** (« Supprimer l'élément », a `Fenetre`): « Supprimer « <titre> » ? Elle disparaît du système pour tous les univers. » with « Supprimer l'élément » (danger) and « Annuler »; when universes hold a customised copy of it, the window names **the number** of universes concerned, never their names unless the account belongs to them, and says « Leurs copies restent, comme fiches ordinaires. » (B-120; the confirmation naming the account's own universes belongs to slice `surcharge`, which adds the detaching, this slice deleting an element with no copy). Refusal (right lost or element already deleted): « Cet élément n'existe plus. » then back to the list; failure: « L'action n'a pas abouti. Réessayez. ».
+
+*E-5 list of systems (admin).* Empty: « Aucun système dans le catalogue. »; error: « Impossible de charger les systèmes. » with « Réessayer »; 100 systems: the panel scrolls, a name truncated with « … ». A row: name, « N univers », « N MJ »; opens E-15.
+
+*Badge and banner.* The badge « Lecture seule » (page header of E-15 and card of E-16) and the banner « … — lecture seule » (E-9) say the same fact on two different screens, never together.
+
+*Reaching a system without a universe.* A GM of the system reads it from **E-16**, which lists the systems the account reads (`GET /api/systemes`, AD-155) — its universes, if any, shown under « Dans vos univers » — and opens it from there; the admin uses E-5.
+
+*Criteria added by the review.*
+- Given Antor, a GM of « Stars Without Number » attached to none of his universes, when he opens « Systèmes de jeu », then he sees « Stars Without Number » with « MJ du système » and opens it.
+- Given a system with no GM, when the admin opens its « MJ du système » tab, then he reads « Ce système n'a aucun MJ. Personne ne peut le modifier tant que vous n'en ajoutez pas. ».
+- Given Mira, GM of a universe attached to the system but not a GM of it, when she opens an element, then she sees the banner and no « Nouvel élément », no « Supprimer l'élément ».
