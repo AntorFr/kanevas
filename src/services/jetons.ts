@@ -52,8 +52,10 @@ export interface Jeton {
   niveauTous: NiveauPose | null;
   univers: AccesUnivers[];
   modifieParAdmin: { par: number; le: string } | null;
-  /** The tools it writes (K-6); empty is the content token. */
+  /** The tools it writes (K-6). */
   outils: string[];
+  /** Whether it reaches the content routes (column `contenu`). */
+  contenu: boolean;
 }
 
 /** The token of a request: the guard gives it the universe of the address. */
@@ -101,6 +103,7 @@ interface JetonRow {
   niveau_tous: NiveauPose | null;
   modifie_par_admin_par: number | null;
   modifie_par_admin_le: string | null;
+  contenu: number;
 }
 
 const universDe = (db: Db, jetonId: number): AccesUnivers[] =>
@@ -132,6 +135,7 @@ const versJeton = (db: Db, r: JetonRow): Jeton => ({
       ? { par: r.modifie_par_admin_par, le: r.modifie_par_admin_le }
       : null,
   outils: outilsDe(db, r.id),
+  contenu: r.contenu === 1,
 });
 
 const ligne = (db: Db, id: number): JetonRow | undefined =>
@@ -378,10 +382,10 @@ function inserer(
   return db.transaction(() => {
     const { lastInsertRowid } = db
       .prepare(
-        `INSERT INTO jetons_api (compte_id, nom, empreinte, cree_le, expire_le, tous, niveau_tous)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO jetons_api (compte_id, nom, empreinte, cree_le, expire_le, tous, niveau_tous, contenu)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-      .run(compteId, nom, empreinteDe(valeur), creeLe, expireLe, acces.tous ? 1 : 0, acces.niveauTous);
+      .run(compteId, nom, empreinteDe(valeur), creeLe, expireLe, acces.tous ? 1 : 0, acces.niveauTous, outils.length > 0 ? 0 : 1);
     poserLignes(db, Number(lastInsertRowid), acces.lignes);
     for (const outil of outils) {
       db.prepare('INSERT INTO jetons_outils (jeton_id, outil) VALUES (?, ?)').run(lastInsertRowid, outil);
