@@ -4,11 +4,11 @@ import { essai } from './essai/index.js';
 import { swn } from './swn/index.js';
 import { battlemap } from './battlemap/index.js';
 
-/** The only module list; the trial module never registers in a real deployment. */
+/** The only module list; `swn` is always registered, the trial module never in a real deployment. */
 export function modulesActifs(): DeclarationModule[] {
-  if (env.KANEVAS_STUB !== '1' && env.NODE_ENV !== 'test') return [];
+  const stub = env.KANEVAS_STUB === '1' || env.NODE_ENV === 'test';
   // A tool that says it is not available (generation without an image engine) is absent, like an unregistered one.
-  return [essai, swn, battlemap].map((m) =>
+  return (stub ? [essai, swn, battlemap] : [swn]).map((m) =>
     m.outils.some((o) => o.disponible?.() === false) ? { ...m, outils: m.outils.filter((o) => o.disponible?.() !== false) } : m);
 }
 
