@@ -1444,7 +1444,7 @@ Léa (player of universe 3) reads the same original, only its player-readable se
 
 ### P-28 — A key reads and writes a system (Monsieur, with his agent)
 He creates a token (token screen, E-18 of `kanevas-synchro`), gives it level « write » on the system (choice described in E-18 below), and the agent
-lists and writes elements at `/api/v1/systemes/<id|key>/…`; the same token still opens his universes. — token screen, API.
+lists and writes elements at `/api/v1/systemes/<id>/…`; the same token still opens his universes. — token screen, API.
 
 **Out of scope of `kanevas-systemes-jeu`:** importing a rules reference; typed relations between a universe's sheet and a
 system element (plain `[[…]]` links are resolved); propagating a later change of the system's element into its

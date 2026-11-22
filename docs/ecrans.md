@@ -5044,7 +5044,7 @@ this slice (the import and the MCP address by it).
 No new layout: the system's page and the sheet screens are reused in a « system space ».
 
 - **E-15 Game system (rewritten).** Two panels: **Elements** (the E-8 list of the system's sheets, grouped by type, with
-  « New element » for the system's GMs) and **GMs of the system** (admin only: add or remove an account). Tabs
+  « New element » for the system's GMs) and **GMs of the system** (admin only: add or remove an account), laid out as tabs of E-15 beside « Outils » (E-20, the system's responsible, unchanged): « Elements » (with, for the system's GMs, the types switch of the system), « GMs of the system » (admin), « Outils ». A tab shows only to who may use it; the admin who is not a GM of the system sees the sole « GMs of the system » tab, no element. Tabs
   « Rules / Creatures / Objects » of the gabarits are replaced by the types filter of E-8. Readers who are not GMs of the system see
   the list read-only. Element address: `/systemes/:sid/fiches/:fid`.
 - **E-9 Sheet, in a system space.** The ordinary sheet (sections, links) for the system's GMs; read-only for the rest.

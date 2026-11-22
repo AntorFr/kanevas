@@ -883,7 +883,7 @@ sheet table. Its `membres` rows (role `mj`) are **the GMs of the system** (B-114
 
 **Rights** (rule 14, new): read of a system's sheet = member of an attached universe (any role) or GM of the system, to the sections
 `joueurs_lisent` for the first, all for the second; write = GM of the system (a `membres` row of the space), never deduced from a universe
-role; the instance admin writes `membres` of a space only. An element with no readable section is « Page introuvable. » (AD-22).
+role; the instance admin writes `membres` of a space only. An element with no readable section is « Page introuvable. » (AD-22). The instance admin reads no element of a system he is not a GM of: E-15 opens for him on the « GMs of the system » tab only (the only thing he writes there). A system is addressed by its `id` only, `systemes_jeu` has no key.
 Customisation: `personnaliser` copies the sheet and **the sections the universe's players read** (the only ones `lectureSysteme` hands to a universe, same visibility flags; the GM-only sections of the system's GMs are not copied and the customised sheet is therefore a player-level one) into the universe, GM outside player mode only;
 Deleting an element or detaching the universe sets `surcharge_de` to `NULL` on the copies (AD-158, B-120). `revenir` deletes the copy (`supprimerFiche`, AD-119). The universe's views substitute the copy for the original by `surcharge_de`.
 Migration: next free number when the slice merges (AD-51); existing systems get no GM until the admin grants one.
