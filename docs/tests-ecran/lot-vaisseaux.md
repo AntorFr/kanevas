@@ -3,7 +3,7 @@
 Inventory of the screen files of `src/e2e/` whose name starts with `vaisseaux-`, `format-` or `fondations-` (30 files at the start of the lot). Form and classes: [README](README.md).
 The doors written by this lot are `src/routes/*-lot-vaisseaux.test.ts`, `src/routes/serveur-lot-vaisseaux.ts` (the app listening in the test process, not a test) and `src/services/vaisseaux-assistant-lot-vaisseaux.test.ts`.
 
-**State of the lot: complete.** 372 tests listed: 129 `affichage`, 211 `effet`, 32 `les deux`.
+**State of the lot: complete.** 374 tests listed: 131 `affichage`, 211 `effet`, 32 `les deux`.
 - Decision `retiré` (211): the screen test is gone from `src/e2e/`, its door is green. None of them ever opened a browser (a real server and fetch, an in-memory database): the API files of the ships atelier (`vaisseaux-*-api`), the assistant tools, the API describes of the four `format-*` files and five B-77 tests of `vaisseaux-regles-ensemble` were moved as they were; the server now listens in the test process (`serveur-lot-vaisseaux.ts`), same HTTP, same seeded world.
 - Decision `allégé` (32): the effect expectations (PUT statuses, rereads of the stored design or sheet, stale flag, proposals, closed routes) went to the door; the display stays. A call kept in a screen test only seeds the page (a catalogue import, a setting, a mask, a member) and is no more asserted as an effect. The titles of the screen tests are unchanged.
 - Decision `gardé`: 117 `affichage` lines. The setup assertions of the screen files (status 200 of a seeding call) are not expectations of the test and are left.
@@ -383,3 +383,5 @@ The doors written by this lot are `src/routes/*-lot-vaisseaux.test.ts`, `src/rou
 | `src/e2e/vaisseaux-atelier-regles-review.test.ts` | `E-22 règles de calcul, 390 px > arme de classe 3 sur coque de classe 2 : bloquante, retirée on enregistre` | affichage | — | gardé |
 | `src/e2e/vaisseaux-atelier-regles-review.test.ts` | `E-22 règles de calcul, 390 px > auto-ciblage : deux pour une arme bloquent, une seconde arme lève l’alerte` | affichage | — | gardé |
 | `src/e2e/vaisseaux-atelier-regles-review.test.ts` | `E-22 règles de calcul, 390 px > conception d’avant la tranche : chiffres enregistrés, aucune alerte neuve sans changement` | affichage | — | gardé |
+| `src/e2e/vaisseaux-regles-calcul-ensemble-ecran.test.ts` | `E-22 arrondi du dièse, 1280 px > trois « Atelier » sur le croiseur : masse libre « 24 » ; un seul « Atelier » sur la frégate de facteur 2 : « 29 »` | affichage | — | gardé |
+| `src/e2e/vaisseaux-regles-calcul-ensemble-ecran.test.ts` | `E-22 arrondi du dièse, 390 px > trois « Atelier » sur le croiseur : masse libre « 24 » ; un seul « Atelier » sur la frégate de facteur 2 : « 29 »` | affichage | — | gardé |
