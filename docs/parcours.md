@@ -1576,7 +1576,7 @@ Léa (player of universe 3) reads the same original, only its player-readable se
 He creates a token (« Mes jetons d'API », E-23 of `kanevas-synchro`), gives it level « write » on the system (choice described in E-23's « Systems » block), and the agent
 lists and writes elements at `/api/v1/systemes/<id>/…`; the same token still opens his universes. — token screen, API.
 His agent, connected to the MCP door of one of his universes with that token, lists and edits the same elements with the `systeme_*`
-tools; the assistant of the universe does the same for a GM of the system (a mere GM of the universe reads only). — MCP door, assistant.
+tools; the assistant of the universe does the same for a GM of the system (a mere GM of the universe reads the system's elements only, and customises them for his universe with `personnaliser_fiche` / `revenir_au_systeme`). — MCP door, assistant.
 
 **Out of scope of `kanevas-systemes-jeu`:** importing a rules reference; typed relations between a universe's sheet and a
 system element (plain `[[…]]` links are resolved); propagating a later change of the system's element into its

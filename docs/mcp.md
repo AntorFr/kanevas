@@ -43,8 +43,8 @@ universe also gets `personnaliser_fiche` and `revenir_au_systeme` (customise an 
 Parameters of the system tools (the system is never one, AD-mcp-sj-2): `systeme_chercher` `mots`, `type?`, `curseur?`; `systeme_lire_fiche` `fiche`;
 `systeme_lire_section` `fiche`, `sectionId`; `systeme_creer_fiche` `type`, `titre`, `sousType?`; `systeme_modifier_entete` `fiche`, `empreinte` and any of `titre`, `sousType`, `alias`, `etiquettes`;
 `systeme_ecrire_section` `fiche`, `sectionId`, `contenu`, `empreinte`; `systeme_supprimer_section` `fiche`, `sectionId`, `empreinte`; `systeme_supprimer_fiche` `fiche`, `empreinte`;
-`personnaliser_fiche` and `revenir_au_systeme` `fiche`. A token with no row for the universe's system lists none of them and, called by name, answers `introuvable`; a `lecture`
-token lists the three readers and answers `lecture_seule` to a writer called by name. Rights are read again at each request: a token whose account stopped being a GM of the system lists the readers only.
+`personnaliser_fiche` and `revenir_au_systeme` `fiche`. A token with no row for the universe's system lists none of the eight `systeme_*` tools and, called by name, answers `introuvable`; a `lecture`
+token lists the three readers and answers `lecture_seule` to a `systeme_*` writer called by name. `personnaliser_fiche` and `revenir_au_systeme` belong to the universe's own list (GM of the universe, `ecriture` universe token): they need no row in `jetons_systemes`. Rights are read again at each request: a token whose account stopped being a GM of the system lists the readers only.
 
 Not offered on this door: `generer_image`, `proposer_mise_a_jour`, `modifier_section`, `ajouter_a_section`.
 
