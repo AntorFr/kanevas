@@ -267,3 +267,175 @@ The doors written by this lot are in `src/routes/*-lot-mediatheque.test.ts` (the
 | `src/e2e/taille-images-import-besoin.test.ts` | `B-taille-1 import : le réglage « petit-gauche » poussé avec la fiche est écrit tel quel dans le texte et lu en petit à gauche, par le MJ comme par la joueuse` | affichage | — | gardé |
 | `src/e2e/taille-images-import-besoin.test.ts` | `B-taille-1 import : fiche poussée avant son fichier (clé en attente) puis fichier : le réglage est conservé ; le rejeu ne change rien` | affichage | — | gardé |
 | `src/e2e/taille-images-import-besoin.test.ts` | `B-taille-1 import : un titre qui n’est pas un réglage reste dans le texte et ne style pas l’image ; sans titre, aucune classe` | affichage | — | gardé |
+
+**Fichiers de l’epic `kanevas-battlemap`** (bibliothèque d’assets et direction artistique, E-25 et E-26, ajoutés après l’inventaire) : 73 tests (puis 15 de l’éditeur et de la liste, E-28 et E-10, puis 15 de la génération, E-27, au même classement), classés `affichage` et gardés tels quels ; leurs effets (droits, comptes, empreinte, retrait) sont déjà prouvés par les tests de routes et de services du module `battlemap`, non reclassés ici.
+
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Léa lit la bibliothèque : dix assets semés moins le MJ seul, aucun contrôle d’écriture` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Léa cherche « Coffre piégé » (MJ seul) : aucun résultat, et « coffre » ne trouve que « Coffre »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Léa lit l’image d’un asset visible, mais pas les octets d’un asset MJ seul` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `E-26 · Léa : « Page introuvable. » sur la direction artistique, et l’API la lui refuse` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · Antor dépose trois images en « Objets », les sélectionne et règle l’empreinte « 2×1 »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · le dépôt prend la catégorie choisie : « Murs » donne des assets sans empreinte` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · un fichier qui n’est pas une image est refusé par son nom sans bloquer les autres` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · une empreinte sur un sol est refusée et le sol reste sans empreinte` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · la recherche ignore la casse (« COFFRE » trouve « Coffre » et « Coffre piégé »)` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · la recherche ignore les accents (« piege » trouve « Coffre piégé »)` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · la recherche ignore la casse des lettres accentuées (« PIÉGÉ » trouve « Coffre piégé »)` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · les étiquettes « bois » et « taverne » se combinent en ET : seul « Tonneau » porte les deux` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Antor rend « couchette-b » MJ seul : Léa ne le voit plus, ni dans la grille, ni en octets` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · « Retirer… » dit « Utilisé sur 0 carte »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · « Retirer… » compte les cartes, annule sans rien faire, confirme et laisse le fichier` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-97 · « Choisir dans la médiathèque » : le fichier choisi garde sa visibilité (MJ seul reste MJ seul)` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · Antor écrit la direction artistique, enregistre, et la retrouve après rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · une image de référence ajoutée est un fichier MJ seul que Léa ne peut pas lire` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · une image de la médiathèque choisie comme référence devient MJ seul` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · la neuvième image de référence est refusée : « 8 images au plus. »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-98 · deux fenêtres : la seconde à enregistrer lit « Ce texte a changé depuis que vous l’avez ouvert. » et « Recharger »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `E-26 · « Demander à l’assistant » est actif et préremplit une demande non envoyée` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · par l’API, Léa qui écrit un asset ou la direction reçoit « introuvable » (404) et rien ne change` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · Antor en mode Joueur lit comme une joueuse : pas d’onglet, E-26 « Page introuvable. », écriture refusée` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-110 · outil éteint : ni entrée « Bibliothèque » dans la barre, ni écran, ni API` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-110 · le MJ active l’outil dans les réglages : l’entrée paraît, la bibliothèque est vide (MJ et joueuse)` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-110 · masquer la bibliothèque aux joueurs la retire de leur barre et de leur écran, pas de celle du MJ` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-110 · « Supprimer les données de l’outil… » compte 3 assets, 1 image de référence et 1 direction puis les efface sans toucher aux fichiers` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-110 · désactiver l’outil garde tout : les assets reparaissent à la réactivation` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-attendus-besoin.test.ts` | `B-96 · bibliothèque pleine à 5 000 assets : le 5 001e est refusé et l’écran le dit` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `desactive : tant que l’outil n’est pas activé, l’API et l’écran répondent « introuvable »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `vide : chaque rôle lit son texte d’état` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `nominal : Antor dépose trois images « Objets », nommées d’après leur fichier` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `refus : un fichier qui n’est pas une image est refusé par son nom sans bloquer les autres` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `nom 80 : le nom tiré d’un fichier long est coupé à 80 caractères` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `empreinte : « 2×1 » réglée dans une sélection ne touche que la sélection` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `sol : une empreinte sur un sol est refusée, le sol n’en a pas` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `direction : texte enregistré, image de la médiathèque devenue MJ seul, image déposée MJ seul` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `limites : neuvième référence refusée, 5 000 caractères acceptés et 5 001 refusés, version périmée refusée` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `joueuse : Léa voit les assets laissés visibles, sans aucun contrôle d’écriture` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `joueuse E-26 : « Page introuvable. », et l’API de la direction est introuvable` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `écriture : un joueur qui écrit un asset reçoit « introuvable », un MJ en mode Joueur « refuse »` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `univers voisin : la bibliothèque d’un univers n’apparaît pas dans un autre` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `fichier adossé : un fichier d’asset ne se supprime pas depuis la médiathèque` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `suppression des données : compte les assets, les efface, laisse les fichiers de la médiathèque` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `visibilité : outil caché aux joueurs, Léa n’a ni entrée, ni écran, ni API` | affichage | — | gardé |
+| `src/e2e/battlemap-assets-ensemble-besoin.test.ts` | `non membre : l’admin de l’instance reçoit « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `vide : les deux rôles voient leur texte d’état` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `depot : trois images « Objets » arrivent sur la grille, le PDF est refusé par son nom` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `empreinte : « 2×1 » réglée par la barre de sélection s’affiche sur la carte` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `sol : une empreinte sur un sol est refusée` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `recherche : sans résultat, « Aucun asset ne correspond. »` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `joueuse : assets visibles seulement, comptes sans MJ seul ni brouillon, aucun contrôle d’écriture` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `mode joueur du MJ : lit comme une joueuse, sans onglets ni cases` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `retrait : « Utilisé sur 0 carte », puis l’asset disparaît (le fichier reste)` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `médiathèque : ne liste que les images sans asset, en ajoute une` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `pleine : bibliothecque_pleine simulée → message, ajouts désactivés` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `pleine : 5 000 assets annoncés par la liste → message dès l’ouverture` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `erreur : la liste en échec dit « Impossible de charger la bibliothèque. » + Réessayer` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `chargement : le texte s’affiche tant que la liste n’a pas répondu` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `refus d’un tiers : un compte hors univers voit « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/battlemap-bibliotheque-e25.test.ts` | `captures : MJ et joueuse, deux thèmes, 1440 / 768 / 390` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `vide : états vides ; « Demander à l’assistant » actif, il ouvre le panneau avec la demande préremplie, non envoyée` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `assistant : demande envoyée → bannière (survit au rechargement) → Annuler ; sauvegarde à la main ; texte écrit ; hors connexion` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `nominal : texte + image choisie dans la médiathèque (devenue MJ seul), enregistré, retrouvé au rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `légende : modifiée, elle se retrouve après rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `périmé : une modification faite dans un second onglet donne « Ce texte a changé… » + Recharger` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `limite : la 9e image est refusée (« 8 images au plus. »), déposée comme choisie` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `retirer : une référence retirée disparaît et libère une place` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `joueuse : adresse forcée → « Page introuvable. » et l’API répond 404` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `mode joueur du MJ : « Page introuvable. » sur l’onglet` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `erreur : lecture en échec → message + Réessayer` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `chargement : le texte s’affiche tant que la lecture n’a pas répondu` | affichage | — | gardé |
+| `src/e2e/battlemap-direction-e26.test.ts` | `captures : deux thèmes, 1440 / 768 / 390` | affichage | — | gardé |
+| `src/e2e/battlemap-assistant-ensemble-besoin.test.ts` | `E-12 → E-28 : la cantine — réponse qui nomme « cuisine », un seul bloc, « Ouvrir » mène à la carte « Cantine »` | affichage | — | gardé |
+| `src/e2e/battlemap-assistant-ensemble-besoin.test.ts` | `E-12 → E-27 : « dix décors » — bloc « Lot préparé : 10 assets » et « À lancer par vous. », E-27 montre « Préparé »` | affichage | — | gardé |
+| `src/e2e/battlemap-assistant-ensemble-besoin.test.ts` | `E-12 → E-26 : la direction — bloc « Direction artistique modifiée », bannière « Texte modifié par l’assistant », « Annuler » rétablit` | affichage | — | gardé |
+| `src/e2e/battlemap-assistant-ensemble-besoin.test.ts` | `joueuse : Léa demande une carte, un lot, une direction — aucun bloc ; E-26, E-27 et E-28 lui sont « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > nominal : sol, deux salles, un mur défait, fermer et rouvrir` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > deux onglets : le second qui écrit donne « Cette carte a changé » au premier` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > carte pleine : le serveur répond 409 carte_pleine, « Carte pleine » et le geste est annulé` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > taille : « 200 cases au plus. » sans requête, puis le refus du serveur pour les éléments hors limites` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > joueur : Léa et le MJ en mode Joueur lisent « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-dessin-revue.test.ts` | `E-28 Éditeur de carte au navigateur > mobile : à 390 px les outils de dessin sont masqués` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-objets-revue.test.ts` | `E-28 objets, calques, propriétés > pose, calque MJ seul, échelle 2, duplication, lien, délien, réouverture` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-objets-revue.test.ts` | `E-28 objets, calques, propriétés > asset retiré : un asset posé sur 3 cartes, retiré en E-25 → « Asset retiré » dans l’éditeur` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-objets-revue.test.ts` | `E-28 objets, calques, propriétés > le 21e calque est refusé : « 20 calques au plus. »` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-objets-revue.test.ts` | `E-28 objets, calques, propriétés > reprise du verify : champs de la carte actifs sans sélection, calque MJ seul hachuré, libellé « Asset retiré » sur le canevas` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-ensemble-besoin.test.ts` | `E-28 Éditeur de carte : ce que voit Antor > E-10 puis E-28 : « Créer » ouvre l’éditeur — calques, onglets, indication de carte vide, « Jouer » désactivé` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-ensemble-besoin.test.ts` | `E-28 Éditeur de carte : ce que voit Antor > premier geste : l’indication disparaît et « Enregistré » s’affiche ; Ctrl+Z la fait revenir` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-ensemble-besoin.test.ts` | `E-28 Éditeur de carte : ce que voit Antor > deux onglets : le second qui écrit lit « Cette carte a changé » et « Recharger » montre l’élément du premier` | les deux | `src/outils/battlemap/editeur-ensemble-besoin.test.ts` : `B-101 échec : deux écritures sur la même version, la seconde est un conflit « version » et n’écrit rien ; un asset inconnu refuse tout le lot` | gardé — the effect (what the server holds) is also read on screen on purpose |
+| `src/e2e/battlemap-editeur-ensemble-besoin.test.ts` | `E-28 Éditeur de carte : ce que voit Antor > E-25 : retirer un asset posé sur 3 cartes dit « Utilisé sur 3 cartes », puis l’asset disparaît de la bibliothèque` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-ensemble-besoin.test.ts` | `E-28 Éditeur de carte : ce que voit Antor > E-28 : un asset retiré est remplacé, pour le MJ, par un repère qui porte « Asset retiré » sans avoir à le sélectionner` | affichage | — | gardé |
+| `src/e2e/battlemap-editeur-ensemble-besoin.test.ts` | `E-28 Éditeur de carte : ce que voit Antor > joueuse : l’adresse de l’éditeur donne « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > liste : Cantine de la station avec sa taille, titre-lien vers l’éditeur` | affichage | — | gardé |
+| `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > largeur 201 et nom vide refusés sous le champ, rien n’est créé` | affichage | — | gardé |
+| `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > création 30 × 20 : la carte est listée et l’éditeur s’ouvre ; la taille de case réglée à 100 est reprise` | affichage | — | gardé |
+| `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > joueuse : la carte composée est listée sans lien ni menu` | affichage | — | gardé |
+| `src/e2e/battlemap-liste-e10.test.ts` | `E-10 Liste des cartes : carte composée > suppression : confirmation par le nom, puis la ligne disparaît` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > absent : sans la route des lots, pas d’onglet Génération, E-25 s’ouvre avec ses dépôts` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > vide : textes d’état, bandeau sans direction, lancement désactivé` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > joueuse : l’onglet n’existe pas et l’API répond 404` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > parcours : trois lignes, trois brouillons un par un, deux acceptés, un régénéré avec remarque, un écarté` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > arrêt : « Arrêter le lot » demande confirmation puis écarte les lignes non acceptées` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > préparé : un lot `prepare` posé par l’API s’affiche « Préparé » avec ses lignes` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > coller : les lignes lisibles sont gardées, les autres nommées par leur numéro ; la 21e est refusée` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > autosave : une ligne sans nom n’est pas envoyée, la liste part d’un coup quand tout est lisible` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > direction : le bandeau dit la direction artistique de l’univers` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > échec : le motif s’affiche, « Réessayer » relance la ligne` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > moteur occupé : une ligne en cours montre l’alerte` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > périmé : « Cette ligne a changé. » et rechargement de la lecture` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > hors ligne : la connexion perdue désactive les actions` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > téléphone : à 768 px la liste et le lot s’empilent, à 1280 ils sont côte à côte` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-e27.test.ts` | `E-27 Génération au navigateur > redémarrage : un lot en cours repart « Interrompu », « Reprendre » le relance` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > onglets : les trois onglets sont entiers dans l’écran de 390 px, sans défilement latéral` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > prepare-nom : dans un lot préparé, le nom « Console de commande » (19 caractères) se lit en entier dans son champ` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > prepare-rangee : dans un lot préparé, le nom a sa propre ligne, catégorie, empreinte et « Retirer » tiennent dessous dans l’écran, sans chevauchement` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > brouillon : vignette réduite à gauche du nom, nom entier, gestes dans l’écran` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-telephone-besoin.test.ts` | `E-27 Génération au téléphone (390 px) > brouillon-pastille : la pastille « Brouillon prêt » est verte` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-bureau-besoin.test.ts` | `E-27 Génération au bureau (1280 px), lot préparé > rangee : nom, catégorie, empreinte et « Retirer » d’une ligne tiennent sur une seule rangée, dans cet ordre` | affichage | — | gardé |
+| `src/e2e/battlemap-generation-bureau-besoin.test.ts` | `E-27 Génération au bureau (1280 px), lot préparé > lancer : « Lancer le lot (2) » est à droite de « Ajouter une ligne » et « Coller des lignes », sur la même rangée` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Jouer » ouvre l’écran de jeu et crée la table` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `avant « Jouer », la joueuse lit « La partie n’a pas commencé. »` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `un disque ajouté est dans la liste, dans la table, et au rechargement ; le masquer le retire à la joueuse` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `joueuse : aucun outil MJ, « Suivre le MJ » actif par défaut et gardé au rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Effacer la vue » rend vue: null` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Réinitialiser la table… » ne vide qu’après confirmation` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `200 pions : « Table pleine », ajout désactivé, le 201e refusé par le serveur` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `P-28 étape 3 : un pion glissé sur la carte change de case et reste là au rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Lier une fiche… » lie le pion à la fiche choisie, « Ouvrir la fiche » l’ouvre ; « Délier » la retire` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `carte cachée aux joueurs : « Page introuvable. » pour la joueuse` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `onglet Calques : une ligne par calque sans puce, un interrupteur nommé par calque, le geste persiste` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `joueuse : un pion reçu est dessiné plein, sans barre ni estompage` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `joueuse à 390 px : « Suivre le MJ » et le zoom ne se recouvrent pas et restent atteignables` | affichage | — | gardé |
+| `src/e2e/battlemap-jeu-e29-revue.test.ts` | `« Ajouter un pion » ▸ Asset : la fenêtre tient dans l’écran et « Ajouter » se clique à la souris` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `sans table : « La partie n’a pas commencé. », puis « En attente du MJ » une fois la table créée, sans recharger` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `presence : E-29 lit « Écran joueurs connecté » tant que E-30 est ouvert` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `vue partagée : la carte s’affiche sans contrôle ni cadre, « Effacer la vue » la retire` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `fenêtre : le canevas tient dans la fenêtre, quelle que soit sa taille` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `calque masqué : il sort de la table que l’écran lit ; révélé de nouveau, il revient` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `une révélation arrive en moins de deux secondes sans recharger` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `flux coupé, « Reconnexion… » apparaît puis, au signal suivant, l’écran se remet à jour` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `carte cachée aux joueurs : « Page introuvable. »` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `le MJ qui ouvre l’écran voit la vue joueur : pas de pion masqué, pas de contrôle` | affichage | — | gardé |
+| `src/e2e/battlemap-affichage-e30-revue.test.ts` | `contraste : --texte-2 sombre sur noir ≥ 4,5:1` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > jouer : « Jouer » ouvre E-29 ; le compte de table ouvre E-30 qui dit « En attente du MJ »` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > vue partagée : E-30 montre la carte, noire tant que rien n’est révélé` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > trois pions : une fiche, un asset, un disque ; deux ont un propriétaire` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > pièce : « Révéler ▸ Pièce », un clic dans la salle, et le sol apparaît sur E-30 en moins de deux secondes, sans recharger` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > images : le sol et le pion d’asset sont dessinés avec leurs images sur E-30, sans recharger` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > reprise : Antor ferme et rouvre E-29, les trois pions y sont ; l’écran joueurs garde la pièce` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 La table à deux fenêtres : Antor joue, l’écran joueurs suit > réinitialiser : la boîte dit ce qui part, puis « Aucun pion. » et l’écran joueurs redevient noir` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 Le zoom du MJ suit à l’écran joueurs, et la connexion coupée se dit puis se rétablit > zoom : Antor zoome avec « Vue partagée » ouverte, l’écran joueurs suit sans recharger, la zone révélée y grandit` | affichage | — | gardé |
+| `src/e2e/battlemap-table-ensemble-besoin.test.ts` | `E-29 / E-30 Le zoom du MJ suit à l’écran joueurs, et la connexion coupée se dit puis se rétablit > coupure : « Connexion perdue. » sur E-29, outils désactivés ; au retour, l’état est relu et la bande disparaît` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ecran-revue.test.ts` | `Léa glisse son pion de 3 cases à droite et 2 en bas : 200, la table le tient, Antor le voit` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ecran-revue.test.ts` | `Léa glisse le pion de la garde : il reste, « Ce pion n’est pas à vous. » s’affiche puis s’efface` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ecran-revue.test.ts` | `clavier : Entrée saisit, deux flèches, Entrée dépose : 2 cases ; Échap laisse le pion` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ecran-revue.test.ts` | `réseau coupé : « Reconnexion… » s’affiche chez Léa à la prochaine mise à jour, part seule au retour et la table est l’état courant` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ecran-revue.test.ts` | `E-20 : « Jeu à distance » est un interrupteur, coché par défaut` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ecran-revue.test.ts` | `réglage coupé en cours de partie : la tentative suivante de Léa ne bouge rien et ne dit rien, puis la ligne « Seul le MJ déplace les pions. » paraît ; au rechargement, plus de prise` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : Léa glisse Mira de 2 cases à droite, l’écran de Teo montre Mira plus à droite sans rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : Antor révèle un couloir dans la moitié cachée, les canevas de Léa et de Teo changent sans rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : Teo dont le seul pion est caché n’a ni « votre pion », ni prise, ni ligne, le jeu à distance étant actif` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : Teo sans pion visible, jeu à distance coupé, lit la ligne « Seul le MJ déplace les pions. » comme tout le monde` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : réglage coupé, Léa voit encore bouger les pions du MJ mais n’a plus de pion à saisir, avec la ligne` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : le MJ cache la carte, l’écran ouvert de Léa devient « Page introuvable. » au prochain événement, et au rechargement` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : Léa glisse la garde de 2 cases : « Ce pion n’est pas à vous. », la garde revient, la table et l’écran de Teo ne bougent pas` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : connexion de Léa coupée, « Reconnexion… » et plus de prise ; au retour la pastille part, la prise revient, la garde est où le MJ l’a mise` | affichage | — | gardé |
+| `src/e2e/battlemap-distance-ensemble-ecran-besoin.test.ts` | `E-29 : la carte cachée pendant que Léa tient sa prise : son écran devient « Page introuvable. », Mira n’a pas bougé` | affichage | — | gardé |

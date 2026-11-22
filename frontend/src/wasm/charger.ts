@@ -5,13 +5,17 @@
 type Exemple = typeof import('../../../rust/pkg/exemple/exemple.js');
 type Coeur = typeof import('../../../rust/pkg/coeur/coeur.js');
 
+type CoeurBattlemap = typeof import('../../../rust/pkg/battlemap_core/battlemap_core.js');
+
 interface Modules {
   exemple: Exemple;
+  battlemap_core: CoeurBattlemap;
   coeur: Coeur;
 }
 
 const importeurs: { [N in keyof Modules]: () => Promise<Modules[N] & { default: () => Promise<unknown> }> } = {
   exemple: () => import('../../../rust/pkg/exemple/exemple.js'),
+  battlemap_core: () => import('../../../rust/pkg/battlemap_core/battlemap_core.js'),
   coeur: () => import('../../../rust/pkg/coeur/coeur.js'),
 };
 
