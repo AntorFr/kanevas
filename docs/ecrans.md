@@ -5071,3 +5071,25 @@ No new layout: the system's page and the sheet screens are reused in a « system
 Matrix: system GM — edits elements, customises in his universes; admin — grants and removes system GMs, does not edit unless granted;
 GM of an attached universe — reads, customises in his universe; player — reads player-readable sections.
 Mockups: none new; the E-9 banner and the E-17 pictogram are judged on captures by the guardian and the visual review.
+
+## `kanevas-systemes-jeu-recherche` — pictogram and filter of the system's elements (2026-11-22)
+
+Finished mockup: none new — the existing `docs/maquettes/e17-recherche.html` and `e08-liste-fiches.html` are the layout; the pictogram and the filter are judged on captures
+by the guardian and the visual review (the epic's decision above). Details of the part « E-17 Search and E-8 lists » of `kanevas-systemes-jeu`:
+
+- **Row.** The row of E-17 and the card of E-8 (grid, list, tree) carry, after the type badge, a neutral `Pastille` (guardian's verdict): icon `Dices` and the **system's name**
+  for an element left at the original (`origine: systeme`), truncated with « … » and a tooltip with the full name; the word « Personnalisé » alone for a customisation
+  (`surcharge`, the universe's own sheet); nothing for a sheet of the universe. On a phone (390 px) the pastille wraps under the title, as the adventure's status does. Never an icon on the thumbnail (it carries the type's).
+- **Filter.** A checkbox « Masquer les éléments du système » (the field of « sous-lieux compris », not a switch: it is a filter, not a saved setting), beside the type filter on
+  E-17 and in the filter bar of E-8. It shows **only in a universe with an attached system** (the universe view says so). It sends `origine=univers`, is kept in the address (`?sans-systeme=1`,
+  history replacement) and is cleared by « Effacer les filtres » of E-8; on E-8 it counts as a filter (the tree view gives way to the flat list while it is on, as for the others). It is kept
+  **per screen**: E-17 and each E-8 list have their own, the address is the only memory (AD-recherche-2).
+- **Empty result with the filter on.** When the result is empty and `sans-systeme` is on, the text is « Aucun résultat sans les éléments du système. » (`role="status"`) and under it a ghost
+  button with the `eye` icon « Afficher les éléments du système », which removes `sans-systeme` from the address and gives the focus back to the checkbox. With the filter off, the screen's own empty state stays
+  (« Aucune fiche ne correspond. »). A label chip or a type chip in place does not change this: it is the filter that is offered off.
+- **States added to E-17 and E-8.** *filter on, results*: the elements at the original are absent, the copies and the universe's sheets stay; *filter on, empty*: the message above; *no system attached*: no checkbox,
+  no pastille anywhere; *Player mode* and *player*: same pastille and filter (the system's name is public to the universe's members), the GM-only things stay GM-only; *loading* and *error* are the screens' own.
+- **Roles.** Everyone who reads the universe sees the pastille and the filter; the filter changes only what is shown to that reader, never what he may read (AD-63 holds: no counter, no « N hidden »).
+- **Criteria.** Given « Pistolet laser » (element left at the original), « Fusil à pompe » (customised in the universe) and « Le Pistolero » (sheet of the universe): when Léa searches « pisto »,
+  three rows, the first with the pastille « Dices · <system> », the second « Personnalisé », the third none; with the box ticked, two rows and `?sans-systeme=1` in the address; with « laser » and the box ticked,
+  the message and the button « Afficher les éléments du système », which brings the row back and removes the parameter; reloading the page with the parameter keeps the box ticked.

@@ -526,6 +526,7 @@ rule, two sections). C: `role="status"`, « Chargement de la fiche… » read an
   `aria-label` and a toast; never copied by itself.
 - **Pastille** gains the *sens* `accent` (`--accent-texte` on `--accent-fond`, icon and word): « Modifié par l'admin ». « Révoqué » and « Révoqué par l'admin » are
   `danger`, « Expiré » `neutre`. Contrast of `--danger` on `--danger-fond` and of `--accent-texte` on `--accent-fond` in a 22 px pill measured in both themes (`contraste.py`, § 5).
+- **Pastille « système »** (`kanevas-systemes-jeu-recherche`): the `neutre` *sens* with the icon `Dices` and the system's name marks an element of the game system on a result row (E-17) and a card (E-8); « Personnalisé » (neutral, no icon) marks its copy. The filter « Masquer les éléments du système » is a checkbox, same spec as « sous-lieux compris » (a filter, never the `Interrupteur`, which is for saved settings). Empty filtered result: text in `--texte-2` and a ghost `Bouton` with `eye`. No token added.
 - **Fenêtre** (`Fenetre` in `frontend/src/ui/composants.tsx`) gains a *large* variant (560 px, scrolling inside itself) and a *locked* property (neither Esc nor the veil closes it while a value is
   shown — E-23).
 
