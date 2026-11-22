@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { FastifyInstance, preHandlerHookHandler } from 'fastify';
 import type { Db } from '../db/db.js';
 import type { Acteur, Role } from '../services/types.js';
-import type { Outil } from '../services/assistant/types.js';
+import type { Outil, Porte } from '../services/assistant/types.js';
 
 export type ValeurReglage = boolean | number | string;
 export type Forme =
@@ -24,6 +24,9 @@ export interface ContexteOutil {
   acteur: Acteur;
   universId: number;
   role: Role;
+  /** The door asking and, on the MCP door, the token's level: a tool offers its writes only where the token writes (AD-mcp-2). */
+  porte?: Porte;
+  niveau?: 'lecture' | 'ecriture';
 }
 export type CibleCatalogue = { systemeId: number } | { universId: number };
 export interface LigneCatalogue {
@@ -79,6 +82,14 @@ export interface DeclarationImportation {
   natures: { nom: string; libelle: string; libellePluriel: string }[];
   appliquer(db: Db, acteur: Acteur, universId: number, cibleId: number, corps: unknown): unknown;
 }
+/** One line of a block a tool adds to a sheet: its text and the address it opens (AD-liens-3). */
+export interface LigneBlocFiche { texte: string; adresse: string }
+/** A block of a sheet that a tool computes under the reader's guards; the key is generic, the core names no module. */
+export interface BlocFiche { cle: string; titre: string; lignes: LigneBlocFiche[] }
+export const schemaBlocFiche = z.strictObject({
+  cle: z.string().min(1), titre: z.string().min(1),
+  lignes: z.array(z.strictObject({ texte: z.string().min(1), adresse: z.string().min(1) })).min(1),
+});
 interface BaseOutil {
   cle: string;
   libelle: string;
@@ -92,6 +103,8 @@ interface BaseOutil {
   donnees?: DonneesOutil;
   importation?: DeclarationImportation;
   outilsAssistant?(ctx: ContexteOutil): Outil[];
+  /** The block this tool adds to a sheet, read only, or null when the reader sees nothing (AD-liens-3). */
+  blocsFiche?(db: Db, acteur: Acteur, universId: number, ficheId: number): BlocFiche | null;
   ecran: { libelle: string; icone: string };
 }
 /** `version` is the optimistic-concurrency token of the map's own row, when its tool can change its visibility (E-10). */
@@ -201,7 +214,7 @@ const declaration = z.strictObject({
         libelle: z.string().min(1), libellePluriel: z.string().min(1) })).min(1),
       appliquer: fonction,
     }).optional(),
-    reglages, outilsAssistant: fonction.optional(), cartes: fonction.optional(),
+    reglages, outilsAssistant: fonction.optional(), blocsFiche: fonction.optional(), cartes: fonction.optional(),
     creation: z.strictObject({ libelle: z.string().min(1), creer: fonction, rendreVisible: fonction }).optional(),
     sections: z.array(z.strictObject({
       type: z.string().regex(/^[a-z][a-z0-9_-]*$/), libelle: z.string().min(1), usage: z.string().min(1),

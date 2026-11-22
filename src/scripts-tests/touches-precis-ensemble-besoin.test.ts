@@ -65,7 +65,8 @@ describe('écrans touchés : le barrel de frontend/src/ui/index.ts (E-ecrans, Li
     for (const exclu of ['administration-badge-entete', 'membres-pastille-largeur', 'accueil-refonte', 'alias-etiquettes-e9', 'recherche-avancee-ecran']) {
       assert.ok(!l.includes(`${E2E}${exclu}.test.ts`), `${exclu} ne dépend pas de Segments`);
     }
-    for (const f of l) assert.ok(ecransDe(f).some((e) => e === 'outil' || e === 'outil-cible'), `${f} déclare ${ecransDe(f)}`);
+    // `demo-composants` (the components screen of the map epic) shows a Segments too.
+    for (const f of l) assert.ok(ecransDe(f).some((e) => e === 'outil' || e === 'outil-cible' || e === 'outil-interieur' || e === 'demo-composants'), `${f} déclare ${ecransDe(f)}`);
     assert.ok(l.length < 60, `${l.length} fichiers`);
   });
 
@@ -96,7 +97,7 @@ describe('écrans touchés : l’éditeur d’un outil seul (équivalent de l’
       assert.ok(!l.includes(`${E2E}alias-etiquettes-e9.test.ts`), 'un test fiche seul');
       assert.ok(!l.includes(`${E2E}administration-badge-entete.test.ts`));
       for (const f of l) {
-        assert.ok(ecransDe(f).some((e) => e === 'outil' || e === 'outil-cible'), `${f} déclare ${ecransDe(f)}`);
+        assert.ok(ecransDe(f).some((e) => e === 'outil' || e === 'outil-cible' || e === 'outil-interieur'), `${f} déclare ${ecransDe(f)}`);
       }
     });
   }
@@ -173,10 +174,10 @@ describe('écrans touchés : Rust et wasm associés aux écrans qui les chargent
     assert.deepEqual(choisir('rust/modules/exemple/src/lib.rs'), []);
   });
 
-  test('frontend/src/wasm/charger.ts, que nul écran ne charge : pas tous les écrans', () => {
+  test('frontend/src/wasm/charger.ts, chargé par les seuls écrans de l’outil galaxie : pas tous les écrans', () => {
     const l = choisir('frontend/src/wasm/charger.ts');
-    assert.ok(l.length < 256, `${l.length} fichiers choisis`);
-    assert.deepEqual(l, []);
+    assert.ok(l.length < 100, `${l.length} fichiers choisis`);
+    for (const f of l) assert.ok(ecransDe(f).some((e) => e.startsWith('outil')), `${f} déclare ${ecransDe(f)}`);
   });
 
   test('frontend/src/wasm/charger.ts, chargé par la page membres : les tests de membres seuls', () => {
@@ -185,7 +186,7 @@ describe('écrans touchés : Rust et wasm associés aux écrans qui les chargent
     });
     assert.ok(l.includes(`${E2E}membres-pastille-largeur.test.ts`));
     assert.ok(!l.includes(`${E2E}administration-badge-entete.test.ts`));
-    assert.ok(l.length < 30, `${l.length} fichiers choisis`);
+    assert.ok(l.length < 100, `${l.length} fichiers choisis`);
   });
 });
 

@@ -187,10 +187,11 @@ icon is the Marge icon (on iOS, « Add to Home Screen » uses the 180 px apple-t
 For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focus`,
 2 px offset) on `:focus-visible`.
 
-**Button** (neutral, primary, danger, ghost; normal 30 px, small 26 px; icon button 28 px).
+**Button** (neutral, primary, danger, ghost, `mj`; normal 30 px, small 26 px; icon button 28 px).
 - V: neutral `--surface-3`, border `--bord-fort` (hover: `--bord-champ`), text `--texte`;
   primary `--accent` / `--sur-accent` (hover: 12 % `--texte` blended in); danger `--danger` /
   `--sur-danger`; ghost without background, `--texte-2`, hover `--surface-2` and `--texte`;
+  **`mj` variant** (`variante="mj"`, a GM writing gesture: « Système » trigger, « Ancrer », « Enregistrer » of the map forms): `--mj-fond` background, `--mj-bord` border (hover: `--mj`), `--mj` text, weight 600 — no new token; its contrasts are in the thresholds table;
   icon button `--texte-3`, hover `--surface-2` (danger: `--danger-fond` and `--danger`). Radius
   `--rayon-champ` (icon: `--rayon-item`). Lucide icon 14 px left of the label. Disabled:
   45 % opacity and not-allowed cursor. Loading: label « … ».
@@ -268,7 +269,7 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
 - C: a toast per successful action (« « Rumeurs entendues » enregistrée », « Audience de
   « Apparence » enregistrée », « Section « … » retirée »), in a `role="status"` region with
   `aria-live="polite"`; it leaves on its own after 4 s, or on « Fermer »; it never takes focus.
-  A failure is not a toast: it is an inline message that stays.
+  A failure is not a toast: it is an inline message that stays. The variant with an action is specified below.
 
 **Dialog** (section removal confirmation).
 - V: `--surface` on `--voile`, `--ombre-flottant`, radius `--rayon-panneau`, at most 440 px,
@@ -286,6 +287,7 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   action button; the text explains why no action is available. Focus enters on
   « Fermer »; Escape and the overlay close; focus returns to the opening button; `role="alertdialog"`,
   titled and described.
+- *Neutral variant* (`variante="neutre"`, kanevas-carte-spatiale-edition: « Ancrer ce système ? », « Ajouter un astre », « Rayon de transition »): same frame (at most 440 px) with a neutral badge (`anchor`, `--texte-2` on `--surface-2`), the action in the `mj` Button variant, and form fields as children (`formulaire`: a `.boite-champs` column). Under 760 px the body scrolls inside the dialog (24 px margin kept) so the actions stay reachable. `role="dialog"` when it carries fields, `role="alertdialog"` for a pure confirmation (« Retirer l'astre »); the focus enters on « Annuler » (anchoring, confirmation) or, with `focusChamp`, on the first field (« Ajouter », « Rayon »); Escape, the overlay and the return of the focus are those of the base dialog.
 
 **Field** (text, section textarea, list, checkbox).
 - V: 34 px, `--surface`, border `--bord-champ`, radius `--rayon-champ`, 12 px label
@@ -326,6 +328,31 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   on `--accent` / `--sur-accent`; the legend above, `--texte-2` 13 px. Disabled: 45 % opacity.
 - C: `role="radiogroup"` labelled by the legend, one `role="radio"` per segment with `aria-checked`; a single tab stop
   (the checked segment); ← → ↑ ↓ move and select, wrapping around.
+- *`mj` variant* (`variante="mj"`, the GM's « Déplacer » three-frame choice): the checked segment on `--mj-fond` / `--mj` inset-bordered by `--mj-bord`, instead of the accent.
+
+**Conversion line** (`LigneConversion`, `frontend/src/ui/composants.tsx`; the « = Orbite 4 · 7 h » line under the « Déplacer » fields).
+- V: 13 px `--texte-2`, tabular figures, one line; « = — » while the entry is not valid.
+- C: `aria-live="polite"`; each field of the form points to it with `aria-describedby`. Its text comes from `texteConversion` (`ui/glisser.ts`).
+
+**Tabs** (`frontend/src/ui/onglets.tsx`, E-24; the three screens that styled their own — settings, system, tool catalogue — take it when they are next touched).
+- V: a horizontal list under the header, `--texte-3`; the active tab `--texte` with a 2 px `--accent` rule; no literal value. Its class is `.onglets-liste` (the legacy `.onglets` of the three screens is left alone).
+- C: `role="tablist"`, `role="tab"` with `aria-selected`, one tab stop, ← → move; the tab rides in the address query (`?onglet=`).
+
+**Slider** (`frontend/src/ui/curseur.tsx`, E-24; twin of the neighbouring `Champ`).
+- V: a native `<input type="range">` styled: 4 px track `--bord-champ` (3:1, WCAG 1.4.11; `--surface-2` would vanish on the page), fill `--accent`, the value beside the label, 16 px thumb `--texte` bordered 2 px `--accent`, hit area at least 24 px, the standard focus ring.
+- C: step 0,05, arrows and Page keys; the same bounds as the field, which carries the error; labelled like the field.
+
+**Colour field** (`frontend/src/ui/champ-couleur.tsx`, E-24).
+- V: a 30 px square, radius `--rayon-champ`, bordered `--bord-champ`, filled with the typed colour, then a monospace `Champ`.
+- C: input `#rrggbb` else « Couleur invalide : #rrggbb. » and the field marked; the square is not a target; the hex is always shown (colour never alone).
+
+**Choice list with thumbnails** (`frontend/src/ui/liste-choix.tsx`, E-24 « Aspects »; a variant of `LigneFicheLiee` if it can carry a selected state and titled groups, else its own file).
+- V: 56 px rows (48 px thumbnail, label, `Pastille` on the right), selected `--surface-2` with a 2 px `--accent` left rule, group heading `--texte-3` 12 px.
+- C: `role="listbox"` / `role="option"` with `aria-selected`, one tab stop, ↑ ↓ move; scrolls inside, Enter or click opens the editor.
+
+**Apply bar** (`frontend/src/ui/barre-application.tsx`, E-24).
+- V: sticky at the foot, `--surface` with a `--bord` top rule; the sentence on the left (detail small below), the primary `Bouton` on the right, an optional neutral `Bouton` before it (« Annuler les changements »); no count → « Rien à appliquer. » and the action off; the content keeps a bottom margin so the bar never hides the focused field (WCAG 2.4.11). A translucent background no token covers would be a decision of Monsieur, not made here.
+- C: the sentence is an `aria-live="polite"` region; the button is disabled when nothing is to apply or the count failed; after the confirmation the focus returns to it.
 
 **Section block** (« Relations », « Pièces jointes »).
 - V: a row below the text, separated by `--bord`: label on the left (136 px, icon and 13 px
@@ -457,6 +484,17 @@ instead of an image.
   Player nor in Player mode; clicking the image opens the original in a new tab;
   removal is confirmed inline (« Annuler » takes focus).
 
+**System map** (E-23, `kanevas-carte-spatiale-carte`; verdict of the gardien).
+- V: a `<canvas>` on `--ciel` (new token: `#0b0b10`→`#17182a` gradient, the same in both themes, a space stays dark), orbit rings in `--ciel-trait` (1 px, low alpha), hours 12 and 3 in `--texte-3`, selected body ringed in `--accent`, transition circle and exits dotted `--accent`; labels in `--texte` over a `--ciel-halo` shadow (new token), 12 px; frame radius `--rayon-panneau`, border `--bord`. Panel at the right (320 px), below the map at 390 px (`Panneau`, `Bouton`, `Pastille`, `Case`, `BoutonIcone` as they are).
+- C: every body is a keyboard target (Tab, Enter opens the panel, `aria-label` name, type, place); the canvas is `role="application"` and points to the list, its text alternative and fallback; drag to pan, wheel / pinch / « + » « − » to zoom, « Recentrer »; no zoom animation under `prefers-reduced-motion`; labels never overlap (move, shorten, collapse).
+- *Drag gesture* (GM outside player mode; constants and rules in `frontend/src/ui/glisser.ts`): mouse — drag a body, it follows the pointer without snapping, release writes. Touch — a press of 300 ms (`APPUI_LONG_MS`) then drag moves the body; a plain drag always pans the view. Keyboard, the second path: on a selected body ← → move the hour and ↑ ↓ the orbit by 0.25, Shift ×4; presses are sent once, 600 ms after the last, and the live region announces « <nom> déplacé ». While the request is in flight the body is dimmed by opacity (never a colour) and reads « Enregistrement… »; on an error or a refusal it returns to its place. A moon moves around its planet, a planet takes its moons along.
+- New tokens `--ciel`, `--ciel-trait`, `--ciel-halo`: contrasts of `--texte-3` and the label over `--ciel` measured with `contraste.py` in both themes before the screen is built.
+
+**Body illustration** (panel, dialog, map sprite).
+- V: a 4/3 frame in the panel (`--bord`, radius `--rayon-champ`), the image `role="img"` with `aria-label` « Illustration de <nom>, <type> »; blurred low-resolution version first (never a flat disc), the sharp one in a 160 ms (`--duree`) fade; unavailable: the blurred version stays with « Illustration indisponible. » and « Réessayer » below (`Alerte` with action).
+- *Reduced size* (`.cs-illustration.reduite`, 96 px wide, same 4/3 frame, blur then sharp): the live thumbnail of the « Modifier » form; its `role="img"` label is unchanged.
+- C: loading blocks nothing; click or Enter on it opens `Fenetre` in its **image** variant (`image`) (the window sized to the image, zoom buttons, Esc closes, focus returns to « Voir l'illustration »).
+
 **Loading state.** V: `--squelette` skeletons shaped like the sheet (type, title,
 rule, two sections). C: `role="status"`, « Chargement de la fiche… » read and written below.
 
@@ -516,6 +554,9 @@ translucent colour is composited over what lies beneath.
 | `--accent-texte` (current icon) | `--accent-fond` on `--fond-lateral` | dark / light | 6,42 / 5,56 | 3 | ok |
 | `--mj` | `--mj-fond` on `--fond` | dark / light | 6,97 / 5,43 | 4,5 | ok |
 | `--mj` | `--mj-fond` on `--surface-2` (« Mode MJ » segment) | dark / light | 5,87 / 5,01 | 4,5 | ok |
+| `--mj` | `--mj-fond` on `--surface` (`mj` Button in a dialog) | dark / light | 6,43 / 5,56 | 4,5 | ok |
+| `--mj` | `--mj-fond` on `--surface-2` (checked amber `Segments`) | dark / light | 5,89 / 5,02 | 4,5 | ok |
+| `--mj` | `--surface-2` (`mj` text on a neutral panel) | dark / light | 7,70 / 5,65 | 4,5 | ok |
 | `--mj` | `--surface` (« Secrète — MJ seul » on thumbnail) | dark / light | 8,34 / 6,33 | 4,5 | ok |
 | `--texte` | GM hatching on `--fond` (GM-only section text) | dark / light | 15,06 / 15,03 | 4,5 | ok |
 | `--table` | `--table-fond` on `--fond` | dark / light | 6,84 / 5,45 | 4,5 | ok |
@@ -564,3 +605,8 @@ change: the code reads them as they are).
 | sheet title (`h1`) | `--t-22` | `--t-40` (`--t-32` on phones) | the title opens the page like a document; `--t-22` remains the section heading |
 
 Tokens marked *(new)* are added without changing anything existing.
+
+**Toast with an action** (E-23 « Illustrer la fiche », `kanevas-carte-spatiale-liens`; verdict of the gardien; variant of `Toast`, no new file).
+- V: the tokens of `Toast` (`--surface`, `--ombre-flottant`, radius `--rayon-champ`, 40 px, icon `circle-check` in `--table`, 13 px text); between the text and « Fermer », an action in `--accent-texte`, 13 px, weight 500, underlined on hover and focus, target at least 24 px, ring `--focus`; at 390 px full width minus the assistant button, the text wraps on two lines before the action is cut.
+- C: `ToastInfo.action?: {libelle; href | onClick}` and `useToasts().toast(texte, action?)`; the action is a real link or button reachable by keyboard; a toast with an action does not fade after 4 s but stays while the pointer or focus is on it, or until « Fermer » (WCAG 2.2.1); announced in the `role="status"` region, never takes the focus; no motion under `prefers-reduced-motion`. A failure is never a toast (`Alerte` with action).
+- Inventory by path: `CadreBlocFiche` lives in `frontend/src/ecrans/fiche/bloc-fiche.tsx` (not in `ui/`) and frames « Sur la carte spatiale ».

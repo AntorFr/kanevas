@@ -357,7 +357,7 @@ export function catalogueDe(
   for (const module of modulesActifs()) {
     for (const declare of module.outils) {
       if (!declare.outilsAssistant || !accessible(db, acteur, universId, declare.cle)) continue;
-      outils.push(...declare.outilsAssistant({ db, acteur, universId, role }));
+      outils.push(...declare.outilsAssistant({ db, acteur, universId, role, porte, niveau }));
     }
   }
 

@@ -1,5 +1,5 @@
-// Server loader of the Wasm modules (AD-rust-4). A module is loaded at first use, never at startup,
-// and cached per name. Errors carry a fixed message: no host path, no cause.
+// Server loader of the Wasm modules (AD-rust-4). A module is loaded when the loader is first asked for it
+// and cached per name (the server asks for the core when it imports services/swn/tirage-etoiles). Errors carry a fixed message: no host path, no cause.
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
