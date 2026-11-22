@@ -883,8 +883,8 @@ table below is written with neutral names; the script that converts Éneria's `a
   a field of the **format**, not a column. A moon already carries an hour around its planet.
 
 **Vocabulary of `aspect` (the core, `valider_aspect`).** The GM's catalogue of settings keeps its names; the conversion of an entry of the
-reference vocabulary into core keys through the table below, **a setting the table does not know is reported by name in the import report**
-(`non_rendu`, never silently dropped, B-114). Rules: a conversion is a formula of the core, tested on measured values; the same name does not mean the same thing
+reference vocabulary into core keys follows the table below and is **the contract of the atlas's producer** (the core receives core keys only); **a key the core does not know is reported by name in the import report**
+(`non_rendu`, never silently dropped, B-114). Rules: each formula is tested by the core on measured values; the same name does not mean the same thing
 (sea, clouds, caps, relief).
 
 | Reference setting | Core key | Conversion |
