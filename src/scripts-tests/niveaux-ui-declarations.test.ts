@@ -115,4 +115,14 @@ describe('niveaux : une déclaration de ui/composants.tsx lue par ses noms', () 
   test('garde-fou : un export = changé choisit tous les écrans', () => {
     assert.deepEqual(liste({ [C]: COMPOSANTS + 'export = {};\n' }), TOUS);
   });
+  test('par le barrel ui/index.ts (cas réel), le corps d’un composant ne choisit que l’écran qui le demande', () => {
+    ecrire('frontend/src/ui/index.ts', "export * from './composants';\nexport * from './autre';");
+    ecrire('frontend/src/ui/autre.ts', 'export const Autre = 1;');
+    ecrire('frontend/src/ecrans/fiche.tsx', "import { Alpha, Autre } from '../ui';\nexport default {};");
+    ecrire('frontend/src/ecrans/carte.tsx', "import { Beta } from '../ui';\nexport default {};");
+    ecrire('frontend/src/ecrans/nouveau.tsx', "import { Autre } from '../ui';\nexport default {};");
+    ecrire('frontend/src/ecrans/pur.tsx', "import { Autre } from '../ui';\nexport default {};");
+    git('add', '-A'); git('commit', '-qm', 'barrel');
+    assert.deepEqual(liste({ [C]: remplacer('<i>beta</i>', '<i>BETA</i>') }), ['src/e2e/carte.test.ts']);
+  });
 });

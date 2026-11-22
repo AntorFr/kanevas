@@ -385,7 +385,12 @@ export function lireGraphe(fichiers, lire) {
         const t = cible(r.spec, f);
         if (!t) continue;
         if (r.star) {
-          if (tous || doute || dispo.doute || [...delta].some((n) => exportsDe(t).noms.has(n) || exportsDe(t).doute)) demander(t, delta);
+          const et = exportsDe(t);
+          if (tous || doute || dispo.doute || et.doute) { if (tous || doute || dispo.doute || [...delta].some((n) => et.noms.has(n) || et.doute)) demander(t, delta); }
+          else { // AD-ecrans-ui-1: only the names this module exports are demanded of it (the others are another module's)
+            const siens = [...delta].filter((n) => et.noms.has(n));
+            if (siens.length) demander(t, new Set(siens));
+          }
         } else if (r.ns !== undefined) {
           if (tous || doute || delta.has(r.ns)) demander(t, true);
         } else {
