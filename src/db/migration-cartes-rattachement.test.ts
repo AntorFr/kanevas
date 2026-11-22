@@ -39,7 +39,7 @@ test('0041 : les cartes gardent leurs lignes et leurs éléments, les colonnes n
     });
     const etat = lire();
 
-    assert.deepEqual(migrate(db, new URL('./migrations/', import.meta.url).pathname), [41, 42, 43, 44, 45, 46, 47, 48, 49]);
+    assert.deepEqual(migrate(db, new URL('./migrations/', import.meta.url).pathname), [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]);
 
     assert.deepEqual(lire(), etat, 'lignes et éléments intacts, mêmes id');
     for (const c of ['cle_origine', 'fiche_id', 'texte', 'texte_public', 'version']) assert.ok(colonnes(db, 'cartes').includes(c), c);
