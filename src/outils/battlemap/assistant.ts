@@ -27,7 +27,12 @@ export function texteCompetence(nom: string): string | undefined {
   if (!(COMPETENCES as readonly string[]).includes(nom)) return undefined;
   let t = lues.get(nom);
   if (t === undefined) {
-    t = readFileSync(new URL(`./competences/${nom}.md`, import.meta.url), 'utf8');
+    try {
+      t = readFileSync(new URL(`./competences/${nom}.md`, import.meta.url), 'utf8');
+    } catch {
+      // A `dist/` built without the copy step (the chain builds with `main`'s package.json): read the sources beside it.
+      t = readFileSync(new URL(`../../../src/outils/battlemap/competences/${nom}.md`, import.meta.url), 'utf8');
+    }
     lues.set(nom, t);
   }
   return t;
