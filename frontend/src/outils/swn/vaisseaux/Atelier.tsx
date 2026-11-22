@@ -163,7 +163,12 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
     setOuvert(null);
   }
   const quantite = (l: Ligne, delta: number) =>
-    change((b) => ({ ...b, lignes: b.lignes.map((x) => (x === l ? { ...x, quantite: Math.max(1, Math.min(99, x.quantite + delta)) } : x)) }));
+    change((b) => ({ ...b, lignes: b.lignes.map((x) => {
+      if (x !== l) return x;
+      const q = Math.max(1, Math.min(99, x.quantite + delta));
+      // The rows follow the quantity: a new one is empty, the last ones leave with their choice.
+      return { ...x, quantite: q, ...(x.rangees ? { rangees: Array.from({ length: q }, (_, k) => x.rangees![k] ?? '') } : {}) };
+    }) }));
   const retirer = (l: Ligne) => {
     marquer(`points/${l.nature}/${l.cle}`, false);
     change((b) => ({ ...b, lignes: b.lignes.filter((x) => x !== l) }));
@@ -177,6 +182,11 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
       const [nature, ...cle] = valeur.split('/');
       return valeur === '' ? sans : { ...sans, vise: { nature: nature!, cle: cle.join('/') } };
     }),
+  }));
+
+  const rangee = (l: Ligne, rang: number, valeur: string) => change((b) => ({
+    ...b,
+    lignes: b.lignes.map((x) => (x === l ? { ...x, rangees: Array.from({ length: x.quantite }, (_, k) => (k === rang ? valeur : x.rangees?.[k] ?? '')) } : x)),
   }));
 
   const alertes: Alerte[] = calcul.alertes;
@@ -446,6 +456,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                         <Effets
                           ligne={l} info={infos[`${l.nature}/${l.cle}`]} infos={infos} lignes={brouillon.lignes} resultat={resultat}
                           alerte={alertes.find((a) => a.code === 'cible_invalide' && a.ligne === i)}
+                          alertes={alertes.filter((a) => a.ligne === i)} indice={i} onRangee={(k, v) => rangee(l, k, v)}
                           ecriture={ecriture} verrou={verrou} cle={cleEquipage}
                           onPoints={(n) => points(l, n)} onInvalide={(v) => marquer(`points/${l.nature}/${l.cle}`, v)} onVise={(v) => viser(l, v)}
                         />
