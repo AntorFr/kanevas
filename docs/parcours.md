@@ -296,6 +296,7 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   in « lecture + écriture » writes only where that player may write. A token restricted to tools
   (`kanevas-outils`, B-65) keeps that restriction, set on E-23: it writes those tools' data and no
   content, whatever its level. *(P-25)*
+- **B-jeton-1** *(kanevas-jeton-unique)* — A token's permissions **add up**: when creating it, its owner chooses « Contenu » and/or any offerable tools (at least one), so that **one key** can import the galaxy and write sheets, or several keys split the work — his choice. The accesses (universes, level) are shared by all its permissions and the account's role decides at each use, as before; permissions are fixed at creation; tokens created before keep their value, scope and behaviour. *(P-jeton-unique-1, E-23, E-5)*
 - **B-95** — The **instance admin** sees every token of the instance on E-5 (name, owner, accesses,
   last use), **revokes** any of them and **changes its accesses**; the owner sees on E-23 « Modifié par
   l'admin » or « Révoqué par l'admin ». « Tous mes univers » takes **exceptions** — a universe at another
@@ -1222,6 +1223,12 @@ a token whose creator is no longer GM, or an unknown system, gets the usual `jet
 From the private Éneria repository, a script reads `atlas/systemes/*.yaml`, `systemes.yaml` and `astres.yaml` (the ships, cities and stations of a system's file travel as its `elements` list), and sends them to the import API of the target galaxy
 (the galaxy already created on Éneria's seed by the conversion of P-20); the batch report counts created, unchanged and refused elements (bodies and map elements alike, each by its key). *Moment fort:* the GM opens the galaxy and a system of
 the lore and finds Éneria's bodies at their places with their illustrations. *Failure path:* a refused element is reported with its path in the file and nothing is half written (as P-20).
+
+### P-jeton-unique-1 — One key for the galaxy and the sheets (Monsieur, GM, Éneria's import)
+1. On « Mes jetons d'API » (E-23) Monsieur chooses « Créer un jeton », names it « Import Éneria », and in « Ce que le jeton peut faire » leaves « Contenu » checked and checks « Galaxie ». He picks « Une liste d'univers » (Éneria, lecture + écriture) and creates it; the value is shown once.
+2. His script uses that one key: it imports the galaxy (`PUT …/outils/swn/galaxie/…`, batch opened with `?outil=swn/galaxie`) and writes sheets (`PUT …/fiches/<cle>`, batch without `?outil=`). No second key, no second variable in the script.
+3. *Alternative:* he prefers one key per script (a content key for the lore, a tool key for the galaxy): the same form, one box each. Nothing forces either choice.
+4. *Failure path:* nothing checked → « Cochez au moins une permission. » and nothing is created. A key without « Galaxie » on the galaxy route: 401 `jeton_invalide`, as today. Tokens made before this slice work as they did.
 
 ### P-22 — Bring Kanevas up to date from the Éneria base (Monsieur, GM, a Saturday, Mac)
 1. The script opens a batch (`POST /lots`), then reads the lists of sheets, files and maps (B-105,

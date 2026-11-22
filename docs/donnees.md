@@ -687,7 +687,7 @@ Invariants, in sentences:
 7. A design is attached to **one sheet** in the same universe and to **one managed section** of that sheet.
 8. A placed system, a route, a zone, a design belong to **one universe**; deleting the universe deletes them.
 9. A route connects two **placed** systems in the same universe; its grid length is that of the coordinates.
-10. A tool token carries a **scope**: the set of tools it can write; without a scope, it writes no tool.
+10. A token carries a **scope** *(kanevas-jeton-unique, B-jeton-1)*: the content (`jetons_api.contenu`) and/or the set of tools it can write (`jetons_outils`); never neither. Without tools it writes no tool; without `contenu` it opens no content route.
 11. Disabling deletes no row; only the delete action does, in a transaction.
 
 ### Logical
@@ -731,7 +731,8 @@ Invariants, in sentences:
 |---|---|---|
 | `essai_catalogue_elements` | `niveau` (`systeme`/`univers`), `systeme_id` or `univers_id`, `nature` (`coques`/`armes`), `cle`, `nom`, `masse` (real), `cout` (integer), `portee` (`courte`/`longue`, null for a hull), `masque` (boolean, default false), `version` (integer, +1 on each change), `version_catalogue` (text) | the owner is two nullable columns (exactly one set: `CHECK`), so uniqueness is two partial unique indexes: `(systeme_id, nature, cle)` where `niveau = 'systeme'`, `(univers_id, nature, cle)` where `niveau = 'univers'`; `CHECK (masse >= 0 AND cout >= 0)`; `CHECK (niveau = 'univers' OR masque = 0)` — a system element is never masked; `portee` set exactly for `armes`; → `systemes_jeu`, → `univers` ON DELETE CASCADE |
 | `essai_catalogue_retraits` | `univers_id`, `nature`, `cle` (of a system element) | primary key `(univers_id, nature, cle)`; → `univers` ON DELETE CASCADE; deleting the row restores the element |
-| `jetons_outils` | `jeton_id`, `outil` | (core, K-6) primary key `(jeton_id, outil)`; → `jetons_api` ON DELETE CASCADE; no row = a content token |
+| `jetons_outils` | `jeton_id`, `outil` | (core, K-6) primary key `(jeton_id, outil)`; → `jetons_api` ON DELETE CASCADE; no row = no tool (*kanevas-jeton-unique*: it no longer says « content token », `jetons_api.contenu` does) |
+| `jetons_api.contenu` *(kanevas-jeton-unique, migration 0046 provisional, AD-51)* | column | `INTEGER NOT NULL DEFAULT 1 CHECK (contenu IN (0, 1))`; 1 = the token opens the content routes (`/api/v1` sheets, files, maps, export, `/mcp`). The migration sets 0 on every token that has a `jetons_outils` row (they keep working as today: tools only) and leaves 1 on the others. « At least one of `contenu` or a tool » is the service's rule (`creerJeton`, `invalide`, `champ: permissions`), not a `CHECK` (a `CHECK` cannot read another table); a token whose tools are deleted with the tool's data keeps the permissions it has, `contenu` included |
 
 `lots_import.outil` (core): null for a content batch, else the `module/outil` whose natures the counters carry. A tool batch's `compteurs` keys are the tool's declared natures (the content batch keeps the fixed list).
 
