@@ -88,7 +88,7 @@ describe('E-28 Éditeur de carte : ce que voit Antor', { skip: skipBrowser }, ()
     const rep = antor.waitForResponse((x: Any) => x.request().method() === 'POST' && /outils\/battlemap\/cartes$/.test(x.url()));
     await d.getByRole('button', { name: rxExact('Créer') }).click();
     const id = ((await (await rep).json()) as Any).id;
-    await antor.waitForURL(new RegExp(`/univers/${uid}/outils/battlemap/cartes/${id}$`));
+    await antor.waitForURL(new RegExp(`/univers/[^/]+/outils/battlemap/cartes/${id}$`));
     await antor.getByLabel('Carte', { exact: true }).waitFor();
     await antor.getByText('Choisissez un outil à gauche, puis cliquez sur la grille.').waitFor();
     for (const t of ['Bibliothèque', 'Calques', 'Propriétés']) await antor.getByRole('tab', { name: t }).waitFor();

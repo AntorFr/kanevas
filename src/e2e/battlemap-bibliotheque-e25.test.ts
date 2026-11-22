@@ -199,7 +199,7 @@ describe('E-25 Bibliothèque au navigateur', { skip: skipBrowser }, () => {
   it('pleine : bibliothecque_pleine simulée → message, ajouts désactivés', async () => {
     const ctx = antor.context();
     const page = await ctx.newPage();
-    await page.route(`**/api/univers/${uid}/outils/battlemap/assets`, async (route: Any) => {
+    await page.route(`**/api/univers/*/outils/battlemap/assets`, async (route: Any) => {
       if (route.request().method() === 'POST') {
         return route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ code: 'bibliotheque_pleine', erreur: 'Bibliothèque pleine.' }) });
       }
@@ -215,11 +215,11 @@ describe('E-25 Bibliothèque au navigateur', { skip: skipBrowser }, () => {
 
   it('pleine : 5 000 assets annoncés par la liste → message dès l’ouverture', async () => {
     const page = await antor.context().newPage();
-    await page.route(`**/api/univers/${uid}/outils/battlemap/assets?*`, (route: Any) => route.fulfill({
+    await page.route(`**/api/univers/*/outils/battlemap/assets?*`, (route: Any) => route.fulfill({
       status: 200, contentType: 'application/json',
       body: JSON.stringify({ assets: [], comptes: { total: 5000, objet: 5000, vaisseau: 0, decor: 0, sol: 0, mur: 0 } }),
     }));
-    await page.route(`**/api/univers/${uid}/outils/battlemap/assets`, (route: Any) => route.request().method() === 'GET'
+    await page.route(`**/api/univers/*/outils/battlemap/assets`, (route: Any) => route.request().method() === 'GET'
       ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ assets: [], comptes: { total: 5000, objet: 5000, vaisseau: 0, decor: 0, sol: 0, mur: 0 } }) })
       : route.continue());
     await ouvrir(page);
@@ -231,7 +231,7 @@ describe('E-25 Bibliothèque au navigateur', { skip: skipBrowser }, () => {
   it('erreur : la liste en échec dit « Impossible de charger la bibliothèque. » + Réessayer', async () => {
     const page = await antor.context().newPage();
     let casse = true;
-    await page.route(`**/api/univers/${uid}/outils/battlemap/assets`, (route: Any) => (casse && route.request().method() === 'GET'
+    await page.route(`**/api/univers/*/outils/battlemap/assets`, (route: Any) => (casse && route.request().method() === 'GET'
       ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"erreur":"x"}' }) : route.continue()));
     await page.goto(adresse);
     await page.getByText('Impossible de charger la bibliothèque.').waitFor();
@@ -245,7 +245,7 @@ describe('E-25 Bibliothèque au navigateur', { skip: skipBrowser }, () => {
     const page = await antor.context().newPage();
     let lache: () => void = () => {};
     const porte = new Promise<void>((r) => { lache = r; });
-    await page.route(`**/api/univers/${uid}/outils/battlemap/assets`, async (route: Any) => {
+    await page.route(`**/api/univers/*/outils/battlemap/assets`, async (route: Any) => {
       if (route.request().method() === 'GET') await porte;
       return route.continue();
     });

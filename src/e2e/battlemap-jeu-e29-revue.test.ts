@@ -182,8 +182,10 @@ describe('E-29 Jeu : la table côté MJ et côté joueuse', { skip: skipBrowser 
     await antor.getByText('Mobile', { exact: true }).first().waitFor();
     const avant = (await table(antor, c)).etat.pions[0];
     const b = await antor.getByLabel('Carte', { exact: true }).boundingBox();
-    // the map (30 × 20) is fitted and centred in the canvas: cell size = the smaller ratio
-    const cote = Math.min(b.width / 30, b.height / 20);
+    // « Ajuster » fits the map (30 × 20) to the canvas as it is now (the first fit is made on the size measured at the first layout,
+    // which the side panel then narrows): cell size = the smaller ratio of the 70 px reference raster, times 0.92 (the margin of the fit)
+    await antor.getByRole('button', { name: 'Ajuster' }).click();
+    const cote = 70 * Math.min(b.width / (30 * 70), b.height / (20 * 70)) * 0.92;
     const ox = b.x + (b.width - cote * 30) / 2;
     const oy = b.y + (b.height - cote * 20) / 2;
     const de = { x: ox + (avant.x + 0.5) * cote, y: oy + (avant.y + 0.5) * cote };

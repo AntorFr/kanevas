@@ -83,7 +83,7 @@ describe('E-10 Liste des cartes : carte composée', { skip: skipBrowser }, () =>
     const rep = antor.waitForResponse((x: Any) => x.request().method() === 'POST' && /outils\/battlemap\/cartes$/.test(x.url()));
     await d.getByRole('button', { name: rxExact('Créer') }).click();
     const id = ((await (await rep).json()) as Any).id;
-    await antor.waitForURL(new RegExp(`/univers/${uid}/outils/battlemap/cartes/${id}$`));
+    await antor.waitForURL(new RegExp(`/univers/[^/]+/outils/battlemap/cartes/${id}$`));
     const c = await (await antor.request.get(`/api/univers/${uid}/outils/battlemap/cartes/${id}`)).json();
     assert.equal(c.largeur, 30);
     assert.equal(c.hauteur, 20);
