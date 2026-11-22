@@ -260,7 +260,7 @@ test('0043 : montée depuis 0042 avec le semis, systèmes inchangés, transition
   const dir = mkdtempSync(join(tmpdir(), 'migration-0043-'));
   const db = openDb(':memory:');
   const source = new URL('../../db/migrations/', import.meta.url);
-  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 42) copyFileSync(new URL(f, source), join(dir, f));
+  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 42 || Number(f.slice(0, 4)) === 46) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
   assert.equal(semerBouchon(db), true);
   const lignes = () => db.prepare('SELECT * FROM swn_systemes ORDER BY id').all();

@@ -367,7 +367,7 @@ test('0044 : montée depuis 0043 avec le semis, tout reste, swn_elements neuve e
   const dir = mkdtempSync(join(tmpdir(), 'migration-0044-'));
   const db = openDb(':memory:');
   const source = new URL('../../db/migrations/', import.meta.url);
-  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 43) copyFileSync(new URL(f, source), join(dir, f));
+  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 43 || Number(f.slice(0, 4)) === 46) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
   assert.equal(semerBouchon(db), true);
   const tables = () => (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all() as any[]).map((x) => x.name);
