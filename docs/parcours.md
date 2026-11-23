@@ -1344,7 +1344,7 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
 
 ### P-27 — Read a system as a map (Antor, GM; Léa, Player — `kanevas-carte-rendu`)
 
-Antor opens Clyra from the galaxy: the map takes the whole window over a starfield (B-120). The star is a modest disc with its halo; the
+Antor opens Clyra from the galaxy: the map takes the whole window below the header over a starfield (B-120); he presses « Plein écran » to have the header and the sidebar covered too, zooms to a body with « + » or the wheel, and leaves with Escape, back at his scroll position (on a phone that refuses the API, the map takes the window by layout). The star is a modest disc with its halo; the
 bodies are at the scale of the orbits (B-113), each with its allure: a violet world with turquoise glow, a giant with its rings turned toward the
 sun, a belt as grains of rock, a nebula as a soft orange gas with asteroids. The names are there, never hidden by the corona. *Moment fort:* the
 comet of the system crosses the transition zone on a long ellipse, tail away from the star; he chooses it, its trajectory turns gold, its illustration
@@ -1357,7 +1357,7 @@ absent for Léa, and so are its name and its route.
 The galaxy opens on the whole known zone, centred, with the names of the defined systems, differing in size and colour; the drawn stars show their class.
 In the map, Antor chooses « Zones » (all, none, default) and sees the Pirates zone in red, routes in the colour of their type; he types « Lyb » in the
 search and the map goes there. *Moment fort:* he double-clicks a system: it opens on its map; « Galaxy » brings him back to where he was. In « travel » mode he
-picks two systems and reads the duration by engine. Léa sees only what the GM lets her see (B-97). *Failure path:* a hidden zone does not hide the routes that cross it from the list; no system → the empty sky says so.
+picks two systems and reads the duration by engine. Léa sees only what the GM lets her see (B-97). *Plein écran* works as in P-27 of this feature, and « + » stops when a hexagon fills the window. *Failure path:* a hidden zone does not hide the routes that cross it from the list; no system → the empty sky says so.
 
 ### P-29 — Share a place (Léa, Player; Antor, GM — `kanevas-carte-rendu`)
 
