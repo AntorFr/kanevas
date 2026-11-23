@@ -17,9 +17,10 @@ use utile::{hache, hex, Bruit, Px, V3};
 use wasm_bindgen::prelude::*;
 
 pub use catalogue::{catalogue_defaut, types};
+pub(crate) use catalogue::{famille, Famille};
 
 /// Version of the renderer: part of the cache hash (AD-142), so a better rendering moves no body.
-pub const VERSION_RENDU: u32 = 1;
+pub const VERSION_RENDU: u32 = 2;
 pub const COTE_MIN: u32 = 16;
 pub const COTE_MAX: u32 = 2048;
 
@@ -143,6 +144,17 @@ pub fn dessiner(aspect_json: &str, cote: u32, version_rendu: u32) -> Result<Vec<
         pal,
         asp,
     };
+    let mut ctx = ctx;
+    // The bands of a gas giant read `bandes_couleurs` in place of the palette.
+    if matches!(catalogue::famille(type_corps), Some(catalogue::Famille::Planete(catalogue::Kind::Gazeuse))) {
+        if let Some(l) = ctx.asp.get("bandes_couleurs").and_then(Value::as_array) {
+            let b: Option<Vec<V3>> = l.iter().map(|c| c.as_str().and_then(hex)).collect();
+            match b {
+                Some(b) if (1..=16).contains(&b.len()) => ctx.pal = b,
+                _ => return Err(ErreurRendu::Aspect("`bandes_couleurs` is not a list of 1 to 16 colours".into())),
+            }
+        }
+    }
     let pixels: Vec<Px> = match catalogue::famille(type_corps) {
         Some(catalogue::Famille::Etoile) => etoile::rendre(&ctx),
         Some(catalogue::Famille::Planete(k)) => corps::rendre(&ctx, k),
