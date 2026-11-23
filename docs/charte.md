@@ -554,6 +554,14 @@ Existing, taken as they are: `Interrupteur` for « Suivre le MJ » (floating pil
 - **Fenêtre** (`Fenetre` in `frontend/src/ui/composants.tsx`) gains a *large* variant (560 px, scrolling inside itself) and a *locked* property (neither Esc nor the veil closes it while a value is
   shown — E-23).
 
+### Components of `kanevas-carte-rendu-plein-ecran` (verdict of the guardian, 2026-11-23)
+
+- **Map controls** (`ui/commandes-carte.tsx`, **new**, from `.canevas-zoom` of `ui/canevas-carte.tsx` and `ColonneOutils`; generic, the battlemap canvas may reuse it). V: four absolute places in the map container, `hautGauche`, `hautDroite`, `basGauche`, `bas`; no frame of its own, every control a `BoutonIcone` or `Bouton` on `--surface` with `--ombre-flottant` and `--rayon-champ`; 44 px targets; on a phone the places stack under `env(safe-area-inset-*)`; an empty place draws nothing; no new token. C: each place is a `ReactNode` prop, nothing wraps; a group has `role="group"` (or `toolbar`) and a name; the frame is `pointer-events: none`, the controls `auto`; « + » disabled at the top of the range, « − » at the bottom; `prefers-reduced-motion` stops every animation. **It replaces the three zoom columns** (`.gx-zoom`, the three buttons of `CarteSysteme.tsx`, and none is written a fourth time).
+- **Full screen button**: `BoutonIcone` with `aria-pressed`, icons `Maximize` / `Minimize` (not `Maximize2`, which means « Ajuster » on the battlemap canvas), named « Plein écran » / « Quitter le plein écran ».
+- **Full screen layer**: the class `plein-fenetre` (container taken by layout) sits at layer **45**, above `.panneau-lateral` (30, 35 on a phone) and `.med-depot` (40), under `.voile` (50) and the toasts (60), so an open dialogue stays visible over a map in full screen.
+- **Side panel, variant « anchored to a container »** (`ui/panneau-lateral.tsx`): the same `aside`, header and « Fermer », Esc and focus return, but `position: absolute` in the map container instead of the window, `min(360px, 40vw)` wide, at most the container's height minus 16 px; at 390 px a bottom sheet of at most 55 % of the container, not a full-screen sheet. No `.gx-panneau` of its own.
+- The pure state and the hook of full screen (`ui/plein-ecran.ts`, `ui/usePleinEcran.ts`) are logic, not a component.
+
 ## 5. Thresholds
 
 Floor: WCAG 2.2 AA. Measured with the `charte-graphique` skill's contrast script (outside this repository), replayed by `frontend/src/ui/contraste.test.ts`; a

@@ -5292,3 +5292,25 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 - Given a secret system, neither its portrait, nor its jump point, nor its name is reachable by a Player through any preview or address.
 
 Cross-check: B-113 to B-116 → E-23; B-117, B-118 → E-21; B-119 → E-21, E-23 and their routes (the portrait is the existing read `lireInterieur` of a readable system only; the distance and colour come from `lireSorties`, which gains two fields); B-120, B-121 → both; B-122 → the import API (no screen, P-30); B-123 → the recette (P-30).
+
+### Full screen and floating controls (`kanevas-carte-rendu-plein-ecran`, B-120, P-27, P-28, P-29; AD-pleinecran-1, AD-pleinecran-2)
+
+Mockup: `docs/maquettes/e23-rendu.html` (Player, phone, full screen; Consult with floating controls and card). The slice adds no screen and no wording beyond what follows.
+
+**In the page.** The map container of E-21 and E-23 takes the window below the page header: height `hauteurPage`, never under 320 px, the width of the main area, **no horizontal scroll at 1440 and 390 px**. The panel is no longer a column beside or under it: it floats over the map (right, 360 px at most; a bottom sheet at 390 px). The control columns sit in the map's corners through `CommandesCarte`.
+
+**Full screen.** « Plein écran » (`BoutonIcone`, icons `Maximize` / `Minimize`, `aria-pressed`) is in the top right place, under the zoom column. Pressed: the map container takes the whole window (the browser's own full screen; on a browser that refuses it, the container takes the window by layout, with safe-area margins); the page header and the sidebar are covered, the controls and the panel stay on the map; the label becomes « Quitter le plein écran » (`Minimize`). Escape (a dialogue open takes it first), the button, the browser's own exit, leaving the screen: the page is as it was, **at the same scroll position**. Never restored on load.
+
+**Zoom.** « + » / « − », the wheel and the pinch go from the fit of the known zone to the detail of a body: on the galaxy, from the fit of the zone as the reader reads it to one hexagon filling the window; on a system, from the fit of the whole system (zoom 1; « Recentrer » returns there) to a body and the gap to its nearest orbit filling the window. A body's drawn size never changes with the zoom (B-113). « + » is disabled at the top of the range, « − » at the bottom.
+
+| State | What the reader sees |
+|---|---|
+| page | the map under the header, controls and panel floating on it |
+| full screen (native) | the container fills the screen; « Quitter le plein écran » |
+| full screen (by layout) | same, the container is `position: fixed` over the page, body scroll locked |
+| refused and no layout possible | cannot happen: the layout way always works; no error text exists |
+| 390 px | corners stacked under the safe areas, 44 px targets, panel a bottom sheet with a close button |
+| `prefers-reduced-motion` | no transition on the panel or the zoom |
+
+Accessibility: every floating control is a real button with a name; the canvas keeps `role="application"` and its list below as the text alternative (not shown in full screen, still in the DOM); the focus stays on « Plein écran » when it toggles and returns to it after Escape; the panel's close button is the first stop inside it.
+
