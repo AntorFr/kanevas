@@ -28,12 +28,9 @@ function LigneCampagne({ universId, fiche, gestion, rafraichir }: PropsLigneTitr
         </>
       )}
       {gestion && (
-        <>
-          {' '}
-          <Bouton petit disabled={perdue} onClick={() => setOuvert(true)}>
+        <Bouton petit disabled={perdue} onClick={() => setOuvert(true)}>
             Changer d’aventure…
           </Bouton>
-        </>
       )}
     </p>
     {ouvert && <ChangerAventure universId={universId} fiche={fiche} onFermer={() => setOuvert(false)} rafraichir={rafraichir} />}

@@ -120,6 +120,7 @@ export function ChangerAventure({
           etiquette="Chercher une aventure"
           value={saisie}
           autoComplete="off"
+          placeholder="Titre ou alias"
           erreur={trop ? `${LONGUEUR_RECHERCHE} caractères au plus.` : undefined}
           onChange={(e: { target: { value: string } }) => {
             setSaisie(e.target.value);
@@ -149,8 +150,7 @@ export function ChangerAventure({
                   nom="nouvelle-aventure"
                   titre={f.titre}
                   Icone={iconeDuType(types, f.type)}
-                  detail={f.sousType ?? ''}
-                  note="(aventure actuelle)"
+                  detail={actuelle ? '(aventure actuelle)' : (f.sousType ?? '')}
                   soi={actuelle}
                   choisi={choisi?.id === f.id}
                   onChoisir={() => {
