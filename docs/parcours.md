@@ -1367,7 +1367,7 @@ secret body gives « Page introuvable. », byte for byte like an unknown one.
 ### P-30 — Prepare and correct the map (Antor, GM; his script)
 
 In « create / edit » mode Antor places a system, draws a route, moves a body by hand (B-121). On a defined system he sets its **star** — class, continuous size, optional free colour — in the system's dialogue (B-117), and on each zone of the galaxy the switch « Displayed when the map opens » (B-118). His atlas script pushes the new
-format (B-122) and the bodies' settings; the report names the settings that stay unrendered. *Moment fort:* the recipe: both maps side by side at the same framing, and Monsieur judges (B-123).
+format (B-122) and the bodies' settings; the report names the settings that stay unrendered. On his system map he then sees what the format said: the planets of a companion round it, a moon at its hour round its planet, a star gone as a dim remnant (« Étoile disparue · <class> » in the list), and under « Lieux » in a body's dialog the elements put on it; Léa, a Player, reads the same except the elements reserved to the GM. *Moment fort:* the recipe: both maps side by side at the same framing, and Monsieur judges (B-123).
 
 ### The battle map (`kanevas-battlemap`)
 

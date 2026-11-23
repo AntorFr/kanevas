@@ -4671,7 +4671,7 @@ Criteria:
 
 ### E-23 — elements (`kanevas-carte-spatiale-elements`, B-96, P-22.4, P-22.5, P-26)
 
-*Drawing.* An element is an icon of its kind (`vaisseau`, `ville`, `station`, `base`, `autre`) on a coloured ring, with a label (the name, truncated at 80 characters). Placed by orbit and hour it sits on the orbit; placed on a body it turns in a small orbit around it and follows it when the body moves. Labels never overlay a body, a belt or another label: they move off, shorten or collapse at zoom-out (E-23 criteria); at 390 px an element's label appears on selection only when the map holds more than 8 elements the reader reads (the elements « Réservé au MJ » count for the GM only, never for a Player, so the display betrays none). The list of bodies (text alternative) lists elements after the bodies, one line each: name, kind, place.
+*Drawing.* An element is an icon of its kind (`vaisseau`, `ville`, `station`, `base`, `autre`) on a coloured ring, with a label (the name, truncated at 80 characters). Placed by orbit and hour it sits on the orbit; placed on a body it is **not drawn** (`kanevas-carte-rendu-atlas-format`, CS-9): it is listed under « Lieux » in that body's dialog and the canvas has no mark for it. Labels never overlay a body, a belt or another label: they move off, shorten or collapse at zoom-out (E-23 criteria); at 390 px an element's label appears on selection only when the map holds more than 8 elements the reader reads (the elements « Réservé au MJ » count for the GM only, never for a Player, so the display betrays none). The list of bodies (text alternative) lists elements after the bodies, one line each: name, kind, place.
 
 *Panel of an element* (the panel of a body is unchanged): name, kind, place (« Orbite 4 · 7 h » or « Sur Vael II »), description (plain text), link to the sheet when it is readable. GM outside Player mode: « Déplacer » (by orbit and hour, or « Poser sur un astre » choosing among the bodies (elements excluded; a system with no body is not offered the choice: the item does not appear, no disabled item, no text)), « Modifier… » (name, kind, description, icon and colour from the core's list), « Lier à une fiche… » (the dialog of `-liens`), « Réservé au MJ » (a switch, the only one on this screen; on, the panel and the list show the badge « MJ seul »), « Retirer ». « Ajouter un élément » (system menu, GM) opens the same form: name (required), kind, place; on a drawn system the anchoring dialog of `-edition` comes first. A Player or the GM in Player mode is offered none of these.
 
@@ -5251,17 +5251,28 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 
 ### What the atlas format adds to the drawing of E-23 (`kanevas-carte-rendu-atlas-format`, B-122, B-115)
 
-No new control. The format's fields (`docs/donnees.md`, « Atlas format ») reach the existing canvas; the only **new texts** are two: the list line « Étoile disparue · <class> » and the section title « Lieux » in a body's dialog (the dialog of a body is the one panel; « panel » and « dialog » name the same object here). Both are French like every label of E-23; « Lieux » is absent when a body has none (its empty state is no section), and the line has no empty state.
+No new control. The format's fields (`docs/donnees.md`, « Atlas format ») reach the existing canvas; the only **new texts** are two: the list line « Étoile disparue · <class> » and the section title « Lieux » in a body's dialog (« dialog » is the panel opened by a click on a body; the « Voir l'illustration » dialog is another object and is named so). « Lieux » is the title of this section only: the things listed are the **elements** of the map, and the sidebar entry « Lieux » of the sheets of type Lieu is unrelated. Both are French like every label of E-23; « Lieux » is absent when a body has none (its empty state is no section), and the line has no empty state.
 
 | Case | Drawing (pure functions of `carte-geometrie.ts`, AD-rendu-1; no size depends on the zoom) |
 |---|---|
 | planets of a companion (`etoile_rang` > 0) | the planet's orbit is traced round **its** star, at the planet's own distance and hour from it, and the planet is drawn there; the orbits of the companion's planets never cross the main star's by construction of the centre; a planet and its moons stay a tight couple (the moons keep their small circle round the planet) |
 | a moon, a station or any body round a planet | a **small mark** on a circle round its planet, at the body's `heure` (12 at the top, 3 at the right, as the hours of the map), the circle's radius following the rank around the planet; never a fixed angle; at most the body's own drawn size, never larger than a quarter of its planet's; its label follows the placement pass of AD-carte-4 |
-| a star gone (`aspect.disparue`) | a **dim remnant**: the star's disc at a quarter of its usual luminosity, no corona and no light cast on the bodies (the bodies of that star are drawn on the unlit face as with no star), its name kept; the list line reads « Étoile disparue · <class> »; in the illustration dialog the picture is the remnant, never the ordinary star |
+| a star gone (`aspect.disparue`) | a **dim remnant**: the star's disc at a quarter of its usual luminosity, no corona and no light cast on the bodies (the bodies of that star are drawn on the unlit face as with no star), its name kept; the line of the list of bodies (the text alternative of the map, « Corps (n) ») reads « Étoile disparue · <class> » and **replaces** the type text of that line, whatever the star was (« Étoile jaune » or « Compagne · … »: a companion gone loses « Compagne »); in the illustration dialog the picture is the remnant, never the ordinary star |
 | a formation's veil / lens | drawn by `-zones-illustrations` from the keys; this tranche only writes and validates them |
 | the places of a body (CS-9) | the elements put **on** a body (`sur` = its `cle`, never an orbit and an hour) are **not drawn** round it: they are listed under « Lieux » in the body's dialogue, in the order of their name, each a link to its sheet when the reader reads it; the section is absent when the body has none; a reader sees only the elements she reads (`sqlElementLisible`), never a count of hidden ones |
 
-States and roles are those of E-23 (nothing is written by the screen; a Player and a GM read the same; the GM in Player mode reads what a Player reads).
+States and roles are those of E-23 (nothing is written by the screen; the GM in Player mode reads what a Player reads). What the tranche adds:
+
+| Case | Reads |
+|---|---|
+| « Lieux », while the system loads | the section is not shown: it appears with the dialog's content, read in the same answer as the body (no spinner of its own); an error is the dialog's own |
+| « Lieux », many or long | one line per element, in the order of the name, the name truncated at 80 characters as everywhere; the section scrolls with the dialog, no cap and no « n more » |
+| « Lieux », an element « Réservé au MJ » | a Player (Léa) never sees the line, and a body whose only elements are reserved shows no section for her; the GM outside Player mode sees the line with the badge « MJ seul » |
+| « Étoile disparue · <class> » | no empty state: the line always exists for a star that is gone, and its class is the key's, or the usual « Drawn from the key » |
+
+Criteria by role: given Léa (Player) and a body with one public and one reserved element, her dialog lists the public one only; given Antor (GM), both, the reserved one badged; given Léa, a star gone reads « Étoile disparue · <class> » like for Antor. The criteria hold in both themes and at 390 px (the moons' circle and the dim remnant are the same drawing).
+
+The mock-ups `e23-carte-systeme.html` (a moon at a fixed offset) and `e23-liste-corps.html` (no « Étoile disparue » line) predate this tranche and show neither the hour nor the remnant nor « Lieux »: the text above is what is tested.
 
 Criteria (this tranche):
 - Given a fixture system of two stars, the planets of the second turn around it, the orbit traced round it.
