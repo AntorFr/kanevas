@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Étoile d'un système — E-21</title><style>
+/* MAQUETTE — E-21, groupe « Étoile » du dialogue d'un système, panneau et état vide (kanevas-carte-rendu-galaxie-systemes). Illustre docs/ecrans.md « E-21 — the star of a system ». Tokens : docs/charte.md. Données inventées. Le document prime. */
+:root{--surface:#191a1f;--surface-2:#212228;--texte:#ebecf0;--texte-3:#8b8c97;--bord:rgba(255,255,255,.1);--accent:#8b9bf0;--ciel:#0b0b10;font-family:system-ui,sans-serif}
+body{background:#121317;color:var(--texte);margin:0;padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+section{background:var(--surface);border:1px solid var(--bord);border-radius:12px;padding:16px}
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--texte-3);margin:0 0 12px}
+fieldset{border:1px solid var(--bord);border-radius:10px;padding:12px;display:grid;gap:12px}legend{font-size:13px;padding:0 6px}
+label{display:grid;gap:4px;font-size:13px}select,input[type=range]{width:100%;min-height:44px}select{background:var(--surface-2);color:var(--texte);border:1px solid var(--bord);border-radius:8px;padding:0 8px}
+.ligne{display:flex;gap:12px;align-items:center}.ap{background:var(--surface-2);border-radius:8px;display:grid;place-items:center}
+.etoile{border-radius:50%;border:1px solid var(--texte-3)}button{min-height:44px;background:none;color:var(--accent);border:0;font-size:13px}
+.vide{height:180px;display:grid;place-items:center;background:var(--ciel);border-radius:10px;color:var(--texte)}small{color:var(--texte-3)}
+</style></head><body>
+<section><h2>Dialogue · Étoile (MJ)</h2><fieldset><legend>Étoile</legend>
+<div class="ligne"><div class="ap" style="width:40px;height:40px" aria-hidden="true"><div class="etoile" style="width:18px;height:18px;background:#ffe08a"></div></div><small>Aperçu, redessiné en direct</small></div>
+<label>Classe<select><option>Tirée de la clé</option><option>G — jaune</option><option>M — rouge</option></select></label>
+<label>Taille <span>0,45</span><input type="range" min="0" max="1" step="0.01" value="0.45"></label>
+<label>Couleur libre<div class="ligne"><input type="text" value="#ffcf6b" aria-label="Couleur libre"><button type="button">Effacer la couleur</button></div></label>
+<small>Couleur libre prioritaire</small></fieldset></section>
+<section><h2>Panneau d'un système (joueur : sans champ)</h2><div class="ligne"><div class="ap" style="width:56px;height:56px" role="img" aria-label="Étoile de classe jaune"><div class="etoile" style="width:26px;height:26px;background:#ffe08a"></div></div><div><strong>Vortexis</strong><br><small>Classe G — jaune</small></div></div></section>
+<section><h2>État vide</h2><div class="vide" role="status">Le ciel est vide ici.</div></section>
+</body></html>
