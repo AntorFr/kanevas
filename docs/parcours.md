@@ -726,7 +726,7 @@ Nothing of Éneria enters this repository (AD-131): captures, atlas and comparis
   browser**, never in a datum of the game. *(P-28, P-30)*
 - **B-122** — *The atlas format says what the atlas knows.* Moon types beyond rocky/ice/lava, the star a formation or a point turns around, an hour around
   a planet, the veil of a system, the class, size and free colour of a defined system, a star's state « vanished » (a star gone, as Arkhan,
-  drawn as such, not as an ordinary star: a key of its `aspect`), the veil and the lens of a zone are fields of the format. *(P-30)*
+  drawn as such, not as an ordinary star: a key of its `aspect`), the veil and the lens of a formation (an atlas `zones[]` entry) are fields of the format. *(P-30)*
 - **B-123** — *The atlas looks like the reference side by side.* The recipe plays at the same framing both maps (Lybrata, Clyra, Éneria, Gamma, Sol,
   Ophyra, plus Alpha Centauri; the illustrations of Clyra II, Clyra IV, Éneria Prime, Jupiter) and Monsieur judges. The recipe adds three
   sets at the same framing: 50 systems drawn on the trial galaxy (seed `eneria-1`, taken at a regular step, four per sheet), the default galaxy,
