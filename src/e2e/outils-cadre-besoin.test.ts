@@ -627,6 +627,8 @@ test('garde : Léa (Joueuse) n’a pas l’onglet, ni son adresse, ni son API, a
     l.filter((e) => !e.disabled && e.getAttribute('aria-disabled') !== 'true').length);
   assert.equal(actifs, 0);
   await photo(lea, 'lea-systeme-sans-onglet');
+  await ouvrirSysteme(antor);
+  const avant = await carte(antor, 'Essai A').getByRole('switch').getAttribute('aria-checked');
   for (const [m, u, c] of [
     ['GET', `/api/univers/${ENERIA}/outils`],
     ['GET', `/api/systemes/${SYS}/outils`],
@@ -639,7 +641,7 @@ test('garde : Léa (Joueuse) n’a pas l’onglet, ni son adresse, ni son API, a
   }
   // Léa did not change anything
   await ouvrirSysteme(antor);
-  assert.equal(await carte(antor, 'Essai A').getByRole('switch').getAttribute('aria-checked'), 'true');
+  assert.equal(await carte(antor, 'Essai A').getByRole('switch').getAttribute('aria-checked'), avant);
 });
 
 // --- transfert (dernier : il retire des droits à Antor) --------------------------------------------------
