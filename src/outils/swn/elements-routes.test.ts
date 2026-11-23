@@ -27,7 +27,7 @@ async function monde() {
   app.db.prepare('UPDATE swn_galaxies SET visible = 1 WHERE id = ?').run(g);
   for (const t of ['swn_routes', 'swn_zones', 'swn_systemes']) app.db.prepare(`DELETE FROM ${t} WHERE galaxie_id=?`).run(g);
   const ouvert = app.db.prepare(
-    "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,0)")
+    "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',0,0)")
     .run(g, E, 'int-ouvert', 'Ouvert', 42, 43).lastInsertRowid as number;
   const astre = (cle: string, genre: string, type: string, orbite: number, heure: number) =>
     app.db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, type, orbite, heure, taille) VALUES (?,?,?,?,?,?,?)').run(ouvert, cle, genre, type, orbite, heure, 1);

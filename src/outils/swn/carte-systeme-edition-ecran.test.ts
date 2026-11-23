@@ -45,7 +45,7 @@ describe('E-23 édition : menu « Système », bouton « Ajouter », pastille de
     await a.ctx.close();
     const db = new Database(dbPath);
     try {
-      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,0)")
+      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',0,0)")
         .run(gid, univers, 'ed-centre', 'Centre-édition', O.q, O.r).lastInsertRowid as number;
       const ast = db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille) VALUES (?,?,?,?,?,?,?,?,?,?)');
       ast.run(sys, 'soleil', 'etoile', null, 0, 'jaune', 'Soleil-ed', 0, 0, 0.3);

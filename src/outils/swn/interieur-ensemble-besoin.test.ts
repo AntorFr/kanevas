@@ -49,7 +49,7 @@ async function monde() {
   const get = (who: string, q: number | string, r: number | string, suite = '') =>
     app.inject({ method: 'GET', url: `/api/univers/${E}/outils/swn/galaxie/galaxies/${g}/interieur/${q}/${r}${suite}`, headers: h[who] });
   const systeme = (q: number, r: number, nom: string | null, secret: boolean) =>
-    app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',?,0)")
+    app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,0)")
       .run(g, E, `ens-${q}-${r}`, nom, q, r, secret ? 1 : 0).lastInsertRowid as number;
   return { app, E, g, get, systeme };
 }

@@ -32,7 +32,7 @@ function monde() {
   const FG = lireJson('../../../rust/modules/coeur/tests/fixtures/generation-galaxie.json');
   db.prepare('UPDATE swn_galaxies SET graine=?, densite_defaut=? WHERE id=?').run(FS.graine, FG.densites.defaut, g);
   const sid = db.prepare(
-    "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,0)")
+    "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',0,0)")
     .run(g, univers, 'sdef', 'Port défini', DEF.q, DEF.r).lastInsertRowid as number;
   db.prepare("INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille, aspect) VALUES (?,?,?,?,0,?,?,?,?,0.1,'{}')")
     .run(sid, 'e', 'etoile', null, 'orange', null, 0, 0);

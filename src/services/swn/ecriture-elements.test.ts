@@ -10,6 +10,7 @@ process.env.NODE_ENV = 'test';
 delete process.env.KANEVAS_STUB;
 const { migrate, openDb } = await import('../../db/db.js');
 const { semerBouchon } = await import('../../bouchon/depart.js');
+const { ancienSchema, ligneApres0051 } = await import('../../db/semis-ancien.js');
 const { viderCacheBlocs } = await import('./cache-blocs.js');
 const { lireInterieur } = await import('./interieur.js');
 const { lireSorties } = await import('./sorties.js');
@@ -369,20 +370,20 @@ test('0044 : montée depuis 0043 avec le semis, tout reste, swn_elements neuve e
   const source = new URL('../../db/migrations/', import.meta.url);
   for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 43) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
-  assert.equal(semerBouchon(db), true);
+  assert.equal(semerBouchon(ancienSchema(db)), true);
   const tables = () => (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all() as any[]).map((x) => x.name);
   assert.ok(!tables().includes('swn_elements'));
   const tout = (t: string) => db.prepare(`SELECT * FROM ${t} ORDER BY 1`).all();
   const avant = { s: tout('swn_systemes'), a: tout('swn_astres'), f: tout('fiches'), g: tout('swn_galaxies') };
-  assert.deepEqual(migrate(db), [44, 45, 46, 47, 48, 49, 50]);
+  assert.deepEqual(migrate(db), [44, 45, 46, 47, 48, 49, 50, 51]);
   assert.ok(tables().includes('swn_elements'));
-  assert.deepEqual({ s: tout('swn_systemes'), a: tout('swn_astres'), f: tout('fiches'), g: tout('swn_galaxies') }, avant);
+  assert.deepEqual({ s: tout('swn_systemes'), a: tout('swn_astres'), f: tout('fiches'), g: tout('swn_galaxies') }, { ...avant, s: (avant.s as any[]).map(ligneApres0051) });
   assert.equal((db.prepare('SELECT COUNT(*) n FROM swn_elements').get() as any).n, 0);
   assert.deepEqual(db.prepare('PRAGMA foreign_key_check').all(), []);
   assert.deepEqual(migrate(db), []);
   // the constraints of docs/donnees.md
-  const sid = (db.prepare('INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) SELECT id, univers_id, ?, ?, 1, 1, 3, ?, ?, 0, 1 FROM swn_galaxies LIMIT 1')
-    .run('s', 'S', 'accent', '').lastInsertRowid) as number;
+  const sid = (db.prepare('INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) SELECT id, univers_id, ?, ?, 1, 1, 0.75, ?, ?, 0, 1 FROM swn_galaxies LIMIT 1')
+    .run('s', 'S', '#8b9bf0', '').lastInsertRowid) as number;
   const ast = db.prepare("INSERT INTO swn_astres (systeme_id, cle, genre, type, orbite, heure, taille) VALUES (?, 'p', 'planete', 'rocheux', 1, 1, 1)").run(sid).lastInsertRowid as number;
   const ins = (genre: string, astre: number | null, orbite: number | null, heure: number | null, secret = 0, cle = 'e') => () =>
     db.prepare('INSERT INTO swn_elements (systeme_id, cle, genre, nom, astre_id, orbite, heure, secret) VALUES (?,?,?,?,?,?,?,?)').run(sid, cle, genre, 'N', astre, orbite, heure, secret);

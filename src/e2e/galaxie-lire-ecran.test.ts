@@ -385,7 +385,7 @@ describe('E-10, droits retirés, trajet sans chemin et nom long', { skip: skipBr
     sql((db) => {
       const g = db.prepare("SELECT galaxie_id, univers_id, id FROM swn_systemes WHERE cle = 'port-sel'").get() as Any;
       db.prepare("UPDATE swn_systemes SET nom = ? WHERE cle = 'hesper'").run(LONG);
-      const r = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, secret) VALUES (?, ?, 'lointain', 'Lointain', 9, -2, 2, 0)").run(g.galaxie_id, g.univers_id);
+      const r = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, secret) VALUES (?, ?, 'lointain', 'Lointain', 9, -2, 0.45, 0)").run(g.galaxie_id, g.univers_id);
       db.prepare('INSERT INTO swn_routes (galaxie_id, univers_id, depuis_id, vers_id, publique, longueur) VALUES (?, ?, ?, ?, 1, 12)')
         .run(g.galaxie_id, g.univers_id, g.id, r.lastInsertRowid);
     });

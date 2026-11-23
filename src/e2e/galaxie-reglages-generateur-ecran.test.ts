@@ -125,7 +125,7 @@ describe('E-24 réglages du générateur : compte avant confirmation, refus, con
     
     // A defined system: the lines of its tables, before and after.
     sql((db) => {
-      const id = Number(db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,1)")
+      const id = Number(db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',0,1)")
         .run(gid, univers, 'rg-defini', 'Défini', 80, 81).lastInsertRowid);
       db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille) VALUES (?,?,?,?,?,?,?,?,?,?)')
         .run(id, 'rg-soleil', 'etoile', null, 0, 'jaune', 'Soleil', 0, 0, 0.3);

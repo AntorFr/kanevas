@@ -79,7 +79,7 @@ describe('E-23 glisser un corps', { skip: skipBrowser, timeout: 900000 }, () => 
     const cartes = (await (await a.page.request.get(`/api/univers/${univers}/cartes`)).json()) as Any;
     gid = Number(String(cartes.cartes.find((c: Any) => c.titre === "Galaxie d'essai").adresse).split('/').pop());
     sql((db) => {
-      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,0)");
+      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',0,0)");
       for (const [cle, nom, p] of [['gl-centre', 'Centre-glisser', O], ['gl-voisin', 'Voisin-glisser', VOISIN]] as const) {
         const id = sys.run(gid, univers, cle, nom, p.q, p.r).lastInsertRowid as number;
         const ast = db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille) VALUES (?,?,?,?,?,?,?,?,?,?)');

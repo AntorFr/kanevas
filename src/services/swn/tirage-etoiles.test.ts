@@ -37,7 +37,7 @@ function monde(opts: { secret?: Set<string> } = {}) {
       .run(g, univers, z.nom, z.nom, z.densite, JSON.stringify(plagesDe(z.hexagones)));
   }
   const poser = (q_: number, r: number, promu: boolean, secret = false) => db.prepare(
-    "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',?,?)")
+    "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,?)")
     .run(g, univers, `s${q_}_${r}`, `S ${q_} ${r}`, q_, r, secret ? 1 : 0, promu ? 1 : 0);
   for (const s of F.systemes_definis) poser(s.q, s.r, s.promu, opts.secret?.has(`${s.q},${s.r}`) ?? false);
   return { db, q, univers, g, a, poser };
@@ -196,12 +196,12 @@ test('0042 : montée depuis 0036, la galaxie à 0.2 passe à 0.68, une autre val
   const avantZones = zones();
   const avantGal = db.prepare('SELECT * FROM swn_galaxies ORDER BY id').all() as any[];
 
-  assert.deepEqual(migrate(db), [37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]);
+  assert.deepEqual(migrate(db), [37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51]);
 
   const apresGal = db.prepare('SELECT * FROM swn_galaxies ORDER BY id').all() as any[];
   assert.deepEqual(apresGal.map((g) => g.densite_defaut), [0.68, 0.5, 0.21, 0, 0.68]);
   assert.deepEqual(apresGal.map((g) => ({ ...g, densite_defaut: 0 })), avantGal.map((g) => ({ ...g, densite_defaut: 0 })), 'rien d\'autre ne bouge (version comprise)');
-  assert.deepEqual(zones(), avantZones, 'les zones restent, une zone à 0.2 aussi');
+  assert.deepEqual(zones(), avantZones.map((z: any) => ({ ...z, affichage_defaut: 1 })), 'les zones restent, une zone à 0.2 aussi (affichage_defaut vaut 1)');
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   assert.deepEqual(migrate(db), []);
 });

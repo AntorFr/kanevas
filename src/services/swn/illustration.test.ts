@@ -39,7 +39,7 @@ function monde() {
       .run(g, univers, z.nom, z.nom, z.densite, JSON.stringify(plagesDe(z.hexagones)));
   }
   const poser = (q_: number, r: number, secret = false) =>
-    db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',?,0)")
+    db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,0)")
       .run(g, univers, `s${q_}_${r}`, `S ${q_} ${r}`, q_, r, secret ? 1 : 0).lastInsertRowid as number;
   const astre = (sid: number, cle: string, type: string, aspect = '{}') =>
     db.prepare("INSERT INTO swn_astres (systeme_id, cle, genre, type, orbite, heure, taille, aspect) VALUES (?,?,'planete',?,1,3,0.1,?)").run(sid, cle, type, aspect).lastInsertRowid as number;

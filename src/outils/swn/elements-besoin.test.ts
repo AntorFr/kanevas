@@ -41,7 +41,7 @@ async function monde() {
   for (const t of ['swn_routes', 'swn_zones', 'swn_systemes']) app.db.prepare(`DELETE FROM ${t} WHERE galaxie_id=?`).run(g);
   const systeme = (cle: string, q: number, r: number, secret: number) => {
     const s = app.db.prepare(
-      "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',?,0)")
+      "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,0)")
       .run(g, E, cle, cle === 'ouvert' ? 'Vael' : 'Caché', q, r, secret).lastInsertRowid as number;
     const astre = (c: string, genre: string, type: string, orbite: number, heure: number) =>
       app.db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, type, orbite, heure, taille) VALUES (?,?,?,?,?,?,1)').run(s, c, genre, type, orbite, heure);
@@ -310,7 +310,7 @@ test('0044 : la montée depuis le schéma précédent garde les lignes existante
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'antor', ?)").run(d);
   db.prepare("INSERT INTO univers (id, cle, nom, cree_le) VALUES (1, 'uu', 'U', ?)").run(d);
   db.prepare("INSERT INTO swn_galaxies (id, univers_id, titre, visible, graine, densite_defaut, version) VALUES (1, 1, 'G', 1, 'abc', 0.68, 1)").run();
-  db.prepare("INSERT INTO swn_systemes (id, galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (1, 1, 1, 's', 'S', 1, 2, 3, 'accent', '', 0, 1)").run();
+  db.prepare("INSERT INTO swn_systemes (id, galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (1, 1, 1, 's', 'S', 1, 2, 0.75, '#8b9bf0', '', 0, 1)").run();
   db.prepare("INSERT INTO swn_astres (id, systeme_id, cle, genre, type, orbite, heure, taille) VALUES (1, 1, 'p', 'planete', 'rocheux', 2, 4, 1)").run();
   assert.equal(db.prepare("SELECT count(*) n FROM sqlite_master WHERE name = 'swn_elements'").get().n, 0);
   const avant = [db.prepare('SELECT * FROM swn_systemes').all(), db.prepare('SELECT * FROM swn_astres').all()];

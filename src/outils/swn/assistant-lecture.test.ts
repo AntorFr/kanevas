@@ -42,7 +42,7 @@ function monde() {
   const lisible = fiche('Port public', true);
   const cachee = fiche('Port du MJ', false);
   const poser = (c: { q: number; r: number }, nom: string, secret: boolean) => db.prepare(
-    "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',?,0)")
+    "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,0)")
     .run(g, univers, `s${c.q}`, nom, c.q, c.r, secret ? 1 : 0).lastInsertRowid as number;
   const sid = poser(DEF, 'Port défini', false);
   const astre = (cle: string, genre: string, type: string, o: Record<string, unknown>) => db.prepare(

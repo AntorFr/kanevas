@@ -27,7 +27,7 @@ test('0029 : montée depuis 0028, la colonne plages apparaît, nulle, et la zone
   db.prepare("INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, secret) VALUES (1, 1, 'z', 'Z', '[[0,0],[1,0],[0,1]]', 'accent', 0)").run();
   const avant = db.prepare('SELECT * FROM swn_zones').all() as Record<string, unknown>[];
 
-  assert.deepEqual(migrate(db), [29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]);
+  assert.deepEqual(migrate(db), [29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51]);
 
   const plages = colonnes(db).find((c) => c.name === 'plages');
   assert.ok(plages, 'la colonne plages existe');
@@ -36,7 +36,7 @@ test('0029 : montée depuis 0028, la colonne plages apparaît, nulle, et la zone
   assert.equal(apres.length, avant.length);
   assert.equal(apres[0]!.plages, null);
   assert.equal(apres[0]!.contour, '[[0,0],[1,0],[0,1]]');
-  const { plages: _p, ...reste } = apres[0]!;
+  const { plages: _p, affichage_defaut: _a, ...reste } = apres[0]!;
   assert.deepEqual(reste, avant[0]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
 });

@@ -31,7 +31,7 @@ function monde() {
   const g = q('SELECT id FROM swn_galaxies WHERE univers_id = ?', univers)[0].id as number;
   const a = (u: string, modeJoueur = false) => ({ compteId: cid(u), modeJoueur });
   const { q: hq, r: hr } = q0;
-  const sid = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,'s','S',?,?,3,'accent','',0,0)")
+  const sid = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,'s','S',?,?,0.75,'#8b9bf0','',0,0)")
     .run(g, univers, hq, hr).lastInsertRowid as number;
   const astre = (cle: string, nom: string | null, fiche: number | null) =>
     db.prepare("INSERT INTO swn_astres (systeme_id, cle, genre, type, orbite, heure, taille, aspect, nom, fiche_id) VALUES (?,?,'planete','rocheux',1,3,0.1,'{}',?,?)").run(sid, cle, nom, fiche);

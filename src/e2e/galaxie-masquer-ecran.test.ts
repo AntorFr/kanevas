@@ -53,7 +53,7 @@ describe('E-21 masquer un système : « Secret (MJ seul) » du panneau, case vid
       const id = Number(db.prepare(`INSERT INTO swn_galaxies (univers_id, titre, visible, graine, densite_defaut)
         VALUES (?, 'Galaxie du secret', 1, 'masquage-14', (SELECT densite_defaut FROM swn_galaxies WHERE univers_id = ? LIMIT 1))`).run(univers, univers).lastInsertRowid);
       const sys = db.prepare(`INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret)
-        VALUES (?, ?, ?, ?, ?, ?, 2, 'ambre', 'Inventé.', 0)`);
+        VALUES (?, ?, ?, ?, ?, ?, 0.45, '#f2a33c', 'Inventé.', 0)`);
       sys.run(id, univers, 'aube', 'Aube', 5, -4);
       sys.run(id, univers, 'brume', 'Brume', 1, -3);
       return id;

@@ -9,6 +9,7 @@ process.env.NODE_ENV = 'test';
 process.env.KANEVAS_STUB = '1';
 const { migrate, openDb } = await import('../../db/db.js');
 const { semerBouchon } = await import('../../bouchon/depart.js');
+const { ancienSchema } = await import('../../db/semis-ancien.js');
 const { avantSemis, apresSemis } = await import('../../db/jetons-pour-semis.js');
 
 const TABLES = ['coques', 'moteurs', 'amenagements', 'defenses', 'armes', 'modifications', 'exemples'];
@@ -33,14 +34,14 @@ test('0029 : montée depuis 0028 avec le semis, comptes inchangés, colonnes nou
   db.exec('ALTER TABLE univers ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN creee_via TEXT; ALTER TABLE sections ADD COLUMN cle TEXT');
   db.exec('CREATE TABLE cles_anciennes (univers_id, cle, fiche_id); CREATE TABLE univers_cles_anciennes (cle, univers_id)');
   avantSemis(db);
-  semerBouchon(db);
+  semerBouchon(ancienSchema(db));
   apresSemis(db);
   db.exec('DROP TABLE cles_anciennes; DROP TABLE univers_cles_anciennes; ALTER TABLE univers DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN creee_via; ALTER TABLE sections DROP COLUMN cle');
   db.exec('ALTER TABLE swn_conceptions DROP COLUMN equipage'); stub('DROP COLUMN');
   const comptes = () => TABLES.map((t) => (db.prepare(`SELECT COUNT(*) n FROM swn_catalogue_${t}`).get() as any).n as number);
   const avant = comptes();
   assert.ok(avant.every((n) => n > 0));
-  assert.deepEqual(migrate(db), [29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]);
+  assert.deepEqual(migrate(db), [29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51]);
   assert.deepEqual(comptes(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   for (const [t, cs] of Object.entries(NOUVELLES)) for (const c of cs) {

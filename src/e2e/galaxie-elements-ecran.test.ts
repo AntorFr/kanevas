@@ -49,7 +49,7 @@ describe('E-23 éléments : le MJ place, déplace et réserve ; la joueuse ne vo
     gid = Number(String(cartes.cartes.find((c: Any) => c.titre === "Galaxie d'essai").adresse).split('/').pop());
     await a.ctx.close();
     sql((db) => {
-      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,1)");
+      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',0,1)");
       const ast = db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille) VALUES (?,?,?,?,?,?,?,?,?,?)');
       const el = db.prepare('INSERT INTO swn_elements (systeme_id, cle, genre, nom, astre_id, orbite, heure, aspect, secret) VALUES (?,?,?,?,?,?,?,?,?)');
       const aspect = (icone: string, couleur: string) => JSON.stringify({ icone, couleur });
