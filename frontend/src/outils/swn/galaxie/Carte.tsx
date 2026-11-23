@@ -487,7 +487,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
 function fusion(d: Donnees, v: VueBlocs, demandes: string[], vue: Vue): Donnees {
   const blocs = new Map(d.blocs);
   for (const k of demandes) blocs.set(k, []);
-  for (const b of v.blocs) blocs.set(cleBloc(b.bx, b.by), b.generes);
+  for (const b of v.blocs) blocs.set(cleBloc(b.bx, b.by), b.generes.map(([q, r]) => [q, r] as [number, number]));
   if (blocs.size > BLOCS_GARDES) {
     const q0 = (RACINE_3 / 3) * vue.vx - vue.vy / 3;
     const r0 = (2 / 3) * vue.vy;

@@ -6,9 +6,10 @@ import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { Bouton } from '../../../ui';
 import { CommutateurMasque } from './Masquer';
 import { cases, distanceHex } from './geo';
+import { tailleNom } from './ecriture';
 import type { PanneauSysteme, Reference, Resultat, VueTrajet } from './types';
 
-const TAILLES: Record<number, string> = { 1: 'Petite', 2: 'Moyenne', 3: 'Grande' };
+const TAILLES: Record<string, string> = { petite: 'Petite', moyenne: 'Moyenne', grande: 'Grande' };
 
 
 /** The search of readable systems: from 2 characters, the latest query wins. */
@@ -157,7 +158,7 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
     <section className="gx-bloc gx-panneau" aria-label="Système sélectionné">
       <div className="gx-tete"><h2>{s.nom}</h2>{estSecret && <span className="pastille mj">MJ seul</span>}</div>
       <dl className="gx-kv">
-        <dt>Taille</dt><dd>{TAILLES[s.taille] ?? `Taille ${s.taille}`}</dd>
+        <dt>Taille</dt><dd>{TAILLES[tailleNom(s.taille)]}</dd>
         {s.notes !== '' && <><dt>Notes</dt><dd className="gx-notes">{s.notes}</dd></>}
         {d !== null && mesure && <><dt>Distance</dt><dd>{cases(d)} depuis {mesure.nom}</dd></>}
         {s.routes.length > 0 && <><dt>Routes</dt><dd><ul className="gx-routes">{s.routes.map((r) => <li key={r.avec.cle}>{r.avec.nom} · {cases(r.longueur)}</li>)}</ul></dd></>}
