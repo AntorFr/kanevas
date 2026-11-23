@@ -5268,7 +5268,7 @@ Vocabulary: a **belt** is the drawing of a ring formation (list label « Anneau 
 Criteria (this slice):
 - Given a system with a ring and a cloud on a neutral fixture, the ring is drawn as at least 800 grains all between its two radii and the cloud as gas with asteroids (rocks of at least two materials), in both themes, desktop and 390 px; reloading draws the same grains and the same stars (B-115).
 - Given a system with a `voile`, the sky is tinted by it and the neutral sky of a system with none is not; for Léa (Player) it is the same as for Antor (GM); given a system Léa may not read, nothing of it answers (the same « Page introuvable. »).
-- Given a zoom from 0,5× to 4×, the stars and the grains keep their pixel size (the canvas carries the attributes `data-ceinture-grains` and `data-ceinture-rayon` — the grain count of the densest belt and the mean grain radius in pixels, one number each, not shown on screen — read by the test; the radius is equal at every zoom) (the sky does not grow) and the hour marks stay on the rim, never across a body.
+- Given a zoom from 0,5× to 4×, the stars and the grains keep their pixel size (the canvas carries the attributes `data-ceinture-grains`, `data-ceinture-rayon` and `data-etoiles-rayon` — the grain count of the densest belt, the mean grain radius and the mean star radius in pixels, one number each, not shown on screen — read by the test; both radii are equal at every zoom) (the sky does not grow) and the hour marks stay on the rim, never across a body.
 - Given a belt with `rochers` 0 and a cloud with none, a belt of the minimum grains and a gas with no rock are drawn, with no error.
 - Given the twelve hour marks, no body name overlaps one of them (the labels move off, as for the jump arrows).
 
