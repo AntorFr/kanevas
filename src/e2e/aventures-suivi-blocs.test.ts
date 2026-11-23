@@ -202,7 +202,8 @@ test('plus de 100 CR : 100 lignes puis « Charger la suite » ; l’échec de la
   await p.unroute('**/api/univers/*/comptes-rendus?*curseur=*');
   await suite.click();
   await crs(p).getByRole('link', { name: /Séance 12/ }).waitFor();
-  assert.equal(await crs(p).locator('li').count(), 101);
+  // 101 lines of the campaign + the descending line of the scenario « Acte II » (AD-cr-aventure-3)
+  assert.equal(await crs(p).locator('li').count(), 102);
   assert.equal(await suite.count(), 0);
 });
 
