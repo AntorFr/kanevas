@@ -901,7 +901,7 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | Reference setting | Core key | Conversion |
 |---|---|---|
 | sea level `mer` | `mer` | table by measurement (a measured correspondence, never below the core's 5 % floor); « no sea » = a `mer` of 0 plus palette without water |
-| cloud cover `nuages` | `nuages` | table by measurement (0.9 of the reference is a covered sky; the core's curve reaches 57 %); the core's curve is widened to a full veil |
+| cloud cover `nuages` | `nuages` | table by measurement (0.9 of the reference is a covered sky; the core's curve reaches 57 %); the core's curve is widened to a full veil (at `nuages` 1 the veil covers at least 90 % of the disc, measured) |
 | `calottes` (latitude where ice begins; 1.2 = none) | `calottes` (a quantity) | `calottes = clamp((1 − latitude) / 0.28, 0, 1)` |
 | `relief` | `relief` | ≈ 0.6 × reference, bound of the validator aligned on the engine's [0, 2] |
 | named palettes (`terre`, `ocean`, `glace`, `roche`, `couleurs`, `croute`, `jour`/`nuit`/`crepuscule`) | `palette` | sampled to 1–16 colours in the order the core reads (ice is read upside down) |
