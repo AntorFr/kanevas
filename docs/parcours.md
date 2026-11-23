@@ -706,10 +706,9 @@ Nothing of Éneria enters this repository (AD-131): captures, atlas and comparis
   in both themes. **The background aggregates with the zoom**: dust tiles of 700 px; detail veils (three per tile, then two, then one as the
   zoom goes out); large tinted regions in tiles of 3200 px fading in under the middle zoom (eight tints); the ambience of a zone from its
   colour, never from a hidden system. *(P-28)*
-- **B-118** — *Zones and routes.* Each zone of the galaxy (the polygonal areas; the rings and clouds of a system are called *formations*) has a colour and a switch **« Displayed when the map opens »** (`affichage_defaut`, the GM's, with the
-  reference's values for the atlas: the asteroid belt and the pirates shown, Vael'Korr and the Ancients hidden); the map offers « all / none /
-  default » (a screen state). A route is drawn in the colour and stroke of its type (public, private, pirate…); the labels of the types
-  keep « Private » and « GM only » apart (the reference confuses them). Touching the **void** of a zone selects nothing (it opens no form);
+- **B-118** — *Zones and routes.* Each zone of the galaxy (the polygonal areas; the rings and clouds of a system are called *formations*) has a colour and a switch **« Affichée à l'ouverture de la carte »** (`affichage_defaut`, the GM's, with the
+  reference's values for the atlas: the asteroid belt and the pirates shown, Vael'Korr and the Ancients hidden); the map offers « Par défaut / Toutes / Aucune » (a screen state). A route is drawn in the colour and stroke of its type (public, private, pirate…); the labels of the types
+  keep « Privée » (a type) and « MJ seul » (a visibility) apart (the reference confuses them). Touching the **void** of a zone selects nothing (it opens no form);
   on a system map, a click on a formation (ring, cloud) opens its panel, with its illustration (B-119). *(P-28)*
 - **B-119** — *Navigate by previews.* From the galaxy panel, the portrait of a system opens it (« Enter the system »), as does a double click; from
   a system, a jump point shows the neighbour's portrait and enters it; « Galaxy » and « Another system » leave it; a body shows its illustration
@@ -1355,9 +1354,9 @@ absent for Léa, and so are its name and its route.
 ### P-28 — Cross the galaxy (Antor, GM; Léa, Player — `kanevas-carte-rendu`)
 
 The galaxy opens on the whole known zone, centred, with the names of the defined systems, differing in size and colour; the drawn stars show their class.
-In the map, Antor chooses « Zones » (all, none, default) and sees the Pirates zone in red, routes in the colour of their type; he types « Lyb » in the
+In the map, Antor chooses « Zones » (« Par défaut », « Toutes », « Aucune ») and sees the Pirates zone in red, routes in the colour of their type; he types « Lyb » in the
 search and the map goes there. *Moment fort:* he double-clicks a system: it opens on its map; « Galaxy » brings him back to where he was. In « travel » mode he
-picks two systems and reads the duration by engine. Léa sees only what the GM lets her see (B-97). *Failure path:* a hidden zone does not hide the routes that cross it from the list; no system → the empty sky says so.
+picks two systems and reads the duration by engine. Léa sees only what the GM lets her see (B-97): she too has « Zones », opens the map on the zones the GM marked to open with it, reads the legend of the four route types (no « MJ seul » line), and a click in the void of a zone selects nothing. *Failure path:* a hidden zone does not hide the routes that cross it from the list; no system → the empty sky says so; a zone block that does not arrive → « Impossible de charger une partie de la carte. ».
 
 ### P-29 — Share a place (Léa, Player; Antor, GM — `kanevas-carte-rendu`)
 
@@ -1366,7 +1365,7 @@ secret body gives « Page introuvable. », byte for byte like an unknown one.
 
 ### P-30 — Prepare and correct the map (Antor, GM; his script)
 
-In « create / edit » mode Antor places a system, draws a route, moves a body by hand (B-121). On a defined system he sets its **star** — class, continuous size, optional free colour — in the system's dialogue (B-117), and on each zone of the galaxy the switch « Displayed when the map opens » (B-118). His atlas script pushes the new
+In « create / edit » mode Antor places a system, draws a route, moves a body by hand (B-121). On a defined system he sets its **star** — class, continuous size, optional free colour — in the system's dialogue (B-117), and on each zone of the galaxy the switch « Affichée à l'ouverture de la carte » (B-118). His atlas script pushes the new
 format (B-122) and the bodies' settings; the report names the settings that stay unrendered. *Moment fort:* the recipe: both maps side by side at the same framing, and Monsieur judges (B-123).
 
 ### The battle map (`kanevas-battlemap`)
@@ -1581,7 +1580,7 @@ and not the station. Antor can cancel the hiding dialogue (nothing is written), 
 
 - **Modes** (B-121): consult (default), travel, create / edit (GM); « factions » stays with `kanevas-factions`.
 - **Reach of a jump**: Kanevas's, 5 + 5 × engine; the reference panel (5 × engine) is corrected on its side.
-- **Zones**: a switch per zone, « Displayed when the map opens » (`affichage_defaut`), with the reference's values (belt and pirates shown, Vael'Korr and the Ancients hidden) (B-118).
+- **Zones**: a switch per zone, « Affichée à l'ouverture de la carte » (`affichage_defaut`), with the reference's values (belt and pirates shown, Vael'Korr and the Ancients hidden) (B-118).
 - **A defined system**: a star class and a continuous size, a drawn star of that class; with no class, drawn from its key and its size; an optional free colour (data) over the class; Vortexis = its class and colour (B-117). Replaces « one colour of six, three sizes ».
 - **Night side**: Kanevas draws cities and glow with `force_lueur` (B-124); the earlier « lights of the night side stay out » is lifted.
 - **Proposed-out lines**: dropped are CS-8 (sites in orbit, now sent as bodies), CG-18 (Factions), CG-19 (travellers off route), CG-28 (a fixed halo, no setting). **Kept against the proposal**: the portraits of systems (the reference's painted thumbnail, composed on the guarded read) and the illustrations of zones in the zone panel (B-119), with every illustration setting.
