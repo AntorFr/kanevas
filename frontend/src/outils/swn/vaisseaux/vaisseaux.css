@@ -128,3 +128,10 @@
 .vx-capacites li { overflow-wrap: anywhere; }
 .vx-dont { display: flex; flex-direction: column; gap: var(--e-1); margin-top: var(--e-3); }
 .vx-dont-nom { color: var(--texte-2); font-size: var(--t-13); }
+/* H-mods-1: a result row of the modifications spans the grid and wraps between words, its figure whole; the refit stepper and its « sur n ». */
+.vx-chiffre-large { grid-column: 1 / -1; }
+.vx-chiffre-large dd { overflow-wrap: break-word; }
+.vx-integre { flex-basis: 100%; display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-1) var(--e-2); }
+.vx-integre-nom { color: var(--texte-2); font-size: var(--t-13); }
+.vx-integre-sur { color: var(--texte-2); font-size: var(--t-13); white-space: nowrap; }
+.vx-maintenance { margin-top: var(--e-2); }

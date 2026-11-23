@@ -20,6 +20,8 @@ export interface Ligne {
   cibles?: { nature: string; cle: string; quantite: number }[];
   /** Draft only (E-22): one entry per installation, `nature/cle` or `''` while not chosen. */
   rangees?: string[];
+  /** H-9: of a modification line's installations, those rebuilt into the hull (0..quantite); absent reads 0. */
+  integre?: number;
   /** X-3, from the server's result only: the line's own cost (a percentage line) and the exchange's deltas. */
   cout?: number;
   echange?: { puissance: number; masse: number };
@@ -51,6 +53,11 @@ export interface Resultat {
   fraisEquipage?: { jour: number; robots: number } | null;
   /** The divisor the price was divided by; absent = 1. */
   diviseurPrix?: number;
+  /** H-mods-1: absent or `null` in a result stored before the slice; the browser only formats them (V-5). */
+  composants?: number | null;
+  installation?: { jours: number; joursChantier: number } | null;
+  maintenance?: number | null;
+  refonte?: { cout: number; composants: number } | null;
   alertes: Alerte[];
 }
 
@@ -63,6 +70,8 @@ export interface Conception {
   /** H-5: of the crew, the player characters and the robots, as stored (absent before the slice). */
   pj?: number;
   robots?: number;
+  /** H-mods-1: the engineer's Int + Con modifier, as stored (absent before the slice, read 0). */
+  modIntCon?: number;
   alertes: Alerte[];
   version: number;
   perime: boolean;
@@ -141,6 +150,8 @@ export interface Brouillon {
   /** H-5: « dont joueurs » and « dont robots », whole numbers 0 to the crew; 0 is not sent. */
   pj: number;
   robots: number;
+  /** H-mods-1: « Modificateurs Int + Con », −10 to 10; 0 is not sent. */
+  modIntCon: number;
 }
 
 export const NATURES: { nature: Nature; titre: string; singulier: string; ajout: string }[] = [

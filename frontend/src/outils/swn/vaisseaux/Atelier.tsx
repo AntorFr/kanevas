@@ -6,7 +6,7 @@ import { appeler, ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { useTitreAriane } from '../../../cadre-contexte';
 import { Bouton, BoiteDialogue, Chargement, ErreurChargement, PageIntrouvable, Pastille } from '../../../ui';
 import { Equipage } from './Equipage';
-import { bornesEquipage, brouillonDe, choixDe, credits, estAutomatisation, exigeReparation, legende, ligneAjuste, memeBrouillon, motifDe, requete } from './format';
+import { bornesEquipage, brouillonDe, choixDe, credits, estAutomatisation, exigeReparation, legende, ligneAjuste, memeBrouillon, motifDe, nombre, requete, entierSigne } from './format';
 import { Effets } from './Effets';
 import { Alertes, Chiffres, ErreurCalcul } from './Resultats';
 import { Selecteur } from './Selecteur';
@@ -167,12 +167,14 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
       if (x !== l) return x;
       const q = Math.max(1, Math.min(99, x.quantite + delta));
       // The rows follow the quantity: a new one is empty, the last ones leave with their choice.
-      return { ...x, quantite: q, ...(x.rangees ? { rangees: Array.from({ length: q }, (_, k) => x.rangees![k] ?? '') } : {}) };
+      return { ...x, quantite: q, ...(x.integre === undefined ? {} : { integre: Math.min(x.integre, q) }), ...(x.rangees ? { rangees: Array.from({ length: q }, (_, k) => x.rangees![k] ?? '') } : {}) };
     }) }));
   const retirer = (l: Ligne) => {
     marquer(`points/${l.nature}/${l.cle}`, false);
+    marquer(`integre/${l.cle}`, false);
     change((b) => ({ ...b, lignes: b.lignes.filter((x) => x !== l) }));
   };
+  const integrer = (l: Ligne, n: number) => change((b) => ({ ...b, lignes: b.lignes.map((x) => (x === l ? { ...x, integre: n } : x)) }));
   const points = (l: Ligne, n: number) => change((b) => ({ ...b, lignes: b.lignes.map((x) => (x === l ? { ...x, points: n } : x)) }));
   const viser = (l: Ligne, valeur: string) => change((b) => ({
     ...b,
@@ -206,7 +208,9 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   const classe = resultat.coque.classe;
   // The repair block (B-83): a chosen element asks for a skill, the server's result carries one, or the design has one above 0.
   const demandeReparation = brouillon.lignes.some((l) => exigeReparation(infos[`${l.nature}/${l.cle}`]?.el.donnees));
-  const blocReparation = demandeReparation || resultat.reparation != null || brouillon.reparation > 0;
+  const avecMods = brouillon.lignes.some((l) => l.nature === 'modifications');
+  const integrees = brouillon.lignes.reduce((n, l) => (l.nature === 'modifications' ? n + Math.min(l.integre ?? 0, l.quantite) : n), 0);
+  const blocReparation = demandeReparation || resultat.reparation != null || brouillon.reparation > 0 || avecMods;
   const reparationAffichee = brouillon.reparation;
   // « dont robots » (H-5): disabled with its muted line while no chosen line is the automation system and no robot is set (display only; the alert is the server's).
   const automatisation = brouillon.lignes.some((l) => l.quantite > 0 && estAutomatisation(infos[`${l.nature}/${l.cle}`]?.el.donnees));
@@ -236,7 +240,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
         setRefus(`Enregistrement refusé : ${premiere ? motifDe(premiere) : 'conception bloquée'}.`);
         setEssaiCalcul((n) => n + 1);
       } else if (e instanceof ErreurApi && e.statut === 403) setRefus('Enregistrement refusé : vous ne pouvez pas modifier cette conception.');
-      else setRefus('Enregistrement impossible.');
+      else setRefus('L’action n’a pas abouti. Réessayez.');
     } finally {
       setEnregistrement(false);
     }
@@ -352,7 +356,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
           </h2>
           <div className="vx-defile">
           <div className={estompe ? 'vx-estompe' : undefined} data-estompe={estompe || undefined}>
-            <Chiffres r={resultat} station={donneesCoque ? donneesCoque.moteur_spike === 0 : null} />
+            <Chiffres r={resultat} station={donneesCoque ? donneesCoque.moteur_spike === 0 : null} modifications={avecMods} integrees={integrees} />
           </div>
           {etatCalcul === 'erreur' && <ErreurCalcul onReessayer={() => setEssaiCalcul((n) => n + 1)} />}
           <div className="vx-alertes-zone"><Alertes alertes={alertes} /></div>
@@ -428,6 +432,23 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
               ) : (
                 <p className="vx-lu">Compétence de réparation : {reparationAffichee}</p>
               )}
+              {avecMods && (
+                <>
+                  {ecriture ? (
+                    <div className="vx-dont">
+                      <span className="vx-dont-nom">Modificateurs Int + Con</span>
+                      <Equipage
+                        key={`mic-${cleEquipage}`} nom="Modificateurs Int + Con" minimum={-10} maximum={10} valeur={brouillon.modIntCon} bornes="" lecture={false} desactive={verrou}
+                        diminuer="Diminuer : Modificateurs Int + Con" augmenter="Augmenter : Modificateurs Int + Con"
+                        onChange={(n) => change((b) => ({ ...b, modIntCon: n }))} onInvalide={(v) => marquer('modIntCon', v)}
+                      />
+                    </div>
+                  ) : (
+                    <p className="vx-lu">Modificateurs Int + Con : {entierSigne(brouillon.modIntCon)}</p>
+                  )}
+                  {resultat.maintenance != null && <p className="vx-lu vx-maintenance">Maintenance : {nombre(resultat.maintenance)}</p>}
+                </>
+              )}
             </div>
           )}
           {NATURES.map((n) => {
@@ -483,6 +504,20 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                           ecriture={ecriture} verrou={verrou} cle={cleEquipage}
                           onPoints={(n) => points(l, n)} onInvalide={(v) => marquer(`points/${l.nature}/${l.cle}`, v)} onVise={(v) => viser(l, v)}
                         />
+                        {l.nature === 'modifications' && (ecriture ? (
+                          <div className="vx-integre">
+                            <span className="vx-integre-nom">Intégrées à la coque</span>
+                            <Equipage
+                              key={`int-${l.cle}-${cleEquipage}`} nom="Intégrées à la coque" etiquette={`Intégrées à la coque : ${l.nom}`} maximum={l.quantite}
+                              valeur={Math.min(l.integre ?? 0, l.quantite)} bornes="" lecture={false} desactive={verrou}
+                              diminuer={`Diminuer les intégrées à la coque : ${l.nom}`} augmenter={`Augmenter les intégrées à la coque : ${l.nom}`}
+                              onChange={(n) => integrer(l, n)} onInvalide={(v) => marquer(`integre/${l.cle}`, v)}
+                            />
+                            <span className="vx-integre-sur">sur {l.quantite}</span>
+                          </div>
+                        ) : Math.min(l.integre ?? 0, l.quantite) > 0 && (
+                          <p className="vx-lu vx-integre">Intégrées à la coque : {Math.min(l.integre ?? 0, l.quantite)} sur {l.quantite}</p>
+                        ))}
                       </li>
                     ))}
                   </ul>

@@ -1,9 +1,17 @@
 import { Bouton } from '../../../ui';
-import { AIDES, ligneCapacite, vitesseLue, credits, entretien, jours, masse, nombre } from './format';
+import { AIDES, ligneCapacite, ligneInstallation, ligneRefonte, vitesseLue, credits, entretien, jours, masse, nombre } from './format';
 import type { Alerte, Resultat } from './types';
 
+const LARGES = new Set(['Installation', 'Refonte']);
+
 /** The figures of a result, with the labels of the text version (V-6). */
-export function Chiffres({ r, station = false }: { r: Resultat; station?: boolean | null }) {
+export function Chiffres({ r, station = false, modifications = false, integrees = 0 }: {
+  r: Resultat;
+  station?: boolean | null;
+  /** The draft has a modification line / refits at least one installation: only decides whether a row shows, the figures are the server's (V-5). */
+  modifications?: boolean;
+  integrees?: number;
+}) {
   const lignes: [string, string][] = [
     ['Prix', r.diviseurPrix != null && r.diviseurPrix !== 1 ? `${credits(r.prix)} (÷${r.diviseurPrix})` : credits(r.prix)],
     ['Chantier', jours(r.chantierJours)],
@@ -19,6 +27,10 @@ export function Chiffres({ r, station = false }: { r: Resultat; station?: boolea
     ['Puissance libre', nombre(r.puissanceLibre)],
     ['Masse libre', masse(r.masseLibre)],
     ['Emports', `${r.emports.utilises} / ${r.emports.total}`],
+    // H-mods-1: each row is absent when the result does not carry it (a design saved before the slice) or the design has nothing to say.
+    ...(r.composants != null && r.composants > 0 ? [['Composants prétech', nombre(r.composants)] as [string, string]] : []),
+    ...(modifications && r.installation != null ? [['Installation', ligneInstallation(r.installation)] as [string, string]] : []),
+    ...(integrees > 0 && r.refonte != null ? [['Refonte', ligneRefonte(r.refonte)] as [string, string]] : []),
   ];
   const couts = [
     ...(r.fraisEquipage != null ? [`Équipage : ${credits(r.fraisEquipage.jour)}/jour`] : []),
@@ -29,7 +41,7 @@ export function Chiffres({ r, station = false }: { r: Resultat; station?: boolea
     <>
       <dl className="vx-chiffres">
         {lignes.map(([k, v]) => (
-          <div key={k} className="vx-chiffre">
+          <div key={k} className={LARGES.has(k) ? 'vx-chiffre vx-chiffre-large' : 'vx-chiffre'}>
             <dt>{k}</dt>
             <dd className={k === 'Puissance libre' && r.puissanceLibre < 0 || k === 'Masse libre' && r.masseLibre < 0 ? 'negatif' : undefined}>{v}</dd>
           </div>
