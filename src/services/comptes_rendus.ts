@@ -1,12 +1,12 @@
 import { ecrire } from './historique.js';
 import type { Db } from '../db/db.js';
-import { aventureLue, campagneDuCompteRendu, exigerMJ, exigerRole } from './droits.js';
+import { aventureLue, campagneDuCompteRendu, exigerMJ, exigerRole, peutVoirFiche, vueMJ } from './droits.js';
 import { tirerCleFiche } from './cles.js';
-import { introuvable, invalide } from './erreurs.js';
-import { LIMITE_LISTE, lireFiche, validerTitre } from './fiches.js';
+import { introuvable, invalide, refuse } from './erreurs.js';
+import { LIMITE_LISTE, chargerFiche, lireFiche, validerTitre, versFiche } from './fiches.js';
 import { preparerContenu } from './liens.js';
 import { exigerSansBloc, insererSection, validerContenu } from './sections.js';
-import type { Acteur, FicheVue } from './types.js';
+import type { Acteur, Fiche, FicheVue } from './types.js';
 import type { CampagneVue } from './droits.js';
 
 export const TITRE_SECTION_COMPTE_RENDU = 'Compte-rendu';
@@ -68,6 +68,35 @@ export function creerCompteRendu(
     return id;
   });
   return lireFiche(db, { compteId }, universId, ficheId);
+}
+
+/**
+ * The GM moves a session report to another adventure of the same universe (AD-cr-aventure-1): only
+ * `charge.campagne_id` is written. Same guards as `changerStatutFiche`; the target is read with
+ * `aventureLue` (as at creation); the same adventure writes nothing, so no history line.
+ */
+export function changerAventureDuCompteRendu(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  campagneId: unknown,
+): Fiche {
+  const role = exigerRole(db, universId, acteur.compteId);
+  const fiche = chargerFiche(db, universId, ficheId);
+  if (role !== 'mj' && !peutVoirFiche(db, role, ficheId, acteur)) throw introuvable();
+  if (!vueMJ(role, acteur)) throw refuse();
+  if (fiche.type !== 'compte_rendu') throw invalide('Cette fiche n\'est pas un compte-rendu.');
+  if (typeof campagneId !== 'number' || !Number.isSafeInteger(campagneId)) throw introuvable();
+  if (!aventureLue(db, role, acteur, universId, campagneId)) throw introuvable();
+  const charge = JSON.parse(fiche.charge) as Record<string, unknown>;
+  if (charge.campagne_id !== campagneId) {
+    ecrire(db, acteur.compteId, () =>
+      db.prepare('UPDATE fiches SET charge = ? WHERE id = ?')
+        .run(JSON.stringify({ ...charge, campagne_id: campagneId }), ficheId),
+    );
+  }
+  return versFiche(chargerFiche(db, universId, ficheId));
 }
 
 export type CompteRenduResume = {

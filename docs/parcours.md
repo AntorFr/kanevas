@@ -766,7 +766,7 @@ the frame says « Image indisponible. » and keeps « Remplacer » and « Retire
    publish it — it opens as a **sheet** (E-9) of type session report, which names the adventure.
 3. They edit it later; others read it from the adventure or the **report list**
    (E-13).
-   *(`kanevas-cr-aventure`)* Filed under the wrong adventure, a report is **moved by the GM** from its sheet (« Changer d'aventure… », E-9): it keeps its address, its relations and the links that aim at it. Under a campaign, the reports of all its scenarios, however deep, show on its page with the scenario's name.
+   *(`kanevas-cr-aventure`)* Maëlle, the GM, finds a report filed under the whole campaign instead of its scenario: she opens it, « Changer d'aventure… » (E-9), picks the scenario and confirms; the « Campagne » line names it at once and the report keeps its address, its relations and the links that aim at it. If the write fails, the dialog says so and keeps her choice; if the scenario was deleted meanwhile, it says « Introuvable. » and offers the list again. Under a campaign, the reports of all its scenarios, however deep, show on its page with the scenario's name.
 
 ### P-5 — Update the world after the game (GM)
 1. They read reports (E-13 → E-9).
