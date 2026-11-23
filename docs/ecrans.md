@@ -5227,7 +5227,7 @@ supprimée » (adventure deleted) offers the same button. Failure: « L'action n
 No new component or token: the dialog assembles the dialog frame, search field, radio rows and footer of « Déplacer sous… » (gardien du design system to confirm at the slice).
 
 **The block « Comptes-rendus » of an adventure's sheet** also lists the reports of all its descendant scenarios, at any depth. A line of a scenario's report adds
-the name of its own scenario (a link to its sheet) beside the date; a line of the adventure's own report stays as it is. One list, newest first,
+the name of its own scenario (a link to its sheet, the neutral `badge-type` pill under the title beside the author, as in E-13); a line of the adventure's own report stays as it is. One list, newest first,
 100 then « Charger la suite ». On the sheet of a scenario, nothing changes. A scenario the reader does not read contributes nothing, nor does what is under it (no placeholder, no count).
 
 Cross-check: B-cr-aventure-1 → E-9 line « Campagne », `PATCH /fiches/:fid {campagne}`; B-cr-aventure-4 → E-9 block, `GET /comptes-rendus?campagne=` (same route, wider
