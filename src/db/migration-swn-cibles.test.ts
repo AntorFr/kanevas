@@ -42,11 +42,14 @@ test('0053 : montée depuis 0052, la modification et la conception à vise garde
   const avantV = versionsSource(db, 1);
   assert.ok(avantI.length > 0);
 
-  assert.deepEqual(migrate(db), [53]);
+  assert.deepEqual(migrate(db), [53, 54]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
 
-  assert.deepEqual(db.prepare('SELECT * FROM swn_catalogue_modifications ORDER BY cle').all(), avant);
-  assert.deepEqual(db.prepare('SELECT * FROM swn_conceptions').get(), avantK);
+  // the columns of 0054 (default 0) are not part of what 0053 must keep
+  assert.deepEqual((db.prepare('SELECT * FROM swn_catalogue_modifications ORDER BY cle').all() as any[]).map(({ composants, composants_par_classe, ...r }) => r), avant);
+  const { mod_int_con, ...conception } = db.prepare('SELECT * FROM swn_conceptions').get() as any;
+  assert.equal(mod_int_con, 0);
+  assert.deepEqual(conception, avantK);
   assert.deepEqual(versionsSource(db, 1), avantV);
   assert.deepEqual(indexes(), avantI);
   ins('sd', 'surdimensionne', { limite: 1 });
