@@ -38,7 +38,7 @@ test('.sdlc.yaml déclare la suite : commande, rapport, format tap ou junit, dé
   assert.match(champ('delai') ?? '', /^\d+[mh]$/);
 });
 
-test('la commande déclarée appelle un script qui existe et le rapport déclaré est ignoré par git', () => {
+test('la commande déclarée appelle un script npm qui existe et le rapport déclaré est ignoré par git', () => {
   const tests = bloc(lire('.sdlc.yaml'), 'tests');
   const commande = /^\s+commande:\s*(.+)$/m.exec(tests)?.[1] ?? '';
   const script = /node (\S+\.mjs)/.exec(commande)?.[1];
