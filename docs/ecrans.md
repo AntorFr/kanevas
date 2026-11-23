@@ -5237,9 +5237,9 @@ The controls leave the page header and sit **inside the map**, floating. One mod
 
 | Mode | Who | Controls |
 |---|---|---|
-| Consult (default) | everyone who reads the map | search, names, orbits, hours, routes, zones (all / none / default), recentre, « Full screen » / « Leave full screen » |
-| Travel | everyone | pick a start and an arrival, read the duration by engine (Kanevas's own calculation; the reach of a jump is 5 + 5 × engine; no « factions » mode, `kanevas-factions`) |
-| Create / edit | GM outside Player mode only (not offered otherwise, not refused) | place a system, draw a route, draw a zone, move a body or an element, anchor, remove; each existing write of E-21 / E-23 keeps its dialogue and its refusals |
+| Consult (« Consulter », default) | everyone who reads the map | search, names, orbits, hours, routes, zones (all / none / default), recentre, « Full screen » / « Leave full screen » |
+| Travel (« Voyage ») | everyone | pick a start and an arrival, read the duration by engine (Kanevas's own calculation; the reach of a jump is 5 + 5 × engine; no « factions » mode, `kanevas-factions`) |
+| Create / edit (« Créer / modifier ») | GM outside Player mode only (not offered otherwise, not refused) | place a system, draw a route, draw a zone, move a body or an element, anchor, remove; each existing write of E-21 / E-23 keeps its dialogue and its refusals |
 
 Closing the full screen (Escape, the button) returns to the page as it was. The display choices (names, orbits, hours) and the last mode are remembered **by browser** (local storage), never in a datum of the game; the mode is a view state, kept in the address (`?mode=`) so a link opens in the mode it was copied from; a Player opening `?mode=edition` gets the Consult mode.
 
@@ -5251,11 +5251,11 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 
 ### The modes in detail (`kanevas-carte-rendu-modes`, B-121, P-28, P-30; AD-modes-1 to 4)
 
-The mode switch is a segmented control, top left of the map, rubric « Modes »: « Consulter », « Voyage », « Créer / modifier » (the last one only for a GM outside Player mode). The tools of the active mode sit in a row under it; at 390 px the row wraps and the controls keep 44 px targets. The controls are the ones the page header carried (it keeps its title only). Components (guardian's verdict, 2026-11-23, recorded in `docs/charte.md`): the switch is `Segments` with its floating variant and a per-option `ton: 'mj'` (the « Créer / modifier » segment is absent from the DOM, not disabled, for a Player); toggles are `PuceFiltre`; « Zones » is a `Segments` in its plain form (three values read without opening a menu); search is `ChampSysteme` moved with the controls; the travel bar reuses the « Trajet » block (`champ-liste`, `Bouton`, `Alerte`); write actions are `Bouton variante="mj"`; the new `CommandesCarte` (three `role="toolbar"` groups: « Modes », « Outils de la carte », « Trajet ») and `LigneEtatCarte` (bottom-left `role="status"`; the hover line is another node without `aria-live`) hold them; « Annuler le déplacement » is the `BandeauAnnulable` pattern inside that line, not a toast. The frame is `pointer-events: none`, only its groups take events. The mockup (`docs/maquettes/e23-rendu.html`) shows the travel bar and the line after a move; the labels below are the screen's.
+The mode switch is a segmented control, top left of the map, rubric « Modes »: « Consulter », « Voyage », « Créer / modifier » (the last one only for a GM outside Player mode). The tools of the active mode sit in a row under it; at 390 px the row wraps and the controls keep 44 px targets. The controls are the ones the page header carried (it keeps its title only). Components (guardian's verdict, 2026-11-23, recorded in `docs/charte.md`): the switch is `Segments` with its floating variant and a per-option `ton: 'mj'` (the « Créer / modifier » segment is absent from the DOM, not disabled, for a Player); toggles are `PuceFiltre`; « Zones » is a `Segments` in its plain form (three values read without opening a menu); search is `ChampSysteme` moved with the controls; the travel bar reuses the « Trajet » block (`champ-liste`, `Bouton`, `Alerte`); write actions are `Bouton variante="mj"`; the new `CommandesCarte` (three `role="toolbar"` groups: « Modes », « Outils de la carte », « Trajet ») and `LigneEtatCarte` (bottom-left `role="status"`; the hover line is another node without `aria-live`) hold them; « Annuler le déplacement » is the `BandeauAnnulable` pattern inside that line, not a toast. The frame is `pointer-events: none`, only its groups take events. The mockup (`docs/maquettes/e23-rendu.html`) gives the direction only: its English labels, its « Zones » menu, the place of its tools (top right) and of its write actions (its toolbar) are superseded by this text, which is the screen's; it has no Create / edit row of E-21 nor travel on E-23 (the text alone). Top right, in every mode: « Plein écran » / « Quitter le plein écran » and the zoom (« + », « − », « Recentrer »).
 
 | Mode | E-21 | E-23 |
 |---|---|---|
-| Consulter | search of a system (centres on it); toggles « Noms », « Routes »; « Zones » (« Toutes », « Aucune », « Par défaut »); hover lights the hexagon and the bottom-left line reads « q · r » and the system's name; choosing a system draws only its routes | toggles « Noms », « Orbites », « Heures », « Routes »; « Galaxie », « Autre système… »; hover: « Orbite n · h h » and the body's name; choosing a body opens its panel (read) |
+| Consulter | search of a system (centres on it); toggles « Noms », « Routes »; « Recentrer »; « Zones » (« Toutes », « Aucune », « Par défaut »); hover lights the hexagon and the bottom-left line reads « q · r » and the system's name; choosing a system draws only its routes | toggles « Noms », « Orbites », « Heures », « Routes »; « Recentrer »; « Galaxie », « Autre système… »; hover: « Orbite n · h h » and the body's name; choosing a body opens its panel (read) |
 | Voyage | the travel bar at the bottom: « Départ », « Arrivée » (a click on a system or the search), « Moteur », « Routes » (GM), « Calculer », « Effacer »; the line « Portée d'un saut : n cases »; the path drawn, both ends marked | the same bar and line; « Départ » is this system, « Arrivée » is picked on a jump point's card (see below) |
 | Créer / modifier | « Placer un système », « Tracer une route », « Dessiner une zone »; the panel's « Modifier », « Retirer » appear | the panel's « Déplacer », « Modifier… », « Ajouter… », « Ancrer », « Retirer » appear; a body and an element can be dragged; arrow keys move the selected body |
 
@@ -5263,15 +5263,25 @@ The mode switch is a segmented control, top left of the map, rubric « Modes »:
 
 **Create / edit on E-23, the move.** A body is moved by dragging it (a long press on touch) and written when it is released; **Escape during the drag puts the body back and sends nothing**. After a written move the bottom-left line reads « <nom> déplacé. » with the button **« Annuler le déplacement »**: it puts the previous position back through the same write and the same guard, for the last move only, and stays until another move is written, the mode changes or the screen is left. A conflict (the body changed meanwhile) removes the button and shows the existing conflict wording.
 
-**Remembered, by browser.** The toggles, « Zones » and the last mode come back when the same browser reopens the map (AD-modes-1). A link carries the mode it was copied in (`?mode=voyage`, `?mode=edition`); a Player's or a Player-mode GM's `?mode=edition` opens « Consulter »; toggling Player mode changes the switch at once, without a reload and without losing the zoom or the place.
+**Roles in the modes.** « Routes » of the travel bar (the GM's routes, as the existing « Trajet » block shows them) and every write action of the panel and « Annuler le déplacement » are **absent from the DOM** for a Player and for a GM in Player mode, not disabled; the server keeps each guard whatever the mode (AD-edition-1). The travel itself (« Calculer ») is open to every reader. A body **or an element** written by a move can be undone.
+
+**Touch and keyboard.** There is no hover on touch: the bottom line then shows the selection (« q · r · nom » / « Orbite n · h h · nom »); it is empty when nothing is selected. A drag is abandoned by Escape (keyboard) or, on touch, by letting go outside the map; the arrow keys write once per press, and « Annuler le déplacement » undoes the last of them. At 390 px the three groups wrap, the targets keep 44 px, and a long system name is cut on one line (the whole in `title`).
+
+**Remembered, by browser.** The toggles, « Zones » and the last mode come back when the same browser reopens the map (AD-modes-1). A link carries the mode it was copied in (`?mode=voyage`, `?mode=edition`); **the address wins over the browser's memory, which wins over « Consulter »**, and the role comes before all three; a Player's or a Player-mode GM's `?mode=edition` opens « Consulter »; toggling Player mode changes the switch at once, without a reload and without losing the zoom or the place.
 
 | State | What the reader sees |
 |---|---|
 | storage refused | the choices work for the page and are forgotten at the next load; no message |
+| travel: empty | « Départ » and « Arrivée » empty, « Moteur » is 1, « Calculer » is disabled with no text until both are set; the line reads « Portée d'un saut : 10 cases » (5 + 5 × moteur) |
+| travel: calculating | « Calcul… » on the button, the previous result stays |
+| travel: result | the duration by engine as the existing « Trajet » block gives it (the calculation's own words), the path drawn |
+| travel: jump beyond reach | « Saut de n cases : au-delà de la portée (m cases) à ce moteur. », path cleared |
+| travel: engine | whole number from 1 to 10; an empty or lower value keeps « Calculer » disabled with « Moteur : de 1 à 10. » |
+| travel: server failure | « Le calcul a échoué. » with « Réessayer », the choices kept |
 | travel: no path | « Aucun trajet avec ce moteur. » (the server's words), the path cleared |
 | travel: same system | « Choisissez deux systèmes différents. » |
 | travel: lost connection | « Calculer » disabled, « Connexion perdue. » on the bottom line |
-| edit: write refused | the dialogue's own refusal, or the toast of the refusal for a drop; the body is back |
+| edit: write refused | the dialogue's own refusal, or for a drop an `Alerte` over the bottom line carrying the server's refusal wording; the body is back |
 | edit: undo conflict | « Annuler le déplacement » gone; the conflict wording of the body |
 | mode no longer offered | the switch falls back to « Consulter » (Player mode toggled on) and the address follows |
 
@@ -5310,7 +5320,7 @@ The mode switch is a segmented control, top left of the map, rubric « Modes »:
 - Given the galaxy opened, the whole known zone is in view with the names of the defined systems; « Zones » set to « none » hides every tint and keeps the routes in the list (B-117, B-118).
 - Given a double click on a system, it opens on its map, and « Galaxy » returns to the same view (B-119).
 - Given Léa on a phone, the map takes the whole window, the controls float and stay reachable by thumb (44 px targets), no horizontal scroll (B-120).
-- Given Léa (Player), the mode switch offers « Consult » and « Travel » only, and a link in `?mode=edition` opens Consult (B-121).
+- Given Léa (Player), the mode switch offers « Consulter » and « Voyage » only, and a link in `?mode=edition` opens « Consulter » (B-121).
 - Given a defined system with a class and a free colour, the galaxy draws it as a star of that class tinted by the colour; with no class, two systems of different keys differ (B-117).
 - Given a galaxy opened, the zones marked « Displayed when the map opens » are drawn and the others hidden until « all » (B-118).
 - Given a world with cities or glow, the night side shows them and `force_lueur` changes the strength (B-124).
