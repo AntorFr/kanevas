@@ -115,7 +115,7 @@ export function ChangerAventure({
 
   return (
     <Fenetre titre={`Changer l’aventure de « ${fiche.titre} »`} onFermer={onFermer} icone={FolderInput}>
-      <form className="changer-type deplacer" onSubmit={changer} noValidate>
+      <form className="changer-type deplacer changer-aventure" onSubmit={changer} noValidate>
         <Champ
           etiquette="Chercher une aventure"
           value={saisie}

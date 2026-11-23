@@ -20,10 +20,10 @@ function LigneCampagne({ universId, fiche, gestion, rafraichir }: PropsLigneTitr
     <>
     <p className="ligne-campagne titre-long">
       {supprimee ? (
-        <>Campagne : Aventure supprimée</>
+        <><span className="etiquette-campagne">Campagne :</span> Aventure supprimée</>
       ) : (
         <>
-          Campagne :{' '}
+          <span className="etiquette-campagne">Campagne :</span>{' '}
           <Link className="nom-campagne" title={fiche.campagneNom} to={`/univers/${universId}/fiche/${fiche.campagneId}`}>{fiche.campagneNom}</Link>
         </>
       )}

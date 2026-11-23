@@ -370,3 +370,7 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .ligne-campagne { display: flex; align-items: center; gap: var(--e-2); min-width: 0; }
 .ligne-campagne .nom-campagne { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ligne-campagne .bouton { flex: none; }
+.ligne-campagne .etiquette-campagne { flex: none; }
+.changer-aventure .titre-res { white-space: normal; overflow: visible; overflow-wrap: break-word; flex: 1 1 12ch; min-width: 8ch; padding: 6px 0; }
+.changer-aventure .resultat { height: auto; }
+.changer-aventure .note-soi { flex: 0 1 auto; min-width: 0; }
