@@ -5266,9 +5266,9 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 
 | State | Text |
 |---|---|
-| empty | E-21 with no system in the zone: « Le ciel est vide ici. » (the map centres on the origin); E-23 unchanged |
+| empty | E-21 with no system in the zone: « Le ciel est vide ici. » (the map centres on the origin); E-23 with no body: « Ce système est vide. » under the map (the star alone is drawn) |
 | loading | the starfield first, then the bodies with their low-resolution illustration (« Chargement du système… », as E-23) |
-| error | the core not loading: the list of bodies / systems replaces the canvas (unchanged); a portrait not arriving: the card shows the name and the distance only |
+| error | the core not loading: the canvas is replaced by « La carte ne peut pas s'afficher ici. » and « Réessayer » (the list of bodies / systems stays under the container in the page, as the text alternative); a portrait not arriving: the card shows the name and the distance only |
 | offline | unchanged (« Connexion perdue. », writes disabled) |
 | refusal | not readable: « Page introuvable. »; the mode « Create / edit » is simply absent for a non-GM |
 | full screen refused | the browser refuses (iPhone): the map takes the whole viewport by layout, same controls |
@@ -5295,11 +5295,13 @@ Cross-check: B-113 to B-116 → E-23; B-117, B-118 → E-21; B-119 → E-21, E-2
 
 ### Full screen and floating controls (`kanevas-carte-rendu-plein-ecran`, B-120, P-27, P-28, P-29 of `kanevas-carte-rendu` — « Read a system as a map », « Cross the galaxy », « Share a place »; the battlemap's parcours reuse those numbers; AD-pleinecran-1, AD-pleinecran-2)
 
-Mockup: `docs/maquettes/e23-rendu.html` (Player, phone, full screen; Consult with floating controls and card). It is in English and draws the tool row and the card only: the zoom column, « Recentrer », the card's close button and the 360 px width are specified here, and **this section prevails** where the two differ (the mockup puts « Full screen » in the tool row, this section in the top-right column; its card carries « Copy the address » and « Enter the system », which belong to `kanevas-carte-rendu-liens-profonds` and the previews, not to this slice). The slice adds no screen and no wording beyond what follows. The same controls for everyone: « Plein écran », the zoom and the panel are identical for a Player, a GM, a GM in player mode and a non-member reader (no right is involved; the content of the panel keeps its own guards, B-97), and the GM's writing controls stay reachable in full screen, their dialogues opening over the map.
+Mockup: `docs/maquettes/e23-rendu.html` (Player, phone, full screen; Consult with floating controls and card). It is in English and draws the tool row and the card only: the zoom column, « Recentrer », the card's close button and the 360 px width are specified here, and **this section prevails** where the two differ: the labels are the French ones below (the mockup's « Full screen » / « Leave full screen » are « Plein écran » / « Quitter le plein écran »), and it shows full screen at 390 px only, the desktop layout being the one described here (the mockup puts « Full screen » in the tool row, this section in the top-right column; its card carries « Copy the address » and « Enter the system », which belong to `kanevas-carte-rendu-liens-profonds` and the previews, not to this slice). The slice adds no screen and no wording beyond what follows. The same controls for everyone who reads the map: « Plein écran », the zoom and the panel are identical for a Player, a GM and a GM in player mode (no right is involved; the content of the panel keeps its own guards, B-97); an account with no role in the universe never reaches the map (« Page introuvable. », unchanged), and the GM's writing controls stay reachable in full screen, their dialogues opening over the map.
 
 **In the page.** The map container of E-21 and E-23 takes the window below the page header: height `hauteurPage`, never under 320 px, the width of the main area, **no horizontal scroll at 1440 and 390 px**. The panel is no longer a column beside or under it: it floats over the map (right, 360 px at most; a bottom sheet at 390 px). The control columns sit in the map's corners through `CommandesCarte`.
 
-**Full screen.** « Plein écran » (`BoutonIcone`, icons `Maximize` / `Minimize`, `aria-pressed`) is in the top right place, under the zoom column. Pressed: the map container takes the whole window (the browser's own full screen; on a browser that refuses it, the container takes the window by layout, with safe-area margins); the page header and the sidebar are covered, the controls and the panel stay on the map; the label becomes « Quitter le plein écran » (`Minimize`). Escape (a dialogue open takes it first), the button, the browser's own exit, leaving the screen: the page is as it was, **at the same scroll position**. Never restored on load.
+**Places.** Top left: the mode switch (rubric « Modes ») and, on E-23, « Galaxy » and « Another system » under it. Top right, one column from top to bottom: « Plein écran », « + », « − », « Recentrer » (`Locate`; disabled while the view is already the fit). Bottom left: the line « Connexion perdue. » when offline, never over the mode switch. At 390 px the same corners are kept, stacked under the safe areas.
+
+**Full screen.** « Plein écran » (`BoutonIcone`, icons `Maximize` / `Minimize`, `aria-pressed`) is the first control of the top right column. Pressed: the map container takes the whole window (the browser's own full screen; on a browser that refuses it, the container takes the window by layout, with safe-area margins); the page header and the sidebar are covered, the controls and the panel stay on the map; the label becomes « Quitter le plein écran » (`Minimize`). Escape (a dialogue open takes it first), the button, the browser's own exit, leaving the screen: the page is as it was, **at the same scroll position**. Never restored on load.
 
 **Zoom.** « + » / « − », the wheel and the pinch go from the fit of the known zone to the detail of a body: on the galaxy, from the fit of the zone as the reader reads it to one hexagon filling the window; on a system, from the fit of the whole system (zoom 1; « Recentrer » returns there) to a body and the gap to its nearest orbit filling the window. A body's drawn size never changes with the zoom (B-113). « + » is disabled at the top of the range, « − » at the bottom.
 
@@ -5309,10 +5311,11 @@ Mockup: `docs/maquettes/e23-rendu.html` (Player, phone, full screen; Consult wit
 | full screen (native) | the container fills the screen; « Quitter le plein écran » |
 | full screen (by layout) | same, the container is `position: fixed` over the page, body scroll locked |
 | refused and no layout possible | cannot happen: the layout way always works; no error text exists |
-| empty (no known system, no body) | the zone fit has nothing to fit: the view is the default one, « + » / « − » stay as at the bounds, and the empty sky of P-28 is said under the map; « Plein écran » still works |
+| empty (no known system, no body) | the zone fit has nothing to fit: the view is the default one, « + » / « − » stay as at the bounds, and the empty sky is said under the map in the words of the States table above (« Le ciel est vide ici. » / « Ce système est vide. »); « + » and « − » are disabled; « Plein écran » still works |
 | loading | the controls are drawn at once, the zoom and « Recentrer » disabled until the map is read; « Plein écran » is available |
-| error (the map does not load) | the map's error text and « Réessayer » fill the container; « Plein écran » is absent, so nothing is left to leave |
-| offline | the shell's « Connexion perdue » banner is covered with the header in full screen: the map shows its own « Connexion perdue. » line in the top-left place until the connection returns (the writing controls are disabled) |
+| error (the map does not load) | « La carte ne peut pas s'afficher ici. » and « Réessayer » fill the container; « Plein écran » is absent, so nothing is left to leave |
+| offline | the shell's « Connexion perdue » banner is covered with the header in full screen: the map shows its own « Connexion perdue. » line at the bottom left until the connection returns (the writing controls are disabled); in the page, the shell's banner alone speaks, the map adds no line |
+| refusal | the GM in player mode in full screen has no writing control (absent, not greyed); an account with no role never reaches the map |
 | extreme content | a single hexagon or body: the minimum and maximum zoom coincide and both « + » and « − » are disabled; a very long name is cut on one line with its full text in the title, the panel scrolls inside itself (a 2,000-character text at 390 px stays in the 55 % sheet) |
 | 390 px | corners stacked under the safe areas, 44 px targets, panel a bottom sheet with a close button |
 | `prefers-reduced-motion` | no transition on the panel or the zoom |
@@ -5323,6 +5326,13 @@ Criteria:
 - Given a body's panel open, when she presses Escape, the panel closes first and the focus returns to the body's control; a second Escape leaves full screen.
 - Given the zoom at the top of its range, « + » is disabled; at the fit, « − » is.
 - Given a Player, a GM and a GM in player mode on the same map, the three see the same controls (the GM's writing ones apart).
+
+- Given a map with no system or body, « + » and « − » are disabled, the empty-sky text is under the map and « Plein écran » works.
+- Given the map still loading, the controls are drawn, « + », « − » and « Recentrer » are disabled and « Plein écran » is enabled.
+- Given the read of the map failing, the container shows « La carte ne peut pas s'afficher ici. » and « Réessayer », there is no « Plein écran », and « Réessayer » reads the map again.
+- Given the connection lost in full screen, « Connexion perdue. » shows at the bottom left, clear of the mode switch, and the writing controls are disabled.
+- Given a body name of 200 characters and a 2,000-character text at 390 px, the name is cut on one line with its full text in the title, the sheet stays at 55 % and scrolls inside itself.
+- Given the maps at 390 px, the panel is a bottom sheet with a close button, every target is at least 44 px and nothing scrolls horizontally.
 
 Accessibility: every floating control is a real button with a name; the canvas keeps `role="application"` and its list below as the text alternative (not shown in full screen, still in the DOM); the focus stays on « Plein écran » when it toggles and returns to it after Escape; the panel's close button is the first stop inside it.
 

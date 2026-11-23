@@ -1357,7 +1357,7 @@ absent for Léa, and so are its name and its route.
 The galaxy opens on the whole known zone, centred, with the names of the defined systems, differing in size and colour; the drawn stars show their class.
 In the map, Antor chooses « Zones » (all, none, default) and sees the Pirates zone in red, routes in the colour of their type; he types « Lyb » in the
 search and the map goes there. *Moment fort:* he double-clicks a system: it opens on its map; « Galaxy » brings him back to where he was. In « travel » mode he
-picks two systems and reads the duration by engine. Léa sees only what the GM lets her see (B-97). *Plein écran* works as in P-27 of this feature, and « + » stops when a hexagon fills the window. *Failure path:* a hidden zone does not hide the routes that cross it from the list; no system → the empty sky says so.
+picks two systems and reads the duration by engine. Léa sees only what the GM lets her see (B-97). *Plein écran* works as in P-27 of this feature (`kanevas-carte-rendu`, not the battlemap's), and « + » stops when a hexagon fills the window. *Failure path:* a hidden zone does not hide the routes that cross it from the list; no system → the empty sky says so; a map that does not load shows « La carte ne peut pas s'afficher ici. » and « Réessayer », with no full-screen button; a lost connection shows « Connexion perdue. » on the map and disables the writes.
 
 ### P-29 — Share a place (Léa, Player; Antor, GM — `kanevas-carte-rendu`)
 
