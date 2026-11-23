@@ -66,6 +66,18 @@ describe('kanevas-cr-aventure-ecran-dialogue, E-9 Changer d’aventure', { skip:
     await groupe.getByRole('radio', { name: /Landes noires/ }).waitFor();
     assert.equal(await groupe.getByRole('radio', { name: /Couronne brisée/ }).isDisabled(), true, 'actuelle non sélectionnable');
     assert.match(await groupe.innerText(), /\(aventure actuelle\)/);
+    assert.equal(await d.getByLabel('Chercher une aventure').getAttribute('placeholder'), 'Titre ou alias');
+    const actuelle = groupe.locator('.resultat.soi');
+    assert.equal(await actuelle.locator('.resultat-puce').evaluate((e: Element) => getComputedStyle(e).visibility), 'visible', 'rond de radio grisé visible');
+    assert.equal((await actuelle.innerText()).replace(/\s+/g, ' ').trim().endsWith('(aventure actuelle)'), true, 'seul libellé dans la colonne du type');
+    assert.doesNotMatch(await actuelle.innerText(), /Campagne\s*\(/, 'pas de sous-type en plus');
+    const cadre = await ligne(antor).evaluate((e: Element) => {
+      const s = getComputedStyle(e);
+      const r = e.getBoundingClientRect();
+      const bt = e.querySelector('button')!.getBoundingClientRect();
+      return { bord: s.borderTopWidth, pad: `${s.paddingTop} ${s.paddingLeft}`, rayon: s.borderTopLeftRadius, droite: Math.round(r.right - bt.right - parseFloat(s.paddingRight) - parseFloat(s.borderRightWidth)) };
+    });
+    assert.deepEqual({ ...cadre, droite: Math.abs(cadre.droite) <= 1 }, { bord: '1px', pad: '10px 12px', rayon: '8px', droite: true }, 'ligne encadrée, bouton au bord droit');
     assert.equal(await d.getByRole('button', { name: 'Changer d’aventure', exact: true }).isDisabled(), true, 'rien choisi, rien à valider');
     await groupe.getByRole('radio', { name: /Landes noires/ }).check();
     await shot(antor, 'dialogue-choix');
