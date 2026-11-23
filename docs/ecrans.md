@@ -4628,6 +4628,33 @@ Objects: a **galaxy** (E-21) holds **systems**; a system holds **bodies** (star,
 | E-23 System map | E-21; the « Sur la carte spatiale » block of a sheet (E-9); a shareable link | read the system, see and open the illustrations, follow links; GM: move, name (« Modifier… »), link, add a body, a zone or an element, remove, set the transition radius, anchor, hide an element |
 | E-24 Generator settings | E-21 (GM) | settings and catalogue of aspects of the galaxy |
 
+#### Deep link (`kanevas-carte-rendu-liens-profonds`, B-119, P-29)
+
+- Address: `/univers/:id/outils/swn/galaxie/:gid/interieur/<q>/<r>/astre/<cle>`, a second path of the E-23 screen (a file of `ecrans/` of its own, no router edited, AD-16); the screen hands the `cle` to the system page, which selects that body and opens its panel on arrival.
+- « Copier l'adresse » sits in the panel of a body (a small `Bouton` with the `Copy` icon, no new component) and copies the address above with the **origin of the page**, never the player mode (`?mode=joueur` is not in it); the confirmation is the toast « Adresse copiée. » (charte, Feedback), and where the browser refuses the clipboard the address is shown in the panel in a `ValeurCopiable` to copy by hand (no toast: a failure is never a toast).
+- Unknown `cle` in a readable system, hidden or unknown system, no role: the same « Page introuvable. » as an unknown id, same bytes (the page of `ui/PageIntrouvable`); no body has a secret of its own, so a body is unreadable only when its system is.
+- A body chosen on the map does not rewrite the address (only the copied link carries it); the back button leaves the system as before.
+- Wording: the gesture is « Copier l'adresse » everywhere (the mockup `e23-rendu.html` shows it so); the English « Copy the address » elsewhere in this file names the same gesture.
+- Roles: « Copier l'adresse » is offered to whoever reads the panel — Player, GM, GM in Player mode (the copied address is the same, never `?mode=joueur`); no role and a hidden system see « Page introuvable. » before any panel. A visitor with no session signs in first and returns to the address.
+- States of the arrival:
+
+| State | What is seen |
+|---|---|
+| loading | « Chargement du système… » (as E-23); the panel of the body opens as soon as the system is read, with no flash of another body |
+| error | the core not loading: the list of bodies replaces the canvas; the body of the address is selected in that list, its panel is open and « Copier l'adresse » stays offered |
+| unknown `cle` | « Page introuvable. » of the whole page, same bytes as an unknown system (a test compares them) |
+| offline | « Connexion perdue. »; « Copier l'adresse » stays active (it copies locally, writes nothing) |
+| clipboard refused | the panel shows the label « Adresse » with the address in a `ValeurCopiable`, selected, no toast |
+| empty | not applicable: an address always names a body |
+| long content | a long body name wraps in the panel and is cut with an ellipsis in the toast; a nameless body reads « Astre sans nom »; the address in `ValeurCopiable` wraps at 390 px, no horizontal scroll |
+
+- Criteria:
+  - Given the address of Clyra II copied from its panel, when it is opened in a new page, then Clyra opens with Clyra II chosen and its panel open.
+  - Given Léa and the address of a body of a hidden system, when she opens it, then she reads « Page introuvable. », byte for byte as for an unknown system.
+  - Given a `cle` that is no body of a readable system, when the address is opened, then the page is « Page introuvable. ».
+  - Given a clipboard that refuses, when « Copier l'adresse » is pressed, then the address appears in the panel and no toast shows.
+  - Given the GM in Player mode, when he copies an address, then it holds no `?mode=joueur`.
+
 ### Roles × screens
 
 | Screen | Player | GM | GM in Player mode | No role |
@@ -5253,14 +5280,14 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 
 - E-21: the panel of a system shows its **portrait** (the reference's painted thumbnail: the star's edge on the left, the bodies in a row, composed from the guarded read so a hidden body never shows) and « Enter the system »; a double click on a system does the same.
 - E-23: a jump point shows its arrow, the neighbour's name, the distance (« 3 cases ») and the colour of its route; a click opens a card with the neighbour's portrait and « Enter the system ». « Galaxy » returns to the place left; « Another system » opens the search of systems.
-- A body: panel with its illustration, its text and « Copy the address »; the address `…/systeme/<q>/<r>/astre/<cle>` opens the system with the body chosen and the panel open (P-29). A system or a body the reader may not read: « Page introuvable. », byte for byte like an unknown one.
+- A body: panel with its illustration, its text and « Copy the address »; the address `…/interieur/<q>/<r>/astre/<cle>` (the system's address plus the body's `cle`) opens the system with the body chosen and the panel open (P-29). A system or a body the reader may not read: « Page introuvable. », byte for byte like an unknown one.
 
 ### Roles × screens
 
 | Screen | Player | GM | GM in Player mode | No role |
 |---|---|---|---|---|
 | E-21 | consult and travel modes; zones control; previews of the systems she reads | all modes | as Player | « Page introuvable. » |
-| E-23 | consult and travel; preview of readable neighbours only (a secret neighbour draws no jump point, as today) | all modes | as Player | « Page introuvable. » |
+| E-23 | consult and travel; preview of readable neighbours only (a secret neighbour draws no jump point, as today); « Copier l'adresse » in the panel of a body | all modes; « Copier l'adresse » | as Player; « Copier l'adresse » without the mode | « Page introuvable. » |
 
 ### States (E-21 and E-23)
 

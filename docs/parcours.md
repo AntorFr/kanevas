@@ -1361,8 +1361,13 @@ picks two systems and reads the duration by engine. Léa sees only what the GM l
 
 ### P-29 — Share a place (Léa, Player; Antor, GM — `kanevas-carte-rendu`)
 
-Antor copies the address of Clyra II and sends it to Léa, who opens it from the link: the system, the body chosen, the panel open. *Failure path:* an address toward a
-secret body gives « Page introuvable. », byte for byte like an unknown one.
+*(This id is shared with « Play remotely » of `kanevas-battlemap`, further down: the two are cited by their title where it matters.)*
+
+1. On the system map (E-23), Antor selects Clyra II: its panel opens.
+2. In the panel he presses « Copier l'adresse » (E-23): the toast « Adresse copiée. » confirms; the address carries the body's `cle` and never the player mode.
+3. He sends it to Léa, who opens it (signed in, with a role in the universe): the system of Clyra opens with Clyra II chosen and its panel open. *Moment fort:* the link lands on the body, not on the galaxy.
+
+*Failure paths:* the browser refuses the clipboard → the address is shown in the panel to copy by hand, no toast; the system is hidden from Léa, unknown, or she has no role in the universe → « Page introuvable. », byte for byte like an unknown one (no body has a secret of its own: a body is unreadable only when its system is); a `cle` that is no body of a readable system → the same « Page introuvable. »; Léa not signed in → she signs in, then lands on the same address.
 
 ### P-30 — Prepare and correct the map (Antor, GM; his script)
 
