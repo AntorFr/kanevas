@@ -5249,6 +5249,32 @@ The system's existing dialogue gains three fields for a defined system (B-117): 
 
 Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the system (a **formation**, not a polygonal zone of the galaxy) opens its panel with the **illustration of its family** (belt, nebula, anomaly: from its form and its `parametres`, no route of its own) and its text; on the galaxy, a click in the **void** of a zone selects nothing and opens no form; the labels of the route types keep « Private » and « GM only » apart.
 
+### The modes in detail (`kanevas-carte-rendu-modes`, B-121, P-28, P-30; AD-modes-1 to 4)
+
+The mode switch is a segmented control, top left of the map, rubric « Modes »: « Consulter », « Voyage », « Créer / modifier » (the last one only for a GM outside Player mode). The tools of the active mode sit in a row under it; at 390 px the row wraps and the controls keep 44 px targets. The controls are the ones the page header carried (it keeps its title only). Components come from the guardian's verdict, recorded in `docs/charte.md`; the labels below are the screen's.
+
+| Mode | E-21 | E-23 |
+|---|---|---|
+| Consulter | search of a system (centres on it); toggles « Noms », « Routes »; « Zones » (« Toutes », « Aucune », « Par défaut »); hover lights the hexagon and the bottom-left line reads « q · r » and the system's name; choosing a system draws only its routes | toggles « Noms », « Orbites », « Heures », « Routes »; « Galaxie », « Autre système… »; hover: « Orbite n · h h » and the body's name; choosing a body opens its panel (read) |
+| Voyage | the travel bar at the bottom: « Départ », « Arrivée » (a click on a system or the search), « Moteur », « Routes » (GM), « Calculer », « Effacer »; the line « Portée d'un saut : n cases »; the path drawn, both ends marked | the same bar and line; « Départ » is this system, « Arrivée » is picked on a jump point's card (see below) |
+| Créer / modifier | « Placer un système », « Tracer une route », « Dessiner une zone »; the panel's « Modifier », « Retirer » appear | the panel's « Déplacer », « Modifier… », « Ajouter… », « Ancrer », « Retirer » appear; a body and an element can be dragged; arrow keys move the selected body |
+
+**Travel on E-23.** The calculation is between systems of the galaxy; on a system map the mode offers the same bar, and picking a jump point's card sets the neighbour as « Arrivée » (the system being « Départ »). A jump point of a system the Player may not read does not exist there (as today), so it cannot be picked.
+
+**Create / edit on E-23, the move.** A body is moved by dragging it (a long press on touch) and written when it is released; **Escape during the drag puts the body back and sends nothing**. After a written move the bottom-left line reads « <nom> déplacé. » with the button **« Annuler le déplacement »**: it puts the previous position back through the same write and the same guard, for the last move only, and stays until another move is written, the mode changes or the screen is left. A conflict (the body changed meanwhile) removes the button and shows the existing conflict wording.
+
+**Remembered, by browser.** The toggles, « Zones » and the last mode come back when the same browser reopens the map (AD-modes-1). A link carries the mode it was copied in (`?mode=voyage`, `?mode=edition`); a Player's or a Player-mode GM's `?mode=edition` opens « Consulter »; toggling Player mode changes the switch at once, without a reload and without losing the zoom or the place.
+
+| State | What the reader sees |
+|---|---|
+| storage refused | the choices work for the page and are forgotten at the next load; no message |
+| travel: no path | « Aucun trajet avec ce moteur. » (the server's words), the path cleared |
+| travel: same system | « Choisissez deux systèmes différents. » |
+| travel: lost connection | « Calculer » disabled, « Connexion perdue. » on the bottom line |
+| edit: write refused | the dialogue's own refusal, or the toast of the refusal for a drop; the body is back |
+| edit: undo conflict | « Annuler le déplacement » gone; the conflict wording of the body |
+| mode no longer offered | the switch falls back to « Consulter » (Player mode toggled on) and the address follows |
+
 ### Previews and navigation (B-119)
 
 - E-21: the panel of a system shows its **portrait** (the reference's painted thumbnail: the star's edge on the left, the bodies in a row, composed from the guarded read so a hidden body never shows) and « Enter the system »; a double click on a system does the same.
