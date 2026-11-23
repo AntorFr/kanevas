@@ -30,8 +30,12 @@ describe('declaration de l\'installation dans .sdlc.yaml', () => {
   test('fichiers: appelle le script de rejeu avec --fichiers et {tests}', () => {
     assert.equal(ligne('fichiers').trim(), 'fichiers: node scripts/rejouer-tests.mjs --fichiers {tests}');
   });
-  test('outillage: nomme package.json et scripts/', () => {
-    assert.equal(ligne('outillage').trim(), 'outillage: [package.json, scripts/]');
+  test('outillage: ne nomme que les quatre scripts qui jugent (ni package.json, ni dossier, ni installation)', () => {
+    assert.equal(
+      ligne('outillage').trim(),
+      'outillage: [scripts/tests-attestes.mjs, scripts/niveaux-tests.mjs, scripts/rejouer-tests.mjs, scripts/playwright.mjs]',
+    );
+    assert.doesNotMatch(ligne('outillage'), /package|\/[,\]]|rust-wasm|copier-wasm/);
   });
   test('ecrans: et rejouer: ne lancent plus npm ci', () => {
     for (const cle of ['ecrans', 'rejouer']) {
@@ -46,7 +50,7 @@ describe('declaration de l\'installation dans .sdlc.yaml', () => {
     );
   });
   test('ecrans: et rejouer: passent --installe, apres leur argument', () => {
-    assert.equal(ligne('ecrans').trim(), 'ecrans: npm run tests:ecrans -- {base} --installe');
+    assert.equal(ligne('ecrans').trim(), 'ecrans: node scripts/tests-attestes.mjs --ecrans {base} --installe');
     assert.equal(ligne('rejouer').trim(), 'rejouer: node scripts/rejouer-tests.mjs {tests} --installe');
   });
   test('les niveaux commande:, local: et fiche: gardent leur npm ci', () => {
