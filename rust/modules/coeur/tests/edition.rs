@@ -322,3 +322,166 @@ fn valider_formation_nuage_centres_dans_l_etendue() {
     assert!(valider_formation("nuage", r#"{"orbite":1001,"heure":3}"#).is_err());
     assert!(valider_formation("nuage", r#"{"orbite":5,"heure":12}"#).is_err());
 }
+
+// ---- `kanevas-carte-rendu-aspects-socle-cles`: the validation of each row of the table of aspects ---------------
+
+fn ok(t: &str, a: Value) {
+    assert!(valider_aspect(t, &a.to_string()).is_ok(), "{t} {a} must pass");
+}
+
+fn refuse(t: &str, a: Value) {
+    assert!(valider_aspect(t, &a.to_string()).is_err(), "{t} {a} must be refused");
+}
+
+#[test]
+fn cratere_dans_0_1_et_crateres_nombre_entier_0_2000() {
+    for v in [0.0, 0.5, 1.0] {
+        ok("rocheux", json!({ "cratere": v }));
+    }
+    refuse("rocheux", json!({ "cratere": 1.01 }));
+    refuse("rocheux", json!({ "cratere": -0.01 }));
+    for v in [0, 20, 400, 2000] {
+        ok("rocheux", json!({ "crateres_nombre": v }));
+    }
+    refuse("rocheux", json!({ "crateres_nombre": 2001 }));
+    refuse("rocheux", json!({ "crateres_nombre": -1 }));
+    refuse("rocheux", json!({ "crateres_nombre": 12.5 }));
+    refuse("rocheux", json!({ "crateres_nombre": "400" }));
+}
+
+#[test]
+fn mer_nuages_calottes_dans_0_1_et_relief_dans_0_2() {
+    for k in ["mer", "nuages", "calottes"] {
+        ok("tellurique", json!({ k: 0 }));
+        ok("tellurique", json!({ k: 1 }));
+        refuse("tellurique", json!({ k: 1.01 }));
+        refuse("tellurique", json!({ k: -0.01 }));
+    }
+    ok("tellurique", json!({ "relief": 2 }));
+    ok("tellurique", json!({ "relief": 0 }));
+    refuse("tellurique", json!({ "relief": 2.01 }));
+    refuse("tellurique", json!({ "relief": -0.01 }));
+}
+
+#[test]
+fn palette_de_1_7_16_acceptee_0_17_et_couleur_fausse_refusees() {
+    for n in [1usize, 7, 16] {
+        ok("tellurique", json!({ "palette": vec!["#102030"; n] }));
+    }
+    refuse("tellurique", json!({ "palette": vec!["#102030"; 17] }));
+    refuse("tellurique", json!({ "palette": Vec::<&str>::new() }));
+    refuse("tellurique", json!({ "palette": ["#12345"] }));
+    refuse("tellurique", json!({ "palette": "#102030" }));
+}
+
+#[test]
+fn atmosphere_halo_et_halo_couleur() {
+    ok("tellurique", json!({ "halo": 0, "halo_couleur": "#7fb6ff" }));
+    ok("tellurique", json!({ "halo": 1 }));
+    refuse("tellurique", json!({ "halo": 1.5 }));
+    refuse("tellurique", json!({ "halo_couleur": "bleu" }));
+}
+
+#[test]
+fn turbulence_dans_0_2() {
+    for v in [0.0, 1.0, 2.0] {
+        ok("gazeuse", json!({ "turbulence": v }));
+    }
+    refuse("gazeuse", json!({ "turbulence": 2.01 }));
+    refuse("gazeuse", json!({ "turbulence": -0.01 }));
+    refuse("gazeuse", json!({ "turbulence": "1" }));
+}
+
+#[test]
+fn tache_objet_borne_latitude_taille_couleur() {
+    ok("gazeuse", json!({ "tache": {} }));
+    ok("gazeuse", json!({ "tache": { "latitude": -1, "taille": 0.02, "couleur": "#aabbcc" } }));
+    ok("gazeuse", json!({ "tache": { "latitude": 1, "taille": 0.4 } }));
+    refuse("gazeuse", json!({ "tache": { "latitude": 1.01 } }));
+    refuse("gazeuse", json!({ "tache": { "latitude": -1.01 } }));
+    refuse("gazeuse", json!({ "tache": { "taille": 0.01 } }));
+    refuse("gazeuse", json!({ "tache": { "taille": 0.41 } }));
+    refuse("gazeuse", json!({ "tache": { "couleur": "rouge" } }));
+    refuse("gazeuse", json!({ "tache": { "inconnue": 1 } }));
+    refuse("gazeuse", json!({ "tache": 3 }));
+    refuse("gazeuse", json!({ "tache": [1] }));
+}
+
+#[test]
+fn bandes_couleurs_1_a_16_couleurs() {
+    for n in [1usize, 16] {
+        ok("gazeuse", json!({ "bandes_couleurs": vec!["#336699"; n] }));
+    }
+    refuse("gazeuse", json!({ "bandes_couleurs": Vec::<&str>::new() }));
+    refuse("gazeuse", json!({ "bandes_couleurs": vec!["#336699"; 17] }));
+    refuse("gazeuse", json!({ "bandes_couleurs": ["#336699", "x"] }));
+    refuse("gazeuse", json!({ "bandes_couleurs": "#336699" }));
+}
+
+#[test]
+fn poussiere_brume_graine() {
+    ok("comete", json!({ "poussiere": "#00ff00" }));
+    ok("comete", json!({ "poussiere": null }));
+    ok("nebuleuse", json!({ "brume": "#00ff00" }));
+    ok("nebuleuse", json!({ "brume": null }));
+    refuse("comete", json!({ "poussiere": "vert" }));
+    refuse("nebuleuse", json!({ "brume": 3 }));
+    ok("tellurique", json!({ "graine": 0 }));
+    ok("tellurique", json!({ "graine": 4_294_967_295u32 }));
+    refuse("tellurique", json!({ "graine": 4_294_967_296u64 }));
+    refuse("tellurique", json!({ "graine": -1 }));
+    refuse("tellurique", json!({ "graine": 1.5 }));
+}
+
+#[test]
+fn anneau_false_ou_objet_borne_comme_le_moteur() {
+    ok("gazeuse", json!({ "anneau": false }));
+    ok("gazeuse", json!({ "anneau": {} }));
+    ok("gazeuse", json!({ "anneau": { "interieur": 1.1, "exterieur": 3.5, "inclinaison": 0.12, "angle": 0, "opacite": 0, "couleur": "#e2d2b0", "couleur2": "#9a8466" } }));
+    ok("gazeuse", json!({ "anneau": { "interieur": 2.5, "inclinaison": 1.2, "opacite": 1 } }));
+    refuse("gazeuse", json!({ "anneau": { "interieur": 1.09 } }));
+    refuse("gazeuse", json!({ "anneau": { "interieur": 2.51 } }));
+    refuse("gazeuse", json!({ "anneau": { "inclinaison": 0.11 } }));
+    refuse("gazeuse", json!({ "anneau": { "inclinaison": 1.21 } }));
+    refuse("gazeuse", json!({ "anneau": { "opacite": 1.01 } }));
+    refuse("gazeuse", json!({ "anneau": { "opacite": -0.01 } }));
+    refuse("gazeuse", json!({ "anneau": { "couleur": "x" } }));
+    refuse("gazeuse", json!({ "anneau": { "autre": 1 } }));
+    refuse("gazeuse", json!({ "anneau": true }));
+    refuse("gazeuse", json!({ "anneau": 1 }));
+}
+
+#[test]
+fn disparue_booleen_refusee_hors_d_une_etoile() {
+    for t in ["jaune", "naine_rouge", "geante_bleue", "etoile"] {
+        ok(t, json!({ "disparue": true }));
+        ok(t, json!({ "disparue": false }));
+    }
+    refuse("jaune", json!({ "disparue": 1 }));
+    refuse("jaune", json!({ "disparue": "oui" }));
+    for t in ["tellurique", "gazeuse", "comete", "nebuleuse", "anomalie"] {
+        refuse(t, json!({ "disparue": true }));
+    }
+}
+
+#[test]
+fn les_cles_existantes_restent_acceptees_et_une_cle_inconnue_refusee() {
+    ok(
+        "tellurique",
+        json!({ "mer": 0.5, "nuages": 0.5, "calottes": 0.5, "relief": 0.6, "palette": ["#112233"], "cratere": 0.4, "halo": 0.5,
+                "halo_couleur": "#112233", "poussiere": "#112233", "brume": "#112233", "graine": 7 }),
+    );
+    refuse("tellurique", json!({ "n_importe_quoi": 1 }));
+    // the validated aspect keeps the new keys, unchanged
+    let sortie: Value = serde_json::from_str(&valider_aspect("gazeuse", &json!({ "turbulence": 1.5, "tache": { "latitude": 0.2 }, "anneau": false }).to_string()).unwrap()).unwrap();
+    assert_eq!(sortie["turbulence"], 1.5);
+    assert_eq!(sortie["tache"]["latitude"], 0.2);
+    assert_eq!(sortie["anneau"], false);
+}
+
+#[test]
+fn jamais_de_panique_sur_des_formes_absurdes() {
+    for s in ["", "[]", "nul", r#"{"tache":null}"#, r#"{"anneau":null}"#, r#"{"disparue":null}"#, r#"{"bandes_couleurs":null}"#, r#"{"turbulence":null}"#] {
+        assert!(valider_aspect("gazeuse", s).is_err(), "{s}");
+    }
+}
