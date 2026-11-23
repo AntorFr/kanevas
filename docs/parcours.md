@@ -706,17 +706,17 @@ Nothing of Éneria enters this repository (AD-131): captures, atlas and comparis
   in both themes. **The background aggregates with the zoom**: dust tiles of 700 px; detail veils (three per tile, then two, then one as the
   zoom goes out); large tinted regions in tiles of 3200 px fading in under the middle zoom (eight tints); the ambience of a zone from its
   colour, never from a hidden system. *(P-28)*
-- **B-118** — *Zones and routes.* Each zone has a colour and a switch **« Displayed when the map opens »** (`affichage_defaut`, the GM's, with the
+- **B-118** — *Zones and routes.* Each zone of the galaxy (the polygonal areas; the rings and clouds of a system are called *formations*) has a colour and a switch **« Displayed when the map opens »** (`affichage_defaut`, the GM's, with the
   reference's values for the atlas: the asteroid belt and the pirates shown, Vael'Korr and the Ancients hidden); the map offers « all / none /
   default » (a screen state). A route is drawn in the colour and stroke of its type (public, private, pirate…); the labels of the types
   keep « Private » and « GM only » apart (the reference confuses them). Touching the **void** of a zone selects nothing (it opens no form);
-  on a system map, a click on a zone (ring, cloud) opens its panel, with its illustration (B-119). *(P-28)*
+  on a system map, a click on a formation (ring, cloud) opens its panel, with its illustration (B-119). *(P-28)*
 - **B-119** — *Navigate by previews.* From the galaxy panel, the portrait of a system opens it (« Enter the system »), as does a double click; from
   a system, a jump point shows the neighbour's portrait and enters it; « Galaxy » and « Another system » leave it; a body shows its illustration
   and its text. A body or a system has an address that can be shared (deep link). The **portrait** of a system is the reference's painted
   thumbnail (the star's edge on the left, the bodies in a row), composed from the guarded read so that no hidden body leaks. The panel of a
-  **zone** of a system (a ring: belt; a cloud: nebula; a cloud with a lens: anomaly) shows the **illustration** of its family, drawn by the
-  browser from the zone's own settings (its veil, the lens of an anomaly: optional keys of the zone's `parametres`, B-122). The distance shown is from the system that is open (not from a fixed one). A player reads the public text
+  **formation** of a system (a ring: belt; a cloud: nebula; a cloud with a lens: anomaly) shows the **illustration** of its family, drawn by the
+  browser from the formation's own settings (its veil, the lens of an anomaly: optional keys of the formation's `parametres`, B-122). The distance shown is from the system that is open (not from a fixed one). A player reads the public text
   of what she reads (the reference withholds it: a defect, not kept). *(P-28, P-29)*
 - **B-120** — *Full screen.* Both maps open in the whole window; controls and panel float over the map. The zoom is not capped at 0.5×–4×: it
   goes from the fit of the known zone to the detail of a body. *(P-27, P-28, P-29)*

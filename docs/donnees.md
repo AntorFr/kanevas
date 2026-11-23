@@ -908,6 +908,7 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | `graine` | `graine` | **always sent**, one per body (`graine_de(id)`): two bodies never share a picture |
 | `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | new accepted key; absent means **no ring** (the engine's random ring at 28 % goes) |
 | `couleur_nuages`, `opacite_nuages`, `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124), `terre_seche`, `etirement`, `eclairs`, `inclinaison`, `geysers`, `couleur_fissures`, `mers`, `canyons`, `lave`, `cristaux`, `activite`, `intensite`, `vue` | new keys of the same names | added to the core one by one, each with a bound and a test of the picture |
+| `disparue` (a star gone, B-122) | `disparue` (boolean, on a star only) | direct; true draws a dim remnant, never an ordinary star; the atlas writes it from `corps[].etat: "disparue"` |
 | `voile` | `swn_systemes.voile` | the system's only; the veil of a nebula is `parametres.voile` of its zone (below) |
 
 **Atlas format (AD-atlas-2, extended).** Every addition is optional (an atlas of the former format stays valid, byte for byte): `lunes[].type` takes every type of the core
