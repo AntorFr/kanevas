@@ -580,8 +580,8 @@ export function calculer(
   const diviseur = reglages.diviseurPrix ?? 1
   const prixAffiche = Math.ceil(prix / diviseur)
 
-  // H-mods-1: the last stage. The rank is the hull's class + 1 (the registry's 0–3 scale, H-mods-1 (1)).
-  const rang = coque.classe + 1
+  // H-mods-1: the last stage. The rank is the hull's class itself (the registry's 1–4 scale, L-48), no "+ 1".
+  const rang = coque.classe
   const composantsDe = (l: LigneResolue) => (l.element.composants ?? 0) * (l.element.composants_par_classe ? rang : 1)
   let coutMods = 0
   let composants = 0
