@@ -1,4 +1,4 @@
-import type { Alerte, Brouillon, Conception, Donnees, ElementCatalogue } from './types';
+import type { Alerte, Brouillon, Conception, Donnees, ElementCatalogue, Ligne } from './types';
 
 const NBSP = '\u00A0';
 /** « 685 000 » with a no-break space between the groups, like the text version (V-6). */
@@ -16,11 +16,32 @@ export const credits = (n: number) => `${nombre(n)}${NBSP}cr`;
 export const jours = (n: number) => `${nombre(n)} ${n === 1 ? 'jour' : 'jours'}`;
 export const entretien = (n: number) => `${credits(n)} / an`;
 
-export const brouillonDe = (c: Pick<Conception, 'coque' | 'lignes' | 'resultat'>): Brouillon => ({
+/** A stored line in the draft: its `cibles` become one row per installation (the same element on as many rows as it has installations). */
+function ligneDeBrouillon(l: Ligne): Ligne {
+  const { cibles, vise, ...reste } = l;
+  if (cibles === undefined) return { ...l };
+  const rangees = cibles.flatMap((c) => Array<string>(c.quantite).fill(`${c.nature}/${c.cle}`));
+  while (rangees.length < l.quantite) rangees.push('');
+  return { ...reste, rangees: rangees.slice(0, l.quantite) };
+}
+
+/** The pairs a draft's rows say, in order of first appearance; the rows never chosen are not sent (the server says « Choisissez… »). */
+export function ciblesDeRangees(rangees: string[] | undefined): { nature: string; cle: string; quantite: number }[] {
+  const comptes = new Map<string, number>();
+  for (const r of rangees ?? []) if (r !== '') comptes.set(r, (comptes.get(r) ?? 0) + 1);
+  return [...comptes].map(([k, quantite]) => {
+    const [nature = '', ...cle] = k.split('/');
+    return { nature, cle: cle.join('/'), quantite };
+  });
+}
+
+export const brouillonDe = (c: Pick<Conception, 'coque' | 'lignes' | 'resultat' | 'pj' | 'robots'>): Brouillon => ({
   coque: { cle: c.coque.cle, nom: c.coque.nom },
-  lignes: c.lignes.map((l) => ({ ...l })),
+  lignes: c.lignes.map(ligneDeBrouillon),
   equipage: c.resultat.equipage?.choisi ?? null,
   reparation: c.resultat.reparation?.choisie ?? 0,
+  pj: c.pj ?? 0,
+  robots: c.robots ?? 0,
 });
 
 export const EQUIPAGE_MAX = 100_000;
@@ -33,10 +54,13 @@ export const choixDe = (b: Brouillon) => ({
   coque: b.coque.cle,
   ...(b.equipage === null ? {} : { equipage: b.equipage }),
   ...(b.reparation > 0 ? { reparation: b.reparation } : {}),
+  ...(b.pj > 0 ? { pj: b.pj } : {}),
+  ...(b.robots > 0 ? { robots: b.robots } : {}),
   choix: b.lignes.map((l) => ({
     nature: l.nature, cle: l.cle, quantite: l.quantite,
     ...(l.points === undefined ? {} : { points: l.points }),
     ...(l.vise === undefined ? {} : { vise: { nature: l.vise.nature, cle: l.vise.cle } }),
+    ...(ciblesDeRangees(l.rangees).length === 0 ? {} : { cibles: ciblesDeRangees(l.rangees) }),
   })),
 });
 
@@ -48,6 +72,13 @@ export function motifDe(a: Alerte): string {
   const m = /^(.*?) : (−?\d+(?:,\d+)?)\.?$/.exec(a.texte);
   return m ? `${m[1]} (${m[2]})` : a.texte.replace(/\.$/, '');
 }
+
+/** A speed as read on screen: the typographic minus for a negative one (B-88). */
+export const vitesseLue = (v: number): string => (v < 0 ? `−${Math.abs(v)}` : String(v));
+
+/** A drive or a system drive: what a station (hull with `moteur_spike` 0) is not offered (H-2). */
+export const estMoteur = (e: { nature: string; donnees?: { effet?: string } }): boolean =>
+  e.nature === 'moteurs' || e.donnees?.effet === 'moteur_systeme' || e.donnees?.effet === 'moteurs';
 
 export const AIDES: Record<string, string> = {
   puissance_insuffisante: 'Retirez une arme ou changez de moteur.',
@@ -149,3 +180,23 @@ export function ligneAjuste(a: { masse?: number; puissance?: number; emports?: n
     .filter((k) => a[k] !== undefined && a[k] !== 0)
     .map((k) => `${k} ${delta(a[k]!)}`).join(', ');
 }
+
+/** « Fret caché 4 t », « Équipage maximum 12 », « Colons de l'exode 1 000 »: one line of the « Capacités » block (H-4), from the server's figure. */
+export function ligneCapacite(c: { code: string; libelle: string; valeur: number; unite: string }): string {
+  const v = masse(c.valeur);
+  switch (c.code) {
+    case 'fret_cache': return `Fret caché ${v} t`;
+    case 'equipage_max_pct': return `Équipage maximum ${v}`;
+    case 'provisions': return `Provisions ${v} mois`;
+    case 'hydroponie': return `Hydroponie ${v} personnes`;
+    case 'sommeil_froid': return `Sommeil froid ${v} personnes`;
+    case 'soute_exode': return `Colons de l'exode ${v}`;
+    case 'canots': return `Canots de sauvetage ${v}`;
+    case 'cabines_luxe': return `Cabines de luxe ${v}`;
+    case 'colonie': return `Colonie ${v} personnes`;
+    default: return `${c.libelle} ${v}${c.unite ? ` ${c.unite}` : ''}`;
+  }
+}
+
+/** True when a chosen fitting is the automation system (display only: « dont robots » is disabled without one; the alert is the server's). */
+export const estAutomatisation = (d: Donnees | undefined) => d?.effet === 'support_automatisation';

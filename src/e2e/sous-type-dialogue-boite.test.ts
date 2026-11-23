@@ -1,3 +1,4 @@
+// ecrans: fiche
 // Browser tests of kanevas-sous-type-dialogue-boite, from its exit criterion: E-9 « Changer le type… » changes
 // the sub-type alone while the type stays the current one (PATCH {sousType}); another type keeps the old behaviour.
 import assert from 'node:assert/strict';
@@ -159,7 +160,7 @@ describe('kanevas-sous-type-dialogue-boite, au navigateur', { skip: skipBrowser 
     const { page } = await connecte(browser, srv.base, 'Antor');
     let liberer: () => void = () => {};
     const attente = new Promise<void>((ok) => (liberer = ok));
-    await page.route(/\/api\/univers\/\d+\/types(\?.*)?$/, async (r: Any) => {
+    await page.route(/\/api\/univers\/[^/]+\/types(\?.*)?$/, async (r: Any) => {
       await attente;
       await r.continue();
     });

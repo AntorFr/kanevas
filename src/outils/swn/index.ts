@@ -5,7 +5,8 @@ import { apresEcritureRegles, produireRegles, versionSourceRegles } from '../../
 import { produireDocument, versionSourceDocument } from '../../services/swn/document-source.js';
 import { importerGalaxie, NATURES_GALAXIE } from '../../services/swn/import-galaxie.js';
 import { donneesGalaxie, donneesVaisseaux } from '../../services/swn/donnees-outils.js';
-import { outilTrajet } from './assistant.js';
+import { presenceDeFiche } from '../../services/swn/presence.js';
+import { outilsAssistant } from './assistant.js';
 import { outilVaisseau } from './assistant-vaisseaux.js';
 import type { DeclarationCarte, DeclarationGenerateur, DeclarationModule, SectionGeree } from '../declaration.js';
 
@@ -15,7 +16,8 @@ export const swnGalaxie: DeclarationCarte = {
   visibiliteParDefaut: { mj: true, joueur: true }, usages: [{ nom: 'maintenir', mjSeul: true }], reglages: {},
   ecran: { libelle: 'Galaxie', icone: 'Map' },
   cartes: (db, acteur, universId) => cartesGalaxies(db, acteur, universId),
-  outilsAssistant: outilTrajet,
+  outilsAssistant,
+  blocsFiche: (db, acteur, universId, ficheId) => presenceDeFiche(db, acteur, universId, ficheId),
   donnees: donneesGalaxie,
   importation: { natures: NATURES_GALAXIE, appliquer: importerGalaxie },
   sections: [{
@@ -46,7 +48,17 @@ export const swnVaisseaux: DeclarationGenerateur = {
   type: 'generateur', portee: 'tous', dependances: [],
   visibiliteParDefaut: { mj: true, joueur: true },
   usages: [{ nom: 'concevoir', mjSeul: false }, { nom: 'creer', mjSeul: true }, { nom: 'generer', mjSeul: true }],
-  reglages: {},
+  // H-capacites-1 (4): these concern the designer only; `portee_saut` stays a setting of the module.
+  reglages: {
+    diviseur_prix: { libelle: 'Diviseur de prix', aide: 'Le prix du livre est divisé par cette valeur (1, 2 ou 4) ; l\'entretien et le chantier le suivent.',
+      niveau: 'systeme+univers', forme: { type: 'choix', valeurs: ['1', '2', '4'] }, defaut: '1' },
+    cadence_chantier: { libelle: 'Cadence du chantier', aide: 'Crédits de prix construits par jour de chantier.',
+      niveau: 'systeme+univers', forme: { type: 'nombre', min: 1, max: 1_000_000, entier: true }, defaut: 25000 },
+    solde_jour: { libelle: 'Solde par jour', aide: 'Crédits de solde par jour et par membre d\'équipage payé.',
+      niveau: 'systeme+univers', forme: { type: 'nombre', min: 0, max: 100_000, entier: true }, defaut: 100 },
+    vivres_jour: { libelle: 'Vivres par jour', aide: 'Crédits de vivres par jour et par membre d\'équipage vivant.',
+      niveau: 'systeme+univers', forme: { type: 'nombre', min: 0, max: 100_000, entier: true }, defaut: 20 },
+  },
   catalogue: catalogueVaisseaux,
   donnees: donneesVaisseaux,
   ecran: { libelle: 'Concepteur de vaisseaux', icone: 'Rocket' },

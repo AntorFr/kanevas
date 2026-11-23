@@ -134,10 +134,9 @@ test('Z-1 : valeurs mal formées refusées avec leur champ et la phrase d\'E-20,
     ['modifications', 'echange-i', { echange_arrondi: 'autre' }, 'echange_arrondi', P.arr],
     ['modifications', 'echange-i', { echange_arrondi: null }, 'echange_arrondi', P.arr],
     ['modifications', 'echange-i', { echange_arrondi: undefined }, 'limite', P.lim],
-    // limite 1 for the three effects that need it
+    // limite 1 for the effects that need it (montages_specialises no longer: H-8)
     ['modifications', 'optimise-l', { limite: 2 }, 'limite', P.lim],
     ['modifications', 'blindage-l', { limite: 2 }, 'limite', P.lim],
-    ['modifications', 'montage-l', { limite: 2 }, 'limite', P.lim],
   ];
   for (const [nature, cle, patch, champ, phrase] of cas) {
     const f = catalogue();

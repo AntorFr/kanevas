@@ -25,7 +25,7 @@ async function monter() {
   await put('perso:aldric', { type: 'personnage', titre: 'Aldric', sections: [{ cle: 'app', titre: 'Apparence', contenu: 'x' }] });
   await put('lieu:port', { type: 'lieu', titre: 'Port', sections: [] });
   await put('fac:guilde', { type: 'faction', titre: 'Guilde', sections: [] });
-  const rows = (sql = '') => app.db.prepare(`SELECT r.nature, r.qualificatif FROM relations r JOIN sections s ON s.id = r.section_id JOIN fiches f ON f.id = s.fiche_id WHERE f.cle_origine = 'perso:aldric' ${sql} ORDER BY r.id`).all() as { nature: string; qualificatif: string }[];
+  const rows = (sql = '') => app.db.prepare(`SELECT r.nature, r.qualificatif FROM relations r JOIN sections s ON s.id = r.section_id JOIN fiches f ON f.id = s.fiche_id WHERE f.cle = 'perso:aldric' ${sql} ORDER BY r.id`).all() as { nature: string; qualificatif: string }[];
   return { app, put, rel, lot, clore, lire, rows };
 }
 const E = { section: 'app', cible: 'lieu:port' };
@@ -125,7 +125,7 @@ test('PUT type famille : crée une famille, rejouée inchangée ; type inconnu r
   const a = await m.put('fam:corvalis', { type: 'famille', titre: 'Les Corvalis', sections: [] }, l);
   assert.equal(a.statusCode, 200, a.body);
   assert.equal(a.json().etat, 'creee');
-  assert.equal((m.app.db.prepare("SELECT type FROM fiches WHERE cle_origine='fam:corvalis'").get() as any).type, 'famille');
+  assert.equal((m.app.db.prepare("SELECT type FROM fiches WHERE cle='fam:corvalis'").get() as any).type, 'famille');
   await m.clore(l);
   const l2 = await m.lot();
   const b = await m.put('fam:corvalis', { type: 'famille', titre: 'Les Corvalis', sections: [] }, l2);

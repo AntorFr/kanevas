@@ -1,3 +1,4 @@
+// ecrans: outil
 // Feature-level browser tests of kanevas-outils-format-vaisseaux-regles-livre (B-87, E-22), real server in stub mode, real Chromium.
 // Written from the feature sheet (exit criterion), docs/parcours.md (B-87, P-19 step 2) and docs/ecrans.md (« What
 // kanevas-outils-format-vaisseaux-regles-livre changes of E-22 »: captions, consequence lines, repair-skill block, target select).
@@ -94,7 +95,7 @@ const corps = async (p: Any) => norm(await p.locator('body').innerText());
 const resultats = async (p: Any) => norm(await p.getByRole('complementary', { name: 'Résultats' }).innerText());
 const attendreTexte = (p: Any, re: RegExp) => p.waitForFunction((src: string) => new RegExp(src).test(document.body.innerText.replace(/[  ]/g, ' ')), re.source, { timeout: 15000 });
 const reparation = (p: Any) => p.getByRole('spinbutton', { name: 'Compétence de réparation' });
-const visee = (p: Any) => p.getByRole('combobox', { name: /Élément visé/ });
+const visee = (p: Any) => p.getByRole('combobox', { name: /^Visée/ });
 const AM = 'Ajouter un aménagement'; const ARME = 'Ajouter une arme'; const MOD = 'Ajouter une modification';
 async function ajouter(p: Any, bouton: string, nom: string) {
   const groupe = { [AM]: 'Aménagements', [ARME]: 'Armes', [MOD]: 'Modifications' }[bouton];
@@ -122,7 +123,7 @@ describe('B-87 · E-22 : légendes des quatre règles du livre et ligne de cons�
     await attendreTexte(a, /masse −2/);
     await m.poser(m.etoile, { coque: 'fregate-r', choix: [l('armes', 'laser-z'), l('modifications', 'montage-z', viseLaser)] });
     const b = await ouvrir(m, 'Léa', m.etoile);
-    await attendreTexte(b, /masse \+1, puissance \+5/);
+    await attendreTexte(b, /puissance −5/);
     await m.poser(m.etoile, { coque: 'fregate-r', choix: [l('armes', 'laser-z'), { ...l('modifications', 'surcharge-z', viseLaser), quantite: 2 }] });
     const c = await ouvrir(m, 'Léa', m.etoile);
     await attendreTexte(c, /puissance \+10/);
@@ -176,11 +177,12 @@ describe('B-87 · E-22 : compétence de réparation et élément visé', { skip:
     await m.poser(m.etoile, { coque: 'fregate-r', choix: [] });
     const p = await ouvrir(m, 'Léa', m.etoile);
     await ajouter(p, AM, 'Soute Z');
-    await ajouter(p, MOD, 'Montage Z');
-    await p.getByText('Aucun élément à viser dans cette conception.').first().waitFor();
+    await ajouter(p, MOD, 'Surcharge Z');
+    await p.getByText('Aucune arme à viser dans cette conception.').first().waitFor();
     await p.getByText(/choisissez l['’]élément visé/).first().waitFor();
     await ajouter(p, ARME, 'Laser Z');
     assert.deepEqual((await visee(p).last().locator('option').allInnerTexts()).map(norm), ['Choisir un élément', 'Laser Z']);
+    assert.equal(await p.getByText('Aucune arme à viser dans cette conception.').count(), 0);
     await p.screenshot({ path: `${SHOTS}-vise.png`, fullPage: true });
   });
 });

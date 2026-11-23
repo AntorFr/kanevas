@@ -5,6 +5,7 @@
   color-scheme: light dark;
   --fond: #121317;
   --fond-lateral: #0e0f12;
+  --affichage-fond: #000; /* E-30: the table display, pure black (charte § 6) */
   --surface: #191a1f;
   --surface-2: #202128;
   --surface-3: #2a2b33;
@@ -35,9 +36,17 @@
   --voile: rgba(5,6,9,.62);
   --ombre-flottant: 0 0 0 1px rgba(255,255,255,.06), 0 12px 32px -6px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.35);
   --squelette: rgba(255,255,255,.06);
+  /* The sky of a system map stays dark in both themes (a space stays dark): the same three values below. */
+  --ciel: #0b0b10;
+  --ciel-lueur: #17182a;
+  --ciel-trait: rgba(160,170,255,.34);
+  --ciel-halo: rgba(0,0,0,.9);
+  /* The colours of an element's ring (E-23, B-96): the six names of the server, one token each, for the dark and the light theme. */
+  --element-accent: #8b9bf0; --element-table: #3fc79a; --element-ambre: #f2a33c; --element-danger: #ec7b6f; --element-neutre: #a6a7b0; --element-clair: #ebecf0;
 
   --police-titre: "Fraunces Variable", "Fraunces", "Iowan Old Style", Georgia, serif;
   --police-lecture: "Newsreader Variable", "Newsreader", "Iowan Old Style", Georgia, serif;
+  --police-code: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --police-texte: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --t-12: 12px; --t-13: 13px; --t-14: 14px; --t-16: 16px; --t-18: 18px; --t-19: 19px; --t-22: 22px; --t-32: 32px; --t-40: 40px;
   --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 24px; --e-6: 32px; --e-7: 48px; --e-8: 64px;
@@ -81,5 +90,13 @@
   --voile: rgba(20,22,34,.38);
   --ombre-flottant: 0 0 0 1px rgba(22,26,44,.08), 0 12px 32px -8px rgba(22,26,44,.22), 0 2px 6px rgba(22,26,44,.08);
   --squelette: rgba(22,26,44,.07);
+  --ciel: #0b0b10;
+  --ciel-lueur: #17182a;
+  --ciel-trait: rgba(160,170,255,.34);
+  --ciel-halo: rgba(0,0,0,.9);
+  --element-accent: #3a4cc0; --element-table: #08694a; --element-ambre: #8a5300; --element-danger: #b4352b; --element-neutre: #4a4c58; --element-clair: #1a1b22;
 }
 @media (prefers-reduced-motion: reduce) { :root { --duree: 0ms; } }
+/* Whatever sits on the sky reads the dark theme's text and accent, in either theme (the sky is dark in both). */
+.cs-ciel { --texte: #ebecf0; --texte-2: #a6a7b0; --texte-3: #8b8c97; --accent: #8b9bf0; --focus: #9aa6f5;
+  --element-accent: #8b9bf0; --element-table: #3fc79a; --element-ambre: #f2a33c; --element-danger: #ec7b6f; --element-neutre: #a6a7b0; --element-clair: #ebecf0; }

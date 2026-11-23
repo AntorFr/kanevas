@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Besoin « preuve de test de la chaîne » (feature kanevas-preuve-tests), vu depuis le dépôt :
 // la suite est déclarée dans .sdlc.yaml (tests:), aucun workflow ne la joue sur push de branche
 // ni sur pull_request, l'image ne se construit que sur un tag v* après la vérification de
@@ -83,7 +84,8 @@ test('l’image ne se construit que sur un tag v*, après un job qui lit l’att
 
 test('l’attestation vérifiée est un succès, pas un statut quelconque', () => {
   const yaml = sansCommentaires(lire('.github/workflows/docker-publish.yml'));
-  assert.match(yaml, /=\s*success/);
+  // AD-niveau-7 : seul « success niveau … » passe, le statut doit dire son niveau.
+  assert.match(yaml, /"success niveau "\*\)/);
   assert.match(yaml, /exit 1/);
 });
 

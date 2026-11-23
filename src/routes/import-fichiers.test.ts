@@ -121,41 +121,49 @@ test('fichier « mj » : absent de la liste de Léa, présent dans celle d’Ant
   assert.ok((await liste(antor)).fichiers.some((f) => f.nom === 'secret.png'));
 });
 
-test('visibilité changée par Antor : non rétablie par le rejeu, avertissement au lot', async () => {
+test('visibilité changée par Antor : le rejeu qui l\'envoie la reprend (B-47), sans avertissement', async () => {
   const { put, lot, lire, app } = await monter();
   const id = (await put('img:s', PNG, { nom: 's.png', visibilite: 'mj' })).json().id;
   app.db.prepare("UPDATE fichiers SET visibilite = 'joueurs' WHERE id = ?").run(id);
   const l = await lot();
   const r = await put('img:s', PNG, { nom: 's.png', visibilite: 'mj' }, l);
-  assert.equal(r.json().etat, 'inchangee');
-  assert.deepEqual(r.json().avertissements, ['visibilité modifiée dans Kanevas : non écrasée']);
-  assert.equal((app.db.prepare('SELECT visibilite FROM fichiers WHERE id = ?').get(id) as { visibilite: string }).visibilite, 'joueurs');
-  const lt = await lire(l);
-  assert.equal(lt.avertissements, 1);
-  assert.match(JSON.stringify(lt.rapport), /visibilité modifiée dans Kanevas : non écrasée/);
+  assert.equal(r.json().etat, 'mise_a_jour');
+  assert.deepEqual(r.json().avertissements, []);
+  assert.equal((app.db.prepare('SELECT visibilite FROM fichiers WHERE id = ?').get(id) as { visibilite: string }).visibilite, 'mj');
+  assert.equal((await lire(l)).avertissements, 0);
 });
 
-test('nom changé par Antor, mêmes octets : inchangé, nom conservé, avertissement', async () => {
+test('visibilité changée par Antor, rejeu sans visibilité : celle de Kanevas reste (B-91)', async () => {
+  const { put, app } = await monter();
+  const id = (await put('img:s2', PNG, { nom: 's.png', visibilite: 'mj' })).json().id;
+  app.db.prepare("UPDATE fichiers SET visibilite = 'joueurs' WHERE id = ?").run(id);
+  const r = await put('img:s2', PNG, { nom: 's.png' });
+  assert.equal(r.json().etat, 'inchangee');
+  assert.deepEqual(r.json().avertissements, []);
+  assert.equal((app.db.prepare('SELECT visibilite FROM fichiers WHERE id = ?').get(id) as { visibilite: string }).visibilite, 'joueurs');
+});
+
+test('nom changé par Antor, mêmes octets : le rejeu remet le nom du script, sans avertissement', async () => {
   const { put, lot, lire, app } = await monter();
   const id = (await put('img:n', PNG, { nom: 'n.png' })).json().id;
   app.db.prepare("UPDATE fichiers SET nom = 'Renommé.png' WHERE id = ?").run(id);
   const l = await lot();
   const r = await put('img:n', PNG, { nom: 'n.png' }, l);
-  assert.equal(r.json().etat, 'inchangee');
-  assert.deepEqual(r.json().avertissements, ['nom modifié dans Kanevas : non écrasé']);
-  assert.equal((app.db.prepare('SELECT nom FROM fichiers WHERE id = ?').get(id) as { nom: string }).nom, 'Renommé.png');
-  assert.equal((await lire(l)).avertissements, 1);
+  assert.equal(r.json().etat, 'mise_a_jour');
+  assert.deepEqual(r.json().avertissements, []);
+  assert.equal((app.db.prepare('SELECT nom FROM fichiers WHERE id = ?').get(id) as { nom: string }).nom, 'n.png');
+  assert.equal((await lire(l)).avertissements, 0);
 });
 
-test('nom et visibilité protégés indépendamment : l’un modifié, l’autre suit encore la source', async () => {
+test('nom et visibilité modifiés dans Kanevas : le rejeu reprend les deux du script', async () => {
   const { put, app } = await monter();
   const id = (await put('img:i', PNG, { nom: 'a.png', visibilite: 'mj' })).json().id;
   app.db.prepare("UPDATE fichiers SET nom = 'Perso.png' WHERE id = ?").run(id);
   const r = await put('img:i', PNG, { nom: 'a.png', visibilite: 'joueurs' });
   assert.equal(r.json().etat, 'mise_a_jour');
-  assert.deepEqual(r.json().avertissements, ['nom modifié dans Kanevas : non écrasé']);
+  assert.deepEqual(r.json().avertissements, []);
   const l = app.db.prepare('SELECT nom, visibilite FROM fichiers WHERE id = ?').get(id);
-  assert.deepEqual({ ...l as object }, { nom: 'Perso.png', visibilite: 'joueurs' });
+  assert.deepEqual({ ...l as object }, { nom: 'a.png', visibilite: 'joueurs' });
 });
 
 test('nom non touché par Antor : un nouveau nom de la source est appliqué (mise à jour)', async () => {
@@ -167,7 +175,7 @@ test('nom non touché par Antor : un nouveau nom de la source est appliqué (mis
   assert.equal((app.db.prepare('SELECT nom FROM fichiers WHERE id = ?').get(id) as { nom: string }).nom, 'apres.png');
 });
 
-test('mêmes clé, octets différents : mis à jour, octets servis changent, un seul fichier disque, nom protégé gardé', async () => {
+test('mêmes clé, octets différents : mis à jour, octets servis changent, un seul fichier disque, nom du script', async () => {
   const { put, lot, clore, lire, antor, octets, lignes, app } = await monter();
   const avant = nbOctets();
   const id = (await put('img:q', PNG, { nom: 'q.png' })).json().id;
@@ -181,7 +189,7 @@ test('mêmes clé, octets différents : mis à jour, octets servis changent, un 
   assert.ok((await octets(antor, id)).rawPayload.equals(PNG2));
   assert.equal(lignes(), 1);
   assert.equal(nbOctets(), avant + 1);
-  assert.equal((app.db.prepare('SELECT nom, taille FROM fichiers WHERE id = ?').get(id) as { nom: string }).nom, 'Perso.png');
+  assert.equal((app.db.prepare('SELECT nom, taille FROM fichiers WHERE id = ?').get(id) as { nom: string }).nom, 'q.png');
 });
 
 test('fichier de 0 octet : 400 invalide champ fichier, refus au lot avec clé et raison, rien d’écrit', async () => {

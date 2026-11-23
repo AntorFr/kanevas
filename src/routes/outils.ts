@@ -51,7 +51,7 @@ export async function registerOutilsRoutes(app: FastifyInstance) {
   const erreurCatalogue = (erreur: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
     if (erreur instanceof ErreurService) {
       if (erreur.code === 'introuvable') return reply.callNotFound();
-      const statut = { refuse: 403, invalide: 400, conflit: 409 }[erreur.code];
+      const statut = { refuse: 403, invalide: 400, conflit: 409, indisponible: 503 }[erreur.code];
       return reply.code(statut).send({
         message: erreur.message, code: erreur.detail ?? erreur.code,
         ...(erreur.champ ? { champ: erreur.champ } : {}),
@@ -195,7 +195,20 @@ export async function registerOutilsRoutes(app: FastifyInstance) {
     if (!creation) return reply;
     const b = corps(request);
     if (typeof b.titre !== 'string') throw new ErreurService('invalide', 'Le titre : de 1 à 80 caractères.', undefined, 'titre');
-    return reply.code(201).send(creation.creer(app.db, acteur(request), idDe(request), b.titre));
+    const taille = (v: unknown, champ: string) => {
+      if (v === undefined || v === null) return undefined;
+      if (!Number.isInteger(v)) throw new ErreurService('invalide', 'La taille est un nombre entier de cases.', 'taille_invalide', champ);
+      return v as number;
+    };
+    return reply.code(201).send(creation.creer(app.db, acteur(request), idDe(request), b.titre,
+      { largeur: taille(b.largeur, 'largeur'), hauteur: taille(b.hauteur, 'hauteur') }));
+  });
+  app.delete(`${baseCartes}/:cid`, async (request, reply) => {
+    const creation = creationDe(request, reply);
+    if (!creation) return reply;
+    if (!creation.supprimer) return reply.callNotFound();
+    creation.supprimer(app.db, acteur(request), idDe(request), idDeChemin((request.params as { cid: string }).cid));
+    return reply.code(204).send();
   });
   app.patch(`${baseCartes}/:cid`, async (request, reply) => {
     const creation = creationDe(request, reply);

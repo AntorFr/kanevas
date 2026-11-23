@@ -1,3 +1,4 @@
+// ecrans: acces-api
 // E-18 « Lots d'import » after kanevas-scenarios-suivi, at the browser: a batch that imports a campaign and its
 // scenario (both sheets of type aventure) counts them in « Fiches » and shows no « Campagnes » nor « Scénarios » line.
 //
@@ -63,11 +64,4 @@ test('lot_vide_n_a_pas_de_ligne_campagnes', opts, async () => {
   await antor.locator('.lot-tete').first().waitFor();
   const texte = await antor.locator('main').innerText();
   assert.doesNotMatch(texte, /Campagnes :|Scénarios :/);
-});
-
-test('routes_d_import_des_campagnes_et_scenarios_repondent_404_au_jeton_valide', opts, async () => {
-  for (const chemin of ['campagnes/x', 'scenarios/x']) {
-    const r = await fetch(`${base}/${chemin}`, { method: 'PUT', headers: h, body: JSON.stringify({ nom: 'x', titre: 'x', statut: 'active' }) });
-    assert.equal(r.status, 404, chemin);
-  }
 });

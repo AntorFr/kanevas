@@ -6,7 +6,7 @@ import { appeler, ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { useTitreAriane } from '../../../cadre-contexte';
 import { Bouton, BoiteDialogue, Chargement, ErreurChargement, PageIntrouvable, Pastille } from '../../../ui';
 import { Equipage } from './Equipage';
-import { bornesEquipage, brouillonDe, choixDe, credits, exigeReparation, legende, ligneAjuste, memeBrouillon, motifDe, requete } from './format';
+import { bornesEquipage, brouillonDe, choixDe, credits, estAutomatisation, exigeReparation, legende, ligneAjuste, memeBrouillon, motifDe, requete } from './format';
 import { Effets } from './Effets';
 import { Alertes, Chiffres, ErreurCalcul } from './Resultats';
 import { Selecteur } from './Selecteur';
@@ -163,7 +163,12 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
     setOuvert(null);
   }
   const quantite = (l: Ligne, delta: number) =>
-    change((b) => ({ ...b, lignes: b.lignes.map((x) => (x === l ? { ...x, quantite: Math.max(1, Math.min(99, x.quantite + delta)) } : x)) }));
+    change((b) => ({ ...b, lignes: b.lignes.map((x) => {
+      if (x !== l) return x;
+      const q = Math.max(1, Math.min(99, x.quantite + delta));
+      // The rows follow the quantity: a new one is empty, the last ones leave with their choice.
+      return { ...x, quantite: q, ...(x.rangees ? { rangees: Array.from({ length: q }, (_, k) => x.rangees![k] ?? '') } : {}) };
+    }) }));
   const retirer = (l: Ligne) => {
     marquer(`points/${l.nature}/${l.cle}`, false);
     change((b) => ({ ...b, lignes: b.lignes.filter((x) => x !== l) }));
@@ -177,6 +182,11 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
       const [nature, ...cle] = valeur.split('/');
       return valeur === '' ? sans : { ...sans, vise: { nature: nature!, cle: cle.join('/') } };
     }),
+  }));
+
+  const rangee = (l: Ligne, rang: number, valeur: string) => change((b) => ({
+    ...b,
+    lignes: b.lignes.map((x) => (x === l ? { ...x, rangees: Array.from({ length: x.quantite }, (_, k) => (k === rang ? valeur : x.rangees?.[k] ?? '')) } : x)),
   }));
 
   const alertes: Alerte[] = calcul.alertes;
@@ -198,6 +208,10 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   const demandeReparation = brouillon.lignes.some((l) => exigeReparation(infos[`${l.nature}/${l.cle}`]?.el.donnees));
   const blocReparation = demandeReparation || resultat.reparation != null || brouillon.reparation > 0;
   const reparationAffichee = brouillon.reparation;
+  // « dont robots » (H-5): disabled with its muted line while no chosen line is the automation system and no robot is set (display only; the alert is the server's).
+  const automatisation = brouillon.lignes.some((l) => l.quantite > 0 && estAutomatisation(infos[`${l.nature}/${l.cle}`]?.el.donnees));
+  const robotsFige = !automatisation && brouillon.robots === 0;
+  const alerteEquipage = alertes.some((a) => a.code === 'equipage_robots');
   const invalide = equipageInvalide || Object.values(invalides).some(Boolean);
 
   async function enregistrer() {
@@ -338,7 +352,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
           </h2>
           <div className="vx-defile">
           <div className={estompe ? 'vx-estompe' : undefined} data-estompe={estompe || undefined}>
-            <Chiffres r={resultat} />
+            <Chiffres r={resultat} station={donneesCoque ? donneesCoque.moteur_spike === 0 : null} />
           </div>
           {etatCalcul === 'erreur' && <ErreurCalcul onReessayer={() => setEssaiCalcul((n) => n + 1)} />}
           <div className="vx-alertes-zone"><Alertes alertes={alertes} /></div>
@@ -380,7 +394,25 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                 key={cleEquipage} valeur={equipageAffiche} bornes={bornes} lecture={!ecriture} desactive={verrou}
                 onChange={(n) => { setEquipageTouche(true); change((b) => ({ ...b, equipage: n })); }}
                 onInvalide={(v) => { setEquipageTouche(true); setEquipageInvalide(v); }}
+                enAlerte={alerteEquipage}
               />
+              <div className="vx-dont">
+                <span className="vx-dont-nom">dont joueurs</span>
+                <Equipage
+                  key={`pj-${cleEquipage}`} nom="dont joueurs" maximum={equipageAffiche ?? 0} valeur={brouillon.pj} bornes="" lecture={!ecriture} desactive={verrou}
+                  diminuer="Diminuer : dont joueurs" augmenter="Augmenter : dont joueurs" enAlerte={alerteEquipage}
+                  onChange={(n) => change((b) => ({ ...b, pj: n }))} onInvalide={(v) => marquer('pj', v)}
+                />
+              </div>
+              <div className="vx-dont">
+                <span className="vx-dont-nom">dont robots</span>
+                <Equipage
+                  key={`robots-${cleEquipage}`} nom="dont robots" maximum={equipageAffiche ?? 0} valeur={brouillon.robots} bornes="" lecture={!ecriture}
+                  desactive={verrou || robotsFige} ligne={robotsFige && ecriture ? 'Aucun système d’automatisation sur cette conception.' : undefined}
+                  diminuer="Diminuer : dont robots" augmenter="Augmenter : dont robots" enAlerte={alerteEquipage}
+                  onChange={(n) => change((b) => ({ ...b, robots: n }))} onInvalide={(v) => marquer('robots', v)}
+                />
+              </div>
             </div>
           )}
           {blocReparation && (
@@ -428,6 +460,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                             <span className="vx-sous">{ligneAjuste(resultat.lignes.find((r) => r.nature === l.nature && r.cle === l.cle)?.ajuste)}</span>
                           )}
                           {infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition && <span className="vx-sous vx-condition">{infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition}</span>}
+                          {infos[`${l.nature}/${l.cle}`]?.el.donnees?.effet_jeu && <span className="vx-sous vx-condition vx-effet-jeu">{infos[`${l.nature}/${l.cle}`]?.el.donnees?.effet_jeu}</span>}
                         </div>
                         {infos[`${l.nature}/${l.cle}`]?.univers && <Pastille sens="neutre">Univers</Pastille>}
                         {retirees.has(i) && <Pastille sens="danger">Élément retiré de cet univers</Pastille>}
@@ -446,6 +479,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                         <Effets
                           ligne={l} info={infos[`${l.nature}/${l.cle}`]} infos={infos} lignes={brouillon.lignes} resultat={resultat}
                           alerte={alertes.find((a) => a.code === 'cible_invalide' && a.ligne === i)}
+                          alertes={alertes.filter((a) => a.ligne === i)} indice={i} onRangee={(k, v) => rangee(l, k, v)}
                           ecriture={ecriture} verrou={verrou} cle={cleEquipage}
                           onPoints={(n) => points(l, n)} onInvalide={(v) => marquer(`points/${l.nature}/${l.cle}`, v)} onVise={(v) => viser(l, v)}
                         />
@@ -454,7 +488,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                   </ul>
                 )}
                 {ouvert?.nature === n.nature && (
-                  <Selecteur universId={universId} suffixe={suffixe} nature={n.nature} titre={ouvert.titre} classeCoque={resultat.coque.classe} onChoisir={choisir} onFermer={() => setOuvert(null)} />
+                  <Selecteur universId={universId} suffixe={suffixe} nature={n.nature} titre={ouvert.titre} classeCoque={resultat.coque.classe} sansMoteur={donneesCoque?.moteur_spike === 0} onChoisir={choisir} onFermer={() => setOuvert(null)} />
                 )}
               </div>
             );

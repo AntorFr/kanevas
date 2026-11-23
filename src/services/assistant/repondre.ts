@@ -111,7 +111,7 @@ export async function repondre(
   }
   const transport = deps.transport ?? transportDe(config);
 
-  const catalogue = catalogueDe(db, compteId, universId, deps.images);
+  const catalogue = catalogueDe(db, compteId, universId, { porte: 'assistant', images: deps.images });
   const evenements: Evenement[] = [];
   const abort = new AbortController();
   const echeance = new Echeance(deps.delaiMs ?? DELAI_MS, () => abort.abort());
@@ -122,7 +122,13 @@ export async function repondre(
   // Shared by every tool call of this request (AD-89: one image per request).
   const contexte: ContexteDemande = { signal: abort.signal };
   const collecter = (r: Resultat): Resultat => {
-    if (r.ok && r.evenement) evenements.push(r.evenement);
+    if (r.ok && r.evenement) {
+      // A map composed in several batches is one event (AD-battlemap-assistant-6): same map, one block.
+      const e = r.evenement;
+      const deja = e.type === 'carte_composee' ? evenements.findIndex((x) => x.type === 'carte_composee' && x.cible.carteId === e.cible.carteId) : -1;
+      if (deja >= 0) evenements[deja] = e;
+      else evenements.push(e);
+    }
     return r;
   };
   const outils: Outil[] = catalogue.outils.map((o) => ({

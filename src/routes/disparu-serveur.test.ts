@@ -49,18 +49,17 @@ async function monter() {
   return { app, antor, lea, u, base, appel, trouver, charge, creer, liste };
 }
 
-test('PATCH disparu : Bran devient mort, modifie_le bouge, dernier_import intact ; vivant le rétablit', async () => {
+test('PATCH disparu : Bran devient mort, modifie_le bouge ; vivant le rétablit', async () => {
   const m = await monter();
   const bran = m.trouver('Bran Corvalis');
-  const avant = m.app.db.prepare('SELECT modifie_le, dernier_import FROM fiches WHERE id = ?').get(bran) as { modifie_le: string; dernier_import: string | null };
+  const avant = m.app.db.prepare('SELECT modifie_le FROM fiches WHERE id = ?').get(bran) as { modifie_le: string };
   await new Promise((r) => setTimeout(r, 5));
   const r = await m.appel(m.antor, 'PATCH', `/fiches/${bran}`, { disparu: true });
   assert.equal(r.statusCode, 200, r.body);
   assert.equal(r.json().charge.disparu, true);
   assert.equal(r.json().charge.pj, false);
-  const apres = m.app.db.prepare('SELECT modifie_le, dernier_import FROM fiches WHERE id = ?').get(bran) as typeof avant;
+  const apres = m.app.db.prepare('SELECT modifie_le FROM fiches WHERE id = ?').get(bran) as typeof avant;
   assert.notEqual(apres.modifie_le, avant.modifie_le);
-  assert.equal(apres.dernier_import, avant.dernier_import);
   const r2 = await m.appel(m.antor, 'PATCH', `/fiches/${bran}`, { disparu: false });
   assert.equal(r2.json().charge.disparu, false);
   assert.equal(m.charge(bran).disparu, false);
@@ -268,7 +267,7 @@ async function importer() {
   const put = (cle: string, payload: unknown, lot?: number) =>
     m.app.inject({ method: 'PUT', url: `/api/import/v1/univers/${e.id}/fiches/${encodeURIComponent(cle)}${lot ? `?lot=${lot}` : ''}`, headers: auth, payload: payload as object });
   const ch = (cle: string) => {
-    const row = m.app.db.prepare('SELECT id, charge FROM fiches WHERE univers_id = ? AND cle_origine = ?').get(e.id, cle) as { id: number; charge: string };
+    const row = m.app.db.prepare('SELECT id, charge FROM fiches WHERE univers_id = ? AND cle = ?').get(e.id, cle) as { id: number; charge: string };
     return { id: row.id, charge: JSON.parse(row.charge) as Record<string, unknown> };
   };
   const mj = (fid: number, payload: object, mode = '') =>
@@ -294,31 +293,33 @@ test('import : disparu sur une quête → champ_inconnu, rien créé ; disparu n
   const r = await m.put('q:1', { type: 'quete', titre: 'Q', disparu: true, sections: [] });
   assert.equal(r.statusCode, 400, r.body);
   assert.match(JSON.stringify(r.json()), /champ_inconnu/);
-  assert.equal(m.app.db.prepare('SELECT COUNT(*) n FROM fiches WHERE cle_origine = ?').get('q:1')!.n ?? 0, 0);
+  assert.equal(m.app.db.prepare('SELECT COUNT(*) n FROM fiches WHERE cle = ?').get('q:1')!.n ?? 0, 0);
   const r2 = await m.put('q:2', { type: 'quete', titre: 'Q', disparu: false, sections: [] });
   assert.equal(r2.statusCode, 400, 'même false est un champ inconnu');
   const r3 = await m.put('p:2', { type: 'personnage', titre: 'P', disparu: 'oui', sections: [] });
   assert.equal(r3.statusCode, 400, r3.body);
 });
 
-test('import B-48 : rejoué après « marquer vivant » dans Kanevas, disparu n est pas écrasé', async () => {
+test('import : rejoué après « marquer vivant » dans Kanevas, disparu revient à ce que le script porte, sans avertissement', async () => {
   const m = await importer();
   await m.put('p:1', { type: 'personnage', titre: 'Défunt', disparu: true, sections: [] });
   const { id } = m.ch('p:1');
   assert.equal((await m.mj(id, { disparu: false })).statusCode, 200);
   const r = await m.put('p:1', { type: 'personnage', titre: 'Défunt', disparu: true, sections: [] });
   assert.equal(r.statusCode, 200, r.body);
-  assert.equal(m.ch('p:1').charge.disparu, false, 'le MJ l a remis vivant');
-  assert.match(JSON.stringify(r.json()), /non écrasé/);
+  assert.equal(r.json().etat, 'mise_a_jour');
+  assert.equal(m.ch('p:1').charge.disparu, true, 'le script l a remis mort');
+  assert.deepEqual(r.json().avertissements, []);
 });
 
-test('import B-48 : le MJ marque mort, le script dit vivant → la décision du MJ reste', async () => {
+test('import : le MJ marque mort, le script dit vivant → le script gagne', async () => {
   const m = await importer();
   await m.put('p:1', { type: 'personnage', titre: 'Vivant', disparu: false, sections: [] });
   const { id } = m.ch('p:1');
   await m.mj(id, { disparu: true });
-  await m.put('p:1', { type: 'personnage', titre: 'Vivant', disparu: false, sections: [] });
-  assert.equal(m.ch('p:1').charge.disparu, true);
+  const r = await m.put('p:1', { type: 'personnage', titre: 'Vivant', disparu: false, sections: [] });
+  assert.equal(r.json().etat, 'mise_a_jour');
+  assert.equal(m.ch('p:1').charge.disparu, false);
 });
 
 test('import : sans changement humain, le script met à jour disparu (mort → vivant)', async () => {
@@ -338,14 +339,17 @@ test('import : le script qui ne dit rien de disparu ne touche pas à la marque d
   assert.equal(m.ch('p:1').charge.disparu, true);
 });
 
-test('import B-48 : PJ changé par le script au même rejeu qu un disparu humain → chacun protégé séparément', async () => {
+test('import : PJ et disparu changés dans Kanevas, le rejeu qui les porte les écrit tous deux ; sans pj ni disparu il laisse les deux', async () => {
   const m = await importer();
   await m.put('p:1', { type: 'personnage', titre: 'X', pj: false, disparu: true, sections: [] });
   const { id } = m.ch('p:1');
   await m.mj(id, { disparu: false });
+  const sans = await m.put('p:1', { type: 'personnage', titre: 'X', sections: [] });
+  assert.equal(sans.json().etat, 'inchangee');
+  assert.equal(m.ch('p:1').charge.disparu, false, 'non envoyé : laissé');
   await m.put('p:1', { type: 'personnage', titre: 'X', pj: true, disparu: true, sections: [] });
-  assert.equal(m.ch('p:1').charge.disparu, false, 'disparu humain protégé');
-  assert.equal(m.ch('p:1').charge.pj, true, 'pj non touché par un humain : le script l écrit');
+  assert.equal(m.ch('p:1').charge.disparu, true);
+  assert.equal(m.ch('p:1').charge.pj, true);
 });
 
 test('import : un type changé par le script vers un type sans marque efface disparu ; un champ disparu y est refusé', async () => {

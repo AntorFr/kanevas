@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { Db } from '../../db/db.js';
 import type { CibleCatalogue, DeclarationCatalogue, LigneCatalogue, StockageCatalogue } from '../../outils/declaration.js';
 import { EFFETS, PARAMETRES_EFFET, SENS_ECHANGE, estEffet, type ParametreEffet } from '../../outils/swn/regles/effets.js';
+import { estCapacite } from '../../outils/swn/regles/capacites.js';
 import { texteMasse } from '../../outils/swn/regles/masse.js';
 import { ErreurService, introuvable } from '../erreurs.js';
 
@@ -40,6 +41,9 @@ const libre = (nom: string, valide: (v: unknown) => boolean, phrase: string, jso
 const masse = (): Champ => ({ nom: 'masse', type: 'masse' });
 const ouiNon = (nom: string): Champ => ({ nom, type: 'oui-non' });
 
+/** H-4: the « effect » line of the book, on every element but an example: 1 to 200 characters, shown and never evaluated. */
+const EFFET_JEU: Champ = texteLibre('effet_jeu', 200);
+
 /** Element fields, shared by engines, fittings, defences, weapons and modifications. */
 const ELEMENT: Champ[] = [
   entier('cout'), entier('puissance'), masse(), entier('pv'), entier('ca'),
@@ -56,26 +60,32 @@ const PLAGE_CLASSES: Champ[] = [facultatif('classe_min', 1, 4), facultatif('clas
 const CHAMPS: Record<NatureCatalogueVaisseau, Champ[]> = {
   coques: [entier('classe', 1, 4), entier('cout'), entier('pv'), entier('ca'), entier('puissance'), masse(),
     entier('emports'), entier('facteur_cout', 1), entier('facteur_puissance', 1), entier('facteur_masse', 1),
-    facultatif('vitesse', 0, 99), facultatif('armure', 0, 99), facultatif('equipage_min', 0, 100_000), facultatif('equipage_max', 0, 100_000)],
-  moteurs: [entier('niveau', 1, 6), ...ELEMENT, ...PLAGE_CLASSES],
+    facultatif('vitesse', 0, 99), facultatif('armure', 0, 99), facultatif('equipage_min', 0, 100_000), facultatif('equipage_max', 0, 100_000),
+    entier('moteur_spike', 0, 1, 1), EFFET_JEU], // H-2: 0 for a station
+  moteurs: [entier('niveau', 1, 6), ...ELEMENT, ...PLAGE_CLASSES, EFFET_JEU],
   amenagements: [...ELEMENT, ...PLAGE_CLASSES, code('effet'), liste4('rend_puissance'), liste4('rend_masse'), facultatif('soute', 0, 1_000_000),
     liste4('soute_par_classe'), verifie('reduction_cout_pct', 1, 100, 'nombre entier de 1 à 100 attendu'),
-    libre('reduction_base', (v) => v === 'coque' || v === 'amenagement', '« coque » ou « amenagement » attendu')],
-  defenses: [...ELEMENT, ...PLAGE_CLASSES, verifie('bonus_vitesse', -9, 9, 'nombre entier de −9 à 9 attendu')],
+    libre('reduction_base', (v) => v === 'coque' || v === 'amenagement', '« coque » ou « amenagement » attendu'),
+    libre('limite_par', (v) => v === 'armes', '« armes » attendu'), // H-3
+    libre('capacite', estCapacite, 'capacité inconnue'), EFFET_JEU], // H-4
+  defenses: [...ELEMENT, ...PLAGE_CLASSES, verifie('bonus_vitesse', -9, 9, 'nombre entier de −9 à 9 attendu'), EFFET_JEU],
   armes: [entier('emport'), entier('munitions'), entier('cout_munition'), entier('classe_min', 1, 4, 1), ...ELEMENT,
-    texteLibre('degats', 40), facultatif('perforation', 0, 99), texteLibre('qualites', 120), facultatif('niveau_tech', 0, 9)],
+    texteLibre('degats', 40), facultatif('perforation', 0, 99), texteLibre('qualites', 120), facultatif('niveau_tech', 0, 9), EFFET_JEU],
   modifications: [...ELEMENT, facultatif('cout_pct', 1, 1000), code('effet'), facultatif('valeur', -9, 20), facultatif('points_max', 1, 99),
     code('sens'), facultatif('echange_puissance', 1, 99), reel('echange_masse', 0.5, 99),
     verifie('reparation_min', 1, 20, 'nombre entier de 1 à 20 attendu'),
     libre('effet_pct', () => true, ''), // range by effect, in `verifierEffet`
-    libre('echange_arrondi', (v) => v === 'installation', '« installation » attendu')],
+    libre('echange_arrondi', (v) => v === 'installation', '« installation » attendu'), EFFET_JEU],
   exemples: [{ nom: 'coque', type: 'texte' }, { nom: 'choix', type: 'choix' }, facultatif('equipage', 0, 100_000)],
 };
 
+/** H-10 (3): an effect aims at elements of the design when it declares the natures it may aim at. */
+const visePar = (effet: unknown): boolean => estEffet(effet) && EFFETS[effet].cible !== undefined;
 const cleSchema = z.string().min(1).max(64);
 const ligneChoix = z.strictObject({
   nature: z.enum(NATURES_DE_LIGNE), cle: cleSchema, quantite: z.number().int().min(1).max(99),
   magasins: z.number().int().min(1).max(9).optional(),
+  cibles: z.array(z.strictObject({ nature: z.enum(NATURES_DE_LIGNE), cle: cleSchema, quantite: z.number().int().min(1).max(99) })).min(1).max(99).optional(),
 }).refine((l) => l.magasins === undefined || l.nature === 'armes', { message: 'magasins : armes seulement' });
 function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
   const forme: Record<string, z.ZodType> = { nom: z.string().min(1).max(200) };
@@ -95,7 +105,7 @@ function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
       : z.array(ligneChoix).max(100);
   }
   // Y-1: a modification may state the field to be refused with the reason of its own (checked in `verifier`).
-  // `valeur` and `limite`: range by effect, in `verifierEffet`; `vise` is checked there and never stored (W-1).
+  // `valeur` and `limite`: range by effect, in `verifierEffet`; `vise` is tolerated and never stored (H-8).
   if (nature === 'modifications') {
     forme.reduction_cout_pct = z.unknown().optional(); forme.valeur = z.unknown().optional();
     forme.limite = z.unknown().optional(); forme.vise = z.unknown().optional();
@@ -159,7 +169,7 @@ export const stockageVaisseaux: StockageCatalogue = {
     table(nature);
     const n = nature as NatureCatalogueVaisseau;
     const o = proprietaire(cible);
-    if (n === 'modifications') { donnees = { ...donnees }; delete donnees.vise; } // W-1: the target is checked at the import, not stored
+    if (n === 'modifications') { donnees = { ...donnees }; delete donnees.vise; } // H-8: `vise` is ignored, never stored
     const avant = lire(db, cible, n, cle);
     const complet = { ...donnees };
     for (const c of CHAMPS[n]) if (c.type === 'entier' && c.defaut !== undefined) complet[c.nom] ??= c.defaut;
@@ -268,7 +278,7 @@ function verifierEffet(nature: 'modifications' | 'amenagements', d: Record<strin
   }
   const parametres = nature === 'modifications' ? PARAMETRES_EFFET.filter((p) => !p.startsWith('rend_')) : PARAMETRES_EFFET.filter((p) => p.startsWith('rend_'));
   if (effet === undefined) {
-    const p = parametres.find((x) => d[x] !== undefined) ?? (d.vise !== undefined ? 'vise' : undefined);
+    const p = parametres.find((x) => d[x] !== undefined);
     return p ? { champ: p, raison: "paramètre sans effet" } : null;
   }
   if (!estEffet(effet) || EFFETS[effet].nature !== nature) return { champ: 'effet', raison: `effet inconnu : ${String(effet)}` };
@@ -279,14 +289,7 @@ function verifierEffet(nature: 'modifications' | 'amenagements', d: Record<strin
     if (!propre && d[p] !== undefined) return { champ: p, raison: 'paramètre réservé à son effet' };
     if (requis && d[p] === undefined) return { champ: p, raison: "paramètre requis par l'effet" };
   }
-  if (nature === 'modifications') {
-    if (decl.cible) {
-      const v = d.vise as { nature?: unknown; cle?: unknown } | string | null | undefined;
-      const ok = typeof v === 'string' ? v.length >= 1 && v.length <= 64
-        : v !== null && typeof v === 'object' && !Array.isArray(v) && typeof v.cle === 'string' && v.cle.length >= 1 && v.cle.length <= 64;
-      if (!ok) return { champ: 'vise', raison: 'élément visé exigé.' };
-    } else if (d.vise !== undefined) return { champ: 'vise', raison: 'paramètre réservé à son effet.' };
-  }
+  // H-8: `vise` is tolerated and ignored (W-7's two refusals are withdrawn): the target is the design's choice.
   if (d.effet_pct !== undefined && !entierDans(d.effet_pct, 1, 1000)) return { champ: 'effet_pct', raison: 'nombre entier de 1 à 1 000 attendu' };
   if (effet === 'blindage_renforce') {
     if (!entierDans(d.valeur, 0, 9)) return { champ: 'valeur', raison: 'nombre entier de 0 à 9 attendu.' };
@@ -316,14 +319,14 @@ export const catalogueVaisseaux: DeclarationCatalogue = {
     resume: (d: Record<string, unknown>) => resume(nom, d),
   })),
   stockage: stockageVaisseaux,
-  /** W-1: `vise` of a modification is checked at the import and never stored, so the replay compares without it. */
+  /** H-8: `vise` of a modification is tolerated and never stored, so the replay compares without it. */
   conserve(nature, donnees) {
     if (nature !== 'modifications' || donnees.vise === undefined) return donnees;
     const { vise: _vise, ...reste } = donnees;
     return reste;
   },
   /** V-10: a hull and every line of an example must resolve at the level of the import, else the example is refused. */
-  verifier(nature, donnees, { existe }) {
+  verifier(nature, donnees, { existe, donnees: lireDonnees }) {
     const forme = verifierFormes(nature as NatureCatalogueVaisseau, donnees) ?? verifierCroises(nature as NatureCatalogueVaisseau, donnees);
     if (forme) return forme;
     const bornes = (min: string, max: string, champ: string) => {
@@ -338,8 +341,12 @@ export const catalogueVaisseaux: DeclarationCatalogue = {
     if (!existe('coques', donnees.coque as string)) {
       return { champ: 'coque', raison: `élément inconnu : coques/${donnees.coque as string}` };
     }
-    for (const l of donnees.choix as { nature: string; cle: string }[]) {
+    for (const l of donnees.choix as { nature: string; cle: string; cibles?: { nature: string; cle: string }[] }[]) {
       if (!existe(l.nature, l.cle)) return { champ: 'choix', raison: `élément inconnu : ${l.nature}/${l.cle}` };
+      // H-cibles-1 (1): `cibles` only on a line whose element aims at something (X-4's refusal, for the new field).
+      if (l.cibles !== undefined && !visePar(lireDonnees(l.nature, l.cle)?.effet)) {
+        return { champ: 'cibles', raison: 'cibles_invalide : élément sans effet visant' };
+      }
     }
     return null;
   },

@@ -11,6 +11,8 @@ import {
   retirerMembreInstance,
   type ActeurInstance,
 } from '../services/instance.js';
+import { fondCarteMaxMo, FOND_CARTE_MAX_MO_MAX, FOND_CARTE_MAX_MO_MIN, poserReglage } from '../services/reglages.js';
+import { ErreurService } from '../services/erreurs.js';
 import { corpsAjout, corpsRole, idDeChemin } from './univers.js';
 
 /** Authelia group that makes an instance admin (B-6, AD-86). */
@@ -71,6 +73,18 @@ export function registerInstanceRoutes(app: FastifyInstance) {
   app.delete('/api/instance/assistant/jeton/connexion', async (_request, reply) => {
     await app.connexionClaude.annuler();
     return reply.code(204).send();
+  });
+
+  // AD-143: the instance settings (admin only, by the hook above).
+  app.get('/api/instance/reglages', async () => ({ fondCarteMaxMo: fondCarteMaxMo(app.db) }));
+
+  app.put('/api/instance/reglages', async (request) => {
+    const v = ((request.body ?? {}) as { fondCarteMaxMo?: unknown }).fondCarteMaxMo;
+    if (typeof v !== 'number' || !Number.isInteger(v) || v < FOND_CARTE_MAX_MO_MIN || v > FOND_CARTE_MAX_MO_MAX) {
+      throw new ErreurService('invalide', 'Entre 1 et 500 Mo.', undefined, 'fondCarteMaxMo');
+    }
+    poserReglage(app.db, 'fond_carte_max_mo', String(v), request.session!.id);
+    return { fondCarteMaxMo: v };
   });
 
   app.get('/api/instance/univers', async (request) =>

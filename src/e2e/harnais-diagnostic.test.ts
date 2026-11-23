@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Diagnostic of the e2e harness: the wait for the server is long enough and a server that cannot start says why.
 import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';

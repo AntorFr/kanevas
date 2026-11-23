@@ -52,7 +52,7 @@ export function Menu({
   /** Content of the trigger (an avatar and a name, for instance); absent: an icon-only trigger. */
   declencheur?: ReactNode;
   /** A quiet add action, using the same style as a small ghost button. */
-  varianteDeclencheur?: 'fantome-petit' | 'outil';
+  varianteDeclencheur?: 'fantome-petit' | 'outil' | 'mj';
   /** Called as the menu opens (the editor freezes the textarea selection there). */
   onOuvrir?: () => void;
   /** Where the focus goes on closing, instead of the trigger (the editor's field). */
@@ -117,7 +117,7 @@ export function Menu({
       <button
         ref={bouton}
         type="button"
-        className={varianteDeclencheur === 'fantome-petit' ? 'bouton fantome petit' : varianteDeclencheur === 'outil' ? 'outil-md' : declencheur ? 'menu-declencheur' : 'bouton-icone'}
+        className={varianteDeclencheur === 'fantome-petit' ? 'bouton fantome petit' : varianteDeclencheur === 'mj' ? 'bouton mj petit' : varianteDeclencheur === 'outil' ? 'outil-md' : declencheur ? 'menu-declencheur' : 'bouton-icone'}
         aria-haspopup="menu"
         aria-expanded={ouvert}
         disabled={desactive}
@@ -137,6 +137,7 @@ export function Menu({
           }
         }}
       >
+        {declencheur !== undefined && Icone && <Icone size={14} strokeWidth={1.75} aria-hidden="true" />}
         {declencheur ?? (Icone && <Icone size={16} strokeWidth={1.75} aria-hidden="true" />)}
       </button>
       {ouvert && (

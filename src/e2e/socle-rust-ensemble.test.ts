@@ -1,3 +1,4 @@
+// ecrans: accueil
 // Feature kanevas-socle-rust, tests d'ensemble écrits depuis le besoin (« Livre — » de la discussion) :
 // un module Rust d'exemple rend la même valeur appelé depuis le serveur et depuis une page du frontend ;
 // ses tests Rust et JS passent dans la suite ; ajouter un module ne touche aucun script ; le serveur
@@ -230,7 +231,10 @@ test('exclusion : le build de production n\'embarque ni page d\'essai ni .wasm d
       .filter((e) => e.isFile())
       .map((e) => join(e.parentPath, e.name));
   const publics = tous(join(RACINE, 'dist/public'));
-  assert.deepEqual(publics.filter((f) => f.endsWith('.wasm')), []);
+  // The browser loads the cores of the loader table (`frontend/src/wasm/charger.ts`: `coeur` for the system map, `battlemap_core` for the battle map editor, and the `exemple` template):
+  // Vite emits their .wasm, and no other .wasm ships in dist/public.
+  assert.ok(publics.some((f) => /coeur_bg.*\.wasm$/.test(f)), 'le cœur chargé par la carte est dans le build');
+  assert.deepEqual(publics.filter((f) => f.endsWith('.wasm') && !/[/\\](battlemap_core|coeur|exemple)_bg-[^/\\]+\.wasm$/.test(f)), []);
   assert.deepEqual(publics.filter((f) => /essai/i.test(f)), []);
   assert.deepEqual(tous(join(RACINE, 'dist')).filter((f) => /\.rs$|Cargo\.(toml|lock)$/.test(f)), []);
 });

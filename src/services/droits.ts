@@ -166,19 +166,19 @@ export function resolveurLiens(
   const lisible = sqlFicheLisible(role, acteur, 'f');
   const lignes = db
     .prepare(
-      `SELECT f.id, f.type, f.cle_origine, ${lisible ? `(${lisible.sql})` : '1'} AS lisible
+      `SELECT f.id, f.type, f.cle, ${lisible ? `(${lisible.sql})` : '1'} AS lisible
          FROM fiches f
         WHERE f.univers_id = ?
-          AND (f.id IN (${ids.map(() => '?').join(',')}) OR f.cle_origine IN (${cles.map(() => '?').join(',')}))`,
+          AND (f.id IN (${ids.map(() => '?').join(',')}) OR f.cle IN (${cles.map(() => '?').join(',')}))`,
     )
     .all(...(lisible?.params ?? []), universId, ...ids, ...cles) as {
     id: number;
     type: string;
-    cle_origine: string | null;
+    cle: string | null;
     lisible: number;
   }[];
   const parId = new Map(lignes.map((l) => [l.id, l]));
-  const parCle = new Map(lignes.flatMap((l) => (l.cle_origine !== null ? [[l.cle_origine, l] as const] : [])));
+  const parCle = new Map(lignes.flatMap((l) => (l.cle !== null ? [[l.cle, l] as const] : [])));
   const marques = vueMJ(role, acteur);
   return (cible) => {
     const f = cible.id !== null ? parId.get(cible.id) : parCle.get(cible.cle ?? '');
@@ -246,7 +246,10 @@ export function vueSection(
     peutEcrire,
   };
   if (peutEcrire || (estGeree(s) && formeLiens === 'markdown')) vue.contenu = lecteurMJ ? s.contenu : s.contenu_public; // the source goes only to who may write it (AD-113)
-  if (lecteurMJ) vue.audience = audienceDe(s);
+  if (lecteurMJ) {
+    vue.audience = audienceDe(s);
+    vue.cle = s.cle;
+  }
   const geree = etatGere(db, acteur, universId, s);
   if (geree) vue.geree = geree;
   return vue;

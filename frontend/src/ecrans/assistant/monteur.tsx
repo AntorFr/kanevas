@@ -1,7 +1,7 @@
 import { Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { universDe, useChemin } from './adresse';
+import { useChemin, useUniversId } from './adresse';
 import { choisirUnivers, surDemandeOuverture } from './fil';
 import { Panneau, useDisponibilite } from './panneau';
 import './assistant.css';
@@ -14,7 +14,7 @@ const TELEPHONE = '(max-width: 759px)';
  */
 export function Assistant() {
   const chemin = useChemin();
-  const universId = universDe(chemin);
+  const universId = useUniversId(chemin);
   const [dispo, relire] = useDisponibilite(universId);
   const [ouvert, setOuvert] = useState(false);
   const bouton = useRef<HTMLButtonElement>(null);
@@ -27,7 +27,8 @@ export function Assistant() {
 
   useEffect(() => surDemandeOuverture(() => setOuvert(true)), []);
 
-  const present = universId !== null && dispo.k !== 'absent';
+  // E-30, the table display, has no chrome at all: no floating button either.
+  const present = universId !== null && dispo.k !== 'absent' && !/\/affichage\/?$/.test(chemin);
   useEffect(() => {
     document.body.classList.toggle('asst-present', present);
     document.body.classList.toggle('asst-ouvert', present && ouvert);
@@ -59,7 +60,7 @@ export function Assistant() {
         aria-expanded={ouvert}
         onClick={() => (ouvert ? fermer() : setOuvert(true))}
       >
-        <Sparkles size={16} strokeWidth={1.75} aria-hidden="true" /> Demander à Kanevas
+        <Sparkles size={16} strokeWidth={1.75} aria-hidden="true" /> <span className="asst-bouton-texte">Demander à Kanevas</span>
       </button>
       {ouvert && (
         <Panneau

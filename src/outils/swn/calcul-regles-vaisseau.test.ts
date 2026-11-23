@@ -12,6 +12,7 @@ delete process.env.DB_PATH;
 
 const { buildApp } = await import('../../app.js');
 const { semerBouchon } = await import('../../bouchon/depart.js');
+const { avantSemis, apresSemis } = await import('../../db/jetons-pour-semis.js');
 const { encoderSession, SESSION_COOKIE } = await import('../../services/session.js');
 const { catalogueDe } = await import('../../services/assistant/catalogue.js');
 const { migrate, openDb } = await import('../../db/db.js');
@@ -102,7 +103,7 @@ test('F-3 : équipage 6 et 20 ne lèvent rien (bornes exactes), 5 et 21 lèvent 
   assert.deepEqual((await w.ok({ coque: 'fregate-r', choix: [], equipage: 0 })).equipage, { choisi: 0, min: 6, max: 20 });
 });
 
-test("F-3 : classe_inadaptee bloquante, une par ligne, textes de F-3 ; une arme n'en lève jamais", async () => {
+test("F-3 : classe_inadaptee bloquante, une par ligne, textes de F-3 ; une arme bloquée sous sa classe_min", async () => {
   const w = await monde();
   const h2 = await w.ok({ coque: 'fregate-r', choix: [L('amenagements', 'hangar')] });
   const a = h2.alertes.find((x: any) => x.code === 'classe_inadaptee');
@@ -117,8 +118,10 @@ test("F-3 : classe_inadaptee bloquante, une par ligne, textes de F-3 ; une arme 
   // ceiling only (no classe_min)
   assert.equal((await w.ok({ coque: 'c4', choix: [L('amenagements', 'plafond')] })).alertes.find((x: any) => x.code === 'classe_inadaptee').texte,
     '« Plafond » : classe de coque 3 au plus.');
-  // a weapon with classe_min 4 on a class 2 hull: never classe_inadaptee
-  assert.ok(!codes(await w.ok({ coque: 'fregate-r', choix: [L('armes', 'canon-r')] })).includes('classe_inadaptee'));
+  // H-7: a weapon with classe_min 4 on a class 2 hull is blocked, on its own line
+  const arme = (await w.ok({ coque: 'fregate-r', choix: [L('armes', 'canon-r')] })).alertes.find((x: any) => x.code === 'classe_inadaptee');
+  assert.deepEqual([arme.niveau, arme.ligne], ['bloquante', 0]);
+  assert.match(arme.texte, /^« .+ » : classe de coque 4 au moins\.$/);
   // one alert per faulty line, indexed, and after moteur_multiple
   const m = await w.ok({ coque: 'fregate-r', choix: [L('moteurs', 'm1', 2), L('amenagements', 'salle'), L('amenagements', 'hangar')] });
   assert.deepEqual(m.alertes.filter((x: any) => x.niveau === 'bloquante').map((x: any) => [x.code, x.ligne ?? null]),
@@ -242,14 +245,22 @@ test('0031 : montée depuis 0030 avec le semis, conceptions gardées, equipage N
   db.exec('ALTER TABLE swn_conceptions ADD COLUMN equipage INTEGER');
   // 0032: the seed writes the optional columns of the catalogue too (stubs for the duration of the seed).
   const c32 = { modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse', 'reparation_min', 'effet_pct', 'echange_arrondi'], amenagements: ['effet', 'rend_puissance', 'rend_masse', 'soute', 'soute_par_classe', 'reduction_cout_pct', 'reduction_base'] };
+  db.exec('ALTER TABLE swn_catalogue_coques ADD COLUMN moteur_spike INTEGER'); // 0051: the seed writes it (stub for the seed only)
   for (const [t, cs] of Object.entries(c32)) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} ADD COLUMN ${c} INTEGER`);
+  // The seed draws keys (0037): stand-in columns and tables for the seed only.
+  db.exec('ALTER TABLE univers ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN creee_via TEXT; ALTER TABLE sections ADD COLUMN cle TEXT');
+  db.exec('CREATE TABLE cles_anciennes (univers_id, cle, fiche_id); CREATE TABLE univers_cles_anciennes (cle, univers_id)');
+  avantSemis(db);
   semerBouchon(db);
+  apresSemis(db);
+  db.exec('DROP TABLE cles_anciennes; DROP TABLE univers_cles_anciennes; ALTER TABLE univers DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN creee_via; ALTER TABLE sections DROP COLUMN cle');
   for (const [t, cs] of Object.entries(c32)) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} DROP COLUMN ${c}`);
+  db.exec('ALTER TABLE swn_catalogue_coques DROP COLUMN moteur_spike');
   db.exec('ALTER TABLE swn_conceptions DROP COLUMN equipage');
   const n = () => (db.prepare('SELECT COUNT(*) n FROM swn_conceptions').get() as any).n as number;
   const avant = db.prepare('SELECT fiche_id, coque_cle, choix, resultat, version FROM swn_conceptions ORDER BY fiche_id').all();
   assert.ok(n() >= 2);
-  assert.deepEqual(migrate(db), [31, 32, 33, 34, 35, 36]);
+  assert.deepEqual(migrate(db), [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53]);
   assert.deepEqual(db.prepare('SELECT fiche_id, coque_cle, choix, resultat, version FROM swn_conceptions ORDER BY fiche_id').all(), avant);
   assert.equal((db.prepare('SELECT COUNT(*) n FROM swn_conceptions WHERE equipage IS NOT NULL').get() as any).n, 0);
   assert.deepEqual(db.pragma('foreign_key_check'), []);

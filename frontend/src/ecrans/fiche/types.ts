@@ -55,6 +55,8 @@ export interface SectionVue {
 
 export interface Fiche {
   id: number;
+  /** Readable key `type:name` (B-99): only in the body of a GM outside player mode (AD-146). */
+  cle?: string;
   universId: number;
   type: string;
   titre: string;
@@ -117,6 +119,8 @@ export interface FicheVue extends Fiche {
   mentions?: Mention[];
   mentionsSuite?: boolean;
   mentionsRestantes?: number;
+  /** Blocks added by the accessible tools (E-9, AD-liens-3), e.g. « Sur la carte spatiale »: absent or empty when none. */
+  blocs?: BlocOutil[];
   /** Origin key of an imported sheet (B-50): sent to the GM outside player mode only. */
   cleOrigine?: string;
 }
@@ -137,3 +141,8 @@ export interface PropsBlocSection {
   /** Refetches the sheet after a write. */
   rafraichir: () => Promise<void>;
 }
+
+/** A line of a tool's block: its text and the in-app address it opens. */
+export interface LigneBlocOutil { texte: string; adresse: string }
+/** A block a tool adds to the sheet (AD-liens-3). */
+export interface BlocOutil { cle: string; titre: string; lignes: LigneBlocOutil[] }

@@ -14,7 +14,7 @@ export const entreesConnues = (entrees: EntreeOutil[]) => entrees.filter((e) => 
  * The tool entries the server shows this caller in this universe. While loading, or on an error,
  * there are none (the section is absent). `mode` is the GM's player mode: the bar then shows what a player sees.
  */
-export function useEntreesOutils(universId: number | null, mode: 'mj' | 'joueur'): EntreeOutil[] {
+export function useEntreesOutils(universId: number | string | null, mode: 'mj' | 'joueur'): EntreeOutil[] {
   const [lu, setLu] = useState<{ cle: string; entrees: EntreeOutil[] } | null>(null);
   const [essai, setEssai] = useState(0);
   const cle = universId === null ? null : `${universId}${mode === 'joueur' ? '?mode=joueur' : ''}`;

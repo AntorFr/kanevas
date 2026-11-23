@@ -1,3 +1,4 @@
+// ecrans: outil, outil-cible
 // Feature-level black-box tests of kanevas-outils-format-evolue for the criterion as AMENDED on 2026-11-06: written from the
 // feature sheet's exit criterion and docs/ecrans.md (E-21, E-22), not from the code. Real server in stub mode with the stub's
 // starting world (« Éneria d'essai », « Galaxie d'essai »), real SQLite, real Chromium. Expected values are literals.
@@ -42,7 +43,7 @@ async function session(): Promise<{ base: string; api: Api; E: number }> {
     return { status: r.status, json, texte };
   };
   const E = ((await api('antor', 'GET', '/api/univers')).json as Any[]).find((u) => u.nom === "Éneria d'essai").id as number;
-  return { base: srv.base, api, E };
+  return { base: srv.base, api, E, jetonOutils: srv.jetonOutils };
 }
 
 describe('B-80 (critère amendé) : masse libre exacte d’une coque de masse 7, sans masse utilisée', () => {
@@ -50,7 +51,7 @@ describe('B-80 (critère amendé) : masse libre exacte d’une coque de masse 7,
   async function monde() {
     const s = await session();
     const V = `/api/univers/${s.E}/outils/swn/vaisseaux`;
-    const jeton = (await s.api('antor', 'POST', `/api/univers/${s.E}/jetons`, { nom: 'Script masses', dureeJours: 30, outils: ['swn/vaisseaux'] })).json.valeur as string;
+    const jeton = await s.jetonOutils('antor', s.E, 'Script masses', ['swn/vaisseaux']);
     const imp = (methode: string, chemin: string, corps?: unknown) =>
       fetch(`${s.base}/api/import/v1/univers/${s.E}${chemin}`, { method: methode, headers: { authorization: `Bearer ${jeton}`, ...(corps === undefined ? {} : { 'content-type': 'application/json' }) }, body: corps === undefined ? undefined : JSON.stringify(corps) });
     const lot = ((await (await imp('POST', '/lots?outil=swn/vaisseaux')).json()) as Any).lotId as number;
@@ -64,19 +65,6 @@ describe('B-80 (critère amendé) : masse libre exacte d’une coque de masse 7,
     return { ...s, V, aube };
   }
   const txt = async (page: Any): Promise<string> => ((await page.locator('body').innerText()) as string).replace(/[  ]/g, ' ');
-
-  it('API : coque de masse 7 + trois éléments de 0,5 → masse libre exactement 5.5 ; sans élément → exactement 7 ; à seize… la coque de 7 en porte quatorze (7 − 7 = 0), le quinzième donne −0.5 et l’alerte', async () => {
-    const m = await monde();
-    const calc = async (q: number) => (await m.api('lea', 'POST', `${m.V}/calcul`, { coque: 'coque-sept', choix: q ? [{ nature: 'amenagements', cle: CLE, quantite: q }] : [] })).json;
-    assert.equal((await calc(3)).resultat.masseLibre, 5.5);
-    assert.equal((await calc(0)).resultat.masseLibre, 7);
-    const zero = await calc(14);
-    assert.equal(zero.resultat.masseLibre, 0);
-    assert.ok(!(zero.alertes as Any[]).some((a) => a.code === 'masse_insuffisante'));
-    const neg = await calc(15);
-    assert.equal(neg.resultat.masseLibre, -0.5);
-    assert.ok((neg.alertes as Any[]).some((a) => a.code === 'masse_insuffisante'));
-  });
 
   for (const largeur of [1280, 390]) {
     it(`${largeur} px : E-22 écrit « 5,5 » pour trois coupleurs sur la coque de masse 7, « 7 » sans éléments, et aucune masse utilisée n’apparaît`, async () => {

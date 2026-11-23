@@ -15,6 +15,8 @@ const schema = z.strictObject({
   coque: z.string().optional(),
   equipage: z.number().int().min(0).max(100000).optional(),
   reparation: z.number().int().min(0).max(20).optional(),
+  pj: z.number().int().min(0).max(100000).optional(),
+  robots: z.number().int().min(0).max(100000).optional(),
   choix: z.array(z.strictObject({
     nature: z.enum(NATURES_DE_LIGNE), nom: z.string(), quantite: z.number().int().min(1).max(99).optional(),
     points: z.number().int().min(0).max(99).optional(),
@@ -35,14 +37,14 @@ export function outilVaisseau({ db, acteur, universId }: ContexteOutil): Outil[]
   };
   return [{
     nom: 'swn_vaisseau_calculer',
-    description: "Calcule un vaisseau : soit `conception` (le titre d'une conception lisible : son résultat enregistré et ses alertes), soit `coque` (nom) et `choix` (`nature` : moteurs, amenagements, defenses, armes ou modifications, `nom`, `quantite` facultative, `points` facultatif pour un échange de points, `vise` facultatif {`nature`, `nom`} de l'élément visé par un doublement) et `equipage` facultatif (entier, le minimum de la coque par défaut), `reparation` facultative (compétence de réparation, 0 à 20) : vitesse, armure, équipage, prix, budgets, chantier, alertes. N'écrit rien.",
+    description: "Calcule un vaisseau : soit `conception` (le titre d'une conception lisible : son résultat enregistré et ses alertes), soit `coque` (nom) et `choix` (`nature` : moteurs, amenagements, defenses, armes ou modifications, `nom`, `quantite` facultative, `points` facultatif pour un échange de points, `vise` facultatif {`nature`, `nom`} de l'élément visé par un doublement) et `equipage` facultatif (entier, le minimum de la coque par défaut), `reparation` facultative (compétence de réparation, 0 à 20), `pj` et `robots` facultatifs (parmi l'équipage) : vitesse, armure, équipage, capacités, effets de jeu, coût d'équipage, prix, budgets, chantier, alertes. N'écrit rien.",
     schema,
     // The services are loaded at the call: a static import closes a cycle (see `index.ts`).
     async executer(args): Promise<Resultat> {
       const p = schema.safeParse(args ?? {});
       if (!p.success) return { ok: false, erreur: 'Paramètres invalides.' };
-      const { conception, coque, choix, equipage, reparation } = p.data;
-      if ((conception !== undefined) === (coque !== undefined) || (conception !== undefined && (choix !== undefined || equipage !== undefined || reparation !== undefined))) return PRECISER;
+      const { conception, coque, choix, equipage, reparation, pj, robots } = p.data;
+      if ((conception !== undefined) === (coque !== undefined) || (conception !== undefined && (choix !== undefined || equipage !== undefined || reparation !== undefined || pj !== undefined || robots !== undefined))) return PRECISER;
       const { resoudreElements } = await import('../../services/catalogues.js');
       const { calculerDepuisChoix, OUTIL_VAISSEAUX } = await import('../../services/swn/calcul-vaisseau.js');
       const { lireConception, listerConceptions } = await import('../../services/swn/conceptions.js');
@@ -68,7 +70,7 @@ export function outilVaisseau({ db, acteur, universId }: ContexteOutil): Outil[]
           lignes.push({ nature: l.nature, cle, quantite: l.quantite ?? 1,
             ...(l.points === undefined ? {} : { points: l.points }), ...(vise ? { vise } : {}) });
         }
-        return { ok: true, donnees: calculerDepuisChoix(db, acteur, universId, { coque: c, choix: lignes, equipage, reparation }) };
+        return { ok: true, donnees: calculerDepuisChoix(db, acteur, universId, { coque: c, choix: lignes, equipage, reparation, pj, robots }) };
       } catch (e) {
         if (!(e instanceof ErreurService)) throw e;
         return e.code === 'introuvable' ? INTROUVABLE : { ok: false, erreur: e.message };

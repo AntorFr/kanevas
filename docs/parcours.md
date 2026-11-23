@@ -110,7 +110,7 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
 - **B-39** — A GM changes a sheet's **title**, **type** and **parent** after creation,
   from its header (E-9). A session report's type cannot change, and a sheet cannot become a
   session report. *(P-14)*
-- **B-40** — A GM **deletes a sheet** from its header (E-9), after a confirmation naming what
+- **B-40** — *(`kanevas-synchro`: a deletion now leaves a history line, 90 days, and its content stays readable 30 days, B-102, B-103 — decision of Monsieur, 2026-11-01)* A GM **deletes a sheet** from its header (E-9), after a confirmation naming what
   goes with it (sections and their file references, relations targeting it, placements on
   maps; files themselves remain in the media library); its
   children move up under its parent; links targeting it become broken links (B-33).
@@ -152,17 +152,17 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   title (`"moyen-droite"`), so the import and the export carry it as text. *(P-12)*
 
 ### Import and API access (`kanevas-import`)
-- **B-45** — A GM creates an **API token** for their universe from « Accès par API » (E-18): a name,
+- **B-45** — *(`kanevas-synchro`: tokens belong to an account, every member creates them on E-23, they reach the universes chosen, B-94)* A GM creates an **API token** for their universe from « Accès par API » (E-18): a name,
   a lifetime (30 days by default, one year at most); Kanevas shows it **once only**; the token acts
   with that GM's permissions in that universe only, and only on the import API. *(P-11, P-10)*
-- **B-46** — A GM sees their universe's tokens (name, created by, last use, expiry) and
+- **B-46** — *(`kanevas-synchro`: a token is seen and revoked by its owner on E-23, B-94, and by the instance admin on E-5, B-95; a GM no longer sees nor revokes the tokens that reach his universe, and E-18 keeps the batches only; a revoked or expired token is still a 401; a lost role no longer refuses the token, it lowers it to the account's current rights there, AD-144)* A GM sees their universe's tokens (name, created by, last use, expiry) and
   **revokes** one from E-18; if the token is revoked, expired, or its GM has lost that role, then
   every request presenting it is refused (401) and nothing is written. *(P-11)*
-- **B-47** — *(`kanevas-scenarios`: adventures go through this same route, B-61)* When a script pushes a sheet through the import API with an **origin key**, Kanevas
+- **B-47** — *(`kanevas-synchro`: a replay writes every field it carries, B-111; « nothing changes if nothing changed » holds)* *(`kanevas-scenarios`: adventures go through this same route, B-61)* When a script pushes a sheet through the import API with an **origin key**, Kanevas
   creates it if the key is unknown in the universe, updates it if known, and changes nothing if
   nothing has changed — sheet, sections, relations, aliases, labels, parent, attachments, illustration,
   campaigns and scenarios; replaying the same import creates no duplicates. *(P-10)*
-- **B-48** — *(`kanevas-scenarios`: the `statut` of an adventure is protected like its sub-type and its parent)* If anything an import wrote has since been **modified in Kanevas** (by a human or their
+- **B-48** — *(`kanevas-synchro`: **retired** — Kanevas no longer keeps what an import wrote; an import write may carry the fingerprint it read and is refused if it is no longer current, B-110, AD-138)* *(`kanevas-scenarios`: the `statut` of an adventure is protected like its sub-type and its parent)* If anything an import wrote has since been **modified in Kanevas** (by a human or their
   assistant) — a sheet's title, type, subtype, parent, aliases, labels; a section's title,
   content, audience, attachments; a sheet's illustration; a campaign's name and
   status; a scenario's title and content; a media library file's name and **visibility** —,
@@ -225,6 +225,135 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   pseudo-terminal), E-5 exists, and currently setting or renewing the token goes through OpenBao and a
   restart. This slice has no link to import: it runs independently, last.
 
+### Kanevas as the main source (`kanevas-synchro`, 2026-11-01)
+*Kanevas is the source of truth. The tools around it — an import script, an agent working with
+Monsieur — remember what they sent; Kanevas tells them that something moved, lets them write one
+thing at a time, and keeps the trace of who changed what (decisions of Monsieur, 2026-11-01).*
+- **B-105** — A script reads, with an import token, the **list of the universe's sheets**: for each,
+  its id, its key (B-99), whether it was **born in Kanevas** or created by an import, its type, its title, its
+  **fingerprint** and its **header fingerprint** (the header fields alone), and its **date of last
+  change**; the script may ask only the sheets changed since a date (`depuis`), a date that moves on
+  every write to what the read returns (B-93); a thousand at a time, in a stable order. *(P-22)*
+- **B-106** — A script reads **one sheet** by its origin key or its id: its header fields (the typed ones and the fields its type carries in its
+  charge — an adventure's status, the mark « disparu » —, PJ, origin creation date), its
+  sections (key, title, Markdown content, audience, keys of the joined files, managed
+  by a tool or not, fingerprint), the relations of its sections (id, section, target, nature,
+  qualifier, fingerprint), the sheet's fingerprint and its header fingerprint. The content is given in import form: a link or
+  a file whose target has an origin key is written with that key (`[[cle:…|…]]`,
+  `fichier:cle:…`). A fingerprint changes when, and only when, something the read returns
+  changes; a waiting link that resolves does not change it. *(P-22)*
+- **B-90** — A script reads, with the same token, the **media library's files** (id, origin key or
+  none, name, visibility, size, SHA-256, fingerprint) and the **universe's maps** (id, origin key or
+  none, title, form, visible, attached sheet, text, background SHA-256, fingerprint), a thousand at a
+  time. *(P-22)*
+- **B-91** — A replay of a file writes only the fields it sends: a file's visibility is set to
+  `joueurs` by default **at its creation only**; a replay without `visibilite` leaves the one Kanevas
+  holds, so a file reserved to the GM in Kanevas never reopens by omission. *(P-22)*
+- **B-92** — A script **exports a whole universe in one call**: one line per sheet in the form of
+  B-106, one per file and per map in the form of B-90, as they are at one instant; a file's bytes
+  are downloaded apart, one by one, with the same token. The export opens with a header line and ends with a
+  closing line carrying the number of lines, so a cut stream is recognised; `?depuis` keeps the sheets changed
+  since a date (files and maps are always all listed); `?empreintes=1` returns the fingerprint list alone;
+  a sheet deleted in Kanevas is found by comparing ids with the list. *(P-24)*
+- **B-93** — The **date of last change** of a sheet moves on every write to anything its read
+  returns (header, sections, relations, aliases, labels, parent, illustration), whoever writes;
+  a false alarm is allowed (a waiting link that resolves), a missed change is not. *(P-22, P-24)*
+- **B-107** — A script changes **only the header fields it sends** of a sheet (title, type,
+  sub-type, PJ, parent, aliases, labels, illustration, origin creation date, and the charge fields
+  of its type: an adventure's status, « disparu »); the others stay. *(P-22)*
+- **B-108** — A script **creates, rewrites or deletes one section** of a sheet, named by its
+  origin key, without sending the rest of the sheet. Deleting it removes its relations and its file
+  joins; the files stay in the media library. A section born in Kanevas (no origin key) and a section
+  managed by a tool are never written by the import: refused, with their code. *(P-22)* *(`kanevas-synchro`, extension: every section has a key, B-104 — only a tool-managed section stays refused.)*
+- **B-109** — A script **adds, modifies (nature, qualifier) or removes one relation**, the existing
+  one named by the id the read gave. *(P-22)*
+- **B-110** — Every import write may carry the **fingerprint the script read**. If it is no longer
+  the current one, the write is refused (412) and nothing is written; the batch counts it as refused
+  with its key and the reason « modifiée depuis la lecture ». A write without a fingerprint applies.
+  Adding a relation takes none (an identical one is « inchangée »); a creation may require that the
+  key is new (`If-None-Match: *`), so a script never overwrites by mistake a sheet born in Kanevas
+  that took the same key.
+  *(P-22)*
+- **B-111** — Nothing is removed by omission (AD-104 holds): a full `PUT` of a sheet writes what it
+  carries and leaves what it does not name; removing is a targeted gesture (B-108, B-109, `DELETE`
+  of a sheet). *(P-22)*
+- **B-112** — A script imports an **illustrated map** by origin key: title, visible to the players or
+  not, background image, the sheet it belongs to (a key), a short text in Markdown with GM blocks.
+  An unknown sheet key is refused with its field (`fiche`), counted, and nothing is written;
+  `fiche` absent leaves the attachment, `null` detaches. The background travels with the map, not
+  taken from the media library; a new map may come without one (a neutral 16/10 frame, as on E-11, AD-70;
+  its background SHA-256 is null); on an existing map, `fond` absent leaves the background, so a script
+  that reads the background's SHA-256 (B-90) sends it only when it changed. Replaying it creates no duplicate; it counts in the batch; it accepts the fingerprint like any
+  write. Its tokens are not imported. *(P-22)*
+- **B-88** — A GM **attaches a map to a sheet** (a place, a ship, an adventure…), changes that sheet
+  or detaches it, and writes, rewrites or empties its **text** on E-11; the sheet shows, on E-9, the maps attached to it that the reader may read; a
+  player reads the text without its GM blocks. *(P-23)*
+- **B-94** — Every member (GM or player) manages **their own API tokens** on « Mes jetons d'API »
+  (E-23): a name, a lifetime (7, 30, 90 or 365 days), and the universes it reaches — either a list,
+  each in « lecture » or « lecture + écriture », or « tous mes univers » at one level, which also
+  covers every universe the account joins later. The token is shown once; its accesses can be
+  changed afterwards; it can be revoked. A token never exceeds its account's rights: a player's token
+  in « lecture + écriture » writes only where that player may write. A token restricted to tools
+  (`kanevas-outils`, B-65) keeps that restriction, set on E-23: it writes those tools' data and no
+  content, whatever its level. *(P-25)*
+- **B-95** — The **instance admin** sees every token of the instance on E-5 (name, owner, accesses,
+  last use), **revokes** any of them and **changes its accesses**; the owner sees on E-23 « Modifié par
+  l'admin » or « Révoqué par l'admin ». « Tous mes univers » takes **exceptions** — a universe at another
+  level, or at « — » —, so the admin cuts one universe without cutting the others nor the ones to come;
+  the owner may change the accesses again, and an admin who wants a token gone revokes it. A GM has no gesture on the tokens that reach his universe: a token is its owner's (decision
+  of Monsieur, 2026-11-01). *(P-25)*
+- **B-96** — Everything a token writes is **attributed to its account**, naming the token. *(P-26)*
+- **B-97** — An agent reaches Kanevas through an **MCP server** (`/mcp`) with an API token: it lists
+  the universes of the token, searches, reads a sheet or a section, lists the sheets that mention one,
+  reads the history (B-102) where its account is GM, and — with « lecture + écriture » — creates a sheet and writes
+  through the targeted writes of B-107 to B-109, each with its precondition (B-110), directly. The tools are the assistant's (one catalogue); image generation
+  is not offered. *(P-24)*
+- **B-98** — A **text search returns passages**: for each match, the sheet, the section and an
+  excerpt around the words (« …les troupes de **Sevrak** franchissent le col… »), paginated; a reader
+  never matches a word that sits only in a GM block he cannot read. *(P-24)*
+- **B-99** — Every sheet has a **readable key** `type:name`, unique in the universe: an imported
+  sheet keeps its origin key; a sheet born in Kanevas receives one at creation from its type and
+  title (« Ténébria », a place → `lieu:tenebria`; taken → `lieu:tenebria-2`). Renaming the sheet or
+  changing its type does not change it. The GM sees it on E-9 and changes it, warned that what cites
+  it will no longer find it; a former key keeps leading to the sheet — an import or a read by a former key reaches the
+  same sheet, never a duplicate. A key is `<type>:<name>` for a sheet born in Kanevas (lowercase
+  letters, digits, dashes); an imported key keeps the import's form (1–200 characters). A key holds **at least one letter** —
+  one made of digits alone would be read as an id: the import refuses it (`invalide`, field `cle`).
+  The key the GM types on E-9 is lowercase letters, digits, `-`, `_` and at most one `:`, 2–200
+  characters, with a letter (`compte_rendu:seance-3` is one). An imported key made of digits alone
+  before this epic is renamed `cle-<digits>` once, and its script must send the new one. *(P-24, P-26)*
+- **B-104** — Every **section** has a key too, unique in its sheet: an imported one keeps its origin
+  key; one born in Kanevas receives one at creation from its title (« Histoire » → `histoire`), stable
+  across renames. The import and the MCP address any section by it — a section born in Kanevas is no
+  longer out of their reach (B-108 amended); a section managed by a tool stays refused. *(P-24)*
+- **B-100** — Every universe has a **readable identifier** (`eneria`), unique on the instance, set at
+  creation from its name and changed by its GM on E-14 (lowercase letters, digits, dashes, 2–40, at
+  least one letter, so it is never mistaken for an id; a name without a letter gives `univers-<id>`);
+  a former one keeps leading to it. *(P-24, P-26)*
+- **B-101** — Addresses use them: a sheet is `/univers/eneria/lieu/nyx` (its key's two parts; a key
+  without that form, or whose first part is not a sheet type of the product, is
+  `/univers/eneria/fiche/<key>`, so no key ever takes a page's address), the
+  API and the MCP accept the key; a numeric address or id is still accepted and leads to the same
+  sheet. *(P-24)*
+- **B-102** — Kanevas keeps the **history of every write to a sheet** — header field, section created,
+  rewritten or deleted, relation added, modified or removed, the sheet created or deleted: the date,
+  what changed, the fingerprint after, the account, the token or « assistant » or « import » (with its
+  batch). This line is kept **90 days**; the **previous value** (a text included) **30 days**. A GM
+  reads it on the sheet (E-9, « Historique ») and for the whole universe (E-24), filtered by
+  contributor (an account, or one of its tokens), by sheet or by action; a token reads it through the API and the MCP; a player does not.
+  *(P-26)*
+- **B-103** — Within 30 days, a GM **restores** a previous value of a section or a header field from
+  the history; restoring is a write, and is itself in the history. It covers a section and the header (title, type,
+  sub-type, parent, and the aliases and labels as a whole); a line « section créée » has no previous
+  value and no button. It writes over the value the GM sees next to it:
+  if the section or the field changed since he opened the line — rewritten, or deleted —, it is refused and he reloads — never
+  over a write he has not seen. A deleted section comes back under its key, at the end of the sheet,
+  unless a section took that key since (refused). A relation's previous value is shown, not
+  restored. A deleted sheet stays **readable**
+  in the history 30 days (its sections as they were), and is not restored by a gesture. *(P-26)*
+- **B-89** — The **largest map background** is an instance setting the admin changes on E-5
+  (75 MB by default); it holds for a background set on E-11 and for one sent by the import. *(P-23)*
+
 ### Game system
 - **B-13** — A GM attaches their universe to a shared game system, or creates one, from
   universe settings (E-14). *(P-8)*
@@ -280,7 +409,7 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   (unchanged), « Préparation » (the open tasks of the adventures en cours, GM). *(P-3, P-4)*
 - **B-61** — *(kanevas-scenarios)* The **import API** pushes an adventure through the sheets
   route (`type: aventure`, `sousType`, `parent` by origin key, sections; `statut` too, built by `kanevas-scenarios-import-assistant`); a reimport
-  never overwrites a status, a sub-type or a parent changed in Kanevas (B-48 extended); a
+  never overwrites a status, a sub-type or a parent changed in Kanevas (B-48 extended; *`kanevas-synchro`: B-48 retired, B-110*); a
   compte-rendu names its adventure by its origin key as before. The former campaign and scenario
   routes of the import disappear. *(P-10)*
 - **B-62** — *(kanevas-scenarios)* The GM's **assistant** creates a sheet of any activated type
@@ -504,6 +633,8 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   a weapon** may be taken several times and the installations add up. The four effects of B-86 are replaced, not kept.
   A catalogue that employs none of them keeps working as before. *(P-19, P-20)*
 
+### Ship designer rules (`kanevas-concepteur-vaisseaux`)
+
 *(kanevas-concepteur-vaisseaux — the rule ledger is `docs/vaisseaux-regles.md`; Monsieur's instruction of 2026-11-15: every
 rule of the book, one by one, before any proposal, so that no conversion meets one more.)*
 
@@ -538,6 +669,44 @@ rule of the book, one by one, before any proposal, so that no conversion meets o
   script and pushed by the import API, **without any difference left open**: the reference figures (the prototype's prices,
   HP, AC, power, mass, hardpoints, build days, upkeep) are replayed on the real data, and the report of what was not
   converted is empty. *(P-22)*
+
+### Spatial map (`kanevas-carte-spatiale`, Monsieur's decisions of 2026-11-11)
+
+The SWN galaxy of the tool (`swn/galaxie`, B-68 to B-85) gets its interior: every star system, drawn or defined, opens on a
+map of its own, with illustrated bodies. Éneria's generator and atlas are the reference (decision 1 of the triage); Kanevas
+becomes the source of the map and Éneria keeps none (decision 3). Nothing in this public repository carries Éneria data (AD-131).
+
+- **B-86** — The generator of Éneria is the generator of Kanevas, ported to Rust (AD-138). For a seed and a hexagon it draws the
+  same nameless star at the same place and the same system interior as Éneria's does: planets, moons, belts, comet,
+  nebula, companion stars. It replaces the SHA-256 draw of `regles/generation.ts` for the stars of the galaxy. *Done when:* the
+  golden fixtures drawn by Éneria's own generator on a neutral seed are read back by the Rust core, hexagon by hexagon (positions,
+  classes, counts exactly; real numbers to 1e-9), and a galaxy created on the seed of Éneria's current galaxy shows its stars at their places.
+- **B-87** — One Rust core, compiled to WebAssembly, is loaded by the browser (map, live thumbnails, zoom) and by the Node
+  server (high-definition illustrations, cached); there is no service of its own (AD-139). *Done when:* the same fixtures pass
+  through the browser binding and the Node binding with identical results, and the image build carries the compiled core (the Cargo/Wasm/Docker foundation is carried by the feature `kanevas-socle-rust`, on which this need depends).
+- **B-88** — A system opens on **its map** (E-23): the star at the centre, each body at its **orbit and hour**, belts and
+  nebulae as ring and cloud zones, the transition zone and the exits towards neighbouring systems. **Every celestial body is
+  always visible** in a system the reader sees (stars, planets, moons, belts, comets, nebulae, anomalies, zones): no body has a secret of its own. Anyone who reads
+  the system reads its map; the GM edits it. *Done when:* the map and its illustrations are judged on captures, in the themes and widths of the charter, **against the system map
+  of Éneria today** (`carte-interactive/systeme.html`): more beautiful, each body drawn with its engine illustration and never as a plain disc.
+- **B-89** — Every body, star and comet has an **illustration** drawn by the core from its aspect (type, palette, relief), **more beautiful than the thumbnails of Éneria's `astres.py`**
+  (same families of bodies, richer surfaces, light and atmosphere; the engine redraws every body, AD-149): the illustration is the body on the map, live
+  thumbnails at the size of the zoom, a high-definition image on demand, cached on the server. The GM may set it as the illustration of the linked sheet (existing
+  media library path, AD-117). *Done when:* two renderings of one aspect are the same image, and an aspect changed in the catalogue changes it. The recette compares captures of the system map and of the illustrations (every theme, desktop and 390 px) with Éneria's `systeme.html` and `astres.py` thumbnails, and judges them more beautiful; no label overlaps a body, an element or another label at 390 px (E-23).
+- **B-90** — **Configuration**, per galaxy (so per universe): the generator settings (seed, density, frequencies of comets and
+  zones, ranges of planets, moons and belts per star class) and the **catalogue of aspects** (the palettes and parameters of each body type)
+  (E-24). A change to the generator settings says how many drawn systems it moves before it is applied (like « Graine… », E-21); a change to the aspects moves no row and counts nothing, it only changes the pictures of the bodies of its type.
+- **B-91** — Two **coordinate systems** are shown and accepted wherever an element is placed: the galactic one (hexagon `q`, `r`,
+  as E-21) and the system's own (orbit, a real ≥ 0, and hour, a real in [0, 12), 12 at the top). Conversions are the core's.
+- **B-92** — A star, body, zone or non-celestial element (B-96) **links to a sheet** when one exists: the map links to the sheet and the sheet shows « Sur la carte spatiale »
+  towards the element — each side only when the other is readable by the reader, without any count or placeholder for hidden ones (AD-64).
+- **B-93** — The **atlas format** of Éneria (bodies with moons, zones, points, `transition`, aspects) is the import format of a system
+  (JSON body of the import API, new natures). A system is either *drawn* (nobody wrote it: the generator gives it) or *defined* (it has a row and its elements are stored). To **anchor** a drawn system is to define it: the GM freezes its interior as drawn (the promotion of E-21), and the elements are then edited; what is stored wins over what would be drawn. In the atlas, `points` are the comets, and the per-body `aspect` and the entries of Éneria's `astres.yaml` become the body's aspect; the catalogue of aspects per type is not imported.
+- **B-94** — The elements of the map are read, edited, completed and defined (anchored) by **gestures of the tools catalogue** (read a
+  system, place or move a body or an element, complete their aspect and link, trace a zone, anchor a system, hide an element or a system), hence by the internal assistant
+  and, through kanevas-synchro's MCP, by an external agent holding a token — under the guards of the GM role (AD-26, AD-103).
+- **B-95** — The map of Éneria is **taken over once**: its defined systems, atlas bodies and aspects enter Kanevas by the import API, from a
+  script of the private Éneria repository (AD-131); Éneria keeps no map afterwards. *Done when:* the exit criterion of the epic holds on the taken-over galaxy.
 
 ### Cross-cutting
 - **B-28** — Every page requires sign-in; no content is served without an account, and
@@ -722,8 +891,10 @@ He first wants a disposable trial, then the real collection, without duplicates 
    and the batch says so: « section « Notes » de personnage:lea-pj modifiée dans Kanevas : non
    écrasée »; « lieu:port-sel : titre modifié dans Kanevas : non écrasé »; likewise a file
    Antor changed to « Visible des joueurs » (E-19) is not restored to « Réservé au MJ »: « visibilité
-   modifiée dans Kanevas : non écrasée ».
-10. **« Accès par API »** (E-18): he revokes the token (P-11).
+   modifiée dans Kanevas : non écrasée ». *(`kanevas-synchro`: these warnings disappear with B-48; a
+   script that wants this protection sends the fingerprint it read, B-110; a file's visibility is not
+   reset by a replay that omits it, B-91.)*
+10. **« Accès par API »** (E-18): he revokes the token (P-11). *(`kanevas-synchro`: he revokes it on « Mes jetons d'API », E-23, P-25.)*
 *Highlight*: the second batch « Fiches : 501 inchangées » and nothing created in any other
 kind — replay is safe.
 *Failure*: token copied incorrectly or revoked — the script receives 401 « Jeton invalide. », nothing is written,
@@ -735,6 +906,7 @@ it left off, since everything already written comes back « inchangé »; a zero
 reason in the batch; deleting the universe while typing a different name — the button remains inactive; failed deletion — « L'action n'a pas abouti. Réessayez. » in the dialog, the universe is intact (states: E-14).
 
 ### P-11 — Create and revoke an API token (GM)
+*(`kanevas-synchro`: replaced by P-25 — a token is created and revoked on « Mes jetons d'API », E-23, by any member; E-18 keeps only the batches.)*
 1. **« Accès par API »** (E-18), from « Univers » ▸ « Accès par API » in the bar (GM-only).
 2. « Nouveau jeton »: a name, a lifetime (7, 30, 90 days or one year); « Créer le jeton ».
 3. The window shows the token, « Copier », and « Il ne sera plus jamais affiché. »; he closes it.
@@ -766,11 +938,11 @@ has expired — the row says « Expiré », the script receives 401.
 6. She asks her **assistant** (E-12) « que sait-on de Port-Sel ? »: it cites nothing from the GM
    block.
 7. *(kanevas-taille-images, B-taille-1)* Antor, back on « Port-Sel », puts the caret in the port's image,
-   opens « Image » (E-9, « Écrire ») and picks « Moyen » then « À droite »; he saves. In reading the
-   « Histoire » text wraps the image on the right; on Léa's phone the image is a centred, readable block.
+   opens « Image » (E-9, « Écrire ») and chooses « Moyen » then « À droite »; he saves. In reading, the text of
+   « Histoire » wraps the image on the right; on Léa's phone the image is a centred, readable block.
 *Highlight*: the same sheet, read by Antor then Léa — the secret is neither shown, findable,
-nor hinted at.
-*Failure*: an inserted image does not load — « Image indisponible. » in its place; a link to a (Step 7 is an editing gesture, outside this key moment.)
+nor hinted at. (Step 7 is an editing gesture, outside this key moment.)
+*Failure*: an inserted image does not load — « Image indisponible. » in its place; a link to a
 removed sheet — plain text for Léa, « lien cassé » for Antor; a sheet with nothing readable by Léa
 since the last import — absent from the tree, search and « Mentionnée dans ». Image setting (step 7): « Image » is greyed out while the caret is not in an image; if saving fails, the written title stays in the field with the section's save message.
 
@@ -948,12 +1120,13 @@ the density of generated systems never changes based on a territory she cannot s
    In the first slice, Léa shares the ship link with Roxane, a player
    who has no design of her own on it: Roxane reads « Étoile du soir » (Léa's second design, on a hull of the system, which she may read) read-only, with « Enregistrer » and « Annuler »
    absent, and « Vent d'Orak » is « Page introuvable. » for her (not hers to read).
-6. *(kanevas-concepteur-vaisseaux, B-90 to B-94; Léa goes on with the design of step 2, saved.)* **First, the compatibility (B-94):** a design saved before this epic (a line of specialised mountings carrying one `vise` for the whole line, written by an earlier slice) opens without error: each installation of the line shows that target in its own « Visée » row, the totals are those shown before, and nothing is rewritten until she saves; a design whose line had no target opens with the blocking alert « Choisissez l'élément visé » on its rows. Then Léa puts a weapon of class 3 on a hull of class 2: the blocking
+6. *(kanevas-concepteur-vaisseaux, B-90 to B-94; Léa goes on with the design of step 2, saved.)* **First, the compatibility (B-94):** a design saved before this epic (a line of specialised mountings carrying one `vise` for the whole line, written by an earlier slice) opens without error: each installation of the line shows that target in its own « Visée » row, the totals are those shown before, and nothing is rewritten until she saves; a design whose line had no target opens with the blocking alert of its line, « Choisissez l'élément visé » (with its count, « (1 installation sur 3) », when the line has several installations). Then Léa puts a weapon of class 3 on a hull of class 2: the blocking
    alert « Classe de coque inadaptée » refuses the save; she chooses a lighter weapon. She sets « dont joueurs » and « dont robots »
-   and reads the crew cost per day and the robots' one-off cost; the results show the capacities the fittings give (hidden cargo,
+   and reads the crew cost per day and the robots' one-off cost (a robot without an automation fitting raises the blocking alert « Des robots exigent un système d'automatisation. »; she adds the fitting first, then the robots; more players than living crew, or a crew made only of robots, raise the two other blocking alerts of E-22); the results show the capacities the fittings give (hidden cargo,
    maximum crew, provisions, lifeboats) and each element's effect line. On a station there is no Spike drive to choose and the
-   speed reads « N/A ». She adds a specialised mounting and, in its « Visée » row (E-22), chooses which of her weapons it aims at (a second row for a second installation; a second specialised mounting on the same weapon is refused with « Cet élément est déjà visé par un montage spécialisé », while an overcharge may be aimed at it again); she adds a pretech modification, reads the components and the installation days, enters « Modificateurs Int + Con » in the repair block and reads the Maintenance (« Maintenance : 3 » with a skill of 1): with four installations she reads the watch alert « 4 mods entretenus, Maintenance 3 », makes two of them part of the hull (« Intégrées à la coque »), reads the alert go and the « Refonte » cost, then makes a third one and reads « Plus de mods intégrés que 2 × Réparation » — saving stays permitted. Antor changes the price divisor or the yard pace on E-20: her
-   design is « Calculée avec d'anciens réglages ».
+   speed reads « N/A »; on another hull a speed malus reads « −1 » with the watch alert « Vitesse négative : malus aux jets de Pilotage »; an auto-targeting system beyond her number of weapons is refused with « Limite dépassée : … », and an element whose mass follows the hull factor weighs a whole number per installation, rounded up (B-90). She adds a specialised mounting and, in its « Visée » row (E-22), chooses which of her weapons it aims at (a second row for a second installation; a second specialised mounting on the same weapon is refused with « Cet élément est déjà visé par un montage spécialisé », while an overcharge may be aimed at it again); she adds a pretech modification, reads the components, the installation days and the Maintenance alert, and
+   makes one mod part of the hull (refit), then reads its cost. Antor changes the price divisor, the yard pace, the daily pay or the daily food on E-20 (a cadence of 0 is refused with « Valeur hors limites. »): her
+   design is « Calculée avec d'anciens réglages »; after « Recalculer » she reads « Chantier : N jours » (⌈price / pace⌉, 25 000 cr by default) for the new pace and the price « (÷2) » for a divisor of 2.
 *Highlight*: budgets recalculate before their eyes, and the sheet's section stays consistent with what
 is calculated.
 *Failure*: a recalculation that fails — « Le recalcul n'a pas abouti. Réessayez. », the text unchanged; the usage removed meanwhile — « Vous ne pouvez plus recalculer cette section. »; connection lost — « Connexion perdue. », the buttons disabled. Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
@@ -987,7 +1160,7 @@ refused (401/403 depending on the import API) and nothing written.
 1. At the Mac, **the conversion script** of the `eneria` repository (`_outils/kanevas`) reads the prototype's data and
    writes the catalogue (12 hulls, 6 drives, 40 fittings, 9 defences, 19 weapons, 18 modifications, 10 examples) and the
    14 designs; it states for each modification what it does, never which element it aims at. It pushes them through the
-   import API with the universe's token (P-20 steps 1 to 3; the script, the token and the report are P-20's).
+   import API with an API token of the GM's account that reaches the universe and carries the tool `swn/vaisseaux` (AD-144, B-65; E-23; P-20 steps 1 to 3; the script, the token and the report are P-20's).
 2. **E-22** of « Éneria »: Antor opens a converted design, sees the price, HP, AC, power and mass of the prototype's
    reference figures, the capacities and the crew costs, and the sheet's section in step. The campaign's ships
    (`classe-hyperion`, `le-pie-rouge`, …) are opened and checked against their sheets.
@@ -1036,7 +1209,7 @@ row): this is what B-88 forbids to remain.
   vessels, « Actives / Détruites / Tous » on factions, « Vivantes / Éteintes / Tous » on families).
   No date, no cause: the text says the rest. *(P-17, P-6)*
 - **B-68** — The **import API** pushes the nature and the qualifier of a relation, the « gone » mark
-  (`disparu`) of a sheet of a type that carries it, and families, with the protection of B-48; the former free `type` of
+  (`disparu`) of a sheet of a type that carries it, and families (the protection of B-48 is withdrawn); the former free `type` of
   a relation is the qualifier. *(P-10)*
 - **B-69** — The graph (E-11) and « Mentionnée dans » (E-9) read the nature where there is one:
   the link of a graph shows the nature's label, the qualifier after it; « Mentionnée dans » keeps
@@ -1067,18 +1240,242 @@ row): this is what B-88 forbids to remain.
 types, the form shows only the natures of the pair (or « sans nature »); a relation whose
 section is closed to the players does not appear in « Fiches liées » for Léa, nor in her
 search, nor in the count.
+- **B-96** — A system's map carries **non-celestial elements**: ship, city, station, base, or another kind from a short list. An element is placed
+  by orbit and hour, or **on a body** (then it follows the body), links to its sheet when one exists (B-92), and the GM may set it **« Réservé au MJ »**, one by one:
+  a hidden element is absent for a Player — no slot, no count, no line, no link from a sheet. The GM places, moves, names, completes and removes elements; the catalogue tools (B-94) read and write
+  them under the same guards. Placing an element on a drawn system anchors it first (B-93). *Done when:* a Player reads the elements the GM left readable and none of the others, on the map, in the list and from the sheets.
+- **B-97** — A GM can **hide a whole system**. For a Player the hexagon of a hidden system is **an empty cell on the galaxy map** (E-21): neither star nor name, no panel content, and the routes towards it
+  are hidden too (a route is readable only if both ends are, no gap and no count); the system's own address answers « Page introuvable. ». A drawn system can be hidden: hiding anchors it (B-93) and the row written is promoted (`promu` true), so the neighbouring drawn systems stay exactly as they were
+  and the hidden state is stored with its row. The GM sees and marks hidden systems (« MJ seul »). Inside a system a Player reads, **nothing celestial is hidden** (B-88).
+
+### P-22 — Read and tend a star system (Antor, GM, at a desk; Léa, Player, on a phone)
+
+Antor opens the galaxy (E-21) of Lame d'Ébène on the Éneria seed, taps a star and chooses « Ouvrir le système » (E-23).
+With `kanevas-carte-spatiale-carte` the map is testable as a canvas, and the lists of `-systeme` stay under it as the text alternative: the same system as lists « Corps » and « Zones » (each line: name, type, orbit and hour), read alike by Antor and by Léa, with « Page introuvable. » for a hidden system. Its strong moment: Léa, on her phone, reads the very lines Antor read, anomaly included. Steps 1 to 5 below are those of the map: `-carte` brings the taps and the illustrations (step 1 without the sheet link, and the high-definition image of step 2), `-liens` the link and « Illustrer la fiche », `-edition` the drag and the names, `-elements` the ship. Moment fort of `-carte`: Léa, on her phone, taps a planet and sees its illustration sharpen, the same planet Antor sees.
+1. **E-23** shows the star at the centre, three planets, a belt, a comet, and the exits. He taps the second planet: the panel shows its illustration,
+   « Orbite 4 · 7 h », its type, and the link to its sheet when one exists (B-92).
+2. « Voir l'illustration » opens the high-definition image (cached after the first time); « Illustrer la fiche » adds it to the linked sheet (offered only on a linked body: for the planet of step 1 it is there because its sheet exists; otherwise he first links it, « Lier à une fiche… », then illustrates). « Délier » takes the link off at once.
+3. He drags the planet to another hour: orbit and hour update, the change is saved (it **anchors** the system if it was only drawn, that is defines it — the dialogue
+   says so first, B-93; the same dialog opens from the menu « Système › Ancrer ce système », and « Annuler » there leaves the system drawn). He may also enter the place by « Déplacer » in plane or hexagon coordinates, add a body or a zone from the menu « Système », remove a body (the dialog counts its moons) and set the transition radius. He names the planet (a drawn element has no name until he gives one) and links it to the sheet « Vael II ».
+4. He places the ship « Aube-Brisée » on the second planet, orbit and hour following the planet, linked to its sheet (B-96).
+5. **Moment fort:** Léa, on her phone, opens the same system: every body is there with its illustration, the new name and, from the sheet, « Sur la carte spatiale ». The ship is there
+   too, unless Antor set it « Réservé au MJ »: then there is no empty slot and no count.
+
+*Failure path:* an illustration that cannot arrive → the blurred version with « Illustration indisponible. » + « Réessayer »; the server does not answer → « Impossible de lire ce système. » + « Réessayer », or the list already read under « Connexion perdue. »; the core fails to load in the browser → the map is replaced by the list of bodies (text, illustrations by the server) and
+« La carte ne peut pas s'afficher ici. » (E-23 states); a body moved by another GM meanwhile → « Cet astre a changé depuis que vous l'avez ouvert. » + « Recharger »; an orbit or hour out of bounds in « Déplacer » → « Orbite invalide. » and nothing saved. A link that fails → « Impossible d'enregistrer. » with « Réessayer »; the sheet deleted while he chose → « Cette fiche n'existe plus. »; an illustration that cannot be added to the sheet → « L'illustration n'a pas pu être ajoutée. » + « Réessayer »; Léa, before a body whose sheet she cannot read, sees the body with no link at all.
+
+### P-23 — Tune the generator (Antor, GM)
+
+From E-21 « Réglages du générateur… » opens **E-24**. Antor lowers the comet frequency, widens the planets of red dwarfs, and then, on the « Aspects » tab, changes the palette of the « glace » type
+and saves it (no count, nothing moves: only the pictures change). Before applying the generator values, E-24 says « 214 systèmes tirés changent d'intérieur. 12 systèmes définis ne bougent pas. » *Moment fort:* the live thumbnails of three sample systems
+redraw as he moves the sliders. *Failure path:* a value out of range is refused at the field with the bound; a seed change asks the confirmation of E-21; a save that fails keeps the draft and offers « Réessayer »; leaving with an unapplied draft asks « Quitter sans appliquer ? »; a lost connection makes the form read-only without losing the draft.
+
+### P-24 — An external agent completes a system (agent with a token, GM watching)
+
+The GM asks his agent (via kanevas-synchro's MCP) to flesh out a drawn system. The agent reads the system (all elements, coordinates, links), completes the aspect and the description of a body,
+names it, links it to an existing sheet, then **anchors** the system. *Moment fort:* the GM reloads E-23 and sees the named body, its link and the « Défini » mark. *Failure path:*
+a token whose creator is no longer GM, or an unknown system, gets the usual `jeton_invalide` / `introuvable` (AD-103); a body asked at an orbit out of bounds is refused with its code.
+
+### P-25 — Take over Éneria's map (Monsieur, Saturday, Mac and private repository)
+
+From the private Éneria repository, a script reads `atlas/systemes/*.yaml`, `systemes.yaml` and `astres.yaml` (the ships, cities and stations of a system's file travel as its `elements` list), and sends them to the import API of the target galaxy
+(the galaxy already created on Éneria's seed by the conversion of P-20); the batch report counts created, unchanged and refused elements (bodies and map elements alike, each by its key). *Moment fort:* the GM opens the galaxy and a system of
+the lore and finds Éneria's bodies at their places with their illustrations. *Failure path:* a refused element is reported with its path in the file and nothing is half written (as P-20).
+
+### P-22 — Bring Kanevas up to date from the Éneria base (Monsieur, GM, a Saturday, Mac)
+1. The script opens a batch (`POST /lots`), then reads the lists of sheets, files and maps (B-105,
+   B-90) and compares each fingerprint with the one it kept at its last run. A file sent again
+   without its visibility keeps the one Kanevas holds (B-91).
+2. A sheet whose fingerprint moved: the script reads it (B-106), sees what the GM changed in Kanevas
+   (« Velarion LUMA-7 » renamed, its Description rewritten), and tells Monsieur, who carries it into
+   the base. A sheet born in Kanevas is listed too, with its key and marked « née dans Kanevas »; a
+   sheet missing from the list was deleted (its line is in the history, B-102).
+3. For what changed in the base, the script writes only that: a renamed header field (B-107), the
+   section « Relations » deleted on 130 sheets (B-108), a relation whose nature changes (B-109) — each
+   with the fingerprint it read (B-110).
+4. A write refused because the sheet moved meanwhile: the script reads it again and retries, or
+   leaves it to Monsieur. Nothing was written.
+5. The 17 « map » sheets of the base become maps (B-112), each attached to its place, ship class or
+   adventure, with its caption as text; the batch is closed and E-18 shows its counts, maps included.
+   Failure: a background over the instance's limit is refused with its key, the rest goes on.
+
+### P-23 — Tidy a map (Antor, GM; the admin for the limit)
+1. On « Cartes de combat de Tyros-7 » (**E-11**), Antor reads the text, edits it, puts a sentence in a
+   GM block, and attaches the map to the sheet « Tyros-7 »; on Tyros-7 (**E-9**), the block « Cartes »
+   lists it. Léa, a player, sees the map on Tyros-7 once it is visible, and its text without the GM block.
+2. A background of 90 MB set on the frame of **E-11** is refused (« Image trop lourde : 75 Mo au plus. »): the admin raises the limit on **E-5** (B-89), Antor sets it again on E-11.
+
+### P-24 — Work the lore with an agent (Monsieur, with his agent, a session on the Mac)
+1. At the start, the agent exports Éneria (B-92) into its local copy, then downloads the images whose
+   fingerprint changed; during the session it checks the list « changed since » the export (B-93).
+2. Monsieur asks for a coherence review of Sevrak: the agent searches the passages (B-98) through the
+   MCP (B-97), reads the sheets that mention `personnage:sevrak` (B-97), and shows the contradictions.
+3. They decide together, in the agent's worktree; once Monsieur says go, the agent writes each change
+   through the MCP, with the fingerprints it read (B-107 to B-110). A write refused because the sheet
+   moved: the agent reads it again and asks Monsieur.
+4. The agent creates « Les Veilleurs », a faction: Kanevas gives it `faction:les-veilleurs` (B-99),
+   which the agent writes into its faction data; the agent's data cite sheets by key
+   (`lieu:tenebria`), and Monsieur opens `/univers/eneria/lieu/tenebria` (B-101) to read what it wrote.
+
+### P-25 — Manage one's tokens (Léa, player; Antor, GM)
+1. Léa opens « Mes jetons d'API » (**E-23**), creates « Agent de Léa », « tous mes univers », in
+   « lecture » (B-94); she copies the value shown once — the strong moment: it is never shown again. A save that fails says
+   « Impossible d'enregistrer. » and keeps her entries; a change on a token revoked meanwhile says « Ce jeton est révoqué. ».
+2. A token of Léa's misbehaves in Éneria: Antor asks the admin, who on **E-5** adds to the token's « tous mes
+   univers » (« Tous les univers du compte » on E-5) the exception « Éneria : — » (B-95); Léa's page shows « Modifié par l'admin », her other
+   universes unchanged, and so will every universe she joins later.
+3. Léa changes the accesses of her token (« Modifier les accès », E-23): the pill goes, the value is
+   unchanged. If she loses the value before copying it, there is no way to read it again: she revokes the
+   token (« Révoquer », confirmation) and creates another.
+4. Another token, forgotten by its owner, still works: the admin revokes it on **E-5** (confirmation naming
+   the token and its owner); its owner then reads « Révoqué par l'admin » on E-23, and the script gets 401
+   `jeton_invalide`. Antor, a GM, sees none of these tokens and has no gesture on them.
+
+### P-26 — See who changed what, and undo a mistake (Antor, GM, the day after)
+1. On « Historique » of Éneria (**E-24**), Antor filters on the token « Agent Éneria » (B-102): twelve
+   lines yesterday evening, one of them « Section Histoire de Sevrak réécrite ».
+2. He opens it, compares with the previous value, and restores it (B-103); the history now carries his
+   restoration. A sheet deleted by mistake two weeks ago: he reads its sections in the history and
+   copies back what he needs.
+3. He changes the key `lieu:tenebria-2` to `lieu:tenebria-la-noire` on E-9 (B-99), and the universe's
+   identifier `eneria-v2` back to `eneria` on E-14 (B-100); the former addresses still open the sheet.
+
+### The battle map (`kanevas-battlemap`)
+
+> *Decisions of Monsieur, 2026-11-11 (triage): a dedicated tool of the tool registry (`kanevas-outils`);
+> a Rust core compiled to WebAssembly, no separate service; the table first, then remote play; an image
+> engine that makes **assets only** — a map is a composition, never one generated picture. Inspired by
+> Dungeonfog, which Monsieur is not satisfied with: its principles (asset libraries, layered composition,
+> a table display), done better. Ids B-96…B-110, P-26…P-29, E-25…E-30, AD-150…AD-165 are this epic's; the
+> sibling epic `kanevas-carte-spatiale` holds B-86…B-95, P-22…P-25, E-23…E-24, AD-138…AD-149.*
+
+- **B-96** — Each universe has an **asset library**: pictures of a **category** (object, vessel, scenery,
+  floor texture, wall texture) that a map knows how to place. An asset carries a name, its category, its
+  **footprint in cells** (width × height, whole cells; a floor or wall texture has none), whether it is
+  **seen from above** (an asset that is not top-down is flagged and still usable), free tags, and is a file of the media
+  library (B-54), so it keeps its visibility rule. The GM and the players read the library (a player sees
+  the assets the GM left visible); only the GM writes it. *(P-26)*
+- **B-97** — The GM **adds assets by hand**: dropping images in the library (several at once, each
+  named from its file and given the category chosen for the drop), picking images already in the media
+  library, then correcting any property one by one or by selection. Removing an asset used by maps first
+  says on how many maps it is placed. *(P-26)*
+- **B-98** — Each universe has an **art direction**: a text (Markdown, the style, palette, mood, what to avoid) and
+  **reference images** (media-library files). The GM edits it by hand; the assistant can propose and write it on
+  request, the previous text being kept one step for « Annuler ». Players do not see it: its reference images and the draft files are GM-only files of the library. *(P-26)*
+- **B-99** — **Optional — batch generation**: the GM lists the assets he wants (a name, a category, a
+  footprint, an optional hint each; or asks the assistant to draft the list from a theme), starts a **batch**
+  and the image engine makes them one after the other, each prompt built from the art direction. Each result
+  lands in the library as a **draft** to accept, regenerate with a remark, or discard; nothing enters a map
+  before it is accepted. The batch shows its progress, the GM can **stop** it (every line not yet accepted is discarded after a confirmation, drafts and failures included — AD-157), and it survives a restart: the line that was running and the lines still waiting are marked *interrupted* and the GM resumes them with one click, never silently. Without an image engine the
+  entry is absent and everything else works with a library filled by hand. *(P-26)*
+- **B-100** — The assistant has **dedicated skills** for the tool (writing an art direction, briefing an
+  asset batch, composing a map from the library): instruction documents shipped with the tool, which it loads
+  on demand, so that an agent that knows nothing of battle maps does the work in the universe's style. *(P-26, P-27)*
+- **B-101** — The GM **composes a map**: a grid (size in cells, cell size in pixels of the reference raster, 70 by default; both editable later, a reduction refused while elements lie outside the new limits), **floors**
+  painted by texture, **walls** drawn along the cell edges (with doors as a wall variant: a door is a drawn passage that stays a limit for a room and has no open / closed state), **assets placed**
+  anywhere on the grid (snapped to the grid or free, a switch of the editor, rotated by quarter turns, mirrored, scaled), organised in **layers**
+  (floor, walls, objects, plus layers the GM creates, renames, orders and deletes, each of a type floor, wall or object). The map is saved as the GM works. *(P-27)*
+- **B-102** — The editor has the comforts of a real tool: select several elements and move, duplicate (copy / paste), delete them;
+  **undo and redo** (this session); a layer can be hidden, locked, or made **GM-only** (its content never
+  reaches a player); zoom and pan; a search in the library from the editor. *(P-27)*
+- **B-103** — The **assistant composes a map** from the library on request (« une taverne de 20×14 cases,
+  deux salles, une cave »): it uses only assets of the library, creates the map, and the GM opens it in the
+  editor and retouches it by hand. A request that needs an asset the library lacks says which one. *(P-27)*
+- **B-104** — A composed map is **one of the universe's maps** (E-10, with its visibility); an **element** of the document (E-28) or a **token** of the table (E-29) can
+  be linked to a **sheet** of the universe; from the map, a reader opens it under the usual reading rules (AD-64), in the GM's
+  and the players' play screen (E-29) — not on the table display (E-30), which has no control. *(P-27, P-3)*
+- **B-105** — **At the table**: the GM opens the map in play mode and a **display for the players**
+  (a second screen — a TV, a tablet — opened on the same account type, chrome-less) shows it, **driven by the GM**: he
+  chooses what part of the map is shown (zoom and position) and which layers (a layer menu of the play screen). The table account is any member account of the universe (a player member left logged in on the TV, or the GM in a second window): the display always shows the player view. *(P-28)*
+- **B-106** — **Tokens**: the GM puts tokens on the map (from a character or creature sheet, an asset of the library or
+  a plain disc with a name; « Ajouter un pion » in the play screen), moves them, shows or hides them, removes them, links a sheet to one. Each token may belong to a player. *(P-28)*
+- **B-107** — **Fog of war**: the map starts hidden to the players; the GM **reveals** areas by hand (painting
+  cells, revealing a rectangle or a whole **room**: the area enclosed by the walls and doors around a clicked cell), and can hide them again. What is hidden is never sent to a
+  player's device. *(P-28)*
+- **B-108** — **Remote play**: each player opens the map on his own device and **moves his own token**;
+  every screen — GM, table display, other players — updates within a second or two, with no reload. A player moves
+  only tokens that belong to him. Where the GM has switched remote play off (E-20), the players still follow live but only the GM moves tokens. *(P-29)*
+- **B-109** — The state of a table (tokens, fog, view) is **kept between sessions**: the GM resumes the map where
+  he left it, and can reset it. A lost connection never loses the state and the screen says so. *(P-28, P-29)*
+- **B-110** — The tool follows the registry: the GM enables it per universe (E-20), sets who sees it (hiding the library from a role hides its entry and panel, not the maps, which stay readable by whoever sees them), the assistant tools
+  disappear when it is disabled, and « Supprimer les données de l'outil… » counts what it will erase. *(P-26, P-21)*
+
+### P-26 — Fill a library in the universe's style (Antor, GM, Sunday evening, office)
+*« Éneria » is dark science-fiction, painted, worn metal; he wants a library for his ship interiors.*
+1. **E-26**: he writes the art direction (or asks the assistant — « Demander à l'assistant » opens E-12 with the request —
+   which writes a text from the universe's sheets; E-26 shows « Texte modifié par l'assistant » with « Annuler », he corrects
+   the text or cancels it) and adds three reference images from the media library.
+2. **E-25**: he drops fifteen images he already owns (Dungeonfog assets he bought, if any): each lands with the category
+   of the drop, he fixes footprints in a selection (« 2×1 » for the bunks).
+3. For what is missing he opens **E-27**: twelve lines (« Couchette », « Console de commande »…), « Lancer » — twelve drafts
+   arrive one by one, each shown on a neutral grid; he accepts nine, regenerates two with a remark (« plus usé »), discards one.
+4. The next day the assistant, asked for « dix décors de station abandonnée », drafts the list through the dedicated skill: the
+   answer carries « Lot préparé : 10 assets » and « Ouvrir »; in E-27 the batch waits as « Préparé », he starts it there.
+5. Léa (player) opens **E-25** and finds the assets Antor left visible; nothing to write, no art direction. If the library loads badly she reads « Impossible de charger la bibliothèque. » and « Réessayer »; if it is empty, « La bibliothèque est vide. ».
+*Highlight*: step 3, the drafts that appear one by one in his style.
+*Failure*: no image engine — the generation entry is absent, steps 1 and 2 stand; a batch is already prepared or running — the assistant answers « Un lot est déjà préparé ou en cours. Ouvrez-le dans la génération. »; « Annuler » after a hand edit elsewhere — « Ce texte a changé depuis que vous l'avez ouvert. » and « Recharger »; offline — « Annuler » is disabled; the cancellation fails — « L'annulation a échoué. Réessayez. »; the assistant is unavailable (no token) — the button « Demander à l'assistant » is absent, steps 1 to 3 stand by hand; one asset fails — its line says « Échec »
+with « Réessayer », the others go on; the batch is interrupted by a restart — the running line is marked
+« Interrompu » and « Reprendre » restarts it; a file that is not an image — refused with its name; removing an asset says on how many maps it is placed; the art direction was changed elsewhere — « Ce texte a changé… » and « Recharger »; a ninth reference — refused; the library holds 5 000 assets — « Bibliothèque pleine ».
+
+### P-27 — Compose a map (Antor, GM; the assistant)
+1. In **E-10** he chooses « Nouvelle carte » ▸ « Carte composée » (the tool enabled): the dialog asks a name and a size (30 × 20 cells); **E-28** opens.
+2. He paints a floor, draws the walls of two rooms with a door, drops consoles and bunks from the library panel, puts the
+   consoles on an « Objets » layer, a hidden trap room on a GM-only layer; he undoes a wrong wall.
+3. Another map: in the assistant (E-12) « Compose une cantine de 20×14 avec une cuisine et une réserve » — the assistant
+   answers with a link; **E-28** shows the map, he moves two tables and replaces a floor.
+   *Detail of `kanevas-battlemap-editeur` (steps 1, 2 and 4).* Step 1: the dialog's « Créer » opens E-28 on a map with the layers « Sol », « Murs », « Objets », the Sol tool armed and the hint of the empty map. Step 2: Antor chooses a floor card in the Bibliothèque tab, paints a rectangle (shift-drag), picks Mur and drags the outline of the first room, then the second, Porte and clicks one segment; he picks two console cards, places them (the editor moved the active layer to « Objets »); « Nouveau calque » ▸ « Réservé au MJ » (type Objet, « MJ seul » on) takes the trap room's elements; a wrong wall is undone with Ctrl+Z; the saving indicator reads « Enregistré » a second after each gesture. Step 4: he selects a console, « Lier une fiche… », types « Terminal », picks the sheet; « Ouvrir la fiche » opens it. He closes the tab and reopens the map from E-10: everything is there (a floor, six walls and a door, two objects, the GM-only layer). Failure paths: a second tab writing first — « Cette carte a changé » + « Recharger »; a network cut — « Enregistrement impossible, nouvelle tentative… » and the work kept; a resize that leaves an element out — « Des éléments sont hors des nouvelles limites. ».
+4. On the console **element** (E-28, Properties) he links the sheet « Terminal de la passerelle »; at the table a player will open it from the map (E-29). A token is linked in E-29.
+*Highlight*: step 3, the assistant's map that he keeps by hand.
+*Failure*: a player asks the assistant for a map — it answers that this is the GM's, nothing is written; the library lacks a kitchen asset — the answer names it and builds the rest; the assistant is unavailable — no panel, the map is made by hand (step 1); two writes at once — the second says
+« Cette carte a changé » and « Recharger »; the map is full (limits of AD-163) — « Carte pleine »; an asset removed meanwhile — a
+placeholder « Asset retiré » for the GM, absent for players. Removed assets are counted on confirmation (« Utilisé sur 3 cartes »).
+
+### P-28 — Play at the table (Antor, GM; the table display; Léa and Roxane at the table)
+1. **E-29**: he opens the map in play mode; on the TV, **E-30** (opened once on a member account of the universe, the table account) shows « En attente du MJ ».
+2. He shows the map: the display follows his zoom and the layers he chose; the fog hides everything but the entrance; with « Ajouter un pion » he places three tokens (Léa's
+   Mira from her sheet, Roxane's Vox, a guard as a plain disc), gives two of them their owner.
+3. The party opens the door: he reveals the room by painting it; the guard token is shown; he moves it.
+4. At the break he leaves; the next Saturday he reopens the map: tokens and fog are as he left them.
+*Highlight*: step 3, the room that appears on the TV.
+   *Detail of `kanevas-battlemap-table`.* Step 1: « Jouer » in the editor opens E-29 and creates the table; « Écran joueurs » opens E-30 in another window (or the TV's browser), whose account is an ordinary member of the universe. Step 2: with « Vue partagée » on, his zoom is the display's; « Ajouter un pion » ▸ Fiche (« Mira »), Asset, Disque (« Garde »), and « Propriétaire… » on two; the fog is the black ground at the display. Step 3: « Révéler » ▸ Pièce, a click in the room: it appears on the display within two seconds; the guard, in it, is seen; he drags it. Step 4: next Saturday « Jouer » finds the tokens and the fog as left; « Réinitialiser la table… » empties them. A player opening the map from E-10 reads the same revealed map on E-29, and « Suivre le MJ » is on.
+*Failure*: the display is closed — the GM sees « Aucun écran joueur connecté » (not an error); connection lost — the GM's
+screen keeps the map, actions disabled, « Connexion perdue. », and the state resumes on reconnection.
+   *Also in step 3 and 4*: « Masquer » paints the fog back, « Effacer la vue » returns the display to « En attente du MJ », « Ouvrir la fiche » on Mira's token opens her sheet in a side panel, « Lier une fiche… » / « Délier » and « Retirer le pion » edit a token. Other failures: « La partie n'a pas commencé. » (a player or the display before the GM's first « Jouer »), « Cette table a changé » ▸ « Recharger », « Table pleine » at 200 tokens.
+
+### P-29 — Play remotely (Antor, GM; Léa and Roxane, each at home)
+1. Each player opens the map (E-29, player mode) on her phone or computer; she sees what has been revealed and her token.
+2. Léa drags Mira: Roxane and Antor see it move; Léa cannot move the guard.
+3. Antor reveals the corridor: both screens uncover it; he scrolls the shared view and chooses « Suivre le MJ » or not (per
+   player, kept in her browser).
+4. Roxane loses her connection: her screen says so and rejoins by itself, with the current state.
+5. Antor switches « Jeu à distance » off (E-20, the card of `battlemap/cartes`): the players keep following live, their rings and drag go, the line « Seul le MJ déplace les pions. » appears; switched on again, they come back.
+*Failure*: a player who owns no token (or the table account) sees the map and moves nothing, with no hint (remote play on; with it off she sees the line « Seul le MJ déplace les pions. » like everyone); a player moves a token that is not hers — refused, the token goes back, « Ce pion n’est pas à vous. »; a stale
+version — silently refetched; the GM hides the map (E-10) — « Page introuvable. » for the players.
 
 ## Out of scope
+
+- *(`kanevas-synchro`)* **A list of the keys deleted since the import**, as such: refused — a script
+  sees a deleted sheet by its absence from the list (B-105), and the history keeps the deletion 90 days
+  (B-102; B-40 amended by Monsieur, 2026-11-01). **Removal by omission** (« this list of sections is
+  complete »): refused, a removal is targeted (B-111). **A mark on the relations the import created**:
+  refused (2026-11-01). ~~The import writing a section born in Kanevas~~: every section has a key since the extension (B-104).
+  **Importing map tokens and graph maps**; **one map per image** is the script's choice.
+  **Free fields per sheet**: refused — positions of systems belong to the galaxy tool (`kanevas-outils`),
+  sources go in a GM-only section keyed `sources` (2026-11-01). **A batch of proposals reviewed in
+  Kanevas, and an all-or-nothing grouped write**: refused — the tool reviews with Monsieur and writes
+  one by one (2026-11-01). **A read-only token scope**: none; a token's level is chosen per universe
+  (B-94). **OAuth through Authelia for the MCP** (claude.ai connectors): deferred. **Restoring a
+  deleted sheet** by a gesture: out.
 
 - **Tools in `kanevas-outils`** *(Monsieur's decisions, 2026-10-15 and 16)*: the **faction turn manager** (epic `kanevas-factions`, with
   per-turn faction overlays on the map), the **shared journal and dice** (next epic), **printing** (a core feature, later),
   user **JSON export or import of a design**, **podcasts**, **offline maps**, **hot-loading** third-party code, a
   **generic tool engine**, and the **campaign link** (timeline, public part) deferred to faction turns. A player does not create a sheet
   (existing rule): the GM creates the ship sheet, the player designs as the section author.
-- **Live play**: no initiative, animated combat or fog of war; the table remains
-  physical.
 - *(kanevas-taille-images)* **A free size in pixels, cropping, a caption and a gallery** for the images of a
   text: three standard sizes and three placements cover the need; reopened if a GM asks for more.
+- **Live play**: no initiative or animated combat; the table remains physical. *(Amended by
+  `kanevas-battlemap`: a hand-driven fog of war and a table display are now in, B-105…B-108.)*
 - *(kanevas-scenarios)* **A calendar of sessions** (dates, who was there) and a **play log per
   scenario** (« joué le 12 octobre avec Léa et Mira ») — the status says where an adventure
   stands, not when; reopened if the GM asks for the history of a campaign.
@@ -1113,7 +1510,7 @@ search, nor in the count.
   2026-10-11)*
 - **Structured creatures and ships** (characteristics in fields per system): another epic;
   here, their imported sheets are Markdown sections, including tables. *(Monsieur's decision of 2026-10-11)*
-- **Maps in the import API**: another, “more advanced” epic; here, a Kanka map is imported
+- *(`kanevas-synchro`: illustrated maps enter the import API, B-112; their tokens and graph maps stay out)* **Maps in the import API**: another, “more advanced” epic; here, a Kanka map is imported
   as an ordinary sheet with its image. *(Monsieur's decision of 2026-10-11)*
 - **Timeline as a separate type** (a visual timeline): a more advanced epic, like maps; here, a
   timeline is a « Savoir » sheet. *(Monsieur's decision of 2026-10-11)*
@@ -1121,10 +1518,30 @@ search, nor in the count.
   for one player remains an authored section (AD-19).
 - **Import history, undoing a batch**: a batch can be replayed, not undone; delete
   the trial universe.
-- **Export to Kanka or another tool**: untriaged.
+- **Export to Kanka or another tool**: untriaged. *(`kanevas-synchro`: the token read of the import API, B-105 and B-106, lets a script read back what it imports; a whole-universe export by token, B-92; no export screen.)*
 - **Calendar or timeline, dice roller, offline use (PWA)**: untriaged.
   Since `kanevas-icones` (AD-135), Kanevas is installable (manifest, icons) but ships **no service worker and no offline cache**: the installed app needs the network, and offline use stays untriaged.
-- **Edit history, export, public sharing.**
+- **Edit history, export, public sharing.** *(`kanevas-synchro`: a history of writes enters, 90 days of lines and 30 of previous values, B-102, B-103; a whole-universe export by token, B-92; public sharing stays out.)*
+
+### P-26 — Hide a system and its elements (Antor, GM; Léa, Player)
+
+On E-21 Antor selects the drawn system (3, −5), where the Hollow Fleet hides, and turns on « Secret (MJ seul) » (the dialogue says that hiding **defines** the system, B-93). *Moment fort:* Léa reloads the galaxy: the hexagon
+is an empty cell, and the two routes that led to it are gone; the system's address answers « Page introuvable. ». On another, visible system, Antor sets a station « Réservé au MJ » (E-23): Léa still sees all the bodies,
+and not the station. Antor can cancel the hiding dialogue (nothing is written), turn the switch off to give the system back, and see what Léa sees in Player mode; the exit that led to a hidden system disappears from the E-23 of its neighbours. He then moves the station onto a planet (« Poser sur un astre »), and removes the planet: the dialog says « Son élément (1) sera retiré. », and removing an element alone asks « Retirer <nom> ? ». *Failure path:* a write by a non-GM is not offered; an element on a system that no longer exists → « Ce système n'existe plus. »; an astre or an element removed by another GM meanwhile → « Cet astre n'existe plus. » / « Cet élément n'existe plus. »; an element changed meanwhile → « Cet élément a changé depuis que vous l'avez ouvert. » + « Recharger ».
+
+### Out of scope of `kanevas-carte-spatiale`
+
+- The skill `creation-systeme` and its agents: they stay in Éneria and move to MCP (a task of Éneria).
+- The 3D surface of a body and the placement of bases or cities **on that surface**: a future epic (a city or base is in scope as an element of the system map, placed by orbit and hour or on a body, B-96). The generator keeps apart what it decides (parameters, relief and colour fields) from the drawing, so that it can reuse them (AD-140).
+- The overlay of factions (`kanevas-factions`).
+- Real-time movement of bodies, orbital mechanics, or a scale-true system map: the map is by orbit and hour, as Éneria's.
+- Editing the generator's algorithm from the interface: its settings change, not its code (AD-148).
+
+- *(kanevas-battlemap)* **A whole map generated as one image**: the image engine makes assets only (Monsieur, 2026-11-11);
+  **door states (open / closed) and doors that block sight**; **importing Dungeonfog maps** (Monsieur has none; their assets enter the library like any dropped image); **automatic
+  fog** (line of sight, light sources, dynamic lighting): the GM reveals by hand; **initiative, dice, combat rules,
+  measuring and automatic movement ranges**; **maps larger than 200 × 200 cells**; **animated assets and sound**; **exporting
+  or printing** a composed map (the print feature, later); **cross-universe or cross-account libraries**; **voice or video**.
 
 ## Cross-check of the `kanevas-import` scoping
 
@@ -1151,3 +1568,17 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 | Each screen has its data | E-20: `outils_systeme`, `outils_univers`, owner, catalogues (version, counts), the concepteur settings (`diviseur_prix`, `cadence_chantier`, `solde_jour`, `vivres_jour`) · E-21: `swn_systemes`, `swn_routes`, `swn_zones`, generated blocks (not stored), seed · E-22: `swn_conceptions` (with the per-installation `cibles`, `pj`, `robots`, `integre`), catalogues, `sections.gere_par` · E-9: `gere_par`, `source_version` — **holds**. |
 | Each entity serves a journey | tool setting P-17, P-21 · owner P-17 · managed section P-19 · token scope P-20 · catalogues P-17, P-19 · placed systems, routes, zones P-18 · design P-19 — **holds**. |
 | Gaps filled by a written choice | one `swn` module with two tools (AD-121); the galaxy map is a module table (`swn_galaxies`) that E-10 adds to its list, `cartes` does not change (AD-122); owner of a system created before the epic: any attached GM, since the creator is not stored; no real dependency between the two tools (the mechanism is exercised with a trial module); the GM document: a sheet chosen or created from E-21; a player sees all non-secret systems (no per-player “known systems”); the engine for a journey is chosen in the tool; who creates a ship (the GM creates the sheet, the player designs if they are its author: “a player does not create a sheet” rule retained); E-22 in two states (list, workshop); caching a block according to reading level ([TO VERIFY], AD-132). Tests on real data run in pods, never in CI (Monsieur's decision, 2026-10-16). |
+
+## Cross-check of the `kanevas-battlemap` framing
+
+- Each need has a journey: B-96, B-97, B-98, B-99, B-100 → P-26; B-101…B-104 → P-27; B-105…B-107, B-109 → P-28; B-108, B-109 → P-29; B-110 → P-21 (tool removal), P-26.
+- Each human gesture has a screen: library E-25; art direction E-26; batch E-27; editor E-28; GM play E-29 (and player play); table display E-30; the creation entry is E-10; tool enabling is E-20; the assistant (B-98, B-100, B-103) is E-12.
+- Each role has its column: GM everything; player reads the library, plays the tokens that are his (E-29 player mode) and reads E-30; the instance admin and a non-member see nothing.
+## Cross-check of the `kanevas-carte-spatiale` scoping
+
+| Check | Result |
+|---|---|
+| Each need has a journey | B-86 P-22, P-25 · B-87 P-22 · B-88 P-22 · B-89 P-22, P-23 · B-90 P-23 · B-91 P-22, P-24 · B-92 P-22, P-24 · B-93 P-22, P-24, P-25, P-26 · B-94 P-24 · B-95 P-25 · B-96 P-22, P-26 · B-97 P-26 — **holds**. |
+| Each human gesture has a screen | open, move, name, link, illustrate, anchor, place an element: E-23 · hide a system: E-21 · tune: E-24 · take over: no screen, the import script and its batch report (E-18 reports, P-20) · agent gestures: no screen, the catalogue — chosen. |
+| Each screen has its data | E-23: `swn_astres`, `swn_formations`, `swn_elements`, `swn_systemes`, `swn_routes` (the exits) · E-24: `swn_reglages`, `swn_aspects`, `swn_galaxies` (seed, default density), `swn_zones` (density per zone, read) · E-9: the block of the sheet reads `swn_astres`, `swn_formations`, `swn_elements` — **holds**. |
+| Each entity serves a journey | `swn_astres` P-22, P-24, P-25 · `swn_formations` P-22, P-24, P-25 · `swn_elements` P-22, P-26 · `swn_reglages`, `swn_aspects` P-23 — **holds**. |

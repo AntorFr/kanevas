@@ -87,18 +87,13 @@ test('W-7 : un rejeu qui retire l’effet remet l’élément sans effet et mont
 const cas: [string, Record<string, unknown>, string, string][] = [
   ['optimise-l', { effet_pct: 10 }, 'effet_pct', 'paramètre réservé à son effet'],
   ['optimise-l', { limite: 2 }, 'limite', 'limite 1 attendue'],
-  ['optimise-l', { vise: VISE }, 'vise', 'paramètre réservé à son effet.'],
   ['blindage-l', { valeur: 10 }, 'valeur', ''],
   ['blindage-l', { valeur: -1 }, 'valeur', ''],
   ['blindage-l', { valeur: 1.5 }, 'valeur', ''],
   ['blindage-l', { valeur: undefined }, 'valeur', ''],
-  ['blindage-l', { vise: VISE }, 'vise', 'paramètre réservé à son effet.'],
   ['blindage-l', { limite: 2 }, 'limite', 'limite 1 attendue'],
   ['blindage-l', { effet_pct: 50 }, 'effet_pct', 'paramètre réservé à son effet'],
-  ['montage-l', { vise: undefined }, 'vise', 'élément visé exigé.'],
-  ['montage-l', { limite: 2 }, 'limite', 'limite 1 attendue'],
   ['montage-l', { effet_pct: 50 }, 'effet_pct', 'paramètre réservé à son effet'],
-  ['surcharge-l', { vise: undefined }, 'vise', 'élément visé exigé.'],
   ['surcharge-l', { effet_pct: 0 }, 'effet_pct', ''],
   ['surcharge-l', { effet_pct: 1001 }, 'effet_pct', ''],
   ['surcharge-l', { limite: 0 }, 'limite', 'nombre entier de 1 ou plus attendu.'],
@@ -145,4 +140,17 @@ test('W-6 : la colonne Armure par classe a disparu des fiches de règles, Pource
   const entete = w.regles('modifications').split('\n').find((l) => l.startsWith('| Nom'))!;
   assert.doesNotMatch(entete, /Armure par classe|Pourcentage|Arrondi/);
   assert.match(entete, /Effet/);
+});
+
+test('H-8 : « vise » est accepté et ignoré sur tout effet, absent il passe aussi, et montages spécialisés accepte toute limite (plus de refus de W-7)', async () => {
+  const w = await monde();
+  const f = catalogue();
+  for (const x of f.modifications) x.vise = VISE;
+  f.modifications.find((x: any) => x.cle === 'montage-l').limite = 2;
+  f.modifications.find((x: any) => x.cle === 'surcharge-l').vise = undefined;
+  const r = await w.post(f);
+  assert.equal(r.statusCode, 200, r.body);
+  assert.deepEqual(r.json().refus, []);
+  for (const cle of ['montage-l', 'surcharge-l', 'optimise-l', 'blindage-l', 'simple']) assert.ok(!('vise' in (await w.ligne('modifications', cle)).donnees), cle);
+  assert.equal((await w.ligne('modifications', 'montage-l')).donnees.limite, 2);
 });

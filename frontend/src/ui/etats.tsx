@@ -1,4 +1,4 @@
-import { CircleAlert, Dices, FileQuestion, Library, RotateCcw, type LucideIcon } from 'lucide-react';
+import { CircleAlert, Dices, Info, FileQuestion, Library, RotateCcw, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -13,13 +13,16 @@ export function Chargement({ texte = 'Chargement…' }: { texte?: string }) {
   );
 }
 
-/** Inline alert (icon, text, optional action): a failure that stays on the page. */
-export function Alerte({ children, action }: { children: ReactNode; action?: ReactNode }) {
+/** Inline alert (icon, text, optional action): a failure that stays on the page. `avertissement` is a neutral notice (amber means « GM only »). */
+export function Alerte({ children, action, sens = 'danger' }: { children: ReactNode; action?: ReactNode; sens?: 'danger' | 'avertissement' }) {
+  const avertissement = sens === 'avertissement';
   return (
-    <div className="etat alerte">
-      <CircleAlert size={16} strokeWidth={1.75} aria-hidden="true" className="alerte-icone" />
+    <div className={`etat alerte${avertissement ? ' avertissement' : ''}`}>
+      {avertissement
+        ? <Info size={16} strokeWidth={1.75} aria-hidden="true" className="alerte-icone" />
+        : <CircleAlert size={16} strokeWidth={1.75} aria-hidden="true" className="alerte-icone" />}
       <div className="corps-alerte">
-        <p role="alert">{children}</p>
+        <p role={avertissement ? 'status' : 'alert'}>{children}</p>
         {action}
       </div>
     </div>

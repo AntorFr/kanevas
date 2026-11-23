@@ -1,3 +1,4 @@
+// ecrans: outil
 // Revue de kanevas-outils-format-vaisseaux-suite-atelier (E-22, B-86, Z-5, Z-7): navigateur piloté, catalogue d'essai Z-5 écrit par le test.
 import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';
@@ -95,7 +96,7 @@ const sauver = async (p: Any) => {
 
 
 const opts = async (p: Any) => (await p.getByRole('combobox', { name: 'Élément visé' }).last().locator('option').allInnerTexts()).map(norm);
-const visees = (p: Any, nom: string) => ligne(p, nom).getByRole('combobox', { name: 'Élément visé' });
+const visees = (p: Any, nom: string) => ligne(p, nom).getByRole('combobox', { name: /^Visée/ });
 async function modif(p: Any, nom: string) {
   await p.getByRole('button', { name: AJ_MOD }).first().click();
   await p.locator('li').filter({ hasText: nom }).last().getByRole('button').first().click();
@@ -128,7 +129,8 @@ describe('E-22 suite Z, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => 
     await p.getByRole('button', { name: 'Ajouter : Modifications' }).click();
     await p.locator('li').filter({ hasText: 'Surcharge Z' }).last().getByRole('button').first().click();
     await p.getByRole('button', { name: 'Retirer : Surcharge Z' }).waitFor();
-    for (const n of ['Montage Z', 'Surcharge Z']) assert.deepEqual((await visees(p, n).locator('option').allInnerTexts()).map(norm), ['Choisir un élément', 'Laser Z'], n);
+    assert.deepEqual((await visees(p, 'Montage Z').locator('option').allInnerTexts()).map(norm), ['Choisir un élément', 'Laser Z', 'Soute Z'], 'montage : armes puis aménagements');
+    assert.deepEqual((await visees(p, 'Surcharge Z').locator('option').allInnerTexts()).map(norm), ['Choisir un élément', 'Laser Z'], 'surcharge : armes seulement');
     await visees(p, 'Montage Z').selectOption('armes/laser-z');
     await visees(p, 'Surcharge Z').selectOption('armes/laser-z');
     await p.screenshot({ path: '/tmp/shots/z-1280-armes.png', fullPage: true });
@@ -173,7 +175,7 @@ describe('E-22 suite Z, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => 
     await api('antor', 'POST', `/api/univers/${E}/membres`, { username: 'teo', role: 'joueur' });
     const p = await ouvrir('teo', etoile, 1280);
     await p.getByText('Lecture seule.').waitFor();
-    await p.getByText('Élément visé : Laser Z').waitFor();
+    await p.getByText('Visée : Laser Z').first().waitFor();
     const t = norm(await p.locator('body').innerText());
     assert.match(t, /3 points : −3 puissance, \+1 masse/);
     assert.equal(await p.locator('input[type="number"]').count(), 0);

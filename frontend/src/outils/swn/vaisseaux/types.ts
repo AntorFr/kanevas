@@ -16,6 +16,10 @@ export interface Ligne {
   /** X-4: the points of an exchange line and the line a doubling aims at (the pair `nature/cle`). */
   points?: number;
   vise?: { nature: string; cle: string };
+  /** B-94, from the server: the targets of an aiming effect, one pair per element with the installations aimed at it. */
+  cibles?: { nature: string; cle: string; quantite: number }[];
+  /** Draft only (E-22): one entry per installation, `nature/cle` or `''` while not chosen. */
+  rangees?: string[];
   /** X-3, from the server's result only: the line's own cost (a percentage line) and the exchange's deltas. */
   cout?: number;
   echange?: { puissance: number; masse: number };
@@ -42,6 +46,11 @@ export interface Resultat {
   /** Absent in a result stored before B-83: read as `null`. */
   soutes?: number | null;
   reparation?: { choisie: number; min: number | null } | null;
+  /** H-4/H-5: absent or `null` in a result stored before the slice; the browser formats them and computes nothing (V-5). */
+  capacites?: { code: string; libelle: string; valeur: number; unite: string }[] | null;
+  fraisEquipage?: { jour: number; robots: number } | null;
+  /** The divisor the price was divided by; absent = 1. */
+  diviseurPrix?: number;
   alertes: Alerte[];
 }
 
@@ -51,6 +60,9 @@ export interface Conception {
   coque: { cle: string; nom: string; classe: number };
   lignes: Ligne[];
   resultat: Resultat;
+  /** H-5: of the crew, the player characters and the robots, as stored (absent before the slice). */
+  pj?: number;
+  robots?: number;
   alertes: Alerte[];
   version: number;
   perime: boolean;
@@ -98,6 +110,8 @@ export interface ElementCatalogue {
 
 export interface Donnees {
   classe_min?: number; classe_max?: number; condition?: string; bonus_vitesse?: number;
+  /** H-2: 0 for a station (no Spike drive nor system drive); the browser only filters its lists with it. */
+  moteur_spike?: number;
   vitesse?: number; armure?: number; equipage_min?: number; equipage_max?: number;
   degats?: string; perforation?: number; qualites?: string; niveau_tech?: number;
   /** B-83 (X-1): stated by the catalogue only when the element has them. */
@@ -107,6 +121,8 @@ export interface Donnees {
   reparation_min?: number; soute_par_classe?: number[]; reduction_cout_pct?: number;
   /** Z-1: stated by the catalogue only when the element has them. */
   effet_pct?: number; echange_arrondi?: string; reduction_base?: string;
+  /** H-4: the book's « Effect » text of the element, shown as a grey line, never evaluated. */
+  effet_jeu?: string; capacite?: string;
 }
 
 export interface PageCatalogue {
@@ -122,6 +138,9 @@ export interface Brouillon {
   equipage: number | null;
   /** The repair skill, 0 to 20 (X-4); 0 is not sent. */
   reparation: number;
+  /** H-5: « dont joueurs » and « dont robots », whole numbers 0 to the crew; 0 is not sent. */
+  pj: number;
+  robots: number;
 }
 
 export const NATURES: { nature: Nature; titre: string; singulier: string; ajout: string }[] = [

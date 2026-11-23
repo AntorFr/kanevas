@@ -1,5 +1,5 @@
 import { type ComponentType, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 
 import { ErreurApi, lire } from '../api';
 import { useBasculeMode, useCharge, useTitreAriane, useVue } from '../cadre-contexte';
@@ -22,6 +22,8 @@ type Etat =
  */
 export function OutilEcran() {
   const { id, module, outil, cible } = useParams();
+  // The address itself restarts the read: a system's inside shares `cible` with its galaxy (E-23).
+  const { pathname } = useLocation();
   const cle = `${module}/${outil}`;
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const mj = univers.etat === 'ok' && univers.valeur.role === 'mj';
@@ -30,6 +32,8 @@ export function OutilEcran() {
   const [etat, setEtat] = useState<Etat>({ k: 'chargement' });
   const [essai, setEssai] = useState(0);
   const client = outilClient(cle);
+  // The address may name the universe by its key (B-101): the tool gets the id the answer carries.
+  const universNum = univers.etat === 'ok' ? univers.valeur.id : Number(id);
 
   useEffect(() => {
     if (!client) return setEtat({ k: 'introuvable' });
@@ -39,7 +43,7 @@ export function OutilEcran() {
     setEtat({ k: 'chargement' });
     Promise.all([
       lire<DescriptionOutil>(`/api/univers/${id}/outils/${cle}/description${suffixe}`),
-      client.verifier ? client.verifier(Number(id), cible, suffixe) : Promise.resolve(undefined),
+      client.verifier ? client.verifier(universNum, cible, suffixe) : Promise.resolve(undefined),
     ])
       .then(async ([description, prealable]) => {
         const { default: Composant } = await client.charger();
@@ -53,7 +57,7 @@ export function OutilEcran() {
     return () => {
       actif = false;
     };
-  }, [id, cle, cible, suffixe, essai, univers.etat]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, cle, cible, pathname, suffixe, essai, univers.etat, universNum]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useTitreAriane(etat.k === 'ok' ? etat.description.libelle : undefined, 'Outils');
 
@@ -61,7 +65,7 @@ export function OutilEcran() {
   if (etat.k === 'mode-joueur') return <CarteCachee />;
   if (etat.k === 'erreur') return <ErreurChargement page texte="Impossible de charger l’outil." onReessayer={() => setEssai((n) => n + 1)} />;
   if (etat.k === 'chargement') return <Chargement texte="Chargement de l'outil…" />;
-  return <etat.Composant universId={Number(id)} description={etat.description} cible={cible} prealable={etat.prealable} suffixeMode={etat.suffixe} />;
+  return <etat.Composant universId={universNum} description={etat.description} cible={cible} prealable={etat.prealable} suffixeMode={etat.suffixe} />;
 }
 
 /** Player mode on a map the players cannot see (E-11's notice, shared). */

@@ -1,17 +1,18 @@
 import { Bouton } from '../../../ui';
-import { AIDES, credits, entretien, jours, masse, nombre } from './format';
+import { AIDES, ligneCapacite, vitesseLue, credits, entretien, jours, masse, nombre } from './format';
 import type { Alerte, Resultat } from './types';
 
 /** The figures of a result, with the labels of the text version (V-6). */
-export function Chiffres({ r }: { r: Resultat }) {
+export function Chiffres({ r, station = false }: { r: Resultat; station?: boolean | null }) {
   const lignes: [string, string][] = [
-    ['Prix', credits(r.prix)],
+    ['Prix', r.diviseurPrix != null && r.diviseurPrix !== 1 ? `${credits(r.prix)} (÷${r.diviseurPrix})` : credits(r.prix)],
     ['Chantier', jours(r.chantierJours)],
     ['Entretien', entretien(r.entretien)],
     ['PV', nombre(r.pv)],
     ['CA', nombre(r.ca)],
     ['Portée de saut', r.porteeSaut === null ? '—' : `${r.porteeSaut} cases`],
-    ...(r.vitesse != null ? [['Vitesse', String(r.vitesse)] as [string, string]] : []),
+    // station === null: the hull's catalogue figures are not read yet, so the speed is not shown (no flash of a wrong « 0 »)
+    ...(station ? [['Vitesse', 'N/A'] as [string, string]] : station === false && r.vitesse != null ? [['Vitesse', vitesseLue(r.vitesse)] as [string, string]] : []),
     ...(r.armure != null ? [['Armure', String(r.armure)] as [string, string]] : []),
     ...(r.equipage != null ? [['Équipage', String(r.equipage.choisi)] as [string, string]] : []),
     ...(r.soutes != null ? [['Soutes', nombre(r.soutes)] as [string, string]] : []),
@@ -19,15 +20,33 @@ export function Chiffres({ r }: { r: Resultat }) {
     ['Masse libre', masse(r.masseLibre)],
     ['Emports', `${r.emports.utilises} / ${r.emports.total}`],
   ];
+  const couts = [
+    ...(r.fraisEquipage != null ? [`Équipage : ${credits(r.fraisEquipage.jour)}/jour`] : []),
+    ...(r.fraisEquipage != null && r.fraisEquipage.robots > 0 ? [`Robots : ${credits(r.fraisEquipage.robots)} (une fois)`] : []),
+  ];
+  const capacites = r.capacites ?? [];
   return (
-    <dl className="vx-chiffres">
-      {lignes.map(([k, v]) => (
-        <div key={k} className="vx-chiffre">
-          <dt>{k}</dt>
-          <dd className={k === 'Puissance libre' && r.puissanceLibre < 0 || k === 'Masse libre' && r.masseLibre < 0 ? 'negatif' : undefined}>{v}</dd>
+    <>
+      <dl className="vx-chiffres">
+        {lignes.map(([k, v]) => (
+          <div key={k} className="vx-chiffre">
+            <dt>{k}</dt>
+            <dd className={k === 'Puissance libre' && r.puissanceLibre < 0 || k === 'Masse libre' && r.masseLibre < 0 ? 'negatif' : undefined}>{v}</dd>
+          </div>
+        ))}
+      </dl>
+      {couts.length > 0 && (
+        <ul className="vx-couts" aria-label="Coûts d’équipage">
+          {couts.map((c) => <li key={c}>{c}</li>)}
+        </ul>
+      )}
+      {capacites.length > 0 && (
+        <div className="vx-capacites">
+          <h3>Capacités</h3>
+          <ul>{capacites.map((c) => <li key={c.code}>{ligneCapacite(c)}</li>)}</ul>
         </div>
-      ))}
-    </dl>
+      )}
+    </>
   );
 }
 
