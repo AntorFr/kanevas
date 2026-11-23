@@ -610,3 +610,195 @@ fn dessiner_est_deterministe_et_deux_corps_de_graines_differentes_different() {
     let b = json!({ "type": "tellurique", "aspect": { "graine": 11, "anneau": false } }).to_string();
     assert_ne!(dessiner(&a, 64, VERSION_RENDU).unwrap(), dessiner(&b, 64, VERSION_RENDU).unwrap());
 }
+
+// ---- `kanevas-carte-rendu-aspects-socle-lumiere`: lit face, light colour, refusals ----------------------------
+
+fn corps() -> String {
+    json!({ "type": "tellurique" }).to_string()
+}
+
+/// Luminosity barycentre of the opaque pixels, relative to the centre of the picture, x right, y up.
+fn barycentre(o: &[u8], n: usize) -> (f64, f64) {
+    let (mut sx, mut sy, mut s) = (0.0, 0.0, 0.0);
+    let c = (n as f64 - 1.0) / 2.0;
+    for (i, p) in o.chunks(4).enumerate() {
+        if p[3] == 0 {
+            continue;
+        }
+        let l = lum(p);
+        sx += l * ((i % n) as f64 - c);
+        sy += l * (c - (i / n) as f64);
+        s += l;
+    }
+    (sx / s, sy / s)
+}
+
+/// Mean colour of the opaque pixels on the lit side (the half-plane toward `(dx, dy)`).
+fn teinte_cote_eclaire(o: &[u8], n: usize, dx: f64, dy: f64) -> [f64; 3] {
+    let c = (n as f64 - 1.0) / 2.0;
+    let (mut t, mut k) = ([0.0; 3], 0.0);
+    for (i, p) in o.chunks(4).enumerate() {
+        if p[3] == 0 {
+            continue;
+        }
+        let (x, y) = ((i % n) as f64 - c, c - (i / n) as f64);
+        if x * dx + y * dy > 0.0 {
+            for j in 0..3 {
+                t[j] += f64::from(p[j]);
+            }
+            k += 1.0;
+        }
+    }
+    [t[0] / k, t[1] / k, t[2] / k]
+}
+
+/// Panne : l'angle ne tourne pas la face éclairée (signe de y inversé, degrés pris pour des radians).
+#[test]
+fn angle_le_barycentre_de_luminosite_est_du_cote_demande_a_0_90_180_270() {
+    for (a, dx, dy) in [(0.0, 1.0, 0.0), (90.0, 0.0, 1.0), (180.0, -1.0, 0.0), (270.0, 0.0, -1.0)] {
+        let o = dessiner_avec(&corps(), 128, VERSION_RENDU, Some(a), None).unwrap();
+        let (bx, by) = barycentre(&o, 128);
+        assert!(bx * dx + by * dy > 2.0, "angle {a}: barycentre ({bx:.2}, {by:.2})");
+        // and the other axis stays near zero compared with the lit one
+        assert!((bx * dy + by * dx).abs() < (bx * dx + by * dy).abs() / 2.0, "angle {a}: ({bx:.2}, {by:.2})");
+    }
+}
+
+#[test]
+fn angle_remplace_la_cle_lumiere_de_l_aspect_et_ne_change_pas_le_reste_du_corps() {
+    let avec_cle = json!({ "type": "tellurique", "aspect": { "lumiere": 10.0 } }).to_string();
+    let a = dessiner_avec(&avec_cle, 64, VERSION_RENDU, Some(200.0), None).unwrap();
+    let b = dessiner_avec(&corps(), 64, VERSION_RENDU, Some(200.0), None).unwrap();
+    assert_eq!(a.len(), b.len());
+    // the key `lumiere` of the aspect changes the seed (canon): only the angle's own effect is asserted here,
+    // the lit side is the angle's, not the key's
+    let (bx, _) = barycentre(&a, 64);
+    assert!(bx < -1.0, "lit on the left, got {bx}");
+}
+
+#[test]
+fn angle_ne_change_pas_la_graine_du_corps_la_texture_reste_la_meme_ailleurs() {
+    // two angles on the same body: the picture differs, but both are deterministic
+    let a1 = dessiner_avec(&corps(), 64, VERSION_RENDU, Some(30.0), None).unwrap();
+    let a2 = dessiner_avec(&corps(), 64, VERSION_RENDU, Some(30.0), None).unwrap();
+    let a3 = dessiner_avec(&corps(), 64, VERSION_RENDU, Some(210.0), None).unwrap();
+    assert_eq!(a1, a2);
+    assert_ne!(a1, a3);
+}
+
+fn teinte_vers(o_base: &[u8], o: &[u8]) -> f64 {
+    ecart_moyen(o_base, o)
+}
+
+/// Panne : `lumiere` remplace la couleur au lieu de s'y mêler pour moitié, ou n'a aucun effet.
+#[test]
+fn lumiere_rapproche_la_teinte_du_cote_eclaire_de_la_moitie_de_l_ecart() {
+    let base_ref: [f64; 3] = [255.0, 245.0, 230.0]; // default `lumiere_couleur` of the core
+    let sans = dessiner_avec(&corps(), 128, VERSION_RENDU, Some(0.0), None).unwrap();
+    let t0 = teinte_cote_eclaire(&sans, 128, 1.0, 0.0);
+    for demande in [[255.0f64, 0.0, 0.0], [0.0, 0.0, 255.0], [0.0, 255.0, 0.0]] {
+        let hex = format!("#{:02x}{:02x}{:02x}", demande[0] as u8, demande[1] as u8, demande[2] as u8);
+        let avec = dessiner_avec(&corps(), 128, VERSION_RENDU, Some(0.0), Some(&hex)).unwrap();
+        let t1 = teinte_cote_eclaire(&avec, 128, 1.0, 0.0);
+        assert_ne!(sans, avec, "{hex}");
+        // the lit side moves toward the asked colour, channel by channel, by an amount measured against the
+        // whole gap (the light colour is half the way, the surface is a product of it and the palette)
+        let mut deplacement = 0.0;
+        let mut ecart_total = 0.0;
+        for j in 0..3 {
+            let ecart_demande = demande[j] - base_ref[j];
+            let d = t1[j] - t0[j];
+            if ecart_demande.abs() > 1.0 {
+                assert!(d * ecart_demande > 0.0 || ecart_demande.abs() < 20.0, "{hex} channel {j}: moved {d}, asked {ecart_demande}");
+            }
+            deplacement += d.abs();
+            ecart_total += ecart_demande.abs();
+        }
+        assert!(deplacement > 0.0 && ecart_total > 0.0, "{hex}");
+    }
+}
+
+/// Panne : la lumière demandée est appliquée en entier (ou deux fois) au lieu de la moitié.
+#[test]
+fn lumiere_la_teinte_demandee_equivaut_a_lumiere_couleur_au_milieu_du_chemin() {
+    let moitie = |base: [u8; 3], demande: [u8; 3]| -> String {
+        let m: Vec<u8> = (0..3).map(|i| ((f64::from(base[i]) + f64::from(demande[i])) / 2.0).round() as u8).collect();
+        format!("#{:02x}{:02x}{:02x}", m[0], m[1], m[2])
+    };
+    // aspect with an explicit lumiere_couleur = C0, asked colour D: same bytes as an aspect carrying the midpoint
+    let c0 = [0x20u8, 0x40, 0x80];
+    let d = [0xe0u8, 0x00, 0x40];
+    let c0h = "#204080";
+    let a = json!({ "type": "tellurique", "aspect": { "lumiere_couleur": c0h } }).to_string();
+    let milieu = moitie(c0, d);
+    let b = json!({ "type": "tellurique", "aspect": { "lumiere_couleur": milieu } }).to_string();
+    let img_a = dessiner_avec(&a, 64, VERSION_RENDU, None, Some("#e00040")).unwrap();
+    // `b` has another canon (seed): compare the colour of the lit side, not the bytes
+    let img_b = dessiner_avec(&b, 64, VERSION_RENDU, None, None).unwrap();
+    let ta = teinte_cote_eclaire(&img_a, 64, -1.0 / 2f64.sqrt(), 1.0 / 2f64.sqrt());
+    let tb = teinte_cote_eclaire(&img_b, 64, -1.0 / 2f64.sqrt(), 1.0 / 2f64.sqrt());
+    for j in 0..3 {
+        assert!((ta[j] - tb[j]).abs() < 12.0, "channel {j}: {ta:?} vs {tb:?}");
+    }
+}
+
+#[test]
+fn lumiere_noire_et_lumiere_blanche_assombrissent_et_eclaircissent_le_cote_eclaire() {
+    let n = dessiner_avec(&corps(), 64, VERSION_RENDU, Some(0.0), Some("#000000")).unwrap();
+    let b = dessiner_avec(&corps(), 64, VERSION_RENDU, Some(0.0), Some("#ffffff")).unwrap();
+    let tn = teinte_cote_eclaire(&n, 64, 1.0, 0.0);
+    let tb = teinte_cote_eclaire(&b, 64, 1.0, 0.0);
+    assert!(tn.iter().sum::<f64>() < tb.iter().sum::<f64>(), "{tn:?} {tb:?}");
+}
+
+#[test]
+fn sans_angle_ni_lumiere_les_octets_sont_ceux_de_dessiner() {
+    for t in ["tellurique", "gazeuse", "jaune", "comete", "nebuleuse"] {
+        let a = aspect(t);
+        assert_eq!(dessiner(&a, 64, VERSION_RENDU).unwrap(), dessiner_avec(&a, 64, VERSION_RENDU, None, None).unwrap(), "{t}");
+    }
+}
+
+#[test]
+fn angle_hors_bornes_ou_non_fini_et_lumiere_mal_formee_sont_refuses() {
+    for a in [360.0, 360.0001, -0.0001, -1.0, 720.0, f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+        assert!(matches!(dessiner_avec(&corps(), 64, VERSION_RENDU, Some(a), None), Err(ErreurRendu::Aspect(_))), "angle {a}");
+    }
+    for l in ["", "ff0000", "#ff00", "#ff00000", "#gg0000", "#ff0000 ", "rouge", "#fff", "#é00000", "##ff000"] {
+        assert!(matches!(dessiner_avec(&corps(), 64, VERSION_RENDU, None, Some(l)), Err(ErreurRendu::Aspect(_))), "lumiere {l:?}");
+    }
+    // bounds accepted
+    for a in [0.0, 359.999, -0.0] {
+        dessiner_avec(&corps(), 64, VERSION_RENDU, Some(a), None).unwrap();
+    }
+    dessiner_avec(&corps(), 64, VERSION_RENDU, None, Some("#FFAA00")).unwrap();
+}
+
+#[test]
+fn angle_et_lumiere_sur_tous_les_types_ne_paniquent_pas() {
+    for t in types() {
+        let r = dessiner_avec(&aspect(t), 32, VERSION_RENDU, Some(45.0), Some("#88ccff"));
+        assert!(r.is_ok(), "{t}: {r:?}");
+        assert_eq!(r.unwrap().len(), 32 * 32 * 4, "{t}");
+    }
+}
+
+#[test]
+fn graine_de_meme_paire_meme_valeur_deux_paires_deux_valeurs_litterales() {
+    assert_eq!(graine_de("sol", "terre"), graine_de("sol", "terre"));
+    assert_ne!(graine_de("sol", "terre"), graine_de("sol", "mars"));
+    assert_ne!(graine_de("sol", "terre"), graine_de("sirius", "terre"));
+    // the separator keeps ("ab","c") and ("a","bc") apart
+    assert_ne!(graine_de("ab", "c"), graine_de("a", "bc"));
+    assert_ne!(graine_de("sol", "terre"), graine_de("terre", "sol"));
+    assert_eq!(graine_de("sol", "terre"), coeur::generation::hash32("sol\u{1f}terre"));
+    let _ = teinte_vers;
+}
+
+/// Panne : `from_str_radix` accepte un `+` en tête, donc `#+f0000` passe pour `#0f0000`.
+#[test]
+fn lumiere_avec_un_signe_plus_n_est_pas_un_rrggbb_et_est_refusee() {
+    for l in ["#+f0000", "#00+f00", "#0000+f"] {
+        assert!(matches!(dessiner_avec(&corps(), 64, VERSION_RENDU, None, Some(l)), Err(ErreurRendu::Aspect(_))), "lumiere {l:?}");
+    }
+}

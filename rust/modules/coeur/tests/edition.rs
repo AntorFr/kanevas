@@ -485,3 +485,50 @@ fn jamais_de_panique_sur_des_formes_absurdes() {
         assert!(valider_aspect("gazeuse", s).is_err(), "{s}");
     }
 }
+
+// ---- trier_aspect (`kanevas-carte-rendu-aspects-socle-lumiere`) -------------------------------------------------
+
+fn trie(t: &str, j: &str) -> Value {
+    serde_json::from_str(&trier_aspect(t, j).unwrap_or_else(|e| panic!("{t} {j}: {e}"))).unwrap()
+}
+
+#[test]
+fn trier_aspect_retire_les_cles_inconnues_a_la_racine_et_dans_anneau_et_liste_les_chemins() {
+    let r = trie("tellurique", r#"{"x":1}"#);
+    assert_eq!(r["garde"], json!({}));
+    assert_eq!(r["inconnues"], json!(["aspect.x"]));
+    let r = trie("gazeuse", r#"{"anneau":{"y":2}}"#);
+    assert_eq!(r["inconnues"], json!(["aspect.anneau.y"]));
+    assert_eq!(r["garde"], json!({ "anneau": {} }));
+    let r = trie("gazeuse", r##"{"mer_x":1,"anneau":{"y":2,"opacite":0.5,"couleur":"#ffffff","z":{"deep":1}},"tache":{"w":1,"taille":0.2}}"##);
+    let mut ch: Vec<String> = r["inconnues"].as_array().unwrap().iter().map(|v| v.as_str().unwrap().to_string()).collect();
+    ch.sort();
+    assert_eq!(ch, ["aspect.anneau.y", "aspect.anneau.z", "aspect.mer_x", "aspect.tache.w"]);
+    assert_eq!(r["garde"]["anneau"], json!({ "opacite": 0.5, "couleur": "#ffffff" }));
+    assert_eq!(r["garde"]["tache"], json!({ "taille": 0.2 }));
+}
+
+#[test]
+fn trier_aspect_garde_une_cle_connue_a_l_identique_et_ne_liste_rien() {
+    let j = r##"{"mer":0.5,"palette":["#112233","#445566"],"nature":"aride"}"##;
+    let r = trie("tellurique", j);
+    assert_eq!(r["inconnues"], json!([]));
+    assert_eq!(r["garde"], serde_json::from_str::<Value>(j).unwrap());
+}
+
+#[test]
+fn trier_aspect_refuse_encore_une_valeur_hors_bornes_un_type_inconnu_et_un_json_invalide() {
+    assert!(trier_aspect("tellurique", r#"{"mer": 2}"#).is_err());
+    assert!(trier_aspect("tellurique", r#"{"mer": 2, "x": 1}"#).is_err());
+    assert!(trier_aspect("licorne", "{}").is_err());
+    assert!(trier_aspect("tellurique", "[1]").is_err());
+    assert!(trier_aspect("tellurique", "pas du json").is_err());
+    assert!(trier_aspect("gazeuse", r#"{"anneau":{"opacite":9}}"#).is_err());
+}
+
+#[test]
+fn trier_aspect_un_objet_inconnu_est_retire_en_entier_une_seule_fois() {
+    let r = trie("tellurique", r#"{"x":{"a":{"b":1}}}"#);
+    assert_eq!(r["inconnues"], json!(["aspect.x"]));
+    assert_eq!(r["garde"], json!({}));
+}
