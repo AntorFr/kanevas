@@ -6,7 +6,7 @@ import { lire, useConnexionPerdue } from '../../../api';
 import { chargerModule } from '../../../wasm/charger';
 import { Alerte, Bouton, BoutonIcone, Case, useToasts } from '../../../ui';
 import { APPUI_LONG_MS, DELAI_FLECHES_MS, pasFleche } from '../../../ui/glisser';
-import { centresNuage, coteDemande, disposer, grainsAnneau, placeApresPas, placeDepuisPoint, PORTEE_COURONNE, queuesComete, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
+import { centresNuage, coteDemande, dimensionsCorps, disposer, grainsAnneau, placeApresPas, placeDepuisPoint, PORTEE_COURONNE, queuesComete, RAYON_MIN_PX, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
 import { Sprites, dessineurDuCoeur } from './carte-sprites';
 import { placerEtiquettes, type CorpsEtiquette, type EtiquettePlacee, type Obstacle } from './etiquettes';
 import { lireEchecEdition, useEdition, type EchecEdition } from './Edition';
@@ -147,6 +147,9 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
 
   const ajuste = dispo && taille.w > 0 ? Math.min(taille.w, taille.h) / 2 / (etendue * 1.12) : 1;
   const echelle = ajuste * vue.zoom;
+  // Radius and sprite side in screen pixels: from the fit only, so a body keeps its size at every zoom (AD-echelle-1).
+  const dims = useMemo(() => (dispo ? dimensionsCorps(dispo.corps, ajuste) : new Map<string, { rayon: number; cote: number }>()), [dispo, ajuste]);
+  const dimDe = (cle: string) => dims.get(cle) ?? { rayon: RAYON_MIN_PX, cote: 2 * RAYON_MIN_PX };
   const cx = taille.w / 2 + vue.dx;
   const cy = taille.h / 2 + vue.dy;
   const ecran = useCallback((x: number, y: number): [number, number] => [cx + x * echelle, cy + y * echelle], [cx, cy, echelle]);
@@ -161,12 +164,12 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   useEffect(() => {
     if (!dispo || taille.w === 0) return;
     const demander = () => {
-      for (const c of dispo.corps) sprites.current?.demander(c.cle, c.aspect, coteDemande(c.cote * echelle, dpr));
+      for (const c of dispo.corps) sprites.current?.demander(c.cle, c.aspect, coteDemande(dimDe(c.cle).cote, dpr));
     };
     // First pass at once (the blurred versions come first in the queue); later zooms wait for the gesture to settle.
     const t = setTimeout(demander, 0);
     return () => clearTimeout(t);
-  }, [dispo, taille.w, echelle, dpr]);
+  }, [dispo, taille.w, dims, dpr]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // Labels.
   const mesureur = useMemo(() => {
@@ -178,17 +181,17 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
 
   // The marks of the elements the reader reads (the answer holds no other), placed on their orbit or around their body.
   const marques = useMemo(
-    () => (dispo && plan ? placerMarques(affiche.elements ?? [], dispo.corps, plan, ecran, echelle) : []),
-    [dispo, plan, affiche, ecran, echelle],
+    () => (dispo && plan ? placerMarques(affiche.elements ?? [], dispo.corps, plan, ecran, echelle, new Map([...dims].map(([k, v]) => [k, v.rayon]))) : []),
+    [dispo, plan, affiche, ecran, echelle, dims],
   );
 
   const cibles = useMemo(() => {
     if (!dispo) return { liste: [] as CorpsEtiquette[], sorties: [] as { q: number; r: number; x: number; y: number; nom: string }[] };
     const liste: CorpsEtiquette[] = dispo.corps.map((c) => {
       const [x, y] = ecran(c.x, c.y);
-      const rayon = Math.max(4, c.rayon * echelle);
+      const rayon = Math.max(4, dimDe(c.cle).rayon);
       // A star's glow is drawn out to ~0.9 of its sprite's half-side: a label does not sit on it.
-      const halo = c.astre.genre === 'etoile' ? Math.max(rayon, (c.cote * echelle) / 2 * PORTEE_COURONNE) : undefined;
+      const halo = c.astre.genre === 'etoile' ? Math.max(rayon, dimDe(c.cle).cote / 2 * PORTEE_COURONNE) : undefined;
       return { cle: c.cle, genre: c.genre, nom: nomAstre(c.astre), x, y, rayon, ...(halo ? { halo } : {}) };
     });
     for (const z of dispo.zones) {
@@ -222,7 +225,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     for (const c of dispo.corps) {
       if (c.genre !== 'comete') continue;
       const [x, y] = ecran(c.x, c.y);
-      liste.push(...queuesComete(x, y, c.cote * echelle, c.astre.aspect));
+      liste.push(...queuesComete(x, y, dimDe(c.cle).cote, c.astre.aspect));
     }
     if (heures) {
       const rh = Math.max(dispo.transition, 3 * U);
@@ -280,7 +283,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
       const maintenant = performance.now();
       for (const c of dispo.corps) {
         const [x, y] = ecran(c.x, c.y);
-        const cote = c.cote * echelle;
+        const cote = dimDe(c.cle).cote;
         if (x + cote < 0 || y + cote < 0 || x - cote > taille.w || y - cote > taille.h) continue;
         for (const { image: im, alpha } of sprites.current?.couches(c.cle, coteDemande(cote, dpr), maintenant) ?? []) {
           g.globalAlpha = enEnvoiRef.current.has(c.cle) ? alpha * OPACITE_ENVOI : alpha;
@@ -289,7 +292,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
         g.globalAlpha = 1;
         if (c.cle === selection) {
           g.strokeStyle = jeton.accent; g.lineWidth = 2;
-          g.beginPath(); g.arc(x, y, Math.max(8, c.rayon * echelle + 5), 0, 7); g.stroke();
+          g.beginPath(); g.arc(x, y, Math.max(8, dimDe(c.cle).rayon + 5), 0, 7); g.stroke();
         }
       }
       if (sprites.current?.enFondu(performance.now())) image = requestAnimationFrame(tracer);
@@ -470,7 +473,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   useEffect(() => {
     window.__carteSysteme = () => ({
       pret: etat === 'pret' && taille.w > 0, largeur: taille.w, hauteur: taille.h, zoom: vueRef.current.zoom, decalage: [vueRef.current.dx, vueRef.current.dy],
-      corps: cibles.liste.map((c) => ({ cle: c.cle, genre: c.genre, x: c.x, y: c.y, rayon: c.rayon })),
+      corps: cibles.liste.map((c) => ({ cle: c.cle, genre: c.genre, x: c.x, y: c.y, rayon: dimDe(c.cle).rayon })),
       etiquettes,
       sorties: sorties.map((s) => ({ q: s.q, r: s.r, heure: s.heure })),
     });
@@ -541,12 +544,12 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
             <canvas ref={toile} className="cs-toile" aria-hidden="true"
               width={Math.round(taille.w * dpr)} height={Math.round(taille.h * dpr)} style={{ width: taille.w, height: taille.h }} />
             {dispo.corps.map((c) => (
-              <BoutonCorps key={c.cle} c={c} ecran={ecran} echelle={echelle} choisi={c.cle === selection} onChoisir={() => onSelection(c.cle)}
+              <BoutonCorps key={c.cle} c={c} rayon={dimDe(c.cle).rayon} ecran={ecran} choisi={c.cle === selection} onChoisir={() => onSelection(c.cle)}
                 glissable={mj && !perdue && deplacable(c.astre)} />
             ))}
             {dispo.corps.filter((c) => enEnvoi.has(c.cle)).map((c) => {
               const [x, y] = ecran(c.x, c.y);
-              return <span key={c.cle} className="cs-enregistrement" style={{ left: x, top: y + Math.max(10, c.rayon * echelle) + 4 }}>Enregistrement…</span>;
+              return <span key={c.cle} className="cs-enregistrement" style={{ left: x, top: y + Math.max(10, dimDe(c.cle).rayon) + 4 }}>Enregistrement…</span>;
             })}
             {marques.map((m) => (
               <MarqueElement key={m.cle} cle={m.cle} x={m.x} y={m.y} icone={m.element.aspect.icone} couleur={m.element.aspect.couleur}
@@ -581,11 +584,11 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   );
 }
 
-function BoutonCorps({ c, ecran, echelle, choisi, onChoisir, glissable }: {
-  c: CorpsPlace; ecran: (x: number, y: number) => [number, number]; echelle: number; choisi: boolean; onChoisir: () => void; glissable: boolean;
+function BoutonCorps({ c, rayon, ecran, choisi, onChoisir, glissable }: {
+  c: CorpsPlace; rayon: number; ecran: (x: number, y: number) => [number, number]; choisi: boolean; onChoisir: () => void; glissable: boolean;
 }) {
   const [x, y] = ecran(c.x, c.y);
-  const d = Math.max(22, c.rayon * echelle * 2);
+  const d = Math.max(22, rayon * 2);
   return (
     <button
       type="button"
