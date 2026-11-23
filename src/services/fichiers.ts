@@ -609,6 +609,40 @@ export function effacerFichier(
   supprimerFichier(disque, racine);
 }
 
+/**
+ * A key deletes a media library file (AD-fichiers-suppr-1): the role is checked first, then the batch;
+ * `cle` is the script's key, else (digits only) the id of a file added on screen. An unknown key is a no-op.
+ * The deletion itself is `effacerFichier`, run in an import context so the history line carries the token.
+ */
+export function supprimerFichierImport(
+  db: Db,
+  jeton: Jeton,
+  lotId: number | null,
+  cle: string,
+  maintenant: Date = new Date(),
+  racine: string = attachmentsDir,
+): void {
+  const acteur = { compteId: jeton.compteId };
+  exigerMJReel(db, jeton.universId, acteur);
+  if (lotId !== null && lireLot(db, jeton, lotId, maintenant).closLe !== null) {
+    throw new ErreurService('conflit', 'Le lot est clos.', 'lot_clos');
+  }
+  avecContexte(db, { compteId: jeton.compteId, jetonId: jeton.id, origine: 'import', lotId }, () => {
+    let f = db
+      .prepare('SELECT id FROM fichiers WHERE univers_id = ? AND cle_origine = ?')
+      .get(jeton.universId, cle) as { id: number } | undefined;
+    if (!f && /^\d+$/.test(cle)) {
+      f = db.prepare('SELECT id FROM fichiers WHERE univers_id = ? AND id = ?').get(jeton.universId, Number(cle)) as
+        | { id: number }
+        | undefined;
+    }
+    if (!f) return;
+    // Counted first: a refusal of `effacerFichier` rolls the counter back with the rest.
+    if (lotId !== null) noterDansLot(db, lotId, 'fichiers', 'supprimees', [], maintenant);
+    effacerFichier(db, acteur, jeton.universId, f.id, racine);
+  });
+}
+
 export type TriFichiers = 'recent' | 'nom';
 
 export interface FiltresFichiers {
