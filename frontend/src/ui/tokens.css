@@ -5,6 +5,7 @@
   color-scheme: light dark;
   --fond: #121317;
   --fond-lateral: #0e0f12;
+  --affichage-fond: #000; /* E-30: the table display, pure black (charte § 6) */
   --surface: #191a1f;
   --surface-2: #202128;
   --surface-3: #2a2b33;

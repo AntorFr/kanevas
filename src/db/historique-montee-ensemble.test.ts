@@ -47,7 +47,7 @@ describe('migration de l’historique : montée d’une base au schéma précéd
     const { db, dir } = baseAvant();
     try {
       assert.equal(un(db, "SELECT name FROM sqlite_master WHERE name IN ('historique', 'contexte_ecriture')"), undefined);
-      assert.deepEqual(migrate(db), [39, 40, 41, 42, 43, 44, 45]);
+      assert.deepEqual(migrate(db), [39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]);
       assert.deepEqual(
         tout(db, "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('historique', 'contexte_ecriture') ORDER BY name").map((r: Any) => r.name),
         ['contexte_ecriture', 'historique']);

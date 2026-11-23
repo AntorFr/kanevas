@@ -244,14 +244,33 @@ test('E-19 sélecteur · barre d’outils de l’éditeur : un fichier supprimé
 let u2 = 0;
 let a2: Any;
 let l2: Any;
+// Second server, prepared once by whichever E-19 test runs first (each calls it, so any of them replays alone).
+let serveur2: Promise<void> | undefined;
+const preparerServeur2 = (): Promise<void> =>
+  (serveur2 ??= (async () => {
+    srv2 = await startServer({});
+    a2 = (await connecte(browser, srv2.base, 'Antor')).page;
+    l2 = (await connecte(browser, srv2.base, 'Léa')).page;
+    await creerUnivers(a2, 'Univers Vide');
+    await allerMembres(a2);
+    await ajouterMembre(a2, 'lea', 'Joueur');
+    u2 = (await (await a2.request.get('/api/univers')).json()).find((x: Any) => x.nom === 'Univers Vide').id;
+  })());
+// The 102 files, a second memoized step: never called by « E-19 vide », whose library stays empty.
+let fichiers102: Promise<void> | undefined;
+const preparer102Fichiers = (): Promise<void> =>
+  (fichiers102 ??= (async () => {
+    await preparerServeur2();
+    for (let i = 0; i < 102; i++) {
+      const r = await a2.request.post(`/api/univers/${u2}/fichiers`, {
+        multipart: { fichier: { name: `f${String(i).padStart(3, '0')}.pdf`, mimeType: 'application/pdf', buffer: Buffer.from(`%PDF-1.4\n% ${i}\n%%EOF\n`) } },
+      });
+      assert.equal(r.status(), 201);
+    }
+  })());
+
 test('E-19 vide · bibliothèque vide : la phrase du MJ et celle du joueur', opts, async () => {
-  srv2 = await startServer({});
-  a2 = (await connecte(browser, srv2.base, 'Antor')).page;
-  l2 = (await connecte(browser, srv2.base, 'Léa')).page;
-  await creerUnivers(a2, 'Univers Vide');
-  await allerMembres(a2);
-  await ajouterMembre(a2, 'lea', 'Joueur');
-  u2 = (await (await a2.request.get('/api/univers')).json()).find((x: Any) => x.nom === 'Univers Vide').id;
+  await preparerServeur2();
   await a2.goto(`/univers/${u2}/mediatheque`);
   await attendre(a2);
   assert.match(await texte(a2), /Aucun fichier pour l'instant\. Ajoutez-en, ou posez-en un dans une fiche\./);
@@ -264,26 +283,26 @@ test('E-19 vide · bibliothèque vide : la phrase du MJ et celle du joueur', opt
 });
 
 test('E-19 contenu long · 102 fichiers : 100 puis « Charger la suite », le dernier arrive, plus de bouton', opts, async () => {
-  for (let i = 0; i < 102; i++) {
-    const r = await a2.request.post(`/api/univers/${u2}/fichiers`, {
-      multipart: { fichier: { name: `f${String(i).padStart(3, '0')}.pdf`, mimeType: 'application/pdf', buffer: Buffer.from(`%PDF-1.4\n% ${i}\n%%EOF\n`) } },
-    });
-    assert.equal(r.status(), 201);
-  }
+  await preparer102Fichiers();
   await a2.goto(`/univers/${u2}/mediatheque`);
   await attendre(a2);
-  const tuiles = () => a2.locator('main').getByRole('button', { name: /f\d{3}\.pdf/ }).count();
+  const lesTuiles = a2.locator('main').getByRole('button', { name: /f\d{3}\.pdf/ });
+  const tuiles = () => lesTuiles.count();
+  // The tiles are awaited (the n-th one shown), not counted at once: under load they arrive after the settle.
+  await lesTuiles.nth(99).waitFor({ state: 'visible' });
   assert.equal(await tuiles(), 100);
   await a2.getByRole('button', { name: 'Charger la suite' }).click();
   await attendreAbsent(a2.getByRole('button', { name: 'Charger la suite' }));
   // The count is read once the next page is drawn, not at the instant the button goes (rouge sous charge, vert seul).
   await attendreVisible(a2.locator('main').getByRole('button', { name: /f\d{3}\.pdf/ }).nth(101));
+  await a2.locator('main').getByRole('button', { name: /f000\.pdf/ }).first().waitFor({ state: 'visible' });
   assert.equal(await tuiles(), 102);
   assert.equal(await a2.getByRole('button', { name: 'Charger la suite' }).count(), 0);
   await a2.screenshot({ path: '/tmp/scr/ver-102.png' });
 });
 
 test('E-19 en-tête · avec 102 fichiers visibles, l’en-tête dit « 102 fichiers » (ceux que le lecteur voit)', opts, async () => {
+  await preparer102Fichiers();
   await a2.goto(`/univers/${u2}/mediatheque`);
   await attendre(a2);
   assert.match(await texte(a2), /(^|\n)102 fichiers(\n|$)/);

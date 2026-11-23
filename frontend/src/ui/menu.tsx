@@ -137,6 +137,7 @@ export function Menu({
           }
         }}
       >
+        {declencheur !== undefined && Icone && <Icone size={14} strokeWidth={1.75} aria-hidden="true" />}
         {declencheur ?? (Icone && <Icone size={16} strokeWidth={1.75} aria-hidden="true" />)}
       </button>
       {ouvert && (
