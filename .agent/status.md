@@ -1,4 +1,5 @@
 # Status — kanevas
+> MàJ : 2026-11-23 (assemblage de `kanevas-cr-aventure-liste`, PR vers `epic/kanevas-cr-aventure` : `listerComptesRendus({campagneId})` rend aussi les comptes rendus des scénarios descendants (parcours `aventuresDeLaChaine`, borné à 50 niveaux, lecture testée à chaque nœud) ; le bloc « Comptes-rendus » d'une aventure nomme le scénario des lignes descendantes ; E-13 inchangée (colonne déjà par ligne) ; décompte de suppression, ligne « Campagne » et bilan restent sur les comptes rendus directs ; aucune liste de l'assistant n'appelle cette fonction)
 > MàJ : 2026-11-23 (assemblage de `kanevas-outillage-tests`, PR vers `main` : déclaration de test seule, produit inchangé)
 > MàJ : 2026-11-23 (assemblage de `kanevas-cr-aventure-ecran`, PR vers `epic/kanevas-cr-aventure` : le MJ change l'aventure d'un compte rendu depuis E-9 ; `epic/kanevas-cr-aventure` fusionnée dans la feature sans conflit)
 > MàJ : 2026-11-23 (assemblage de `kanevas-api-supprimer-fichier`, PR vers `main` : `DELETE /fichiers/:cle` de l'API à clé)
