@@ -10,6 +10,7 @@ import {
   nettoyer,
   poserEtiquetage,
 } from './etiquettes.js';
+import { changerAventureDuCompteRendu } from './comptes_rendus.js';
 import { champsDeCharge } from './empreintes.js';
 import {
   changerSousType,
@@ -35,7 +36,7 @@ import { estImage } from './fichiers-lecture.js';
 
 /** The header fields of a sheet that `PATCH /fiches/:cle` (and the full `PUT`) may carry (AD-ecriture-1). */
 export const CHAMPS_ENTETE = [
-  'titre', 'type', 'sousType', 'pj', 'parent', 'alias', 'etiquettes', 'illustration', 'creeLe', 'statut', 'disparu',
+  'titre', 'type', 'sousType', 'pj', 'parent', 'alias', 'etiquettes', 'illustration', 'creeLe', 'statut', 'disparu', 'campagne',
 ] as const;
 
 /**
@@ -54,6 +55,8 @@ export interface ChampsEntete {
   creeLe?: string;
   statut?: string;
   disparu?: boolean;
+  /** Origin key of the adventure a session report belongs to. */
+  campagne?: string;
 }
 
 export type EtatEntete = 'mise_a_jour' | 'inchangee';
@@ -128,6 +131,12 @@ export function validerEnTete(corps: unknown, maintenant: Date): ChampsEntete {
     }
     champs[k] = liste;
   }
+  if (c.campagne !== undefined) {
+    if (typeof c.campagne !== 'string' || !cleValide(c.campagne)) {
+      throw invalide('campagne', "campagne : clé d'origine absente ou invalide.");
+    }
+    champs.campagne = c.campagne;
+  }
   for (const k of ['parent', 'illustration'] as const) {
     if (c[k] === undefined) continue;
     if (c[k] !== null && (typeof c[k] !== 'string' || !cleValide(c[k] as string))) {
@@ -199,6 +208,20 @@ export function ecrireEnTete(db: Db, contexte: ContexteEntete, ficheId: number, 
   if (champs.disparu !== undefined && !porteMarqueDisparu(typeFinal)) {
     throw invalide('disparu', 'disparu : champ inconnu pour ce type.', 'champ_inconnu');
   }
+  if (champs.campagne !== undefined && typeFinal !== 'compte_rendu') {
+    throw invalide('campagne', 'campagne : champ inconnu pour ce type.', 'champ_inconnu');
+  }
+  let campagneId: number | undefined;
+  if (champs.campagne !== undefined) {
+    const res = estId(champs.campagne) ? null : resoudreFiche(db, universId, champs.campagne);
+    const a = res
+      ? (db.prepare("SELECT id FROM fiches WHERE id = ? AND univers_id = ? AND type = 'aventure'").get(res.id, universId) as
+          | { id: number }
+          | undefined)
+      : undefined;
+    if (!a) throw invalide('campagne', `campagne : « ${champs.campagne} » n'est pas une aventure de l'univers.`, 'campagne_inconnue');
+    campagneId = a.id;
+  }
 
   // Type (and PJ, for a character) are one unit.
   const pjCourant = (JSON.parse(cur.charge) as { pj?: boolean }).pj === true;
@@ -241,6 +264,14 @@ export function ecrireEnTete(db: Db, contexte: ContexteEntete, ficheId: number, 
     const etiquettes = champs.etiquettes ?? courant.etiquettes;
     if (!memeEnsemble(courant.alias, alias) || !memeEnsemble(courant.etiquettes, etiquettes)) {
       poserEtiquetage(db, acteur, universId, ficheId, { alias, etiquettes });
+      ecrit = true;
+    }
+  }
+
+  if (campagneId !== undefined) {
+    const courantId = (JSON.parse(lire(db, ficheId).charge) as { campagne_id?: number }).campagne_id;
+    if (courantId !== campagneId) {
+      changerAventureDuCompteRendu(db, acteur, universId, ficheId, campagneId);
       ecrit = true;
     }
   }
