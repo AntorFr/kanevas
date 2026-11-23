@@ -1453,7 +1453,7 @@ fixes beyond them:
   (`fiches.type = 'aventure'`, `cle_origine`); an unknown key, or a key of a sheet of another type, is
   the existing refusal (400 `invalide`, `champ: campagne`, « campagne inconnue : <clé> »); the id goes
   to `charge.campagne_id` through `creerCompteRendu` as before; the replay keeps the adventure and warns
-  « campagne non modifiable, ignorée » *(`kanevas-cr-aventure`: no longer — a different key is written, AD-cr-aventure-2)*. The lookup replaces whatever the pivot left; the sample orders
+  « campagne non modifiable, ignorée » *(`kanevas-cr-aventure`, AD-cr-aventure-2: no longer, once `kanevas-cr-aventure-import` is built; until then the import still ignores it)*. The lookup replaces whatever the pivot left; the sample orders
   the adventures before the reports.
 - `GET /` : `types` already lists `aventure` with its activation ; `limites` loses `nomCampagne`,
   `titreScenario` and `contenuScenario` (the pivot removes them with the routes; this slice checks they
@@ -2407,7 +2407,7 @@ Kanevas declares, beside `ecrans:`, the command that **names** the screen tests 
 
 | ID | Decision |
 |---|---|
-| AD-cr-aventure-1 | **One writer for a report's adventure after creation: `changerAventureDuCompteRendu`** (`services/comptes_rendus.ts`), composed by the route (`PATCH /fiches/:fid {campagne}`, same body as `titre`/`parent`, one transaction) and by the import (`assurerFiche`, which today refuses). Guards: GM outside player mode, target read by `aventureLue`, same universe. No SQL elsewhere, no `UPDATE fiches SET charge` by a caller. |
+| AD-cr-aventure-1 | **One writer for a report's adventure after creation: `changerAventureDuCompteRendu`** (`services/comptes_rendus.ts`), composed by the route (`PATCH /fiches/:fid {campagne}`, same body as `titre`/`parent`, one transaction) and, once `kanevas-cr-aventure-import` is built, by the import (`assurerFiche`, which still refuses today). Guards: GM outside player mode, target read by `aventureLue`, same universe. No SQL elsewhere, no `UPDATE fiches SET charge` by a caller. |
 | AD-cr-aventure-2 | **The import compares and writes the adventure like a header field** (B-47): sent and different → written through AD-cr-aventure-1 and counted in the batch; not sent → left; unknown key or not an adventure → refusal before the transaction (as today). The warning « campagne non modifiable, ignorée » disappears. |
 | AD-cr-aventure-3 | **The page of an adventure widens the filter of `listerComptesRendus`, not a second function** (AD-63 spirit): reports of the adventure and of **all its descendant scenarios** (a scenario is a sheet of type `aventure` reached from the adventure through a chain of `aventure` sheets by `parent_id`, at any depth; an adventure filed under a sheet of another type is not a scenario of the adventure above that sheet, as `descendantsDe` follows the same type, AD-130). The walk is its own bounded recursive query inside `listerComptesRendus` that tests, at each step, the reader's read of the node (`aventureLue`'s rule), so an unread scenario cuts off what is under it; `descendantsDe` is not changed and is not the walker. The 50 levels of AD-115 cannot be exceeded (`deplacerFiche` refuses deeper, `trop_profond`): no truncation to signal, no state for it. Each scenario brings its reports; each line keeps its own adventure. Decision of Monsieur, 2026-11-23. |
 | AD-cr-aventure-4 | **No move to another universe, no assistant/MCP tool** in this epic (out of scope). |
