@@ -38,13 +38,12 @@ test('.sdlc.yaml déclare la suite : commande, rapport, format tap ou junit, dé
   assert.match(champ('delai') ?? '', /^\d+[mh]$/);
 });
 
-test('la commande déclarée appelle un script npm qui existe et le rapport déclaré est ignoré par git', () => {
+test('la commande déclarée appelle un script qui existe et le rapport déclaré est ignoré par git', () => {
   const tests = bloc(lire('.sdlc.yaml'), 'tests');
   const commande = /^\s+commande:\s*(.+)$/m.exec(tests)?.[1] ?? '';
-  const script = /npm run (\S+)/.exec(commande)?.[1];
-  assert.ok(script, `la commande « ${commande} » n'appelle aucun script npm`);
-  const scripts = JSON.parse(lire('package.json')).scripts as Record<string, string>;
-  assert.ok(scripts[script], `package.json n'a pas de script ${script}`);
+  const script = /node (\S+\.mjs)/.exec(commande)?.[1];
+  assert.ok(script, `la commande « ${commande} » n'appelle aucun script node`);
+  assert.ok(existsSync(join(RACINE, script)), `${script} n'existe pas`);
   const rapport = /^\s+rapport:\s*(\S+)/m.exec(tests)?.[1] ?? '';
   assert.ok(lire('.gitignore').split('\n').includes(rapport), `${rapport} n'est pas dans .gitignore`);
 });
