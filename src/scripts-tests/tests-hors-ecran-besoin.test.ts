@@ -72,7 +72,7 @@ describe('tests d’écran hors écran (R25) : les 19 fichiers retirés et la du
   test('19 fichiers retirés : absents de src/e2e, présents dans avant.md, toutes leurs lignes « retiré » ; 275 restent (+ 16 de l’epic kanevas-battlemap)', () => {
     assert.equal(retires.length, 19);
     const ecrans = readdirSync('src/e2e').filter((f) => f.endsWith('.test.ts'));
-    assert.equal(ecrans.length, 275 + 16, "256 de kanevas-tests-hors-ecran + adresses-lisibles et cle-fiche-identifiant (kanevas-synchro-cles) + historique-ecran-critere et historique-ensemble-ecran (kanevas-synchro-historique) + carte-rattache-texte-ecran (kanevas-synchro-cartes-ecrans); plus les écrans de l'epic kanevas-carte-spatiale ; plus 16 fichiers battlemap de l'epic kanevas-battlemap (lot-mediatheque.md)");
+    assert.equal(ecrans.length, 275 + 16 + 1, "256 de kanevas-tests-hors-ecran + adresses-lisibles et cle-fiche-identifiant (kanevas-synchro-cles) + historique-ecran-critere et historique-ensemble-ecran (kanevas-synchro-historique) + carte-rattache-texte-ecran (kanevas-synchro-cartes-ecrans); plus les écrans de l'epic kanevas-carte-spatiale ; plus 16 fichiers battlemap de l'epic kanevas-battlemap (lot-mediatheque.md) ; plus carte-systeme-echelle-ecran (kanevas-carte-rendu-echelle)");
     for (const f of retires) {
       assert.equal(existsSync(f), false, `${f} existe encore`);
       assert.ok(avant.includes(`\`${f}\``), `${f} absent de avant.md`);
