@@ -19,6 +19,8 @@ const num = (v: unknown, d = 0): number => (typeof v === 'number' && Number.isFi
 export function placerMarques(
   elements: readonly ElementSysteme[], corps: readonly CorpsPlace[], plan: Plan,
   ecran: (x: number, y: number) => [number, number], echelle: number,
+  /** Screen radius of each body (`dimensionsCorps`): the marks keep clear of the disc. */
+  rayons: ReadonlyMap<string, number> = new Map(),
 ): MarquePlacee[] {
   const parCorps = new Map<string, number>();
   const nombreParCorps = new Map<string, number>();
@@ -34,7 +36,7 @@ export function placerMarques(
       const dansCouronne = Math.min(PAR_COURONNE, total - couronne * PAR_COURONNE);
       const angle = Math.PI / 4 + (2 * Math.PI * (k % PAR_COURONNE)) / dansCouronne + couronne * 0.4;
       const [cx, cy] = ecran(mere.x, mere.y);
-      const distance = Math.max(4, mere.rayon * echelle) + ECART_CORPS + COTE_MARQUE / 2 + couronne * (COTE_MARQUE + 2);
+      const distance = Math.max(4, rayons.get(mere.cle) ?? 0) + ECART_CORPS + COTE_MARQUE / 2 + couronne * (COTE_MARQUE + 2);
       return { cle: e.cle, element: e, x: cx + Math.cos(angle) * distance, y: cy + Math.sin(angle) * distance };
     }
     const [wx, wy] = plan(rayonOrbite(Math.max(0, num(e.orbite))), num(e.heure));
