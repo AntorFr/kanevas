@@ -245,7 +245,8 @@ export function resoudreChoix(db: Db, universId: number, e: EntreeCalcul, porte:
     }
     return { nature: l.nature, cle: l.cle, nom: el.nom, quantite: l.quantite,
       ...(l.magasins === undefined ? {} : { magasins: l.magasins }),
-      ...(l.points === undefined ? {} : { points: l.points }), ...ciblage(l, el.donnees.effet as string | undefined),
+      ...(l.points === undefined ? {} : { points: l.points }),
+      ...(l.nature === 'modifications' ? { integre: integreLu({ integre: l.integre, quantite: l.quantite }) } : {}), ...ciblage(l, el.donnees.effet as string | undefined),
       element: el.donnees as unknown as ElementCalcul };
   });
   const equipage = e.equipage === undefined ? (coque?.equipage_min ?? null) : e.equipage;
@@ -255,7 +256,7 @@ export function resoudreChoix(db: Db, universId: number, e: EntreeCalcul, porte:
 /** Calculates from resolved elements; `null` result and the alerts alone when one does not resolve. */
 export function calculerResolu(db: Db, universId: number, r: Resolution): SortieCalcul {
   if (r.retirees.length > 0 || !r.coque || r.lignes.some((l) => l === null)) return { resultat: null, alertes: r.retirees };
-  const resultat = calculer(r.coque, r.lignes as LigneResolue[], reglagesDe(db, universId), r.equipage, r.reparation, r.pj, r.robots);
+  const resultat = calculer(r.coque, r.lignes as LigneResolue[], reglagesDe(db, universId), r.equipage, r.reparation, r.pj, r.robots, r.modIntCon);
   return { resultat, alertes: resultat.alertes };
 }
 

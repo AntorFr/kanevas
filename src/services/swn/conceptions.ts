@@ -80,7 +80,8 @@ function vue(db: Db, acteur: Acteur, universId: number, l: Lue): VueConception {
   // A result stored before the slice has no vitesse / armure / equipage: read as `null` (F-3).
   const resultat: ResultatVaisseau = { ...stocke, vitesse: stocke.vitesse ?? null, armure: stocke.armure ?? null, equipage: stocke.equipage ?? null,
     soutes: stocke.soutes ?? null, reparation: stocke.reparation ?? null,
-    capacites: stocke.capacites ?? null, effetsJeu: stocke.effetsJeu ?? null, fraisEquipage: stocke.fraisEquipage ?? null };
+    capacites: stocke.capacites ?? null, effetsJeu: stocke.effetsJeu ?? null, fraisEquipage: stocke.fraisEquipage ?? null,
+    composants: stocke.composants ?? null, installation: stocke.installation ?? null, maintenance: stocke.maintenance ?? null, refonte: stocke.refonte ?? null };
   const choix = JSON.parse(l.ligne.choix) as LigneChoix[];
   // The elements the design carries that no longer resolve: computed now, never stored (V-3).
   const r = resoudreChoix(db, universId, { coque: l.ligne.coque_cle, choix }, porteDe(l.ligne));

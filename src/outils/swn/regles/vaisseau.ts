@@ -16,6 +16,9 @@ export const TAUX_ENTRETIEN = 0.05
 /** Mass of one extra magazine of a launcher (book mechanics, E-3). */
 export const MASSE_MAGASIN = 1
 
+/** H-mods-1 (3): the book's step of installation days, a constant of the rules (the shipyard's pace is the setting). */
+export const PAS_INSTALLATION = 5000
+
 export type NatureVaisseau = 'moteurs' | 'amenagements' | 'defenses' | 'armes' | 'modifications'
 
 export interface CoqueResolue {
@@ -90,6 +93,9 @@ export interface ElementResolu {
   /** H-4/H-5: a code of `CODES_CAPACITE`, and the book's « Effect » text, never evaluated. */
   capacite?: string
   effet_jeu?: string
+  /** H-mods-1 (1): pretech components of a modification, per installation; absent = 0 (B-94). `composants_par_classe` multiplies by the hull's rank. */
+  composants?: number
+  composants_par_classe?: number
 }
 
 export interface LigneResolue {
@@ -104,6 +110,8 @@ export interface LigneResolue {
   vise?: { nature: NatureVaisseau; cle: string }
   /** H-8: one pair per installation, for the effects that aim at elements of the design. */
   cibles?: { nature: NatureVaisseau; cle: string; quantite: number }[]
+  /** H-9: installations of a modification line rebuilt into the hull (0..quantite; absent = 0). */
+  integre?: number
   element: ElementResolu
 }
 
@@ -124,6 +132,8 @@ export interface AlerteVaisseau {
   code: string
   texte: string
   ligne?: number
+  /** H-mods-1 (4)/(5): the two figures of `maintenance_depassee` (mods kept up, Maintenance) and of `refonte_depassee` (refitted, 2 × Réparation). */
+  nombres?: { a: number; b: number }
 }
 
 export interface ResultatVaisseau {
@@ -163,6 +173,12 @@ export interface ResultatVaisseau {
   fraisEquipage?: { jour: number; robots: number } | null
   /** H-capacites-1 (3): the divisor the price was divided by; absent before the slice (read as 1). */
   diviseurPrix?: number
+  /** H-mods-1: absent in a result stored before the slice, read as `null`. */
+  composants?: number | null
+  /** `jours`: crew days (cost / 5 000); `joursChantier`: shipyard days (cost / `cadence_chantier`); both 0 without a modification. */
+  installation?: { jours: number; joursChantier: number } | null
+  maintenance?: number | null
+  refonte?: { cout: number; composants: number } | null
   alertes: AlerteVaisseau[]
 }
 
@@ -213,7 +229,9 @@ const LIBELLES_CAPACITE: Record<string, [string, string]> = {
  *   6. alerts: blocking (power, mass, emports, limits, engine, class incl. weapons' `classe_min`, targets), then watch
  *      (reserves, crew, repair, negative speed);
  *   7. speed (simple sum, may be negative, H-6; `null` without a hull speed) and armour (floored at 0);
- *   8. last, the price divisor on the totals (H-capacites-1 (3)): displayed price, upkeep and build days follow it.
+ *   8. the price divisor on the totals (H-capacites-1 (3)): displayed price, upkeep and build days follow it;
+ *   9. last, the modification rules (H-mods-1): pretech components, installation days, Maintenance, refit, and their two watch
+ *      alerts. They read the lines and the settings only, before the divisor and nothing downstream reads them.
  */
 export function calculer(
   coque: CoqueResolue,
@@ -223,6 +241,7 @@ export function calculer(
   reparation = 0,
   pj = 0,
   robots = 0,
+  modIntCon = 0,
 ): ResultatVaisseau {
   let prix = coque.cout
   let pv = coque.pv
@@ -238,6 +257,8 @@ export function calculer(
   let soutes = null as number | null
   let reparationMin = null as number | null
   const coutsLigne = new Map<number, number>()
+  // H-mods-1 (2): the cost of every modification line, before the divisor (the one `coutLigne` below, not a second formula).
+  const coutsMods = new Map<number, number>()
   const echanges = new Map<number, { puissance: number; masse: number }>()
   const cibleDe = (l: LigneResolue) => l.vise === undefined ? undefined : lignes.find((m) => m.nature === l.vise!.nature && m.cle === l.vise!.cle)
   const trouver = (c: { nature: string; cle: string }) => lignes.find((m) => m.nature === c.nature && m.cle === c.cle)
@@ -265,6 +286,7 @@ export function calculer(
       coutLigne = Math.max(0, coutLigne - Math.floor((assiette * e.reduction_cout_pct! + 50) / 100))
     }
     prix += coutLigne
+    if (l.nature === 'modifications') coutsMods.set(i, coutLigne)
     if (e.cout_pct !== undefined || reduit) coutsLigne.set(i, coutLigne)
     if (e.effet === 'vitesse') effetVitesse += (e.valeur ?? 0) * q
     if (e.effet === 'armure') effetArmure += (e.valeur ?? 0) * q
@@ -558,6 +580,37 @@ export function calculer(
   const diviseur = reglages.diviseurPrix ?? 1
   const prixAffiche = Math.ceil(prix / diviseur)
 
+  // H-mods-1: the last stage. The rank is the hull's class + 1 (the registry's 0–3 scale, H-mods-1 (1)).
+  const rang = coque.classe + 1
+  const composantsDe = (l: LigneResolue) => (l.element.composants ?? 0) * (l.element.composants_par_classe ? rang : 1)
+  let coutMods = 0
+  let composants = 0
+  let entretenus = 0
+  let integres = 0
+  let coutRefonte = 0
+  let composantsRefonte = 0
+  lignes.forEach((l, i) => {
+    if (l.nature !== 'modifications') return
+    const q = l.quantite
+    const integre = q > 0 ? Math.max(0, Math.min(l.integre ?? 0, q)) : 0
+    const cout = coutsMods.get(i) ?? 0
+    coutMods += cout
+    composants += composantsDe(l) * q
+    entretenus += q - integre
+    integres += integre
+    if (q > 0) coutRefonte += (cout / q) * integre
+    composantsRefonte += composantsDe(l) * integre
+  })
+  const maintenance = Math.max(0, modIntCon + 3 * reparation)
+  if (entretenus > maintenance) {
+    surveiller.push({ niveau: 'a_surveiller', code: 'maintenance_depassee', nombres: { a: entretenus, b: maintenance },
+      texte: `${entretenus} ${entretenus < 2 ? 'mod entretenu' : 'mods entretenus'}, Maintenance ${maintenance}` })
+  }
+  if (integres > 2 * reparation) {
+    surveiller.push({ niveau: 'a_surveiller', code: 'refonte_depassee', nombres: { a: integres, b: 2 * reparation },
+      texte: 'Plus de mods intégrés que 2 × Réparation' })
+  }
+
   return {
     coque: { cle: coque.cle, nom: coque.nom, classe: coque.classe },
     lignes: lignes.map((l, i) => ({
@@ -585,6 +638,10 @@ export function calculer(
     fraisEquipage,
     diviseurPrix: diviseur,
     reparation: reparationMin === null && reparation === 0 ? null : { choisie: reparation, min: reparationMin },
+    composants,
+    installation: { jours: Math.max(0, Math.ceil(coutMods / PAS_INSTALLATION - 1e-9)), joursChantier: Math.max(0, Math.ceil(coutMods / (reglages.cadenceChantier ?? CADENCE_CHANTIER_DEFAUT) - 1e-9)) },
+    maintenance,
+    refonte: { cout: Math.round(5 * coutRefonte), composants: 2 * composantsRefonte },
     alertes: [...bloquantes, ...surveiller],
   }
 }
