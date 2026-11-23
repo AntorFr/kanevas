@@ -260,14 +260,14 @@ test('0043 : montée depuis 0042 avec le semis, systèmes inchangés, transition
   const dir = mkdtempSync(join(tmpdir(), 'migration-0043-'));
   const db = openDb(':memory:');
   const source = new URL('../../db/migrations/', import.meta.url);
-  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 42 || Number(f.slice(0, 4)) === 46) copyFileSync(new URL(f, source), join(dir, f));
+  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 42 || Number(f.slice(0, 4)) === 51) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
   assert.equal(semerBouchon(db), true);
   const lignes = () => db.prepare('SELECT * FROM swn_systemes ORDER BY id').all();
   const avant = lignes();
   assert.ok(avant.length > 0);
   assert.ok(!('transition' in (avant[0] as object)));
-  assert.deepEqual(migrate(db), [43, 44, 45, 46, 47, 48, 49, 50, 51, 52]);
+  assert.deepEqual(migrate(db), [43, 44, 45, 46, 47, 48, 49, 50, 52]);
   const apres = lignes() as any[];
   assert.equal(apres.length, avant.length);
   for (let i = 0; i < avant.length; i++) assert.deepEqual({ ...apres[i], transition: undefined }, { ...(avant[i] as object), transition: undefined });
