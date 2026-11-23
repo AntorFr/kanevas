@@ -81,7 +81,7 @@ have it (sheet, map and, since `kanevas-import`, search E-17).
 | **E-26 Art direction** *(kanevas-battlemap)* | tab of E-25 (GM) | the style text and the reference images; edit, ask the assistant, « Annuler » the last assistant change | P-26 |
 | **E-27 Asset generation** *(kanevas-battlemap)* | tab of E-25 (GM), only when an image engine exists | write the list, start a batch, follow it, accept / regenerate with a remark / discard each draft | P-26 |
 | **E-28 Map editor** *(kanevas-battlemap)* | E-10 (a composed map); a link | grid, floors, walls, assets, layers, selection, undo; link a sheet; « Jouer » | P-27 |
-| **E-29 Play** *(kanevas-battlemap)* | E-28 « Jouer »; E-10 | GM: tokens, fog, shared view, display status; player: the revealed map, the tokens she is shown (she drags her own, P-29), « Suivre le MJ » | P-28, P-29 |
+| **E-29 Play** *(kanevas-battlemap)* | E-28 « Jouer »; E-10 | GM: tokens, fog, shared view, display status; player: the revealed map, the tokens she is shown (she drags her own, P-29 « Play remotely »), « Suivre le MJ » | P-28, P-29 « Play remotely » |
 | **E-30 Table display** *(kanevas-battlemap)* | E-29 « Écran joueurs » (a link to open on the second screen) | read-only, chrome-less, follows the GM's view and fog | P-28 |
 
 Screens **modified** by `kanevas-outils`: **E-9** (managed section: « Générée par … » banner, rendering
@@ -1737,8 +1737,6 @@ Any read of the proposal by another account responds like an unknown address (AD
 
 | State | What is shown | Available actions |
 |---|---|---|
-| hidden system, no role | « Page introuvable. » before any panel (same bytes as an unknown system) |
-| visitor with no session | signs in, then lands on the same address (no panel is shown before) |
 | empty | not applicable: the block only exists with a proposal (the tool refuses empty content, AD-80), so « Proposé » is never empty; an empty section reads « (section vide) » in « Actuel » | — |
 | loading (reading the proposal) | no header; « Chargement de la proposition… » (`role="status"`); no areas or actions | keep writing in the thread; close |
 | pending | header, « Actuel » and « Proposé », actions | « Appliquer »; « Abandonner »; « Ouvrir » |

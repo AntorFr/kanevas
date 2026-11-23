@@ -1428,9 +1428,9 @@ format (B-122) and the bodies' settings; the report names the settings that stay
   player's device. *(P-28)*
 - **B-108** — **Remote play**: each player opens the map on his own device and **moves his own token**;
   every screen — GM, table display, other players — updates within a second or two, with no reload. A player moves
-  only tokens that belong to him. Where the GM has switched remote play off (E-20), the players still follow live but only the GM moves tokens. *(P-29)*
+  only tokens that belong to him. Where the GM has switched remote play off (E-20), the players still follow live but only the GM moves tokens. *(P-29 « Play remotely »)*
 - **B-109** — The state of a table (tokens, fog, view) is **kept between sessions**: the GM resumes the map where
-  he left it, and can reset it. A lost connection never loses the state and the screen says so. *(P-28, P-29)*
+  he left it, and can reset it. A lost connection never loses the state and the screen says so. *(P-28, P-29 « Play remotely »)*
 - **B-110** — The tool follows the registry: the GM enables it per universe (E-20), sets who sees it (hiding the library from a role hides its entry and panel, not the maps, which stay readable by whoever sees them), the assistant tools
   disappear when it is disabled, and « Supprimer les données de l'outil… » counts what it will erase. *(P-26, P-21)*
 
@@ -1620,7 +1620,7 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 
 ## Cross-check of the `kanevas-battlemap` framing
 
-- Each need has a journey: B-96, B-97, B-98, B-99, B-100 → P-26; B-101…B-104 → P-27; B-105…B-107, B-109 → P-28; B-108, B-109, B-119 → P-29 « Share a place »; B-110 → P-21 (tool removal), P-26.
+- Each need has a journey: B-96, B-97, B-98, B-99, B-100 → P-26; B-101…B-104 → P-27; B-105…B-107, B-109 → P-28; B-108, B-109 → P-29 « Play remotely »; B-119 → P-29 « Share a place »; B-110 → P-21 (tool removal), P-26.
 - Each human gesture has a screen: library E-25; art direction E-26; batch E-27; editor E-28; GM play E-29 (and player play); table display E-30; the creation entry is E-10; tool enabling is E-20; the assistant (B-98, B-100, B-103) is E-12.
 - Each role has its column: GM everything; player reads the library, plays the tokens that are his (E-29 player mode) and reads E-30; the instance admin and a non-member see nothing.
 ## Cross-check of the `kanevas-carte-spatiale` scoping
