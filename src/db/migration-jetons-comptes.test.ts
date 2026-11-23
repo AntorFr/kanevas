@@ -30,7 +30,7 @@ test('0038 : chaque jeton reçoit son créateur et une ligne ecriture pour son u
     ins.run(9, 1, 2, 'expire', 'fp-e', D, '2022-03-01T00:00:00.000Z', null, null);
     db.prepare("INSERT INTO lots_import (id, univers_id, jeton_id, ouvert_le) VALUES (5, 2, 7, ?)").run(D);
 
-    assert.deepEqual(migrate(db), [38, 39, 40, 41, 42, 43, 44, 45]);
+    assert.deepEqual(migrate(db), [38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]);
 
     const j = db.prepare('SELECT * FROM jetons_api ORDER BY id').all() as Record<string, unknown>[];
     assert.deepEqual(j.map((r) => r.id), [3, 7, 9]);

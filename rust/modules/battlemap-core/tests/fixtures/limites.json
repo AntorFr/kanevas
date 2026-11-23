@@ -1,0 +1,324 @@
+[
+  {
+    "nom": "échelle trop petite",
+    "document": "carte_vide",
+    "lot": [
+      {
+        "type": "poser_element",
+        "id": "a",
+        "calque": "objets",
+        "asset_id": "x",
+        "x": 1,
+        "y": 1,
+        "echelle": 0.2
+      }
+    ],
+    "code": "echelle_invalide"
+  },
+  {
+    "nom": "échelle trop grande",
+    "document": "document",
+    "lot": [
+      {
+        "type": "mettre_a_echelle",
+        "id": "e1",
+        "echelle": 4.01
+      }
+    ],
+    "code": "echelle_invalide"
+  },
+  {
+    "nom": "redimensionner sous un élément",
+    "document": "document",
+    "lot": [
+      {
+        "type": "redimensionner",
+        "largeur": 6,
+        "hauteur": 8
+      }
+    ],
+    "code": "limite_depassee",
+    "champ": "taille"
+  },
+  {
+    "nom": "redimensionner sous un mur",
+    "document": "document",
+    "lot": [
+      {
+        "type": "redimensionner",
+        "largeur": 10,
+        "hauteur": 6
+      }
+    ],
+    "code": "limite_depassee",
+    "champ": "taille"
+  },
+  {
+    "nom": "redimensionner au-delà de 200",
+    "document": "document",
+    "lot": [
+      {
+        "type": "redimensionner",
+        "largeur": 201,
+        "hauteur": 8
+      }
+    ],
+    "code": "limite_depassee",
+    "champ": "taille"
+  },
+  {
+    "nom": "redimensionner à zéro",
+    "document": "document",
+    "lot": [
+      {
+        "type": "redimensionner",
+        "largeur": 0,
+        "hauteur": 8
+      }
+    ],
+    "code": "limite_depassee",
+    "champ": "taille"
+  },
+  {
+    "nom": "le 21e calque",
+    "document": "carte_vide",
+    "lot": [
+      {
+        "type": "creer_calque",
+        "id": "c0",
+        "nom": "C0",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c1",
+        "nom": "C1",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c2",
+        "nom": "C2",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c3",
+        "nom": "C3",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c4",
+        "nom": "C4",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c5",
+        "nom": "C5",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c6",
+        "nom": "C6",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c7",
+        "nom": "C7",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c8",
+        "nom": "C8",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c9",
+        "nom": "C9",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c10",
+        "nom": "C10",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c11",
+        "nom": "C11",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c12",
+        "nom": "C12",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c13",
+        "nom": "C13",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c14",
+        "nom": "C14",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c15",
+        "nom": "C15",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "c16",
+        "nom": "C16",
+        "genre": "objet"
+      },
+      {
+        "type": "creer_calque",
+        "id": "de-trop",
+        "nom": "De trop",
+        "genre": "objet"
+      }
+    ],
+    "code": "carte_pleine",
+    "index": 17
+  },
+  {
+    "nom": "un lot refusé en entier : la 2e commande hors de la carte",
+    "document": "document",
+    "lot": [
+      {
+        "type": "peindre_sol",
+        "calque": "sol",
+        "cellules": [
+          {
+            "x": 5,
+            "y": 5
+          }
+        ],
+        "asset_id": "herbe"
+      },
+      {
+        "type": "deplacer_element",
+        "id": "e1",
+        "x": 10.5,
+        "y": 1
+      }
+    ],
+    "code": "position_invalide",
+    "index": 1
+  },
+  {
+    "nom": "sol hors grille",
+    "document": "document",
+    "lot": [
+      {
+        "type": "peindre_sol",
+        "calque": "sol",
+        "cellules": [
+          {
+            "x": 10,
+            "y": 0
+          }
+        ],
+        "asset_id": "herbe"
+      }
+    ],
+    "code": "position_invalide"
+  },
+  {
+    "nom": "sol sur un calque d’objets",
+    "document": "document",
+    "lot": [
+      {
+        "type": "peindre_sol",
+        "calque": "objets",
+        "cellules": [
+          {
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "asset_id": "herbe"
+      }
+    ],
+    "code": "calque_incompatible"
+  },
+  {
+    "nom": "calque inconnu",
+    "document": "document",
+    "lot": [
+      {
+        "type": "regler_calque",
+        "id": "nulle-part",
+        "visible": false
+      }
+    ],
+    "code": "calque_inconnu"
+  },
+  {
+    "nom": "élément inconnu",
+    "document": "document",
+    "lot": [
+      {
+        "type": "supprimer_element",
+        "id": "zzz"
+      }
+    ],
+    "code": "element_inconnu"
+  },
+  {
+    "nom": "id d’élément déjà pris",
+    "document": "document",
+    "lot": [
+      {
+        "type": "poser_element",
+        "id": "e1",
+        "calque": "objets",
+        "asset_id": "x",
+        "x": 1,
+        "y": 1
+      }
+    ],
+    "code": "id_existant"
+  },
+  {
+    "nom": "porte sur un mur absent",
+    "document": "document",
+    "lot": [
+      {
+        "type": "poser_porte",
+        "calque": "murs",
+        "x": 9,
+        "y": 0,
+        "cote": "h",
+        "porte": true
+      }
+    ],
+    "code": "mur_inconnu"
+  },
+  {
+    "nom": "rotation hors liste",
+    "document": "document",
+    "lot": [
+      {
+        "type": "pivoter_element",
+        "id": "e1",
+        "rotation": 45
+      }
+    ],
+    "code": "rotation_invalide"
+  }
+]

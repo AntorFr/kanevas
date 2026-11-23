@@ -18,3 +18,11 @@ export class ErreurGeneration extends Error {
     this.name = 'ErreurGeneration';
   }
 }
+
+/** The engine is not there (nothing configured, or gone since): the batch says so in its own words (AD-battlemap-generation-3). */
+export class ErreurMoteurAbsent extends ErreurGeneration {
+  constructor() {
+    super("Aucun moteur d'images n'est configuré.");
+    this.name = 'ErreurMoteurAbsent';
+  }
+}

@@ -312,6 +312,7 @@ test('B-71 / E-10 : Antor crée « Galaxie neuve » par « Nouvelle carte » ▸
   const antor = await session(m, 'antor');
   await antor.page.goto(`/univers/${m.uid}/cartes`);
   await antor.page.getByRole('button', { name: 'Nouvelle carte' }).click();
+  await antor.page.getByRole('menuitem', { name: 'Carte illustrée, graphe…' }).click();
   await antor.page.getByLabel('Forme').selectOption({ label: 'Carte de la galaxie' });
   assert.equal(await antor.page.getByLabel('Image de fond').count(), 0, '« Image de fond » est masquée');
   await antor.page.getByLabel('Titre').fill('Galaxie neuve');
