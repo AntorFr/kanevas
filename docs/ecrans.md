@@ -5251,7 +5251,7 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 
 ### What the atlas format adds to the drawing of E-23 (`kanevas-carte-rendu-atlas-format`, B-122, B-115)
 
-No new control, no new text: the format's fields (`docs/donnees.md`, « Atlas format ») reach the existing canvas.
+No new control. The format's fields (`docs/donnees.md`, « Atlas format ») reach the existing canvas; the only **new texts** are two: the list line « Étoile disparue · <class> » and the section title « Lieux » in a body's dialog (the dialog of a body is the one panel; « panel » and « dialog » name the same object here). Both are French like every label of E-23; « Lieux » is absent when a body has none (its empty state is no section), and the line has no empty state.
 
 | Case | Drawing (pure functions of `carte-geometrie.ts`, AD-rendu-1; no size depends on the zoom) |
 |---|---|
@@ -5266,7 +5266,7 @@ States and roles are those of E-23 (nothing is written by the screen; a Player a
 Criteria (this tranche):
 - Given a fixture system of two stars, the planets of the second turn around it, the orbit traced round it.
 - Given a moon with `heure: 3`, it sits at the right of its planet on the small circle; with `heure: 9`, at the left; two moons of ranks 0 and 1 are on two circles.
-- Given an `etoiles[]` entry with `etat: "disparue"`, the star is drawn dim, with no corona, and its list line says so; an ordinary star of the same class is not.
+- Given an `etoiles[]` entry with `etat: "disparue"` (stored as `aspect.disparue`), the star is drawn dim, with no corona, and its list line says so; an ordinary star of the same class is not.
 - Given a body with two elements put on it, its dialogue lists them under « Lieux » and the canvas has no mark for them.
 
 ### Previews and navigation (B-119)
