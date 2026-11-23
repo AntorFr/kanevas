@@ -37,7 +37,7 @@ async function ouvrir(app: App, h: H) {
   return c;
 }
 const avecId = (app: App, code: unknown) => ({ connexionId: ids.get(app) ?? 'inconnu', code });
-const fils = () =>
+const photoFils = () =>
   readdirSync('/proc')
     .filter((d) => /^\d+$/.test(d))
     .filter((d) => {
@@ -49,10 +49,19 @@ const fils = () =>
         return false;
       }
     });
-const attendreMort = async () => {
-  for (let i = 0; i < 100 && fils().length; i++) await new Promise((r) => setTimeout(r, 20));
-  return fils();
+/** Deadline of every process wait: generous, the suite runs under load (two files at a time, builds). */
+const ECHEANCE_PROCESSUS_MS = 15_000;
+/** Polls `/proc` until exactly `n` fake-program processes live (or the deadline), then returns them. */
+const attendreFils = async (n: number) => {
+  const fin = Date.now() + ECHEANCE_PROCESSUS_MS;
+  let l = photoFils();
+  while (l.length !== n && Date.now() < fin) {
+    await new Promise((r) => setTimeout(r, 20));
+    l = photoFils();
+  }
+  return l;
 };
+const attendreMort = () => attendreFils(0);
 async function monter() {
   const dir = join(mkdtempSync(join(tmpdir(), 'connexion-')), 'claude');
   const app = await buildApp();
@@ -69,7 +78,7 @@ test('connexion : pose par le bouchon, 201 puis 200, fichier écrit, rien du jet
   assert.equal(c.json().adresse, 'https://claude.ai/oauth/authorize?code=true&client_id=bouchon');
   const dur = Date.parse(c.json().expireLe) - t0;
   assert.ok(dur > 9.9 * 60e3 && dur <= 10 * 60e3 + 5e3, `expireLe à ${dur} ms`);
-  assert.equal(fils().length, 1);
+  assert.equal((await attendreFils(1)).length, 1);
   const r = await appel(app, admin, 'POST', `${BASE}/code`, avecId(app, 'bouchon'));
   assert.equal(r.statusCode, 200);
   assert.equal(r.json().pose, true);
@@ -106,7 +115,7 @@ test('connexion : code invalide (absent, vide, trop long, non texte) → 400 san
     const r = await appel(app, admin, 'POST', `${BASE}/code`, { connexionId: ids.get(app), ...body });
     assert.equal(r.statusCode, 400, JSON.stringify(body).slice(0, 40));
   }
-  assert.equal(fils().length, 1);
+  assert.equal((await attendreFils(1)).length, 1);
   assert.equal((await appel(app, admin, 'POST', `${BASE}/code`, avecId(app, 'bouchon'))).statusCode, 200);
   await app.close();
 });
@@ -128,7 +137,7 @@ test('connexion : connexionId absent ou ancien → 400 / 410, rien posé, la ses
   const inconnu = await appel(app, admin, 'POST', `${BASE}/code`, { connexionId: 'autre', code: 'bouchon' });
   assert.equal(inconnu.statusCode, 410);
   assert.ok(!existsSync(fichier));
-  assert.equal(fils().length, 1);
+  assert.equal((await attendreFils(1)).length, 1);
   const ok = await appel(app, admin, 'POST', `${BASE}/code`, { connexionId: id2, code: 'bouchon' });
   assert.equal(ok.statusCode, 200);
   assert.ok(existsSync(fichier));
@@ -162,11 +171,11 @@ test('connexion : une session juste avant l’échéance reste valable', async (
 test('connexion : une seconde connexion remplace la première (un seul processus)', async () => {
   const { app, admin } = await monter();
   await ouvrir(app, admin);
-  const avant = fils();
+  const avant = await attendreFils(1);
   assert.equal(avant.length, 1);
   const c2 = await ouvrir(app, admin);
   assert.equal(c2.statusCode, 201);
-  const apres = fils();
+  const apres = await attendreFils(1);
   assert.equal(apres.length, 1);
   assert.notEqual(apres[0], avant[0]);
   assert.equal((await appel(app, admin, 'POST', `${BASE}/code`, avecId(app, 'bouchon'))).statusCode, 200);
@@ -186,7 +195,7 @@ test('connexion : DELETE → 204, processus mort, code suivant 410 ; DELETE sans
 test('connexion : l’arrêt du serveur tue le processus', async () => {
   const { app, admin } = await monter();
   await ouvrir(app, admin);
-  assert.equal(fils().length, 1);
+  assert.equal((await attendreFils(1)).length, 1);
   await app.close();
   assert.deepEqual(await attendreMort(), []);
 });
@@ -206,7 +215,7 @@ test('connexion : un compte hors parents reçoit 404 sur les trois routes, sans 
     assert.equal(r.body, ref.body);
     assert.equal((await appel(app, undefined, m, u, p as any)).statusCode, 401);
   }
-  assert.equal(fils().length, 1, 'le refus ne touche pas la session de l’admin');
+  assert.equal((await attendreFils(1)).length, 1, 'le refus ne touche pas la session de l’admin');
   await app.close();
 });
 
