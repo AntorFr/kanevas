@@ -20,7 +20,7 @@ import { lireContexteImport } from '../services/import.js';
 import { modifierEnTete } from '../services/import-entete.js';
 import { assurerFiche, lotDeRequete, supprimerFicheImport } from '../services/import-fiches.js';
 import { listerHistorique } from '../services/historique.js';
-import { assurerFichier, listerFichiersApi, MAX_FICHIERS_JOINTS, ouvrirFichierParReference } from '../services/fichiers.js';
+import { assurerFichier, supprimerFichierImport, listerFichiersApi, MAX_FICHIERS_JOINTS, ouvrirFichierParReference } from '../services/fichiers.js';
 import { lireFicheApi, listerFichesApi } from '../services/lecture-api.js';
 import { estId } from '../services/cles-forme.js';
 import { listerCartesApi } from '../services/cartes.js';
@@ -386,6 +386,13 @@ export async function registerImportRoutes(app: FastifyInstance) {
           visibilite: champ('visibilite'),
           flux: part?.fieldname === 'fichier' ? flux() : null,
         }, app.horloge(), undefined, request.headers);
+      });
+
+      scope.delete(`${base}/fichiers/:cle`, { config: { portee: 'contenu' } }, async (request, reply) => {
+        const { cle } = request.params as { cle: string };
+        const { lot } = request.query as { lot?: unknown };
+        supprimerFichierImport(app.db, jetonDe(request), lotDeRequete(lot), cle, app.horloge());
+        return reply.code(204).send();
       });
 
       scope.delete(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request, reply) => {
