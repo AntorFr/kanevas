@@ -5247,6 +5247,8 @@ The zone form (« Nouvelle zone » and its edit) gains one switch, « Affichée 
 
 The system's existing dialogue gains three fields for a defined system (B-117): star class (the core's list, « Drawn from the key » by default), size (a slider) and a free colour (optional, over the class). The galaxy's panel of a system shows its star as the map draws it.
 
+E-21 « Zones » (B-118): a `Segments` « Par défaut » / « Toutes » / « Aucune » in the galaxy's toolbar for every reader (address `?zones=`, AD-zonesroutes-2); the selected zone and the zone being drawn stay drawn whatever the choice; the zone form's switch is shown to the GM only. States: the choice « Toutes » with no zone hidden changes nothing (no message); a galaxy with no zone shows the control disabled; a route type labelled « private » is a type, « MJ seul » is the visibility (AD-zonesroutes-3). The mock-up `docs/maquettes/e21-carte-galaxie.html` is amended by the slice's dev with the control, the strokes and the legend before the screen test.
+
 Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the system (a **formation**, not a polygonal zone of the galaxy) opens its panel with the **illustration of its family** (belt, nebula, anomaly: from its form and its `parametres`, no route of its own) and its text; on the galaxy, a click in the **void** of a zone selects nothing and opens no form; the labels of the route types keep « Private » and « GM only » apart.
 
 ### Previews and navigation (B-119)
@@ -5285,6 +5287,11 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 - Given a double click on a system, it opens on its map, and « Galaxy » returns to the same view (B-119).
 - Given Léa on a phone, the map takes the whole window, the controls float and stay reachable by thumb (44 px targets), no horizontal scroll (B-120).
 - Given Léa (Player), the mode switch offers « Consult » and « Travel » only, and a link in `?mode=edition` opens Consult (B-121).
+- Given a neutral galaxy of two zones, one with `affichage_defaut` false and a pirate zone true, the map opens without the first; « Toutes » shows it, « Aucune » hides both, keeps every route and system in their lists and in the search, and a selected zone stays drawn (B-118, AD-zonesroutes-2).
+- Given the pirate zone, it is tinted and outlined red (each of the six colours sets a fill and an outline); a pirate route is dashed long in its own colour, a public one solid, a GM-only route dash-dot and marked « MJ seul », never « Privée »; the legend lists the four types and the mark (B-118, AD-zonesroutes-3).
+- Given a click in the void of a zone, nothing is selected and no form opens; a click on its outline or its name selects it (B-118).
+- Given two neighbouring zones, each name is inside its own polygon and meets no other name nor a system's disc; at a zoom where it cannot fit, it disappears rather than leaves (B-118, AD-zonesroutes-4).
+- Given the GM in the zone form, « Affichée à l'ouverture de la carte » is on by default and reopening the map applies it; a Player reads the default through « Zones » and never sees the switch (B-118).
 - Given a defined system with a class and a free colour, the galaxy draws it as a star of that class tinted by the colour; with no class, two systems of different keys differ (B-117).
 - Given a galaxy opened, the zones marked « Displayed when the map opens » are drawn and the others hidden until « all » (B-118).
 - Given a world with cities or glow, the night side shows them and `force_lueur` changes the strength (B-124).
