@@ -6,7 +6,7 @@ import { lireElement, type ElementResolu } from '../catalogues.js';
 import { ErreurService, introuvable } from '../erreurs.js';
 import { accessible, lireLigneOutil, resoudreOutil } from '../outils.js';
 import type { Acteur } from '../types.js';
-import { NATURES_DE_LIGNE } from './catalogue-vaisseaux.js';
+import { integreValide, NATURES_DE_LIGNE } from './catalogue-vaisseaux.js';
 
 /** The tool key and its two catalogue-aware pieces (V-1). */
 export const OUTIL_VAISSEAUX = 'swn/vaisseaux';
@@ -18,11 +18,15 @@ export interface LigneChoix { nature: NatureVaisseau; cle: string; quantite: num
   /** X-4: points of an exchange line and the line a doubling aims at. */
   points?: number; vise?: { nature: NatureVaisseau; cle: string }
   /** H-8: one pair per installation (quantities), for the effects that aim at an element of the design. */
-  cibles?: CibleLigne[] }
+  cibles?: CibleLigne[]
+  /** H-9: of the installations of a modification line, those rebuilt into the hull (0..quantite; absent reads 0, clamped by `integreLu`). */
+  integre?: number }
 /** `equipage`: `undefined` = the hull's minimum (F-2); `null` = no crew, kept as such. */
 export interface EntreeCalcul { coque: string; choix: LigneChoix[]; equipage?: number | null; reparation?: number;
   /** H-5: of the crew, how many are player characters and how many robots (stored; read by the calculation). */
-  pj?: number; robots?: number }
+  pj?: number; robots?: number;
+  /** H-9: the engineer's Int + Con modifier, -10..10 (stored; read by the calculation of the next slice). */
+  modIntCon?: number }
 export interface SortieCalcul { resultat: ResultatVaisseau | null; alertes: AlerteVaisseau[] }
 /** What the stored design already carries: the keys that may still resolve although masked (V-3). */
 export interface Porte {
@@ -88,12 +92,14 @@ export function validerChoix(coque: unknown, choix: unknown): EntreeCalcul {
       || (o.magasins !== undefined && (o.nature !== 'armes' || !Number.isInteger(o.magasins) || (o.magasins as number) < 1 || (o.magasins as number) > 9))) {
       throw invalide('Choix invalides.', 'choix_invalide', 'choix');
     }
+    if (!integreValide(o)) throw invalide('Mods intégrés invalides.', 'integre_invalide', 'integre');
     const k = JSON.stringify([o.nature, o.cle]);
     if (vus.has(k)) throw invalide('Un élément ne peut figurer qu\'une fois.', 'choix_en_double', 'choix');
     vus.add(k);
     return { nature: o.nature as NatureVaisseau, cle: o.cle, quantite: o.quantite as number,
       ...(o.magasins === undefined ? {} : { magasins: o.magasins as number }),
       ...(o.points === undefined ? {} : { points: o.points as number }),
+      ...(o.integre === undefined ? {} : { integre: o.integre as number }),
       ...(o.vise === undefined ? {} : { vise: { nature: (o.vise as { nature: NatureVaisseau }).nature, cle: (o.vise as { cle: string }).cle } }),
       ...(o.cibles === undefined || (o.cibles as unknown[]).length === 0 ? {}
         : { cibles: (o.cibles as CibleLigne[]).map((c) => ({ nature: c.nature, cle: c.cle, quantite: c.quantite })) }) };
@@ -114,6 +120,17 @@ export function validerReparation(v: unknown): number | undefined {
   if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 20) throw invalide('Réparation invalide.', 'reparation_invalide', 'reparation');
   return v;
 }
+
+/** The `mod_int_con` of a request (H-mods-1 (7)): absent or `null` = 0, else an integer -10..10. */
+export function validerModIntCon(v: unknown): number | undefined {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v !== 'number' || !Number.isInteger(v) || v < -10 || v > 10) throw invalide('Modificateurs invalides.', 'mod_int_con_invalide', 'mod_int_con');
+  return v;
+}
+
+/** The `integre` of a stored line as it reads (B-94): absent reads 0, above the quantity reads the quantity; nothing is rewritten. */
+export const integreLu = (l: { integre?: unknown; quantite: number }): number =>
+  typeof l.integre === 'number' && Number.isInteger(l.integre) ? Math.max(0, Math.min(l.integre, l.quantite)) : 0;
 
 /** The `pj` / `robots` of a request (H-5): absent or `null` = 0, else a non-negative integer, refused with its `champ`. */
 export function validerEffectif(v: unknown, champ: 'pj' | 'robots'): number | undefined {
@@ -166,6 +183,8 @@ export interface Resolution {
   /** H-5. */
   pj: number;
   robots: number;
+  /** H-9. */
+  modIntCon: number;
 }
 
 /** X-4: `points` and `vise` must belong to an element that has the effect; one above `points_max` is refused. */
@@ -230,7 +249,7 @@ export function resoudreChoix(db: Db, universId: number, e: EntreeCalcul, porte:
       element: el.donnees as unknown as ElementCalcul };
   });
   const equipage = e.equipage === undefined ? (coque?.equipage_min ?? null) : e.equipage;
-  return { coque, lignes, equipage, reparation: e.reparation ?? 0, pj: e.pj ?? 0, robots: e.robots ?? 0, retirees, nomsRetires, inconnu };
+  return { coque, lignes, equipage, reparation: e.reparation ?? 0, pj: e.pj ?? 0, robots: e.robots ?? 0, modIntCon: e.modIntCon ?? 0, retirees, nomsRetires, inconnu };
 }
 
 /** Calculates from resolved elements; `null` result and the alerts alone when one does not resolve. */
@@ -247,7 +266,7 @@ export function calculerResolu(db: Db, universId: number, r: Resolution): Sortie
 export function calculerDepuisChoix(db: Db, acteur: Acteur, universId: number, entree: unknown,
   porte: Porte | null = null): SortieCalcul {
   if (!accessible(db, acteur, universId, OUTIL_VAISSEAUX)) throw introuvable();
-  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown; equipage?: unknown; reparation?: unknown; pj?: unknown; robots?: unknown };
+  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown; equipage?: unknown; reparation?: unknown; pj?: unknown; robots?: unknown; mod_int_con?: unknown };
   const e = validerChoix(o.coque, o.choix);
   const equipage = validerEquipage(o.equipage);
   if (equipage !== undefined) e.equipage = equipage;
@@ -255,6 +274,7 @@ export function calculerDepuisChoix(db: Db, acteur: Acteur, universId: number, e
   if (reparation !== undefined) e.reparation = reparation;
   e.pj = validerEffectif(o.pj, 'pj') ?? 0;
   e.robots = validerEffectif(o.robots, 'robots') ?? 0;
+  e.modIntCon = validerModIntCon(o.mod_int_con) ?? 0;
   const r = resoudreChoix(db, universId, e, porte);
   controlerChoix(r, e);
   return calculerResolu(db, universId, r);
