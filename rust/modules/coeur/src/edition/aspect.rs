@@ -128,6 +128,45 @@ pub fn valider_aspect(type_astre: &str, json: &str) -> Result<String, ErreurEdit
     Ok(Value::Object(o).to_string())
 }
 
+/// Keys of the objects `tache` and `anneau`, and the objects that may carry unknown keys.
+const SOUS_OBJETS: [(&str, &[&str]); 2] = [
+    ("tache", &["latitude", "taille", "couleur"]),
+    ("anneau", &["interieur", "exterieur", "inclinaison", "angle", "opacite", "couleur", "couleur2"]),
+];
+
+/// Sorts an aspect (AD-aspects-socle-2): keys the core does not know are removed at any depth and listed by
+/// path (`aspect.x`, `aspect.anneau.y`); the rest is validated as `valider_aspect` does, so a known key out of
+/// bounds is still a refusal. Returns `{"garde": <aspect>, "inconnues": [<paths>]}`.
+pub fn trier_aspect(type_astre: &str, json: &str) -> Result<String, ErreurEdition> {
+    if !types().contains(&type_astre) {
+        return Err(ErreurEdition::TypeInconnu(type_astre.to_string()));
+    }
+    let mut o = lire_json(json, MAX_ASPECT)?;
+    let mut inconnues: Vec<String> = Vec::new();
+    let cles: Vec<String> = o.keys().cloned().collect();
+    for k in cles {
+        if !cle_connue(&k) {
+            o.remove(&k);
+            inconnues.push(format!("aspect.{k}"));
+            continue;
+        }
+        if let Some((_, connues)) = SOUS_OBJETS.iter().find(|(n, _)| *n == k) {
+            if let Some(Value::Object(sous)) = o.get_mut(&k) {
+                let ks: Vec<String> = sous.keys().cloned().collect();
+                for sk in ks {
+                    if !connues.contains(&sk.as_str()) {
+                        sous.remove(&sk);
+                        inconnues.push(format!("aspect.{k}.{sk}"));
+                    }
+                }
+            }
+        }
+    }
+    let garde = valider_aspect(type_astre, &Value::Object(o).to_string())?;
+    let garde: Value = serde_json::from_str(&garde).map_err(|_| ErreurEdition::Json("not JSON".into()))?;
+    Ok(serde_json::json!({ "garde": garde, "inconnues": inconnues }).to_string())
+}
+
 /// An object of numbers within bounds and colours, every key optional, no other key.
 fn objet_borne(cle: &str, v: &Value, nombres: &[(&str, f64, f64)], couleurs: &[&str]) -> Result<(), ErreurEdition> {
     let o = v.as_object().ok_or_else(|| ErreurEdition::HorsBornes(format!("`{cle}` must be an object")))?;

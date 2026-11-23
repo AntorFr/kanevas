@@ -89,6 +89,39 @@ const CLES_COULEUR: [&str; 6] = ["halo_couleur", "lumiere_couleur", "couleur", "
 /// Draws `aspect_json` (`{"type", "taille"?, "aspect"?}`: the object the generator returns for a body)
 /// at `cote` x `cote` pixels: RGBA, straight alpha, `cote * cote * 4` bytes.
 pub fn dessiner(aspect_json: &str, cote: u32, version_rendu: u32) -> Result<Vec<u8>, ErreurRendu> {
+    dessiner_avec(aspect_json, cote, version_rendu, None, None)
+}
+
+/// Share of the requested light colour mixed into `lumiere_couleur` (AD-aspects-socle-1): half the gap.
+pub const TEINTE_LUMIERE: f32 = 0.5;
+
+fn octets_hex(s: &str) -> Option<[u8; 3]> {
+    if s.len() != 7 || !s.starts_with('#') {
+        return None;
+    }
+    let o = |i: usize| u8::from_str_radix(s.get(i..i + 2)?, 16).ok();
+    Some([o(1)?, o(3)?, o(5)?])
+}
+
+/// Same as `dessiner`, with the direction of the star (`angle`, degrees in [0, 360), x to the right, y up;
+/// replaces the `lumiere` key of the aspect) and the colour of its light (`lumiere`, `#rrggbb`, mixed for half
+/// with `lumiere_couleur`). Neither changes the body itself, only how it is lit.
+pub fn dessiner_avec(
+    aspect_json: &str,
+    cote: u32,
+    version_rendu: u32,
+    angle: Option<f64>,
+    lumiere: Option<&str>,
+) -> Result<Vec<u8>, ErreurRendu> {
+    if let Some(a) = angle {
+        if !(a.is_finite() && (0.0..360.0).contains(&a)) {
+            return Err(ErreurRendu::Aspect("`angle` is not a number in [0, 360)".into()));
+        }
+    }
+    let lumiere_octets = match lumiere {
+        None => None,
+        Some(l) => Some(octets_hex(l).ok_or_else(|| ErreurRendu::Aspect("`lumiere` is not a colour `#rrggbb`".into()))?),
+    };
     if version_rendu != VERSION_RENDU {
         return Err(ErreurRendu::Version(version_rendu));
     }
@@ -145,6 +178,20 @@ pub fn dessiner(aspect_json: &str, cote: u32, version_rendu: u32) -> Result<Vec<
         asp,
     };
     let mut ctx = ctx;
+    if let Some(a) = angle {
+        if let Value::Object(o) = &mut ctx.asp {
+            o.insert("lumiere".into(), json!(a));
+        }
+    }
+    if let Some(demande) = lumiere_octets {
+        let base = ctx.asp.get("lumiere_couleur").and_then(Value::as_str).and_then(octets_hex).unwrap_or([255, 245, 230]);
+        let mix: Vec<u8> = (0..3)
+            .map(|i| (base[i] as f32 + (demande[i] as f32 - base[i] as f32) * TEINTE_LUMIERE).round().clamp(0.0, 255.0) as u8)
+            .collect();
+        if let Value::Object(o) = &mut ctx.asp {
+            o.insert("lumiere_couleur".into(), json!(format!("#{:02x}{:02x}{:02x}", mix[0], mix[1], mix[2])));
+        }
+    }
     // The bands of a gas giant read `bandes_couleurs` in place of the palette.
     if matches!(catalogue::famille(type_corps), Some(catalogue::Famille::Planete(catalogue::Kind::Gazeuse))) {
         if let Some(l) = ctx.asp.get("bandes_couleurs").and_then(Value::as_array) {
@@ -200,10 +247,27 @@ fn vers_octets(ctx: &Ctx, px: &[Px]) -> Vec<u8> {
 
 // Flat exports (AD-etoiles-3): strings, numbers, bytes.
 
-/// The picture of a body: `cote * cote * 4` RGBA bytes. Throws for an unknown type, version or a side out of [16, 2048].
+/// The picture of a body: `cote * cote * 4` RGBA bytes (`angle` and `lumiere` optional). Throws for an unknown type, version or a side out of [16, 2048].
 #[wasm_bindgen]
-pub fn dessiner_astre(aspect_json: &str, cote: u32, version_rendu: u32) -> Result<Vec<u8>, JsError> {
-    dessiner(aspect_json, cote, version_rendu).map_err(|e| JsError::new(&e.to_string()))
+pub fn dessiner_astre(
+    aspect_json: &str,
+    cote: u32,
+    version_rendu: u32,
+    angle: Option<f64>,
+    lumiere: Option<String>,
+) -> Result<Vec<u8>, JsError> {
+    dessiner_avec(aspect_json, cote, version_rendu, angle, lumiere.as_deref()).map_err(|e| JsError::new(&e.to_string()))
+}
+
+/// Seed of a body from its system key and its own key (AD-aspects-socle-2): same pair, same seed.
+pub fn graine_de(cle_systeme: &str, cle_corps: &str) -> u32 {
+    utile_hash(&format!("{cle_systeme}\u{1f}{cle_corps}"))
+}
+
+/// Seed of a body, see `graine_de`.
+#[wasm_bindgen(js_name = graine_de)]
+pub fn graine_de_wasm(cle_systeme: &str, cle_corps: &str) -> u32 {
+    graine_de(cle_systeme, cle_corps)
 }
 
 /// Version of the renderer.
