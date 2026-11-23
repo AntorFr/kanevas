@@ -8,3 +8,6 @@ ALTER TABLE swn_catalogue_modifications ADD COLUMN composants_par_classe INTEGER
   CHECK (typeof(composants_par_classe) = 'integer' AND composants_par_classe IN (0, 1));
 ALTER TABLE swn_conceptions ADD COLUMN mod_int_con INTEGER NOT NULL DEFAULT 0
   CHECK (typeof(mod_int_con) = 'integer' AND mod_int_con BETWEEN -10 AND 10);
+-- An example of the catalogue carries the modifier too (the import of a design is an example), same default and CHECK.
+ALTER TABLE swn_catalogue_exemples ADD COLUMN mod_int_con INTEGER NOT NULL DEFAULT 0
+  CHECK (typeof(mod_int_con) = 'integer' AND mod_int_con BETWEEN -10 AND 10);
