@@ -12,7 +12,7 @@ import {
 } from './galaxies.js';
 
 export interface SystemeVue {
-  id: number; cle: string; nom: string; q: number; r: number; taille: number; couleur: string; secret?: boolean;
+  id: number; cle: string; nom: string; q: number; r: number; taille: number; couleur: string | null; secret?: boolean;
   version?: number;
 }
 export interface BoutRoute { cle: string; q: number; r: number }
@@ -77,7 +77,7 @@ export function lireBlocs(
 }
 
 export interface PanneauSysteme {
-  nom: string; q: number; r: number; taille: number; couleur: string; notes: string;
+  nom: string; q: number; r: number; taille: number; couleur: string | null; notes: string;
   routes: { avec: { cle: string; nom: string }; longueur: number }[];
   lien: string;
   /** Level `mj` only. */

@@ -18,7 +18,7 @@ export interface LigneGalaxie {
 }
 export interface LigneSysteme {
   id: number; galaxie_id: number; cle: string; nom: string; q: number; r: number; taille: number;
-  couleur: string; notes: string; secret: number; promu: number; version: number;
+  couleur: string | null; classe: string | null; voile: string | null; notes: string; secret: number; promu: number; version: number;
 }
 export interface LigneRoute {
   id: number; galaxie_id: number; depuis_id: number; vers_id: number; publique: number; longueur: number; version: number; type_lien: string | null;
@@ -251,12 +251,12 @@ export function semerGalaxieEssai(db: Db, universId: number): number {
       VALUES (?, 'Galaxie d''essai', 1, 'essai-1', ?)`).run(universId, densiteParDefaut()).lastInsertRowid);
     const sys = db.prepare(`INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
-    const id = (cle: string, nom: string, q: number, r: number, taille: number, couleur: string, notes: string, secret: number) =>
+    const id = (cle: string, nom: string, q: number, r: number, taille: number, couleur: string | null, notes: string, secret: number) =>
       Number(sys.run(g, universId, cle, nom, q, r, taille, couleur, notes, secret).lastInsertRowid);
-    const port = id('port-sel', 'Port-Sel', 0, 0, 3, 'bleu', 'Un port franc, inventé.', 0);
-    const vael = id('vael', 'Vael', 7, 0, 2, 'vert', 'Un monde agricole, inventé.', 0);
-    const hesper = id('hesper', 'Hesper', 1, 5, 2, 'ambre', 'Une station minière, inventée.', 0);
-    id('station-fantome', 'Station fantôme', -4, 2, 1, 'rouge', 'Secret du MJ, inventé.', 1);
+    const port = id('port-sel', 'Port-Sel', 0, 0, 0.75, '#8b9bf0', 'Un port franc, inventé.', 0);
+    const vael = id('vael', 'Vael', 7, 0, 0.45, '#3fc79a', 'Un monde agricole, inventé.', 0);
+    const hesper = id('hesper', 'Hesper', 1, 5, 0.45, '#f2a33c', 'Une station minière, inventée.', 0);
+    id('station-fantome', 'Station fantôme', -4, 2, 0.15, '#ec7b6f', 'Secret du MJ, inventé.', 1);
     const route = db.prepare('INSERT INTO swn_routes (galaxie_id, univers_id, depuis_id, vers_id, publique, longueur) VALUES (?, ?, ?, ?, ?, ?)');
     route.run(g, universId, port, vael, 1, 7);
     route.run(g, universId, vael, hesper, 1, 6);
@@ -281,7 +281,7 @@ export function semerGalaxieMasquage(db: Db, universId: number): number {
     const g = Number(db.prepare(`INSERT INTO swn_galaxies (univers_id, titre, visible, graine, densite_defaut)
       VALUES (?, 'Galaxie du secret', 1, 'masquage-14', ?)`).run(universId, densiteParDefaut()).lastInsertRowid);
     const sys = db.prepare(`INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret)
-      VALUES (?, ?, ?, ?, ?, ?, 2, 'ambre', 'Inventé.', 0)`);
+      VALUES (?, ?, ?, ?, ?, ?, 0.45, '#f2a33c', 'Inventé.', 0)`);
     sys.run(g, universId, 'aube', 'Aube', 5, -4);
     sys.run(g, universId, 'brume', 'Brume', 1, -3);
     return g;

@@ -187,7 +187,7 @@ const systemeDe = (db: Db, g: LigneGalaxie, q: number, r: number): LigneSysteme 
 
 /** Colour of a system from the class letter of its star (the six names of the palette) and size from its size. */
 const COULEUR_LETTRE: Record<string, string> = { M: 'danger', K: 'ambre', G: 'ambre', F: 'clair', A: 'clair', B: 'accent' };
-const tailleSysteme = (t: number): number => (t < 1.0 ? 1 : t < 1.6 ? 2 : 3);
+const tailleSysteme = (t: number): number => (t < 1.0 ? 0.15 : t < 1.6 ? 0.45 : 0.75);
 
 /**
  * Anchors the drawn system of `(q, r)`: the `swn_systemes` row (E-21's promotion, `placerSysteme`) and the drawn

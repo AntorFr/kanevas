@@ -14,7 +14,8 @@ import { niveauLecture, routesLisibles, systemesLisibles, zonesLisibles, type Li
 /** Fixed version of a galaxy that no longer exists. */
 export const GALAXIE_SUPPRIMEE = 'galaxie-supprimee';
 
-const TAILLES = ['petite', 'moyenne', 'grande'];
+/** The document words a size: the nearest of the three names (0.15, 0.45, 0.75; the former 4 and 5 were « grande »). */
+const nomDeTaille = (t: number): string => (t < 0.3 ? 'petite' : t < 0.6 ? 'moyenne' : 'grande');
 
 /** The galaxy a document section belongs to: by section, else by sheet. */
 function galaxieDeContexte(db: Db, ctx: ContexteSection): LigneGalaxie | undefined {
@@ -50,7 +51,7 @@ export function produireGalaxie(db: Db, acteur: ContexteSection['acteur'], unive
   const vue: VueDocument = {
     titre: g.titre,
     systemes: systemes.map((s) => ({
-      nom: s.nom, q: s.q, r: s.r, taille: TAILLES[Math.min(Math.max(s.taille, 1), 3) - 1]!, notes: s.notes, secret: s.secret === 1,
+      nom: s.nom, q: s.q, r: s.r, taille: nomDeTaille(s.taille), notes: s.notes, secret: s.secret === 1,
     })),
     routes: routesLisibles(db, g.id, 'mj').map((r) => ({
       depuis: noms.get(r.depuis_id) ?? '', vers: noms.get(r.vers_id) ?? '', longueur: r.longueur, publique: r.publique === 1, typeLien: r.type_lien,
