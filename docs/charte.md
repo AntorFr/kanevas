@@ -299,6 +299,7 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   for « Secrète (MJ seul) », in `--accent` for the search filter « sous-lieux compris ».
 - C: a visible label linked to the field; the error appears beneath in `--danger` with
   « Erreur : » before it, linked by `aria-describedby`; input is never lost on failure.
+- *Variants of the ship designer's « Visée » rows (`kanevas-concepteur-vaisseaux-cibles`, guardian's verdict, no new token or component):* the list form repeated once per installation of a modification line, labelled « Visée 1 », « Visée 2 » (« Visée » alone for one installation), options grouped by a native `optgroup`; the alert of a row (`.vx-alerte`, blocking or watch) sits **under the row it concerns** and is linked to its select by `aria-describedby` (`aria-invalid` alone is not enough); the muted help line (`.vx-sous` style, 12 px `--texte-3`) is the one shared muted line of the workshop.
 
 **Navigation item.**
 - V: 30 px (40 on phones), radius `--rayon-item`, 16 px `--texte-3` icon and 13 px

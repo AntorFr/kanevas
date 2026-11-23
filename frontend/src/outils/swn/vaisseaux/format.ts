@@ -1,4 +1,4 @@
-import type { Alerte, Brouillon, Conception, Donnees, ElementCatalogue } from './types';
+import type { Alerte, Brouillon, Conception, Donnees, ElementCatalogue, Ligne } from './types';
 
 const NBSP = '\u00A0';
 /** « 685 000 » with a no-break space between the groups, like the text version (V-6). */
@@ -16,9 +16,28 @@ export const credits = (n: number) => `${nombre(n)}${NBSP}cr`;
 export const jours = (n: number) => `${nombre(n)} ${n === 1 ? 'jour' : 'jours'}`;
 export const entretien = (n: number) => `${credits(n)} / an`;
 
+/** A stored line in the draft: its `cibles` become one row per installation (the same element on as many rows as it has installations). */
+function ligneDeBrouillon(l: Ligne): Ligne {
+  const { cibles, vise, ...reste } = l;
+  if (cibles === undefined) return { ...l };
+  const rangees = cibles.flatMap((c) => Array<string>(c.quantite).fill(`${c.nature}/${c.cle}`));
+  while (rangees.length < l.quantite) rangees.push('');
+  return { ...reste, rangees: rangees.slice(0, l.quantite) };
+}
+
+/** The pairs a draft's rows say, in order of first appearance; the rows never chosen are not sent (the server says « Choisissez… »). */
+export function ciblesDeRangees(rangees: string[] | undefined): { nature: string; cle: string; quantite: number }[] {
+  const comptes = new Map<string, number>();
+  for (const r of rangees ?? []) if (r !== '') comptes.set(r, (comptes.get(r) ?? 0) + 1);
+  return [...comptes].map(([k, quantite]) => {
+    const [nature = '', ...cle] = k.split('/');
+    return { nature, cle: cle.join('/'), quantite };
+  });
+}
+
 export const brouillonDe = (c: Pick<Conception, 'coque' | 'lignes' | 'resultat' | 'pj' | 'robots'>): Brouillon => ({
   coque: { cle: c.coque.cle, nom: c.coque.nom },
-  lignes: c.lignes.map((l) => ({ ...l })),
+  lignes: c.lignes.map(ligneDeBrouillon),
   equipage: c.resultat.equipage?.choisi ?? null,
   reparation: c.resultat.reparation?.choisie ?? 0,
   pj: c.pj ?? 0,
@@ -41,6 +60,7 @@ export const choixDe = (b: Brouillon) => ({
     nature: l.nature, cle: l.cle, quantite: l.quantite,
     ...(l.points === undefined ? {} : { points: l.points }),
     ...(l.vise === undefined ? {} : { vise: { nature: l.vise.nature, cle: l.vise.cle } }),
+    ...(ciblesDeRangees(l.rangees).length === 0 ? {} : { cibles: ciblesDeRangees(l.rangees) }),
   })),
 });
 

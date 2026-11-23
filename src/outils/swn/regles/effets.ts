@@ -5,6 +5,7 @@
 
 export type CodeEffet = 'vitesse' | 'armure' | 'echange' | 'soutes_doublees' | 'magasins_doubles' | 'reparation_min' | 'moteur_systeme' | 'support_automatisation'
   | 'soutes_optimisees_livre' | 'blindage_renforce' | 'montages_specialises' | 'surcharge_cumulable'
+  | 'surdimensionne' | 'moteur_niveau'
 export type ParametreEffet =
   | 'valeur' | 'points_max' | 'sens' | 'echange_puissance' | 'echange_masse' | 'rend_puissance' | 'rend_masse'
   | 'effet_pct' | 'echange_arrondi'
@@ -19,8 +20,8 @@ export interface DeclarationEffet {
   facultatifs?: readonly ParametreEffet[]
   /** The file must say `limite` 1: one line per design, so a target or a number of points has one meaning. */
   limiteUne?: true
-  /** W-1: the file states `vise` (a weapon line of the design), required with the effect and refused without it. */
-  cible?: true
+  /** H-8, H-10 (3): the effect aims at elements chosen on the design (`cibles` of its line), of these natures only; never stated by the file. */
+  cible?: readonly ('armes' | 'amenagements')[]
 }
 
 export const EFFETS: Readonly<Record<CodeEffet, DeclarationEffet>> = {
@@ -35,8 +36,10 @@ export const EFFETS: Readonly<Record<CodeEffet, DeclarationEffet>> = {
   reparation_min: { nature: 'modifications', libelle: 'Réparation minimale', parametres: ['valeur'] },
   soutes_optimisees_livre: { nature: 'modifications', libelle: 'Soutes optimisées', parametres: [], limiteUne: true },
   blindage_renforce: { nature: 'modifications', libelle: 'Blindage renforcé', parametres: ['valeur'], limiteUne: true },
-  montages_specialises: { nature: 'modifications', libelle: 'Montages spécialisés', parametres: [], limiteUne: true, cible: true },
-  surcharge_cumulable: { nature: 'modifications', libelle: "Surcharge d'arme", parametres: ['effet_pct'], cible: true },
+  montages_specialises: { nature: 'modifications', libelle: 'Montages spécialisés', parametres: [], cible: ['armes', 'amenagements'] },
+  surcharge_cumulable: { nature: 'modifications', libelle: "Surcharge d'arme", parametres: ['effet_pct'], cible: ['armes'] },
+  surdimensionne: { nature: 'modifications', libelle: 'Surdimensionné', parametres: [], limiteUne: true, cible: ['armes', 'amenagements'] },
+  moteur_niveau: { nature: 'modifications', libelle: 'Moteur de rang supérieur', parametres: [], limiteUne: true },
   support_automatisation: { nature: 'amenagements', libelle: "Système d'automatisation", parametres: [], limiteUne: true },
   moteur_systeme: { nature: 'amenagements', libelle: 'Moteur système', parametres: ['rend_puissance', 'rend_masse'] },
 }

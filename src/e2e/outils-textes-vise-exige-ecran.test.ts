@@ -1,7 +1,7 @@
 // ecrans: parametres
 // Browser test of kanevas-outils-textes (E-20, « Import refusals »), written from the fiche and docs/ecrans.md — not from the code.
-// Need: the import refusal of an element whose `vise` is missing reads « … champ vise : élément visé exigé. Cet élément n’est pas appliqué. »
-// on the report screen, with ONE full stop after « exigé ». Invented trial catalogue; screenshots in /tmp/cap-textes (never in the workspace).
+// Need (amended by H-8): a montage or overcharge without `vise` is no longer refused — the report shows no refusal; the old « élément visé exigé » is gone.
+// Before H-8 the refusal read « … champ vise : élément visé exigé. Cet élément n’est pas appliqué. » with ONE full stop after « exigé ». Invented trial catalogue; screenshots in /tmp/cap-textes (never in the workspace).
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import { connecte, launch, skipBrowser, startServer, type Any, type Server } from './harnais.test.ts';
@@ -48,18 +48,14 @@ describe('refus d’import « vise » exigé : un seul point à l’écran du ra
         return dlg;
       };
 
-      it('montage et surcharge sans élément visé : « élément visé exigé. » avec un seul point, jamais deux', async () => {
+      it('montage et surcharge sans élément visé : aucun refus, le catalogue ne dit plus la cible (vise toléré et ignoré, H-8)', async () => {
         const { page, ctx } = await connecte(browser, srv.base, 'Antor');
         await page.setViewportSize({ width: vue.width, height: vue.height });
         const dlg = await ouvrirDialogue(page);
         await page.locator('input[type=file]').setInputFiles(fichier(catalogue(['montage-l', 'surcharge-l'])));
-        const liste = dlg.getByRole('list', { name: 'Éléments refusés' });
-        await liste.waitFor();
-        const lignes = (await liste.getByRole('listitem').allInnerTexts()).map(norm);
-        assert.deepEqual(lignes, [
-          'Modification « montage-l », champ vise : élément visé exigé. Cet élément n’est pas appliqué.',
-          'Modification « surcharge-l », champ vise : élément visé exigé. Cet élément n’est pas appliqué.',
-        ]);
+        await dlg.getByRole('table', { name: 'Résumé par nature' }).waitFor();
+        assert.equal(await dlg.getByRole('list', { name: 'Éléments refusés' }).count(), 0);
+        assert.equal((await dlg.innerText()).includes('exigé'), false);
         await page.screenshot({ path: `${SHOTS}/${vue.nom}-refus-vise.png`, fullPage: true });
         await ctx.close();
       });

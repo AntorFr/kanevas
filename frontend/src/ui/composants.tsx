@@ -115,7 +115,7 @@ export function Champ({
   const id = useId();
   const idErreur = `${id}-e`;
   const idCompteur = `${id}-c`;
-  const decrit = [erreur ? idErreur : '', compteur ? idCompteur : ''].filter(Boolean).join(' ');
+  const decrit = [erreur ? idErreur : '', compteur ? idCompteur : '', (reste['aria-describedby'] as string | undefined) ?? ''].filter(Boolean).join(' ');
   const props = {
     ...reste,
     id,

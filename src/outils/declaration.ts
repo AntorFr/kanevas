@@ -47,7 +47,11 @@ export interface StockageCatalogue {
   effacer(db: Db, cible: CibleCatalogue): void;
 }
 /** What a nature may check beyond its own schema: whether another element is known at the import's level (V-10). */
-export interface ContexteVerification { existe(nature: string, cle: string): boolean }
+export interface ContexteVerification {
+  existe(nature: string, cle: string): boolean
+  /** The data of an element known at the import's level (the file's valid ones first), `null` when unknown. */
+  donnees(nature: string, cle: string): Record<string, unknown> | null
+}
 export interface DeclarationCatalogue {
   natures: { nom: string; libelle: string; libellePluriel: string;
     schema: z.ZodObject; resume(donnees: Record<string, unknown>): string }[];

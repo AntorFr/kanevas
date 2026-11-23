@@ -47,7 +47,7 @@ test('0052 : montée depuis 0051, valeurs de la table reconstruite gardées, nou
   const avantK = db.prepare('SELECT * FROM swn_conceptions').get() as any;
   const avantV = versionsSource(db, 1);
 
-  assert.deepEqual(migrate(db), [52]);
+  assert.deepEqual(migrate(db), [52, 53]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
 
   const apresA = db.prepare('SELECT * FROM swn_catalogue_amenagements ORDER BY cle').all() as any[];

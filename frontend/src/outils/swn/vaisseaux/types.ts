@@ -16,6 +16,10 @@ export interface Ligne {
   /** X-4: the points of an exchange line and the line a doubling aims at (the pair `nature/cle`). */
   points?: number;
   vise?: { nature: string; cle: string };
+  /** B-94, from the server: the targets of an aiming effect, one pair per element with the installations aimed at it. */
+  cibles?: { nature: string; cle: string; quantite: number }[];
+  /** Draft only (E-22): one entry per installation, `nature/cle` or `''` while not chosen. */
+  rangees?: string[];
   /** X-3, from the server's result only: the line's own cost (a percentage line) and the exchange's deltas. */
   cout?: number;
   echange?: { puissance: number; masse: number };

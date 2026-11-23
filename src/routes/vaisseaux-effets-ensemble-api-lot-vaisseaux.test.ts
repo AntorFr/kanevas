@@ -18,7 +18,7 @@
 // B-83 soutes     nominal  : Cale d'essai aiming Soute d'essai (soute 10) → soutes 20 ; not aimed → soutes 10 and blocking alert, save 422
 //                 bords    : target not in the design ; target that states no soute ; quantity 2 → 40 ; removing the target line raises the alert
 //                 exclusions : vise on an element without a doubling refused ; no soute stated → soutes null
-// B-83 magasins   nominal  : weapon (munitions 10 × 100 × 2 on class 2, cost 12 000): 14 000 ; 2 extra magazines 18 000 ; doubled magazines 24 000 and mass 4
+// B-83 magasins   nominal  : weapon (munitions 10 × 100 × 2 on class 2, cost 12 000): 14 000 ; 2 extra magazines 18 000 ; doubled munitions 24 000, magazines' mass unchanged (2), no target (H-8 (4))
 // B-83 réparation nominal  : skill 1 against 2 → watch alert exact text, save works ; bords : 2 passes, 0 default raises, two lines ask 2 and 3 : skill 2 → one alert ;
 //                 échec    : −1, 21, 2.5, "2" refused (champ reparation) ; 20 passes ; exclusions : no line asks, skill 0 → reparation null
 // B-83 moteur système nominal : class 2 → +3 power, +1,5 mass ; bords : classes 1, 3, 4 → 2/1, 4/2, 5/2,5 ; échec/exclusion : two units → blocking alert
@@ -298,23 +298,28 @@ describe('B-83 soutes doublées : un élément visé', () => {
 
 describe('B-83 magasins doublés', () => {
   const armeMag = (magasins?: number) => l('armes', 'arme-r', 1, magasins === undefined ? {} : { magasins });
-  it('arme sans magasin en plus : 12 000 + 2 000 de munitions (10 × 100 × 2 en classe 2) ; avec 2 magasins : 6 000 de munitions → prix 318 000 ; magasins doublés : 12 000 → 324 000, masse libre 15', async () => {
+  it('arme sans magasin en plus : 12 000 + 2 000 de munitions (10 × 100 × 2 en classe 2) ; avec 2 magasins : 6 000 de munitions → prix 318 000 ; munitions doublées sans cible : 12 000 → 324 000, masse libre 17 (chargeurs inchangés)', async () => {
     const m = await monde();
     const sans = await calc(m, { coque: 'fregate-r', choix: [armeMag()] });
     assert.equal(sans.json.resultat.prix, 300000 + 12000 + 2000);
     const deux = await calc(m, { coque: 'fregate-r', choix: [armeMag(2)] });
     assert.equal(deux.json.resultat.prix, 300000 + 12000 + 6000);
     assert.equal(deux.json.resultat.masseLibre, 20 - 1 - 2);
-    const dbl = await calc(m, { coque: 'fregate-r', choix: [armeMag(2), mods('munitions-x', 1, { vise: { nature: 'armes', cle: 'arme-r' } })] });
+    const dbl = await calc(m, { coque: 'fregate-r', choix: [armeMag(2), mods('munitions-x')] });
     assert.equal(dbl.status, 200, dbl.texte);
     assert.equal(dbl.json.resultat.prix, 300000 + 12000 + 12000);
-    assert.equal(dbl.json.resultat.masseLibre, 20 - 1 - 4);
+    assert.equal(dbl.json.resultat.masseLibre, 20 - 1 - 2);
+    // a `vise` still sent with it is ignored: same totals
+    const vise = await calc(m, { coque: 'fregate-r', choix: [armeMag(2), mods('munitions-x', 1, { vise: { nature: 'armes', cle: 'arme-r' } })] });
+    assert.equal(vise.json.resultat.prix, dbl.json.resultat.prix);
+    assert.equal(vise.json.resultat.masseLibre, dbl.json.resultat.masseLibre);
   });
 
-  it('sans arme visée : alerte bloquante « choisissez l’élément visé »', async () => {
+  it('sans arme visée : plus aucun refus, le doublement n’a pas de cible', async () => {
     const m = await monde();
     const r = await calc(m, { coque: 'fregate-r', choix: [armeMag(1), mods('munitions-x')] });
-    assert.deepEqual(r.json.alertes.filter((a: Any) => a.code === 'cible_invalide').map((a: Any) => a.texte), ["« Munitions d'essai » : choisissez l'élément visé."]);
+    assert.equal(r.status, 200, r.texte);
+    assert.deepEqual(r.json.alertes.filter((a: Any) => a.code === 'cible_invalide'), []);
   });
 });
 
