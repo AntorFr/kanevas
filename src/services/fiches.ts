@@ -3,6 +3,7 @@ import type { Db } from '../db/db.js';
 import {
   exigerMJ,
   exigerRole,
+  lectureSysteme,
   peutLireSection,
   peutVoirFiche,
   sqlFicheLisible,
@@ -703,6 +704,51 @@ export function lireFiche(
   ficheId: number,
   formeLiens: 'html' | 'markdown' = 'html',
 ): FicheVue {
+  exigerRole(db, universId, acteur.compteId);
+  const espace = espaceDeLecture(db, universId, ficheId);
+  // An element of the attached system, opened from a universe: the account's right on the system decides what is
+  // read, never the address of entry nor the player mode (AD-157).
+  if (espace) {
+    return { ...lireFicheDans(db, { compteId: acteur.compteId }, espace.espaceId, ficheId, formeLiens), origine: 'systeme', systeme: espace.systeme };
+  }
+  const vue = lireFicheDans(db, acteur, universId, ficheId, formeLiens);
+  const propre = systemeDeEspace(db, universId);
+  return propre ? { ...vue, origine: 'systeme', systeme: propre } : { ...vue, origine: 'univers' };
+}
+
+/** The system whose hidden space is this universe row (AD-151), `null` for a real universe. */
+function systemeDeEspace(db: Db, universId: number): { id: number; nom: string } | null {
+  // `SELECT *`: a base held short of 0051 (the migration tests seed an old schema) has no space column.
+  const u = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as { espace_systeme_id?: number | null } | undefined;
+  if (u?.espace_systeme_id == null) return null;
+  return (db.prepare('SELECT id, nom FROM systemes_jeu WHERE id = ?').get(u.espace_systeme_id) as { id: number; nom: string } | undefined) ?? null;
+}
+
+/**
+ * The space of the system attached to `universId` when `ficheId` is one of its elements (and not a sheet of the
+ * universe itself): the sheet is read there, at the right of the account on the system (`lectureSysteme`, AD-152).
+ */
+function espaceDeLecture(db: Db, universId: number, ficheId: number): { espaceId: number; systeme: { id: number; nom: string } } | null {
+  const u = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as
+    | { systeme_id: number | null; espace_systeme_id?: number | null }
+    | undefined;
+  if (!u || u.systeme_id == null || !('espace_systeme_id' in u)) return null;
+  const r = db
+    .prepare(
+      `SELECT e.id AS espaceId, s.id, s.nom FROM univers e JOIN systemes_jeu s ON s.id = e.espace_systeme_id
+        JOIN fiches f ON f.univers_id = e.id WHERE e.espace_systeme_id = ? AND f.id = ?`,
+    )
+    .get(u.systeme_id, ficheId) as { espaceId: number; id: number; nom: string } | undefined;
+  return r ? { espaceId: r.espaceId, systeme: { id: r.id, nom: r.nom } } : null;
+}
+
+function lireFicheDans(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  formeLiens: 'html' | 'markdown',
+): FicheVue {
   const role = exigerRole(db, universId, acteur.compteId);
   const fiche = chargerFiche(db, universId, ficheId, vueMJ(role, acteur));
   const lisibles = sectionsDe(db, ficheId).filter((s) => peutLireSection(role, s, acteur));
@@ -980,6 +1026,20 @@ export function listerFiches(
     const colonnes = role === 'mj' && !acteur.modeJoueur ? 'titre contenu' : 'titre contenu_public';
     params.push(match, `{${colonnes}} : (${match})`, ...(sectionLue?.params ?? []));
   }
+  // The elements of the attached system join the list, read at the account's right on the system (AD-157): one
+  // line each, once. Only the flat list and the search; the linked, tree and visibility reads stay the universe's.
+  const element = options.lie === undefined && options.parent === undefined && options.horsDe === undefined &&
+    options.visibilite === undefined && options.statut === undefined && options.etat === undefined
+    ? elementsDeLUnivers(db, acteur.compteId, universId)
+    : null;
+  if (element) {
+    const c = conditionElements(element, options);
+    if (c === null) return { fiches: [], suivant: null };
+    const propres = where.join(' AND ');
+    where.length = 0;
+    where.push(`((${propres}) OR (${c.sql}))`);
+    params.push(...c.params);
+  }
   if (options.curseur !== undefined) {
     let c: { t: string; i: number };
     try {
@@ -1005,11 +1065,28 @@ export function listerFiches(
       : null;
   const mots = options.recherche === undefined ? null : motsDe(options.recherche);
   const passages = options.extraits === true && options.recherche !== undefined
-    ? passagesDe(db, role, acteur, page.map((r) => r.id), options.recherche)
+    ? passagesDeLaPage(db, role, acteur, element, page, options.recherche)
     : null;
   const enrichie = (r: FicheRow): Fiche => {
     const e = etiquetageDe(db, r.id);
-    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur)), ...visibiliteVue(r), alias: e.alias, etiquettes: e.etiquettes };
+    if (element && r.univers_id === element.espaceId) {
+      const lecteur = { compteId: acteur.compteId };
+      const vue: Fiche = {
+        ...versFiche(r, (f) => lisiblePar(element.role, lecteur, f), vueMJ(element.role, lecteur)),
+        ...(element.role === 'mj' ? visibiliteVue(r) : {}),
+        origine: 'systeme',
+        systeme: element.systeme,
+        alias: e.alias,
+        etiquettes: e.etiquettes,
+      };
+      if (mots !== null) {
+        const trouve = mots.length > 0 && !repond(r.titre, mots) ? e.alias.find((a) => repond(a, mots)) : undefined;
+        if (trouve !== undefined) vue.aliasTrouve = trouve;
+      }
+      if (passages !== null) vue.passages = passages.get(r.id) ?? [];
+      return vue;
+    }
+    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur)), ...visibiliteVue(r), origine: 'univers', alias: e.alias, etiquettes: e.etiquettes };
     if (r.lien_via) {
       const via = JSON.parse(r.lien_via) as { id: number; titre: string };
       if (via.id !== options.lie) f.via = via;
@@ -1029,6 +1106,87 @@ export function listerFiches(
   };
   if (options.parent === undefined) return { fiches: page.map(enrichie), suivant };
   return { fiches: page.map((r) => versArbre(db, role, acteur, r, enrichie(r))), suivant };
+}
+
+/** The system's elements a universe's list may carry: the account's right on it and the space to read. */
+interface ElementsLus {
+  espaceId: number;
+  role: Role;
+  compteId: number;
+  systeme: { id: number; nom: string };
+}
+
+function elementsDeLUnivers(db: Db, compteId: number, universId: number): ElementsLus | null {
+  const u = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as
+    | { systeme_id: number | null; espace_systeme_id?: number | null }
+    | undefined;
+  if (!u || u.systeme_id == null || !('espace_systeme_id' in u)) return null;
+  const droit = lectureSysteme(db, compteId, u.systeme_id);
+  if (!droit) return null;
+  const s = db.prepare('SELECT id, nom FROM systemes_jeu WHERE id = ?').get(u.systeme_id) as { id: number; nom: string };
+  return { ...droit, compteId, systeme: s };
+}
+
+/** The conditions of the list on the elements of the system (type, sub-type, label, readable, search); `null`: nothing can match. */
+function conditionElements(
+  e: ElementsLus,
+  options: { type?: string; sousType?: string; etiquette?: string; recherche?: string },
+): { sql: string; params: (string | number)[] } | null {
+  const acteur = { compteId: e.compteId };
+  const where = ['f.univers_id = ?'];
+  const params: (string | number)[] = [e.espaceId];
+  if (options.type !== undefined) {
+    where.push('f.type = ?');
+    params.push(options.type);
+  }
+  if (options.sousType !== undefined) {
+    where.push('f.sous_type = ? COLLATE NOCASE');
+    params.push(options.sousType);
+  }
+  if (options.etiquette !== undefined) {
+    where.push(
+      `EXISTS (SELECT 1 FROM fiche_etiquettes fe JOIN etiquettes x ON x.id = fe.etiquette_id
+        WHERE fe.fiche_id = f.id AND x.nom = ? COLLATE NOCASE)`,
+    );
+    params.push(options.etiquette.trim());
+  }
+  const lisible = sqlFicheLisible(e.role, acteur, 'f');
+  if (lisible) {
+    where.push(lisible.sql);
+    params.push(...lisible.params);
+  }
+  if (options.recherche !== undefined) {
+    const match = motsRecherche(options.recherche);
+    if (match === null) return null;
+    const sectionLue = sqlSectionLisible(e.role, acteur, 's');
+    where.push(
+      `(f.id IN (SELECT rowid FROM recherche_fiches WHERE recherche_fiches MATCH ?)
+        OR EXISTS (SELECT 1 FROM sections s WHERE s.fiche_id = f.id
+          AND s.id IN (SELECT rowid FROM recherche_sections WHERE recherche_sections MATCH ?)
+          ${sectionLue ? `AND ${sectionLue.sql}` : ''}))`,
+    );
+    const colonnes = e.role === 'mj' ? 'titre contenu' : 'titre contenu_public';
+    params.push(match, `{${colonnes}} : (${match})`, ...(sectionLue?.params ?? []));
+  }
+  return { sql: where.join(' AND '), params };
+}
+
+/** The excerpts of a page, each sheet read at its own right: the universe's, or the account's on the system. */
+function passagesDeLaPage(
+  db: Db,
+  role: Role,
+  acteur: Acteur,
+  element: ElementsLus | null,
+  page: FicheRow[],
+  recherche: string,
+): Map<number, Passage[]> {
+  const propres = page.filter((r) => !element || r.univers_id !== element.espaceId).map((r) => r.id);
+  const sortie = passagesDe(db, role, acteur, propres, recherche);
+  if (element) {
+    const deSysteme = page.filter((r) => r.univers_id === element.espaceId).map((r) => r.id);
+    for (const [k, v] of passagesDe(db, element.role, { compteId: element.compteId }, deSysteme, recherche)) sortie.set(k, v);
+  }
+  return sortie;
 }
 
 /**

@@ -4,15 +4,16 @@ import { invalide } from '../services/erreurs.js';
 import {
   creerEtRattacherSysteme,
   creerSysteme,
-  lireSysteme,
+  lireSystemeComplet,
   listerCatalogue,
   listerSystemes,
   rattacherSysteme,
 } from '../services/systemes.js';
-import { reglerTypeSysteme, reglerTypeUnivers, typesDeLUnivers, typesDuSysteme } from '../services/types-fiche.js';
+import { reglerTypeSysteme, reglerTypeUnivers, typesDeLUnivers } from '../services/types-fiche.js';
 import { changerCleUnivers } from '../services/cles.js';
 import { lireUnivers, modifierUnivers } from '../services/univers.js';
 import { acteur } from './fiches.js';
+import { GROUPE_ADMIN } from './instance.js';
 import { idDeChemin } from './univers.js';
 
 function corps(request: { body?: unknown }): Record<string, unknown> {
@@ -83,9 +84,14 @@ export function registerSystemesRoutes(app: FastifyInstance) {
   const sid = (request: { params: unknown }) => idDeChemin((request.params as { sid: string }).sid);
 
   app.get('/api/systemes/:sid', async (request) => {
-    const id = sid(request);
-    const systeme = lireSysteme(app.db, request.session!.id, id);
-    return { ...systeme, types: typesDuSysteme(app.db, id) };
+    const q = request.query as Record<string, unknown>;
+    for (const k of ['type', 'curseur']) if (q[k] !== undefined && typeof q[k] !== 'string') throw invalide('Requête invalide.');
+    return lireSystemeComplet(
+      app.db,
+      { compteId: request.session!.id, admin: request.session!.groups.includes(GROUPE_ADMIN) },
+      sid(request),
+      { type: q.type as string | undefined, curseur: q.curseur as string | undefined },
+    );
   });
 
   app.get('/api/univers/:id/types', async (request) =>

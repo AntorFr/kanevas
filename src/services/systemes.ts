@@ -1,7 +1,10 @@
 import type { Db } from '../db/db.js';
-import { exigerMJ, lectureSysteme } from './droits.js';
+import { espaceDe, exigerMJ, lectureSysteme } from './droits.js';
+import { listerFiches } from './fiches.js';
+import { listerMembresNoyau } from './membres.js';
+import { typesDuSysteme } from './types-fiche.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
-import type { Role } from './types.js';
+import type { Fiche, Role } from './types.js';
 
 export interface SystemeCatalogue {
   id: number;
@@ -199,4 +202,42 @@ function systemeVisible(db: Db, compteId: number, systemeId: number): SystemeVue
 /** The system seen from its own address: name, counts, the caller's universes only (AD-84, AD-94). */
 export function lireSysteme(db: Db, compteId: number, systemeId: number): SystemeVue {
   return systemeVisible(db, compteId, systemeId);
+}
+
+/** The system as `GET /api/systemes/:sid` answers it (AD-157). */
+export interface SystemeComplet extends SystemeVue {
+  types: { type: string; active: boolean }[];
+  /** The elements, for who reads them (a GM of the system, a member of an attached universe); never for an admin with no link (rule 14). */
+  fiches?: Fiche[];
+  suivant?: string | null;
+  /** The GMs of the system: for a GM of it and for the instance admin (B-114). */
+  mj?: { compteId: number; username: string }[];
+}
+
+/**
+ * The system with its types and, for who reads it, its elements (as `GET …/fiches`: `?type`, `?curseur`, 100 a page).
+ * The instance admin who reads nothing of it gets the header, the types and the GMs only; anyone else who reads
+ * nothing, and an unknown system, the same « not found » (AD-152, AD-157).
+ */
+export function lireSystemeComplet(
+  db: Db,
+  acteur: { compteId: number; admin: boolean },
+  systemeId: number,
+  options: { type?: string; curseur?: string } = {},
+): SystemeComplet {
+  const s = db.prepare('SELECT id, nom FROM systemes_jeu WHERE id = ?').get(systemeId) as SystemeCatalogue | undefined;
+  if (!s) throw introuvable();
+  const droit = lectureSysteme(db, acteur.compteId, systemeId);
+  if (!droit && !acteur.admin) throw introuvable();
+  const complet: SystemeComplet = { ...vueDe(db, acteur.compteId, s), types: typesDuSysteme(db, systemeId) };
+  if (droit) {
+    const page = listerFiches(db, { compteId: acteur.compteId }, droit.espaceId, options);
+    complet.fiches = page.fiches;
+    complet.suivant = page.suivant;
+  }
+  if (droit?.role === 'mj' || acteur.admin) {
+    const espace = espaceDe(db, systemeId);
+    complet.mj = espace === null ? [] : listerMembresNoyau(db, espace).map((m) => ({ compteId: m.compteId, username: m.username }));
+  }
+  return complet;
 }

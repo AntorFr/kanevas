@@ -10,7 +10,14 @@ export function roleDe(db: Db, universId: number, compteId: number): Role | null
   const row = db
     .prepare('SELECT role FROM membres WHERE univers_id = ? AND compte_id = ?')
     .get(universId, compteId) as { role: Role } | undefined;
-  return row?.role ?? null;
+  if (row) return row.role;
+  // The space of a system (AD-151) has no player rows: whoever reads the system reads its space as a player
+  // (AD-152), so the sheet services refuse a write with 403 and not 404 (AD-157).
+  const u = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as
+    | { espace_systeme_id?: number | null }
+    | undefined;
+  if (u?.espace_systeme_id == null) return null;
+  return lectureSysteme(db, compteId, u.espace_systeme_id)?.role ?? null;
 }
 
 /** A caller without a role gets "not found", as if the universe did not exist (B-4). */
@@ -39,7 +46,10 @@ export function lectureSysteme(
 ): { espaceId: number; role: Role } | null {
   const espaceId = espaceDe(db, systemeId);
   if (espaceId === null) return null;
-  if (roleDe(db, espaceId, compteId) === 'mj') return { espaceId, role: 'mj' };
+  const ligne = db.prepare('SELECT role FROM membres WHERE univers_id = ? AND compte_id = ?').get(espaceId, compteId) as
+    | { role: Role }
+    | undefined;
+  if (ligne?.role === 'mj') return { espaceId, role: 'mj' };
   const rattache = db
     .prepare(
       `SELECT 1 FROM univers u JOIN membres m ON m.univers_id = u.id

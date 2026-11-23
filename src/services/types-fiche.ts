@@ -171,10 +171,11 @@ export interface TypeVue {
 export type EtatType = 'active' | 'desactive' | 'suivre';
 
 function systemeDe(db: Db, universId: number): number | null {
-  const r = db.prepare('SELECT systeme_id FROM univers WHERE id = ?').get(universId) as
-    | { systeme_id: number | null }
+  const r = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as
+    | { systeme_id: number | null; espace_systeme_id?: number | null }
     | undefined;
-  return r?.systeme_id ?? null;
+  // The space of a system follows the system's own settings (AD-151, AD-152).
+  return r?.espace_systeme_id ?? r?.systeme_id ?? null;
 }
 
 interface Decision {
