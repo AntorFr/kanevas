@@ -955,4 +955,14 @@ reference vocabulary into core keys follows the table below and is **the contrac
 (not only rocky/ice/lava); `zones[].etoile` and `points[].etoile` (a star's `cle`, default the main one; `zones[].etoile` written to `swn_formations.etoile_rang` and `points[].etoile` to `swn_astres.etoile_rang` (a comet's star), both columns existing; AD-atlas-2 gives `etoile` to `corps[]` only) `corps[].lunes[].heure` is the hour around the planet;
 `voile` (a colour) on the system; `classe`, `taille` (continuous) and `couleur` (free) on a defined system (the former names and sizes still accepted); `corps[].etat: "disparue"` on a star (written as `aspect.disparue`, B-122); `zones[].voile` and `zones[].lentille` (written in the formation's `parametres`); each body's `aspect` may carry the keys above. Refusals keep AD-atlas-3 (all or nothing, path of each refusal).
 
+**The night side (`kanevas-carte-rendu-nuit`, B-124, AD-nuit-1).** Three keys of `aspect`, drawn by the core on the side turned away from the star, accepted on `tellurique` and `verrouillee` (a living world; any other kind refuses them with the path and the kinds, AD-aspects-reliefs-1):
+
+| Key | Bound, default | Drawing |
+|---|---|---|
+| `villes` (cities, B-124) | [0, 1], default 0 | points of warm light on the **land** of the night side (never on the sea, never on the day side), as many and as bright as the value; their places come from the seed, so a body keeps its cities from one drawing to the next |
+| `lueur` (glow, B-124) | [0, 1], default 0 | a cold, soft glow (bioluminescence) over the night side, land and shallows alike, in veins that follow the relief; the value is its coverage and its brightness |
+| `force_lueur` | [0, 2], default 1 | the strength of the two lights above (cities and glow) together: 0 draws neither, 1 the values as given, 2 twice as bright (clamped to white); alone, with neither `villes` nor `lueur`, it draws nothing |
+
+The colours are the core's (a warm yellow for the cities, a blue-green for the glow), not keys: no colour setting is added (out of the slice). The night side is the part of the disc where the lit amount of the body is below the terminator's width; the lights fade in over the terminator and never touch the lit side, whose pixels are those of a body without the keys. A value at its default (`villes` 0, `lueur` 0, or `force_lueur` 0) gives the bytes of a body without the keys. The three keys are listed in `NOUVELLES` (`-aspects-reliefs`, AD-aspects-reliefs-1) and so never land under `non_rendu`; `VERSION_RENDU` does not move (AD-nuit-1).
+
 **Rules kept.** A body has no secret of its own (the system's hides it); `lisibilite.ts` stays the only reader of `secret`; the import never overwrites what the GM changed (AD-atlas-3).
