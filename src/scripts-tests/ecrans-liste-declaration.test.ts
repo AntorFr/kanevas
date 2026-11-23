@@ -21,9 +21,9 @@ describe('ecrans_liste : déclaration', () => {
     assert.equal(cle('ecrans_liste'), 'npm ci --ignore-scripts --loglevel=error >/dev/null && node scripts/niveaux-tests.mjs --liste ecrans {base}');
   });
   test('ecrans, fiche et local ne bougent pas', () => {
-    assert.equal(cle('ecrans'), 'npm run tests:ecrans -- {base} --installe');
-    assert.equal(cle('fiche'), 'npm ci && npm run tests:fiche -- {base}');
-    assert.equal(cle('local'), 'npm ci && npm run tests:local');
+    assert.equal(cle('ecrans'), 'node scripts/tests-attestes.mjs --ecrans {base} --installe');
+    assert.equal(cle('fiche'), 'npm ci && node scripts/tests-attestes.mjs --fiche {base}');
+    assert.equal(cle('local'), 'npm ci && node scripts/tests-attestes.mjs --local');
   });
 });
 
