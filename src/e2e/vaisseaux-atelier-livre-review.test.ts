@@ -190,7 +190,8 @@ describe('E-22 livre', { skip: skipBrowser, timeout: 240000 }, () => {
     }
     await p.locator('li').filter({ hasText: 'Blindage L' }).last().getByRole('button').first().click();
     await p.getByRole('button', { name: 'Retirer : Blindage L' }).waitFor();
-    assert.equal(await p.getByRole('heading', { name: 'Compétence de réparation' }).count(), 0);
+    // kanevas-concepteur-vaisseaux-mods-livre: the repair block exists as soon as a modification line does
+    assert.equal(await p.getByRole('heading', { name: 'Compétence de réparation' }).count(), 1);
     assert.equal(await p.getByRole('combobox', { name: /Visée|Élément visé/ }).count(), 0);
   });
 });
