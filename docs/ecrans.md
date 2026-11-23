@@ -5253,8 +5253,10 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 
 Mockup: `docs/maquettes/e23-ciel.html` (direction only; this text wins). Invented data (AD-131). **No new control, no new screen**: the canvas of E-23 gains what it draws behind and around the bodies; the `heures` checkbox and the `orbites` one keep their place and meaning.
 
-- *Starfield.* Behind everything, a field of small stars (0,4 to 1,4 px, never a disc that grows with the zoom): the sky **does not scale with the zoom** and follows the pan at a tenth of its speed, so the bodies glide over it (AD-ciel-1). The same system always has the same sky; two systems do not. When the system has a `voile` (a colour the atlas carries), about a third of the stars take it and a faint wash of it lies over the dark sky; with none, the sky is the neutral one. The sky stays dark in both themes (`--ciel`, charte).
 Vocabulary: a **belt** is the drawing of a ring formation (list label « Anneau ») and a **nebula** that of a cloud formation (list label « Nuage »); this section and the older description of E-23 above say the same two things, the lists keep their words.
+
+
+- *Starfield.* Behind everything, a field of small stars (0,4 to 1,4 px, never a disc that grows with the zoom): the sky **does not scale with the zoom** and follows the pan at a tenth of its speed, so the bodies glide over it (AD-ciel-1). The same system always has the same sky; two systems do not. When the system has a `voile` (a colour the atlas carries), about a third of the stars take it and a faint wash of it lies over the dark sky; with none, the sky is the neutral one. The sky stays dark in both themes (`--ciel`, charte).
 
 - *Belt.* A ring formation is drawn as **thousands of grains of rock** along its band, denser in the middle of it than at its edges, in the colours of its materials (dark rock, rock, metal, ice), never as a few hundred equal dots; zooming does not change a grain's size, only the spacing.
 - *Gas cloud.* A cloud formation is drawn as **soft gas of its own colour** (its `brume`; a neutral gas when it has none), without any edge, over which its rocks (as many as its `rochers` says) are drawn as small **irregular asteroids** coloured by material. A cloud is never a stack of concentric discs; a cloud with no `rochers` shows gas only.
@@ -5266,7 +5268,7 @@ Vocabulary: a **belt** is the drawing of a ring formation (list label « Anneau 
 Criteria (this slice):
 - Given a system with a ring and a cloud on a neutral fixture, the ring is drawn as at least 800 grains all between its two radii and the cloud as gas with asteroids (rocks of at least two materials), in both themes, desktop and 390 px; reloading draws the same grains and the same stars (B-115).
 - Given a system with a `voile`, the sky is tinted by it and the neutral sky of a system with none is not; for Léa (Player) it is the same as for Antor (GM); given a system Léa may not read, nothing of it answers (the same « Page introuvable. »).
-- Given a zoom from 0,5× to 4×, the stars and the grains keep their pixel size (the `data-ceinture` hook gives the grain count and their mean radius in pixels, equal at every zoom) (the sky does not grow) and the hour marks stay on the rim, never across a body.
+- Given a zoom from 0,5× to 4×, the stars and the grains keep their pixel size (the canvas carries the attributes `data-ceinture-grains` and `data-ceinture-rayon` — the grain count of the densest belt and the mean grain radius in pixels, one number each, not shown on screen — read by the test; the radius is equal at every zoom) (the sky does not grow) and the hour marks stay on the rim, never across a body.
 - Given a belt with `rochers` 0 and a cloud with none, a belt of the minimum grains and a gas with no rock are drawn, with no error.
 - Given the twelve hour marks, no body name overlaps one of them (the labels move off, as for the jump arrows).
 
