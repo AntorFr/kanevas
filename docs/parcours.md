@@ -1357,7 +1357,7 @@ absent for Léa, and so are its name and its route.
 The galaxy opens on the whole known zone, centred, with the names of the defined systems, differing in size and colour; the drawn stars show their class.
 In the map, Antor chooses « Zones » (all, none, default) and sees the Pirates zone in red, routes in the colour of their type; he types « Lyb » in the
 search and the map goes there. *Moment fort:* he double-clicks a system: it opens on its map; « Galaxy » brings him back to where he was. In « travel » mode he
-picks two systems and reads the duration by engine. Léa sees only what the GM lets her see (B-97). *Failure path:* a hidden zone does not hide the routes that cross it from the list; no system → the empty sky says so.
+picks two systems and reads the duration by engine. Léa sees only what the GM lets her see (B-97); she opens a system's panel and reads its star, « Étoile de classe G — jaune », with no field to change. *Failure path:* a hidden zone does not hide the routes that cross it from the list; no system → the empty sky says so.
 
 ### P-29 — Share a place (Léa, Player; Antor, GM — `kanevas-carte-rendu`)
 
@@ -1367,7 +1367,7 @@ secret body gives « Page introuvable. », byte for byte like an unknown one.
 ### P-30 — Prepare and correct the map (Antor, GM; his script)
 
 In « create / edit » mode Antor places a system, draws a route, moves a body by hand (B-121). On a defined system he sets its **star** — class, continuous size, optional free colour — in the system's dialogue (B-117), and on each zone of the galaxy the switch « Displayed when the map opens » (B-118). His atlas script pushes the new
-format (B-122) and the bodies' settings; the report names the settings that stay unrendered. *Moment fort:* the recipe: both maps side by side at the same framing, and Monsieur judges (B-123).
+format (B-122) and the bodies' settings; the report names the settings that stay unrendered. *Failure path (the dialogue):* a colour typed « violet » is refused under its field (« Couleur invalide : #rrggbb attendu. »), nothing is saved and the other values stay typed. *Moment fort:* the recipe: both maps side by side at the same framing, and Monsieur judges (B-123).
 
 ## Out of scope
 

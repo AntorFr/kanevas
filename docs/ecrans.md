@@ -5083,6 +5083,8 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 | Screen | Player | GM | GM in Player mode | No role |
 |---|---|---|---|---|
 | E-21 | consult and travel modes; zones control; previews of the systems she reads | all modes | as Player | « Page introuvable. » |
+| E-21, group « Étoile » of the system dialogue | — (absent, no field) | all fields | absent, as Player | « Page introuvable. » |
+| E-21, star of a system's panel | the star of the systems she reads | the same | as Player | « Page introuvable. » |
 | E-23 | consult and travel; preview of readable neighbours only (a secret neighbour draws no jump point, as today) | all modes | as Player | « Page introuvable. » |
 
 ### States (E-21 and E-23)
