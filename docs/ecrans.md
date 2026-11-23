@@ -5249,6 +5249,25 @@ The system's existing dialogue gains three fields for a defined system (B-117): 
 
 Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the system (a **formation**, not a polygonal zone of the galaxy) opens its panel with the **illustration of its family** (belt, nebula, anomaly: from its form and its `parametres`, no route of its own) and its text; on the galaxy, a click in the **void** of a zone selects nothing and opens no form; the labels of the route types keep « Private » and « GM only » apart.
 
+### The sky of a system (`kanevas-carte-rendu-habillage-ciel`, B-115, P-27; E-23)
+
+Mockup: `docs/maquettes/e23-ciel.html` (direction only; this text wins). Invented data (AD-131). **No new control, no new screen**: the canvas of E-23 gains what it draws behind and around the bodies; the `heures` checkbox and the `orbites` one keep their place and meaning.
+
+- *Starfield.* Behind everything, a field of small stars (0,4 to 1,4 px, never a disc that grows with the zoom): the sky **does not scale with the zoom** and follows the pan at a tenth of its speed, so the bodies glide over it (AD-ciel-1). The same system always has the same sky; two systems do not. When the system has a `voile` (a colour the atlas carries), about a third of the stars take it and a faint wash of it lies over the dark sky; with none, the sky is the neutral one. The sky stays dark in both themes (`--ciel`, charte).
+- *Belt.* A ring formation is drawn as **thousands of grains of rock** along its band, denser in the middle of it than at its edges, in the colours of its materials (dark rock, rock, metal, ice), never as a few hundred equal dots; zooming does not change a grain's size, only the spacing.
+- *Gas cloud.* A cloud formation is drawn as **soft gas of its own colour** (its `brume`; a neutral gas when it has none), without any edge, over which its rocks (as many as its `rochers` says) are drawn as small **irregular asteroids** coloured by material. A cloud is never a stack of concentric discs; a cloud with no `rochers` shows gas only.
+- *Hours.* The twelve hours are **marks on the rim of the system** (on the transition circle): a short tick pointing outward and the hour's number, longer ticks at 12, 3, 6 and 9; they no longer cross the orbits and the bodies. A name never lands on an hour mark. The `heures` checkbox shows and hides them (checked by default, as today).
+- *States.* No belt and no cloud: the sky and the hours only. A belt whose `rochers` is 0: the minimum of grains (a belt is never empty), an icy or metallic one the colours of its own materials. A cloud with no `brume`: neutral gas. A `voile` that is not a colour: neutral sky. Loading, offline, error: those of the system; the sky is drawn with the bodies (never alone, never after). At the zoom-out the belts and clouds keep their pixel grains, the bodies' picture falls to its floor (B-113). *Reduced motion*: nothing here moves (the parallax follows the user's own pan).
+- *Roles.* Everyone who reads the system sees the same sky, the same belts and clouds and the same `voile`; the GM outside Player mode, in addition, writes nothing here (the `voile` has no control: it comes from the atlas, AD-rendu-2). A system the reader does not read: « Page introuvable. », and no tint of it anywhere.
+- *Accessibility.* The stars, grains, gas and rocks are decorative (not targets, not in the tab order, no text of their own); the map's text alternative and the lists under the canvas are unchanged.
+
+Criteria (this slice):
+- Given a system with a ring and a cloud on a neutral fixture, the ring is drawn as at least 800 grains all between its two radii and the cloud as gas with asteroids (rocks of at least two materials), in both themes, desktop and 390 px; reloading draws the same grains and the same stars (B-115).
+- Given a system with a `voile`, the sky is tinted by it and the neutral sky of a system with none is not; for Léa (Player) it is the same as for Antor (GM); given a system Léa may not read, nothing of it answers (the same « Page introuvable. »).
+- Given a zoom from 0,5× to 4×, the stars and the grains keep their pixel size (the sky does not grow) and the hour marks stay on the rim, never across a body.
+- Given a belt with `rochers` 0 and a cloud with none, a belt of the minimum grains and a gas with no rock are drawn, with no error.
+- Given the twelve hour marks, no body name overlaps one of them (the labels move off, as for the jump arrows).
+
 ### Previews and navigation (B-119)
 
 - E-21: the panel of a system shows its **portrait** (the reference's painted thumbnail: the star's edge on the left, the bodies in a row, composed from the guarded read so a hidden body never shows) and « Enter the system »; a double click on a system does the same.
