@@ -6,6 +6,7 @@ import { Bouton, Chargement, PastilleRole } from '../../ui';
 import type { Role } from '../../types';
 import { blocs } from './blocs/registre';
 import { MAX_HISTORIQUE, MAX_MESSAGE, TEXTE_ERREUR, envoyer, nouvelleConversation, reessayer, useFil } from './fil';
+import { ajouterDemande, surMessagePrerempli } from './ouverture';
 import './assistant.css';
 
 export type Disponibilite =
@@ -67,6 +68,16 @@ export function Panneau({ universId, dispo, relireDispo, fermer, surOuverture, c
   const idAide = useId();
   const idErreur = useId();
   const defilement = useRef<HTMLDivElement>(null);
+
+  // A screen's prefilled request joins the field after the draft; it is never sent for the person.
+  useEffect(
+    () =>
+      surMessagePrerempli((m) => {
+        setTexte((t) => ajouterDemande(t, m));
+        champ.current?.focus();
+      }),
+    [champ],
+  );
 
   useEffect(() => {
     const el = defilement.current;
