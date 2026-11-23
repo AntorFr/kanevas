@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Previews and navigation — Kanevas</title><style>
+/*
+MOCKUP — E-21 / E-23 amended by `kanevas-carte-rendu-apercus` (docs/ecrans.md « What kanevas-carte-rendu-apercus builds »; docs/parcours.md B-119, P-28, P-29; AD-apercus-1).
+Tokens: frontend/src/ui/tokens.css (docs/charte.md). Invented data: nothing of the reference map. The document wins over the mockup.
+Four frames: the galaxy panel of a defined system (portrait, « Enter the system », rows); the panel of a drawn star (nearest defined systems);
+the jump point's card on a system map; the panel of a body for a Player (summary of the sheet she reads).
+The portrait is a 3:2 thumbnail: the star's edge at the left, planets and comets in a row, a moon a third of its planet at its lower right.
+*/
+:root{--fond:#121317;--s:#191a1f;--s2:#202128;--bf:rgba(255,255,255,.14);--t:#ebecf0;--t2:#a6a7b0;--ac:#8b9bf0;--acf:rgba(154,166,245,.16);--mj:#f2a33c;
+--titre:"Fraunces Variable","Fraunces",Georgia,serif;--txt:"Inter",system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--fond);color:var(--t);font:14px var(--txt)}
+.wrap{padding:16px;display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 6px;font-weight:600;color:var(--ac)}
+.frame{border:1px solid var(--bf);border-radius:12px;overflow:hidden;position:relative;background:radial-gradient(circle at 40% 50%,#17182a,#0a0a0f 75%);aspect-ratio:16/10}
+.panel{position:absolute;right:12px;top:12px;bottom:12px;width:250px;background:var(--s);border:1px solid var(--bf);border-radius:10px;padding:12px;font-size:12.5px;overflow:auto}
+.panel h2{font:500 17px var(--titre);margin:8px 0 6px}
+.por{aspect-ratio:3/2;background:#05060b;border-radius:8px;overflow:hidden}.por svg{width:100%;height:100%;display:block}
+.btn{display:block;text-align:center;border:1px solid var(--bf);border-radius:8px;padding:9px;margin:8px 0;min-height:36px}
+.btn.p{background:var(--acf);border-color:var(--ac)}
+dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin:8px 0}dt{color:var(--t2)}dd{margin:0}
+.sw{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+small{color:var(--t2)}ul{margin:4px 0;padding-left:16px}a{color:var(--ac)}
+.bar{position:absolute;left:10px;bottom:10px;display:flex;gap:6px}.bar span{background:rgba(25,26,31,.85);border:1px solid var(--bf);border-radius:8px;padding:6px 10px;min-height:30px}
+svg.m{width:100%;height:100%;display:block}text{font:11.5px var(--txt);fill:var(--t);paint-order:stroke;stroke:#000;stroke-width:3px}
+</style></head><body><div class="wrap">
+
+<section><p class="lab">E-21 · panel of a defined system · everyone who reads it</p><div class="frame">
+<svg class="m" viewBox="0 0 800 500"><g stroke="#8b9bf0" opacity=".7"><path d="M200 200 L330 170"/><path d="M330 170 L420 260" stroke="#e5524f"/></g>
+<circle cx="200" cy="200" r="9" fill="#ffcf6e"/><text x="200" y="224" text-anchor="middle">Kell</text>
+<circle cx="330" cy="170" r="12" fill="#ff9a62" stroke="#8b9bf0" stroke-width="2"/><text x="330" y="196" text-anchor="middle">Vesper</text>
+<circle cx="420" cy="260" r="6" fill="#bcd"/><text x="420" y="282" text-anchor="middle">Dorn</text></svg>
+<div class="panel"><div class="por"><svg viewBox="0 0 300 200" aria-hidden="true"><circle cx="-60" cy="100" r="160" fill="#ff9a62"/><circle cx="-60" cy="100" r="176" fill="#ff9a62" opacity=".18"/>
+<circle cx="128" cy="100" r="13" fill="#c98b5a"/><circle cx="188" cy="100" r="22" fill="#5b8fd0"/><circle cx="203" cy="113" r="6" fill="#aaa"/><circle cx="248" cy="100" r="9" fill="#9a7"/></svg></div>
+<h2>Vesper</h2><span class="btn p">Enter the system</span><span class="btn">Trajet depuis ici</span>
+<dl><dt>Star</dt><dd>K, orange</dd><dt>Hexagon</dt><dd>7, −3</dd><dt>Zone</dt><dd>Marches de Kell</dd><dt>Distance</dt><dd>3 cases depuis Kell</dd></dl>
+<b>Routes</b><ul><li><a>Kell</a> · <span class="sw" style="background:#8b9bf0"></span>public · 2 cases · 2 jours</li><li><a>Dorn</a> · <span class="sw" style="background:#e5524f"></span>pirate · 3 cases · 3 jours</li></ul><small>Moteur 2</small>
+<p><b>Notable places</b></p><ul><li><a>Station Aube</a></li><li><a>Le Comptoir</a></li></ul></div>
+<div class="bar"><span>Double click: enter</span></div></div></section>
+
+<section><p class="lab">E-21 · panel of a drawn star</p><div class="frame">
+<svg class="m" viewBox="0 0 800 500"><circle cx="330" cy="170" r="4" fill="#bcd"/><circle cx="260" cy="230" r="9" fill="#ffcf6e"/><circle cx="470" cy="300" r="7" fill="#ff9a62"/><circle cx="360" cy="215" r="2.5" fill="#fff" stroke="#8b9bf0" stroke-width="2"/></svg>
+<div class="panel"><h2>Système non défini</h2><span class="btn p">Enter the system</span>
+<dl><dt>Hexagon</dt><dd>8, −2</dd><dt>Distance</dt><dd>1 case depuis Vesper</dd></dl>
+<b>Defined systems nearest</b><ul><li><a>Vesper</a> · 1 case</li><li><a>Kell</a> · 4 cases</li><li><a>Dorn</a> · 4 cases</li></ul></div></div></section>
+
+<section><p class="lab">E-23 · card of a jump point</p><div class="frame">
+<svg class="m" viewBox="0 0 800 500"><g fill="none" stroke="rgba(255,255,255,.12)"><circle cx="400" cy="250" r="60"/><circle cx="400" cy="250" r="120"/></g>
+<circle cx="400" cy="250" r="16" fill="#ffcf6e"/><circle cx="460" cy="250" r="7" fill="#c98b5a"/>
+<path d="M642 120 l-22 10 l22 10z" fill="#e5524f" stroke="#fff" stroke-width="1.5"/><text x="640" y="160" text-anchor="middle">Dorn · 3 cases</text></svg>
+<div class="panel" style="top:auto;height:auto;width:210px;right:12px;left:auto;bottom:50px"><b style="font:500 16px var(--titre)">Dorn</b><div class="por" style="margin:6px 0"><svg viewBox="0 0 300 200" aria-hidden="true"><circle cx="-60" cy="100" r="160" fill="#ffb27a"/><circle cx="150" cy="100" r="16" fill="#8aa"/><circle cx="225" cy="100" r="10" fill="#c97"/></svg></div>
+<small><span class="sw" style="background:#e5524f"></span>pirate · 3 cases</small><span class="btn p">Enter the system</span><span class="btn">Fermer</span></div>
+<div class="bar"><span>Galaxy</span><span>Another system…</span></div></div></section>
+
+<section><p class="lab">E-23 · panel of a body · Player</p><div class="frame">
+<svg class="m" viewBox="0 0 800 500"><circle cx="400" cy="250" r="16" fill="#ffcf6e"/><circle cx="460" cy="250" r="7" fill="#c98b5a" stroke="#8b9bf0" stroke-width="2"/></svg>
+<div class="panel"><div class="por" style="aspect-ratio:4/3"><svg viewBox="0 0 120 90"><circle cx="60" cy="45" r="30" fill="#c98b5a"/></svg></div>
+<h2>Vesper I</h2><dl><dt>Type</dt><dd>Rocheuse</dd><dt>Lieu</dt><dd>Orbite 2</dd></dl>
+<b>Résumé</b><p>Un monde sec où la Compagnie du Phare tient le seul port. Les convois partent à l’aube…</p><a>Lire la fiche</a>
+<p><small>No text of the GM is shown to a Player.</small></p></div></div></section>
+</div></body></html>

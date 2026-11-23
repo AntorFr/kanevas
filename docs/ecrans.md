@@ -5076,6 +5076,31 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 - E-23: a jump point shows its arrow, the neighbour's name, the distance (« 3 cases ») and the colour of its route; a click opens a card with the neighbour's portrait and « Enter the system ». « Galaxy » returns to the place left; « Another system » opens the search of systems.
 - A body: panel with its illustration, its text and « Copy the address »; the address `…/systeme/<q>/<r>/astre/<cle>` opens the system with the body chosen and the panel open (P-29). A system or a body the reader may not read: « Page introuvable. », byte for byte like an unknown one.
 
+#### What `kanevas-carte-rendu-apercus` builds (B-119; AD-rendu-4, AD-apercus-1)
+
+Mockup: `maquettes/e21-e23-apercus.html` (the document wins). **Portrait**: a 3:2 painted thumbnail, the star's edge at the left, the planets and comets in a row to its right, a moon small at the lower right of its planet; no label, no control, a decorative image (`alt=""`; the counts are in the words beside it). It is drawn from the already-read interior with the core's sprites: no image route, no stored picture.
+
+*E-21, the panel of a system* (floating over the map; below 600 px a sheet from the bottom edge). Top to bottom: **portrait**; name (and « MJ seul » for the GM); « Enter the system » (primary, a link to its map) and, under it, the existing « Trajet depuis ici » / « Trajet vers ici »; rows: **Star** (its class as the map draws it, « Tirée de la clé » for a drawn one), **Hexagon** (`q, r`), **Zone** (the readable zone(s) the hexagon lies in, names; absent when none), **Distance** (« 3 cases depuis Sol »: from the **reference**, which is the system just left through « Galaxy » and otherwise the one the panel already used), **Routes** (one line per route the reader reads: neighbour's name as a link that selects it, type with its colour swatch, « 3 cases · 4 jours » — the duration is the one-leg trip at engine 2, the `Trajet` rule `longueur ÷ moteur + 1`, and « Moteur 2 » said once under the list), **Notable places** (the bodies of the system that carry a sheet the reader reads: sheet title as a link, 5 at most then « + n »; absent for a drawn system and when none). A **drawn star's** panel (no record) keeps « Système non défini » and gains **« Defined systems nearest »**: the 5 nearest defined systems the map has loaded, by distance then name, each « Name · 3 cases » selecting it; « Aucun système défini à proximité. » when none. Double click (mouse) or double tap (two taps within 350 ms and 10 px) on a system **or a drawn star** does what « Enter the system » does; on an empty hexagon, nothing.
+
+*E-23, the jump point.* A click or tap on a jump point's arrow opens a **card** (floating, the same panel as the body's) instead of leaving at once: the neighbour's name, **portrait**, « 3 cases » and its route type with swatch, « Enter the system » (primary) and « Fermer ». Escape and a click elsewhere close it. A neighbour no Player reads has no arrow, hence no card. The bottom bar of the map holds **« Galaxy »** (back to the view left, see AD-apercus-1) and **« Another system… »** (the search of readable systems opens over the map; choosing a result opens its map; Escape closes it).
+
+*E-23, the panel of a body.* Illustration (as today), name, type, place, then **Summary** (the linked sheet's public summary, 280 characters at most, « Lire la fiche » as a link) for everyone who reads the sheet, then the **text** (`description`) for the writing GM only. A player reads the summary of what she reads and nothing of the GM's text; with no readable sheet the panel has neither, and says nothing about it.
+
+| State | Text and behaviour |
+|---|---|
+| portrait loading | the 3:2 frame on the `--ciel` background (dark in both themes) with the star's edge only, `aria-busy`; no spinner |
+| portrait not arriving (404 or network) | the card or panel shows the name and the distance only, no frame, no message of error (E-23 « error ») |
+| core not loaded | the frame stays with the star's edge; the rest of the panel is whole |
+| a system with no body | the star's edge alone; the card says « Aucun astre. » |
+| more than 8 bodies | 8 in the row, « + n astres » under the portrait |
+| neighbour not readable | no arrow; the address answers « Page introuvable. » |
+| « Galaxy » with no record | the opening view with the system left selected |
+| distances with no reference | « Distance » row absent (as today) |
+| offline | reads fail as everywhere (« Connexion perdue. »); « Enter the system » stays a link |
+| long content | a neighbour's name cut with « … » at one line (tooltip: the full name); 20 routes: the list scrolls inside the panel, the portrait stays |
+
+Targets are 44 px on a phone. The portrait is not focusable; « Enter the system », the route links and the card's buttons are, in reading order, and focus returns to the arrow that opened a card when it closes.
+
 ### Roles × screens
 
 | Screen | Player | GM | GM in Player mode | No role |
