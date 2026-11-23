@@ -869,7 +869,7 @@ atomic.
 
 ## `kanevas-carte-rendu` scope: the model
 
-The drawing of the spatial map is read from existing rows: **one migration, two columns (one defaulted, one nullable), no table**; everything else is a
+The drawing of the spatial map is read from existing rows: **one migration, no table: three columns added (`swn_zones.affichage_defaut`, `swn_systemes.voile`, `swn_systemes.classe`) and two changed (`swn_systemes.taille`, `couleur`, which rebuilds the table)**; everything else is a
 vocabulary (what the core accepts in `aspect`) and a format (what the atlas import carries). Nothing of Éneria enters this repository (AD-131): the
 table below is written with neutral names; the script that converts Éneria's `astres.yaml` stays in its private repository.
 
@@ -880,10 +880,12 @@ table below is written with neutral names; the script that converts Éneria's `a
   The migration rebuilds the table (`-- migrate: sans-cles-etrangeres`): each old size and each of the six names maps to a value fixed and tested in the slice,
   a replay of an old atlas gives the same drawing as the migrated row. Written by the existing writers (`ecriture-systeme.ts`, the atlas import) and the
   system's existing dialogue (three fields), never by a screen of its own.
-- `swn_zones.affichage_defaut` (boolean, default true): the zone is drawn when the map opens (B-118); the atlas and the import carry the reference's values
-  (the asteroid belt and the pirates `true`, Vael'Korr and the Ancients `false`). It is the GM's choice for everyone; the choice « all / none / default »
+- `swn_zones.affichage_defaut` (boolean, default true): the zone is drawn when the map opens (B-118); the zone routes (T-5) and the import of zones (T-9) carry it; the atlas (a system's interior) has no such field. The reference's values
+  (the asteroid belt and the pirates `true`, Vael'Korr and the Ancients `false`) are set by the GM, or by the script that replays the galaxy's zones. It is the GM's choice for everyone; the choice « all / none / default »
   of the map is a state of the screen, never stored. A hidden zone hides no route from the lists and no system from the search.
 - `swn_systemes.voile` (text, nullable, `#rrggbb`): the tint of the starfield of the system's map (B-115); null = the core's neutral sky.
+- **Old values of `taille` and `couleur`.** The migration maps `petite`/`moyenne`/`grande` and the six palette names to fixed values (tested in the slice). The writers (`ecriture-systeme.ts`, the atlas import, T-9) keep **accepting the former names and sizes as aliases** of those values, so that a script of the former format replays byte for byte (AD-rendu-8); a new write may give a number in [0, 1] and `#rrggbb` instead. Refusals: `classe` unknown to the core, `couleur` not `#rrggbb`, `taille` outside [0, 1] are `invalide` with their `champ`.
+- **No column for a zone's illustration or a star's state.** A formation's family comes from what it is: a ring is a belt, a cloud a nebula, a cloud whose `parametres` carry a `lentille` an anomaly; `parametres` (JSON, already bounded) gains the optional keys `voile` (`#rrggbb`) and `lentille` (a bounded object: strength, colour). A star gone (« `disparue` », Arkhan) is the boolean key `disparue` of the star's `aspect`, in the core's vocabulary: drawn as a dim remnant, never as an ordinary star.
 - `swn_zones` and `swn_routes` gain no colour column: a zone has its `couleur`, a route's colour and stroke come from its `type_lien` through a table of the core
   (`public`, `private`, `pirate`… and one neutral for any other text), never stored (T-4 is amended by name, in the slice that draws it).
 - `swn_astres.aspect` keeps its bound (4,000 characters) and `swn_formations.etoile_rang` and `swn_astres.etoile_rang` already exist (migration 0043): B-122's « the star a formation or a point turns round » is
@@ -906,10 +908,10 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | `graine` | `graine` | **always sent**, one per body (`graine_de(id)`): two bodies never share a picture |
 | `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | new accepted key; absent means **no ring** (the engine's random ring at 28 % goes) |
 | `couleur_nuages`, `opacite_nuages`, `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124), `terre_seche`, `etirement`, `eclairs`, `inclinaison`, `geysers`, `couleur_fissures`, `mers`, `canyons`, `lave`, `cristaux`, `activite`, `intensite`, `vue` | new keys of the same names | added to the core one by one, each with a bound and a test of the picture |
-| `voile` | `swn_systemes.voile` / `fond` | the system's, or a body's |
+| `voile` | `swn_systemes.voile` | the system's only; the veil of a nebula is `parametres.voile` of its zone (below) |
 
 **Atlas format (AD-atlas-2, extended).** Every addition is optional (an atlas of the former format stays valid, byte for byte): `lunes[].type` takes every type of the core
 (not only rocky/ice/lava); `zones[].etoile` and `points[].etoile` (a star's `cle`, default the main one; `zones[].etoile` written to `swn_formations.etoile_rang` and `points[].etoile` to `swn_astres.etoile_rang` (a comet's star), both columns existing; AD-atlas-2 gives `etoile` to `corps[]` only) `corps[].lunes[].heure` is the hour around the planet;
-`voile` (a colour) on the system; `classe`, `taille` (continuous) and `couleur` (free) on a defined system; a star's state `disparue` (B-122); each body's `aspect` may carry the keys above. Refusals keep AD-atlas-3 (all or nothing, path of each refusal).
+`voile` (a colour) on the system; `classe`, `taille` (continuous) and `couleur` (free) on a defined system (the former names and sizes still accepted); `corps[].etat: "disparue"` on a star (written as `aspect.disparue`, B-122); `zones[].voile` and `zones[].lentille` (written in the formation's `parametres`); each body's `aspect` may carry the keys above. Refusals keep AD-atlas-3 (all or nothing, path of each refusal).
 
 **Rules kept.** A body has no secret of its own (the system's hides it); `lisibilite.ts` stays the only reader of `secret`; the import never overwrites what the GM changed (AD-atlas-3).

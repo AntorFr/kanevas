@@ -5068,7 +5068,7 @@ The zone form (« Nouvelle zone » and its edit) gains one switch, « Affichée 
 
 The system's existing dialogue gains three fields for a defined system (B-117): star class (the core's list, « Drawn from the key » by default), size (a slider) and a free colour (optional, over the class). The galaxy's panel of a system shows its star as the map draws it.
 
-Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud opens its panel with the **illustration of its family** (belt, nebula, anomaly) and its text; on the galaxy, a click in the **void** of a zone selects nothing and opens no form; the labels of the route types keep « Private » and « GM only » apart.
+Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the system (a **formation**, not a polygonal zone of the galaxy) opens its panel with the **illustration of its family** (belt, nebula, anomaly: from its form and its `parametres`, no route of its own) and its text; on the galaxy, a click in the **void** of a zone selects nothing and opens no form; the labels of the route types keep « Private » and « GM only » apart.
 
 ### Previews and navigation (B-119)
 

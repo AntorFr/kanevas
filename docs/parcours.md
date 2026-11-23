@@ -715,8 +715,8 @@ Nothing of Éneria enters this repository (AD-131): captures, atlas and comparis
   a system, a jump point shows the neighbour's portrait and enters it; « Galaxy » and « Another system » leave it; a body shows its illustration
   and its text. A body or a system has an address that can be shared (deep link). The **portrait** of a system is the reference's painted
   thumbnail (the star's edge on the left, the bodies in a row), composed from the guarded read so that no hidden body leaks. The panel of a
-  **zone** (belt, nebula, anomaly) shows the **illustration** of its family, the engine's families bound to the zone and their settings
-  (veils, the lens of anomalies). The distance shown is from the system that is open (not from a fixed one). A player reads the public text
+  **zone** of a system (a ring: belt; a cloud: nebula; a cloud with a lens: anomaly) shows the **illustration** of its family, drawn by the
+  browser from the zone's own settings (its veil, the lens of an anomaly: optional keys of the zone's `parametres`, B-122). The distance shown is from the system that is open (not from a fixed one). A player reads the public text
   of what she reads (the reference withholds it: a defect, not kept). *(P-28, P-29)*
 - **B-120** — *Full screen.* Both maps open in the whole window; controls and panel float over the map. The zoom is not capped at 0.5×–4×: it
   goes from the fit of the known zone to the detail of a body. *(P-27, P-28, P-29)*
@@ -726,7 +726,7 @@ Nothing of Éneria enters this repository (AD-131): captures, atlas and comparis
   browser**, never in a datum of the game. *(P-28, P-30)*
 - **B-122** — *The atlas format says what the atlas knows.* Moon types beyond rocky/ice/lava, the star a formation or a point turns around, an hour around
   a planet, the veil of a system, the class, size and free colour of a defined system, a star's state « vanished » (a star gone, as Arkhan,
-  drawn as such, not as an ordinary star) are fields of the format. *(P-30)*
+  drawn as such, not as an ordinary star: a key of its `aspect`), the veil and the lens of a zone are fields of the format. *(P-30)*
 - **B-123** — *The atlas looks like the reference side by side.* The recipe plays at the same framing both maps (Lybrata, Clyra, Éneria, Gamma, Sol,
   Ophyra, plus Alpha Centauri; the illustrations of Clyra II, Clyra IV, Éneria Prime, Jupiter) and Monsieur judges. The recipe adds three
   sets at the same framing: 50 systems drawn on the trial galaxy (seed `eneria-1`, taken at a regular step, four per sheet), the default galaxy,
@@ -1366,7 +1366,7 @@ secret body gives « Page introuvable. », byte for byte like an unknown one.
 
 ### P-30 — Prepare and correct the map (Antor, GM; his script)
 
-In « create / edit » mode Antor places a system, draws a route, moves a body by hand (B-121). His atlas script pushes the new
+In « create / edit » mode Antor places a system, draws a route, moves a body by hand (B-121). On a defined system he sets its **star** — class, continuous size, optional free colour — in the system's dialogue (B-117), and on each zone of the galaxy the switch « Displayed when the map opens » (B-118). His atlas script pushes the new
 format (B-122) and the bodies' settings; the report names the settings that stay unrendered. *Moment fort:* the recipe: both maps side by side at the same framing, and Monsieur judges (B-123).
 
 ## Out of scope
