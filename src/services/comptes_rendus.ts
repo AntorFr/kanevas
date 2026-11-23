@@ -8,6 +8,7 @@ import { preparerContenu } from './liens.js';
 import { exigerSansBloc, insererSection, validerContenu } from './sections.js';
 import type { Acteur, FicheVue } from './types.js';
 import type { CampagneVue } from './droits.js';
+import type { Role } from './types.js';
 
 export const TITRE_SECTION_COMPTE_RENDU = 'Compte-rendu';
 
@@ -93,6 +94,31 @@ interface LigneCR {
   auteur: string | null;
 }
 
+const PROFONDEUR_CHAINE = 50;
+
+/**
+ * The adventure `racineId` (already checked as read) and its descendants reached through an
+ * unbroken chain of adventures by `parent_id`; the read guard is tested at each node, so an
+ * unreadable scenario cuts what is below it, and a non-adventure child is left out.
+ */
+function aventuresDeLaChaine(db: Db, role: Role, acteur: Acteur, universId: number, racineId: number): number[] {
+  const enfants = db.prepare("SELECT id FROM fiches WHERE parent_id = ? AND type = 'aventure' AND univers_id = ?");
+  const trouves = new Set<number>([racineId]);
+  let niveau = [racineId];
+  for (let n = 0; n < PROFONDEUR_CHAINE && niveau.length > 0; n++) {
+    const suivant: number[] = [];
+    for (const id of niveau) {
+      for (const { id: e } of enfants.all(id, universId) as { id: number }[]) {
+        if (trouves.has(e) || !aventureLue(db, role, acteur, universId, e)) continue;
+        trouves.add(e);
+        suivant.push(e);
+      }
+    }
+    niveau = suivant;
+  }
+  return [...trouves];
+}
+
 /**
  * Session reports of the universe the caller reads at least one section of,
  * newest first (`cree_le`, then `id`, descending), at most 100 a page. A report
@@ -121,8 +147,10 @@ export function listerComptesRendus(
   // Closed, deleted, foreign and unknown adventures all answer not found to a non-reader.
   if (options.campagneId !== undefined) {
     if (!aventureLue(db, role, acteur, universId, options.campagneId)) throw introuvable();
-    where.push("json_extract(f.charge, '$.campagne_id') = ?");
-    params.push(options.campagneId);
+    // The adventure and its scenarios: an unbroken chain of readable adventures by `parent_id`.
+    const ids = aventuresDeLaChaine(db, role, acteur, universId, options.campagneId);
+    where.push("json_extract(f.charge, '$.campagne_id') IN (SELECT value FROM json_each(?))");
+    params.push(JSON.stringify(ids));
   }
   const { n: total } = db
     .prepare(`SELECT COUNT(*) AS n FROM fiches f WHERE ${where.join(' AND ')}`)
