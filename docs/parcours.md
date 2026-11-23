@@ -1350,7 +1350,7 @@ sun, a belt as grains of rock, a nebula as a soft orange gas with asteroids. The
 comet of the system crosses the transition zone on a long ellipse, tail away from the star; he chooses it, its trajectory turns gold, its illustration
 and text open in the panel. A jump point shows an arrow, « 3 cases » and the colour of its route; he clicks it: the neighbour's portrait, « Enter the system ». Léa, on her
 phone, sees the same map with what she may read. *Failure path:* a setting the core does not render is named in the import report; a secret body is
-absent for Léa, and so are its name and its route.
+absent for Léa, and so are its name and its route; a map that does not load shows « La carte ne peut pas s'afficher ici. » and « Réessayer », and a lost connection shows « Connexion perdue. » on the map and disables the writes, as in P-28.
 
 ### P-28 — Cross the galaxy (Antor, GM; Léa, Player — `kanevas-carte-rendu`)
 
@@ -1361,7 +1361,7 @@ picks two systems and reads the duration by engine. Léa sees only what the GM l
 
 ### P-29 — Share a place (Léa, Player; Antor, GM — `kanevas-carte-rendu`)
 
-Antor copies the address of Clyra II and sends it to Léa, who opens it from the link: the system, the body chosen, the panel open. *Failure path:* an address toward a
+Antor copies the address of Clyra II and sends it to Léa, who opens it from the link: the system, the body chosen, the panel open, floating over the map (a bottom sheet on her phone); Escape closes it, the map stays where it is, and she can go to full screen and zoom on the body from there. *Failure path:* an address toward a
 secret body gives « Page introuvable. », byte for byte like an unknown one.
 
 ### P-30 — Prepare and correct the map (Antor, GM; his script)
