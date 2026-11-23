@@ -5283,6 +5283,8 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 - Given a jump point towards a neighbour 3 hexagons away by a pirate route, the map shows the arrow, « 3 cases » and the pirate colour (B-115).
 - Given the galaxy opened, the whole known zone is in view with the names of the defined systems; « Zones » set to « none » hides every tint and keeps the routes in the list (B-117, B-118).
 - Given a double click on a system, it opens on its map, and « Galaxy » returns to the same view (B-119).
+- Given the galaxy of a neutral fixture opened, a starfield (dust and veils) is drawn under the systems and the routes, the same at every reload; zooming out under 0,4 fades large tinted regions in, and under 0,15 only the veils remain (B-117, AD-fond-1).
+- Given a zone the reader cannot read, no veil takes its tint; two readers of the same zones see the same sky (AD-fond-1).
 - Given Léa on a phone, the map takes the whole window, the controls float and stay reachable by thumb (44 px targets), no horizontal scroll (B-120).
 - Given Léa (Player), the mode switch offers « Consult » and « Travel » only, and a link in `?mode=edition` opens Consult (B-121).
 - Given a defined system with a class and a free colour, the galaxy draws it as a star of that class tinted by the colour; with no class, two systems of different keys differ (B-117).

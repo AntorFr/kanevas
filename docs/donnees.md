@@ -955,4 +955,20 @@ reference vocabulary into core keys follows the table below and is **the contrac
 (not only rocky/ice/lava); `zones[].etoile` and `points[].etoile` (a star's `cle`, default the main one; `zones[].etoile` written to `swn_formations.etoile_rang` and `points[].etoile` to `swn_astres.etoile_rang` (a comet's star), both columns existing; AD-atlas-2 gives `etoile` to `corps[]` only) `corps[].lunes[].heure` is the hour around the planet;
 `voile` (a colour) on the system; `classe`, `taille` (continuous) and `couleur` (free) on a defined system (the former names and sizes still accepted); `corps[].etat: "disparue"` on a star (written as `aspect.disparue`, B-122); `zones[].voile` and `zones[].lentille` (written in the formation's `parametres`); each body's `aspect` may carry the keys above. Refusals keep AD-atlas-3 (all or nothing, path of each refusal).
 
+**Background of the galaxy (`kanevas-carte-rendu-galaxie-fond`, AD-fond-1; no column, nothing stored).** Constants of `fond-etoile.ts`, `k` being the zoom of the map (1 = a hexagon at its drawn size), world pixels for the lengths:
+
+| Constant | Value |
+|---|---|
+| `TUILE_POUSSIERE_PX` | 700 |
+| `GRAINS_PAR_TUILE` | 80 (drawn while `k ≥ SEUIL_POUSSIERE_K` = 0,15) |
+| `VOILES_DETAIL_PAR_TUILE` | 3; 2 under `k < 0,3`; 1 under `k < 0,15` |
+| `RAYON_VOILE_DETAIL_PX` | 160 to 490 |
+| `OPACITE_VOILE_DETAIL(k)` | `0,35 + 0,65 × borner((k − 0,1) / 0,4, 0, 1)` times the veil's own opacity |
+| `TUILE_REGION_PX` | 3 200 |
+| `VOILES_REGION_PAR_TUILE` | 3, of radius 900 to 2 000 px, opacity 0,10 to 0,18 |
+| `FONDU_REGION(k)` | `borner((0,4 − k) / 0,25, 0, 1)`: 0 at k ≥ 0,4, 0,6 at 0,25, 1 at k ≤ 0,15 |
+| `TEINTES_REGION` | eight `#rrggbb`, neutral names (`indigo`, `cyan`, `vert`, `or`, `rouge`, `violet`, `orange`, `rose`) |
+
+A tile with no readable zone takes `TEINTES_REGION[hash % 8]`; a tile whose centre is in a readable zone takes the colour of that zone (the palette name of its `couleur` mapped to one of the eight hues). Same key, same tile, same grains and veils for every reader.
+
 **Rules kept.** A body has no secret of its own (the system's hides it); `lisibilite.ts` stays the only reader of `secret`; the import never overwrites what the GM changed (AD-atlas-3).
