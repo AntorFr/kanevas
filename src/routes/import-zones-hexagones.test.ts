@@ -178,8 +178,9 @@ test('0029 : montée depuis 0028 avec une zone polygone, rien ne bouge, plages n
   const comptesAvant = db.prepare('SELECT (SELECT COUNT(*) FROM swn_zones) z, (SELECT COUNT(*) FROM swn_galaxies) g').get();
   assert.deepEqual(migrate(db), [29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51]);
   const apres = db.prepare('SELECT * FROM swn_zones').all() as any[];
-  const { plages, ...reste } = apres[0];
+  const { plages, affichage_defaut, ...reste } = apres[0];
   assert.equal(plages, null);
+  assert.equal(affichage_defaut, 1);
   assert.deepEqual(reste, avant[0]);
   assert.deepEqual(db.prepare('SELECT (SELECT COUNT(*) FROM swn_zones) z, (SELECT COUNT(*) FROM swn_galaxies) g').get(), comptesAvant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);

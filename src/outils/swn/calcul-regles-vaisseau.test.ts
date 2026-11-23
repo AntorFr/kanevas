@@ -12,6 +12,7 @@ delete process.env.DB_PATH;
 
 const { buildApp } = await import('../../app.js');
 const { semerBouchon } = await import('../../bouchon/depart.js');
+const { ancienSchema } = await import('../../db/semis-ancien.js');
 const { avantSemis, apresSemis } = await import('../../db/jetons-pour-semis.js');
 const { encoderSession, SESSION_COOKIE } = await import('../../services/session.js');
 const { catalogueDe } = await import('../../services/assistant/catalogue.js');
@@ -248,7 +249,7 @@ test('0031 : montée depuis 0030 avec le semis, conceptions gardées, equipage N
   db.exec('ALTER TABLE univers ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN creee_via TEXT; ALTER TABLE sections ADD COLUMN cle TEXT');
   db.exec('CREATE TABLE cles_anciennes (univers_id, cle, fiche_id); CREATE TABLE univers_cles_anciennes (cle, univers_id)');
   avantSemis(db);
-  semerBouchon(db);
+  semerBouchon(ancienSchema(db));
   apresSemis(db);
   db.exec('DROP TABLE cles_anciennes; DROP TABLE univers_cles_anciennes; ALTER TABLE univers DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN creee_via; ALTER TABLE sections DROP COLUMN cle');
   for (const [t, cs] of Object.entries(c32)) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} DROP COLUMN ${c}`);

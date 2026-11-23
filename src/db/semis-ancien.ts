@@ -12,7 +12,7 @@ export function ancienSchema(db: Db): Db {
       if (nom !== 'prepare') { const v = Reflect.get(cible, nom, cible); return typeof v === 'function' ? v.bind(cible) : v; }
       return (sql: string) => {
         const st = cible.prepare(sql.replace("0.45, '#f2a33c'", "2, 'ambre'"));
-        if (!/INSERT INTO swn_systemes/.test(sql)) return st;
+        if (!/INSERT INTO swn_syst/.test(sql)) return st;
         const colonnes = /\(([^)]*)\)\s*VALUES/s.exec(sql)?.[1]?.split(',').map((c) => c.trim()) ?? [];
         const it = colonnes.indexOf('taille'), ic = colonnes.indexOf('couleur');
         return new Proxy(st, {

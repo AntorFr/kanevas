@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 
 import { migrate, openDb } from './db.js';
+import { ligneApres0051 } from './semis-ancien.js';
 
 const SRC = new URL('./migrations/', import.meta.url).pathname;
 const NUMEROS = readdirSync(SRC).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))).sort((a, b) => a - b);
@@ -44,7 +45,14 @@ test('0023 : montée depuis 0022 peuplée, rien de perdu, version_importee nulle
     // 0038 adds the nullable `transition` to the systems (AD-systeme-4): null for a row written before.
     const { transition, ...reste } = sansPlages;
     assert.equal(transition === null || transition === undefined, true);
-    assert.deepEqual(reste, (avant[i + 1] as any[])[j]);
+    // 0051 (B-117, B-118) rebuilds the systems on the new shape (`classe`/`voile` null, taille and couleur converted) and gives the zones `affichage_defaut` 1.
+    const { classe, voile, affichage_defaut, ...final } = reste;
+    assert.equal(classe === null || classe === undefined, true);
+    assert.equal(voile === null || voile === undefined, true);
+    assert.equal(i === 2 ? affichage_defaut : 1, 1);
+    const attendu: any = i === 0 ? ligneApres0051((avant[i + 1] as any[])[j]) : (avant[i + 1] as any[])[j];
+    delete attendu.classe; delete attendu.voile;
+    assert.deepEqual(final, attendu);
   }));
   // 0037 (AD-etoiles-7) moves a galaxy left at the former default 0.2 to the core's 0.68; nothing else of the row moves.
   assert.deepEqual(apres[0], (avant[0] as any[]).map((g) => ({ ...g, densite_defaut: 0.68 })));
