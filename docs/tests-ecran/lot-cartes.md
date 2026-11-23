@@ -472,6 +472,10 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/carte-systeme-echelle-ecran.test.ts` | `E-23 les astres à l’échelle de leurs orbites > un astre garde sa taille entre deux zooms, la position seule suit` | affichage | — | gardé |
 | `src/e2e/carte-systeme-echelle-ecran.test.ts` | `E-23 les astres à l’échelle de leurs orbites > chaque astre a son orbite tracée, la lune sur celle de sa planète` | affichage | — | gardé |
 | `src/e2e/carte-systeme-echelle-ecran.test.ts` | `E-23 les astres à l’échelle de leurs orbites > captures dans les deux thèmes à 1280 et 390 px, tous les noms posés` | affichage | — | gardé |
+| `src/e2e/carte-systeme-echelle-besoin-ecran.test.ts` | `E-23 besoin : les astres à l’échelle, sans grossir au zoom, chacun avec son orbite > un astre garde sa taille entre deux zooms, seule sa position suit (zoom 1, 2, 0,5)` | affichage | — | gardé |
+| `src/e2e/carte-systeme-echelle-besoin-ecran.test.ts` | `E-23 besoin : les astres à l’échelle, sans grossir au zoom, chacun avec son orbite > un astre ne dépasse pas la moitié de l’écart entre deux orbites voisines, sans descendre sous 3 px` | affichage | — | gardé |
+| `src/e2e/carte-systeme-echelle-besoin-ecran.test.ts` | `E-23 besoin : les astres à l’échelle, sans grossir au zoom, chacun avec son orbite > chaque astre a son orbite tracée, la lune autour de sa planète` | affichage | — | gardé |
+| `src/e2e/carte-systeme-echelle-besoin-ecran.test.ts` | `E-23 besoin : les astres à l’échelle, sans grossir au zoom, chacun avec son orbite > ${largeur} px : le nom de chaque astre hors lunes est posé, sans recouvrir un autre nom (capture)` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `${l} px : un corps sélectionné ouvre son panneau (nom, type, lieu, hexagone) ; le ciel vide le ferme` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `un astre sans nom lit « Astre sans nom »` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `le MJ lit le panneau de la joueuse et seulement trois gestes d’écriture de plus (E-23 édition)` | affichage | — | gardé |
