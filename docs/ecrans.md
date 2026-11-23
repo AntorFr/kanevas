@@ -5263,7 +5263,9 @@ The mode switch is a segmented control, top left of the map, rubric « Modes »:
 
 **Create / edit on E-23, the move.** A body is moved by dragging it (a long press on touch) and written when it is released; **Escape during the drag puts the body back and sends nothing**. After a written move the bottom-left line reads « <nom> déplacé. » with the button **« Annuler le déplacement »**: it puts the previous position back through the same write and the same guard, for the last move only, and stays until another move is written, the mode changes or the screen is left. A conflict (the body changed meanwhile) removes the button and shows the existing conflict wording.
 
-**Roles in the modes.** « Routes » of the travel bar (the GM's routes, as the existing « Trajet » block shows them) and every write action of the panel and « Annuler le déplacement » are **absent from the DOM** for a Player and for a GM in Player mode, not disabled; the server keeps each guard whatever the mode (AD-edition-1). The travel itself (« Calculer ») is open to every reader. A body **or an element** written by a move can be undone.
+**Roles in the modes.** Hidden means absent from the DOM, never disabled, for the Player and the GM in Player mode; shown to the GM outside Player mode only. « Routes » of the travel bar (the GM's routes, as the existing « Trajet » block shows them) and every write action of the panel and « Annuler le déplacement » are **absent from the DOM** for a Player and for a GM in Player mode, not disabled; the server keeps each guard whatever the mode (AD-edition-1). The travel itself (« Calculer ») is open to every reader. A body **or an element** written by a move can be undone.
+
+**Bottom of the map.** From the bottom up: the travel bar (Voyage only), then the status line above it; the body's panel never covers them (it is the column beside the map, or under it at 390 px). « Recentrer » frames every system (E-21) or every body (E-23) as the map did when it opened, and has no state of its own. Back from Player mode to GM, the switch shows « Consulter » (the remembered write mode is not restored by itself).
 
 **Touch and keyboard.** There is no hover on touch: the bottom line then shows the selection (« q · r · nom » / « Orbite n · h h · nom »); it is empty when nothing is selected. A drag is abandoned by Escape (keyboard) or, on touch, by letting go outside the map; the arrow keys write once per press, and « Annuler le déplacement » undoes the last of them. At 390 px the three groups wrap, the targets keep 44 px, and a long system name is cut on one line (the whole in `title`).
 
@@ -5282,6 +5284,7 @@ The mode switch is a segmented control, top left of the map, rubric « Modes »:
 | travel: same system | « Choisissez deux systèmes différents. » |
 | travel: lost connection | « Calculer » disabled, « Connexion perdue. » on the bottom line |
 | edit: write refused | the dialogue's own refusal, or for a drop an `Alerte` over the bottom line carrying the server's refusal wording; the body is back |
+| edit: undo offline or failed | the button is `aria-disabled` offline with « Connexion perdue. »; a server failure keeps it and shows an `Alerte` with the server's refusal wording, one more press retries |
 | edit: undo conflict | « Annuler le déplacement » gone; the conflict wording of the body |
 | mode no longer offered | the switch falls back to « Consulter » (Player mode toggled on) and the address follows |
 
