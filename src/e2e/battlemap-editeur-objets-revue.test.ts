@@ -213,8 +213,11 @@ describe('E-28 objets, calques, propriétés', { skip: skipBrowser }, () => {
     assert.equal((await lire(cid)).titre, 'Salle des gardes');
     const larg = antor.getByLabel(/Largeur/);
     await larg.fill('32');
+    const ecrite = antor.waitForResponse(
+      (r) => r.request().method() === 'PATCH' && new URL(r.url()).pathname.endsWith(`/cartes/${cid}`) && r.ok(),
+    );
     await larg.press('Enter');
-    await antor.getByLabel(/Largeur/).and(antor.locator('input[value="32"]')).waitFor();
+    await ecrite;
     assert.equal((await lire(cid)).document.largeur, 32);
     await larg.fill('abc');
     await larg.press('Enter');
