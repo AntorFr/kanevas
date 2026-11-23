@@ -880,6 +880,17 @@ table below is written with neutral names; the script that converts Éneria's `a
   The migration rebuilds the table (`-- migrate: sans-cles-etrangeres`): each old size and each of the six names maps to a value fixed and tested in the slice,
   a replay of an old atlas gives the same drawing as the migrated row. Written by the existing writers (`ecriture-systeme.ts`, the atlas import) and the
   system's existing dialogue (three fields), never by a screen of its own.
+
+  **Conversion table (`kanevas-carte-rendu-galaxie-systemes`, tested line by line).** Size: `1` → 0.15, `2` → 0.45, `3` → 0.75, `4` → 0.9, `5` → 1
+  (the aliases `petite`, `moyenne`, `grande` of the writers and of the old atlas give 0.15, 0.45 and 0.75). Colour: `accent` → `#8b9bf0`, `table` → `#3fc79a`,
+  `ambre` → `#f2a33c`, `danger` → `#ec7b6f`, `clair` → `#ebecf0`, and `neutre` (the old default, « no colour chosen ») → null; the six names stay accepted as aliases
+  by the writers and give the same values. `classe` of a migrated row is null (drawn from its key and its size). The three other columns of the slice are written by
+  other slices: `voile` (`#rrggbb`, nullable, by the atlas import) and `swn_zones.affichage_defaut` (by the zone routes).
+  **Classes** (the core lists them, `classes_etoile()`): `M`, `K`, `G`, `F`, `A`, `B` (the drawn stars') and `V` (the reference's yellow-green); a class carries a label and
+  a colour of the core (`M` `#ff8f70`, `K` `#ffb870`, `G` `#ffe08a`, `F` `#fff4d6`, `A` `#dfe9ff`, `B` `#a9c4ff`, `V` `#d6f08a`). **Size of a drawn star on the scale of a
+  defined one:** `taille = (t − 0.65) / 1.45` for the core's drawn size `t` in [0.65, 2.1]; anchoring a drawn system (`ancrerTire`) writes that value and its letter as
+  `classe`, so anchoring never changes how the star looks. **Class drawn from the key:** `classe_de_cle(cle, taille)` of the core is `lettre_de(Rng(hash32("couleur:" + cle)), 0.65 + 1.45 × taille)`
+  and never gives `V`.
 - `swn_zones.affichage_defaut` (boolean, default true): the zone is drawn when the map opens (B-118); the zone routes (T-5) and the import of zones (T-9) carry it; the atlas (a system's interior) has no such field. The reference's values
   (the asteroid belt and the pirates `true`, Vael'Korr and the Ancients `false`) are set by the GM, or by the script that replays the galaxy's zones. It is the GM's choice for everyone; the choice « all / none / default »
   of the map is a state of the screen, never stored. A hidden zone hides no route from the lists and no system from the search.
