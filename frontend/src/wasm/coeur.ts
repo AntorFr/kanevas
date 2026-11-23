@@ -136,3 +136,13 @@ export async function validerAspect(type: string, json: string): Promise<string>
 export async function validerFormation(forme: string, json: string): Promise<string> {
   return (await chargerModule('coeur')).valider_formation(forme, json);
 }
+
+/** The seven star classes of the core as JSON: `[{ lettre, libelle, couleur }]`. */
+export async function classesEtoile(): Promise<string> {
+  return (await chargerModule('coeur')).classes_etoile();
+}
+
+/** The class letter drawn from a key and a size in [0, 1]; never `V`. Throws on a size out of range. */
+export async function classeDeCle(cle: string, taille: number): Promise<string> {
+  return (await chargerModule('coeur')).classe_de_cle(cle, taille);
+}

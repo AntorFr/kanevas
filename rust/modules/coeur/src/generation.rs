@@ -185,6 +185,50 @@ pub fn plan_vers_hex_wasm(x: f64, y: f64) -> Vec<i32> {
     vec![q, r]
 }
 
+/// The star classes of the core (AD-galaxie-systemes-1): letter, label and colour. `V` is the
+/// reference's yellow-green and is never drawn from a key.
+pub const CLASSES_ETOILE: [(&str, &str, &str); 7] = [
+    ("M", "M \u{2014} rouge", "#ff8f70"),
+    ("K", "K \u{2014} orange", "#ffb870"),
+    ("G", "G \u{2014} jaune", "#ffe08a"),
+    ("F", "F \u{2014} jaune p\u{e2}le", "#fff4d6"),
+    ("A", "A \u{2014} blanche", "#dfe9ff"),
+    ("B", "B \u{2014} bleue", "#a9c4ff"),
+    ("V", "V \u{2014} jaune-vert", "#d6f08a"),
+];
+
+#[derive(Serialize)]
+struct ClasseEtoile {
+    lettre: &'static str,
+    libelle: &'static str,
+    couleur: &'static str,
+}
+
+/// Class letter of a system from its key and its continuous size in [0, 1]; never `V`.
+pub fn classe_de_cle(cle: &str, taille: f64) -> Result<&'static str, String> {
+    if !(0.0..=1.0).contains(&taille) {
+        return Err("taille outside 0..1".to_string());
+    }
+    let c = Rng::new(hash32(&format!("couleur:{cle}"))).suivant();
+    Ok(lettre_de(c, 0.65 + 1.45 * taille))
+}
+
+/// The seven classes as JSON: `[{lettre, libelle, couleur}]`.
+#[wasm_bindgen]
+pub fn classes_etoile() -> String {
+    let liste: Vec<ClasseEtoile> = CLASSES_ETOILE
+        .iter()
+        .map(|(lettre, libelle, couleur)| ClasseEtoile { lettre, libelle, couleur })
+        .collect();
+    serde_json::to_string(&liste).unwrap_or_else(|_| "[]".to_string())
+}
+
+/// Class letter drawn from a key and a size; a size outside [0, 1] is refused.
+#[wasm_bindgen(js_name = classe_de_cle)]
+pub fn classe_de_cle_wasm(cle: &str, taille: f64) -> Result<String, JsError> {
+    classe_de_cle(cle, taille).map(str::to_string).map_err(|m| JsError::new(&m))
+}
+
 /// The star of a block as JSON: `null` or the `Etoile` object. `exclus`: nine bytes, non-zero = excluded.
 #[wasm_bindgen(js_name = tirer_bloc)]
 pub fn tirer_bloc_wasm(graine: &str, bx: i32, by: i32, densites: &[f64], exclus: &[u8]) -> Result<String, JsError> {
