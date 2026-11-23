@@ -101,7 +101,7 @@ describe('kanevas-scenarios-suivi : fiche aventure, blocs, E-3, E-13', { skip: s
     // Casse si : le bloc n'est pas rendu, la coche recharge la page, ou le bloc est montré à une joueuse.
     await fiche(antor, m.couronne);
     await antor.getByRole('heading', { name: /^Préparation/ }).waitFor();
-    assert.match(await texte(antor), /Rien à préparer pour l'instant\./);
+    await antor.getByText("Rien à préparer pour l'instant.").waitFor();
     await antor.evaluate(() => ((window as Any).__marque = 'avant'));
     await antor.getByLabel('Nouvelle tâche').fill('Plan de la crypte');
     await antor.getByLabel('Catégorie').selectOption({ label: 'Cartes' });
@@ -111,6 +111,9 @@ describe('kanevas-scenarios-suivi : fiche aventure, blocs, E-3, E-13', { skip: s
     await antor.getByText(/Cochées \(1\)/).waitFor();
     assert.equal(await antor.evaluate(() => (window as Any).__marque), 'avant', 'la page a été rechargée');
     assert.match(await texte(antor), /Rien à préparer pour l'instant\./);
+    const lues = await appel(antor, 'GET', `/api/univers/1/fiches/${m.couronne}/taches`);
+    assert.equal(lues.status, 200, lues.text);
+    assert.deepEqual(lues.body.taches.map((x: Any) => [x.libelle, x.faite]), [['Plan de la crypte', true]]);
     await antor.screenshot({ path: '/tmp/suivi-preparation-antor.png', fullPage: true });
 
     await fiche(lea, m.couronne);
@@ -118,6 +121,9 @@ describe('kanevas-scenarios-suivi : fiche aventure, blocs, E-3, E-13', { skip: s
     const t = await texte(lea);
     assert.ok(!/Préparation/.test(t), 'Léa voit « Préparation »');
     assert.ok(!/Plan de la crypte/.test(t), 'Léa lit une tâche');
+    const refus = await appel(lea, 'GET', `/api/univers/1/fiches/${m.couronne}/taches`);
+    assert.equal(refus.status, 404, refus.text);
+    assert.ok(!/Plan de la crypte/.test(refus.text), 'la route rend une tâche à Léa');
     await lea.screenshot({ path: '/tmp/suivi-preparation-lea.png', fullPage: true });
   });
 
