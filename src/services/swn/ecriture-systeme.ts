@@ -185,9 +185,8 @@ export interface JetonSysteme { versionSysteme?: unknown }
 const systemeDe = (db: Db, g: LigneGalaxie, q: number, r: number): LigneSysteme | undefined =>
   db.prepare('SELECT * FROM swn_systemes WHERE galaxie_id = ? AND q = ? AND r = ?').get(g.id, q, r) as LigneSysteme | undefined;
 
-/** Colour of a system from the class letter of its star (the six names of the palette) and size from its size. */
-const COULEUR_LETTRE: Record<string, string> = { M: 'danger', K: 'ambre', G: 'ambre', F: 'clair', A: 'clair', B: 'accent' };
-const tailleSysteme = (t: number): number => (t < 1.0 ? 0.15 : t < 1.6 ? 0.45 : 0.75);
+/** Size of a drawn star (the core's `t`, 0.65 to 2.1) on the scale of a defined system, 0 to 1 (`docs/donnees.md`). */
+const tailleSysteme = (t: number): number => Math.min(1, Math.max(0, (t - 0.65) / 1.45));
 
 /**
  * Anchors the drawn system of `(q, r)`: the `swn_systemes` row (E-21's promotion, `placerSysteme`) and the drawn
@@ -203,7 +202,7 @@ function ancrerTire(db: Db, ac: Acteur, universId: number, g: LigneGalaxie, q: n
   // One signal per call, sent by the caller after the gesture (`sansSignal` holds back the one of `placerSysteme`).
   const { valeur } = sansSignal(() => placerSysteme(db, ac, universId, g.id, {
     nom: nom ?? `Système (${q}, ${r})`, q, r,
-    taille: tailleSysteme(tire.etoile.taille), couleur: COULEUR_LETTRE[tire.etoile.lettre] ?? 'accent',
+    taille: tailleSysteme(tire.etoile.taille), couleur: null, classe: tire.etoile.lettre,
   }));
   const ids = new Map<string, number>();
   const insererAstre = db.prepare(`INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille, aspect)

@@ -6,6 +6,7 @@ import { distanceHex } from '../../outils/swn/regles/hex.js';
 import { ErreurService } from '../erreurs.js';
 import type { Acteur } from '../types.js';
 import { lireBlocsGeneres } from './cache-blocs.js';
+import { classeConnue } from './classes-etoile.js';
 import { surSourceModifiee } from '../crochets-outils.js';
 import { exigerEcritureGalaxie, OUTIL_GALAXIE, type LigneGalaxie, type LigneRoute, type LigneSysteme, type LigneZone } from './galaxies.js';
 
@@ -72,6 +73,12 @@ function couleurSystemeValide(v: unknown): string | null {
   if (typeof v === 'string' && /^#[0-9a-f]{6}$/.test(v)) return v;
   if (v === null) return null;
   throw invalideChamp('couleur', 'Couleur inconnue.');
+}
+/** A system's star class: a letter of the core, or null (drawn from the key and the size at reading). */
+function classeValide(v: unknown): string | null {
+  if (v === null) return null;
+  if (classeConnue(v)) return v;
+  throw invalideChamp('classe', 'Classe inconnue.');
 }
 function couleurValide(v: unknown): string {
   if (typeof v === 'string' && (COULEURS as readonly string[]).includes(v)) return v;
@@ -144,7 +151,7 @@ function estGenere(db: Db, acteur: Acteur, universId: number, g: LigneGalaxie, q
   return !!bloc && bloc.generes.some(([gq, gr]) => gq === q && gr === r);
 }
 
-export interface SystemeNormalise { nom: string; q: number; r: number; taille: number; couleur: string | null; notes: string; secret: boolean }
+export interface SystemeNormalise { nom: string; q: number; r: number; taille: number; couleur: string | null; classe: string | null; notes: string; secret: boolean }
 /** The fields of a system as written, defaults applied; `invalide` with the field otherwise. */
 export function normaliserSysteme(entree: unknown): SystemeNormalise {
   const c = corps(entree);
@@ -152,6 +159,7 @@ export function normaliserSysteme(entree: unknown): SystemeNormalise {
     nom: nomValide(c.nom), q: coordonnee('q', c.q), r: coordonnee('r', c.r),
     taille: a(c, 'taille') ? tailleValide(c.taille) : TAILLES.moyenne!,
     couleur: a(c, 'couleur') ? couleurSystemeValide(c.couleur) : COULEURS_ANCIENNES.accent!,
+    classe: a(c, 'classe') ? classeValide(c.classe) : null,
     notes: a(c, 'notes') ? notesValides(c.notes) : '',
     secret: a(c, 'secret') ? boolValide('secret', c.secret) : false,
   };
@@ -174,7 +182,7 @@ export function routesDeSysteme(db: Db, systemeId: number): { id: number; versio
 }
 
 export interface SystemeEntree {
-  nom: unknown; q: unknown; r: unknown; taille?: unknown; couleur?: unknown; notes?: unknown; secret?: unknown;
+  nom: unknown; q: unknown; r: unknown; taille?: unknown; couleur?: unknown; classe?: unknown; notes?: unknown; secret?: unknown;
 }
 export interface ResultatSysteme { id: number; cle: string; version: number; promu: boolean }
 
@@ -184,12 +192,12 @@ export function placerSysteme(db: Db, acteur: Acteur | number, universId: number
   const ac = acteurDe(acteur);
   return db.transaction(() => {
     const g = exigerEcritureGalaxie(db, ac, universId, galaxieId);
-    const { nom, q, r, taille, couleur, notes, secret } = normaliserSysteme(s);
+    const { nom, q, r, taille, couleur, classe, notes, secret } = normaliserSysteme(s);
     caseLibre(db, g, q, r);
     const promu = importe ? false : estGenere(db, ac, universId, g, q, r);
     const cle = importe?.cle ?? cleDe(nom, clesDe(db, 'swn_systemes', g.id));
-    const id = Number(db.prepare(`INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(g.id, universId, cle, nom, q, r, taille, couleur, notes, secret ? 1 : 0, promu ? 1 : 0).lastInsertRowid);
+    const id = Number(db.prepare(`INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, classe, notes, secret, promu)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(g.id, universId, cle, nom, q, r, taille, couleur, classe, notes, secret ? 1 : 0, promu ? 1 : 0).lastInsertRowid);
     apresEcriture(db, ac.compteId, universId);
     return { id, cle, version: 1, promu };
   })();
@@ -217,6 +225,7 @@ export function modifierSysteme(db: Db, acteur: Acteur | number, universId: numb
     if (a(c, 'nom')) { sets.push('nom = ?'); vals.push(nomValide(c.nom)); }
     if (a(c, 'taille')) { sets.push('taille = ?'); vals.push(tailleValide(c.taille)); }
     if (a(c, 'couleur')) { sets.push('couleur = ?'); vals.push(couleurSystemeValide(c.couleur)); }
+    if (a(c, 'classe')) { sets.push('classe = ?'); vals.push(classeValide(c.classe)); }
     if (a(c, 'notes')) { sets.push('notes = ?'); vals.push(notesValides(c.notes)); }
     if (a(c, 'secret')) { sets.push('secret = ?'); vals.push(boolValide('secret', c.secret) ? 1 : 0); }
     const q = a(c, 'q') ? coordonnee('q', c.q) : s.q, r = a(c, 'r') ? coordonnee('r', c.r) : s.r;

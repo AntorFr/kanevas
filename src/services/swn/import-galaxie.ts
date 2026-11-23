@@ -77,7 +77,7 @@ function lireFichier(corps: unknown): Fichier {
   return { systemes: liste('systemes', MAX_SYSTEMES), zones, routes: liste('routes', MAX_ROUTES) };
 }
 
-const CHAMPS_SYSTEME = ['cle', 'nom', 'q', 'r', 'taille', 'couleur', 'notes', 'secret'];
+const CHAMPS_SYSTEME = ['cle', 'nom', 'q', 'r', 'taille', 'couleur', 'classe', 'notes', 'secret'];
 const CHAMPS_ZONE = ['cle', 'nom', 'contour', 'couleur', 'densite', 'secret'];
 const CHAMPS_ROUTE = ['depuis', 'vers', 'publique', 'type_lien'];
 
@@ -134,7 +134,7 @@ export function importerGalaxie(db: Db, acteur: Acteur, universId: number, galax
             return 'creees';
           }
           const egal = ligne.nom === v.nom && ligne.q === v.q && ligne.r === v.r && ligne.taille === v.taille
-            && ligne.couleur === v.couleur && ligne.notes === v.notes && (ligne.secret === 1) === v.secret;
+            && ligne.couleur === v.couleur && ligne.classe === v.classe && ligne.notes === v.notes && (ligne.secret === 1) === v.secret;
           if (egal) return 'inchangees';
           if (ligne.version !== ligne.version_importee) throw new ErreurService('conflit', HORS_SYNCHRO, 'hors_synchro');
           const enPas = routesDeSysteme(db, ligne.id).filter((r) => r.version === r.version_importee).map((r) => r.id);
