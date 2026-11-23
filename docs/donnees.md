@@ -907,7 +907,29 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | `atmosphere`, `force_atmo` | `halo_couleur`, `halo` | direct, the type's default sent when absent |
 | `graine` | `graine` | **always sent**, one per body (`graine_de(id)`): two bodies never share a picture |
 | `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | new accepted key; absent means **no ring** (the engine's random ring at 28 % goes) |
-| `couleur_nuages`, `opacite_nuages`, `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124), `terre_seche`, `etirement`, `eclairs`, `inclinaison`, `geysers`, `couleur_fissures`, `mers`, `canyons`, `lave`, `cristaux`, `activite`, `intensite`, `vue` | new keys of the same names | added to the core one by one, each with a bound and a test of the picture |
+| `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124) | new keys of the same names | `kanevas-carte-rendu-nuit`: added to the core with a bound and a test of the picture |
+| `couleur_nuages`, `opacite_nuages` | `couleur_nuages` (colour, `null` clears), `opacite_nuages` ([0, 1], default 1) | direct: the tint of the cloud layer (default: the white of today) and the factor of its opacity; drawn on `tellurique`, `verrouillee` |
+| `terre_seche` | `terre_seche` ([0, 1], default 0) | share of the land drawn dry (the palette's arid tone mixed in, the sea untouched); `tellurique`, `verrouillee` |
+| `etirement` | `etirement` ([0.25, 4], default 1) | stretch of the clouds along the parallels (1 = today's shape, 4 = long streaks); `tellurique`, `verrouillee`, `gazeuse` |
+| `eclairs` | `eclairs` ([0, 1], default 0) | flashes in the clouds on the night side, as many as the value and `nuages` allow; `tellurique`, `gazeuse` |
+| `inclinaison` | `inclinaison` ([−90, 90] degrees, default 0) | tilt of the body's axis: the caps and the bands turn by it (not the ring's `anneau.inclinaison`, a key of its own object); every planet kind |
+| `mers` (several seas) | `mers` (integer [1, 8], default 1) | number of separate basins sharing the `mer` level (the total sea share does not change); `tellurique`, `verrouillee` |
+| `canyons` | `canyons` ([0, 1], default 0) | dark cuts in the relief; `rocheux`, `tellurique` |
+| `lave` (on a rocky body) | `lave` ([0, 1], default 0) | glowing veins in the lowest relief; `rocheux` (the type `lave` already is lava) |
+| `cristaux` | `cristaux` ([0, 1], default 0) | bright facets scattered on the surface; `glace`, `rocheux` |
+| `geysers` | `geysers` ([0, 1], default 0) | plumes rising from the surface and, at the limb, beyond the disc; `glace`, `rocheux` |
+| `couleur_fissures` | `couleur_fissures` (colour, `null` clears) | the colour of the cracks of `fissures` (default: today's); `glace`, `rocheux`, `lave` |
+| craters on ice (the reference's own setting for an icy body) | `cratere_glace` (new, [0, 1], default 0) | depth of the craters of an icy body; their number is `crateres_nombre` (`-aspects-socle`) read on `glace` too; `glace` |
+| atmosphere thickness | `atmosphere_epaisseur` (new, [0, 1], default 0.5 = today's) | width of the limb halo, `halo` stays its strength; every planet kind with a `halo` |
+| `activite` | `activite` ([0, 1], default 0) | flares and prominences at the limb of a star; `etoile` kinds |
+| `intensite` | `intensite` ([0, 2], default 1) | brightness of the disc and of the corona of a star (1 = today's); `etoile` kinds |
+| `vue` | `vue` (`"profil"` default, or `"face"`) | a comet seen from the side (tail drawn along its curve) or head-on (the tail foreshortened into a halo round the nucleus); `comete` |
+| signed curvature | `courbure` (existing; bound widened from [0, 1] to [−1, 1]) | a negative value bends the tail to the other side; [0, 1] draws exactly as before; `comete` |
+| `couleur_anneaux`, `opacite_anneaux` | `anneau.couleur`, `anneau.couleur2`, `anneau.opacite` (accepted since `-aspects-socle`) | no new key: this slice proves by a measured test that the ring takes its colours and its opacity (the tint of its pixels, the visibility of the body behind it) |
+
+**Applicability (AD-aspects-reliefs-1).** A key is accepted on the kinds the row names; on another kind it is refused (`invalide`, with the path and the kinds), as `disparue` is on a non-star. The kinds are the core's: planets `tellurique`, `verrouillee`, `glace`, `rocheux`, `lave`, `gazeuse`; stars (every class); `comete`.
+
+**Count of `kanevas-carte-rendu-aspects-reliefs`: 18 rows of this table** (`couleur_nuages` and `opacite_nuages` share one; the ring is the last, with no new key; the slice's `livre` lists the settings, this table the rows). New keys of the core: `terre_seche`, `etirement`, `eclairs`, `inclinaison`, `mers`, `canyons`, `lave`, `cristaux`, `geysers`, `couleur_fissures`, `couleur_nuages`, `opacite_nuages`, `cratere_glace`, `atmosphere_epaisseur`, `activite`, `intensite`, `vue` (17); `courbure` widens. `villes`, `lueur`, `force_lueur` stay with `-nuit`.
 | `disparue` (a star gone, B-122) | `disparue` (boolean, on a star only) | direct; true draws a dim remnant, never an ordinary star; the atlas writes it from `corps[].etat: "disparue"` |
 | `voile` | `swn_systemes.voile` | the system's only; the veil of a nebula is `parametres.voile` of its zone (below) |
 
