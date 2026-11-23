@@ -5249,6 +5249,26 @@ The system's existing dialogue gains three fields for a defined system (B-117): 
 
 Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the system (a **formation**, not a polygonal zone of the galaxy) opens its panel with the **illustration of its family** (belt, nebula, anomaly: from its form and its `parametres`, no route of its own) and its text; on the galaxy, a click in the **void** of a zone selects nothing and opens no form; the labels of the route types keep « Private » and « GM only » apart.
 
+### What the atlas format adds to the drawing of E-23 (`kanevas-carte-rendu-atlas-format`, B-122, B-115)
+
+No new control, no new text: the format's fields (`docs/donnees.md`, « Atlas format ») reach the existing canvas.
+
+| Case | Drawing (pure functions of `carte-geometrie.ts`, AD-rendu-1; no size depends on the zoom) |
+|---|---|
+| planets of a companion (`etoile_rang` > 0) | the planet's orbit is traced round **its** star, at the planet's own distance and hour from it, and the planet is drawn there; the orbits of the companion's planets never cross the main star's by construction of the centre; a planet and its moons stay a tight couple (the moons keep their small circle round the planet) |
+| a moon, a station or any body round a planet | a **small mark** on a circle round its planet, at the body's `heure` (12 at the top, 3 at the right, as the hours of the map), the circle's radius following the rank around the planet; never a fixed angle; at most the body's own drawn size, never larger than a quarter of its planet's; its label follows the placement pass of AD-carte-4 |
+| a star gone (`aspect.disparue`) | a **dim remnant**: the star's disc at a quarter of its usual luminosity, no corona and no light cast on the bodies (the bodies of that star are drawn on the unlit face as with no star), its name kept; the list line reads « Étoile disparue · <class> »; in the illustration dialog the picture is the remnant, never the ordinary star |
+| a formation's veil / lens | drawn by `-zones-illustrations` from the keys; this tranche only writes and validates them |
+| the places of a body (CS-9) | the elements put **on** a body (`sur` = its `cle`, never an orbit and an hour) are **not drawn** round it: they are listed under « Lieux » in the body's dialogue, in the order of their name, each a link to its sheet when the reader reads it; the section is absent when the body has none; a reader sees only the elements she reads (`sqlElementLisible`), never a count of hidden ones |
+
+States and roles are those of E-23 (nothing is written by the screen; a Player and a GM read the same; the GM in Player mode reads what a Player reads).
+
+Criteria (this tranche):
+- Given a fixture system of two stars, the planets of the second turn around it, the orbit traced round it.
+- Given a moon with `heure: 3`, it sits at the right of its planet on the small circle; with `heure: 9`, at the left; two moons of ranks 0 and 1 are on two circles.
+- Given an `etoiles[]` entry with `etat: "disparue"`, the star is drawn dim, with no corona, and its list line says so; an ordinary star of the same class is not.
+- Given a body with two elements put on it, its dialogue lists them under « Lieux » and the canvas has no mark for them.
+
 ### Previews and navigation (B-119)
 
 - E-21: the panel of a system shows its **portrait** (the reference's painted thumbnail: the star's edge on the left, the bodies in a row, composed from the guarded read so a hidden body never shows) and « Enter the system »; a double click on a system does the same.
