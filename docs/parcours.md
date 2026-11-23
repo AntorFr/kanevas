@@ -439,7 +439,7 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
 - **B-cr-aventure-3** — *(`kanevas-cr-aventure`)* The **export** gives the new adventure of a moved report, with no
   work of its own once B-cr-aventure-1 and 2 are delivered (`GET /export`, AD-export-1, gives each sheet in its read form, at the instant of the snapshot): verified, not built. *(P-10)*
 - **B-cr-aventure-4** — *(`kanevas-cr-aventure`)* The block « Comptes-rendus » of an **adventure's sheet** (B-60) also lists
-  the reports of its scenarios (its direct children of type adventure that the reader reads), each with the **name of its scenario**;
+  the reports of its scenarios (all its descendants of type adventure, at any depth of the tree, that the reader reads; an unread scenario cuts off what is under it), each with the **name of its own scenario**;
   the sheet of a scenario lists its own, as before. Without it, filing a report under its scenario would make it disappear from its
   campaign's page. *(P-4)*
 
@@ -766,7 +766,7 @@ the frame says « Image indisponible. » and keeps « Remplacer » and « Retire
    publish it — it opens as a **sheet** (E-9) of type session report, which names the adventure.
 3. They edit it later; others read it from the adventure or the **report list**
    (E-13).
-   *(`kanevas-cr-aventure`)* Filed under the wrong adventure, a report is **moved by the GM** from its sheet (« Changer d'aventure… », E-9): it keeps its address, its relations and the links that aim at it. Under a campaign, the reports of its scenarios show on its page with the scenario's name.
+   *(`kanevas-cr-aventure`)* Filed under the wrong adventure, a report is **moved by the GM** from its sheet (« Changer d'aventure… », E-9): it keeps its address, its relations and the links that aim at it. Under a campaign, the reports of all its scenarios, however deep, show on its page with the scenario's name.
 
 ### P-5 — Update the world after the game (GM)
 1. They read reports (E-13 → E-9).

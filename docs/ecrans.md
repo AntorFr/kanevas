@@ -4107,7 +4107,7 @@ n'est visible des joueurs. » and no « Préparation » block.
   for that CR and the « Campagne » line of its sheet (E-9) is absent: the title of a scenario
   closed to the players never leaks through a CR (rule 3 of `docs/donnees.md`), the CR itself stays
   readable. The filter by adventure of the route stays (`?campagne=<fiche id>`), for an adventure
-  the caller reads (404 otherwise, like the sheet); *(`kanevas-cr-aventure`)* filtering by an adventure also returns the reports of its scenarios (same filter as the block of E-9), the column of each row naming its own adventure.
+  the caller reads (404 otherwise, like the sheet); *(`kanevas-cr-aventure`)* filtering by an adventure also returns the reports of all its descendant scenarios (same filter as the block of E-9), the column of each row naming its own adventure.
 - **Type deactivated** (E-14/E-15, AD-122): exactly what deactivating any type does, nothing
   more — the « Aventures » entry leaves the bar, creating an adventure is refused (E-8; the import warns `type_desactive`); existing adventures stay readable and writable by their
   address and in the search, with their blocks « Préparation » and « Comptes-rendus » and their
@@ -5226,9 +5226,9 @@ shows the new adventure in place, without reloading the sheet; the sections, rel
 supprimée » (adventure deleted) offers the same button. Failure: « L'action n'a pas abouti. Réessayez. » in the dialog, the line unchanged; offline: button disabled.
 No new component or token: the dialog assembles the dialog frame, search field, radio rows and footer of « Déplacer sous… » (gardien du design system to confirm at the slice).
 
-**The block « Comptes-rendus » of an adventure's sheet** also lists the reports of its scenarios. A line of a scenario's report adds
-the scenario's name (a link to its sheet) beside the date; a line of the adventure's own report stays as it is. One list, newest first,
-100 then « Charger la suite ». On the sheet of a scenario, nothing changes. A scenario the reader does not read contributes nothing (no placeholder, no count).
+**The block « Comptes-rendus » of an adventure's sheet** also lists the reports of all its descendant scenarios, at any depth. A line of a scenario's report adds
+the name of its own scenario (a link to its sheet) beside the date; a line of the adventure's own report stays as it is. One list, newest first,
+100 then « Charger la suite ». On the sheet of a scenario, nothing changes. A scenario the reader does not read contributes nothing, nor does what is under it (no placeholder, no count).
 
 Cross-check: B-cr-aventure-1 → E-9 line « Campagne », `PATCH /fiches/:fid {campagne}`; B-cr-aventure-4 → E-9 block, `GET /comptes-rendus?campagne=` (same route, wider
 filter); B-cr-aventure-2 and 3 have no screen (import and export).
