@@ -713,13 +713,13 @@ Nothing of Éneria enters this repository (AD-131): captures, atlas and comparis
   on a system map, a click on a formation (ring, cloud) opens its panel, with its illustration (B-119). *(P-28)*
 - **B-119** — *Navigate by previews.* From the galaxy panel, the portrait of a system opens it (« Enter the system »), as does a double click; from
   a system, a jump point shows the neighbour's portrait and enters it; « Galaxy » and « Another system » leave it; a body shows its illustration
-  and its text. A body or a system has an address that can be shared (deep link). The **portrait** of a system is the reference's painted
+  and its text. A body or a system has an address that can be shared (deep link, P-29 « Share a place »). The **portrait** of a system is the reference's painted
   thumbnail (the star's edge on the left, the bodies in a row), composed from the guarded read so that no hidden body leaks. The panel of a
   **formation** of a system (a ring: belt; a cloud: nebula; a cloud with a lens: anomaly) shows the **illustration** of its family, drawn by the
   browser from the formation's own settings (its veil, the lens of an anomaly: optional keys of the formation's `parametres`, B-122). The distance shown is from the system that is open (not from a fixed one). A player reads the public text
-  of what she reads (the reference withholds it: a defect, not kept). *(P-28, P-29)*
+  of what she reads (the reference withholds it: a defect, not kept). *(P-28, P-29 « Share a place »)*
 - **B-120** — *Full screen.* Both maps open in the whole window; controls and panel float over the map. The zoom is not capped at 0.5×–4×: it
-  goes from the fit of the known zone to the detail of a body. *(P-27, P-28, P-29)*
+  goes from the fit of the known zone to the detail of a body. *(P-27, P-28, P-29 « Share a place »)*
 - **B-121** — *Modes.* The controls sit **inside the map** and the list shown depends on the **mode**: consult (default: search, names, routes, zones,
   recentre), travel simulation (the reach of a jump is Kanevas's: 5 + 5 × engine), and create / edit (GM outside Player mode: place, route, zone,
   move bodies). The mode « factions » stays with `kanevas-factions`. The display choices (names, orbits, hours, the mode) are remembered **by
@@ -1620,7 +1620,7 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 
 ## Cross-check of the `kanevas-battlemap` framing
 
-- Each need has a journey: B-96, B-97, B-98, B-99, B-100 → P-26; B-101…B-104 → P-27; B-105…B-107, B-109 → P-28; B-108, B-109 → P-29; B-110 → P-21 (tool removal), P-26.
+- Each need has a journey: B-96, B-97, B-98, B-99, B-100 → P-26; B-101…B-104 → P-27; B-105…B-107, B-109 → P-28; B-108, B-109, B-119 → P-29 « Share a place »; B-110 → P-21 (tool removal), P-26.
 - Each human gesture has a screen: library E-25; art direction E-26; batch E-27; editor E-28; GM play E-29 (and player play); table display E-30; the creation entry is E-10; tool enabling is E-20; the assistant (B-98, B-100, B-103) is E-12.
 - Each role has its column: GM everything; player reads the library, plays the tokens that are his (E-29 player mode) and reads E-30; the instance admin and a non-member see nothing.
 ## Cross-check of the `kanevas-carte-spatiale` scoping

@@ -1737,6 +1737,8 @@ Any read of the proposal by another account responds like an unknown address (AD
 
 | State | What is shown | Available actions |
 |---|---|---|
+| hidden system, no role | « Page introuvable. » before any panel (same bytes as an unknown system) |
+| visitor with no session | signs in, then lands on the same address (no panel is shown before) |
 | empty | not applicable: the block only exists with a proposal (the tool refuses empty content, AD-80), so « Proposé » is never empty; an empty section reads « (section vide) » in « Actuel » | — |
 | loading (reading the proposal) | no header; « Chargement de la proposition… » (`role="status"`); no areas or actions | keep writing in the thread; close |
 | pending | header, « Actuel » and « Proposé », actions | « Appliquer »; « Abandonner »; « Ouvrir » |
@@ -4628,7 +4630,7 @@ Objects: a **galaxy** (E-21) holds **systems**; a system holds **bodies** (star,
 | E-23 System map | E-21; the « Sur la carte spatiale » block of a sheet (E-9); a shareable link | read the system, see and open the illustrations, follow links; GM: move, name (« Modifier… »), link, add a body, a zone or an element, remove, set the transition radius, anchor, hide an element |
 | E-24 Generator settings | E-21 (GM) | settings and catalogue of aspects of the galaxy |
 
-#### Deep link (`kanevas-carte-rendu-liens-profonds`, B-119, P-29)
+#### Deep link (`kanevas-carte-rendu-liens-profonds`, B-119, P-29 « Share a place »)
 
 - Address: `/univers/:id/outils/swn/galaxie/:gid/interieur/<q>/<r>/astre/<cle>`, a second path of the E-23 screen (a file of `ecrans/` of its own, no router edited, AD-16); the screen hands the `cle` to the system page, which selects that body and opens its panel on arrival.
 - « Copier l'adresse » sits in the panel of a body (a small `Bouton` with the `Copy` icon, no new component) and copies the address above with the **origin of the page**, never the player mode (`?mode=joueur` is not in it); the confirmation is the toast « Adresse copiée. » (charte, Feedback), and where the browser refuses the clipboard the address is shown in the panel in a `ValeurCopiable` to copy by hand (no toast: a failure is never a toast).
@@ -4654,11 +4656,16 @@ Objects: a **galaxy** (E-21) holds **systems**; a system holds **bodies** (star,
   - Given a `cle` that is no body of a readable system, when the address is opened, then the page is « Page introuvable. ».
   - Given a clipboard that refuses, when « Copier l'adresse » is pressed, then the address appears in the panel and no toast shows.
   - Given the GM in Player mode, when he copies an address, then it holds no `?mode=joueur`.
+  - Given a slow read, when the address is opened, then « Chargement du système… » shows and the body's panel opens at the end with no flash of another body.
+  - Given the core failing to load, when the address is opened, then the list of bodies replaces the canvas, the body of the address is selected and « Copier l'adresse » stays offered.
+  - Given a lost connection, when « Copier l'adresse » is pressed, then it still copies the address and « Connexion perdue. » stays shown.
+  - Given a body with a very long name, when its panel opens at 390 px, then the name wraps, the toast cuts it with an ellipsis and the page has no horizontal scroll.
+  - Given a visitor with no session, when she opens the address, then she signs in and lands on the same address.
 
 ### Roles × screens
 
 | Screen | Player | GM | GM in Player mode | No role |
-| E-23 | reads every body and zone, the elements the GM left readable, illustrations included; follows the links of readable sheets (text version, `-systeme`: a hidden system « Page introuvable. », no action) | all, plus: move, name, modify, link, transition radius, add, remove, anchor; for an element: « Déplacer », « Poser sur un astre », « Modifier… », « Réservé au MJ », « Retirer »; « Illustrer la fiche » | as Player | « Page introuvable. » (hidden, not refused) |
+| E-23 | reads every body and zone, the elements the GM left readable, illustrations included; follows the links of readable sheets (text version, `-systeme`: a hidden system « Page introuvable. », no action); « Copier l'adresse » in the panel of a body | all, plus: move, name, modify, link, transition radius, add, remove, anchor; for an element: « Déplacer », « Poser sur un astre », « Modifier… », « Réservé au MJ », « Retirer »; « Illustrer la fiche » | as Player | « Page introuvable. » (hidden, not refused) |
 | E-9 block « Sur la carte spatiale » | lines of readable elements, bodies and systems only; no block when none | as Player, plus the lines of « Réservé au MJ » elements with the badge « MJ seul » | as Player | « Page introuvable. » (the sheet is not readable) |
 | E-24 | « Page introuvable. » (the entry is not shown) | reads and edits | the entry is shown, the screen opens read-only with « Mode joueur actif. » | « Page introuvable. » |
 
@@ -5280,7 +5287,7 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 
 - E-21: the panel of a system shows its **portrait** (the reference's painted thumbnail: the star's edge on the left, the bodies in a row, composed from the guarded read so a hidden body never shows) and « Enter the system »; a double click on a system does the same.
 - E-23: a jump point shows its arrow, the neighbour's name, the distance (« 3 cases ») and the colour of its route; a click opens a card with the neighbour's portrait and « Enter the system ». « Galaxy » returns to the place left; « Another system » opens the search of systems.
-- A body: panel with its illustration, its text and « Copy the address »; the address `…/interieur/<q>/<r>/astre/<cle>` (the system's address plus the body's `cle`) opens the system with the body chosen and the panel open (P-29). A system or a body the reader may not read: « Page introuvable. », byte for byte like an unknown one.
+- A body: panel with its illustration, its text and « Copier l'adresse »; the address `…/interieur/<q>/<r>/astre/<cle>` (the system's address plus the body's `cle`) opens the system with the body chosen and the panel open (P-29 « Share a place »). A system or a body the reader may not read: « Page introuvable. », byte for byte like an unknown one.
 
 ### Roles × screens
 
