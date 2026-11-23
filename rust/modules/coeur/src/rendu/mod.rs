@@ -96,7 +96,7 @@ pub fn dessiner(aspect_json: &str, cote: u32, version_rendu: u32) -> Result<Vec<
 pub const TEINTE_LUMIERE: f32 = 0.5;
 
 fn octets_hex(s: &str) -> Option<[u8; 3]> {
-    if s.len() != 7 || !s.starts_with('#') {
+    if s.len() != 7 || !s.starts_with('#') || !s[1..].bytes().all(|b| b.is_ascii_hexdigit()) {
         return None;
     }
     let o = |i: usize| u8::from_str_radix(s.get(i..i + 2)?, 16).ok();
