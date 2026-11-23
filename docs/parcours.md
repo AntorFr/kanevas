@@ -1346,11 +1346,11 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
 
 Antor opens Clyra from the galaxy: the map takes the whole window over a starfield (B-120). The star is a modest disc with its halo; the
 bodies are at the scale of the orbits (B-113), each with its allure: a violet world with turquoise glow, a giant with its rings turned toward the
-sun, a belt as grains of rock, a nebula as a soft orange gas with asteroids. The names are there, never hidden by the corona. *Moment fort:* the
+sun, a belt as grains of rock, a nebula as a soft orange gas with asteroids; the sky behind is tinted by the system's veil and the twelve hours are marks on its rim. The names are there, never hidden by the corona. *Moment fort:* the
 comet of the system crosses the transition zone on a long ellipse, tail away from the star; he chooses it, its trajectory turns gold, its illustration
 and text open in the panel. A jump point shows an arrow, « 3 cases » and the colour of its route; he clicks it: the neighbour's portrait, « Enter the system ». Léa, on her
 phone, sees the same map with what she may read. *Failure path:* a setting the core does not render is named in the import report; a secret body is
-absent for Léa, and so are its name and its route.
+absent for Léa, and so are its name and its route; an invalid veil or a belt without rocks changes nothing but the tint and the grain count, with no error.
 
 ### P-28 — Cross the galaxy (Antor, GM; Léa, Player — `kanevas-carte-rendu`)
 
