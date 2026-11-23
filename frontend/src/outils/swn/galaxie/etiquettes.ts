@@ -74,9 +74,11 @@ const sechevauchent = (a: Rect, b: Rect) =>
   a.x < b.x + b.largeur + MARGE && b.x < a.x + a.largeur + MARGE && a.y < b.y + b.hauteur + MARGE && b.y < a.y + a.hauteur + MARGE;
 
 /** Rectangles of the four sides of a body, at one distance: below, above, right, left. */
-const candidats = (corps: CorpsEtiquette, m: Mesure, d: number): Rect[] => {
+const candidats = (corps: CorpsEtiquette, m: Mesure, d: number, obstacles: Obstacle[] = []): Rect[] => {
   const { largeur: l, hauteur: h } = m;
-  const c = { ...corps, rayon: Math.max(corps.rayon, corps.halo ?? 0) };
+  // A disc obstacle centred on the body (a star's corona) is part of what the label sits beside.
+  const couronne = Math.max(0, ...obstacles.map((o) => (o.type === 'disque' && Math.abs(o.x - corps.x) < 0.5 && Math.abs(o.y - corps.y) < 0.5 ? o.rayon : 0)));
+  const c = { ...corps, rayon: Math.max(corps.rayon, corps.halo ?? 0, couronne) };
   return [
     { x: c.x - l / 2, y: c.y + c.rayon + d, largeur: l, hauteur: h },
     { x: c.x - l / 2, y: c.y - c.rayon - d - h, largeur: l, hauteur: h },
@@ -106,14 +108,14 @@ export function placerEtiquettes(corps: CorpsEtiquette[], vue: VueEtiquettes, me
         const texte = k === 0 ? plein : raccourci(plein, longueurs[k] ?? 2);
         const m = mesurer(texte);
         for (const d of DISTANCES) {
-          const r = candidats(c, m, d).find(libre);
+          const r = candidats(c, m, d, obstacles).find(libre);
           if (r) { trouve = { cle: c.cle, ...r, texte, visible: true }; placees.push(r); break; }
         }
       }
       if (!trouve && [...plein].length <= 2) {
         const m = mesurer(plein);
         for (const d of DISTANCES) {
-          const r = candidats(c, m, d).find(libre);
+          const r = candidats(c, m, d, obstacles).find(libre);
           if (r) { trouve = { cle: c.cle, ...r, texte: plein, visible: true }; placees.push(r); break; }
         }
       }

@@ -6,7 +6,7 @@ import { lire, useConnexionPerdue } from '../../../api';
 import { chargerModule } from '../../../wasm/charger';
 import { Alerte, Bouton, BoutonIcone, Case, useToasts } from '../../../ui';
 import { APPUI_LONG_MS, DELAI_FLECHES_MS, pasFleche } from '../../../ui/glisser';
-import { centresNuage, coteDemande, dimensionsCorps, disposer, grainsAnneau, placeApresPas, placeDepuisPoint, PORTEE_COURONNE, queuesComete, RAYON_MIN_PX, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
+import { centresNuage, coteDemande, dimensionsCorps, disposer, grainsAnneau, orbitesAstres, placeApresPas, placeDepuisPoint, PORTEE_COURONNE, queuesComete, RAYON_MIN_PX, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
 import { Sprites, dessineurDuCoeur } from './carte-sprites';
 import { placerEtiquettes, type CorpsEtiquette, type EtiquettePlacee, type Obstacle } from './etiquettes';
 import { lireEchecEdition, useEdition, type EchecEdition } from './Edition';
@@ -189,10 +189,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     if (!dispo) return { liste: [] as CorpsEtiquette[], sorties: [] as { q: number; r: number; x: number; y: number; nom: string }[] };
     const liste: CorpsEtiquette[] = dispo.corps.map((c) => {
       const [x, y] = ecran(c.x, c.y);
-      const rayon = Math.max(4, dimDe(c.cle).rayon);
-      // A star's glow is drawn out to ~0.9 of its sprite's half-side: a label does not sit on it.
-      const halo = c.astre.genre === 'etoile' ? Math.max(rayon, dimDe(c.cle).cote / 2 * PORTEE_COURONNE) : undefined;
-      return { cle: c.cle, genre: c.genre, nom: nomAstre(c.astre), x, y, rayon, ...(halo ? { halo } : {}) };
+      return { cle: c.cle, genre: c.genre, nom: nomAstre(c.astre), x, y, rayon: dimDe(c.cle).rayon };
     });
     for (const z of dispo.zones) {
       const [x, y] = ecran(z.ancre[0], z.ancre[1]);
@@ -223,8 +220,10 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     const [cx, cy] = ecran(0, 0);
     if (dispo.transition > 0) liste.push({ type: 'anneau', x: cx, y: cy, rayon: dispo.transition * echelle });
     for (const c of dispo.corps) {
-      if (c.genre !== 'comete') continue;
       const [x, y] = ecran(c.x, c.y);
+      // A star's glow is drawn out to ~0.9 of its sprite's half-side: a label does not sit on it (an obstacle, never part of the radius).
+      if (c.astre.genre === 'etoile') liste.push({ type: 'disque', x, y, rayon: dimDe(c.cle).cote / 2 * PORTEE_COURONNE });
+      if (c.genre !== 'comete') continue;
       liste.push(...queuesComete(x, y, dimDe(c.cle).cote, c.astre.aspect));
     }
     if (heures) {
@@ -236,7 +235,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
       }
     }
     return liste;
-  }, [dispo, ecran, echelle, heures, mesureur, plan]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dispo, ecran, echelle, heures, mesureur, plan, dims]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const etiquettes = useMemo(
     () => (taille.w > 0 ? placerEtiquettes(cibles.liste, { largeur: taille.w, hauteur: taille.h, zoom: vue.zoom }, mesureur, obstacles) : []),
@@ -484,13 +483,8 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     return <Alerte>La carte ne peut pas s’afficher ici.</Alerte>;
   }
 
-  const orbitesTracees = dispo
-    ? Array.from({ length: Math.min(40, Math.max(1, Math.ceil(Math.max(
-      ...interieur.astres.map((a) => (typeof a.orbite === 'number' ? a.orbite : 0)),
-      ...interieur.formations.map((f) => Number(f.forme === 'anneau' ? f.parametres.a : f.parametres.orbite) || 0),
-      Number(interieur.transition) || 0,
-    ) - 0.3))) }, (_, i) => i + 1)
-    : [];
+  // One ring per body, at its own orbit (a moon around its planet): AD-echelle-1.
+  const anneaux = dispo ? orbitesAstres(dispo) : [];
   const rayonHeures = dispo ? Math.max(dispo.transition, 3 * U) : 0;
   const pointHeure = (h: number, r: number): [number, number] => { const p = planRef.current; return p ? ecran(...p(r, h)) : [0, 0]; };
   const [ccx, ccy] = ecran(0, 0);
@@ -525,9 +519,10 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
         {dispo && taille.w > 0 && (
           <>
             <svg className="cs-traits" width={taille.w} height={taille.h} aria-hidden="true">
-              {orbites && orbitesTracees.map((o) => (
-                <circle key={o} className="cs-orbite" cx={ccx} cy={ccy} r={rayonOrbite(o) * echelle} />
-              ))}
+              {orbites && anneaux.map((o) => {
+                const [ox, oy] = ecran(o.cx, o.cy);
+                return <circle key={o.cle} className="cs-orbite" data-cle={o.cle} cx={Math.round(ox)} cy={Math.round(oy)} r={o.rayon * echelle} />;
+              })}
               {heures && Array.from({ length: 12 }, (_, h) => {
                 const [x1, y1] = pointHeure(h, 0);
                 const [x2, y2] = pointHeure(h, rayonHeures);
@@ -535,7 +530,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
                 return (
                   <g key={h} className="cs-heure" data-heure={h}>
                     <line x1={x1} y1={y1} x2={x2} y2={y2} />
-                    {h % 3 === 0 && <text x={tx} y={ty} textAnchor="middle" dominantBaseline="middle">{h === 0 ? 12 : h} h</text>}
+                    {h % 3 === 0 && <text x={Math.round(tx)} y={Math.round(ty)} textAnchor="middle" dominantBaseline="middle">{h === 0 ? 12 : h} h</text>}
                   </g>
                 );
               })}
@@ -569,7 +564,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
             ))}
             {etiquettes.filter((e) => e.visible).map((e) => (
               <span key={e.cle} className={`cs-etiquette${e.cle.startsWith('zone:') ? ' zone' : e.cle.startsWith('sortie:') ? ' sortie' : e.cle.startsWith('element:') ? ' element' : ''}`}
-                data-cle={e.cle} style={{ left: e.x, top: e.y }}>{e.texte}</span>
+                data-cle={e.cle} style={{ left: Math.round(e.x), top: Math.round(e.y) }}>{e.texte}</span>
             ))}
           </>
         )}
