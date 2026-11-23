@@ -5259,9 +5259,9 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 
 > Mockup: `maquettes/e23-rendu.html`, section « Click on a formation ». The mockup draws the frame as a bare `svg`; the screen takes the **existing frame** « Body illustration » (`.cs-illustration`: 4/3, border, `role="img"`, label « Illustration de <name>, <type> », the sky colour `--ciel`) and the existing panel of a formation (`PanneauFormation`, which already shows the name, the form, the place, the hexagon and the linked sheet): no new component. The colours of the three drawings are data (the zone's `parametres`), never tokens.
 
-- **Reaching it.** A click (or a tap) on the ring or on the cloud of a formation on the canvas selects it and opens its panel; the row of the « Zones » list does the same (already so). The hit is **geometric** (`formationAuPoint`, pure): a ring answers between its two orbits, a cloud inside any of its centres (radius = the centre's size); a body or an element under the pointer wins over the formation behind it; a click in the void selects nothing (as today). A formation selected is drawn with the existing selection ring; a body and a formation are never selected together.
+- **Reaching it.** A click (or a tap) on the ring or on the cloud of a formation on the canvas selects it and opens its panel; the row of the « Zones » list does the same (already so). The hit is **geometric** (`formationAuPoint`, pure): a ring answers between its two orbits, a cloud inside any of its centres (radius = the centre's size); a body or an element under the pointer wins over the formation behind it; a click in the void selects nothing and leaves an open panel as it is (as today); the panel closes by its own « Fermer » control or by selecting another object. A formation is reached by keyboard through its row of the « Zones » list (Tab, Enter), which opens the same panel; the canvas itself takes no keyboard focus, as for bodies. A formation selected is drawn with the existing selection ring; a body and a formation are never selected together.
 - **The panel** gains, between the title and the facts, the **illustration of its family**, then (unchanged) the facts, the GM's text (for the GM that wrote it; a player reads no source) and the linked sheet. Nothing is added to what a reader may read: the panel is built from the formation of `lireInterieur`, under the guard of the system.
-- **Families.** *Belt*: a `anneau`; grains over an arc of the band round a partial star, at the ring's own spacing. *Nebula*: a `nuage` with no `lentille`; translucent layers over the cloud's centres, tinted by its `voile` (colour, strength; with no `voile`, the neutral haze of the map). *Anomaly*: a `nuage` whose `parametres` carry a `lentille`; the same layers, a dark centre and a ring at the edge whose colour is the lens colour, the stars behind it displaced away from the centre by an amount that grows with the lens strength.
+- **Families.** *Belt*: a `anneau`; grains over an arc of the band round a partial star, at the ring's own spacing. *Nebula*: a `nuage` with no `lentille`; translucent layers over the cloud's centres, tinted by its `voile` (colour, strength; with no `voile`, the neutral haze `#8899aa`, the constant `COULEUR_VOILE_NEUTRE`). *Anomaly*: a `nuage` whose `parametres` carry a `lentille`; the same layers, a dark centre and a ring at the edge whose colour is the lens colour, the stars behind it displaced away from the centre by an amount that grows with the lens strength.
 - **Settings read, defaults and bounds are those of `-atlas-format`** (`docs/donnees.md`, « Atlas format »): `voile = {couleur, force}` and `lentille = {force, couleur}`; this slice reads them, never defines or clamps them (the core validated them on write); a key missing or not a finite number/colour is read as that table's default.
 - **Click on the illustration**: nothing (no enlarged view: the picture is drawn at any size, there is nothing to fetch). No loading, no failure state: the drawing is made by the browser from data already in hand, the same formation gives the same picture (the stream is seeded by its `cle`, as for its grains on the map). No animation.
 - **Roles.** The same for a Player, a GM and a GM in Player mode (the panel's GM gestures stay in the GM's actions, unchanged). A formation of a system the reader may not read has no panel: the system answers « Page introuvable. » before anything.
@@ -5272,6 +5272,10 @@ Zone panels (B-118, B-119): on a system map, a click on a ring or a cloud of the
 | long name | wraps in the title, as every panel |
 | `parametres` with no `voile`, no `lentille` | belt / nebula by its form, the neutral tint |
 | a `lentille` on a ring | not a valid format (the core refuses it); read as a belt |
+| formation with no text and no linked sheet | the panel shows the illustration and the facts only; no empty block, no placeholder |
+| offline | not applicable: the panel is built from data already loaded, the drawing needs nothing from the network |
+| very long name (80 characters) | wraps in the title; the frame keeps its 4/3 and the panel scrolls |
+| loading, error | not applicable: no fetch for the drawing (see « Click on the illustration »); the panel's own loading is the system's |
 | 390 px | the frame takes the panel's width, 4/3; the 44 px targets of the panel unchanged |
 
 Criteria:
@@ -5286,7 +5290,7 @@ Criteria:
 | Screen | Player | GM | GM in Player mode | No role |
 |---|---|---|---|---|
 | E-21 | consult and travel modes; zones control; previews of the systems she reads | all modes | as Player | « Page introuvable. » |
-| E-23 | consult and travel; preview of readable neighbours only (a secret neighbour draws no jump point, as today) | all modes | as Player | « Page introuvable. » |
+| E-23 | consult and travel; preview of readable neighbours only (a secret neighbour draws no jump point, as today); select a formation and read its panel with its illustration | all modes | as Player | « Page introuvable. » |
 
 ### States (E-21 and E-23)
 
