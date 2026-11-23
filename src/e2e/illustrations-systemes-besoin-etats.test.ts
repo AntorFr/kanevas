@@ -375,10 +375,11 @@ describe('kanevas-illustrations (B) : tests qui changent le monde', { timeout: 6
     await lea.getByRole('link', { name: 'Systèmes de jeu' }).first().waitFor();
     await aller(lea, `/univers/${m.U}`);
     assert.equal(await lea.getByRole('link', { name: /Ouvrir le système/ }).count(), 0);
-    // Antor, on E-14 opened before the detach
+    // Antor, on E-14 opened before the detach: the seed makes him a GM of the system itself (AD-152), so he still
+    // reads it — his stale click lands on its page, not on « Page introuvable. »
     await antor.getByRole('link', { name: /Ouvrir le système/ }).click();
-    await antor.getByText('Page introuvable.').first().waitFor();
-    await antor.getByRole('link', { name: 'Systèmes de jeu' }).first().waitFor();
+    await antor.getByRole('heading', { name: 'CoF Mini', level: 1 }).waitFor();
+    assert.equal(await antor.getByText('Page introuvable.').count(), 0);
     await antor.goBack();
     await aller(antor, `/univers/${m.U}/parametres`);
     await antor.getByText('Cet univers n’est rattaché à aucun système de jeu.').first().waitFor();
