@@ -63,7 +63,7 @@ const ecransDe = (f: string) => premiereLigne(f).replace(/^\/\/ ecrans:\s*/, '')
 const E2E = 'src/e2e/';
 
 describe('écrans touchés : le barrel de frontend/src/ui/index.ts (E-ecrans, Livre : barrel)', () => {
-  test('Segments, que seule la galaxie importe : seuls les tests des écrans outil et outil-cible, pas les 256', () => {
+  test('Segments, que seule la galaxie importe : seuls les tests des écrans outil et outil-cible, pas les 272', () => {
     const l = choisir('frontend/src/ui/segments.tsx', {}, ['if (!pas || disabled) return;', 'if (!pas || disabled) return; void pas;']); // AD-ecrans-ui-4: a body, not a comment
     assert.ok(l.includes(`${E2E}vaisseaux-atelier-livre-review.test.ts`), 'un test de l’écran outil');
     for (const exclu of ['administration-badge-entete', 'membres-pastille-largeur', 'accueil-refonte', 'alias-etiquettes-e9', 'recherche-avancee-ecran']) {
@@ -102,7 +102,7 @@ describe('écrans touchés : l’éditeur d’un outil seul (équivalent de l’
       assert.ok(!l.includes(`${E2E}alias-etiquettes-e9.test.ts`), 'un test fiche seul');
       assert.ok(!l.includes(`${E2E}administration-badge-entete.test.ts`));
       for (const f of l) {
-        assert.ok(ecransDe(f).some((e) => e === 'outil' || e === 'outil-cible' || e === 'outil-interieur'), `${f} déclare ${ecransDe(f)}`);
+        assert.ok(ecransDe(f).some((e) => e === 'outil' || e === 'outil-cible' || e === 'outil-interieur' || e === 'demo-composants'), `${f} déclare ${ecransDe(f)}`);
       }
     });
   }
@@ -181,8 +181,10 @@ describe('écrans touchés : Rust et wasm associés aux écrans qui les chargent
 
   test('frontend/src/wasm/charger.ts, chargé par les seuls écrans de l’outil galaxie : pas tous les écrans', () => {
     const l = choisir('frontend/src/wasm/charger.ts');
+    // The battlemap editor core (outils/battlemap/cartes/coeur.ts) loads it, and the tool screens load the editor.
     assert.ok(l.length < 100, `${l.length} fichiers choisis`);
-    for (const f of l) assert.ok(ecransDe(f).some((e) => e.startsWith('outil')), `${f} déclare ${ecransDe(f)}`);
+    for (const f of l) assert.ok(ecransDe(f).some((e) => e.startsWith('outil') || e === 'battlemap-assets'), `${f} déclare ${ecransDe(f)}`);
+    assert.ok(!l.includes(`${E2E}membres-pastille-largeur.test.ts`));
   });
 
   test('frontend/src/wasm/charger.ts, chargé par la page membres : les tests de membres seuls', () => {
@@ -226,9 +228,9 @@ describe('écrans touchés : le README dit le nombre de tests choisis et la dur�
   const readme = () => readFileSync(join(RACINE, 'README.md'), 'utf8');
   const ligne = (motif: RegExp) => readme().split('\n').find((l) => l.startsWith('|') && motif.test(l)) ?? '';
 
-  test('la ligne Cadre.tsx : 256 fichiers et 39 min', () => {
+  test('la ligne Cadre.tsx : 272 fichiers et 39 min', () => {
     const l = ligne(/Cadre\.tsx/);
-    assert.match(l, /256 files/);
+    assert.match(l, /272 files/);
     assert.match(l, /39 min/);
   });
 
