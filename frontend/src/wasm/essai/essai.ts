@@ -25,6 +25,8 @@ import {
   typesAstre,
   validerAspect,
   validerFormation,
+  classeDeCle,
+  classesEtoile,
 } from '../coeur';
 
 const sortie = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
@@ -171,6 +173,19 @@ async function afficherReglages(): Promise<void> {
   });
 }
 
+// The star classes (B-117): the list, the class drawn for a few keys and sizes, and whether a size out of range throws.
+async function afficherClasses(): Promise<void> {
+  const tirages: string[] = [];
+  for (const t of [0, 0.5, 1]) for (let i = 0; i < 20; i++) tirages.push(await classeDeCle(`cle-${i}`, t));
+  let refus = false;
+  try {
+    await classeDeCle('a', 1.5);
+  } catch {
+    refus = true;
+  }
+  sortie('coeur-classes').textContent = JSON.stringify({ liste: await classesEtoile(), tirages, refus });
+}
+
 async function afficher(): Promise<void> {
   try {
     const exemple = await chargerModule('exemple');
@@ -180,6 +195,7 @@ async function afficher(): Promise<void> {
     await afficherRendu();
     await afficherEdition();
     await afficherReglages();
+    await afficherClasses();
   } catch {
     const erreur = sortie('erreur');
     erreur.hidden = false;
