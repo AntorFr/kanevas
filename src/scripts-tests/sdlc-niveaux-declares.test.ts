@@ -23,11 +23,12 @@ describe('niveaux déclarés dans .sdlc.yaml', () => {
     assert.equal(cle('installation'), 'npm ci && npm run build:wasm');
     assert.equal(cle('fichiers'), 'node scripts/rejouer-tests.mjs --fichiers {tests}');
   });
-  test('ecrans lit {base} avant --installe et appelle un script npm existant ; fiche reste autonome', () => {
-    const scripts = JSON.parse(lire('package.json')).scripts as Record<string, string>;
-    assert.equal(cle('ecrans'), 'npm run tests:ecrans -- {base} --installe');
-    assert.equal(cle('fiche'), 'npm ci && npm run tests:fiche -- {base}');
-    for (const nom of ['ecrans', 'fiche']) assert.ok(scripts[`tests:${nom}`]?.includes(`--${nom}`));
+  test('les niveaux appellent tests-attestes.mjs directement ; {base} précède --installe', () => {
+    assert.equal(cle('commande'), 'npm ci && node scripts/tests-attestes.mjs');
+    assert.equal(cle('local'), 'npm ci && node scripts/tests-attestes.mjs --local');
+    assert.equal(cle('ecrans'), 'node scripts/tests-attestes.mjs --ecrans {base} --installe');
+    assert.equal(cle('fiche'), 'npm ci && node scripts/tests-attestes.mjs --fiche {base}');
+    for (const nom of ['commande', 'local', 'ecrans', 'fiche']) assert.doesNotMatch(cle(nom) ?? '', /npm run/, `${nom} passe par package.json`);
   });
   test('rejouer ne réinstalle pas et passe --installe après les noms', () => {
     assert.equal(cle('rejouer'), 'node scripts/rejouer-tests.mjs {tests} --installe');
@@ -37,16 +38,22 @@ describe('niveaux déclarés dans .sdlc.yaml', () => {
     assert.ok(chemins.length > 0, 'tests.outillage est vide');
     for (const c of chemins) assert.ok(existsSync(`${racine}${c}`), `outillage : ${c} n'existe pas`);
     const commandes = bloc.map((l) => l.replace(/^\s+\S+:\s*/, '')).join('\n');
-    const scripts = JSON.parse(lire('package.json')).scripts as Record<string, string>;
     const lances = new Set<string>();
     for (const m of commandes.matchAll(/node\s+(\S+\.mjs)/g)) lances.add(m[1]);
-    for (const m of commandes.matchAll(/npm run ([\w:.-]+)/g)) {
-      for (const s of (scripts[m[1]] ?? '').matchAll(/node\s+(?:--\S+\s+\S+\s+)*(\S+\.mjs)/g)) lances.add(s[1]);
-    }
     assert.ok(lances.size > 0);
     for (const s of lances) {
       assert.ok(existsSync(`${racine}${s}`), `${s} n'existe pas`);
-      assert.ok(chemins.some((c) => s === c || (c.endsWith('/') && s.startsWith(c))), `${s} n'est sous aucun chemin d'outillage`);
+      assert.ok(chemins.includes(s), `${s} n'est pas nommé par l'outillage`);
+    }
+  });
+  test("l'outillage ne nomme que des scripts de jugement : ni package.json, ni dossier, ni installation ou construction", () => {
+    const chemins = outillage();
+    assert.deepEqual([...chemins].sort(), [
+      'scripts/niveaux-tests.mjs', 'scripts/playwright.mjs', 'scripts/rejouer-tests.mjs', 'scripts/tests-attestes.mjs',
+    ]);
+    for (const c of chemins) {
+      assert.match(c, /^scripts\/[\w.-]+\.mjs$/, `${c} n'est pas un script .mjs exact`);
+      assert.doesNotMatch(c, /package(-lock)?\.json|rust-wasm|copier-wasm/, `${c} installe ou construit`);
     }
   });
 });
