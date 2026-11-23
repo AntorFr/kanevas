@@ -11,7 +11,7 @@ describe('section « Outils » de la barre et écran d’un outil', { skip: skip
   let universId: number;
   let systemeId: number;
   before(async () => {
-    srv = await startServer({ KANEVAS_SANS_SEMIS: '' });
+    srv = await startServer({ KANEVAS_SANS_SEMIS: '', KANEVAS_SANS_SEMIS_BATTLEMAP: '1' });
     browser = await launch();
   });
   after(async () => {

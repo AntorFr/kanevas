@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { migrate, openDb } from './db.js';
 import { versionsSource } from '../services/swn/calcul-vaisseau.js';
 
-// 0048 (B-94, H-8, H-10): the `effet` CHECK of swn_catalogue_modifications is rebuilt for `surdimensionne` and `moteur_niveau`;
+// 0053 (B-94, H-8, H-10): the `effet` CHECK of swn_catalogue_modifications is rebuilt for `surdimensionne` and `moteur_niveau`;
 // every row keeps every value, no design is rewritten, no catalogue version moves.
 const SRC = new URL('./migrations/', import.meta.url).pathname;
 function dossierJusqua(max: number): string {
@@ -17,9 +17,9 @@ function dossierJusqua(max: number): string {
   return dir;
 }
 
-test('0048 : montée depuis 0047, la modification et la conception à vise gardent toutes leurs valeurs, CHECK élargi, index gardés', () => {
+test('0053 : montée depuis 0052, la modification et la conception à vise gardent toutes leurs valeurs, CHECK élargi, index gardés', () => {
   const db = openDb(':memory:');
-  migrate(db, dossierJusqua(47));
+  migrate(db, dossierJusqua(52));
   db.prepare("INSERT INTO univers (id, nom, cle, cree_le) VALUES (1, 'U', 'univ-essai', '2026-11-01T00:00:00.000Z')").run();
   const ins = (cle: string, effet: string | null, extra: Record<string, unknown> = {}) => {
     const cols: Record<string, unknown> = { proprietaire: 'univers', univers_id: 1, cle, nom: `N ${cle}`, cout: 700, puissance: 2, masse: 1.5, pv: 3, ca: 4, limite: 2,
@@ -42,7 +42,7 @@ test('0048 : montée depuis 0047, la modification et la conception à vise garde
   const avantV = versionsSource(db, 1);
   assert.ok(avantI.length > 0);
 
-  assert.deepEqual(migrate(db), [48]);
+  assert.deepEqual(migrate(db), [53]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
 
   assert.deepEqual(db.prepare('SELECT * FROM swn_catalogue_modifications ORDER BY cle').all(), avant);

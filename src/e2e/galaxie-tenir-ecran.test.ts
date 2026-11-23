@@ -465,6 +465,7 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     const { page, ctx } = await ouvre('Antor');
     await page.goto(`/univers/${univers}/cartes`);
     await page.getByRole('button', { name: 'Nouvelle carte' }).click();
+    await page.getByRole('menuitem', { name: 'Carte illustrée, graphe…' }).click();
     await page.getByLabel('Forme').selectOption({ label: 'Carte de la galaxie' });
     assert.equal(await page.getByLabel('Image de fond').count(), 0, 'pas d\'image de fond');
     await page.getByLabel('Titre').fill('Galaxie neuve');
