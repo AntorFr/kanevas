@@ -13,7 +13,8 @@ test('P-8: a universe attached then detached leaves the system, its entries and 
   const sys = (await m.dire(m.antor, 'POST', `${lame.base}/systeme-nouveau`, { nom: 'CoF Mini' })).corps;
   assert.equal((await m.dire(m.antor, 'PUT', `${landes.base}/systeme`, { systemeId: sys.id })).status, 204);
   const lire = (h: Parameters<typeof m.dire>[0], q = '?type=creature') => m.dire(h, 'GET', `/api/systemes/${sys.id}${q}`);
-  assert.equal((await lire(m.admin)).status, 404, 'a GM of an unattached universe reads nothing');
+  assert.equal((await lire(m.admin)).status, 200, 'the instance admin with no link reads the header only (AD-157)');
+  assert.equal((await lire(m.admin)).corps.fiches, undefined, 'and no element');
   assert.equal((await m.dire(m.antor, 'PUT', `${brume.base}/systeme`, { systemeId: sys.id })).status, 204);
   assert.equal((await lire(m.antor)).corps.nbUnivers, 3);
 

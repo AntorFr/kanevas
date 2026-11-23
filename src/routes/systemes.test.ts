@@ -208,9 +208,11 @@ test('lecture : 404 de corps identique (inconnu, sans rôle, non rattaché, non 
 
   const inconnu = await appel(app, w.antor, 'GET', '/api/systemes/99999');
   const teo = await appel(app, w.teo, 'GET', url);
-  const admin = await appel(app, w.admin, 'GET', url); // MJ d'un univers non rattaché
-  for (const r of [inconnu, teo, admin]) assert.equal(r.statusCode, 404);
-  for (const r of [teo, admin]) assert.equal(r.body, inconnu.body);
+  const admin = await appel(app, w.admin, 'GET', url); // instance admin, no link: the header only (AD-157)
+  for (const r of [inconnu, teo]) assert.equal(r.statusCode, 404);
+  assert.equal(teo.body, inconnu.body);
+  assert.equal(admin.statusCode, 200);
+  assert.equal(admin.json().fiches, undefined);
   assert.equal((await appel(app, w.teo, 'GET', '/api/systemes/abc')).statusCode, 404);
 
   const vu = await appel(app, w.antor, 'GET', url);
