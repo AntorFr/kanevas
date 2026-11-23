@@ -9,7 +9,7 @@ import { poserSectionGeree } from '../sections-gerees.js';
 import { etatGere } from '../sections-gerees-etat.js';
 import type { Acteur, SectionRow } from '../types.js';
 import { calculerDepuisChoix, calculerResolu, OUTIL_VAISSEAUX, resoudreChoix, TYPE_CARACTERISTIQUES, validerChoix, validerEffectif, validerEquipage, validerReparation, controlerChoix, versionSourceVaisseaux,
-  versionsSource, type EntreeCalcul, type LigneChoix, type Porte } from './calcul-vaisseau.js';
+  versionsSource, ciblesDeLigne, ligneAEnregistrer, type EntreeCalcul, type LigneChoix, type Porte } from './calcul-vaisseau.js';
 import { ligneDe, porteDe, type ChargeConception, type LigneConception } from './section-vaisseaux.js';
 
 // The designs under rights (V-5, V-7): the row `swn_conceptions` and the managed section « Caractéristiques » are written
@@ -88,8 +88,18 @@ function vue(db: Db, acteur: Acteur, universId: number, l: Lue): VueConception {
   const bloquantes = [...resultat.alertes.filter((a) => a.niveau === 'bloquante'), ...classes];
   const surveiller = resultat.alertes.filter((a) => a.niveau !== 'bloquante');
   const geree = etatGere(db, acteur, universId, l.section);
+  // The targets of a line as they read today, whatever shape was stored (H-cibles-1 (1)): `vise` stays on `soutes_doublees` only.
+  const lignes = resultat.lignes.map((x, i) => {
+    const effet = r.lignes[i]?.element.effet;
+    if (effet === undefined) return x;
+    const { vise, cibles: _stockees, ...reste } = x;
+    const cibles = ciblesDeLigne({ quantite: x.quantite, ...(vise ? { vise } : {}), ...(_stockees ? { cibles: _stockees } : {}) }, effet);
+    // A single pair is also given as `vise`, kept for readers of the old shape; the workshop reads `cibles` (only `soutes_doublees` still reads `vise`).
+    const unique = cibles?.length === 1 ? { nature: cibles[0]!.nature, cle: cibles[0]!.cle } : undefined;
+    return { ...reste, ...(cibles ? { cibles } : {}), ...(effet === 'soutes_doublees' && vise ? { vise } : unique ? { vise: unique } : {}) };
+  });
   return {
-    ficheId: l.ligne.fiche_id, titre: l.titre, coque: resultat.coque, lignes: resultat.lignes, resultat,
+    ficheId: l.ligne.fiche_id, titre: l.titre, coque: resultat.coque, lignes, resultat,
     pj: l.ligne.pj ?? 0, robots: l.ligne.robots ?? 0,
     alertes: [...bloquantes, ...r.retirees, ...surveiller],
     version: l.ligne.version,
@@ -145,11 +155,13 @@ function charger(db: Db, universId: number, e: EntreeCalcul, porte: Porte | null
   if (r.inconnu) {
     throw new ErreurService('invalide', "Cet élément n'est pas disponible.", 'element_indisponible', r.inconnu.champ);
   }
-  controlerChoix(r);
+  controlerChoix(r, e);
   const s = { ...calculerResolu(db, universId, r), equipage: r.equipage };
   if (s.resultat === null) throw new ErreurConceptionBloquee(s.alertes);
   if (s.alertes.some((a) => a.niveau === 'bloquante')) throw new ErreurConceptionBloquee(s.alertes);
-  const charge: ChargeConception = { coque: e.coque, lignes: e.choix, resultat: s.resultat,
+  // B-94: a save writes `cibles` (and no `vise`) for the effects that aim; nothing was rewritten before.
+  const lignes = e.choix.map((l, i) => ligneAEnregistrer(l, r.lignes[i]?.element.effet));
+  const charge: ChargeConception = { coque: e.coque, lignes, resultat: s.resultat,
     versionReglages: versionsSource(db, universId).reglages, versionCatalogue: versionsSource(db, universId).catalogue,
     equipage: s.equipage, reparation: r.reparation, pj: r.pj, robots: r.robots };
   return charge;

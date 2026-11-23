@@ -409,7 +409,7 @@ test('0046 : montée depuis 0045, données gardées, contraintes vivantes, RESTR
   db.prepare("INSERT INTO univers (id, cle, nom, cree_le) VALUES (1, 'un', 'U', '2026-11-01T00:00:00.000Z')").run();
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'a', 'x')").run();
   const avant = db.prepare('SELECT * FROM univers').all();
-  assert.deepEqual(migrate(db), [46, 47, 48, 49, 50, 51, 52]);
+  assert.deepEqual(migrate(db), [46, 47, 48, 49, 50, 51, 52, 53]);
   assert.deepEqual(tables(), ['bm_assets', 'bm_cartes', 'bm_direction', 'bm_direction_images', 'bm_lots', 'bm_lots_lignes', 'bm_pions_proprietaires', 'bm_tables']);
   assert.deepEqual(db.prepare('SELECT * FROM univers').all(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);

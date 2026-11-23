@@ -286,8 +286,8 @@ describe('B-86 import : champs créés, relus, inchangés au rejeu', () => {
     ] });
     const r = await m.antor('POST', `${m.V}/catalogue/application`, cat);
     assert.equal(r.status, 200, r.texte);
-    assert.deepEqual(refus(r), { 'pct-sur-armure': 'effet_pct', 'vise-sur-vitesse': 'vise', 'pct-sans-effet': 'effet_pct', 'surcharge-sans-pct': 'effet_pct' });
-    assert.equal(r.json.natures.modifications.ajoutes, 1);
+    assert.deepEqual(refus(r), { 'pct-sur-armure': 'effet_pct', 'pct-sans-effet': 'effet_pct', 'surcharge-sans-pct': 'effet_pct' });
+    assert.equal(r.json.natures.modifications.ajoutes, 2); // `vise` is tolerated and ignored (H-8): the line 'vise-sur-vitesse' is created
   });
 
   it('un fichier qui retire un champ au rejeu modifie l’élément : la base de la réduction disparaît, le moteur revient à 36 000', async () => {
@@ -359,7 +359,8 @@ describe('B-86 fiches de règles et texte de la conception', () => {
     assert.match(t, /Montage L \(→ Laser Z\)/);
     assert.match(t, /Réacteur arrondi \(3 points\)/);
     const relue = (await m.lea('GET', `${m.V}/conceptions/${m.etoile}`)).json;
-    assert.equal(relue.resultat.masseLibre, 19);
+    // laser 1 (the mounting leaves a mass of 1 at 1) → 19, then the exchange of 3 points gives back 1: 20
+    assert.equal(relue.resultat.masseLibre, 20);
   });
 });
 
