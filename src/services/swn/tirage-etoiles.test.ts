@@ -56,7 +56,7 @@ function lireTout(w: W, who: ReturnType<W['a']>) {
 }
 const attendu = (b: any): [number, number][] => (b.etoile ? [[b.etoile.q, b.etoile.r]] : []);
 const bloc = (w: W, who: ReturnType<W['a']>, bx: number, by: number) =>
-  lireBlocsGeneres(w.db, who, w.univers, w.g, { bx, by }, { bx, by })[0]!.generes;
+  lireBlocsGeneres(w.db, who, w.univers, w.g, { bx, by }, { bx, by })[0]!.generes.map(([q, r]) => [q, r] as [number, number]);
 
 test('les generes des 400 blocs des fixtures sont les étoiles des fixtures (MJ et joueuse, un système secret au milieu)', () => {
   const w = monde({ secret: new Set(['22,-49', '3,-2']) });
@@ -167,7 +167,7 @@ test('une densité par défaut modifiée change le résultat servi (clé de cach
   w.db.prepare('UPDATE swn_galaxies SET densite_defaut = 0 WHERE id = ?').run(w.g);
   assert.ok(!lire().includes('[['), 'densité 0 : aucune étoile');
   w.db.prepare('UPDATE swn_galaxies SET densite_defaut = 1 WHERE id = ?').run(w.g);
-  assert.equal(lire().match(/\[\d+,-?\d+\]/g)?.length, 100, 'densité 1 : une étoile par bloc');
+  assert.equal(lire().match(/\[-?\d+,-?\d+,[-\d.e]+,\"[A-Z]\"\]/g)?.length, 100, 'densité 1 : une étoile par bloc');
   w.db.prepare('UPDATE swn_galaxies SET densite_defaut = ? WHERE id = ?').run(F.densites.defaut, w.g);
   assert.equal(lire(), base);
 });

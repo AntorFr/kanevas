@@ -153,7 +153,7 @@ test('clé : graine, zone, densité par défaut changent le résultat servi', ()
   const b = { bx: 0, by: 0 };
   const lire = () => JSON.stringify(lireBlocsGeneres(db, a('antor'), univers, g, b, b));
   const base = lire();
-  assert.equal(base, '[{"bx":0,"by":0,"generes":[[1,3]]}]');
+  assert.deepEqual(JSON.parse(base).map((x: any) => ({ ...x, generes: x.generes.map(([q, r]: number[]) => [q, r]) })), [{ bx: 0, by: 0, generes: [[1, 3]] }]);
   db.prepare("UPDATE swn_galaxies SET graine='autre' WHERE id=?").run(g);
   const R = { bx: 0, by: 0 }, S = { bx: 4, by: 4 };
   const autre = JSON.stringify(lireBlocsGeneres(db, a('antor'), univers, g, R, S));
@@ -163,7 +163,7 @@ test('clé : graine, zone, densité par défaut changent le résultat servi', ()
   db.prepare("INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, densite, secret) VALUES (?,?,'z','Z','[[0,0],[4,0],[4,4],[0,4]]','rouge',0,0)").run(g, univers);
   assert.equal(JSON.parse(lire())[0].generes.length, 0);
   db.prepare("UPDATE swn_zones SET densite=1, version=version+1 WHERE cle='z'").run();
-  assert.deepEqual(JSON.parse(lire())[0].generes, [[1, 3]]);
+  assert.deepEqual(JSON.parse(lire())[0].generes.map(([q, r]: number[]) => [q, r]), [[1, 3]]);
   db.prepare('DELETE FROM swn_zones WHERE cle=?').run('z');
   assert.equal(lire(), base);
   db.prepare('UPDATE swn_galaxies SET densite_defaut = 0 WHERE id = ?').run(g);

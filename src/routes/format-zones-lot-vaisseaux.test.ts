@@ -266,8 +266,8 @@ describe('B-84 droits d’une zone privée (B-73)', () => {
     assert.equal(r.json.refusTotal, 0, r.texte);
     assert.deepEqual((await m.api('lea', 'GET', `${m.G}${fenetre}`)).json.blocs, leaAvant);
     const mjApres = (await m.api('antor', 'GET', `${m.G}${fenetre}`)).json.blocs as Any[];
-    assert.deepEqual(mjApres.find((b) => b.bx === 0 && b.by === 1).generes, [[3, 7]], 'le MJ voit le bloc modifié');
-    assert.deepEqual(mjApres.find((b) => b.bx === 0 && b.by === 2).generes, [[3, 12]]);
+    assert.deepEqual(mjApres.find((b) => b.bx === 0 && b.by === 1).generes.map(([q, r]: number[]) => [q, r]), [[3, 7]], 'le MJ voit le bloc modifié');
+    assert.deepEqual(mjApres.find((b) => b.bx === 0 && b.by === 2).generes.map(([q, r]: number[]) => [q, r]), [[3, 12]]);
     assert.notDeepEqual(mjApres, mjAvant);
   });
 

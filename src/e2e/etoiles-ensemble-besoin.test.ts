@@ -199,7 +199,7 @@ async function toutLire(g: Galaxie, compte: string): Promise<Lecture> {
     for (const y of [-10, 0]) {
       const r = await appel(g.m, compte, 'GET', `/${g.id}/blocs?de=${x},${y}&a=${x + 9},${y + 9}`);
       assert.equal(r.status, 200, r.texte);
-      for (const b of r.json.blocs) generes.set(`${b.bx},${b.by}`, b.generes);
+      for (const b of r.json.blocs) generes.set(`${b.bx},${b.by}`, b.generes.map(([q, r]: number[]) => [q, r]));
       systemes.push(...r.json.systemes);
     }
   }
@@ -267,7 +267,7 @@ test('B-87 : le serveur d’une image qui ne porte que dist/ charge le cœur et 
   // Block (0,-1) of the fixtures: the star of class… at (2,-3) when no system or zone is around (literal read from the fixtures).
   const r = await appel(g.m, 'antor', 'GET', `/${g.id}/blocs?de=0,-1&a=0,-1`);
   assert.equal(r.status, 200, r.texte);
-  assert.deepEqual(r.json.blocs[0].generes, [[2, -3]]);
+  assert.deepEqual(r.json.blocs[0].generes.map(([q, r]: number[]) => [q, r]), [[2, -3]]);
 });
 
 // ---------------------------------------------------------------- B-86 : the stars at the places of the fixtures
