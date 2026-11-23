@@ -4,11 +4,11 @@ import { invalide } from '../services/erreurs.js';
 import {
   creerEtRattacherSysteme,
   creerSysteme,
-  lireSystemeComplet,
   listerCatalogue,
   listerSystemes,
   rattacherSysteme,
 } from '../services/systemes.js';
+import { lireSystemeComplet } from '../services/systemes-elements.js';
 import { reglerTypeSysteme, reglerTypeUnivers, typesDeLUnivers } from '../services/types-fiche.js';
 import { changerCleUnivers } from '../services/cles.js';
 import { lireUnivers, modifierUnivers } from '../services/univers.js';
