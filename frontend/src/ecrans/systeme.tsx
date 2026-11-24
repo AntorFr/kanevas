@@ -3,10 +3,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
-import { useTitreAriane } from '../cadre-contexte';
+import { useMoi, useTitreAriane } from '../cadre-contexte';
 import type { SystemeCompte } from '../types';
 import type { Ecran } from '../registre';
 import { ChargementListe, ErreurChargement, PageIntrouvable, Pastille } from '../ui';
+import { GROUPE_ADMIN } from '../items';
+import { OngletMJSysteme } from './systeme/onglet-mj';
 import { PucesUnivers } from './systeme/puces';
 import { OngletTypesSysteme } from './types-reglage/onglet-systeme';
 import { PanneauOutils } from './outils/panneau';
@@ -29,7 +31,10 @@ const PLUS_DROIT = 'Vous ne pouvez plus modifier ce système.';
 function Systeme() {
   const { sid } = useParams();
   const [params, setParams] = useSearchParams();
+  const moi = useMoi();
+  const estAdmin = moi.etat === 'ok' && moi.valeur.groups.includes(GROUPE_ADMIN);
   const surOutils = params.get('type') === 'outils';
+  const surMJ = params.get('type') === 'mj';
   const [entete, setEntete] = useState<Page>();
   const [etat, setEtat] = useState<'chargement' | 'ok' | 'erreur' | 'introuvable'>('chargement');
   const [essai, setEssai] = useState(0);
@@ -70,6 +75,8 @@ function Systeme() {
   }
   const peutEcrire = entete.peutEcrire;
   const peutLireOutils = params.get('mode') !== 'joueur' && entete.mesUnivers.some((u) => u.role === 'mj');
+  if (surMJ && moi.etat === 'chargement') return <ChargementListe texte="Chargement du système…" />;
+  if (surMJ && !estAdmin) return <PageIntrouvable retour="systemes" />;
   if (surOutils && !peutLireOutils) return <PageIntrouvable retour="systemes" />;
 
   return (
@@ -105,17 +112,19 @@ function Systeme() {
           <button
             type="button"
             role="tab"
-            aria-selected={!surOutils}
-            className={!surOutils ? 'actif' : undefined}
+            aria-selected={!surOutils && !surMJ}
+            className={!surOutils && !surMJ ? 'actif' : undefined}
             onClick={() => setParams({}, { replace: true })}
           >
             Types de fiche
           </button>
           {peutLireOutils && <button type="button" role="tab" aria-selected={surOutils} className={surOutils ? 'actif' : undefined}
             onClick={() => setParams({ type: 'outils' }, { replace: true })}>Outils</button>}
+          {estAdmin && <button type="button" role="tab" aria-selected={surMJ} className={surMJ ? 'actif' : undefined}
+            onClick={() => setParams({ type: 'mj' }, { replace: true })}>MJ du système</button>}
         </div>
       </div>
-      {!surOutils && (
+      {!surOutils && !surMJ && (
         <div role="tabpanel">
           <OngletTypesSysteme
             systemeId={sid!}
@@ -134,6 +143,7 @@ function Systeme() {
           />
         </div>
       )}
+      {surMJ && <div role="tabpanel"><OngletMJSysteme key={sid} id={sid!} nom={entete.nom} /></div>}
       {surOutils && <div role="tabpanel"><PanneauOutils key={sid} id={sid!} niveau="systeme" /></div>}
     </div>
   );
