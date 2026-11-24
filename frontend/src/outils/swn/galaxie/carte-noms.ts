@@ -7,8 +7,9 @@ export interface CandidatNom {
   taille?: number;
 }
 export interface VueNoms { s: number; corps?: number }
+// `s` is the zoom; it moves the boxes' positions (done by the caller), not which names are tried.
 
-/** Hexagon radius (px) from which names show at all. */
+/** Hexagon radius (px) from which the labels of routes and zones show: names of stars have no threshold, they give way by collision (AD-galaxie-systemes-4). */
 export const SEUIL_NOMS = 12;
 /** Height of a name's box, in px. */
 export const HAUTEUR_NOM = 12;
@@ -17,7 +18,6 @@ const CORPS_DEFAUT = 12;
 /** The `cle` of the names kept: placed by priority, then size (large first), then key; a name is kept only if its box meets no kept box. */
 export function nomsVisibles(candidats: CandidatNom[], vue: VueNoms): Set<string> {
   const gardes = new Set<string>();
-  if (vue.s < SEUIL_NOMS) return gardes;
   const corps = vue.corps ?? CORPS_DEFAUT;
   const boites: { x0: number; x1: number; y0: number; y1: number }[] = [];
   const ordre = [...candidats].sort((a, b) => a.priorite - b.priorite || (b.taille ?? 0) - (a.taille ?? 0) || (a.cle < b.cle ? -1 : a.cle > b.cle ? 1 : 0));
