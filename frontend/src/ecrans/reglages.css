@@ -81,3 +81,4 @@
 .filtre-elements { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--e-3); }
 .liste-elements .ligne-liee { padding: 0 var(--e-3); }
 .liste-elements .chevron-ligne { margin-left: auto; color: var(--texte-3); }
+.liste-elements .jeton { background: none; padding-inline: 0; }
