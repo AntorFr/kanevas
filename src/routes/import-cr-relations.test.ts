@@ -112,7 +112,7 @@ test('bords : creeLe dans le futur → 400 ; sans creeLe, la date est celle de l
   assert.ok(Date.now() - new Date(d).getTime() < 60_000);
 });
 
-test('rejeu : 3 inchangées, ordre et dates intacts ; autre campagne ou autre date : inchangée + avertissement, rien ne bouge', async () => {
+test('rejeu : 3 inchangées, ordre et dates intacts ; autre date : inchangée + avertissement, rien ne bouge ; autre campagne : déplacée, sans avertissement', async () => {
   const m = await monter();
   await troisCR(m);
   await m.putC('c:autre', { nom: 'Autre' });
@@ -125,9 +125,6 @@ test('rejeu : 3 inchangées, ordre et dates intacts ; autre campagne ou autre da
     assert.deepEqual(r.json().avertissements, []);
   }
   assert.equal(morceauxLot(await m.lire(l))[0], 'Fiches : 3 inchangées');
-  const r2 = await m.put('cr:mars', cr('Mars', '2021-03-03T20:00:00Z', { campagne: 'c:autre' }), l);
-  assert.equal(r2.json().etat, 'inchangee');
-  assert.ok(r2.json().avertissements.some((a: string) => /campagne/.test(a)), r2.body);
   const r3 = await m.put('cr:mars', cr('Mars', '2021-05-01T20:00:00Z'), l);
   assert.equal(r3.json().etat, 'inchangee');
   assert.ok(r3.json().avertissements.length >= 1);
@@ -135,6 +132,12 @@ test('rejeu : 3 inchangées, ordre et dates intacts ; autre campagne ou autre da
   assert.deepEqual(m.app.db.prepare('SELECT id, version, modifie_le FROM sections ORDER BY id').all(), sections);
   const camp = m.app.db.prepare("SELECT json_extract(charge,'$.campagne_id') c FROM fiches WHERE cle='cr:mars'").get() as { c: number };
   assert.equal(camp.c, (m.app.db.prepare("SELECT id FROM fiches WHERE type='aventure' AND cle='c:brumes'").get() as { id: number }).id);
+  // another adventure: the report is moved (B-cr-aventure-2), counted as updated, no warning
+  const r2 = await m.put('cr:mars', cr('Mars', '2021-03-03T20:00:00Z', { campagne: 'c:autre' }), l);
+  assert.equal(r2.json().etat, 'mise_a_jour', r2.body);
+  assert.deepEqual(r2.json().avertissements, []);
+  const camp2 = m.app.db.prepare("SELECT json_extract(charge,'$.campagne_id') c FROM fiches WHERE cle='cr:mars'").get() as { c: number };
+  assert.equal(camp2.c, (m.app.db.prepare("SELECT id FROM fiches WHERE type='aventure' AND cle='c:autre'").get() as { id: number }).id);
 });
 
 test('exclusion : le MJ ferme aux joueurs la section d’un des trois → Léa ne voit que deux lignes (total 2), Antor trois', async () => {

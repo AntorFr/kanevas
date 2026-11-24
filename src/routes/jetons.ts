@@ -42,7 +42,7 @@ export function registerJetonsRoutes(app: FastifyInstance) {
     const { jeton, valeur } = creerJeton(
       app.db,
       request.session!.id,
-      { nom: b.nom, dureeJours: b.dureeJours, acces: b.acces, outils: b.outils },
+      { nom: b.nom, dureeJours: b.dureeJours, acces: b.acces, outils: b.outils, contenu: b.contenu },
       app.horloge(),
     );
     return reply.code(201).send({ jeton, valeur });

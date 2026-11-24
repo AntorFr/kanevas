@@ -5,6 +5,7 @@ import { ErreurApi, appeler, lire, useConnexionPerdue } from '../../api';
 import { badgeFiche, iconeDuType, useTypes } from '../../types-contexte';
 import { useUnivers } from '../../cadre-contexte';
 import { Alerte, Bouton, BoutonIcone, Champ, Fenetre, Menu, useToasts } from '../../ui';
+import { LigneChoix } from './ligne-choix';
 import { LONGUEUR_RECHERCHE } from './liste-recherche';
 import type { Enfant, Fiche, FicheVue, PageEnfants, PageFiches } from './types';
 
@@ -265,22 +266,17 @@ export function DeplacerSous({
     const detail = [badge, f.sousType].filter(Boolean).join(' · ') + (f.id === parentActuel ? ' (parent actuel)' : '');
     return (
       <div key={f.id} className="ligne-res">
-        <label className={`resultat${soi ? ' soi' : ''}`} aria-disabled={soi || undefined} title={f.titre}>
-          <input
-            type="radio"
-            name="nouveau-parent"
-            disabled={soi}
-            checked={!soi && choisi?.id === f.id}
-            data-enfants={enfants && !soi ? f.id : undefined}
-            onChange={() => choisir({ id: f.id, titre: f.titre })}
-          />
-          <span className="puce" aria-hidden="true" />
-          <Icone size={16} strokeWidth={1.75} aria-hidden="true" />
-          <span className="titre-res">{f.titre}</span>
-          {soi && ' '}
-          {soi && <span className="note-soi">(cette fiche)</span>}
-          <span className="type-option">{detail}</span>
-        </label>
+        <LigneChoix
+          nom="nouveau-parent"
+          titre={f.titre}
+          Icone={Icone}
+          detail={detail}
+          note="(cette fiche)"
+          soi={soi}
+          choisi={choisi?.id === f.id}
+          enfants={enfants && !soi ? f.id : undefined}
+          onChoisir={() => choisir({ id: f.id, titre: f.titre })}
+        />
         {enfants && !soi && (
           <button type="button" className="chevron-res" tabIndex={-1} aria-label={`Ouvrir « ${f.titre} »`} aria-disabled={perdue || undefined} onClick={() => !perdue && descendre(f as Enfant)}>
             <ChevronRight size={16} strokeWidth={1.75} aria-hidden="true" />
@@ -306,7 +302,7 @@ export function DeplacerSous({
   const aucun = (
     <label className="resultat aucun">
       <input type="radio" name="nouveau-parent" checked={choisi === null} onChange={() => choisir(null)} />
-      <span className="puce" aria-hidden="true" />
+      <span className="puce resultat-puce" aria-hidden="true" />
       Aucun parent
       {parentActuel === null && <span className="type-option">(actuel)</span>}
     </label>
