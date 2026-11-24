@@ -443,7 +443,8 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   to its sheet, at least 24 px high. Only adventure fields returned by the server appear.
   A deleted adventure is plain text for the GM; a hidden one leaves no placeholder or
   separator. Dates use a semantic `time` element. Without the adventure option (E-9 block),
-  the same row keeps only its title, author and date.
+  the same row keeps only its title, author and date; the block of an adventure's sheet turns the option on for the
+  rows of a scenario only (`cr.campagneId` differs from the sheet's id), the adventure's own rows staying without a pill.
 
 **Adventure sheet blocks** (`fiche/blocs-fiche/`, E-9, AD-124).
 - Visual: the compact panels of `e09-aventure.html`, `--surface` and `--bord`,
