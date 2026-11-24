@@ -174,7 +174,7 @@
 - Catalogues (`kanevas-outils-catalogue`, migration 0021, K-1 to K-8 in `ARCHITECTURE.md`): only `services/catalogues.ts` reads a module's
   `StockageCatalogue` and resolves the two levels (never a module's computation on its own tables); an import (preview or application, one
   transaction) never writes `masque` nor the withdrawals (B-48) and changes the catalogue version only when an element is added or modified;
-  no gesture hides a system element. A token with no `jetons_outils` row opens no tool route, a tool token opens no content route
+  no gesture hides a system element. A token with no `jetons_outils` row opens no tool route, a token without the `contenu` permission (`jetons_api.contenu`, AD-jeton-unique-1) opens no content route
   (`config.portee` of each route in `routes/import.ts`).
 - Managed sections (`kanevas-outils-sections-gerees`, migration 0020, AD-127/128): a section with `gere_par` (`module/outil/type`) is written
   only by its tool. `ecrireContenu` refuses it (`refuse`, `detail: 'section_geree'`) unless its last parameter `geree` is passed — and

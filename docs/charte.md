@@ -296,7 +296,7 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   `--accent-fond` halo. A section's textarea keeps the reading typography (Newsreader
   18 px) on `--surface`, bordered by `--accent` with a halo, footer « 313 / 100 000 », keyboard help,
   « Annuler », « Enregistrer ». Checkbox: 16 px, outline `--bord-champ`; checked in `--mj`
-  for « Secrète (MJ seul) », in `--accent` for the search filter « sous-lieux compris ».
+  for « Secrète (MJ seul) », in `--accent` for the search filter « sous-lieux compris » and for the token permissions of E-23. `Case` takes an optional `detail` (kanevas-jeton-unique): a 12 px `--texte-3` line under the 13 px label, inside the `<label>` (clickable, part of the accessible name); without it the output is unchanged.
 - C: a visible label linked to the field; the error appears beneath in `--danger` with
   « Erreur : » before it, linked by `aria-describedby`; input is never lost on failure.
 
@@ -443,7 +443,8 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   to its sheet, at least 24 px high. Only adventure fields returned by the server appear.
   A deleted adventure is plain text for the GM; a hidden one leaves no placeholder or
   separator. Dates use a semantic `time` element. Without the adventure option (E-9 block),
-  the same row keeps only its title, author and date.
+  the same row keeps only its title, author and date; the block of an adventure's sheet turns the option on for the
+  rows of a scenario only (`cr.campagneId` differs from the sheet's id), the adventure's own rows staying without a pill.
 
 **Adventure sheet blocks** (`fiche/blocs-fiche/`, E-9, AD-124).
 - Visual: the compact panels of `e09-aventure.html`, `--surface` and `--bord`,
