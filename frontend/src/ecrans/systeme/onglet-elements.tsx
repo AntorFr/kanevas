@@ -56,7 +56,11 @@ export function OngletElements({ systemeId, types, fiches, suite, peutEcrire }: 
     if (t.length > 120) return setErreur('120 caractères au plus.');
     setEnCours(true);
     try {
-      const f = await appeler<Fiche>('POST', `/api/systemes/${systemeId}/fiches`, { type, titre: t });
+      const f = await appeler<Fiche>('POST', `/api/systemes/${systemeId}/fiches`, {
+        type,
+        titre: t,
+        ...(type === 'personnage' ? { charge: { pj: false } } : {}),
+      });
       toast(`« ${t} » créé.`);
       navigate(`/systemes/${systemeId}/fiches/${f.id}`);
     } catch (e2) {

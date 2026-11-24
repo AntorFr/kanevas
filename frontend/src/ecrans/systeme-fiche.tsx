@@ -18,7 +18,7 @@ const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 interface Entete {
   nom: string;
   peutEcrire: boolean;
-  types: { type: string; singulier: string; icone: string }[];
+  mots: { type: string; singulier: string; icone: string }[];
 }
 
 type Etat = { k: 'chargement' } | { k: 'erreur' } | { k: 'introuvable' } | { k: 'ok'; fiche: FicheVue; entete: Entete };
@@ -73,7 +73,7 @@ function FicheEspace() {
 
   const { entete } = etat;
   const ecrit = entete.peutEcrire;
-  const type = entete.types.find((t) => t.type === fiche.type);
+  const type = entete.mots.find((t) => t.type === fiche.type);
   const Icone = iconeDeNom(type?.icone);
 
   async function ecrire(action: () => Promise<void>) {
