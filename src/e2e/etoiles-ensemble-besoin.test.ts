@@ -440,7 +440,12 @@ test('E-21 : l’écran de la galaxie montre les étoiles des fixtures à leur p
     await page.screenshot({ path: '/tmp/shots/etoiles-e21.png' });
     const visibles: string[] = await page.locator('[data-genere]').evaluateAll((els: Element[]) => els.map((e) => e.getAttribute('data-genere')!));
     const fixture = new Set(FIX.blocs.filter((b) => b.etoile).map((b) => `${b.etoile!.q},${b.etoile!.r}`));
-    for (const v of visibles) assert.ok(fixture.has(v), `l'étoile ${v} montrée est une étoile des fixtures`);
+    // The map opens on the whole known zone (the fixtures' zones included), wider than the part the fixtures vouch for: they cover the blocks -10..9
+    // (hexagons -50..49) with ALL their defined systems placed, and only one system is placed here, so a star next to a fixture system
+    // that is not placed is drawn here and absent from the fixtures. Everywhere else the stars shown are the fixtures' own.
+    const exclues = new Set(FIX.systemes_definis.flatMap((x) => [[0, 0] as [number, number], ...VOISINS].map(([dq, dr]) => `${x.q + dq},${x.r + dr}`)));
+    const garanti = (v: string) => !exclues.has(v) && v.split(',').map(Number).every((n) => n >= -50 && n <= 49);
+    for (const v of visibles.filter(garanti)) assert.ok(fixture.has(v), `l'étoile ${v} montrée est une étoile des fixtures`);
     assert.ok(visibles.includes('7,-7'), 'l’étoile (7,-7) des fixtures est montrée');
     for (const [dq, dr] of [[0, 0], ...VOISINS] as [number, number][]) {
       assert.equal(visibles.includes(`${voisin.q + dq},${voisin.r + dr}`), false, `aucune étoile en ${voisin.q + dq},${voisin.r + dr}`);
