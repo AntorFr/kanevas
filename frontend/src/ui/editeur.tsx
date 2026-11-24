@@ -93,7 +93,10 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
   // The list grows when the answer arrives: scroll again then, so the whole list and the save row stay in view.
   const lignes = recherche.etat === 'ok' ? recherche.fiches.length : -1;
   useEffect(() => {
-    if (listeOuverte) bloc.current?.querySelector('.pied-md')?.scrollIntoView?.({ block: 'nearest' });
+    if (!listeOuverte) return;
+    // The save row first (clear of the assistant button), then the top of the list (clear of the sticky bar): both fit together.
+    bloc.current?.querySelector('.pied-md')?.scrollIntoView?.({ block: 'nearest' });
+    bloc.current?.querySelector('.liste-liens')?.scrollIntoView?.({ block: 'nearest' });
   }, [listeOuverte, recherche.etat, lignes]);
   // « Image » (E-taille-1): whether the caret stands in an image reference, and the reference frozen when the menu opened.
   const [surImage, setSurImage] = useState(false);
