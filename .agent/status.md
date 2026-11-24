@@ -1,4 +1,5 @@
 # Status — kanevas
+> MàJ : 2026-11-24 (assemblage de `rouge-kanevas-22` : 11 tests instables sous charge stabilisés, tests seuls, produit inchangé — 10 des 15 tests « connexion : » de `src/routes/instance-connexion.test.ts` (ceux qui comptent les processus) attendent le nombre de processus du faux programme par sondage de `/proc` avec une échéance de 15 s au lieu d'une photo et de 2 s ; « un bloc déposé seul dans blocs/ » de `frontend/src/ecrans/vue-ensemble/registre.test.ts` a une échéance de 120 s et ferme son second serveur Vite et retire `zz-bloc-de-test.tsx` dans un `finally`)
 > MàJ : 2026-11-23 (assemblage de `kanevas-outillage-tests`, PR vers `main` : déclaration de test seule, produit inchangé)
 > MàJ : 2026-11-23 (assemblage de `kanevas-api-supprimer-fichier`, PR vers `main` : `DELETE /fichiers/:cle` de l'API à clé)
 > MàJ : 2026-11-22 (assemblage de `kanevas-jeton-unique`, PR vers `main` : jeton d'API aux permissions cumulables, migration 0051)
