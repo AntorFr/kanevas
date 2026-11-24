@@ -132,7 +132,7 @@ describe('kanevas-systemes-jeu-elements : écrans E-5, E-9, E-15, E-16, E-17', (
     await p.getByText(/aucun élément/i).waitFor();
   });
 
-  it('E-5 + E-15 : l’admin ouvre un système sans MJ depuis « Administration », voit les onglets, ajoute un compte puis le retire ', { timeout: 300000 }, async () => {
+  it('E-5 + E-15 : l’admin ouvre un système sans MJ depuis « Administration », voit les onglets, ajoute un compte puis le retire', { timeout: 300000 }, async () => {
     const w = await monde();
     const p: Any = w.admin.page;
     await p.goto('/administration');
