@@ -18,6 +18,17 @@ function lignesRegles(r: ResultatVaisseau): [string, string][] {
   return rows.flatMap(([k, n]): [string, string][] => n === null ? [] : [[k, entier(n)]])
 }
 
+/** H-mods-1: the four rows of the modification rules, each only when it has a value (a stored result before the slice has none). */
+function lignesMods(r: ResultatVaisseau): [string, string][] {
+  const jours = (n: number) => `${entier(n)} ${n < 2 ? 'jour' : 'jours'}`
+  const rows: [string, string][] = []
+  if (r.composants) rows.push(['Composants prétech', entier(r.composants)])
+  if (r.installation && r.installation.jours > 0) rows.push(['Installation', `${jours(r.installation.jours)} d'équipage, ${jours(r.installation.joursChantier)} avec chantier`])
+  if (r.maintenance !== null && r.maintenance !== undefined && r.lignes.some((l) => l.nature === 'modifications')) rows.push(['Maintenance', entier(r.maintenance)])
+  if (r.refonte && (r.refonte.cout > 0 || r.refonte.composants > 0)) rows.push(['Refonte', `${credits(r.refonte.cout)}, ${entier(r.refonte.composants)} ${r.refonte.composants < 2 ? 'composant' : 'composants'}`])
+  return rows
+}
+
 /** The measures table of V-6; shared with the example sheets so the layout cannot drift. */
 export function tableMesures(r: ResultatVaisseau, avecRegles = true): string {
   const jours = `${r.chantierJours} ${r.chantierJours < 2 ? 'jour' : 'jours'}`
@@ -27,6 +38,7 @@ export function tableMesures(r: ResultatVaisseau, avecRegles = true): string {
     ['PV', entier(r.pv)],
     ['CA', entier(r.ca)],
     ['Chantier', jours],
+    ...lignesMods(r),
     ['Entretien', `${credits(r.entretien)} / an`],
     ['Portée de saut', portee],
     ...(avecRegles ? lignesRegles(r) : []),

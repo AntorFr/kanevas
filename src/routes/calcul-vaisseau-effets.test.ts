@@ -267,5 +267,5 @@ test('X-3 : un catalogue sans aucun des champs donne le résultat d\'avant clé 
   assert.equal(r.prix, 302000); assert.equal(r.vitesse, 3); assert.equal(r.armure, 5);
   assert.equal(r.puissanceLibre, 8); assert.equal(r.masseLibre, 6);
   assert.equal(r.soutes, null); assert.equal(r.reparation, null);
-  assert.deepEqual(Object.keys(r).sort(), ['alertes', 'armure', 'ca', 'capacites', 'chantierJours', 'coque', 'diviseurPrix', 'effetsJeu', 'emports', 'entretien', 'equipage', 'fraisEquipage', 'lignes', 'masseLibre', 'porteeSaut', 'prix', 'puissanceLibre', 'pv', 'reparation', 'soutes', 'vitesse']);
+  assert.deepEqual(Object.keys(r).sort(), ['alertes', 'armure', 'ca', 'capacites', 'chantierJours', 'composants', 'coque', 'diviseurPrix', 'effetsJeu', 'emports', 'entretien', 'equipage', 'fraisEquipage', 'installation', 'lignes', 'maintenance', 'masseLibre', 'porteeSaut', 'prix', 'puissanceLibre', 'pv', 'refonte', 'reparation', 'soutes', 'vitesse']);
 });

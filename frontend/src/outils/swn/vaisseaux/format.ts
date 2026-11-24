@@ -35,13 +35,14 @@ export function ciblesDeRangees(rangees: string[] | undefined): { nature: string
   });
 }
 
-export const brouillonDe = (c: Pick<Conception, 'coque' | 'lignes' | 'resultat' | 'pj' | 'robots'>): Brouillon => ({
+export const brouillonDe = (c: Pick<Conception, 'coque' | 'lignes' | 'resultat' | 'pj' | 'robots' | 'modIntCon'>): Brouillon => ({
   coque: { cle: c.coque.cle, nom: c.coque.nom },
   lignes: c.lignes.map(ligneDeBrouillon),
   equipage: c.resultat.equipage?.choisi ?? null,
   reparation: c.resultat.reparation?.choisie ?? 0,
   pj: c.pj ?? 0,
   robots: c.robots ?? 0,
+  modIntCon: c.modIntCon ?? 0,
 });
 
 export const EQUIPAGE_MAX = 100_000;
@@ -56,8 +57,10 @@ export const choixDe = (b: Brouillon) => ({
   ...(b.reparation > 0 ? { reparation: b.reparation } : {}),
   ...(b.pj > 0 ? { pj: b.pj } : {}),
   ...(b.robots > 0 ? { robots: b.robots } : {}),
+  ...(b.modIntCon !== 0 ? { mod_int_con: b.modIntCon } : {}),
   choix: b.lignes.map((l) => ({
     nature: l.nature, cle: l.cle, quantite: l.quantite,
+    ...(l.nature === 'modifications' && (l.integre ?? 0) > 0 ? { integre: l.integre } : {}),
     ...(l.points === undefined ? {} : { points: l.points }),
     ...(l.vise === undefined ? {} : { vise: { nature: l.vise.nature, cle: l.vise.cle } }),
     ...(ciblesDeRangees(l.rangees).length === 0 ? {} : { cibles: ciblesDeRangees(l.rangees) }),
@@ -200,3 +203,12 @@ export function ligneCapacite(c: { code: string; libelle: string; valeur: number
 
 /** True when a chosen fitting is the automation system (display only: « dont robots » is disabled without one; the alert is the server's). */
 export const estAutomatisation = (d: Donnees | undefined) => d?.effet === 'support_automatisation';
+
+/** « Installation : 12 jours d'équipage, 2 jours avec chantier » (H-mods-1): the figures are the server's, the singular is the screen's. */
+export const ligneInstallation = (i: { jours: number; joursChantier: number }) =>
+  `${jours(i.jours).replace(/ jours?$/, (m) => `${m} d’équipage`)}, ${jours(i.joursChantier)} avec chantier`;
+/** « Refonte : 750 000 cr, 12 composants ». */
+export const ligneRefonte = (r: { cout: number; composants: number }) =>
+  `${credits(r.cout)}, ${nombre(r.composants)} ${r.composants === 1 ? 'composant' : 'composants'}`;
+/** The typographic minus of a signed whole number, as the Int + Con field shows it. */
+export const entierSigne = (n: number) => (n < 0 ? `−${Math.abs(n)}` : String(n));

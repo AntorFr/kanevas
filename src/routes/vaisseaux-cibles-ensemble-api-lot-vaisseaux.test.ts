@@ -112,7 +112,8 @@ const l = (nature: string, cle: string, quantite = 1, plus: Any = {}) => ({ natu
 const arm = (cle: string, q = 1) => l('armes', cle, q);
 const cib = (cle: string, quantite = 1, nature = 'armes') => ({ nature, cle, quantite });
 const mod = (cle: string, quantite: number, cibles?: Any[], plus: Any = {}) => l('modifications', cle, quantite, cibles ? { cibles, ...plus } : plus);
-const calc = (m: Monde, coqueCle: string, choix: Any[]) => m.lea('POST', `${m.V}/calcul`, { coque: coqueCle, choix });
+// Repair 1 (Maintenance 3) keeps the watch alert `maintenance_depassee` (H-mods-1 (4)) out of these lists: no test here counts modifications kept up.
+const calc = (m: Monde, coqueCle: string, choix: Any[]) => m.lea('POST', `${m.V}/calcul`, { coque: coqueCle, choix, reparation: 1 });
 const codes = (r: Rep) => (r.json.alertes as Any[]).map((a) => `${a.niveau}:${a.code}`);
 const ligne = (r: Rep, cle: string): Any => (r.json.resultat.lignes as Any[]).find((x) => x.cle === cle);
 async function enregistrer(m: Monde, coqueCle: string, choix: Any[]): Promise<Rep> {

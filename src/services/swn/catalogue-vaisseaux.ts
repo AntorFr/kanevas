@@ -75,9 +75,16 @@ const CHAMPS: Record<NatureCatalogueVaisseau, Champ[]> = {
     code('sens'), facultatif('echange_puissance', 1, 99), reel('echange_masse', 0.5, 99),
     verifie('reparation_min', 1, 20, 'nombre entier de 1 à 20 attendu'),
     libre('effet_pct', () => true, ''), // range by effect, in `verifierEffet`
-    libre('echange_arrondi', (v) => v === 'installation', '« installation » attendu'), EFFET_JEU],
-  exemples: [{ nom: 'coque', type: 'texte' }, { nom: 'choix', type: 'choix' }, facultatif('equipage', 0, 100_000)],
+    libre('echange_arrondi', (v) => v === 'installation', '« installation » attendu'), EFFET_JEU,
+    entier('composants', 0, 99, 0), entier('composants_par_classe', 0, 1, 0)], // H-9: pretech components, absent reads 0
+  exemples: [{ nom: 'coque', type: 'texte' }, { nom: 'choix', type: 'choix' }, facultatif('equipage', 0, 100_000),
+    entier('mod_int_con', -10, 10, 0)], // H-10 (5): the design's Int + Con modifier, absent reads 0
 };
+
+/** H-9: `integre` of a line, the one rule: a modification line only, an integer from 0 to its `quantite` (`integre_invalide`). */
+export const integreValide = (l: { nature?: unknown; quantite?: unknown; integre?: unknown }): boolean =>
+  l.integre === undefined || (l.nature === 'modifications' && typeof l.integre === 'number' && Number.isInteger(l.integre)
+    && typeof l.quantite === 'number' && l.integre >= 0 && l.integre <= l.quantite);
 
 /** H-10 (3): an effect aims at elements of the design when it declares the natures it may aim at. */
 const visePar = (effet: unknown): boolean => estEffet(effet) && EFFETS[effet].cible !== undefined;
@@ -85,6 +92,7 @@ const cleSchema = z.string().min(1).max(64);
 const ligneChoix = z.strictObject({
   nature: z.enum(NATURES_DE_LIGNE), cle: cleSchema, quantite: z.number().int().min(1).max(99),
   magasins: z.number().int().min(1).max(9).optional(),
+  integre: z.unknown().optional(), // H-9: checked in `verifier` (`integre_invalide`, `champ: 'integre'`)
   cibles: z.array(z.strictObject({ nature: z.enum(NATURES_DE_LIGNE), cle: cleSchema, quantite: z.number().int().min(1).max(99) })).min(1).max(99).optional(),
 }).refine((l) => l.magasins === undefined || l.nature === 'armes', { message: 'magasins : armes seulement' });
 function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
@@ -132,6 +140,8 @@ function ligne(nature: NatureCatalogueVaisseau, r: Ligne): LigneCatalogue {
   return { nature, cle: r.cle, nom: r.nom, donnees, masque: Boolean(r.masque), version: r.version };
 }
 const colonnes = (nature: NatureCatalogueVaisseau) => CHAMPS[nature].map((c) => c.nom);
+/** Columns of 0054: a 0 not yet stored is left out of the write, so a row is written the same on a schema that predates them. */
+const DE_0054 = new Set(['composants', 'composants_par_classe', 'mod_int_con']);
 const aStocker = (c: Champ, v: unknown) => c.type === 'oui-non' ? Number(v) : c.type === 'choix' || ((c.type === 'liste4' || (c.type === 'libre' && c.json)) && v !== null) ? JSON.stringify(v) : v;
 
 function lire(db: Db, cible: CibleCatalogue, nature: NatureCatalogueVaisseau, cle: string): LigneCatalogue | null {
@@ -177,13 +187,15 @@ export const stockageVaisseaux: StockageCatalogue = {
     const champs = CHAMPS[n];
     const valeurs = [donnees.nom, ...champs.map((c) => aStocker(c, donnees[c.nom] ?? (c.type === 'entier' ? c.defaut : undefined) ?? null))];
     if (avant) {
-      db.prepare(`UPDATE ${table(n)} SET nom = ?, ${colonnes(n).map((c) => `${c} = ?`).join(', ')},
+      const gardees = champs.map((c, i) => ({ c: c.nom, v: valeurs[i + 1] }))
+        .filter((x) => !(DE_0054.has(x.c) && x.v === 0 && !avant.donnees[x.c]));
+      db.prepare(`UPDATE ${table(n)} SET nom = ?, ${gardees.map((x) => `${x.c} = ?`).join(', ')},
         version_catalogue = ?, version = version + 1 WHERE proprietaire = ? AND ${o.colonne} = ? AND cle = ?`)
-        .run(...valeurs, versionCatalogue, o.niveau, o.id, cle);
+        .run(donnees.nom, ...gardees.map((x) => x.v), versionCatalogue, o.niveau, o.id, cle);
       return 'modifie';
     }
     // A column not stated stays out of the INSERT (NULL by default): a row is written the same on a schema that predates the column.
-    const dites = champs.map((c, i) => ({ c: c.nom, v: valeurs[i + 1] })).filter((x) => x.v !== null);
+    const dites = champs.map((c, i) => ({ c: c.nom, v: valeurs[i + 1] })).filter((x) => x.v !== null && !(DE_0054.has(x.c) && x.v === 0));
     db.prepare(`INSERT INTO ${table(n)} (proprietaire, systeme_id, univers_id, cle, nom, ${dites.map((x) => x.c).join(', ')}, version_catalogue)
       VALUES (?, ?, ?, ?, ?, ${dites.map(() => '?').join(', ')}, ?)`)
       .run(o.niveau, 'systemeId' in cible ? cible.systemeId : null, 'universId' in cible ? cible.universId : null,
@@ -341,8 +353,9 @@ export const catalogueVaisseaux: DeclarationCatalogue = {
     if (!existe('coques', donnees.coque as string)) {
       return { champ: 'coque', raison: `élément inconnu : coques/${donnees.coque as string}` };
     }
-    for (const l of donnees.choix as { nature: string; cle: string; cibles?: { nature: string; cle: string }[] }[]) {
+    for (const l of donnees.choix as { nature: string; cle: string; quantite: number; integre?: unknown; cibles?: { nature: string; cle: string }[] }[]) {
       if (!existe(l.nature, l.cle)) return { champ: 'choix', raison: `élément inconnu : ${l.nature}/${l.cle}` };
+      if (l.integre !== undefined && !integreValide(l)) return { champ: 'integre', raison: 'integre_invalide : de 0 à la quantité d\'une modification' };
       // H-cibles-1 (1): `cibles` only on a line whose element aims at something (X-4's refusal, for the new field).
       if (l.cibles !== undefined && !visePar(lireDonnees(l.nature, l.cle)?.effet)) {
         return { champ: 'cibles', raison: 'cibles_invalide : élément sans effet visant' };

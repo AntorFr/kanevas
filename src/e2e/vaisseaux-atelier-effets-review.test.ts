@@ -245,7 +245,8 @@ describe('E-22 effets, 1280 px', { skip: skipBrowser, timeout: 240000 }, () => {
     await p.getByRole('button', { name: 'Retirer : Blindage' }).waitFor();
     const l = norm(await ligne(p, 'Blindage').innerText());
     assert.doesNotMatch(l, /% de la coque|Ligne :/);
-    assert.equal(await p.locator('input[aria-label="Compétence de réparation"]').count(), 0);
+    // kanevas-concepteur-vaisseaux-mods-livre: the repair block exists as soon as a modification line does (Maintenance, Int + Con); the muted catalogue adds nothing else
+    assert.equal(await p.locator('input[aria-label="Compétence de réparation"]').count(), 1);
     assert.equal(await p.locator('input[aria-label^="Points échangés"]').count(), 0);
     assert.equal(await p.getByRole('combobox', { name: 'Élément visé' }).count(), 0);
     assert.doesNotMatch(await res(p), /Soutes/);

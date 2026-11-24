@@ -8,7 +8,7 @@ import { accessible, peutUsage } from '../outils.js';
 import { poserSectionGeree } from '../sections-gerees.js';
 import { etatGere } from '../sections-gerees-etat.js';
 import type { Acteur, SectionRow } from '../types.js';
-import { calculerDepuisChoix, calculerResolu, OUTIL_VAISSEAUX, resoudreChoix, TYPE_CARACTERISTIQUES, validerChoix, validerEffectif, validerEquipage, validerReparation, controlerChoix, versionSourceVaisseaux,
+import { calculerDepuisChoix, calculerResolu, OUTIL_VAISSEAUX, resoudreChoix, TYPE_CARACTERISTIQUES, validerChoix, validerEffectif, validerEquipage, validerReparation, validerModIntCon, integreLu, controlerChoix, versionSourceVaisseaux,
   versionsSource, ciblesDeLigne, ligneAEnregistrer, type EntreeCalcul, type LigneChoix, type Porte } from './calcul-vaisseau.js';
 import { ligneDe, porteDe, type ChargeConception, type LigneConception } from './section-vaisseaux.js';
 
@@ -32,6 +32,8 @@ export interface VueConception {
   /** H-5: of the crew, the player characters and the robots (as stored, `0` for a design from before). */
   pj: number;
   robots: number;
+  /** H-9: the engineer's Int + Con modifier (as stored, `0` for a design from before). */
+  modIntCon: number;
   alertes: AlerteVaisseau[];
   version: number;
   /** The core's `etatGere` (S-4), read at each call, never stored (R-8). */
@@ -78,7 +80,8 @@ function vue(db: Db, acteur: Acteur, universId: number, l: Lue): VueConception {
   // A result stored before the slice has no vitesse / armure / equipage: read as `null` (F-3).
   const resultat: ResultatVaisseau = { ...stocke, vitesse: stocke.vitesse ?? null, armure: stocke.armure ?? null, equipage: stocke.equipage ?? null,
     soutes: stocke.soutes ?? null, reparation: stocke.reparation ?? null,
-    capacites: stocke.capacites ?? null, effetsJeu: stocke.effetsJeu ?? null, fraisEquipage: stocke.fraisEquipage ?? null };
+    capacites: stocke.capacites ?? null, effetsJeu: stocke.effetsJeu ?? null, fraisEquipage: stocke.fraisEquipage ?? null,
+    composants: stocke.composants ?? null, installation: stocke.installation ?? null, maintenance: stocke.maintenance ?? null, refonte: stocke.refonte ?? null };
   const choix = JSON.parse(l.ligne.choix) as LigneChoix[];
   // The elements the design carries that no longer resolve: computed now, never stored (V-3).
   const r = resoudreChoix(db, universId, { coque: l.ligne.coque_cle, choix }, porteDe(l.ligne));
@@ -90,9 +93,12 @@ function vue(db: Db, acteur: Acteur, universId: number, l: Lue): VueConception {
   const geree = etatGere(db, acteur, universId, l.section);
   // The targets of a line as they read today, whatever shape was stored (H-cibles-1 (1)): `vise` stays on `soutes_doublees` only.
   const lignes = resultat.lignes.map((x, i) => {
+    // H-9: the one reading of `integre`, on a modification line only; nothing is rewritten before the next save.
+    const refonte = x.nature === 'modifications' ? { integre: integreLu({ integre: choix[i]?.integre, quantite: x.quantite }) } : {};
     const effet = r.lignes[i]?.element.effet;
-    if (effet === undefined) return x;
-    const { vise, cibles: _stockees, ...reste } = x;
+    if (effet === undefined) return { ...x, ...refonte };
+    const { vise, cibles: _stockees, ...reste0 } = x;
+    const reste = { ...reste0, ...refonte };
     const cibles = ciblesDeLigne({ quantite: x.quantite, ...(vise ? { vise } : {}), ...(_stockees ? { cibles: _stockees } : {}) }, effet);
     // A single pair is also given as `vise`, kept for readers of the old shape; the workshop reads `cibles` (only `soutes_doublees` still reads `vise`).
     const unique = cibles?.length === 1 ? { nature: cibles[0]!.nature, cle: cibles[0]!.cle } : undefined;
@@ -100,7 +106,7 @@ function vue(db: Db, acteur: Acteur, universId: number, l: Lue): VueConception {
   });
   return {
     ficheId: l.ligne.fiche_id, titre: l.titre, coque: resultat.coque, lignes, resultat,
-    pj: l.ligne.pj ?? 0, robots: l.ligne.robots ?? 0,
+    pj: l.ligne.pj ?? 0, robots: l.ligne.robots ?? 0, modIntCon: l.ligne.mod_int_con ?? 0,
     alertes: [...bloquantes, ...r.retirees, ...surveiller],
     version: l.ligne.version,
     perime: geree?.etat === 'perime',
@@ -163,12 +169,12 @@ function charger(db: Db, universId: number, e: EntreeCalcul, porte: Porte | null
   const lignes = e.choix.map((l, i) => ligneAEnregistrer(l, r.lignes[i]?.element.effet));
   const charge: ChargeConception = { coque: e.coque, lignes, resultat: s.resultat,
     versionReglages: versionsSource(db, universId).reglages, versionCatalogue: versionsSource(db, universId).catalogue,
-    equipage: s.equipage, reparation: r.reparation, pj: r.pj, robots: r.robots };
+    equipage: s.equipage, reparation: r.reparation, pj: r.pj, robots: r.robots, modIntCon: r.modIntCon };
   return charge;
 }
 
 export function creerConception(db: Db, acteur: Acteur, universId: number,
-  entree: { ficheId: number; coque: string; auteurId?: number | null; pj?: unknown; robots?: unknown }): VueConception {
+  entree: { ficheId: number; coque: string; auteurId?: number | null; pj?: unknown; robots?: unknown; mod_int_con?: unknown }): VueConception {
   exigerRole(db, universId, acteur.compteId);
   if (!accessible(db, acteur, universId, OUTIL_VAISSEAUX)) throw introuvable();
   if (!peutUsage(db, acteur, universId, OUTIL_VAISSEAUX, 'creer')) throw refuse();
@@ -177,9 +183,10 @@ export function creerConception(db: Db, acteur: Acteur, universId: number,
   const { coque } = validerChoix(entree.coque, []);
   const pj = validerEffectif(entree.pj, 'pj') ?? 0;
   const robots = validerEffectif(entree.robots, 'robots') ?? 0;
+  const modIntCon = validerModIntCon(entree.mod_int_con) ?? 0;
   return db.transaction(() => {
     if (ligneDe(db, fiche.id)) throw new ErreurService('conflit', 'Cette fiche a déjà une conception.', 'deja_concue');
-    const charge = charger(db, universId, { coque, choix: [], pj, robots }, null);
+    const charge = charger(db, universId, { coque, choix: [], pj, robots, modIntCon }, null);
     poserSectionGeree(db, acteur.compteId, universId, {
       ficheId: fiche.id, outil: OUTIL_VAISSEAUX, type: TYPE_CARACTERISTIQUES,
       audience: { auteurId: entree.auteurId ?? null, auteurLit: true, auteurEcrit: true },
@@ -190,7 +197,7 @@ export function creerConception(db: Db, acteur: Acteur, universId: number,
 }
 
 export function enregistrerConception(db: Db, acteur: Acteur, universId: number, ficheId: number,
-  entree: { coque: unknown; choix: unknown; version: unknown; equipage?: unknown; reparation?: unknown; pj?: unknown; robots?: unknown }): VueConception {
+  entree: { coque: unknown; choix: unknown; version: unknown; equipage?: unknown; reparation?: unknown; pj?: unknown; robots?: unknown; mod_int_con?: unknown }): VueConception {
   const l = lire(db, acteur, universId, ficheId);
   if (!peutEcrire(db, acteur, universId, l.role, l.section)) throw refuse('Vous ne pouvez pas modifier cette conception.');
   const e = validerChoix(entree?.coque, entree?.choix);
@@ -199,6 +206,7 @@ export function enregistrerConception(db: Db, acteur: Acteur, universId: number,
   e.reparation = validerReparation(entree?.reparation) ?? 0;
   e.pj = validerEffectif(entree?.pj, 'pj') ?? 0;
   e.robots = validerEffectif(entree?.robots, 'robots') ?? 0;
+  e.modIntCon = validerModIntCon(entree?.mod_int_con) ?? 0;
   if (!Number.isInteger(entree.version) || (entree.version as number) < 1) throw invalide('La version lue est requise.');
   return db.transaction(() => {
     const cur = lire(db, acteur, universId, ficheId);
@@ -220,11 +228,11 @@ export function enregistrerConception(db: Db, acteur: Acteur, universId: number,
  * design is readable under both guards; an unreadable or unknown one is `introuvable`.
  */
 export function calculerConception(db: Db, acteur: Acteur, universId: number, entree: unknown) {
-  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown; ficheId?: unknown; equipage?: unknown; reparation?: unknown; pj?: unknown; robots?: unknown };
+  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown; ficheId?: unknown; equipage?: unknown; reparation?: unknown; pj?: unknown; robots?: unknown; mod_int_con?: unknown };
   let porte: Porte | null = null;
   if (o.ficheId !== undefined && o.ficheId !== null) {
     if (!Number.isInteger(o.ficheId)) throw new ErreurService('invalide', 'Fiche invalide.', 'fiche_invalide', 'ficheId');
     porte = porteDe(lire(db, acteur, universId, o.ficheId as number).ligne);
   }
-  return calculerDepuisChoix(db, acteur, universId, { coque: o.coque, choix: o.choix, equipage: o.equipage, reparation: o.reparation, pj: o.pj, robots: o.robots }, porte);
+  return calculerDepuisChoix(db, acteur, universId, { coque: o.coque, choix: o.choix, equipage: o.equipage, reparation: o.reparation, pj: o.pj, robots: o.robots, mod_int_con: o.mod_int_con }, porte);
 }

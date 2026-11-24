@@ -55,7 +55,11 @@ for (const [cle, prix, pv, ca, pl, ml, u, t, j, ent, portee] of TABLEAU) {
 
 test('alertes des exemples : seules celles du tableau', () => {
   const codes = (c: string) => exemple(c).alertes.map((a) => `${a.niveau}:${a.code}`)
-  for (const c of ['eclaireur-nu', 'eclaireur-arme', 'fregate-de-ligne', 'croiseur-de-transport']) assert.deepEqual(codes(c), [], c)
+  for (const c of ['eclaireur-nu', 'eclaireur-arme', 'fregate-de-ligne']) assert.deepEqual(codes(c), [], c)
+  // H-mods-1 (4): one modification kept up with no Repair (Maintenance 0) is the one watch alert of the transport cruiser.
+  assert.deepEqual(exemple('croiseur-de-transport').alertes.map((a) => [a.niveau, a.code, a.texte]), [
+    ['a_surveiller', 'maintenance_depassee', '1 mod entretenu, Maintenance 0'],
+  ])
   assert.deepEqual(exemple('fregate-a-l-extreme').alertes.map((a) => [a.niveau, a.code, a.texte]), [
     ['a_surveiller', 'reserve_nulle', 'Plus aucune réserve de puissance.'],
   ])
@@ -221,6 +225,7 @@ test('texte : à surveiller, portée absente « — », ordre des choix', () => 
   const debut = c.indexOf('**Choix**')
   assert.deepEqual(c.slice(debut).split('\n'), [
     '**Choix**', '- 1 × Moteur 2', '- 1 × Cabines', '- 1 × Soute', '- 1 × Blindage', '- 1 × Canon léger', '- 2 × Laser', '- 1 × Renfort de coque', '',
+    '**Alertes**', '- **À surveiller** : 1 mod entretenu, Maintenance 0', '',
   ])
 })
 

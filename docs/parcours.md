@@ -1132,7 +1132,7 @@ is calculated.
 *Failure*: a recalculation that fails — « Le recalcul n'a pas abouti. Réessayez. », the text unchanged; the usage removed meanwhile — « Vous ne pouvez plus recalculer cette section. »; connection lost — « Connexion perdue. », the buttons disabled. Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
 désactivé », without editing; Roxane opens Léa's « Vent d'Orak », which she cannot read — « Page introuvable. »;
 two concurrent writes — the second refused with « Recharger »; calculating an invalid design —
-blocking alerts (a doubling with no target, a second system engine), « Enregistrer » refuses and explains why; Antor withdraws the hull of « Étoile du soir » from the universe or masks « Lance d'essai » — the design keeps its text, the line says « Élément retiré de cet univers » and « Enregistrer » stays disabled (withdrawn), or Léa still sees the masked element on her design but does not find it in her choices; on a phone, the catalogue is browsed in one column.
+blocking alerts (a doubling with no target, a second system engine), « Enregistrer » refuses and explains why; Antor withdraws the hull of « Étoile du soir » from the universe or masks « Lance d'essai » — the design keeps its text, the line says « Élément retiré de cet univers » and « Enregistrer » stays disabled (withdrawn), or Léa still sees the masked element on her design but does not find it in her choices; a save that fails reads « L'action n'a pas abouti. Réessayez. » and keeps every value typed (a forced « Intégrées à la coque » or « Modificateurs Int + Con » out of bounds is refused by the server the same way); on a phone, the catalogue is browsed in one column.
 
 ### P-20 — Migrate Éneria's current tools (Monsieur, Saturday, Mac and private repository)
 *Current files (map, ships) remain usable; Monsieur wants to switch over.*
@@ -1164,7 +1164,7 @@ refused (401/403 depending on the import API) and nothing written.
 2. **E-22** of « Éneria »: Antor opens a converted design, sees the price, HP, AC, power and mass of the prototype's
    reference figures, the capacities and the crew costs, and the sheet's section in step. The campaign's ships
    (`classe-hyperion`, `le-pie-rouge`, …) are opened and checked against their sheets.
-3. Only if a converted design carries a specialised mounting or an overcharge (none of the prototype's ten examples carries any modification), **E-22** asks which weapon each installation aims at:
+3. *(B-93)* The ten examples carry no modification, so the book's rules of modification (components, installation days, Maintenance, refit) are read on the four campaign designs that carry some: Antor opens one, reads « Composants prétech », « Installation » and « Maintenance » and checks them against the ledger's § 13.1. Only if a converted design carries a specialised mounting or an overcharge (none of the prototype's ten examples carries any modification), **E-22** asks which weapon each installation aims at:
    the choice is on the design line and the section shows it. Otherwise the step is empty, and the rule is proved on constructed designs by the construction tasks (B-95, § 13 of `vaisseaux-regles.md`).
 4. The report of the conversion says « 0 non converti »; the figures replayed on the real data are the proof of B-95.
 *Failure*: a rule of the book that the catalogue cannot state stops the conversion with the rule named (the ledger's
