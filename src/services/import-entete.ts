@@ -219,7 +219,7 @@ export function ecrireEnTete(db: Db, contexte: ContexteEntete, ficheId: number, 
           | { id: number }
           | undefined)
       : undefined;
-    if (!a) throw invalide('campagne', `campagne : « ${champs.campagne} » n'est pas une aventure de l'univers.`, 'campagne_inconnue');
+    if (!a) throw invalide('campagne', `campagne : « ${champs.campagne} » n'est pas une aventure de l'univers.`);
     campagneId = a.id;
   }
 
