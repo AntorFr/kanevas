@@ -9,9 +9,8 @@
 .gx-grille { fill: none; stroke: var(--bord); stroke-width: 1; }
 .gx-hachure { stroke: var(--bord-fort); stroke-width: 2; }
 .gx-manquant { stroke: none; opacity: .7; pointer-events: none; }
-.gx-genere { pointer-events: none; }
-.gx-genere text { fill: var(--texte-2); font-size: var(--t-12); pointer-events: none; paint-order: stroke; stroke: var(--surface-2); stroke-width: 3px; }
-.gx-disque { fill: var(--texte-3); stroke: var(--texte-3); stroke-width: 1; }
+.gx-nom-genere { fill: var(--texte-2); font-size: var(--t-12); pointer-events: none; paint-order: stroke; stroke: var(--surface-2); stroke-width: 3px; }
+.gx-disque { pointer-events: none; fill: var(--texte-3); stroke: var(--texte-3); stroke-width: 1; }
 .gx-vide { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
 .gx-route line:not(.gx-route-touche) { stroke: var(--texte-2); stroke-width: 2; }
 .gx-route.privee line:not(.gx-route-touche) { stroke: var(--mj); }

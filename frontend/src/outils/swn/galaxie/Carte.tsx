@@ -16,6 +16,8 @@ const RACINE_3 = Math.sqrt(3);
 const TAILLE_DEPART = 28;
 /** Below this radius (px) the name labels collapse. */
 const SEUIL_ETIQUETTES = SEUIL_NOMS;
+/** Share of the window the opening fit uses: the zoom column and the legend sit over the corners and must not hide a system. */
+const ENCART_COMMANDES = 0.8;
 const EN_VOL_MAX = 4;
 const BLOCS_GARDES = 400;
 
@@ -134,7 +136,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
 
   /** The view that holds the whole known zone (systems and hexagons of the zones read), or the reference at the starting zoom. */
   const cadrage = (): Vue => {
-    const v = cadrerZoneConnue([...donnees.systemes.values()], [...donnees.zones.values()], taille);
+    const v = cadrerZoneConnue([...donnees.systemes.values()], [...donnees.zones.values()], { w: taille.w * ENCART_COMMANDES, h: taille.h * ENCART_COMMANDES });
     if (v) return { ...v, s: borne(v.s) };
     const p = versPlan(depart.q, depart.r);
     return { vx: p.x, vy: p.y, s: borne(TAILLE_DEPART) };
@@ -452,9 +454,9 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
           if (p.x < -40 || p.y < -40 || p.x > taille.w + 40 || p.y > taille.h + 40) return null;
           const fond = couleurEtoile(null, lettre, classes);
           return (
-            <g key={`${q},${r}`} className="gx-genere" data-genere={`${q},${r}`} data-classe={lettre}>
-              <circle className="gx-disque" cx={p.x} cy={p.y} r={rayonEtoile(t)} style={fond ? { fill: fond } : undefined} />
-              {noms.has(`g:${q},${r}`) && <text x={p.x} y={p.y + rayonEtoile(t) + 3 + 10} textAnchor="middle">{`Étoile ${q}, ${r}`}</text>}
+            <g key={`${q},${r}`}>
+              <circle className="gx-genere gx-disque" cx={p.x} cy={p.y} r={rayonEtoile(t)} style={fond ? { fill: fond } : undefined} data-genere={`${q},${r}`} data-classe={lettre} />
+              {noms.has(`g:${q},${r}`) && <text className="gx-nom-genere" x={p.x} y={p.y + rayonEtoile(t) + 3 + 10} textAnchor="middle">{`Étoile ${q}, ${r}`}</text>}
             </g>
           );
         })}
