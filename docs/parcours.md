@@ -428,6 +428,21 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   the assistant proposes new section content without writing anything; the GM sees the current and
   proposed content, then applies or abandons it in one action. Nothing applies itself. *(P-5)*
 
+- **B-cr-aventure-1** — *(`kanevas-cr-aventure`)* The GM **changes the adventure of an existing session
+  report**, from the report's sheet (E-9), among the adventures of the universe, with the rules of its creation
+  (B-19: an adventure he reads, of the same universe). The sheet keeps its id, its sections, its relations and the links that
+  aim at it; nothing is deleted and recreated. A member who is not a GM does not see the gesture. *(P-4, step 3)*
+- **B-cr-aventure-2** — *(`kanevas-cr-aventure`)* The **import** writes the adventure (`campagne`, an origin key)
+  of a report that already exists, like the other header fields (B-47) and under the header fingerprint
+  (AD-139); the batch counts it as a written sheet; it no longer answers « campagne non modifiable, ignorée ». A key that is not an
+  adventure of the universe stays refused (« campagne inconnue »). *(P-10)*
+- **B-cr-aventure-3** — *(`kanevas-cr-aventure`)* The **export** gives the new adventure of a moved report, with no
+  work of its own once B-cr-aventure-1 and 2 are delivered (`GET /export`, AD-export-1, gives each sheet in its read form, at the instant of the snapshot): verified, not built. *(P-10)*
+- **B-cr-aventure-4** — *(`kanevas-cr-aventure`)* The block « Comptes-rendus » of an **adventure's sheet** (B-60) also lists
+  the reports of its scenarios (all its descendants of type adventure reached through an unbroken chain of adventures by parent, at any depth, that the reader reads; an adventure filed under a sheet of another type is left out; an unread scenario cuts off what is under it), each with the **name of its own scenario**;
+  the sheet of a scenario lists its own, as before. Without it, filing a report under its scenario would make it disappear from its
+  campaign's page. *(P-4)*
+
 ### Maps
 - **B-22** — A GM creates an illustrated map (a background image dropped onto the map, freely
   placed tokens linked to sheets) or a graph (chosen sheets connected by their relations) from
@@ -751,6 +766,7 @@ the frame says « Image indisponible. » and keeps « Remplacer » and « Retire
    publish it — it opens as a **sheet** (E-9) of type session report, which names the adventure.
 3. They edit it later; others read it from the adventure or the **report list**
    (E-13).
+   *(`kanevas-cr-aventure`)* Maëlle, the GM, finds a report filed under the whole campaign instead of its scenario: she opens it, « Changer d'aventure… » (E-9), picks the scenario and confirms; the « Campagne » line names it at once and the report keeps its address, its relations and the links that aim at it. If the write fails, the dialog says so and keeps her choice; if the scenario was deleted meanwhile, it says « Introuvable. » and offers the list again. Under a campaign, the reports of all its scenarios, however deep, show on its page with the scenario's name.
 
 ### P-5 — Update the world after the game (GM)
 1. They read reports (E-13 → E-9).
@@ -829,7 +845,10 @@ He first wants a disposable trial, then the real collection, without duplicates 
    **campaigns** first, then sheets, parents first (origin key, type, title, parent, aliases,
    labels, Markdown sections with their `[[…]]` links, GM blocks, images,
    audience) — session reports with their campaign key —, then relations, and closes the batch
-   (the order from AD-104).
+   (the order from AD-104). *(`kanevas-cr-aventure`)* A report already in Kanevas whose `campagne` key now names another adventure
+   (a scenario, say) is moved by the replay: the sheet is counted as written, its id, relations and links stay, and no
+   « campagne non modifiable » warning appears; a key that is not an adventure of the universe is a counted refusal « campagne inconnue ».
+   The next export gives the new adventure.
    Files, images and documents, first go into the **media library** (E-19), each with its
    permissions — « Réservée au MJ » for those Kanka only displays in GM content, « Visible des
    joueurs » otherwise —, including the 385 MB unused by any sheet; sheets reference them.
