@@ -3,19 +3,24 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { Bouton } from '../../../ui';
-import { abreger, abregerType, placerEtiquetteType, BLOCS_MAX, bloc, cases, COTE_BLOC, distanceHex, TAILLE_MAX, TAILLE_MIN, tailleMinimale, versHex, versPlan } from './geo';
+import { EtatVide } from '../../../ui/etats';
+import { classeDeCle, classesEtoile } from '../../../wasm/coeur';
+import { abreger, abregerType, placerEtiquetteType, BLOCS_MAX, bloc, cases, COTE_BLOC, distanceHex, TAILLE_MAX, TAILLE_MIN, versHex, versPlan } from './geo';
+import { boiteGrille, boiteZoneConnue, cadrerZoneConnue, zoomMinimal } from './carte-cadrage';
+import { couleurEtoile, rayonEtoile } from './carte-geometrie';
+import { nomsVisibles, SEUIL_NOMS, type CandidatNom } from './carte-noms';
 import { ZoneHexagones } from './ZoneHexagones';
 import type { Geste, Reference, RouteCarte, Selection, SystemeCarte, Touche, VueBlocs, VueGalaxie, ZoneCarte } from './types';
 
 const RACINE_3 = Math.sqrt(3);
 const TAILLE_DEPART = 28;
 /** Below this radius (px) the name labels collapse. */
-const SEUIL_ETIQUETTES = 12;
+const SEUIL_ETIQUETTES = SEUIL_NOMS;
 const EN_VOL_MAX = 4;
 const BLOCS_GARDES = 400;
 
 interface Donnees {
-  blocs: Map<string, [number, number][]>;
+  blocs: Map<string, [number, number, number, string][]>;
   systemes: Map<string, SystemeCarte>;
   routes: Map<number, RouteCarte>;
   zones: Map<number, ZoneCarte>;
@@ -78,7 +83,28 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
   const vueRef = useRef(vue);
   vueRef.current = vue;
 
-  const sMin = tailleMinimale(taille.w, taille.h);
+  // The star classes of the core (letter → colour) and the class drawn from the key of each defined system that sets none.
+  const [classes, setClasses] = useState<ReadonlyMap<string, string>>(() => new Map());
+  const [tirees, setTirees] = useState<ReadonlyMap<string, string>>(() => new Map());
+  useEffect(() => {
+    let vivant = true;
+    classesEtoile().then((j) => {
+      if (vivant) setClasses(new Map((JSON.parse(j) as { lettre: string; couleur: string }[]).map((c) => [c.lettre, c.couleur])));
+    }, () => { /* the discs keep the neutral fill */ });
+    return () => { vivant = false; };
+  }, []);
+  useEffect(() => {
+    const manquantes = [...donnees.systemes.values()].filter((x) => !x.couleur && !x.classe && !tirees.has(`${x.cle}|${x.taille}`));
+    if (manquantes.length === 0) return;
+    let vivant = true;
+    Promise.all(manquantes.map((x) => classeDeCle(x.cle, Math.min(1, Math.max(0, x.taille))).then((l): [string, string] | null => [`${x.cle}|${x.taille}`, l], () => null))).then((r) => {
+      if (vivant) setTirees((t) => new Map<string, string>([...t, ...r.flatMap((e) => (e ? [e] : []))]));
+    });
+    return () => { vivant = false; };
+  }, [donnees.systemes, tirees]);
+
+  const boiteConnue = useMemo(() => boiteZoneConnue([...donnees.systemes.values()], [...donnees.zones.values()]), [donnees.systemes, donnees.zones]);
+  const sMin = zoomMinimal(taille, boiteConnue);
   const borne = useCallback((s: number) => Math.min(TAILLE_MAX, Math.max(sMin, s)), [sMin]);
 
   useEffect(() => {
@@ -106,18 +132,12 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
     setEchec(false);
   }, [rev]);
 
-  /** The view that holds every system loaded so far, or the reference at the starting zoom. */
+  /** The view that holds the whole known zone (systems and hexagons of the zones read), or the reference at the starting zoom. */
   const cadrage = (): Vue => {
-    const pts = [...donnees.systemes.values()].map((x) => versPlan(x.q, x.r));
-    if (pts.length === 0) {
-      const p = versPlan(depart.q, depart.r);
-      return { vx: p.x, vy: p.y, s: borne(TAILLE_DEPART) };
-    }
-    const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
-    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-    // Room left around the systems for the zoom column and the legend that sit over the map's corners.
-    const s = Math.min((taille.w * 0.56) / (x1 - x0 + 2), (taille.h * 0.56) / (y1 - y0 + 2), TAILLE_DEPART * 1.5);
-    return { vx: (x0 + x1) / 2, vy: (y0 + y1) / 2, s: borne(s) };
+    const v = cadrerZoneConnue([...donnees.systemes.values()], [...donnees.zones.values()], taille);
+    if (v) return { ...v, s: borne(v.s) };
+    const p = versPlan(depart.q, depart.r);
+    return { vx: p.x, vy: p.y, s: borne(TAILLE_DEPART) };
   };
 
   // Once every visible block of the wide first view is in, frame the systems (unless a link already centred the view).
@@ -309,7 +329,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
     return { x: (p.x - vue.vx) * vue.s + taille.w / 2, y: (p.y - vue.vy) * vue.s + taille.h / 2 };
   };
   const systemes = [...donnees.systemes.values()];
-  const rayon = (t: number) => vue.s * (0.22 + 0.08 * t);
+  const rayon = (t: number) => rayonEtoile(t);
   const dist = (q: number, r: number) => (mesure ? distanceHex({ q, r }, mesure) : null);
   const survole = survol ? donnees.systemes.get(survol.cle) : undefined;
   const manquants: { bx: number; by: number }[] = [];
@@ -327,6 +347,23 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
     });
     return `M${pts.join('L')}Z`;
   };
+  const etoiles = [...donnees.blocs.values()].flat().filter(([q, r]) => !donnees.occupes.has(`${q},${r}`));
+  const cielVide = !premier && !echec && systemes.length === 0 && etoiles.length === 0;
+  const grille = cielVide ? null : boiteGrille(boiteZoneConnue(systemes, [...donnees.zones.values()], etoiles.map(([q, r]) => ({ q, r }))));
+  const coinG = grille && { a: { x: (grille.x0 - vue.vx) * vue.s + taille.w / 2, y: (grille.y0 - vue.vy) * vue.s + taille.h / 2 }, b: { x: (grille.x1 - vue.vx) * vue.s + taille.w / 2, y: (grille.y1 - vue.vy) * vue.s + taille.h / 2 } };
+  // Names: the defined systems first, a drawn star as « Étoile q, r », a name giving way when its box meets a kept one.
+  const candidats: CandidatNom[] = [];
+  for (const s of systemes) {
+    const p = px(s.q, s.r);
+    if (p.x < -60 || p.y < -60 || p.x > taille.w + 60 || p.y > taille.h + 60) continue;
+    candidats.push({ cle: `s:${s.cle}`, x: p.x, y: p.y + rayonEtoile(s.taille) + 3, texte: abreger(s.nom), priorite: 0, taille: s.taille });
+  }
+  for (const [q, r, t] of etoiles) {
+    const p = px(q, r);
+    if (p.x < -60 || p.y < -60 || p.x > taille.w + 60 || p.y > taille.h + 60) continue;
+    candidats.push({ cle: `g:${q},${r}`, x: p.x, y: p.y + rayonEtoile(t) + 3, texte: `Étoile ${q}, ${r}`, priorite: 1, taille: t });
+  }
+  const noms = nomsVisibles(candidats, { s: vue.s });
   const ligne = chemin.map((c) => px(c.q, c.r)).map((p) => `${p.x},${p.y}`).join(' ');
 
   return (
@@ -350,7 +387,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
             <line x1="0" y1="0" x2="0" y2="8" className="gx-hachure" />
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill="url(#gx-grille)" />
+        {coinG && <rect x={coinG.a.x} y={coinG.a.y} width={coinG.b.x - coinG.a.x} height={coinG.b.y - coinG.a.y} fill="url(#gx-grille)" className="gx-zone-connue" />}
         {manquants.map((m) => <polygon key={cleBloc(m.bx, m.by)} points={blocPoly(m)} fill="url(#gx-hachure)" className="gx-manquant" />)}
         {[...donnees.zones.values()].map((z) => {
           if (z.plages) {
@@ -410,22 +447,28 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
           );
         })()}
         {chemin.length > 1 && <polyline className="gx-chemin" points={ligne} fill="none" />}
-        {[...donnees.blocs.values()].flatMap((g) => g).map(([q, r]) => {
+        {etoiles.map(([q, r, t, lettre]) => {
           const p = px(q, r);
           if (p.x < -40 || p.y < -40 || p.x > taille.w + 40 || p.y > taille.h + 40) return null;
-          const occupe = donnees.occupes.has(`${q},${r}`);
-          return occupe ? null : <circle key={`${q},${r}`} className="gx-genere" cx={p.x} cy={p.y} r={vue.s * 0.2}
-            data-genere={`${q},${r}`} />;
+          const fond = couleurEtoile(null, lettre, classes);
+          return (
+            <g key={`${q},${r}`} className="gx-genere" data-genere={`${q},${r}`} data-classe={lettre}>
+              <circle className="gx-disque" cx={p.x} cy={p.y} r={rayonEtoile(t)} style={fond ? { fill: fond } : undefined} />
+              {noms.has(`g:${q},${r}`) && <text x={p.x} y={p.y + rayonEtoile(t) + 3 + 10} textAnchor="middle">{`Étoile ${q}, ${r}`}</text>}
+            </g>
+          );
         })}
         {systemes.map((s) => {
           const p = px(s.q, s.r);
           if (p.x < -60 || p.y < -60 || p.x > taille.w + 60 || p.y > taille.h + 60) return null;
           const choisi = selection?.k === 'systeme' && selection.cle === s.cle;
           const rr = rayon(s.taille);
+          const lettre = s.classe ?? tirees.get(`${s.cle}|${s.taille}`);
+          const fond = couleurEtoile(s.couleur, lettre, classes);
           return (
             <g
               key={s.cle}
-              className={`gx-systeme gx-c-${s.couleur}${choisi ? ' choisi' : ''}${s.secret ? ' secret' : ''}`}
+              className={`gx-systeme${choisi ? ' choisi' : ''}${s.secret ? ' secret' : ''}`}
               role="button"
               tabIndex={0}
               aria-label={s.nom}
@@ -440,18 +483,19 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
               {choisi && <circle className="gx-halo" cx={p.x} cy={p.y} r={rr + 5} />}
               {mode?.k === 'route' && mode.depart?.cle === s.cle && <circle className="gx-halo" cx={p.x} cy={p.y} r={rr + 5} />}
               {mesure?.cle === s.cle && <circle className="gx-depart" cx={p.x} cy={p.y} r={rr + 3} />}
-              <circle className="gx-point" cx={p.x} cy={p.y} r={rr} />
-              {(vue.s >= SEUIL_ETIQUETTES || choisi) && <text x={p.x} y={p.y + Math.max(rr, 22) - 6 + 14} textAnchor="middle">{abreger(s.nom)}</text>}
-              {s.secret && (vue.s >= SEUIL_ETIQUETTES || choisi) && (
+              <circle className="gx-point" cx={p.x} cy={p.y} r={rr} style={fond ? { fill: fond } : undefined} data-classe={lettre} />
+              {(noms.has(`s:${s.cle}`) || choisi) && <text x={p.x} y={p.y + rr + 3 + 10} textAnchor="middle">{abreger(s.nom)}</text>}
+              {s.secret && (noms.has(`s:${s.cle}`) || choisi) && (
                 <g className="gx-marque-mj" aria-hidden="true">
-                  <rect x={p.x - 26} y={p.y + Math.max(rr, 22) + 13} width={52} height={16} rx={8} />
-                  <text x={p.x} y={p.y + Math.max(rr, 22) + 25} textAnchor="middle">MJ seul</text>
+                  <rect x={p.x - 26} y={p.y + rr + 18} width={52} height={16} rx={8} />
+                  <text x={p.x} y={p.y + rr + 30} textAnchor="middle">MJ seul</text>
                 </g>
               )}
             </g>
           );
         })}
       </svg>
+      {cielVide && <div className="gx-vide" role="status"><EtatVide titre="Le ciel est vide ici." /></div>}
       {premier && !echec && <p className="gx-chargement" role="status">Chargement de la carte…</p>}
       {survole && (
         <p className="gx-etiquette" role="tooltip" style={{ left: survol!.x, top: survol!.y - Math.max(rayon(survole.taille), 22) - 4 }}>
@@ -487,7 +531,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
 function fusion(d: Donnees, v: VueBlocs, demandes: string[], vue: Vue): Donnees {
   const blocs = new Map(d.blocs);
   for (const k of demandes) blocs.set(k, []);
-  for (const b of v.blocs) blocs.set(cleBloc(b.bx, b.by), b.generes.map(([q, r]) => [q, r] as [number, number]));
+  for (const b of v.blocs) blocs.set(cleBloc(b.bx, b.by), b.generes);
   if (blocs.size > BLOCS_GARDES) {
     const q0 = (RACINE_3 / 3) * vue.vx - vue.vy / 3;
     const r0 = (2 / 3) * vue.vy;

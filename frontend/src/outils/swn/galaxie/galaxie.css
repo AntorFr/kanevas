@@ -3,13 +3,16 @@
 .gx-entete h1 { margin: 0; overflow-wrap: anywhere; }
 .gx-sous { margin: 0; color: var(--texte-2); }
 .gx-corps { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e-4); }
-.gx-carte { position: relative; height: 60vh; min-height: 280px; overflow: hidden; background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-panneau); touch-action: none; user-select: none; }
+.gx-carte { position: relative; height: 60vh; min-height: 280px; overflow: hidden; background: var(--surface-2); border: 1px solid var(--bord); border-radius: var(--rayon-panneau); touch-action: none; user-select: none; }
 .gx-svg { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
 .gx-svg:active { cursor: grabbing; }
 .gx-grille { fill: none; stroke: var(--bord); stroke-width: 1; }
 .gx-hachure { stroke: var(--bord-fort); stroke-width: 2; }
 .gx-manquant { stroke: none; opacity: .7; pointer-events: none; }
-.gx-genere { fill: none; stroke: var(--texte-3); stroke-width: 1; opacity: .6; pointer-events: none; }
+.gx-genere { pointer-events: none; }
+.gx-genere text { fill: var(--texte-2); font-size: var(--t-12); pointer-events: none; paint-order: stroke; stroke: var(--surface-2); stroke-width: 3px; }
+.gx-disque { fill: var(--texte-3); stroke: var(--texte-3); stroke-width: 1; }
+.gx-vide { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
 .gx-route line:not(.gx-route-touche) { stroke: var(--texte-2); stroke-width: 2; }
 .gx-route.privee line:not(.gx-route-touche) { stroke: var(--mj); }
 .gx-route text { fill: var(--mj); font-size: var(--t-12); }
@@ -23,7 +26,7 @@
 .gx-systeme { cursor: pointer; outline: none; }
 .gx-systeme text { fill: var(--texte); font-size: var(--t-12); pointer-events: none; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
 .gx-zone-touche { fill: transparent; }
-.gx-point { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.gx-point { fill: var(--texte-3); stroke: var(--texte-3); stroke-width: 1; }
 .gx-c-bleu .gx-point { fill: var(--accent); }
 .gx-c-vert .gx-point { fill: var(--table); }
 .gx-c-ambre .gx-point { fill: var(--mj); }
