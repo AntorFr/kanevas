@@ -956,12 +956,12 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | `graine` | `graine` | **always sent**, one per body (`graine_de(id)`): two bodies never share a picture |
 | `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | accepted key (the engine reads it, `valider_aspect` did not): object `{interieur [1.1, 2.5], exterieur, inclinaison [0.12, 1.2], angle, opacite [0, 1], couleur, couleur2}` each optional and bounded as the engine's own clamps; absent means **no ring** (the engine's random ring at 28 % goes) |
 | `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124) | new keys of the same names | `kanevas-carte-rendu-nuit`: added to the core with a bound and a test of the picture |
-| `couleur_nuages`, `opacite_nuages` | `couleur_nuages` (colour, `null` clears), `opacite_nuages` ([0, 1], default 1) | direct: the tint of the cloud layer (default: the white of today) and the factor of its opacity; drawn on `tellurique`, `verrouillee` |
+| `couleur_nuages`, `opacite_nuages` | `couleur_nuages` (colour, `null` clears), `opacite_nuages` ([0, 1], default 1) | direct: the tint of the cloud layer (default: the white of today) and the factor of its opacity; drawn on `tellurique`, and on `verrouillee` when `nuages` is above 0 (a locked world draws no cloud layer without one of these keys or `etirement`) |
 | `terre_seche` | `terre_seche` ([0, 1], default 0) | share of the land drawn dry (the palette's arid tone mixed in, the sea untouched); `tellurique`, `verrouillee` |
 | `etirement` | `etirement` ([0.25, 4], default 1) | stretch of the clouds along the parallels (1 = today's shape, 4 = long streaks); `tellurique`, `verrouillee`, `gazeuse` |
 | `eclairs` | `eclairs` ([0, 1], default 0) | flashes in the clouds on the night side, as many as the value and `nuages` allow; `tellurique`, `gazeuse` |
 | `inclinaison` | `inclinaison` ([−90, 90] degrees, default 0) | tilt of the body's axis: the caps and the bands turn by it (not the ring's `anneau.inclinaison`, a key of its own object); every planet kind |
-| `mers` (several seas) | `mers` (integer [1, 8], default 1) | number of separate basins sharing the `mer` level (the total sea share does not change); `tellurique`, `verrouillee` |
+| `mers` (several seas) | `mers` (integer [1, 8], default 1) | number of separate basins sharing the `mer` level (the total sea share holds within a few points); `tellurique` only (a locked world has no sea level) |
 | `canyons` | `canyons` ([0, 1], default 0) | dark cuts in the relief; `rocheux`, `tellurique` |
 | `lave` (on a rocky body) | `lave` ([0, 1], default 0) | glowing veins in the lowest relief; `rocheux` (the type `lave` already is lava) |
 | `cristaux` | `cristaux` ([0, 1], default 0) | bright facets scattered on the surface; `glace`, `rocheux` |

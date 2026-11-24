@@ -13,7 +13,14 @@ struct Surf {
     spec: f32,
     /// 0 = lit by the terminator normally, 1 = the surface holds no night (clouds are lit, not dark).
     nuit: V3,
+    /// Cover of the cloud layer under the pixel, in [0, 1] (the lightning flashes only in it).
+    nuage: f32,
 }
+
+/// The arid tone of a dry land (`terre_seche`), a pale ochre.
+const ARIDE: &str = "#c9a272";
+/// The lightning of a storm: a warm white.
+const ECLAIR: V3 = [1.0, 0.95, 0.8];
 
 struct Anneau {
     ri: f32,
@@ -31,6 +38,8 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
     // Orientation of the body: a yaw and a tilt drawn from the seed (same body at every side).
     let yaw = graine.entre(0.0, 6.2832);
     let tilt = graine.entre(-0.35, 0.35) * if kind == Kind::Gazeuse { 0.5 } else { 1.0 };
+    // `inclinaison` (degrees) turns the axis further: caps and bands follow it. Zero adds nothing.
+    let tilt = tilt + c.f("inclinaison", 0.0).to_radians();
     let (sy, cy, st, ct) = (yaw.sin(), yaw.cos(), tilt.sin(), tilt.cos());
     let tourner = |p: V3| -> V3 {
         let (x, z) = (p[0] * cy + p[2] * sy, -p[0] * sy + p[2] * cy);
@@ -59,7 +68,9 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
     let anneau = anneau_de(c, kind, &mut graine);
     let echelle = if anneau.is_some() { c.f("echelle", 0.62).min(0.46) } else { borne(c.f("echelle", 0.78), 0.2, 0.95) };
     let r_corps = c.demi * echelle;
-    let halo_larg = 0.28 * halo.min(1.0).max(0.2);
+    // `atmosphere_epaisseur`: 0.5 is today's width, the halo scales with it (never to a zero width).
+    let epaisseur = (c.f("atmosphere_epaisseur", 0.5) / 0.5).max(0.05);
+    let halo_larg = 0.28 * halo.min(1.0).max(0.2) * epaisseur;
     let oct = if c.cote <= 24 { 3 } else if c.cote <= 64 { 4 } else if c.cote <= 256 { 5 } else { 6 };
     let mer = c.f("mer", 0.5);
     let nuages = borne(c.f("nuages", 0.0), 0.0, 1.0);
@@ -69,6 +80,17 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
     let cratere = c.f("cratere", 0.0);
     let fissures = c.f("fissures", 0.0);
     let turbulence = borne(c.f("turbulence", 1.0), 0.0, 2.0);
+    // Keys of the slice: each neutral value draws the picture of a body without the key.
+    let couleur_nuages = c.asp.get("couleur_nuages").and_then(serde_json::Value::as_str).and_then(hex);
+    let opacite_nuages = borne(c.f("opacite_nuages", 1.0), 0.0, 1.0);
+    let terre_seche = borne(c.f("terre_seche", 0.0), 0.0, 1.0);
+    let etirement = borne(c.f("etirement", 1.0), 0.25, 4.0);
+    let etire = 1.0 / etirement;
+    let eclairs = borne(c.f("eclairs", 0.0), 0.0, 1.0);
+    let mers = c.f("mers", 1.0).round().max(1.0);
+    let aride = hex(ARIDE).unwrap_or([0.6; 3]);
+    // A locked world draws no clouds unless the aspect asks for a look of them.
+    let nuages_verrouillee = nuages > 0.0 && (couleur_nuages.is_some() || opacite_nuages < 1.0 || etirement != 1.0);
     let crateres_nombre = c.asp.get("crateres_nombre").and_then(serde_json::Value::as_f64).map(|n| n as f32);
     let tache = c.asp.get("tache").and_then(serde_json::Value::as_object);
     let brume = c.asp.get("brume").and_then(serde_json::Value::as_str).and_then(hex);
@@ -78,7 +100,19 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
     // The height field: continents, craters, crests, ridges. Cheap, called twice per pixel for the relief.
     let hauteur = |p: V3| -> f32 {
         match kind {
-            Kind::Tellurique | Kind::Verrouillee => br.fbm([p[0] * 2.2, p[1] * 2.2, p[2] * 2.2], oct),
+            Kind::Tellurique | Kind::Verrouillee => {
+                let h = br.fbm([p[0] * 2.2, p[1] * 2.2, p[2] * 2.2], oct);
+                if kind == Kind::Tellurique && mers > 1.0 {
+                    // Several seas: low walls along the borders of large cells split the water into basins,
+                    // and the land sinks by the mean height of the walls (measured), so the sea share holds within a few points.
+                    let f = 0.75 + 0.55 * mers.sqrt();
+                    let (f1, f2, _) = br.cellules([p[0] * f + 31.0, p[1] * f, p[2] * f]);
+                    let mur = 1.0 - lisse(0.0, 0.16, f2 - f1);
+                    h + 0.3 * (mur - 0.235)
+                } else {
+                    h
+                }
+            }
             Kind::Glace => 0.5 * br.fbm([p[0] * 3.0, p[1] * 3.0, p[2] * 3.0], oct) + 0.5 * br.crete([p[0] * 2.0, p[1] * 2.0, p[2] * 2.0], oct.min(4)),
             Kind::Rocheux => {
                 let base = br.fbm([p[0] * 3.0, p[1] * 3.0, p[2] * 3.0], oct);
@@ -105,6 +139,16 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
         }
     };
 
+    // The cloud cover at a point: streaks stretched along the parallels by `etirement` (1 = the base shape).
+    let couverture = |p: V3| -> f32 {
+        let w = br.fbm([p[0] * 5.0 * etire - 3.0, p[1] * 8.0, p[2] * 5.0 * etire + 1.0], 3);
+        // The streaks are bent by the turbulence (1 = the base shape).
+        let tord = (turbulence - 1.0) * (w - 0.5) * 1.2;
+        let q = br.fbm([p[0] * 2.6 * etire + 11.0 + tord, p[1] * 4.2, p[2] * 2.6 * etire - tord], oct);
+        // A wide curve: at 1 the veil covers the disc.
+        lisse(0.62 - 0.5 * nuages, 0.8 - 0.5 * nuages, q * 0.8 + w * 0.2)
+    };
+
     let surface = |p: V3, h: f32, nrm: V3, d: f32| -> Surf {
         let pal = &c.pal;
         match kind {
@@ -126,6 +170,12 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                     let vert = melange(c.pal_i(3), c.pal_i(4), humid);
                     let sol = melange(c.pal_i(2), melange(vert, terre, lisse(0.6, 1.0, t)), sable);
                     alb = melange(sol, c.pal_i(5), lisse(0.78, 1.0, t) * 0.8);
+                    // Dry land: the arid tone takes over where a slow noise passes a threshold that falls with the key.
+                    if terre_seche > 0.0 {
+                        let sec = br.fbm([p[0] * 1.7 - 6.0, p[1] * 1.7 + 2.0, p[2] * 1.7], 3);
+                        let seuil = lerp(0.85, -0.1, terre_seche);
+                        alb = melange(alb, aride, lisse(seuil, seuil + 0.1, sec) * 0.9);
+                    }
                 }
                 // Polar caps, with a ragged edge.
                 let lim = 1.0 - 0.28 * calottes - 0.1 * br.fbm([p[0] * 4.0, p[1] * 4.0, p[2] * 4.0], 3);
@@ -137,18 +187,15 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                     }
                 }
                 // Clouds: a bright layer lit like the ground, thicker toward the weather fronts.
+                let mut nuage = 0.0;
                 if nuages > 0.0 {
-                    let w = br.fbm([p[0] * 5.0 - 3.0, p[1] * 8.0, p[2] * 5.0 + 1.0], 3);
-                    // The streaks are bent by the turbulence (1 = the base shape).
-                    let tord = (turbulence - 1.0) * (w - 0.5) * 1.2;
-                    let q = br.fbm([p[0] * 2.6 + 11.0 + tord, p[1] * 4.2, p[2] * 2.6 - tord], oct);
-                    // A wide curve: at 1 the veil covers the disc.
-                    let dens = lisse(0.62 - 0.5 * nuages, 0.8 - 0.5 * nuages, q * 0.8 + w * 0.2);
-                    alb = melange(alb, [0.96, 0.97, 1.0], dens * 0.92);
-                    spec *= 1.0 - dens;
+                    let dens = couverture(p);
+                    alb = melange(alb, couleur_nuages.unwrap_or([0.96, 0.97, 1.0]), dens * 0.92 * opacite_nuages);
+                    spec *= 1.0 - dens * opacite_nuages;
+                    nuage = dens;
                 }
                 // Lights of the night side stay out: a quiet blue-black.
-                Surf { alb, emis: [0.0; 3], spec, nuit: nuit_def }
+                Surf { alb, emis: [0.0; 3], spec, nuit: nuit_def, nuage }
             }
             Kind::Verrouillee => {
                 // The sub-stellar point is fixed: scorched at the centre of the day side, a living ring near the
@@ -159,7 +206,17 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                 let mut alb = rampe(pal, 1.0 - k);
                 let fiss = br.crete([p[0] * 4.0, p[1] * 4.0, p[2] * 4.0], 4);
                 alb = mul(alb, 0.8 + 0.4 * fiss * (0.3 + h));
-                Surf { alb, emis: mul(c.pal_i(pal.len() - 1), 0.05 * lisse(0.75, 1.0, k)), spec: 0.0, nuit: [0.75, 0.85, 1.0] }
+                // Dry ground: the arid tone spread over the surface (no sea on a locked world).
+                if terre_seche > 0.0 {
+                    alb = melange(alb, aride, terre_seche * 0.7);
+                }
+                let mut nuage = 0.0;
+                if nuages_verrouillee {
+                    let dens = couverture(p);
+                    alb = melange(alb, couleur_nuages.unwrap_or([0.96, 0.97, 1.0]), dens * 0.92 * opacite_nuages);
+                    nuage = dens;
+                }
+                Surf { alb, emis: mul(c.pal_i(pal.len() - 1), 0.05 * lisse(0.75, 1.0, k)), spec: 0.0, nuit: [0.75, 0.85, 1.0], nuage }
             }
             Kind::Glace => {
                 let m = borne(h * 1.2, 0.0, 1.0);
@@ -169,14 +226,14 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                 alb = melange(alb, mul(c.pal_i(pal.len() - 1), 0.55), lignes);
                 // Frost: lighter where the surface is high.
                 alb = melange(alb, c.pal_i(0), lisse(0.55, 0.9, h) * 0.5);
-                Surf { alb, emis: [0.0; 3], spec: 0.55, nuit: [0.6, 0.7, 1.0] }
+                Surf { alb, emis: [0.0; 3], spec: 0.55, nuit: [0.6, 0.7, 1.0], nuage: 0.0 }
             }
             Kind::Rocheux => {
                 let m = borne(h * 1.3 + 0.35, 0.0, 1.0);
                 let mut alb = rampe(pal, m);
                 let tache = br.fbm([p[0] * 1.5 + 8.0, p[1] * 1.5, p[2] * 1.5], 3);
                 alb = mul(alb, 0.75 + 0.5 * tache);
-                Surf { alb, emis: [0.0; 3], spec: 0.0, nuit: [0.7, 0.75, 1.0] }
+                Surf { alb, emis: [0.0; 3], spec: 0.0, nuit: [0.7, 0.75, 1.0], nuage: 0.0 }
             }
             Kind::Lave => {
                 // A dark crust broken by glowing cracks.
@@ -186,13 +243,13 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                 let croute = melange(c.pal_i(0), c.pal_i(1), fond);
                 let chaud = melange(c.pal_i(2), c.pal_i(3), lisse(0.78, 1.0, crev));
                 let alb = melange(croute, chaud, braise);
-                Surf { alb: melange(alb, croute, 0.5 * (1.0 - braise)), emis: mul(chaud, 1.6 * braise * (0.65 + 0.35 * fond)), spec: 0.0, nuit: [1.0, 0.9, 0.9] }
+                Surf { alb: melange(alb, croute, 0.5 * (1.0 - braise)), emis: mul(chaud, 1.6 * braise * (0.65 + 0.35 * fond)), spec: 0.0, nuit: [1.0, 0.9, 0.9], nuage: 0.0 }
             }
             Kind::Gazeuse => {
                 // Bands of latitude warped by turbulence, a storm, limb darkening comes with the lighting.
                 let lat = p[1];
-                let tur = br.fbm([p[0] * 2.0, p[1] * 6.0, p[2] * 2.0], oct);
-                let tur2 = br.fbm([p[0] * 5.0 + 7.0, p[1] * 14.0, p[2] * 5.0], oct.min(4));
+                let tur = br.fbm([p[0] * 2.0 * etire, p[1] * 6.0, p[2] * 2.0 * etire], oct);
+                let tur2 = br.fbm([p[0] * 5.0 * etire + 7.0, p[1] * 14.0, p[2] * 5.0 * etire], oct.min(4));
                 let w = lat * (5.0 + 3.0 * c.bruit.valeur([3.3, 1.1, 0.5])) + (tur - 0.5) * 1.6 * bandes * turbulence + (tur2 - 0.5) * 0.35 * turbulence;
                 let b = 0.5 + 0.5 * (w * 6.2832 * 0.55).sin();
                 let b2 = 0.5 + 0.5 * (w * 6.2832 * 1.3 + 1.0).sin();
@@ -224,7 +281,7 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                     }
                 }
                 let _ = (nrm, h);
-                Surf { alb, emis: [0.0; 3], spec: 0.0, nuit: [0.6, 0.55, 0.7] }
+                Surf { alb, emis: [0.0; 3], spec: 0.0, nuit: [0.6, 0.55, 0.7], nuage: 1.0 }
             }
         }
     };
@@ -304,6 +361,16 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                     col = ajoute(col, mul(lcol, sp * 0.8));
                 }
                 col = ajoute(col, s.emis);
+                // Lightning: small flashes inside the clouds, on the night side only.
+                if eclairs > 0.0 && s.nuage > 0.3 {
+                    let nuit = 1.0 - lisse(0.0, 0.15, dif);
+                    if nuit > 0.0 {
+                        let (f1, _, id) = br.cellules([p[0] * 14.0 + 5.0, p[1] * 14.0 - 2.0, p[2] * 14.0]);
+                        if alea(hache(id ^ 0x51ed)) < eclairs * 0.4 {
+                            col = ajoute(col, mul(ECLAIR, 1.6 * lisse(0.12, 0.0, f1) * nuit * lisse(0.3, 0.7, s.nuage)));
+                        }
+                    }
+                }
                 // Rim light and in-scattering of the atmosphere at the limb.
                 if bord > 0.0 || halo > 0.0 {
                     let fres = (1.0 - nz).powi(3);
