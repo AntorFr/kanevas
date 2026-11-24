@@ -117,7 +117,7 @@ Each figure is one pass of the declared command on a scratch clone of the featur
 
 ### Screens touched
 
-A screen is a file of `frontend/src/ecrans/` registered in `registre.ts`; a screen test declares its screens on its first line, `// ecrans: administration` (several names separated by commas; an unknown name is an error, `src/scripts-tests/` checks it; `scripts/proposer-ecrans.mjs` proposes the lines from the addresses a test opens). All 295 `src/e2e/` files declare (a screen test without the line is refused, AD-touches-6). Read a choice without playing it:
+A screen is a file of `frontend/src/ecrans/` registered in `registre.ts`; a screen test declares its screens on its first line, `// ecrans: administration` (several names separated by commas; an unknown name is an error, `src/scripts-tests/` checks it; `scripts/proposer-ecrans.mjs` proposes the lines from the addresses a test opens). All 296 `src/e2e/` files declare (a screen test without the line is refused, AD-touches-6). Read a choice without playing it:
 
 ```
 node scripts/niveaux-tests.mjs --liste ecrans <base>   # the screen tests `ecrans:` plays
