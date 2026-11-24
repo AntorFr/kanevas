@@ -4,12 +4,12 @@ import { introuvable } from './erreurs.js';
 import { listerFiches } from './fiches.js';
 import { listerMembresNoyau } from './membres.js';
 import { vueDe, type SystemeCatalogue, type SystemeVue } from './systemes.js';
-import { typesDuSysteme } from './types-fiche.js';
+import { typesDuSysteme, type TypeDuSysteme } from './types-fiche.js';
 import type { Fiche } from './types.js';
 
 /** The system as `GET /api/systemes/:sid` answers it (AD-157). */
 export interface SystemeComplet extends SystemeVue {
-  types: { type: string; active: boolean }[];
+  types: TypeDuSysteme[];
   /** The elements, for who reads them (a GM of the system, a member of an attached universe); never for an admin with no link (rule 14). */
   fiches?: Fiche[];
   suivant?: string | null;

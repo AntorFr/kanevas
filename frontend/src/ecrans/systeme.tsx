@@ -9,6 +9,8 @@ import type { Ecran } from '../registre';
 import { ChargementListe, ErreurChargement, PageIntrouvable, Pastille } from '../ui';
 import { GROUPE_ADMIN } from '../items';
 import { OngletMJSysteme } from './systeme/onglet-mj';
+import { OngletElements, type TypeSysteme } from './systeme/onglet-elements';
+import type { Fiche } from './fiche/types';
 import { PucesUnivers } from './systeme/puces';
 import { OngletTypesSysteme } from './types-reglage/onglet-systeme';
 import { PanneauOutils } from './outils/panneau';
@@ -19,22 +21,24 @@ import './reglages.css';
 import './cartes.css';
 
 interface Page extends SystemeCompte {
-  types: { type: string; active: boolean }[];
+  types: TypeSysteme[];
+  /** The elements, for who reads them; absent for the instance admin who reads nothing of the system. */
+  fiches?: Fiche[];
+  suivant?: string | null;
 }
 
 const PLUS_DROIT = 'Vous ne pouvez plus modifier ce système.';
 
 /**
- * E-15 Système de jeu: header, the types of sheet and the tools of a system, at its own address (AD-94). The system's
- * elements are sheets of its space, read and written by the screens of `kanevas-systemes-jeu-elements-ecrans`.
+ * E-15 Système de jeu, at its own address (AD-94): the tabs « Éléments » (the system's sheets and, for its GMs, the
+ * switches of its types), « Outils » and « MJ du système » (instance admin). Each tab shows only to who may use it.
  */
 function Systeme() {
   const { sid } = useParams();
   const [params, setParams] = useSearchParams();
   const moi = useMoi();
   const estAdmin = moi.etat === 'ok' && moi.valeur.groups.includes(GROUPE_ADMIN);
-  const surOutils = params.get('type') === 'outils';
-  const surMJ = params.get('type') === 'mj';
+  const onglet = params.get('type');
   const [entete, setEntete] = useState<Page>();
   const [etat, setEtat] = useState<'chargement' | 'ok' | 'erreur' | 'introuvable'>('chargement');
   const [essai, setEssai] = useState(0);
@@ -75,6 +79,11 @@ function Systeme() {
   }
   const peutEcrire = entete.peutEcrire;
   const peutLireOutils = params.get('mode') !== 'joueur' && entete.mesUnivers.some((u) => u.role === 'mj');
+  const voitElements = entete.fiches !== undefined;
+  // The first tab the account may use, when the address names none (the admin with no link sees the sole « MJ du système »).
+  const surOutils = onglet === 'outils';
+  const surMJ = onglet === 'mj' || (!voitElements && !surOutils);
+  const surElements = !surOutils && !surMJ;
   if (surMJ && moi.etat === 'chargement') return <ChargementListe texte="Chargement du système…" />;
   if (surMJ && !estAdmin) return <PageIntrouvable retour="systemes" />;
   if (surOutils && !peutLireOutils) return <PageIntrouvable retour="systemes" />;
@@ -109,38 +118,35 @@ function Systeme() {
       )}
       <div className="barre-outils">
         <div role="tablist" className="onglets">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={!surOutils && !surMJ}
-            className={!surOutils && !surMJ ? 'actif' : undefined}
-            onClick={() => setParams({}, { replace: true })}
-          >
-            Types de fiche
-          </button>
+          {voitElements && (
+            <button type="button" role="tab" aria-selected={surElements} className={surElements ? 'actif' : undefined}
+              onClick={() => setParams({}, { replace: true })}>Éléments</button>
+          )}
           {peutLireOutils && <button type="button" role="tab" aria-selected={surOutils} className={surOutils ? 'actif' : undefined}
             onClick={() => setParams({ type: 'outils' }, { replace: true })}>Outils</button>}
           {estAdmin && <button type="button" role="tab" aria-selected={surMJ} className={surMJ ? 'actif' : undefined}
             onClick={() => setParams({ type: 'mj' }, { replace: true })}>MJ du système</button>}
         </div>
       </div>
-      {!surOutils && !surMJ && (
+      {surElements && (
         <div role="tabpanel">
-          <OngletTypesSysteme
-            systemeId={sid!}
-            systemeNom={entete.nom}
-            universId={entete.mesUnivers[0]?.id}
-            actifs={entete.types}
-            nbUnivers={entete.nbUnivers}
-            peutEcrire={peutEcrire}
-            onChange={(t, active) =>
-              setEntete((h) => (h ? { ...h, types: h.types.map((x) => (x.type === t ? { ...x, active } : x)) } : h))
-            }
-            onDroitPerdu={() => {
-              setPlusDroit(true);
-              setEssai((n) => n + 1);
-            }}
-          />
+          {peutEcrire && (
+            <OngletTypesSysteme
+              systemeId={sid!}
+              systemeNom={entete.nom}
+              actifs={entete.types}
+              nbUnivers={entete.nbUnivers}
+              peutEcrire={peutEcrire}
+              onChange={(t, active) =>
+                setEntete((h) => (h ? { ...h, types: h.types.map((x) => (x.type === t ? { ...x, active } : x)) } : h))
+              }
+              onDroitPerdu={() => {
+                setPlusDroit(true);
+                setEssai((n) => n + 1);
+              }}
+            />
+          )}
+          <OngletElements systemeId={sid!} types={entete.types} fiches={entete.fiches ?? []} suite={Boolean(entete.suivant)} peutEcrire={peutEcrire} />
         </div>
       )}
       {surMJ && <div role="tabpanel"><OngletMJSysteme key={sid} id={sid!} nom={entete.nom} /></div>}

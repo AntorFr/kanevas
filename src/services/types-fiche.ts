@@ -301,14 +301,31 @@ export function reglerTypeUnivers(
 }
 
 /** Types of a system as the system sets them (default enabled), reglable types only. */
-export function typesDuSysteme(db: Db, systemeId: number): { type: TypeFiche; active: boolean }[] {
+export interface TypeDuSysteme {
+  type: TypeFiche;
+  active: boolean;
+  singulier: string;
+  pluriel: string;
+  nouveau: string;
+  icone: string;
+}
+
+/** The settable types of a system with their words, so that a screen outside any universe can name them (E-15). */
+export function typesDuSysteme(db: Db, systemeId: number): TypeDuSysteme[] {
   const lignes = new Map(
     (db.prepare('SELECT type, active FROM types_systeme WHERE systeme_id = ?').all(systemeId) as {
       type: string;
       active: number;
     }[]).map((r) => [r.type, r.active === 1]),
   );
-  return TYPES.filter((t) => t.reglable).map((t) => ({ type: t.type, active: lignes.get(t.type) ?? true }));
+  return TYPES.filter((t) => t.reglable).map((t) => ({
+    type: t.type,
+    active: lignes.get(t.type) ?? true,
+    singulier: t.singulier,
+    pluriel: t.pluriel,
+    nouveau: t.nouveau,
+    icone: t.icone,
+  }));
 }
 
 /**
