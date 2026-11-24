@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { chargerModule } from '../../../wasm/charger';
 import { coteDemande, dimensionsCorps, disposer, grainsAnneau, type Plan } from './carte-geometrie';
 import { Sprites, dessineurDuCoeur } from './carte-sprites';
+import { chargerClasses, cleSprite, eclairages } from './lumiere-corps';
 import type { InterieurSysteme } from './types';
 
 /** No body is drawn larger than this, in CSS pixels (AD-reglages-7). */
@@ -33,14 +34,21 @@ export default function CarteCompacte({ systeme, cote }: { systeme: InterieurSys
   const dims = dispo ? dimensionsCorps(dispo.corps, echelle) : new Map<string, { rayon: number; cote: number }>();
   const coteDe = (cle: string) => dims.get(cle)?.cote ?? 0;
 
+  const [classesLues, setClassesLues] = useState(false);
+  useEffect(() => { void chargerClasses().then(() => setClassesLues(true)); }, []);
+  const lumieres = dispo && classesLues ? eclairages(dispo.corps) : new Map<string, { angle?: number; lumiere?: string }>();
+
   // One set of sprites per draw: the keys of two draws do not mean the same body.
   useEffect(() => {
     if (!dispo) return;
     const s = new Sprites(dessineurDuCoeur, () => retracer((n) => n + 1), true, () => undefined);
     sprites.current = s;
-    for (const c of dispo.corps) s.demander(c.cle, c.aspect, coteDemande(Math.min(COTE_MAX, coteDe(c.cle)), dpr, 128));
+    for (const c of dispo.corps) {
+      const e = lumieres.get(c.cle);
+      s.demander(cleSprite(c.cle, e), c.aspect, coteDemande(Math.min(COTE_MAX, coteDe(c.cle)), dpr, 128), e?.angle, e?.lumiere);
+    }
     return () => { s.arreter(); sprites.current = null; };
-  }, [systeme, plan]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [systeme, plan, classesLues]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const t = toile.current;
@@ -64,7 +72,7 @@ export default function CarteCompacte({ systeme, cote }: { systeme: InterieurSys
     g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
     for (const c of dispo.corps) {
       const cc = Math.min(COTE_MAX, Math.max(8, coteDe(c.cle)));
-      for (const { image, alpha } of sprites.current?.couches(c.cle, coteDemande(cc, dpr, 128), performance.now()) ?? []) {
+      for (const { image, alpha } of sprites.current?.couches(cleSprite(c.cle, lumieres.get(c.cle)), coteDemande(cc, dpr, 128), performance.now()) ?? []) {
         g.globalAlpha = alpha;
         g.drawImage(image, cx + c.x * echelle - cc / 2 + c.decalage[0] * cc, cy + c.y * echelle - cc / 2 + c.decalage[1] * cc, cc, cc);
       }

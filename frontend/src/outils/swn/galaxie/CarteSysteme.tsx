@@ -8,6 +8,7 @@ import { Alerte, Bouton, BoutonIcone, Case, useToasts } from '../../../ui';
 import { APPUI_LONG_MS, DELAI_FLECHES_MS, pasFleche } from '../../../ui/glisser';
 import { centresNuage, coteDemande, dimensionsCorps, disposer, grainsAnneau, orbitesAstres, placeApresPas, placeDepuisPoint, PORTEE_COURONNE, queuesComete, RAYON_MIN_PX, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
 import { Sprites, dessineurDuCoeur } from './carte-sprites';
+import { chargerClasses, cleSprite, eclairages, type Eclairage } from './lumiere-corps';
 import { placerEtiquettes, type CorpsEtiquette, type EtiquettePlacee, type Obstacle } from './etiquettes';
 import { lireEchecEdition, useEdition, type EchecEdition } from './Edition';
 import { COTE_MARQUE, placerMarques } from './elements-geometrie';
@@ -154,6 +155,11 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   const cy = taille.h / 2 + vue.dy;
   const ecran = useCallback((x: number, y: number): [number, number] => [cx + x * echelle, cy + y * echelle], [cx, cy, echelle]);
 
+  // The light of each body (E-23): the angle toward its star and that star's colour, once the core's class colours are read.
+  const [classesLues, setClassesLues] = useState(false);
+  useEffect(() => { void chargerClasses().then(() => setClassesLues(true)); }, []);
+  const lumieres = useMemo(() => (dispo && classesLues ? eclairages(dispo.corps) : new Map<string, Eclairage>()), [dispo, classesLues]);
+
   // Sprites: the blurred version of every body at once, the sharp one once the zoom has settled.
   const sprites = useRef<Sprites | null>(null);
   useEffect(() => {
@@ -164,12 +170,15 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   useEffect(() => {
     if (!dispo || taille.w === 0) return;
     const demander = () => {
-      for (const c of dispo.corps) sprites.current?.demander(c.cle, c.aspect, coteDemande(dimDe(c.cle).cote, dpr));
+      for (const c of dispo.corps) {
+        const e = lumieres.get(c.cle);
+        sprites.current?.demander(cleSprite(c.cle, e), c.aspect, coteDemande(dimDe(c.cle).cote, dpr), e?.angle, e?.lumiere);
+      }
     };
     // First pass at once (the blurred versions come first in the queue); later zooms wait for the gesture to settle.
     const t = setTimeout(demander, 0);
     return () => clearTimeout(t);
-  }, [dispo, taille.w, dims, dpr]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dispo, taille.w, dims, dpr, lumieres]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // Labels.
   const mesureur = useMemo(() => {
@@ -284,7 +293,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
         const [x, y] = ecran(c.x, c.y);
         const cote = dimDe(c.cle).cote;
         if (x + cote < 0 || y + cote < 0 || x - cote > taille.w || y - cote > taille.h) continue;
-        for (const { image: im, alpha } of sprites.current?.couches(c.cle, coteDemande(cote, dpr), maintenant) ?? []) {
+        for (const { image: im, alpha } of sprites.current?.couches(cleSprite(c.cle, lumieres.get(c.cle)), coteDemande(cote, dpr), maintenant) ?? []) {
           g.globalAlpha = enEnvoiRef.current.has(c.cle) ? alpha * OPACITE_ENVOI : alpha;
           g.drawImage(im, x - cote / 2 + c.decalage[0] * cote, y - cote / 2 + c.decalage[1] * cote, cote, cote);
         }
