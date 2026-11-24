@@ -1,4 +1,4 @@
-// Migration 0046 (AD-jeton-unique-1): `jetons_api.contenu` — 0 for a token with a `jetons_outils` row, 1 for the others.
+// Migration 0051 (AD-jeton-unique-1): `jetons_api.contenu` — 0 for a token with a `jetons_outils` row, 1 for the others.
 // The 0045 database is built by the test itself (migrations ≤ 0045, then SQL rows in the former schema).
 import assert from 'node:assert/strict';
 import { copyFileSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
@@ -13,15 +13,15 @@ const D = '2022-02-02T10:00:00.000Z';
 const FUTUR = '2999-01-01T00:00:00.000Z';
 const MAINTENANT = new Date('2023-01-01T00:00:00.000Z');
 
-test('0046 : le jeton d’outil passe à contenu 0, les autres (révoqué compris) à 1 ; chacun s’ouvre comme avant', () => {
+test('0051 : le jeton d’outil passe à contenu 0, les autres (révoqué compris) à 1 ; chacun s’ouvre comme avant', () => {
   const dir = mkdtempSync(join(tmpdir(), 'migration-jetons-contenu-'));
   try {
     const source = new URL('./migrations/', import.meta.url);
     for (const file of readdirSync(source)) {
-      if (/^\d{4}-.+\.sql$/.test(file) && Number(file.slice(0, 4)) <= 45) copyFileSync(new URL(file, source), join(dir, file));
+      if (/^\d{4}-.+\.sql$/.test(file) && Number(file.slice(0, 4)) <= 50) copyFileSync(new URL(file, source), join(dir, file));
     }
     const db = openDb(':memory:');
-    assert.equal(migrate(db, dir + '/').at(-1), 45);
+    assert.equal(migrate(db, dir + '/').at(-1), 50);
     assert.ok(!(db.prepare('PRAGMA table_info(jetons_api)').all() as { name: string }[]).some((c) => c.name === 'contenu'));
 
     db.prepare('INSERT INTO comptes (id, username, cree_le) VALUES (1, ?, ?)').run('ana', D);
@@ -42,7 +42,7 @@ test('0046 : le jeton d’outil passe à contenu 0, les autres (révoqué compri
     db.prepare("INSERT INTO jetons_outils (jeton_id, outil) VALUES (2, 'swn')").run();
     db.prepare("INSERT INTO jetons_outils (jeton_id, outil) VALUES (4, 'swn')").run();
 
-    assert.deepEqual(migrate(db), [46]);
+    assert.deepEqual(migrate(db), [51]);
 
     assert.deepEqual(
       db.prepare('SELECT id, contenu, nom, empreinte, expire_le, revoque_le FROM jetons_api ORDER BY id').all(),

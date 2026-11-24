@@ -51,6 +51,9 @@ body.asst-ouvert .zone-principale { margin-right: 380px; }
   .asst-panneau { width: 100%; border-left: 0; }
   body.asst-ouvert .zone-principale { margin-right: 0; }
   body.asst-ouvert .asst-bouton { right: var(--e-5); }
+  /* Phone: icon-only round button so it does not cover the controls at the page's foot. */
+  .asst-bouton { width: 44px; height: 44px; padding: 0; justify-content: center; right: var(--e-3); bottom: var(--e-3); }
+  .asst-bouton-texte { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
 
 /* Block « Image attachée » (kanevas-images). */

@@ -16,12 +16,16 @@ export type TypeEvenement =
   | 'relation_creee'
   | 'relation_modifiee'
   | 'relation_retiree'
-  | 'systeme_modifie';
+  | 'systeme_modifie'
+  // Battle map (AD-battlemap-assistant-6)
+  | 'direction_ecrite'
+  | 'lot_prepare'
+  | 'carte_composee';
 
 export interface Evenement {
   type: TypeEvenement;
   libelle: string;
-  cible: { type: 'fiche' | 'proposition' | 'systeme'; [id: string]: string | number };
+  cible: { type: 'fiche' | 'proposition' | 'systeme' | 'direction' | 'lot' | 'carte'; [id: string]: string | number };
 }
 
 /**
