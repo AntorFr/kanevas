@@ -182,7 +182,7 @@ function FicheEspace() {
       {supprimer && (
         <BoiteDialogue
           titre={`Supprimer « ${fiche.titre} » ?`}
-          texte="L’élément et ses sections disparaîtront de ce système et de tous les univers qui l’utilisent."
+          texte="Cet élément disparaît du système pour tous les univers."
           action="Supprimer l’élément"
           enCours={enCours}
           onConfirmer={() => void retirer()}
