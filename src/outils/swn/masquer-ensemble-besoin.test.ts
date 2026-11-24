@@ -91,7 +91,9 @@ test('B-97 nominal : le MJ masque le système tiré (-49, -48) : il est ancré e
   for (const [cle, corps] of Object.entries(avant)) assert.equal((await w.lire('antor', `interieur/${cle}`)).body, corps, cle);
   const v1 = (await w.lire('antor', `interieur/${H}`)).json();
   assert.equal(v1.etat, 'defini');
-  assert.deepEqual(v1.astres.map(({ version, ...a }: any) => a), v0.astres.map(({ version, ...a }: any) => a), 'l\'intérieur figé est celui qu\'on voyait');
+  // (the seed of a defined body is filled in at the read, AD-aspects-socle-2: a drawn one has none)
+  const sansGraine = ({ version, aspect: { graine, ...aspect }, ...a }: any) => ({ ...a, aspect });
+  assert.deepEqual(v1.astres.map(sansGraine), v0.astres.map(sansGraine), 'l\'intérieur figé est celui qu\'on voyait');
   const etat = (await w.lire('antor', `interieur/${H}/secret`)).json();
   assert.equal(etat.secret, true); assert.equal(etat.promu, true);
 });

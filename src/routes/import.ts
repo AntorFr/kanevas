@@ -20,7 +20,7 @@ import { lireContexteImport } from '../services/import.js';
 import { modifierEnTete } from '../services/import-entete.js';
 import { assurerFiche, lotDeRequete, supprimerFicheImport } from '../services/import-fiches.js';
 import { listerHistorique } from '../services/historique.js';
-import { assurerFichier, listerFichiersApi, MAX_FICHIERS_JOINTS, ouvrirFichierParReference } from '../services/fichiers.js';
+import { assurerFichier, supprimerFichierImport, listerFichiersApi, MAX_FICHIERS_JOINTS, ouvrirFichierParReference } from '../services/fichiers.js';
 import { lireFicheApi, listerFichesApi } from '../services/lecture-api.js';
 import { estId } from '../services/cles-forme.js';
 import { listerCartesApi } from '../services/cartes.js';
@@ -46,8 +46,8 @@ declare module 'fastify' {
 }
 
 /**
- * What a route of this scope accepts (K-6): `contenu` the content token only, `outil` a token
- * carrying the tool of the address, `ouverture` the opening of a batch (the token's kind decides),
+ * What a route of this scope accepts (K-6): `contenu` a token with the content permission, `outil` a token
+ * carrying the tool of the address, `ouverture` the opening of a batch (content, or the tool of `?outil=`),
  * `lot` any token (a batch of its universe). A route without one is refused.
  */
 export type PorteeImport = 'contenu' | 'outil' | 'ouverture' | 'lot';
@@ -60,11 +60,11 @@ declare module 'fastify' {
 
 function porteeOuverte(portee: PorteeImport | undefined, jeton: Jeton, request: FastifyRequest): boolean {
   switch (portee) {
-    case 'contenu': return jeton.outils.length === 0;
+    case 'contenu': return jeton.contenu;
     case 'lot': return true;
     case 'ouverture': {
       const { outil } = request.query as { outil?: unknown };
-      if (outil === undefined) return jeton.outils.length === 0;
+      if (outil === undefined) return jeton.contenu;
       return typeof outil === 'string' && jeton.outils.includes(outil);
     }
     case 'outil': {
@@ -386,6 +386,13 @@ export async function registerImportRoutes(app: FastifyInstance) {
           visibilite: champ('visibilite'),
           flux: part?.fieldname === 'fichier' ? flux() : null,
         }, app.horloge(), undefined, request.headers);
+      });
+
+      scope.delete(`${base}/fichiers/:cle`, { config: { portee: 'contenu' } }, async (request, reply) => {
+        const { cle } = request.params as { cle: string };
+        const { lot } = request.query as { lot?: unknown };
+        supprimerFichierImport(app.db, jetonDe(request), lotDeRequete(lot), cle, app.horloge());
+        return reply.code(204).send();
       });
 
       scope.delete(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request, reply) => {

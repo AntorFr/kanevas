@@ -6,11 +6,13 @@ pub fn rendre(c: &Ctx) -> Vec<Px> {
     let n = c.cote;
     let echelle = borne(c.f("echelle", 0.4), 0.15, 0.7);
     let r = c.demi * echelle;
-    let couronne = borne(c.f("couronne", 0.7), 0.0, 2.0);
+    // A star gone is a dull remnant: no corona, no rays, no halo, the disc at a fifth of its brightness.
+    let disparue = c.asp.get("disparue").and_then(serde_json::Value::as_bool).unwrap_or(false);
+    let couronne = if disparue { 0.0 } else { borne(c.f("couronne", 0.7), 0.0, 2.0) };
     let gran = borne(c.f("granulation", 1.0), 0.0, 3.0);
     let taches = borne(c.f("taches", 0.5), 0.0, 1.0);
     let rayons = borne(c.f("rayons", 7.0), 0.0, 24.0);
-    let halo = borne(c.f("halo", 0.0), 0.0, 2.0);
+    let halo = if disparue { 0.0 } else { borne(c.f("halo", 0.0), 0.0, 2.0) };
     let (c0, c1, c2) = (c.pal_i(0), c.pal_i(1), c.pal_i(2));
     let br = c.bruit;
     let oct = if c.cote <= 64 { 3 } else { 4 };
@@ -70,6 +72,10 @@ pub fn rendre(c: &Ctx) -> Vec<Px> {
                     col = mul(col, 1.0 + 0.12 * lisse(0.4, 0.7, s) * (1.0 - nz) * 2.0);
                 }
                 col = mul(col, 1.06);
+                if disparue {
+                    // A fifth of the brightness as the eye reads it (the output is encoded: 0.2 squared before the encoding).
+                    col = mul(col, 0.04);
+                }
                 let corps: Px = [col[0] * cov, col[1] * cov, col[2] * cov, cov];
                 px = dessus(corps, px);
             }

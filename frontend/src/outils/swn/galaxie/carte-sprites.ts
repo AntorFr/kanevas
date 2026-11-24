@@ -6,13 +6,13 @@ import { dessiner, versionRendu } from '../../../wasm/coeur';
 export const COTE_FLOU = 16;
 export const FONDU_MS = 160;
 
-export type Dessineur = (aspect: string, cote: number) => Promise<Uint8Array>;
+export type Dessineur = (aspect: string, cote: number, angle?: number, lumiere?: string) => Promise<Uint8Array>;
 
 /** The core's drawing at the renderer's current version; rejects if the core cannot load. */
-export const dessineurDuCoeur: Dessineur = async (aspect, cote) => dessiner(aspect, cote, await versionRendu());
+export const dessineurDuCoeur: Dessineur = async (aspect, cote, angle, lumiere) => dessiner(aspect, cote, await versionRendu(), angle, lumiere);
 
 interface Net { image: HTMLCanvasElement; depuis: number }
-interface Demande { cle: string; aspect: string; cote: number }
+interface Demande { cle: string; aspect: string; cote: number; angle?: number; lumiere?: string }
 
 function versCanvas(octets: Uint8Array, cote: number): HTMLCanvasElement {
   const c = document.createElement('canvas');
@@ -36,11 +36,12 @@ export class Sprites {
 
   arreter() { this.arrete = true; this.file = []; }
 
-  /** Asks the blurred version, then the sharp one at `cote`; asking again for the same pair does nothing. */
-  demander(cle: string, aspect: string, cote: number) {
+  /** Asks the blurred version, then the sharp one at `cote`; asking again for the same pair does nothing. `cle` carries the light
+   *  (`cleSprite`), `angle` and `lumiere` are passed to the core as they are. */
+  demander(cle: string, aspect: string, cote: number, angle?: number, lumiere?: string) {
     const f = `f|${cle}`, n = `n|${cle}|${cote}`;
-    if (!this.vus.has(f)) { this.vus.add(f); this.file.push({ cle, aspect, cote: COTE_FLOU }); }
-    if (!this.vus.has(n)) { this.vus.add(n); this.file.push({ cle, aspect, cote }); }
+    if (!this.vus.has(f)) { this.vus.add(f); this.file.push({ cle, aspect, cote: COTE_FLOU, angle, lumiere }); }
+    if (!this.vus.has(n)) { this.vus.add(n); this.file.push({ cle, aspect, cote, angle, lumiere }); }
     this.file.sort((a, b) => (a.cote === COTE_FLOU ? 0 : 1) - (b.cote === COTE_FLOU ? 0 : 1));
     void this.pomper();
   }
@@ -52,7 +53,7 @@ export class Sprites {
       while (this.file.length > 0 && !this.arrete) {
         const d = this.file.shift()!;
         try {
-          const octets = await this.dessineur(d.aspect, d.cote);
+          const octets = await this.dessineur(d.aspect, d.cote, d.angle, d.lumiere);
           if (this.arrete) return;
           const image = versCanvas(octets, d.cote);
           if (d.cote === COTE_FLOU) this.flous.set(d.cle, image);

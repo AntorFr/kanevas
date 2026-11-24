@@ -15,6 +15,7 @@ const { semerBouchon } = await import('../bouchon/depart.js');
 const { creerJeton } = await import('../services/jetons.js');
 const { trouverCompte } = await import('../services/comptes.js');
 const { creerGalaxie } = await import('../services/swn/galaxies.js');
+const { graineDe } = await import('../wasm/coeur.js');
 
 const G = 'swn/galaxie';
 // A neutral atlas invented here: one star, two bodies one of which has a moon, a belt, a comet, a transition.
@@ -95,7 +96,8 @@ test('B-93 B-95 nominal : atlas neutre importé deux fois, mêmes lignes, second
   assert.equal(v.transition, 9.75);
   const par = (c: string) => v.astres.find((a: any) => a.cle === c);
   assert.deepEqual([par('monde-a').orbite, par('monde-a').heure, par('monde-a').genre, par('monde-a').nom], [2.5, 3.5, 'planete', 'Monde A']);
-  assert.deepEqual(par('monde-a').aspect, { mer: 0.3 });
+  // the seed is written at the creation of the row (AD-aspects-socle-2)
+  assert.deepEqual(par('monde-a').aspect, { mer: 0.3, graine: await graineDe('sys-ref', 'monde-a') });
   assert.deepEqual([par('satellite-a').genre, par('satellite-a').parent_cle, par('satellite-a').orbite, par('satellite-a').heure], ['lune', 'monde-a', 0.5, 9]);
   assert.deepEqual([par('monde-b').orbite, par('monde-b').heure], [7, 11]);
   assert.deepEqual([par('comete-x').genre, par('comete-x').orbite, par('comete-x').heure], ['comete', 10, 1]);

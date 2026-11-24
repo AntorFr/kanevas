@@ -1,0 +1,130 @@
+[
+  {
+    "type": "peindre_sol",
+    "calque": "sol",
+    "cellules": [
+      {
+        "x": 4,
+        "y": 0
+      },
+      {
+        "x": 4,
+        "y": 1
+      }
+    ],
+    "asset_id": "herbe"
+  },
+  {
+    "type": "tracer_mur",
+    "calque": "murs",
+    "segments": [
+      {
+        "x": 2,
+        "y": 2,
+        "cote": "h"
+      },
+      {
+        "x": 3,
+        "y": 2,
+        "cote": "h"
+      }
+    ],
+    "asset_id": "mur-bois"
+  },
+  {
+    "type": "poser_porte",
+    "calque": "murs",
+    "x": 3,
+    "y": 2,
+    "cote": "h",
+    "porte": true
+  },
+  {
+    "type": "poser_element",
+    "id": "n1",
+    "calque": "objets",
+    "asset_id": "lit",
+    "x": 5.5,
+    "y": 4.5
+  },
+  {
+    "type": "deplacer_element",
+    "id": "n1",
+    "x": 6.5,
+    "y": 4.5
+  },
+  {
+    "type": "pivoter_element",
+    "id": "n1",
+    "rotation": 90
+  },
+  {
+    "type": "retourner_element",
+    "id": "n1"
+  },
+  {
+    "type": "mettre_a_echelle",
+    "id": "n1",
+    "echelle": 2
+  },
+  {
+    "type": "lier_fiche",
+    "id": "n1",
+    "fiche_id": "fiche-publique"
+  },
+  {
+    "type": "dupliquer_elements",
+    "ids": [
+      "n1"
+    ],
+    "nouveaux_ids": [
+      "n2"
+    ],
+    "dx": 1,
+    "dy": 0
+  },
+  {
+    "type": "supprimer_element",
+    "id": "e5"
+  },
+  {
+    "type": "gommer",
+    "calque": "sol",
+    "cellules": [
+      {
+        "x": 0,
+        "y": 0
+      }
+    ]
+  },
+  {
+    "type": "creer_calque",
+    "id": "toit",
+    "nom": "Toit",
+    "genre": "objet"
+  },
+  {
+    "type": "renommer_calque",
+    "id": "toit",
+    "nom": "Toits"
+  },
+  {
+    "type": "regler_calque",
+    "id": "toit",
+    "visible": false
+  },
+  {
+    "type": "ordonner_calque",
+    "id": "toit",
+    "index": 0
+  },
+  {
+    "type": "redimensionner",
+    "largeur": 12,
+    "hauteur": 9
+  },
+  {
+    "type": "supprimer_calque",
+    "id": "secret-sol"
+  }
+]

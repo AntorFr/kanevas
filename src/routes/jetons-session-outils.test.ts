@@ -75,7 +75,7 @@ test('outils : saisie invalide → 400 champ outils, aucun jeton créé', async 
   const w = await monde();
   const avant = (await w.appel(w.antor, 'GET', '/api/compte/jetons')).json().jetons.length;
   const base = { nom: 'T', dureeJours: 30, acces: w.sur(w.E) };
-  const cas: unknown[] = [[], 'essai/g', [3], ['rien/du/tout'], ['essai/h'], [G, 'essai/h'], null, {}];
+  const cas: unknown[] = ['essai/g', [3], ['rien/du/tout'], ['essai/h'], [G, 'essai/h'], null, {}];
   for (const outils of cas) {
     const r = await w.creer(w.antor, { ...base, outils });
     assert.equal(r.statusCode, 400, JSON.stringify(outils));

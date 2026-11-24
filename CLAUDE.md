@@ -8,9 +8,9 @@
   is just the suite (typecheck, build, every test, two files at a time by default, `--concurrence N` to change it) and writes
   the per-test TAP report `resultats.tap` (git-ignored); it writes no report and posts no status. The image build (tag `v*`
   only) and the `main` rule require the status; no workflow plays a test or runs on a branch push or a pull request.
-  Three more keys under `tests:` (not levels): `installation:` `npm ci && npm run build:wasm` (played once per extraction), `fichiers:` `node scripts/rejouer-tests.mjs --fichiers {tests}` (prints `name<TAB>file`, plays nothing) and `outillage:` `[package.json, scripts/]` (what the chain takes from `origin/main`); `ecrans:` and `rejouer:` start no `npm ci` and pass `--installe` after their argument (`tests:ecrans -- {base} --installe`, `rejouer-tests.mjs {tests} --installe`), which skips only `build:wasm`.
-  Five levels in `.sdlc.yaml` (and `ecrans_liste:` `npm ci --ignore-scripts --loglevel=error >/dev/null && node scripts/niveaux-tests.mjs --liste ecrans {base}`, not a level: it names the screen tests `ecrans:` would play, with no build, no Playwright and no test): `commande:` (the whole suite, above, about 37 min), `fiche:` `npm ci && npm run tests:fiche -- {base}` (the suite minus the screen
-  tests the change does not touch), `ecrans:` `npm run tests:ecrans -- {base} --installe` (only the chosen screen tests), `local:` `npm ci && npm run tests:local` (every file but
+  Three more keys under `tests:` (not levels): `installation:` `npm ci && npm run build:wasm` (played once per extraction), `fichiers:` `node scripts/rejouer-tests.mjs --fichiers {tests}` (prints `name<TAB>file`, plays nothing) and `outillage:` `[scripts/tests-attestes.mjs, scripts/niveaux-tests.mjs, scripts/rejouer-tests.mjs, scripts/playwright.mjs]` (only the scripts that judge, taken from `origin/main`; never `package.json`, a directory or an install/build script, AD-outillage-1); `ecrans:` and `rejouer:` start no `npm ci` and pass `--installe` after their argument (`tests-attestes.mjs --ecrans {base} --installe`, `rejouer-tests.mjs {tests} --installe`), which skips only `build:wasm`.
+  Five levels in `.sdlc.yaml` (and `ecrans_liste:` `npm ci --ignore-scripts --loglevel=error >/dev/null && node scripts/niveaux-tests.mjs --liste ecrans {base}`, not a level: it names the screen tests `ecrans:` would play, with no build, no Playwright and no test): `commande:` (the whole suite, above, about 37 min), `fiche:` `npm ci && node scripts/tests-attestes.mjs --fiche {base}` (the suite minus the screen
+  tests the change does not touch), `ecrans:` `node scripts/tests-attestes.mjs --ecrans {base} --installe` (only the chosen screen tests), `local:` `npm ci && node scripts/tests-attestes.mjs --local` (every file but
   `src/e2e/`, no `build`, no Playwright; about 4 min) and `rejouer:` `node scripts/rejouer-tests.mjs {tests} --installe` (only the named
   tests, `describe > test` as in `resultats.tap`; non-zero for a name no file declares as a literal test title). A screen test declares its screens on its first line (`// ecrans: a, b`);
   read a choice without playing it: `node scripts/niveaux-tests.mjs --liste ecrans|fiche <base>`; durations measured in the README. The `tests-complets` status says its level (description starting with « niveau »), the tag build refuses one that does not. Test choice logic: `scripts/niveaux-tests.mjs`.
@@ -19,10 +19,9 @@
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
 - Build and test in containers (reference). In a pod without Docker, Node >= 20 on the host runs the same commands
-  (`npm ci && npm run typecheck && npm test`), see the README. The e2e tests need Playwright and Chromium and **fail** without
-  them (AD-harnais-4): `node:20-bookworm-slim` has neither, so the Docker route covers typecheck and the non-e2e tests only;
-  `npm ci && npm run tests:attestes` (which installs Playwright locally) plays everything:
-  `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"` (e2e files fail there)
+  (`npm ci && npm run build:wasm && npm run typecheck && npm test`), see the README. The Node-only image
+  (`docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"`)
+  has no Rust: it only works once `rust/pkg/` exists (see the Rust → Wasm item below), and neither Playwright nor Chromium: the e2e tests **fail** without them (AD-harnais-4), so that route covers typecheck and the non-e2e tests only; `npm ci && npm run tests:attestes` (which installs Playwright locally) plays everything.
 - Rust → Wasm (`rust/`, AD-rust-1 to 10): the Node-only Docker command above is not enough any more, it has no Rust; `npm run build:wasm` (needs `cargo`, the wasm target and `wasm-bindgen`, see README « Rust / WebAssembly ») must have run before `typecheck`, `build` and `npm test`; `tests:attestes` runs it itself.
 - `npm run typecheck` : `tsc --noEmit` on the API and on `frontend/`. `npm test` : `node --import tsx --test`
   on the files found by `find` in `src` and `frontend/src` — Node 20 (CI, image) does not expand globs
@@ -175,7 +174,7 @@
 - Catalogues (`kanevas-outils-catalogue`, migration 0021, K-1 to K-8 in `ARCHITECTURE.md`): only `services/catalogues.ts` reads a module's
   `StockageCatalogue` and resolves the two levels (never a module's computation on its own tables); an import (preview or application, one
   transaction) never writes `masque` nor the withdrawals (B-48) and changes the catalogue version only when an element is added or modified;
-  no gesture hides a system element. A token with no `jetons_outils` row opens no tool route, a tool token opens no content route
+  no gesture hides a system element. A token with no `jetons_outils` row opens no tool route, a token without the `contenu` permission (`jetons_api.contenu`, AD-jeton-unique-1) opens no content route
   (`config.portee` of each route in `routes/import.ts`).
 - Managed sections (`kanevas-outils-sections-gerees`, migration 0020, AD-127/128): a section with `gere_par` (`module/outil/type`) is written
   only by its tool. `ecrireContenu` refuses it (`refuse`, `detail: 'section_geree'`) unless its last parameter `geree` is passed — and

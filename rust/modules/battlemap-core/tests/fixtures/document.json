@@ -1,0 +1,203 @@
+{
+  "schema": 1,
+  "largeur": 10,
+  "hauteur": 8,
+  "calques": [
+    {
+      "id": "sol",
+      "nom": "Sol",
+      "type": "sol",
+      "visible": true,
+      "verrouille": false,
+      "mj_seul": false
+    },
+    {
+      "id": "murs",
+      "nom": "Murs",
+      "type": "mur",
+      "visible": true,
+      "verrouille": false,
+      "mj_seul": false
+    },
+    {
+      "id": "objets",
+      "nom": "Objets",
+      "type": "objet",
+      "visible": true,
+      "verrouille": false,
+      "mj_seul": false
+    },
+    {
+      "id": "secret-sol",
+      "nom": "Réservé au MJ",
+      "type": "sol",
+      "visible": true,
+      "verrouille": false,
+      "mj_seul": true
+    },
+    {
+      "id": "secret-objets",
+      "nom": "Pièges",
+      "type": "objet",
+      "visible": true,
+      "verrouille": false,
+      "mj_seul": true
+    }
+  ],
+  "sols": [
+    {
+      "calque": "sol",
+      "x": 0,
+      "y": 0,
+      "asset_id": "dalle"
+    },
+    {
+      "calque": "sol",
+      "x": 1,
+      "y": 0,
+      "asset_id": "dalle"
+    },
+    {
+      "calque": "sol",
+      "x": 2,
+      "y": 0,
+      "asset_id": "dalle"
+    },
+    {
+      "calque": "sol",
+      "x": 3,
+      "y": 0,
+      "asset_id": "dalle"
+    },
+    {
+      "calque": "sol",
+      "x": 0,
+      "y": 1,
+      "asset_id": "dalle"
+    },
+    {
+      "calque": "sol",
+      "x": 1,
+      "y": 1,
+      "asset_id": "dalle"
+    },
+    {
+      "calque": "sol",
+      "x": 2,
+      "y": 1,
+      "asset_id": "dalle"
+    },
+    {
+      "calque": "sol",
+      "x": 3,
+      "y": 1,
+      "asset_id": "dalle"
+    },
+    {
+      "calque": "secret-sol",
+      "x": 8,
+      "y": 6,
+      "asset_id": "piege-sol"
+    }
+  ],
+  "murs": [
+    {
+      "calque": "murs",
+      "x": 0,
+      "y": 0,
+      "cote": "h",
+      "asset_id": "mur-pierre",
+      "porte": false
+    },
+    {
+      "calque": "murs",
+      "x": 1,
+      "y": 0,
+      "cote": "h",
+      "asset_id": "mur-pierre",
+      "porte": false
+    },
+    {
+      "calque": "murs",
+      "x": 4,
+      "y": 0,
+      "cote": "v",
+      "asset_id": "mur-pierre",
+      "porte": true
+    },
+    {
+      "calque": "murs",
+      "x": 4,
+      "y": 1,
+      "cote": "v",
+      "asset_id": "mur-bois",
+      "porte": false
+    }
+  ],
+  "elements": [
+    {
+      "id": "e1",
+      "calque": "objets",
+      "asset_id": "table",
+      "x": 1.5,
+      "y": 1.5,
+      "rotation": 90,
+      "miroir": true,
+      "echelle": 1.5,
+      "fiche_id": "fiche-publique"
+    },
+    {
+      "id": "e2",
+      "calque": "objets",
+      "asset_id": "tonneau",
+      "x": 3,
+      "y": 2.25,
+      "rotation": 0,
+      "miroir": false,
+      "echelle": 1
+    },
+    {
+      "id": "e3",
+      "calque": "objets",
+      "asset_id": "coffre-secret",
+      "x": 2,
+      "y": 5,
+      "rotation": 180,
+      "miroir": false,
+      "echelle": 1,
+      "fiche_id": "fiche-publique"
+    },
+    {
+      "id": "e4",
+      "calque": "objets",
+      "asset_id": "statue",
+      "x": 6,
+      "y": 3,
+      "rotation": 0,
+      "miroir": false,
+      "echelle": 2,
+      "fiche_id": "fiche-mj"
+    },
+    {
+      "id": "e5",
+      "calque": "objets",
+      "asset_id": "vieille-lampe",
+      "x": 7,
+      "y": 7,
+      "rotation": 270,
+      "miroir": false,
+      "echelle": 1
+    },
+    {
+      "id": "e6",
+      "calque": "secret-objets",
+      "asset_id": "piege",
+      "x": 8.5,
+      "y": 6.5,
+      "rotation": 0,
+      "miroir": false,
+      "echelle": 1,
+      "fiche_id": "fiche-publique"
+    }
+  ]
+}
