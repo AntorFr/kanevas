@@ -27,10 +27,6 @@ const NIVEAUX = [
   { valeur: 'lecture', libelle: 'Lecture' },
   { valeur: 'ecriture', libelle: 'Lecture + écriture' },
 ] as const;
-const PORTEES = [
-  { valeur: 'contenu', libelle: 'Contenu de l’univers' },
-  { valeur: 'outils', libelle: 'Outils' },
-] as const;
 const modes = (admin: boolean) =>
   [
     { valeur: 'tous', libelle: admin ? 'Tous les univers du compte' : 'Tous mes univers' },
@@ -80,9 +76,9 @@ export function FormulaireJeton({
   const [revoque, setRevoque] = useState(false);
   const [montre, setMontre] = useState<{ nom: string; valeur: string } | null>(null);
   const [sansListe, setSansListe] = useState(false);
-  const [portee, setPortee] = useState<'contenu' | 'outils'>('contenu');
+  const [contenu, setContenu] = useState(true);
   const [outils, setOutils] = useState<string[]>([]);
-  const [sansOutil, setSansOutil] = useState(false);
+  const [sansPermission, setSansPermission] = useState(false);
 
   const creation = !jeton;
   const lignes = lignesDe(univers, forme, courant);
@@ -96,14 +92,14 @@ export function FormulaireJeton({
     e?.preventDefault();
     if (enCours) return;
     if (creation && nom.trim() === '') return setNomVide(true);
-    if (creation && portee === 'outils' && outils.length === 0) return setSansOutil(true);
+    if (creation && !contenu && outils.length === 0) return setSansPermission(true);
     if (listeVide(forme)) return setSansListe(true);
     setEnCours(true);
     setEchec(null);
     setChanges(false);
     try {
       if (creation) {
-        const r = await appeler<{ valeur: string }>('POST', url, { nom: nom.trim(), dureeJours: Number(duree), acces: corpsAcces(forme), ...(portee === 'outils' ? { outils } : {}) });
+        const r = await appeler<{ valeur: string }>('POST', url, { nom: nom.trim(), dureeJours: Number(duree), acces: corpsAcces(forme), contenu, outils });
         setMontre({ nom: nom.trim(), valeur: r.valeur });
         onChange();
       } else {
@@ -170,40 +166,44 @@ export function FormulaireJeton({
                 onChange={(e: { target: { value: string } }) => setNom(e.target.value)}
               />
               <ChoixSegmente legende="Durée" options={DUREES} valeur={duree} onChange={setDuree} />
-              <ChoixSegmente
-                legende="Portée"
-                options={PORTEES}
-                valeur={portee}
-                disabled={outilsOffrables.length === 0}
-                onChange={(v) => {
-                  setSansOutil(false);
-                  setPortee(v);
-                }}
-              />
-              {outilsOffrables.length === 0 && (
-                <p className="note-jeton">Aucun outil de vos univers ne reçoit de catalogue par l’API.</p>
-              )}
-              {portee === 'outils' && (
-                <>
-                  <p className="note-jeton">Un jeton d’outil n’écrit que le catalogue des outils cochés. Il n’ouvre ni fiches ni fichiers.</p>
-                  <div className="cases-outils" role="group" aria-label="Outils">
-                    {outilsOffrables.map((o) => (
-                      <Case
-                        key={o.cle}
-                        etiquette={`${o.libelle} · ${o.libelleModule}`}
-                        checked={outils.includes(o.cle)}
-                        onChange={(e) => {
-                          setSansOutil(false);
-                          setOutils((l) => (e.target.checked ? [...l, o.cle] : l.filter((c) => c !== o.cle)));
-                        }}
-                      />
-                    ))}
-                  </div>
-                  {sansOutil && <p role="alert" className="erreur-boite">Cochez au moins un outil.</p>}
-                </>
-              )}
+              <span id="lib-permissions" className="titre-liste-acces">
+                Ce que le jeton peut faire
+              </span>
+              <div className="cases-outils" role="group" aria-labelledby="lib-permissions">
+                <Case
+                  etiquette="Contenu"
+                  detail="fiches, sections, relations, fichiers, cartes, export"
+                  checked={contenu}
+                  onChange={(e) => {
+                    setSansPermission(false);
+                    setContenu(e.target.checked);
+                  }}
+                />
+                {outilsOffrables.map((o) => (
+                  <Case
+                    key={o.cle}
+                    etiquette={o.libelle}
+                    detail={o.libelleModule}
+                    checked={outils.includes(o.cle)}
+                    onChange={(e) => {
+                      setSansPermission(false);
+                      setOutils((l) => (e.target.checked ? [...l, o.cle] : l.filter((c) => c !== o.cle)));
+                    }}
+                  />
+                ))}
+                <p className="note-jeton">
+                  Un seul jeton peut tout faire, ou créez-en un par script : les accès ci-dessous valent pour tout ce que vous cochez.
+                </p>
+                {outilsOffrables.length === 0 && <p className="note-jeton">Aucun outil de vos univers ne reçoit de catalogue par l’API.</p>}
+                {sansPermission && (
+                  <p role="alert" className="erreur-boite">
+                    Cochez au moins une permission.
+                  </p>
+                )}
+              </div>
             </>
           )}
+          {!creation && <p className="note-jeton">Les permissions d’un jeton ne changent pas : créez-en un autre.</p>}
           <ChoixSegmente
             legende="Univers atteints"
             options={modes(admin)}

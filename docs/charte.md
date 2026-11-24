@@ -296,7 +296,7 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   `--accent-fond` halo. A section's textarea keeps the reading typography (Newsreader
   18 px) on `--surface`, bordered by `--accent` with a halo, footer « 313 / 100 000 », keyboard help,
   « Annuler », « Enregistrer ». Checkbox: 16 px, outline `--bord-champ`; checked in `--mj`
-  for « Secrète (MJ seul) », in `--accent` for the search filter « sous-lieux compris ».
+  for « Secrète (MJ seul) », in `--accent` for the search filter « sous-lieux compris » and for the token permissions of E-23. `Case` takes an optional `detail` (kanevas-jeton-unique): a 12 px `--texte-3` line under the 13 px label, inside the `<label>` (clickable, part of the accessible name); without it the output is unchanged.
 - C: a visible label linked to the field; the error appears beneath in `--danger` with
   « Erreur : » before it, linked by `aria-describedby`; input is never lost on failure.
 
