@@ -53,7 +53,7 @@ const fil = (page: Any) => page.getByRole('navigation', { name: /Fil d.Ariane/i 
 async function filTexte(page: Any): Promise<string> {
   return (await fil(page).innerText()).replace(/\s*\n\s*/g, ' › ').replace(/\s+/g, ' ').replace(/^\S › /, '').trim();
 }
-// Le maillon de type vient d'une requête distincte de la fiche : on attend le fil attendu, sans délai fixe.
+// The type link comes from a request separate from the sheet: wait for the expected trail, with no fixed delay.
 async function filComplet(page: Any, attendu: string): Promise<void> {
   await page.waitForFunction((voulu: string) => {
     const nav = Array.from(document.querySelectorAll('nav')).find((n) => /Fil d.Ariane/i.test(n.getAttribute('aria-label') ?? ''));
