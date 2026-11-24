@@ -907,3 +907,13 @@ universe name without a letter gives `univers-<id>`), triggers created, the hist
 `better-sqlite3` runs triggers inside the write's transaction: a write and its history line are
 atomic.
 
+
+## `kanevas-cr-aventure` scope: the model
+
+No new entity, no migration. A session report's adventure is `fiches.charge.campagne_id` (unchanged); it becomes **writable by the GM** after creation.
+
+Rules:
+1. `campagne_id` is written by `creerCompteRendu` and by one new service function of `services/comptes_rendus.ts`, `changerAventureDuCompteRendu`, run inside `ecrire` (history, AD-147, and `modifie_le` by the triggers). The target is read with `aventureLue` (same guard as the creation); GM outside player mode only; an id that is not a readable sheet, or a target that is not a readable adventure of the universe: `introuvable` (as the creation); a readable sheet that is not a session report: `invalide` (400 on the route, as the other type-bound fields of `PATCH`); a player or a GM in player mode: the refusals of `changerStatutFiche` (AD-cr-aventure-5); the same adventure: no write.
+2. Nothing else of the sheet moves (id, key, sections, relations, `liens`, `parent_id`).
+3. The list `listerComptesRendus({campagneId})` returns the reports whose adventure is that one **or any descendant of it of type `aventure` that the caller reads** (reached through a chain of `aventure` sheets by `parent_id`, at any depth — the 50 levels of AD-115 cannot be exceeded; the walk tests the caller's read at each node, so a scenario the caller does not read brings nothing, nor does what is under it; an adventure under a sheet of another type is not a scenario); each line carries its own adventure (`campagneId`, `campagneNom`), from which the screen shows the scenario's name when it differs from the page's adventure. The deletion count of an adventure (AD-119) stays on direct reports. The filter is one for every reader of `listerComptesRendus({campagneId})` (the route `?campagne=`, E-9's block, E-13's list (through the route's filter, there is no screen filter); no assistant list calls it): all give the widened result with each line's own adventure; nothing else widens (the deletion count, the « Campagne » line of a report, the bilan).
+4. The import fingerprint of the header (AD-139) already holds `campagne_id` for a report: a change of adventure is a change of header.
