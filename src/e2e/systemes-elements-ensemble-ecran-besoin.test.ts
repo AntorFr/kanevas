@@ -216,7 +216,7 @@ describe('kanevas-systemes-jeu-elements : écrans E-5, E-9, E-15, E-16, E-17', (
     const fenetre = p.getByRole('alertdialog').or(p.getByRole('dialog'));
     await fenetre.getByRole('button', { name: 'Annuler' }).waitFor();
     const manques = await manquants([
-      ['« Supprimer « Pistolet » ? »', () => fenetre.getByText(/Supprimer .Pistolet. \?/)],
+      ['« Supprimer « Pistolet » ? »', () => fenetre.getByText(/Supprimer «\s+Pistolet\s+» \?/)],
       ['« Cet élément disparaît du système pour tous les univers. »', () => fenetre.getByText(/Cet élément disparaît du système pour tous les univers\./)],
     ]);
     assert.deepEqual(manques, []);
