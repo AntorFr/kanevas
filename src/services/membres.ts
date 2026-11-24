@@ -65,12 +65,16 @@ export function ajouterMembreNoyau(
   universId: number,
   username: string,
   role: Role,
+  raisons: { jamaisConnecte: string; dejaMembre: string } = {
+    jamaisConnecte: RAISON_JAMAIS_CONNECTE,
+    dejaMembre: RAISON_DEJA_MEMBRE,
+  },
 ): Membre {
   verifierRole(role);
   const compte = db.prepare('SELECT id, username FROM comptes WHERE username = ?').get(
     username.trim(),
   ) as { id: number; username: string } | undefined;
-  if (!compte) throw new ErreurService('invalide', RAISON_JAMAIS_CONNECTE);
+  if (!compte) throw new ErreurService('invalide', raisons.jamaisConnecte);
   try {
     db.prepare('INSERT INTO membres (univers_id, compte_id, role) VALUES (?, ?, ?)').run(
       universId,
@@ -79,7 +83,7 @@ export function ajouterMembreNoyau(
     );
   } catch (e) {
     if ((e as { code?: string }).code === 'SQLITE_CONSTRAINT_PRIMARYKEY') {
-      throw new ErreurService('invalide', RAISON_DEJA_MEMBRE);
+      throw new ErreurService('invalide', raisons.dejaMembre);
     }
     throw e;
   }

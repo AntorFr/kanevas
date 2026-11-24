@@ -119,7 +119,10 @@ export function listerMJSysteme(db: Db, acteur: ActeurInstance, systemeId: numbe
 
 export function ajouterMJSysteme(db: Db, acteur: ActeurInstance, systemeId: number, username: string): Membre {
   exigerAdmin(acteur);
-  return ajouterMembreNoyau(db, espaceOuIntrouvable(db, systemeId), username, 'mj');
+  return ajouterMembreNoyau(db, espaceOuIntrouvable(db, systemeId), username, 'mj', {
+    jamaisConnecte: 'Aucun compte ne porte cet identifiant.',
+    dejaMembre: 'Ce compte est déjà MJ de ce système.',
+  });
 }
 
 /** No floor of one GM here (B-114): a system with no GM is edited by nobody. */

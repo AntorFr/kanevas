@@ -63,7 +63,7 @@ export function OngletMJSysteme({ id, nom }: { id: string; nom: string }) {
   return (
     <div className="mj-systeme">
       {mj.valeur.length === 0 ? (
-        <p className="note-admin">Aucun MJ : personne ne peut modifier les éléments de ce système.</p>
+        <p className="note-admin">Ce système n'a aucun MJ. Personne ne peut le modifier tant que vous n'en ajoutez pas.</p>
       ) : (
         <ul className="suivi-liste liste-membres">
           {mj.valeur.map((m) => (
