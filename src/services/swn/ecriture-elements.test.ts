@@ -375,7 +375,7 @@ test('0044 : montée depuis 0043 avec le semis, tout reste, swn_elements neuve e
   assert.ok(!tables().includes('swn_elements'));
   const tout = (t: string) => db.prepare(`SELECT * FROM ${t} ORDER BY 1`).all();
   const avant = { s: tout('swn_systemes'), a: tout('swn_astres'), f: tout('fiches'), g: tout('swn_galaxies') };
-  assert.deepEqual(migrate(db), [44, 45, 46, 47, 48, 49, 50, 51]);
+  assert.deepEqual(migrate(db), [44, 45, 46, 47, 48, 49, 50, 51, 52]);
   assert.ok(tables().includes('swn_elements'));
   assert.deepEqual({ s: tout('swn_systemes'), a: tout('swn_astres'), f: tout('fiches'), g: tout('swn_galaxies') }, { ...avant, s: (avant.s as any[]).map(ligneApres0051) });
   assert.equal((db.prepare('SELECT COUNT(*) n FROM swn_elements').get() as any).n, 0);
