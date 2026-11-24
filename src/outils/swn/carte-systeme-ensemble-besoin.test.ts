@@ -51,14 +51,15 @@ test('B-89 : un même corps rendu deux fois (deux serveurs, deux caches) donne l
   assert.equal(octets(ra), octets(rb));
 });
 
-test('B-89 : deux corps d\'aspect identique donnent la même image ; un type ou un côté changés en donnent une autre', async () => {
+test('B-89 : un corps se redessine à l\'identique ; un autre corps (sa graine vient de sa clé, B-114), un autre type ou un autre côté donnent une autre image', async () => {
   const w = await monde();
   const s = w.sys('ens-b', 72, 73, 0);
   w.astre(s, 'ref', 'rocheux', 1); w.astre(s, 'jumeau', 'rocheux', 1);
   w.astre(s, 'lave', 'lave', 1);
   const img = async (cle: string, cote = 96) => octets(await w.get('lea', 72, 73, `/astres/${cle}/illustration?cote=${cote}`));
   const ref = await img('ref');
-  assert.equal(await img('jumeau'), ref);
+  assert.equal(await img('ref'), ref);
+  assert.notEqual(await img('jumeau'), ref);
   assert.notEqual(await img('lave'), ref);
   assert.notEqual(await img('ref', 128), ref);
 });

@@ -932,6 +932,8 @@ table below is written with neutral names; the script that converts Éneria's `a
 - `swn_astres.aspect` keeps its bound (4,000 characters) and `swn_formations.etoile_rang` and `swn_astres.etoile_rang` already exist (migration 0043): B-122's « the star a formation or a point turns round » is
   a field of the **format**, not a column. A moon already carries an hour around its planet.
 
+**Count of `kanevas-carte-rendu-aspects-socle`: 15 rows of this table** (`mer`, `nuages`, `calottes`, `relief`, palettes, `crateres`, atmosphere, `turbulence`, `tache`, colours of the bands, `poussiere`, `brume`, `graine`, `anneaux`, `disparue`), each with a measured-value test of the core; the keys of the last row of reliefs (`couleur_nuages`… `vue`) and `villes`/`lueur` belong to `-aspects-reliefs` and `-nuit`; `voile` is the system's. The call parameters `angle` and `lumiere` (AD-aspects-socle-1) are not keys of an aspect and not rows.
+
 **Vocabulary of `aspect` (the core, `valider_aspect`).** The GM's catalogue of settings keeps its names; the conversion of an entry of the
 reference vocabulary into core keys follows the table below and is **the contract of the atlas's producer** (the core receives core keys only); **a key the core does not know is reported by name in the import report**
 (`non_rendu`, never silently dropped, B-114). Rules: each formula is tested by the core on measured values; the same name does not mean the same thing
@@ -940,16 +942,21 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | Reference setting | Core key | Conversion |
 |---|---|---|
 | sea level `mer` | `mer` | table by measurement (a measured correspondence, never below the core's 5 % floor); « no sea » = a `mer` of 0 plus palette without water |
-| cloud cover `nuages` | `nuages` | table by measurement (0.9 of the reference is a covered sky; the core's curve reaches 57 %); the core's curve is widened to a full veil |
+| cloud cover `nuages` | `nuages` | table by measurement (0.9 of the reference is a covered sky; the core's curve reaches 57 %); the core's curve is widened to a full veil (at `nuages` 1 the veil covers at least 90 % of the disc, measured) |
 | `calottes` (latitude where ice begins; 1.2 = none) | `calottes` (a quantity) | `calottes = clamp((1 − latitude) / 0.28, 0, 1)` |
 | `relief` | `relief` | ≈ 0.6 × reference, bound of the validator aligned on the engine's [0, 2] |
 | named palettes (`terre`, `ocean`, `glace`, `roche`, `couleurs`, `croute`, `jour`/`nuit`/`crepuscule`) | `palette` | sampled to 1–16 colours in the order the core reads (ice is read upside down) |
-| `crateres` (a count) | `cratere` (a depth) | ≈ count / 220; count and size law are new keys (`crateres_nombre`) |
+| `crateres` (a count) | `cratere` (a depth) and `crateres_nombre` (new, integer [0, 2000]) | `cratere = clamp(count / 220, 0, 1)`; `crateres_nombre` is the number of craters the core draws (absent: its density follows `cratere`); one size law, the core's |
 | `atmosphere`, `force_atmo` | `halo_couleur`, `halo` | direct, the type's default sent when absent |
+| `turbulence` | `turbulence` (new, [0, 2], default 1) | direct: amplitude of the distortion of the bands of a gas giant and of the streaks of a telluric surface (the engine's factor `(tur − 0.5) × 1.6`, multiplied by it); 0 gives straight bands |
+| `tache` (a storm, a spot) | `tache` (new, object) | `{latitude [−1, 1], taille [0.02, 0.4], couleur}`, every key optional (defaults: `tempete` decides whether one is drawn, mid-latitude, 0.12, the palette's third colour); `tempete` stays the intensity of the engine's own spot, `tache` places and colours it; unknown keys inside it are reported (`non_rendu`) |
+| colours of the bands `couleurs` of a gas giant | `bandes_couleurs` (new, list of 1 to 16 `#rrggbb`) | sampled in the order the core reads; when present the bands of a gas giant read it in place of `palette`; `palette` stays the body's (the reference's `couleurs` of a giant is a palette: the producer may send either, the core draws the same) |
+| `poussiere` | `poussiere` (existing, colour `#rrggbb`, `null` clears) | direct: the dust tail of a comet and the dust of a nebula take this colour; the reference's dust quantity is the existing `force_poussiere` [0, 2] |
+| `brume` | `brume` (existing, colour `#rrggbb`, `null` clears) | direct: the haze of a nebula and the atmosphere veil of a world take this colour |
 | `graine` | `graine` | **always sent**, one per body (`graine_de(id)`): two bodies never share a picture |
-| `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | new accepted key; absent means **no ring** (the engine's random ring at 28 % goes) |
+| `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | accepted key (the engine reads it, `valider_aspect` did not): object `{interieur [1.1, 2.5], exterieur, inclinaison [0.12, 1.2], angle, opacite [0, 1], couleur, couleur2}` each optional and bounded as the engine's own clamps; absent means **no ring** (the engine's random ring at 28 % goes) |
 | `couleur_nuages`, `opacite_nuages`, `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124), `terre_seche`, `etirement`, `eclairs`, `inclinaison`, `geysers`, `couleur_fissures`, `mers`, `canyons`, `lave`, `cristaux`, `activite`, `intensite`, `vue` | new keys of the same names | added to the core one by one, each with a bound and a test of the picture |
-| `disparue` (a star gone, B-122) | `disparue` (boolean, on a star only) | direct; true draws a dim remnant, never an ordinary star; the atlas writes it from `corps[].etat: "disparue"` |
+| `disparue` (a star gone, B-122) | `disparue` (new, boolean, on a star only: refused on any other type) | direct; true draws a dim remnant (the star's disc at a fifth of its brightness, no corona, no rays), never an ordinary star; the atlas writes it from `corps[].etat: "disparue"` |
 | `voile` | `swn_systemes.voile` | the system's only; the veil of a nebula is `parametres.voile` of its zone (below) |
 
 **Atlas format (AD-atlas-2, extended).** Every addition is optional (an atlas of the former format stays valid, byte for byte): `lunes[].type` takes every type of the core

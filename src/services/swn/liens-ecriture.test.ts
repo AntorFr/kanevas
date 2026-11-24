@@ -146,7 +146,9 @@ test('Léa : fiche non lisible = JSON d\'un corps non lié ; lisible = {id, titr
   const znu = JSON.stringify(w.lire(w.lea).formations.find((f: any) => f.cle === z.cle));
   E.lierZone(...w.AS, z.cle!, { ficheId: w.cachee, version: 1 });
   const cache = w.lire(w.lea);
-  assert.equal(JSON.stringify(planete(cache)), nu);
+  // (the seed of a body of a defined system is filled in at the read, AD-aspects-socle-2: the drawn one `nu` has none)
+  const sansGraine = (c: any) => JSON.stringify({ ...c, aspect: Object.fromEntries(Object.entries(c.aspect).filter(([k]) => k !== 'graine')) });
+  assert.equal(sansGraine(planete(cache)), nu);
   assert.equal(planete(cache).fiche, null);
   assert.equal(JSON.stringify(cache.formations.find((f: any) => f.cle === z.cle)), znu);
   assert.ok(!JSON.stringify(cache).includes('Aube'));
