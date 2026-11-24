@@ -78,14 +78,14 @@ async function ajouter(p: Any, nom: string) {
 }
 const plus = async (p: Any, nom: string, n: number) => { for (let i = 0; i < n; i++) await p.getByRole('button', { name: `Augmenter la quantité : ${nom}` }).click(); };
 const integre = (p: Any) => p.locator('input[aria-label="Intégrées à la coque : Refonte M"]');
+const valeurIntegre = (p: Any, v: string) => p.waitForFunction((x: string) => (document.querySelector('input[aria-label="Intégrées à la coque : Refonte M"]') as HTMLInputElement | null)?.value === x, v, { timeout: 15000 });
 const sansDebordement = async (p: Any) => {
   const m = await p.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: window.innerWidth }));
   assert.ok(m.sw <= m.iw + 1, `aucun défilement horizontal ${JSON.stringify(m)}`);
 };
 
 describe('E-22 mods du livre', { skip: skipBrowser, timeout: 300000 }, () => {
-  for (const largeur of [1280, 390]) {
-    it(`Léa : installation, Maintenance, alerte, refonte, intégrées ≤ quantité, ${largeur} px`, async () => {
+  const parcours = (largeur: number) => async () => {
       await remettre();
       const p = await ouvrir('lea', orak, largeur);
       // an empty design: no row, no block
@@ -120,10 +120,10 @@ describe('E-22 mods du livre', { skip: skipBrowser, timeout: 300000 }, () => {
       await integre(p).fill('3');
       await p.getByRole('button', { name: 'Diminuer la quantité : Refonte M' }).click();
       await attendre(p, /sur 3\b/);
-      assert.equal(await integre(p).inputValue(), '3');
+      await valeurIntegre(p, '3');
       await p.getByRole('button', { name: 'Diminuer la quantité : Refonte M' }).click();
       await attendre(p, /sur 2\b/);
-      assert.equal(await integre(p).inputValue(), '2');
+      await valeurIntegre(p, '2');
       await attendre(p, /sur 2\b/);
       // Int + Con signed
       const ic = p.locator('input[aria-label="Modificateurs Int + Con"]');
@@ -134,8 +134,9 @@ describe('E-22 mods du livre', { skip: skipBrowser, timeout: 300000 }, () => {
       assert.equal(await ic.inputValue(), '−2'); // the typographic minus
       await sansDebordement(p);
       await p.screenshot({ path: `/tmp/shots/mods-${largeur}.png`, fullPage: true });
-    });
-  }
+  };
+  it('Léa : installation, Maintenance, alerte, refonte, intégrées ≤ quantité, 1280 px', parcours(1280));
+  it('Léa : installation, Maintenance, alerte, refonte, intégrées ≤ quantité, 390 px', parcours(390));
 
   it('enregistrement relu ; échec : message et valeurs gardées ; hors ligne : pas à pas verrouillés', async () => {
     await remettre();

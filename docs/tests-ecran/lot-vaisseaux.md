@@ -90,7 +90,8 @@ The doors written by this lot are `src/routes/*-lot-vaisseaux.test.ts`, `src/rou
 | `src/e2e/vaisseaux-atelier-livre-review.test.ts` | `E-22 livre > les quatre effets : légendes et lignes ajustées lues, ${largeur} px` | affichage | — | gardé |
 | `src/e2e/vaisseaux-atelier-livre-review.test.ts` | `E-22 livre > lecteur : mêmes légendes, aucun contrôle` | affichage | — | gardé |
 | `src/e2e/vaisseaux-atelier-livre-review.test.ts` | `E-22 livre > catalogue sans ces effets : ni légende ni contrôle nouveau` | affichage | — | gardé |
-| `src/e2e/vaisseaux-atelier-mods-livre-review.test.ts` | `E-22 mods du livre > Léa : installation, Maintenance, alerte, refonte, intégrées ≤ quantité, ${largeur} px` | affichage | — | gardé |
+| `src/e2e/vaisseaux-atelier-mods-livre-review.test.ts` | `E-22 mods du livre > Léa : installation, Maintenance, alerte, refonte, intégrées ≤ quantité, 1280 px` | affichage | — | gardé |
+| `src/e2e/vaisseaux-atelier-mods-livre-review.test.ts` | `E-22 mods du livre > Léa : installation, Maintenance, alerte, refonte, intégrées ≤ quantité, 390 px` | affichage | — | gardé |
 | `src/e2e/vaisseaux-atelier-mods-livre-review.test.ts` | `E-22 mods du livre > enregistrement relu ; échec : message et valeurs gardées ; hors ligne : pas à pas verrouillés` | affichage | — | gardé |
 | `src/e2e/vaisseaux-atelier-mods-livre-review.test.ts` | `E-22 mods du livre > prétech par classe : une installation de 2 composants sur un rang 3 → 6` | affichage | — | gardé |
 | `src/e2e/vaisseaux-atelier-mods-livre-review.test.ts` | `E-22 mods du livre > Lecteur teo (lecture) : texte, aucun pas à pas ni « Enregistrer » ; rien quand integre vaut 0 ; ancienne conception : 0 partout` | affichage | — | gardé |
