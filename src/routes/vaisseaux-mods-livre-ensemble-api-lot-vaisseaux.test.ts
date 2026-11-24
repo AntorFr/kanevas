@@ -1,7 +1,7 @@
 // Feature-level black-box tests of kanevas-concepteur-vaisseaux-mods-livre (B-93, B-94, H-9, H-10 (1) and (5)), HTTP level: real app in stub
 // mode with the stub seed, real SQLite. Written from the feature sheet (« Livre », exit criterion), docs/parcours.md (P-19 step 6),
 // docs/ecrans.md (E-22 criteria, alert texts) and the V-8 routes of ARCHITECTURE.md. The trial catalogue is written by the test; every
-// expected value is a literal worked out by hand. The screen is covered by `src/e2e/vaisseaux-mods-livre-ensemble-ecran.test.ts` (E-22).
+// expected value is a literal worked out by hand. The screen (E-22) is covered by the committed `src/e2e/vaisseaux-atelier-mods-livre-review.test.ts`.
 //
 // TEST PLAN (catalogue d'essai : coques c1..c4 de classe 1..4 ; modifications aux coûts écrits en dur ; Léa, autrice de « Étoile du soir »)
 // B-93 installation   nominal : 20 000 cr → 4 jours d'équipage, 1 jour de chantier (cadence 25 000)
