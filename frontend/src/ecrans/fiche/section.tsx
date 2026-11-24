@@ -211,7 +211,8 @@ export function PanneauSection(p: Props) {
   const nbPieces = section.piecesJointes?.length ?? 0;
   const perte =
     nbPieces === 0 ? 'Son contenu sera perdu.' : nbPieces === 1 ? 'Son contenu et son fichier joint seront retirés.' : `Son contenu et ses ${nbPieces} fichiers joints seront retirés.`;
-  const blocs = blocsSectionVisibles(role);
+  // The blocks (relations…) read the universe's own tables: an element of the system carries none here.
+  const blocs = fiche.origine === 'systeme' ? [] : blocsSectionVisibles(role);
   const inactif = Boolean(enCours) || perdue;
   const trop = depasse(texte, maxContenu);
   const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);

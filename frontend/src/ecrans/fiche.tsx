@@ -172,7 +172,7 @@ function PageFiche() {
   const sections = etat.k === 'ok' ? fiche.sections : [];
   const modeLu: 'mj' | 'joueur' = element ? 'joueur' : modeEffectif;
   const gestion = mj && modeEffectif === 'mj';
-  const tous = blocsFicheVisibles(fiche.type, modeLu);
+  const tous = element ? [] : blocsFicheVisibles(fiche.type, modeLu);
   const blocs = tous.filter((b) => placeDe(b) === 'haut');
   const blocsBas = tous.filter((b) => placeDe(b) === 'bas');
 
@@ -277,11 +277,11 @@ function PageFiche() {
           ))}
         </div>
       )}
-      <BlocContient universId={uid} ficheId={fiche.id} suffixeMode={suffixe} />
+      {!element && <BlocContient universId={uid} ficheId={fiche.id} suffixeMode={suffixe} />}
       {etat.k === 'ok' && blocsBas.map((bloc) => (
         <bloc.composant key={`${id}/${fid}/${modeLu}/${suffixe}/${bloc.id}`} universId={uid} fiche={fiche} role={modeLu} suffixeMode={suffixe} />
       ))}
-      {etat.k === 'ok' && (
+      {etat.k === 'ok' && !element && (
         <BlocMentions
           universId={uid}
           ficheId={fiche.id}
@@ -291,7 +291,7 @@ function PageFiche() {
           suffixeMode={suffixe}
         />
       )}
-      {etat.k === 'ok' && <BlocsOutils blocs={fiche.blocs ?? AUCUNE_BLOC} />}
+      {etat.k === 'ok' && !element && <BlocsOutils blocs={fiche.blocs ?? AUCUNE_BLOC} />}
       {gestion && etat.k === 'ok' && (
         <div className={`ajout-section${formulaire ? ' ouvert' : ''}`}>
           {!formulaire && sections.length > 0 && (
