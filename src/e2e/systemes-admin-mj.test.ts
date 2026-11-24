@@ -35,7 +35,7 @@ describe('B-114 : l’admin gère les MJ d’un système depuis Administration (
     await page.getByRole('link', { name: rx('Zeta') }).click();
     await page.getByRole('tab', { name: 'MJ du système' }).waitFor();
     assert.match(page.url(), /type=mj/);
-    await page.getByText('Aucun MJ', { exact: false }).waitFor();
+    await page.getByText(/Ce système n.a aucun MJ/).waitFor();
     await page.getByLabel('Identifiant du compte').fill('lea');
     await page.getByRole('button', { name: 'Ajouter' }).click();
     await page.getByRole('button', { name: 'Retirer lea' }).waitFor();
@@ -43,7 +43,7 @@ describe('B-114 : l’admin gère les MJ d’un système depuis Administration (
     assert.deepEqual((await apres.json()).map((m: { username: string }) => m.username), ['lea']);
     await page.getByRole('button', { name: 'Retirer lea' }).click();
     await page.getByRole('button', { name: 'Retirer lea' }).last().click();
-    await page.getByText('Aucun MJ', { exact: false }).waitFor();
+    await page.getByText(/Ce système n.a aucun MJ/).waitFor();
     const fin = await admin.ctx.request.get(`/api/instance/systemes/${sid}/membres`);
     assert.deepEqual(await fin.json(), []);
     // a non-admin reaches no such tab

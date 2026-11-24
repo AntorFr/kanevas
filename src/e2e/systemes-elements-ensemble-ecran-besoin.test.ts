@@ -142,7 +142,7 @@ describe('kanevas-systemes-jeu-elements : écrans E-5, E-9, E-15, E-16, E-17', (
     await p.getByText(/0 MJ/).first().waitFor();
     await p.getByRole('link', { name: /Zeta/ }).first().click();
     await p.getByRole('tab', { name: 'MJ du système' }).waitFor();
-    await p.getByText(/Aucun MJ/).waitFor();
+    await p.getByText(/Ce système n.a aucun MJ/).waitFor();
     await p.screenshot({ path: '/tmp/kanevas-ensemble-admin-mj.png' });
     assert.equal(await p.getByRole('button', { name: 'Nouvel élément' }).count(), 0, 'l’admin sans lien ne crée pas d’élément');
 
@@ -164,7 +164,7 @@ describe('kanevas-systemes-jeu-elements : écrans E-5, E-9, E-15, E-16, E-17', (
     const confirmer = p.getByRole('alertdialog').getByRole('button', { name: /Retirer/ });
     if (await confirmer.count()) await confirmer.click();
     assert.equal((await retrait).status(), 204);
-    await p.getByText(/Aucun MJ/).waitFor();
+    await p.getByText(/Ce système n.a aucun MJ/).waitFor();
   });
 
   it('textes d’état d’E-15 « Éléments » (docs/ecrans.md) : vide pour le MJ du système et pour le lecteur, formulaire « Nom », erreur « Erreur : le nom est obligatoire. »', { timeout: 240000 }, async () => {

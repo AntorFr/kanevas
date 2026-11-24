@@ -69,9 +69,13 @@ test('admin : ajoute un MJ au système, le liste, le retire, y compris le dernie
 test('admin : refus d’un compte inconnu, d’un doublon, d’un corps faux, d’un système inconnu', async () => {
   const w = await monde();
   const base = `/api/instance/systemes/${w.sys.id}/membres`;
-  assert.equal((await appel(w.app, w.admin, 'POST', base, { username: 'personne' })).statusCode, 400);
+  const inconnu = await appel(w.app, w.admin, 'POST', base, { username: 'personne' });
+  assert.equal(inconnu.statusCode, 400);
+  assert.equal(inconnu.json().message, 'Aucun compte ne porte cet identifiant.');
   assert.equal((await appel(w.app, w.admin, 'POST', base, { username: 'mira' })).statusCode, 201);
-  assert.equal((await appel(w.app, w.admin, 'POST', base, { username: 'mira' })).statusCode, 400);
+  const doublon = await appel(w.app, w.admin, 'POST', base, { username: 'mira' });
+  assert.equal(doublon.statusCode, 400);
+  assert.equal(doublon.json().message, 'Ce compte est déjà MJ de ce système.');
   assert.equal((await appel(w.app, w.admin, 'POST', base, {})).statusCode, 400);
   assert.equal((await appel(w.app, w.admin, 'GET', '/api/instance/systemes/9999/membres')).statusCode, 404);
   assert.equal((await appel(w.app, w.admin, 'POST', '/api/instance/systemes/9999/membres', { username: 'mira' })).statusCode, 404);
