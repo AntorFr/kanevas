@@ -31,8 +31,7 @@ interface Page extends SystemeCompte {
 const PLUS_DROIT = 'Vous ne pouvez plus modifier ce système.';
 
 /**
- * E-15 Système de jeu, at its own address (AD-94): the tabs « Éléments » (the system's sheets and, for its GMs, the
- * switches of its types), « Outils » and « MJ du système » (instance admin). Each tab shows only to who may use it.
+ * E-15 Système de jeu, at its own address (AD-94): the tabs « Types de fiche » (the switches of its types, the default), « Éléments » (the system's sheets), « Outils » and « MJ du système » (instance admin). Each tab shows only to who may use it.
  */
 function Systeme() {
   const { sid } = useParams();
@@ -88,7 +87,8 @@ function Systeme() {
   // The first tab the account may use, when the address names none (the admin with no link sees the sole « MJ du système »).
   const surOutils = onglet === 'outils';
   const surMJ = onglet === 'mj' || (!voitElements && !surOutils);
-  const surElements = !surOutils && !surMJ;
+  const surElements = onglet === 'elements' && voitElements;
+  const surTypes = !surOutils && !surMJ && !surElements;
   if (surMJ && moi.etat === 'chargement') return <ChargementListe texte="Chargement du système…" />;
   if (surMJ && !estAdmin) return <PageIntrouvable retour="systemes" />;
   if (surOutils && !peutLireOutils) return <PageIntrouvable retour="systemes" />;
@@ -124,8 +124,12 @@ function Systeme() {
       <div className="barre-outils">
         <div role="tablist" className="onglets">
           {voitElements && (
+            <button type="button" role="tab" aria-selected={surTypes} className={surTypes ? 'actif' : undefined}
+              onClick={() => setParams({}, { replace: true })}>Types de fiche</button>
+          )}
+          {voitElements && (
             <button type="button" role="tab" aria-selected={surElements} className={surElements ? 'actif' : undefined}
-              onClick={() => setParams({}, { replace: true })}>Éléments</button>
+              onClick={() => setParams({ type: 'elements' }, { replace: true })}>Éléments</button>
           )}
           {peutLireOutils && <button type="button" role="tab" aria-selected={surOutils} className={surOutils ? 'actif' : undefined}
             onClick={() => setParams({ type: 'outils' }, { replace: true })}>Outils</button>}
@@ -133,24 +137,26 @@ function Systeme() {
             onClick={() => setParams({ type: 'mj' }, { replace: true })}>MJ du système</button>}
         </div>
       </div>
+      {surTypes && (
+        <div role="tabpanel">
+          <OngletTypesSysteme
+            systemeId={sid!}
+            systemeNom={entete.nom}
+            actifs={types}
+            nbUnivers={entete.nbUnivers}
+            peutEcrire={peutEcrire}
+            onChange={(t, active) =>
+              setEntete((h) => (h ? { ...h, types: h.types.map((x) => (x.type === t ? { ...x, active } : x)) } : h))
+            }
+            onDroitPerdu={() => {
+              setPlusDroit(true);
+              setEssai((n) => n + 1);
+            }}
+          />
+        </div>
+      )}
       {surElements && (
         <div role="tabpanel">
-          {peutEcrire && (
-            <OngletTypesSysteme
-              systemeId={sid!}
-              systemeNom={entete.nom}
-              actifs={types}
-              nbUnivers={entete.nbUnivers}
-              peutEcrire={peutEcrire}
-              onChange={(t, active) =>
-                setEntete((h) => (h ? { ...h, types: h.types.map((x) => (x.type === t ? { ...x, active } : x)) } : h))
-              }
-              onDroitPerdu={() => {
-                setPlusDroit(true);
-                setEssai((n) => n + 1);
-              }}
-            />
-          )}
           <OngletElements systemeId={sid!} types={types} fiches={entete.fiches ?? []} suite={Boolean(entete.suivant)} peutEcrire={peutEcrire} />
         </div>
       )}
