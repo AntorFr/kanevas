@@ -135,6 +135,11 @@ describe('B-84 E-21 à l’écran', { skip: skipBrowser, timeout: 600000 }, () =
     const dy = (he.y - ps.y) / 5;
     return (q: number, r: number) => ({ x: ps.x + dx * (q + r / 2), y: ps.y + dy * r });
   };
+  /** The map opens on the whole known zone, below the zoom from which the names of the hexagon sets show: zoom in until `cible` is on the map. */
+  const zoomerJusqua = async (page: Any, cible: Any) => {
+    const plus = page.getByRole('button', { name: 'Zoom avant' });
+    for (let i = 0; i < 8 && (await cible.count()) === 0 && (await plus.getAttribute('aria-disabled')) !== 'true'; i++) await plus.click();
+  };
   /** True when a zone (the one of this key, or any zone when no key: a player's zones carry none) is painted under the point. */
   const sous = (page: Any, p: { x: number; y: number }, cle = ''): Promise<boolean> =>
     page.evaluate(({ x, y, cle }: Any) => document.elementsFromPoint(x, y).some((e: Element) => e.closest(cle ? `g.gx-zone[data-zone="${cle}"]` : 'g.gx-zone')), { x: p.x, y: p.y, cle });
@@ -151,16 +156,18 @@ describe('B-84 E-21 à l’écran', { skip: skipBrowser, timeout: 600000 }, () =
     for (const [q, r] of [[0, 0], [1, 5], [-3, -3], [6, 6], [3, 3]]) assert.equal(await sous(page, hex(q, r), 'anneau'), false, `(${q},${r}) est dans le trou, vide`);
     // the label (the name) sits on a member hexagon: its centre is not inside the hole, even shrunk by one hexagon
     const etiquette = page.locator('svg text', { hasText: "Anneau d'essai" }).first();
+    await zoomerJusqua(page, etiquette);
     await etiquette.waitFor();
+    const hex2 = await reperes(page); // the view moved: the points are read again
     const b = await etiquette.boundingBox();
-    const o = hex(0, 0);
-    const dy = hex(0, 1).y - o.y;
-    const dx = hex(1, 0).x - o.x;
+    const o = hex2(0, 0);
+    const dy = hex2(0, 1).y - o.y;
+    const dx = hex2(1, 0).x - o.x;
     const r = (b.y + b.height / 2 - o.y) / dy;
     const q = (b.x + b.width / 2 - o.x) / dx - r / 2;
     assert.ok(!(q > -2 && q < 5 && r > -2 && r < 5), `l’étiquette est sur un hexagone membre, pas dans le trou : (${q.toFixed(1)}, ${r.toFixed(1)})`);
 
-    const p = hex(-6, 1);
+    const p = hex2(-6, 1);
     await page.mouse.click(p.x, p.y);
     await page.getByText('Hexagones', { exact: true }).waitFor();
     await page.getByText('800', { exact: true }).waitFor();
@@ -177,6 +184,7 @@ describe('B-84 E-21 à l’écran', { skip: skipBrowser, timeout: 600000 }, () =
     await m.put([ANNEAU(), prive([[-1, -1], [0, -1], [-1, 0], [0, 0], [1, 0], [2, 0]])]);
     const antor = await ouvre(m, 'Antor');
     await antor.page.locator('g.gx-zone[data-zone="reserve"]').waitFor();
+    await zoomerJusqua(antor.page, antor.page.getByText('Réserve privée'));
     await antor.page.getByText('Réserve privée').first().waitFor();
     await antor.page.screenshot({ path: `${SHOTS}/1280-04-antor-prive.png`, fullPage: true });
     const hexA = await reperes(antor.page);

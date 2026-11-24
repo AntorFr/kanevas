@@ -46,6 +46,8 @@ describe('E-21 : fidélité des formulaires à la maquette', { skip: skipBrowser
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(adresse);
     await systeme(page, 'Vael').waitFor();
+    // the map opens on the whole known zone: the hexagons next to a system sit under its touch area until the view is one step closer (more would push Vael out of the drawn part)
+    await page.getByRole('button', { name: 'Zoom avant' }).click();
     await page.getByRole('button', { name: 'Placer un système' }).click();
     await toucher(page, 1, 0);
     const form = page.getByRole('region', { name: 'Nouveau système' });

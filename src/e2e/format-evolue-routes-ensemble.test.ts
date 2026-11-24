@@ -119,6 +119,9 @@ describe('B-81 E-21 à l’écran', { skip: skipBrowser, timeout: 600000 }, () =
       form.getByRole('button', { name: 'Tracer', exact: true }).click(),
     ]);
     await form.waitFor({ state: 'detached' });
+    const id = (await rep.json()).id as number;
+    // the route is on the map before the label is looked for: zooming on a map that has not drawn it yet only moves the view away
+    await antor.page.locator(`g[data-route="${id}"]`).waitFor();
     const etiquette = antor.page.locator('svg text.gx-route-type', { hasText: 'Pirate' });
     await zoomer(antor.page, etiquette);
     await etiquette.waitFor();
@@ -127,7 +130,6 @@ describe('B-81 E-21 à l’écran', { skip: skipBrowser, timeout: 600000 }, () =
     const [e, h] = await Promise.all([etiquette.boundingBox(), systeme(antor.page, 'Havre').boundingBox()]);
     assert.ok(e.x > h.x + h.width / 2, `l’étiquette est sur le segment, à droite de Havre : ${e.x} vs ${h.x}`);
 
-    const id = (await rep.json()).id as number;
     await antor.page.locator(`g[data-route="${id}"] line.gx-route-touche`).dispatchEvent('click');
     await antor.page.getByText('Type : Pirate').waitFor();
     await antor.page.screenshot({ path: `${SHOTS}/1280-03-panneau.png`, fullPage: true });
