@@ -559,6 +559,3 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/carte-rattache-texte-ecran.test.ts` | `E-9 : une fiche sans carte n’a pas de bloc « Cartes »` | affichage | — | gardé |
 | `src/e2e/carte-rattache-texte-ecran.test.ts` | `E-11 : « Modifier » et « Vider » sont dans l’en-tête du bloc Texte, à droite du titre, avec leur icône` | affichage | — | gardé |
 | `src/e2e/carte-rattache-texte-ecran.test.ts` | `E-9 : le bloc « Cartes » est un libellé avec icône ; à 360 px le titre d’une carte reste lisible, le type et la pastille passent à la ligne` | affichage | — | gardé |
-| `src/e2e/carte-systeme-lumiere-ecran.test.ts` | `E-23 la face éclairée de chaque astre regarde son étoile > la face la plus claire de chaque planète et de la lune regarde son étoile` | affichage | — | gardé |
-| `src/e2e/carte-systeme-lumiere-ecran.test.ts` | `E-23 la face éclairée de chaque astre regarde son étoile > « Voir l’illustration » d’une planète montre la même face que la carte` | affichage | — | gardé |
-| `src/e2e/carte-systeme-lumiere-ecran.test.ts` | `E-23 la face éclairée de chaque astre regarde son étoile > captures dans les deux thèmes à 1280 et 390 px` | affichage | — | gardé |
