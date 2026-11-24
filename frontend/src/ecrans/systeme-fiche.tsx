@@ -42,7 +42,7 @@ function FicheEspace() {
   const [supprimer, setSupprimer] = useState(false);
   const [enCours, setEnCours] = useState(false);
   const fiche = etat.k === 'ok' ? etat.fiche : undefined;
-  useTitreAriane(fiche?.titre);
+  useTitreAriane(fiche?.titre, etat.k === 'ok' ? etat.entete.nom : undefined);
 
   const lireTout = useCallback(async (): Promise<Etat> => {
     try {

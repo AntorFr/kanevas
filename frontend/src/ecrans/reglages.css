@@ -71,10 +71,13 @@
 
 .parametres-univers .aide-champ { margin: calc(-1 * var(--e-2)) 0 var(--e-3); font-size: var(--t-12); color: var(--texte-3); overflow-wrap: anywhere; }
 
-/* ---------- E-15, onglet « Éléments » : une liste par type ---------- */
+/* ---------- E-15, « Éléments » tab: one list per type ---------- */
 .groupe-elements { margin-top: var(--e-5); }
 .groupe-elements h2 { display: flex; align-items: center; gap: var(--e-2); margin: 0 0 var(--e-2); font-size: var(--t-14); color: var(--texte-2); }
 .liste-elements { list-style: none; margin: 0; padding: 0; border: 1px solid var(--bord); border-radius: var(--rayon-champ); background: var(--surface); }
 .liste-elements li + li { border-top: 1px solid var(--bord); }
 .liste-elements a { display: block; padding: var(--e-3) var(--e-4); color: var(--texte); text-decoration: none; overflow-wrap: anywhere; }
 .liste-elements a:hover { background: var(--surface-2); }
+.filtre-elements { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--e-3); }
+.liste-elements .ligne-liee { padding: 0 var(--e-3); }
+.liste-elements .chevron-ligne { margin-left: auto; color: var(--texte-3); }

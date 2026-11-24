@@ -45,14 +45,14 @@ describe('kanevas-systemes-jeu-elements-ecrans : éléments de système à l’�
     await attendre(pm);
     assert.equal(await pm.getByRole('tab', { name: 'MJ du système' }).count(), 0, 'un MJ ne voit pas « MJ du système »');
     await pm.getByRole('tab', { name: 'Éléments' }).click();
-    await pm.getByText('Aucun élément pour l’instant.').waitFor();
+    await pm.getByText('Ce système n’a encore aucun élément.').waitFor();
     await pm.getByRole('button', { name: 'Nouvel élément' }).click();
     const boite = pm.getByRole('dialog');
-    await boite.getByLabel('Titre').fill('');
+    await boite.getByLabel('Nom').fill('');
     await boite.getByRole('button', { name: 'Créer l’élément' }).click();
-    await boite.getByText('le titre est obligatoire.').waitFor();
+    await boite.getByText('Erreur : le nom est obligatoire.').waitFor();
     await boite.getByLabel('Type').selectOption({ label: 'Objet' });
-    await boite.getByLabel('Titre').fill('Épée runique');
+    await boite.getByLabel('Nom').fill('Épée runique');
     await boite.getByRole('button', { name: 'Créer l’élément' }).click();
     await pm.getByRole('heading', { level: 1, name: 'Épée runique' }).waitFor();
     assert.match(pm.url(), new RegExp(`/systemes/${sid}/fiches/\\d+$`));
@@ -127,7 +127,7 @@ describe('kanevas-systemes-jeu-elements-ecrans : éléments de système à l’�
     await pm.getByRole('alertdialog').getByRole('button', { name: 'Supprimer l’élément' }).click();
     await pm.getByRole('heading', { level: 1, name: 'Zeta' }).waitFor();
     await pm.goto(`/systemes/${sid}?type=elements`);
-    await pm.getByText('Aucun élément pour l’instant.').waitFor();
+    await pm.getByText('Ce système n’a encore aucun élément.').waitFor();
     // Léa ne le trouve plus
     await pl.goto(`/univers/${uid}/fiches/${fid}`);
     await pl.getByText(/introuvable/i).first().waitFor();
@@ -155,7 +155,7 @@ describe('kanevas-systemes-jeu-elements-ecrans : éléments de système à l’�
     await pm.getByRole('button', { name: 'Nouvel élément' }).click();
     const boite = pm.getByRole('dialog');
     const typeParDefaut = await boite.getByLabel('Type').inputValue();
-    await boite.getByLabel('Titre').fill('Premier');
+    await boite.getByLabel('Nom').fill('Premier');
     await boite.getByRole('button', { name: 'Créer l’élément' }).click();
     await pm.getByRole('heading', { level: 1, name: 'Premier' }).waitFor();
     assert.ok(typeParDefaut.length > 0);

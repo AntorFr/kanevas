@@ -81,6 +81,9 @@ function Systemes() {
                       Lecture seule
                     </Pastille>
                   )}
+                  {s.peutEcrire && s.mesUnivers.length === 0 && (
+                    <Pastille sens="neutre">MJ du système</Pastille>
+                  )}
                 </div>
                 <div className="pied-dessin">
                   <Link className="lien-carte deux-lignes" to={`/systemes/${s.id}`} title={s.nom}>

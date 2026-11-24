@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { ChevronRight, Plus } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -34,10 +34,12 @@ export function OngletElements({ systemeId, types, fiches, suite, peutEcrire }: 
   const actifs = types.filter((t) => t.active);
   const [ouvert, setOuvert] = useState(false);
   const [type, setType] = useState('');
+  const [filtre, setFiltre] = useState('');
   const [titre, setTitre] = useState('');
   const [erreur, setErreur] = useState<string>();
   const [enCours, setEnCours] = useState(false);
   const groupes = types
+    .filter((t) => filtre === '' || t.type === filtre)
     .map((t) => ({ t, lignes: fiches.filter((f) => f.type === t.type) }))
     .filter((g) => g.lignes.length > 0);
 
@@ -52,7 +54,7 @@ export function OngletElements({ systemeId, types, fiches, suite, peutEcrire }: 
     e?.preventDefault();
     if (enCours) return;
     const t = titre.trim();
-    if (t === '') return setErreur('le titre est obligatoire.');
+    if (t === '') return setErreur('Erreur : le nom est obligatoire.');
     if (t.length > 120) return setErreur('120 caractères au plus.');
     setEnCours(true);
     try {
@@ -71,15 +73,27 @@ export function OngletElements({ systemeId, types, fiches, suite, peutEcrire }: 
 
   return (
     <>
-      {peutEcrire && (
-        <div className="barre-outils">
+      <div className="barre-outils filtre-elements">
+        <Champ liste etiquette="Type d’élément" value={filtre} onChange={(e: { target: { value: string } }) => setFiltre(e.target.value)}>
+          <option value="">Tous les types</option>
+          {types.map((t) => (
+            <option key={t.type} value={t.type}>{t.pluriel}</option>
+          ))}
+        </Champ>
+        {peutEcrire && (
           <Bouton variante="principal" ecrit icone={Plus} disabled={actifs.length === 0} onClick={ouvrir}>
             Nouvel élément
           </Bouton>
-        </div>
-      )}
+        )}
+      </div>
       {groupes.length === 0 ? (
-        <p className="note-sys">Aucun élément pour l’instant.</p>
+        <p className="note-sys">
+          {fiches.length > 0
+            ? 'Aucun élément de ce type.'
+            : peutEcrire
+              ? 'Ce système n’a encore aucun élément.'
+              : 'Ce système n’a encore aucun élément à voir.'}
+        </p>
       ) : (
         groupes.map(({ t, lignes }) => {
           const Icone = iconeDeNom(t.icone);
@@ -90,8 +104,10 @@ export function OngletElements({ systemeId, types, fiches, suite, peutEcrire }: 
               </h2>
               <ul className="liste-elements">
                 {lignes.map((f) => (
-                  <li key={f.id}>
-                    <Link to={`/systemes/${systemeId}/fiches/${f.id}`}>{f.titre}</Link>
+                  <li key={f.id} className="ligne-liee">
+                    <span className="vignette-fiche t36" aria-hidden="true"><Icone size={16} strokeWidth={1.75} /></span>
+                    <Link className="jeton cible titre-liee" to={`/systemes/${systemeId}/fiches/${f.id}`} title={f.titre}>{f.titre}</Link>
+                    <ChevronRight size={16} strokeWidth={1.75} aria-hidden="true" className="chevron-ligne" />
                   </li>
                 ))}
               </ul>
@@ -117,7 +133,7 @@ export function OngletElements({ systemeId, types, fiches, suite, peutEcrire }: 
               <option key={t.type} value={t.type}>{t.singulier}</option>
             ))}
           </Champ>
-          <Champ etiquette="Titre" value={titre} autoComplete="off" erreur={erreur}
+          <Champ etiquette="Nom" value={titre} autoComplete="off" erreur={erreur}
             onChange={(e: { target: { value: string } }) => { setTitre(e.target.value); setErreur(undefined); }} />
         </BoiteDialogue>
       )}

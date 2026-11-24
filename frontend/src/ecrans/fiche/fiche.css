@@ -368,7 +368,7 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .cle-fiche-avertissement { margin: var(--e-2) 0; font-size: var(--t-12); color: var(--texte-3); }
 .cle-fiche.edition .boutons { display: flex; gap: var(--e-2); justify-content: flex-end; }
 
-/* ---------- Bandeau d'un élément de système ouvert depuis un univers (E-9, lecture seule) ---------- */
+/* ---------- Banner of a system element opened from a universe (E-9, read-only) ---------- */
 .bandeau-element { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); margin-bottom: var(--e-4); padding: var(--e-2) var(--e-3);
   border: 1px solid var(--bord); border-radius: var(--rayon-champ); background: var(--accent-fond); color: var(--accent-texte); font-size: var(--t-13); }
 .bandeau-element a { color: inherit; font-weight: 600; text-decoration: underline; overflow-wrap: anywhere; }
