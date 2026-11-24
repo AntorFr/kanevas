@@ -227,3 +227,36 @@ test('nom_long_non_tronque_a_cote_de_la_pastille_revoque', opts, async () => {
   }
   await admin.ctx.close();
 });
+
+test('acces_permissions_contenu_et_outils_entieres_a_1280_et_390_sombre_et_clair', opts, async () => {
+  const m = await monde();
+  // Antor creates, through the screen, a token with Contenu + Essai G (the door's effect is in the routes tests).
+  const antor = await connecte(browser, m.base, 'Antor');
+  await antor.page.goto('/compte/jetons');
+  await attendre(antor.page);
+  await antor.page.getByRole('button', { name: 'Créer un jeton' }).first().click();
+  await antor.page.getByLabel('Nom').fill('Jeton cumul');
+  const groupe = antor.page.getByRole('group', { name: 'Ce que le jeton peut faire' });
+  await groupe.getByRole('checkbox', { name: /Essai G/ }).check();
+  await antor.page.getByRole('button', { name: 'Créer le jeton' }).click();
+  await antor.page.locator('code').first().waitFor();
+  await antor.ctx.close();
+
+  const admin = await connecte(browser, m.base, 'Admin');
+  await ouvrirAdmin(admin.page);
+  for (const [largeur, schema] of [[1280, 'dark'], [1280, 'light'], [390, 'dark'], [390, 'light']] as const) {
+    await admin.page.setViewportSize({ width: largeur, height: 900 });
+    await admin.page.emulateMedia({ colorScheme: schema });
+    await attendre(admin.page);
+    const cellule = ligne(admin.page, 'Jeton cumul').locator('.cel-acces');
+    await cellule.waitFor();
+    assert.match((await cellule.textContent()) ?? '', /contenu \+ outils : Essai G/, `${largeur} ${schema}: libellé dit`);
+    const perm = cellule.locator('.acces-perm');
+    const mesure = await perm.evaluate((e: HTMLElement) => ({ coupe: e.scrollHeight > e.clientHeight + 1 || e.scrollWidth > e.clientWidth + 1, droite: e.getBoundingClientRect().right }));
+    assert.equal(mesure.coupe, false, `${largeur} ${schema}: permissions non coupées`);
+    assert.ok(mesure.droite <= largeur, `${largeur} ${schema}: dans la fenêtre`);
+    assert.equal(await perm.isVisible(), true);
+    await ligne(admin.page, 'Jeton cumul').screenshot({ path: `${CAP}/acces-${largeur}-${schema}.png` });
+  }
+  await admin.ctx.close();
+});

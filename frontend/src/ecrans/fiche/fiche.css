@@ -254,10 +254,10 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 /* « Déplacer sous… »: the native radio stays (role, keyboard) but is hidden behind the mock-up's dot. */
 .deplacer .resultat { position: relative; }
 .deplacer .resultat input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
-.deplacer .resultat .puce { width: 14px; height: 14px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--bord-champ); }
+.resultat-puce { width: 14px; height: 14px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--bord-champ); }
 .deplacer .resultat:has(input:checked), .deplacer .ligne-res:has(input:checked) { background: var(--accent-fond); border-radius: var(--rayon-item); }
 .deplacer .ligne-res:has(input:checked) .resultat { background: none; }
-.deplacer .resultat:has(input:checked) .puce { box-shadow: inset 0 0 0 4px var(--accent); }
+.resultat:has(input:checked) .resultat-puce { box-shadow: inset 0 0 0 4px var(--accent); }
 .deplacer .resultat:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
 @media (max-width: 760px) { .changer-type .resultat { min-height: 40px; } }
 .fiche .blocs:empty { display: none; }
@@ -340,7 +340,8 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .deplacer .titre-res { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .deplacer .note-soi { flex: none; color: var(--texte-3); }
 .deplacer .resultat.soi { color: var(--texte-3); cursor: default; }
-.deplacer .resultat.soi .puce { visibility: hidden; }
+.resultat.soi .resultat-puce { visibility: hidden; }
+.changer-aventure .resultat.soi .resultat-puce { visibility: visible; }
 .deplacer .resultat.soi input { cursor: default; }
 .deplacer .resultat .type-option { flex: none; white-space: nowrap; }
 .deplacer .chevron-res { flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; background: none; border: 0; border-radius: var(--rayon-item); color: var(--texte-3); cursor: pointer; }
@@ -372,3 +373,12 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
   border: 1px solid var(--bord); border-radius: var(--rayon-champ); background: var(--accent-fond); color: var(--accent-texte); font-size: var(--t-13); }
 .bandeau-element a { color: inherit; font-weight: 600; text-decoration: underline; overflow-wrap: anywhere; }
 .bandeau-element .be-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-left: auto; }
+/* « Changer d'aventure… » (E-9): the title is cut on the « Campagne » line, the button stays visible. */
+.ligne-campagne { display: flex; align-items: center; gap: var(--e-2); min-width: 0; padding: 10px 12px; border: 1px solid var(--bord); border-radius: var(--rayon-champ); }
+.ligne-campagne .bouton { margin-left: auto; }
+.ligne-campagne .nom-campagne { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ligne-campagne .bouton { flex: none; }
+.ligne-campagne .etiquette-campagne { flex: none; }
+.changer-aventure .titre-res { white-space: normal; overflow: visible; overflow-wrap: break-word; flex: 1 1 12ch; min-width: 8ch; padding: 6px 0; }
+.changer-aventure .resultat { height: auto; }
+.changer-aventure .note-soi { flex: 0 1 auto; min-width: 0; }
