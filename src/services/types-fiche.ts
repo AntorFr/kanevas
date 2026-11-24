@@ -300,32 +300,20 @@ export function reglerTypeUnivers(
   return typeDeLUnivers(db, compteId, universId, type);
 }
 
-/** Types of a system as the system sets them (default enabled), reglable types only. */
-export interface TypeDuSysteme {
-  type: TypeFiche;
-  active: boolean;
-  singulier: string;
-  pluriel: string;
-  nouveau: string;
-  icone: string;
+/** The words of the settable types, for a screen outside any universe (E-15 names the types of a system with them). */
+export function motsDesTypesReglables(): { type: TypeFiche; singulier: string; pluriel: string; nouveau: string; icone: string }[] {
+  return TYPES.filter((t) => t.reglable).map((t) => ({ type: t.type, singulier: t.singulier, pluriel: t.pluriel, nouveau: t.nouveau, icone: t.icone }));
 }
 
-/** The settable types of a system with their words, so that a screen outside any universe can name them (E-15). */
-export function typesDuSysteme(db: Db, systemeId: number): TypeDuSysteme[] {
+/** Types of a system as the system sets them (default enabled), reglable types only. */
+export function typesDuSysteme(db: Db, systemeId: number): { type: TypeFiche; active: boolean }[] {
   const lignes = new Map(
     (db.prepare('SELECT type, active FROM types_systeme WHERE systeme_id = ?').all(systemeId) as {
       type: string;
       active: number;
     }[]).map((r) => [r.type, r.active === 1]),
   );
-  return TYPES.filter((t) => t.reglable).map((t) => ({
-    type: t.type,
-    active: lignes.get(t.type) ?? true,
-    singulier: t.singulier,
-    pluriel: t.pluriel,
-    nouveau: t.nouveau,
-    icone: t.icone,
-  }));
+  return TYPES.filter((t) => t.reglable).map((t) => ({ type: t.type, active: lignes.get(t.type) ?? true }));
 }
 
 /**

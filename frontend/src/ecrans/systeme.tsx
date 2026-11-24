@@ -21,7 +21,8 @@ import './reglages.css';
 import './cartes.css';
 
 interface Page extends SystemeCompte {
-  types: TypeSysteme[];
+  types: { type: string; active: boolean }[];
+  mots: Omit<TypeSysteme, 'active'>[];
   /** The elements, for who reads them; absent for the instance admin who reads nothing of the system. */
   fiches?: Fiche[];
   suivant?: string | null;
@@ -78,6 +79,10 @@ function Systeme() {
     return <ChargementListe texte="Chargement du système…" />;
   }
   const peutEcrire = entete.peutEcrire;
+  const types: TypeSysteme[] = entete.types.flatMap((t) => {
+    const m = entete.mots.find((x) => x.type === t.type);
+    return m ? [{ ...m, active: t.active }] : [];
+  });
   const peutLireOutils = params.get('mode') !== 'joueur' && entete.mesUnivers.some((u) => u.role === 'mj');
   const voitElements = entete.fiches !== undefined;
   // The first tab the account may use, when the address names none (the admin with no link sees the sole « MJ du système »).
@@ -134,7 +139,7 @@ function Systeme() {
             <OngletTypesSysteme
               systemeId={sid!}
               systemeNom={entete.nom}
-              actifs={entete.types}
+              actifs={types}
               nbUnivers={entete.nbUnivers}
               peutEcrire={peutEcrire}
               onChange={(t, active) =>
@@ -146,7 +151,7 @@ function Systeme() {
               }}
             />
           )}
-          <OngletElements systemeId={sid!} types={entete.types} fiches={entete.fiches ?? []} suite={Boolean(entete.suivant)} peutEcrire={peutEcrire} />
+          <OngletElements systemeId={sid!} types={types} fiches={entete.fiches ?? []} suite={Boolean(entete.suivant)} peutEcrire={peutEcrire} />
         </div>
       )}
       {surMJ && <div role="tabpanel"><OngletMJSysteme key={sid} id={sid!} nom={entete.nom} /></div>}

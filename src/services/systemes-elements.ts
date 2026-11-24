@@ -4,12 +4,14 @@ import { introuvable } from './erreurs.js';
 import { listerFiches } from './fiches.js';
 import { listerMembresNoyau } from './membres.js';
 import { vueDe, type SystemeCatalogue, type SystemeVue } from './systemes.js';
-import { typesDuSysteme, type TypeDuSysteme } from './types-fiche.js';
+import { motsDesTypesReglables, typesDuSysteme } from './types-fiche.js';
 import type { Fiche } from './types.js';
 
 /** The system as `GET /api/systemes/:sid` answers it (AD-157). */
 export interface SystemeComplet extends SystemeVue {
-  types: TypeDuSysteme[];
+  types: { type: string; active: boolean }[];
+  /** The words of those types (the server owns them, AD-120): a GM with no universe has no other list to name them. */
+  mots: { type: string; singulier: string; pluriel: string; nouveau: string; icone: string }[];
   /** The elements, for who reads them (a GM of the system, a member of an attached universe); never for an admin with no link (rule 14). */
   fiches?: Fiche[];
   suivant?: string | null;
@@ -32,7 +34,7 @@ export function lireSystemeComplet(
   if (!s) throw introuvable();
   const droit = lectureSysteme(db, acteur.compteId, systemeId);
   if (!droit && !acteur.admin) throw introuvable();
-  const complet: SystemeComplet = { ...vueDe(db, acteur.compteId, s), types: typesDuSysteme(db, systemeId) };
+  const complet: SystemeComplet = { ...vueDe(db, acteur.compteId, s), types: typesDuSysteme(db, systemeId), mots: motsDesTypesReglables() };
   if (droit) {
     const page = listerFiches(db, { compteId: acteur.compteId }, droit.espaceId, options);
     complet.fiches = page.fiches;
