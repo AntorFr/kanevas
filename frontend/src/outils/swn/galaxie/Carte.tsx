@@ -407,7 +407,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
                 <polygon className="gx-zone-bord" points={pts.map((p) => `${p.x},${p.y}`).join(' ')}
                   onClick={(e) => { e.stopPropagation(); if (!geste.current.bouge) onSelection({ k: 'zone', cle: z.cle! }); }} />
               )}
-              {vue.s >= SEUIL_ETIQUETTES && <text x={c.x} y={c.y} textAnchor="middle">{abreger(z.nom)}{z.secret ? ' · Secret' : ''}</text>}
+              <text x={c.x} y={c.y} textAnchor="middle">{abreger(z.nom)}{z.secret ? ' · Secret' : ''}</text>
             </g>
           );
         })}
@@ -423,7 +423,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
                 <line className="gx-route-touche" x1={a.x} y1={a.y} x2={b.x} y2={b.y}
                   onClick={(e) => { e.stopPropagation(); if (!geste.current.bouge) onSelection({ k: 'route', id: r.id }); }} />
               )}
-              {prive && vue.s >= SEUIL_ETIQUETTES && <text x={(a.x + b.x) / 2} y={(a.y + b.y) / 2 - 6} textAnchor="middle">Privée</text>}
+              {prive && <text x={(a.x + b.x) / 2} y={(a.y + b.y) / 2 - 6} textAnchor="middle">Privée</text>}
               {r.type_lien && vue.s >= SEUIL_ETIQUETTES && (() => {
                 const court = abregerType(r.type_lien);
                 const c = placerEtiquetteType(a, b, [...court].length * 7, 14);
