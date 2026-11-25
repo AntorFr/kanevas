@@ -154,6 +154,7 @@ describe('kanevas-systemes-jeu-elements-ecrans : éléments de système à l’�
     await attendre(pm);
     await pm.getByRole('button', { name: 'Nouvel élément' }).click();
     const boite = pm.locator('form.formulaire-ligne');
+    await pm.screenshot({ path: '/tmp/kanevas-elements-formulaire.png' });
     const typeParDefaut = await boite.getByLabel('Type').inputValue();
     await boite.getByLabel('Nom').fill('Premier');
     await boite.getByRole('button', { name: 'Créer l’élément' }).click();
