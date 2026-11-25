@@ -463,7 +463,7 @@ as is; `recherche_fiches` triggers are recreated.
 | `types_systeme` | `systeme_id`, `type`, `active` (boolean) | primary key `(systeme_id, type)` (5); → `systemes_jeu`; no row: the product default (enabled) |
 | `types_univers` | `univers_id`, `type`, `active` (boolean) | primary key `(univers_id, type)` (5); → `univers`; no row: the universe inherits from its system |
 | `jetons_api` | *(since migration 0038 there is no `univers_id`: the universes a token reaches are in `jetons_univers`, see the amendment below)* `id`, `compte_id`, `nom`, `empreinte`, `cree_le`, `expire_le`, `revoque_le` (null: active), `dernier_usage_le` (null: never) | → `comptes`; unique `empreinte` (7); `nom` 1 to 80; `CHECK (expire_le > cree_le)`; at most one year: service |
-| `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (null: in progress), `dernier_ecrit_le`, `compteurs` (JSON: per nature — `fiches`, `fichiers`, `relations` (`campagnes` and `scenarios` no longer exist since `kanevas-scenarios-suivi`: adventures are sheets, counted in `fiches`) — `{creees, mises_a_jour, inchangees, refusees}`, integers ≥ 0; nature `fiches` adds `supprimees`, written by `DELETE /fiches/:cle`, `kanevas-import-tenir`), `avertissements`, `en_attente` (integers ≥ 0; pending links and references at closure), `rapport` (JSON: at most 1,000 entries, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api`; « abandonné » (abandoned) is not stored: open with `dernier_ecrit_le` older than 24 h |
+| `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (null: in progress), `dernier_ecrit_le`, `compteurs` (JSON: per nature — `fiches`, `fichiers`, `relations` (`campagnes` and `scenarios` no longer exist since `kanevas-scenarios-suivi`: adventures are sheets, counted in `fiches`) — `{creees, mises_a_jour, inchangees, refusees}`, integers ≥ 0; nature `fiches` adds `supprimees`, written by `DELETE /fiches/:cle`, `kanevas-import-tenir`; nature `fichiers` adds it too, written by `DELETE /fichiers/:cle` and absent until a first file is deleted in the batch), `avertissements`, `en_attente` (integers ≥ 0; pending links and references at closure), `rapport` (JSON: at most 1,000 entries, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api`; « abandonné » (abandoned) is not stored: open with `dernier_ecrit_le` older than 24 h |
 
 **Added columns** (`ALTER TABLE … ADD COLUMN`, as in 0002 and 0006):
 
@@ -692,7 +692,7 @@ Invariants, in sentences:
 7. A design is attached to **one sheet** in the same universe and to **one managed section** of that sheet.
 8. A placed system, a route, a zone, a design belong to **one universe**; deleting the universe deletes them.
 9. A route connects two **placed** systems in the same universe; its grid length is that of the coordinates.
-10. A tool token carries a **scope**: the set of tools it can write; without a scope, it writes no tool.
+10. A token carries a **scope** *(kanevas-jeton-unique, B-jeton-1)*: the content (`jetons_api.contenu`) and/or the set of tools it can write (`jetons_outils`); never neither. Without tools it writes no tool; without `contenu` it opens no content route.
 11. Disabling deletes no row; only the delete action does, in a transaction.
 
 ### Logical
@@ -736,7 +736,8 @@ Invariants, in sentences:
 |---|---|---|
 | `essai_catalogue_elements` | `niveau` (`systeme`/`univers`), `systeme_id` or `univers_id`, `nature` (`coques`/`armes`), `cle`, `nom`, `masse` (real), `cout` (integer), `portee` (`courte`/`longue`, null for a hull), `masque` (boolean, default false), `version` (integer, +1 on each change), `version_catalogue` (text) | the owner is two nullable columns (exactly one set: `CHECK`), so uniqueness is two partial unique indexes: `(systeme_id, nature, cle)` where `niveau = 'systeme'`, `(univers_id, nature, cle)` where `niveau = 'univers'`; `CHECK (masse >= 0 AND cout >= 0)`; `CHECK (niveau = 'univers' OR masque = 0)` — a system element is never masked; `portee` set exactly for `armes`; → `systemes_jeu`, → `univers` ON DELETE CASCADE |
 | `essai_catalogue_retraits` | `univers_id`, `nature`, `cle` (of a system element) | primary key `(univers_id, nature, cle)`; → `univers` ON DELETE CASCADE; deleting the row restores the element |
-| `jetons_outils` | `jeton_id`, `outil` | (core, K-6) primary key `(jeton_id, outil)`; → `jetons_api` ON DELETE CASCADE; no row = a content token |
+| `jetons_outils` | `jeton_id`, `outil` | (core, K-6) primary key `(jeton_id, outil)`; → `jetons_api` ON DELETE CASCADE; no row = no tool (*kanevas-jeton-unique*: it no longer says « content token », `jetons_api.contenu` does) |
+| `jetons_api.contenu` *(kanevas-jeton-unique, migration 0051, renumbered from 0046 when `main` was caught up, AD-51)* | column | `INTEGER NOT NULL DEFAULT 1 CHECK (contenu IN (0, 1))`; 1 = the token opens the content routes (`/api/v1` sheets, files, maps, export, `/mcp`). The migration sets 0 on every token that has a `jetons_outils` row (they keep working as today: tools only) and leaves 1 on the others. « At least one of `contenu` or a tool » is the service's rule (`creerJeton`, `invalide`, `champ: permissions`), not a `CHECK` (a `CHECK` cannot read another table); a token whose tools are deleted with the tool's data keeps the permissions it has, `contenu` included |
 
 `lots_import.outil` (core): null for a content batch, else the `module/outil` whose natures the counters carry. A tool batch's `compteurs` keys are the tool's declared natures (the content batch keeps the fixed list).
 
@@ -942,6 +943,8 @@ table below is written with neutral names; the script that converts Éneria's `a
 - `swn_astres.aspect` keeps its bound (4,000 characters) and `swn_formations.etoile_rang` and `swn_astres.etoile_rang` already exist (migration 0043): B-122's « the star a formation or a point turns round » is
   a field of the **format**, not a column. A moon already carries an hour around its planet.
 
+**Count of `kanevas-carte-rendu-aspects-socle`: 15 rows of this table** (`mer`, `nuages`, `calottes`, `relief`, palettes, `crateres`, atmosphere, `turbulence`, `tache`, colours of the bands, `poussiere`, `brume`, `graine`, `anneaux`, `disparue`), each with a measured-value test of the core; the keys of the last row of reliefs (`couleur_nuages`… `vue`) and `villes`/`lueur` belong to `-aspects-reliefs` and `-nuit`; `voile` is the system's. The call parameters `angle` and `lumiere` (AD-aspects-socle-1) are not keys of an aspect and not rows.
+
 **Vocabulary of `aspect` (the core, `valider_aspect`).** The GM's catalogue of settings keeps its names; the conversion of an entry of the
 reference vocabulary into core keys follows the table below and is **the contract of the atlas's producer** (the core receives core keys only); **a key the core does not know is reported by name in the import report**
 (`non_rendu`, never silently dropped, B-114). Rules: each formula is tested by the core on measured values; the same name does not mean the same thing
@@ -950,20 +953,57 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | Reference setting | Core key | Conversion |
 |---|---|---|
 | sea level `mer` | `mer` | table by measurement (a measured correspondence, never below the core's 5 % floor); « no sea » = a `mer` of 0 plus palette without water |
-| cloud cover `nuages` | `nuages` | table by measurement (0.9 of the reference is a covered sky; the core's curve reaches 57 %); the core's curve is widened to a full veil |
+| cloud cover `nuages` | `nuages` | table by measurement (0.9 of the reference is a covered sky; the core's curve reaches 57 %); the core's curve is widened to a full veil (at `nuages` 1 the veil covers at least 90 % of the disc, measured) |
 | `calottes` (latitude where ice begins; 1.2 = none) | `calottes` (a quantity) | `calottes = clamp((1 − latitude) / 0.28, 0, 1)` |
 | `relief` | `relief` | ≈ 0.6 × reference, bound of the validator aligned on the engine's [0, 2] |
 | named palettes (`terre`, `ocean`, `glace`, `roche`, `couleurs`, `croute`, `jour`/`nuit`/`crepuscule`) | `palette` | sampled to 1–16 colours in the order the core reads (ice is read upside down) |
-| `crateres` (a count) | `cratere` (a depth) | ≈ count / 220; count and size law are new keys (`crateres_nombre`) |
+| `crateres` (a count) | `cratere` (a depth) and `crateres_nombre` (new, integer [0, 2000]) | `cratere = clamp(count / 220, 0, 1)`; `crateres_nombre` is the number of craters the core draws (absent: its density follows `cratere`); one size law, the core's |
 | `atmosphere`, `force_atmo` | `halo_couleur`, `halo` | direct, the type's default sent when absent |
+| `turbulence` | `turbulence` (new, [0, 2], default 1) | direct: amplitude of the distortion of the bands of a gas giant and of the streaks of a telluric surface (the engine's factor `(tur − 0.5) × 1.6`, multiplied by it); 0 gives straight bands |
+| `tache` (a storm, a spot) | `tache` (new, object) | `{latitude [−1, 1], taille [0.02, 0.4], couleur}`, every key optional (defaults: `tempete` decides whether one is drawn, mid-latitude, 0.12, the palette's third colour); `tempete` stays the intensity of the engine's own spot, `tache` places and colours it; unknown keys inside it are reported (`non_rendu`) |
+| colours of the bands `couleurs` of a gas giant | `bandes_couleurs` (new, list of 1 to 16 `#rrggbb`) | sampled in the order the core reads; when present the bands of a gas giant read it in place of `palette`; `palette` stays the body's (the reference's `couleurs` of a giant is a palette: the producer may send either, the core draws the same) |
+| `poussiere` | `poussiere` (existing, colour `#rrggbb`, `null` clears) | direct: the dust tail of a comet and the dust of a nebula take this colour; the reference's dust quantity is the existing `force_poussiere` [0, 2] |
+| `brume` | `brume` (existing, colour `#rrggbb`, `null` clears) | direct: the haze of a nebula and the atmosphere veil of a world take this colour |
 | `graine` | `graine` | **always sent**, one per body (`graine_de(id)`): two bodies never share a picture |
-| `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | new accepted key; absent means **no ring** (the engine's random ring at 28 % goes) |
-| `couleur_nuages`, `opacite_nuages`, `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124), `terre_seche`, `etirement`, `eclairs`, `inclinaison`, `geysers`, `couleur_fissures`, `mers`, `canyons`, `lave`, `cristaux`, `activite`, `intensite`, `vue` | new keys of the same names | added to the core one by one, each with a bound and a test of the picture |
-| `disparue` (a star gone, B-122) | `disparue` (boolean, on a star only) | direct; true draws a dim remnant, never an ordinary star; the atlas writes it from `corps[].etat: "disparue"` |
+| `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | accepted key (the engine reads it, `valider_aspect` did not): object `{interieur [1.1, 2.5], exterieur, inclinaison [0.12, 1.2], angle, opacite [0, 1], couleur, couleur2}` each optional and bounded as the engine's own clamps; absent means **no ring** (the engine's random ring at 28 % goes) |
+| `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124) | new keys of the same names | `kanevas-carte-rendu-nuit`: added to the core with a bound and a test of the picture |
+| `couleur_nuages`, `opacite_nuages` | `couleur_nuages` (colour, `null` clears), `opacite_nuages` ([0, 1], default 1) | direct: the tint of the cloud layer (default: the white of today) and the factor of its opacity; drawn on `tellurique`, and on `verrouillee` when `nuages` is above 0 (a locked world draws no cloud layer without one of these keys or `etirement`) |
+| `terre_seche` | `terre_seche` ([0, 1], default 0) | share of the land drawn dry (the palette's arid tone mixed in, the sea untouched); `tellurique`, `verrouillee` |
+| `etirement` | `etirement` ([0.25, 4], default 1) | stretch of the clouds along the parallels (1 = today's shape, 4 = long streaks); `tellurique`, `verrouillee`, `gazeuse` |
+| `eclairs` | `eclairs` ([0, 1], default 0) | flashes in the clouds on the night side, as many as the value and `nuages` allow; `tellurique`, `gazeuse` |
+| `inclinaison` | `inclinaison` ([−90, 90] degrees, default 0) | tilt of the body's axis: the caps and the bands turn by it (not the ring's `anneau.inclinaison`, a key of its own object); every planet kind |
+| `mers` (several seas) | `mers` (integer [1, 8], default 1) | number of separate basins sharing the `mer` level (the total sea share holds within a few points); `tellurique` only (a locked world has no sea level) |
+| `canyons` | `canyons` ([0, 1], default 0) | dark cuts in the relief; `rocheux`, `tellurique` |
+| `lave` (on a rocky body) | `lave` ([0, 1], default 0) | glowing veins in the lowest relief; `rocheux` (the type `lave` already is lava) |
+| `cristaux` | `cristaux` ([0, 1], default 0) | bright facets scattered on the surface; `glace`, `rocheux` |
+| `geysers` | `geysers` ([0, 1], default 0) | plumes rising off the limb, drawn only at the edge of the disc (beyond it); `glace`, `rocheux` |
+| `couleur_fissures` | `couleur_fissures` (colour, `null` clears) | the colour of the cracks of `fissures` (default: today's); `glace`, `rocheux`, `lave` |
+| craters on ice (the reference's own setting for an icy body) | `cratere_glace` (new, [0, 1], default 0) | depth of the craters of an icy body; their number is `crateres_nombre` (`-aspects-socle`) read on `glace` too; `glace` |
+| atmosphere thickness | `atmosphere_epaisseur` (new, [0, 1], default 0.5 = today's) | width of the limb halo, `halo` stays its strength; the six planet kinds accept it (none is refused; with `halo` 0 it has nothing to widen) |
+| `activite` | `activite` ([0, 1], default 0) | flares and prominences at the limb of a star; `etoile` kinds |
+| `intensite` | `intensite` ([0, 2], default 1) | brightness of the disc and of the corona of a star (1 = today's); `etoile` kinds |
+| `vue` | `vue` (`"profil"` default, or `"face"`) | a comet seen from the side (tail drawn along its curve) or head-on (the tail foreshortened into a halo round the nucleus); `comete` |
+| signed curvature | `courbure` (existing; bound widened from [0, 1] to [−1, 1]) | a negative value bends the tail to the other side; [0, 1] draws exactly as before; `comete` |
+| `couleur_anneaux`, `opacite_anneaux` | `anneau.couleur`, `anneau.couleur2`, `anneau.opacite` (accepted since `-aspects-socle`) | no new key: this slice proves by a measured test that the ring takes its colours and its opacity (the tint of its pixels, the visibility of the body behind it) |
+| `disparue` (a star gone, B-122) | `disparue` (new, boolean, on a star only: refused on any other type) | direct; true draws a dim remnant (the star's disc at a fifth of its brightness, no corona, no rays), never an ordinary star; the atlas writes it from `corps[].etat: "disparue"` |
 | `voile` | `swn_systemes.voile` | the system's only; the veil of a nebula is `parametres.voile` of its zone (below) |
+
+**Applicability (AD-aspects-reliefs-1).** A key is accepted on the kinds the row names; on another kind it is refused (`invalide`, with the path and the kinds), as `disparue` is on a non-star. In an atlas this is the all-or-nothing refusal of AD-atlas-3 (the whole atlas is refused, one line per refusal with its path); only a key the core does not know at all is reported under `non_rendu`, the body still imported (B-114). The kinds are the core's: planets `tellurique`, `verrouillee`, `glace`, `rocheux`, `lave`, `gazeuse`; stars (every class); `comete`.
+
+**Count of `kanevas-carte-rendu-aspects-reliefs`: 18 rows of this table** (`couleur_nuages` and `opacite_nuages` share one; the ring is the last, with no new key; the slice's `livre` lists the settings, this table the rows). New keys of the core: `terre_seche`, `etirement`, `eclairs`, `inclinaison`, `mers`, `canyons`, `lave`, `cristaux`, `geysers`, `couleur_fissures`, `couleur_nuages`, `opacite_nuages`, `cratere_glace`, `atmosphere_epaisseur`, `activite`, `intensite`, `vue` (17); `courbure` widens. `villes`, `lueur`, `force_lueur` stay with `-nuit`.
 
 **Atlas format (AD-atlas-2, extended).** Every addition is optional (an atlas of the former format stays valid, byte for byte): `lunes[].type` takes every type of the core
 (not only rocky/ice/lava); `zones[].etoile` and `points[].etoile` (a star's `cle`, default the main one; `zones[].etoile` written to `swn_formations.etoile_rang` and `points[].etoile` to `swn_astres.etoile_rang` (a comet's star), both columns existing; AD-atlas-2 gives `etoile` to `corps[]` only) `corps[].lunes[].heure` is the hour around the planet;
 `voile` (a colour) on the system; `classe`, `taille` (continuous) and `couleur` (free) on a defined system (the former names and sizes still accepted); `corps[].etat: "disparue"` on a star (written as `aspect.disparue`, B-122); `zones[].voile` and `zones[].lentille` (written in the formation's `parametres`); each body's `aspect` may carry the keys above. Refusals keep AD-atlas-3 (all or nothing, path of each refusal).
 
 **Rules kept.** A body has no secret of its own (the system's hides it); `lisibilite.ts` stays the only reader of `secret`; the import never overwrites what the GM changed (AD-atlas-3).
+
+## `kanevas-cr-aventure` scope: the model
+
+No new entity, no migration. A session report's adventure is `fiches.charge.campagne_id` (unchanged); it becomes **writable by the GM** after creation.
+
+Rules:
+1. `campagne_id` is written by `creerCompteRendu` and by one new service function of `services/comptes_rendus.ts`, `changerAventureDuCompteRendu`, run inside `ecrire` (history, AD-147, and `modifie_le` by the triggers). The target is read with `aventureLue` (same guard as the creation); GM outside player mode only; an id that is not a readable sheet, or a target that is not a readable adventure of the universe: `introuvable` (as the creation); a readable sheet that is not a session report: `invalide` (400 on the route, as the other type-bound fields of `PATCH`); a player or a GM in player mode: the refusals of `changerStatutFiche` (AD-cr-aventure-5); the same adventure: no write.
+2. Nothing else of the sheet moves (id, key, sections, relations, `liens`, `parent_id`).
+3. The list `listerComptesRendus({campagneId})` returns the reports whose adventure is that one **or any descendant of it of type `aventure` that the caller reads** (reached through a chain of `aventure` sheets by `parent_id`, at any depth — the 50 levels of AD-115 cannot be exceeded; the walk tests the caller's read at each node, so a scenario the caller does not read brings nothing, nor does what is under it; an adventure under a sheet of another type is not a scenario); each line carries its own adventure (`campagneId`, `campagneNom`), from which the screen shows the scenario's name when it differs from the page's adventure. The deletion count of an adventure (AD-119) stays on direct reports. The filter is one for every reader of `listerComptesRendus({campagneId})` (the route `?campagne=`, E-9's block, E-13's list (through the route's filter, there is no screen filter); no assistant list calls it): all give the widened result with each line's own adventure; nothing else widens (the deletion count, the « Campagne » line of a report, the bilan).
+4. The import fingerprint of the header (AD-139) already holds `campagne_id` for a report: a change of adventure is a change of header.

@@ -17,6 +17,7 @@ const { creerGalaxie } = await import('../services/swn/galaxies.js');
 const { lireInterieur } = await import('../services/swn/interieur.js');
 const { creerFiche } = await import('../services/fiches.js');
 const { modifierAstre } = await import('../services/swn/ecriture-systeme.js');
+const { graineDe } = await import('../wasm/coeur.js');
 
 const G = 'swn/galaxie';
 const ESSAI = fileURLToPath(new URL('../outils/swn/exemples/atlas-essai.json', import.meta.url));
@@ -82,7 +83,8 @@ test("atlas d'essai : tout créé, rejeu identique tout inchangé aux mêmes ver
   assert.equal(v.transition, 14.5);
   const p1 = v.astres.find((a: any) => a.cle === 'planete-un')!;
   assert.deepEqual([p1.orbite, p1.heure, p1.taille, p1.type], [3.5, 2.25, 1, 'tellurique']);
-  assert.deepEqual(p1.aspect, { mer: 0.6, nuages: 0.4 });
+  // the seed is written at the creation of the row (AD-aspects-socle-2)
+  assert.deepEqual(p1.aspect, { mer: 0.6, nuages: 0.4, graine: await graineDe('vael', 'planete-un') });
   const lune = v.astres.find((a: any) => a.cle === 'lune-un')!;
   assert.deepEqual([lune.genre, lune.parent_cle, lune.orbite, lune.heure], ['lune', 'planete-un', 0.4, 6]);
   const p2 = v.astres.find((a: any) => a.cle === 'planete-deux')!;

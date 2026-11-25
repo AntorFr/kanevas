@@ -158,7 +158,7 @@ export function normaliserSysteme(entree: unknown): SystemeNormalise {
   return {
     nom: nomValide(c.nom), q: coordonnee('q', c.q), r: coordonnee('r', c.r),
     taille: a(c, 'taille') ? tailleValide(c.taille) : TAILLES.moyenne!,
-    couleur: a(c, 'couleur') ? couleurSystemeValide(c.couleur) : COULEURS_ANCIENNES.accent!,
+    couleur: a(c, 'couleur') ? couleurSystemeValide(c.couleur) : null,
     classe: a(c, 'classe') ? classeValide(c.classe) : null,
     notes: a(c, 'notes') ? notesValides(c.notes) : '',
     secret: a(c, 'secret') ? boolValide('secret', c.secret) : false,

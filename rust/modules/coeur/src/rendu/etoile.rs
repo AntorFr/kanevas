@@ -6,11 +6,15 @@ pub fn rendre(c: &Ctx) -> Vec<Px> {
     let n = c.cote;
     let echelle = borne(c.f("echelle", 0.4), 0.15, 0.7);
     let r = c.demi * echelle;
-    let couronne = borne(c.f("couronne", 0.7), 0.0, 2.0);
+    // A star gone is a dull remnant: no corona, no rays, no halo, the disc at a fifth of its brightness.
+    let disparue = c.asp.get("disparue").and_then(serde_json::Value::as_bool).unwrap_or(false);
+    let couronne = if disparue { 0.0 } else { borne(c.f("couronne", 0.7), 0.0, 2.0) };
     let gran = borne(c.f("granulation", 1.0), 0.0, 3.0);
     let taches = borne(c.f("taches", 0.5), 0.0, 1.0);
     let rayons = borne(c.f("rayons", 7.0), 0.0, 24.0);
-    let halo = borne(c.f("halo", 0.0), 0.0, 2.0);
+    let halo = if disparue { 0.0 } else { borne(c.f("halo", 0.0), 0.0, 2.0) };
+    let activite = borne(c.f("activite", 0.0), 0.0, 1.0);
+    let intensite = borne(c.f("intensite", 1.0), 0.0, 2.0);
     let (c0, c1, c2) = (c.pal_i(0), c.pal_i(1), c.pal_i(2));
     let br = c.bruit;
     let oct = if c.cote <= 64 { 3 } else { 4 };
@@ -39,11 +43,23 @@ pub fn rendre(c: &Ctx) -> Vec<Px> {
                 let bord = 1.0 - lisse(0.62, 1.0, d / c.demi);
                 let i = (coeur + large + rai) * couronne * bord * bord * lisse(0.85, 1.0, u);
                 let teinte = melange(c1, c0, (-k * 4.0).exp());
-                px = lueur(teinte, i);
+                px = lueur(teinte, i * intensite);
+            }
+            // Prominences: arcs of the hot colour rising from the limb where a noise of the angle is high.
+            if activite > 0.0 && u > 0.97 && !disparue {
+                let th = dy.atan2(dx) + rot;
+                let m = lisse(0.5, 0.8, br.fbm([th.cos() * 2.2 + phase, th.sin() * 2.2, 7.5], 3));
+                let h = activite * 0.5 * m;
+                if h > 0.0 && u < 1.0 + h {
+                    let t = (u - 1.0).max(0.0) / h;
+                    let bord = 1.0 - lisse(0.62, 1.0, d / c.demi);
+                    let i = (1.0 - t * t) * m * (0.5 + 0.5 * activite) * bord;
+                    px = dessus(px, lueur(melange(c0, c1, t), i * intensite));
+                }
             }
             if halo > 0.0 && u > 1.0 {
                 let k = u - 1.0;
-                px = dessus(px, lueur(c1, halo * (-k * 1.6).exp() * 0.4 * (1.0 - lisse(0.6, 1.0, d / c.demi))));
+                px = dessus(px, lueur(c1, intensite * halo * (-k * 1.6).exp() * 0.4 * (1.0 - lisse(0.6, 1.0, d / c.demi))));
             }
             let cov = borne(r - d + 0.5, 0.0, 1.0);
             if cov > 0.0 {
@@ -69,7 +85,11 @@ pub fn rendre(c: &Ctx) -> Vec<Px> {
                     // Faculae brighten the limb around the spots.
                     col = mul(col, 1.0 + 0.12 * lisse(0.4, 0.7, s) * (1.0 - nz) * 2.0);
                 }
-                col = mul(col, 1.06);
+                col = mul(col, 1.06 * intensite);
+                if disparue {
+                    // A fifth of the brightness as the eye reads it (the output is encoded: 0.2 squared before the encoding).
+                    col = mul(col, 0.04);
+                }
                 let corps: Px = [col[0] * cov, col[1] * cov, col[2] * cov, cov];
                 px = dessus(corps, px);
             }

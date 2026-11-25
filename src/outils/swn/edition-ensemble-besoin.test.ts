@@ -71,7 +71,9 @@ test('B-93 nominal : le MJ déplace une planète d\'un système tiré, le systè
   assert.equal(apres.astres.length, v0.astres.length);
   assert.equal(apres.formations.length, v0.formations.length);
   // every other body is as drawn
-  assert.deepEqual(apres.astres.filter((a: any) => a.cle !== p.cle).map(({ version, ...a }: any) => a), v0.astres.filter((a: any) => a.cle !== p.cle).map(({ version, ...a }: any) => a));
+  // (the seed of a defined body is filled in at the read, AD-aspects-socle-2: a drawn one has none)
+  const sansGraine = ({ version, aspect: { graine, ...aspect }, ...a }: any) => ({ ...a, aspect });
+  assert.deepEqual(apres.astres.filter((a: any) => a.cle !== p.cle).map(sansGraine), v0.astres.filter((a: any) => a.cle !== p.cle).map(sansGraine));
   assert.equal(w.systemes(), 1);
   // neighbours, and all other drawn systems: byte for byte as before
   for (const [q, r] of TIRES.slice(1)) assert.equal((await w.lire('antor', q, r)).body, avant[`${q},${r}`], `${q},${r}`);
@@ -90,7 +92,9 @@ test('B-93 nominal : « Ancrer ce système » seul fige l\'intérieur tel que ti
   const v1 = res.json();
   assert.equal(v1.etat, 'defini');
   assert.equal(v1.nom, 'Système (-49, -48)');
-  assert.equal(sansJetons(JSON.stringify({ ...v1, nom: null, etat: 'tire' })), sansJetons(JSON.stringify({ ...v0 })));
+  // (the seed of a defined body is filled in at the read, AD-aspects-socle-2: a drawn one has none)
+  const sansGraine = (v: any) => ({ ...v, astres: v.astres.map(({ aspect: { graine, ...aspect }, ...a }: any) => ({ ...a, aspect })) });
+  assert.equal(sansJetons(JSON.stringify(sansGraine({ ...v1, nom: null, etat: 'tire' }))), sansJetons(JSON.stringify(sansGraine({ ...v0 }))));
   const lignes = w.lignes();
   const encore = await w.ecrire('antor', 'POST', -49, -48, 'ancrage', { versionSysteme: v1.versionSysteme });
   assert.equal(encore.statusCode, 200, encore.body);

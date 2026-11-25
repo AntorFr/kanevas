@@ -114,7 +114,7 @@ function Page({ universId, cible, base, suffixeMode }: { universId: number; cibl
             {choisi && mj && formulaire === 'deplacer' && <FormulaireDeplacer key={`d-${choisi.cle}`} astre={choisi} onFermer={fermerFormulaire} />}
             {choisi && mj && formulaire === 'modifier' && <FormulaireModifierAstre key={`m-${choisi.cle}`} astre={choisi} onFermer={fermerFormulaire} />}
             {choisi && !(mj && formulaire) && (
-              <PanneauCorps key={choisi.cle} astre={choisi} q={s.q} r={s.r} base={base} suffixe={suffixeMode ?? ''}
+              <PanneauCorps key={choisi.cle} astre={choisi} interieur={s} q={s.q} r={s.r} base={base} suffixe={suffixeMode ?? ''}
                 actions={mj && (
                   <>
                     <Bouton variante="mj" ecrit icone={Move} data-ouvreur="deplacer" onClick={() => setFormulaire('deplacer')}>Déplacer</Bouton>

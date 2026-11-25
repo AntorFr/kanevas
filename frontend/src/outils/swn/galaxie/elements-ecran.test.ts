@@ -18,8 +18,8 @@ const astre = (cle: string, o: Partial<AstreSysteme> = {}): AstreSysteme => ({
 });
 const plan = (r: number, h: number): [number, number] => [r * Math.cos((h * Math.PI) / 6), r * Math.sin((h * Math.PI) / 6)];
 const ecran = (x: number, y: number): [number, number] => [x, y];
-const corpsPlace = (cle: string, x: number, y: number, rayon: number): CorpsPlace =>
-  ({ cle, genre: 'planete', nom: cle, astre: astre(cle), x, y, rayon, cote: rayon * 2, aspect: '{}', decalage: [0, 0] });
+const corpsPlace = (cle: string, x: number, y: number): CorpsPlace =>
+  ({ cle, genre: 'planete', nom: cle, astre: astre(cle), x, y, aspect: '{}', decalage: [0, 0] });
 
 describe('marques des éléments : où elles se posent', () => {
   it('par orbite et heure : sur l’orbite (orbite 4 = rayon 198, heure 0), l’échelle de l’écran n’y change rien d’autre qu’ecran()', () => {
@@ -36,8 +36,8 @@ describe('marques des éléments : où elles se posent', () => {
 
   it('sur un corps : en orbite autour de lui, hors de son disque, et il le suit quand le corps bouge', () => {
     const e = el('nef', { sur: 'p', orbite: null });
-    const a = placerMarques([e], [corpsPlace('p', 100, 100, 10)], plan, ecran, 1)[0]!;
-    const b = placerMarques([e], [corpsPlace('p', 300, 50, 10)], plan, ecran, 1)[0]!;
+    const a = placerMarques([e], [corpsPlace('p', 100, 100)], plan, ecran, 1, new Map([['p', 10]]))[0]!;
+    const b = placerMarques([e], [corpsPlace('p', 300, 50)], plan, ecran, 1, new Map([['p', 10]]))[0]!;
     const da = Math.hypot(a.x - 100, a.y - 100);
     assert.ok(da >= 10 + 14, `hors du disque du corps (distance ${da})`);
     assert.ok(da < 60, 'petite orbite');
@@ -46,7 +46,7 @@ describe('marques des éléments : où elles se posent', () => {
 
   it('plusieurs éléments sur le même corps : positions toutes distinctes', () => {
     const els = [0, 1, 2, 3].map((i) => el(`e${i}`, { sur: 'p', orbite: null }));
-    const r = placerMarques(els, [corpsPlace('p', 0, 0, 12)], plan, ecran, 1);
+    const r = placerMarques(els, [corpsPlace('p', 0, 0)], plan, ecran, 1, new Map([['p', 12]]));
     const cles = new Set(r.map((m) => `${m.x.toFixed(2)}|${m.y.toFixed(2)}`));
     assert.equal(cles.size, 4);
   });
