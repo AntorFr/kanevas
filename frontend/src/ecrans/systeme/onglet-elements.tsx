@@ -3,7 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../../api';
-import { Bouton, BoiteDialogue, Champ, useToasts } from '../../ui';
+import { Bouton, Champ, useToasts } from '../../ui';
 import { iconeDeNom } from '../../types-contexte';
 import type { Fiche } from '../fiche/types';
 
@@ -80,12 +80,27 @@ export function OngletElements({ systemeId, types, fiches, suite, peutEcrire }: 
             <option key={t.type} value={t.type}>{t.pluriel}</option>
           ))}
         </Champ>
-        {peutEcrire && (
+        {peutEcrire && !ouvert && (
           <Bouton variante="principal" ecrit icone={Plus} disabled={actifs.length === 0} onClick={ouvrir}>
             Nouvel élément
           </Bouton>
         )}
       </div>
+      {ouvert && (
+        <form className="formulaire-ligne ouvert" noValidate onSubmit={(e) => void creer(e)}>
+          <Champ etiquette="Nom" value={titre} autoComplete="off" maxLength={80} erreur={erreur}
+            onChange={(e: { target: { value: string } }) => { setTitre(e.target.value); setErreur(undefined); }} />
+          <Champ liste etiquette="Type" value={type} onChange={(e: { target: { value: string } }) => setType(e.target.value)}>
+            {actifs.map((t) => (
+              <option key={t.type} value={t.type}>{t.singulier}</option>
+            ))}
+          </Champ>
+          <div className="actions">
+            <Bouton variante="principal" type="submit" ecrit disabled={enCours}>Créer l’élément</Bouton>
+            <Bouton type="button" onClick={() => setOuvert(false)}>Annuler</Bouton>
+          </div>
+        </form>
+      )}
       {groupes.length === 0 ? (
         <p className="note-sys">
           {fiches.length > 0
@@ -116,27 +131,6 @@ export function OngletElements({ systemeId, types, fiches, suite, peutEcrire }: 
         })
       )}
       {suite && <p className="note-sys">D’autres éléments existent : affinez par type.</p>}
-      {ouvert && (
-        <BoiteDialogue
-          titre="Nouvel élément"
-          texte="Il naît sans section ; les joueurs ne lisent rien tant qu’une section ne leur est pas ouverte."
-          action="Créer l’élément"
-          variante="neutre"
-          formulaire
-          enCours={enCours}
-          onConfirmer={() => void creer()}
-          onFermer={() => setOuvert(false)}
-          reperage={() => document.querySelector<HTMLElement>('main h1')}
-        >
-          <Champ liste etiquette="Type" value={type} onChange={(e: { target: { value: string } }) => setType(e.target.value)}>
-            {actifs.map((t) => (
-              <option key={t.type} value={t.type}>{t.singulier}</option>
-            ))}
-          </Champ>
-          <Champ etiquette="Nom" value={titre} autoComplete="off" erreur={erreur}
-            onChange={(e: { target: { value: string } }) => { setTitre(e.target.value); setErreur(undefined); }} />
-        </BoiteDialogue>
-      )}
     </>
   );
 }
