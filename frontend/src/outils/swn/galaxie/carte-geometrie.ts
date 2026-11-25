@@ -272,7 +272,7 @@ export function orbitesAstres(d: Disposition): AnneauOrbite[] {
   return out;
 }
 
-/** Radius (px) of the disc of a star of the galaxy map from its `taille` in [0, 1]: the same at every zoom (AD-galaxie-systemes-3, E-21). */
+/** Radius (px) of the disc of a star of the galaxy map from its `taille` in [0, 1]: the same at every zoom (AD-galaxie-systemes-1, E-21). */
 export const RAYON_ETOILE_MIN = 3;
 export const RAYON_ETOILE_MAX = 12;
 export function rayonEtoile(taille: number): number {
