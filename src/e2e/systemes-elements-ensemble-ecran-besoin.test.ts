@@ -249,4 +249,32 @@ describe('kanevas-systemes-jeu-elements : écrans E-5, E-9, E-15, E-16, E-17', (
     await teo.page.goto(`/systemes/${w.sid}`);
     await teo.page.getByText('Page introuvable.').waitFor();
   });
+
+  it('E-15 : « Nouvel élément » suit la maquette e15 (#zone-ajout) : titre, Nom, Type puis boutons, un par rangée, boutons à droite', { timeout: 240000 }, async () => {
+    const w = await monde();
+    assert.equal((await w.admin.ctx.request.post(`/api/instance/systemes/${w.sid}/membres`, { data: { username: 'mira' } })).status(), 201);
+    const p: Any = w.mira.page;
+    await p.goto(`/systemes/${w.sid}?type=elements`);
+    await attendre(p);
+    await p.getByRole('button', { name: 'Nouvel élément' }).first().click();
+    const boite = p.locator('form').filter({ has: p.getByRole('heading', { name: 'Nouvel élément' }) });
+    await boite.getByRole('heading', { name: 'Nouvel élément' }).waitFor();
+    const box = async (l: Any) => (await l.boundingBox())!;
+    const form = await box(boite);
+    const titre = await box(boite.getByRole('heading', { name: 'Nouvel élément' }));
+    const nom = await box(boite.getByLabel('Nom'));
+    const type = await box(boite.getByLabel('Type'));
+    const annuler = await box(boite.getByRole('button', { name: 'Annuler' }));
+    const creer = await box(boite.getByRole('button', { name: /Créer l.élément/ }));
+    await p.screenshot({ path: '/tmp/kanevas-elements-formulaire-maquette.png' });
+    assert.ok(titre.y + titre.height <= nom.y + 1, 'le titre est au-dessus de Nom');
+    assert.ok(nom.y + nom.height <= type.y + 1, 'Nom est au-dessus de Type, sans partager sa rangée');
+    assert.ok(type.y + type.height <= annuler.y + 1, 'Annuler est sous Type');
+    assert.ok(type.y + type.height <= creer.y + 1, 'Créer est sous Type');
+    assert.ok(Math.abs(annuler.y - creer.y) < 4, 'Annuler et Créer partagent une rangée');
+    assert.ok(annuler.x < creer.x, 'Annuler à gauche de Créer');
+    assert.ok(nom.width > form.width / 2, 'Nom occupe la largeur du formulaire');
+    assert.ok(type.width > form.width / 2, 'Type occupe la largeur du formulaire');
+    assert.ok(form.x + form.width - (creer.x + creer.width) < 40, 'les boutons sont calés à droite');
+  });
 });
