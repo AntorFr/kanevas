@@ -48,6 +48,10 @@ describe('kanevas-systemes-jeu-elements-ecrans : éléments de système à l’�
     await pm.getByText('Ce système n’a encore aucun élément.').waitFor();
     await pm.getByRole('button', { name: 'Nouvel élément' }).click();
     const boite = pm.locator('form.formulaire-ligne');
+    await boite.getByRole('heading', { name: 'Nouvel élément' }).waitFor();
+    const yNom = (await boite.getByLabel('Nom').boundingBox())!.y;
+    const yType = (await boite.getByLabel('Type').boundingBox())!.y;
+    assert.ok(yType > yNom, 'Nom puis Type, empilés');
     await boite.getByLabel('Nom').fill('');
     await boite.getByRole('button', { name: 'Créer l’élément' }).click();
     await boite.getByText('Erreur : le nom est obligatoire.').waitFor();

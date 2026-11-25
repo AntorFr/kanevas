@@ -87,7 +87,8 @@ export function OngletElements({ systemeId, types, fiches, suite, peutEcrire }: 
         )}
       </div>
       {ouvert && (
-        <form className="formulaire-ligne ouvert" noValidate onSubmit={(e) => void creer(e)}>
+        <form className="formulaire-ligne ouvert empile" noValidate onSubmit={(e) => void creer(e)}>
+          <h3>Nouvel élément</h3>
           <Champ etiquette="Nom" value={titre} autoComplete="off" maxLength={80} erreur={erreur}
             onChange={(e: { target: { value: string } }) => { setTitre(e.target.value); setErreur(undefined); }} />
           <Champ liste etiquette="Type" value={type} onChange={(e: { target: { value: string } }) => setType(e.target.value)}>
