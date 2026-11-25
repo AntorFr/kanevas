@@ -9,7 +9,7 @@ export interface CandidatNom {
 export interface VueNoms { s: number; corps?: number }
 // `s` is the zoom; it moves the boxes' positions (done by the caller), not which names are tried.
 
-/** Hexagon radius (px) from which the labels of routes and zones show: names of stars have no threshold, they give way by collision (AD-galaxie-systemes-4). */
+/** Hexagon radius (px) from which the labels of hexagon-set zones and the link type of a route show; the name of a polygon zone and « Privée » have no threshold, nor do the names of stars, which give way by collision (AD-galaxie-systemes-4). */
 export const SEUIL_NOMS = 12;
 /** Height of a name's box, in px. */
 export const HAUTEUR_NOM = 12;
