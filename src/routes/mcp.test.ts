@@ -146,6 +146,7 @@ test('refus : jeton inconnu = révoqué (même corps), expiré, d’outils, autr
     const outils = m.jeton('antor', LECTURE);
     m.app.db.pragma('foreign_keys = OFF');
     m.app.db.prepare('INSERT INTO jetons_outils (jeton_id, outil) VALUES (?, ?)').run(outils.jeton.id, 'vaisseaux');
+    m.app.db.prepare('UPDATE jetons_api SET contenu = 0 WHERE id = ?').run(outils.jeton.id);
     assert.equal((await m.brut('/mcp', bearer(outils.valeur))).status, 401);
     assert.equal((await m.brut(`/mcp/${m.cle}`, bearer(outils.valeur))).status, 401);
     // Origin présent

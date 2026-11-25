@@ -25,8 +25,8 @@
    « Créer un jeton » (nom, durée, accès : « Tous mes univers » avec un niveau et des
    exceptions, ou une liste d'univers), le jeton montré une seule fois, « Modifier les
    accès », « Révoquer ». Parcours P-25 (docs/parcours.md). Hors de tout univers : barre de
-   e01-accueil.html, entrée « Mes jetons d'API » du menu du compte. Le choix « Outils »
-   (kanevas-outils, B-65) s'ajoute au formulaire quand cette epic est dans l'arbre : il n'est pas dessiné ici.
+   e01-accueil.html, entrée « Mes jetons d'API » du menu du compte. Le groupe « Ce que le jeton peut faire »
+   (kanevas-jeton-unique, B-jeton-1 : Contenu + outils cumulables) est dessiné dans la boîte de création.
    Cadre, tokens et composants : e18-acces-api.html (boîtes, bascules segmentées, lignes de liste).
    Le document prime sur la maquette.
 
@@ -371,6 +371,8 @@ body.etat-perdue [data-ecrit-recherche] { opacity: .45; pointer-events: none; }
 .genre button .i { color: var(--texte-3); }
 .genre button[aria-checked="true"] .i { color: var(--accent-texte); }
 .dialogue .aide-genre { font-size: var(--t-12); color: var(--texte-3); }
+.dialogue .case-perm { display: flex; gap: 8px; align-items: flex-start; font-size: var(--t-13); }
+.dialogue .case-perm small { display: block; font-size: var(--t-12); color: var(--texte-3); }
 .dialogue .actions { margin-top: var(--e-2); }
 @media (max-width: 1080px) {
   .page.liste { padding-left: var(--e-6); padding-right: var(--e-6); }
@@ -706,6 +708,14 @@ body.etat-perdue .actions-ligne .bouton { opacity: .45; }
           <button type="button" role="radio" aria-checked="false" tabindex="-1" data-jours="365">1 an</button>
         </div>
       </div>
+      <div class="champ" id="champ-permissions" role="group" aria-labelledby="lib-perm">
+        <span id="lib-perm">Ce que le jeton peut faire</span>
+        <label class="case-perm"><input type="checkbox" checked> <span>Contenu <small>fiches, sections, relations, fichiers, cartes, export</small></span></label>
+        <label class="case-perm"><input type="checkbox"> <span>Galaxie <small>Systèmes de jeu · Stars Without Number — import de la galaxie</small></span></label>
+        <label class="case-perm"><input type="checkbox"> <span>Catalogue d'essai <small>Essai · catalogue d'équipement</small></span></label>
+        <span class="aide-genre">Un seul jeton peut tout faire, ou créez-en un par script : les accès ci-dessous valent pour tout ce que vous cochez.</span>
+        <span class="erreur" id="err-perm" hidden>Cochez au moins une permission.</span>
+      </div>
       <div class="champ">
         <span id="lib-portee">Univers atteints</span>
         <div class="genre portee" role="radiogroup" aria-labelledby="lib-portee">
@@ -901,7 +911,7 @@ body.etat-perdue .actions-ligne .bouton { opacity: .45; }
     var creer = m === 'creer';
     $('#dlg-nouveau-titre').textContent = creer ? 'Créer un jeton' : 'Modifier les accès';
     $('#valider-jeton').textContent = creer ? 'Créer le jeton' : 'Enregistrer';
-    $('#champ-nom').hidden = !creer; $('#champ-duree').hidden = !creer;
+    $('#champ-nom').hidden = !creer; $('#champ-duree').hidden = !creer; $('#champ-permissions').hidden = !creer;
     $('#form-jeton').hidden = false; $('#face-jeton').hidden = true; $('#err-nom').hidden = true; $('#err-sauve').hidden = true;
     $('#nom-jeton').classList.remove('en-erreur'); $('#nom-jeton').value = creer ? (nom || '') : '';
     ouvrir($('#voile-nouveau'), depuis || $('#nouveau-jeton'), creer ? $('#nom-jeton') : $('#bloc-tous .genre button[aria-checked=true]'));

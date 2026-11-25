@@ -35,6 +35,7 @@ import {
 } from '../services/sections.js';
 import { etiquettesProposees, poserEtiquetage } from '../services/etiquettes.js';
 import { exigerRole } from '../services/droits.js';
+import { changerAventureDuCompteRendu } from '../services/comptes_rendus.js';
 import { liees } from '../services/liees.js';
 import { estNature, listerNatures, type TypeNature } from '../services/natures.js';
 import { lireRelations, relierSection, retirerRelation } from '../services/relations.js';
@@ -125,13 +126,13 @@ function monter(app: FastifyInstance, base: string, systeme: boolean) {
   app.patch(`${base}/:fid`, async (request) => {
     const i = ids(request);
     const b = corps(request);
-    if (Object.keys(b).some((k) => !['titre', 'sousType', 'parent', 'statut', 'disparu', 'cle'].includes(k))) {
+    if (Object.keys(b).some((k) => !['titre', 'sousType', 'parent', 'statut', 'disparu', 'cle', 'campagne'].includes(k))) {
       throw invalide('Requête invalide.');
     }
     if (b.disparu !== undefined && typeof b.disparu !== 'boolean') throw invalide('Requête invalide.');
     if (
       b.titre === undefined && b.sousType === undefined && b.parent === undefined && b.statut === undefined &&
-      b.disparu === undefined && b.cle === undefined
+      b.disparu === undefined && b.cle === undefined && b.campagne === undefined
     ) {
       throw invalide('Rien à modifier.');
     }
@@ -144,6 +145,7 @@ function monter(app: FastifyInstance, base: string, systeme: boolean) {
     return app.db.transaction(() => {
       let fiche;
       if (b.statut !== undefined) fiche = changerStatutFiche(app.db, a, i.univers, i.fiche, b.statut);
+      if (b.campagne !== undefined) fiche = changerAventureDuCompteRendu(app.db, a, i.univers, i.fiche, b.campagne);
       if (b.titre !== undefined) fiche = renommerFiche(app.db, a, i.univers, i.fiche, b.titre as string);
       if (b.sousType !== undefined) fiche = changerSousType(app.db, a.compteId, i.univers, i.fiche, b.sousType);
       if (b.parent !== undefined) fiche = deplacerFiche(app.db, a, i.univers, i.fiche, b.parent as number | null);
