@@ -60,15 +60,11 @@ describe('E-23 le halo de transition et les flèches de sortie', { skip: skipBro
   after(async () => { await browser?.close(); srv?.stop(); });
 
   // No named inner function in `evaluate`: the test loader would inject a helper the page does not have.
-  const couleurs = async (page: Any) => page.evaluate(() => {
-    const couleur = (v: string, sel: string | null) => {
-      const e = sel ? document.querySelector(sel) as HTMLElement : document.body.appendChild(document.createElement('i'));
-      if (!sel) e.style.color = `var(${v})`;
-      const c = getComputedStyle(e).color;
-      if (!sel) e.remove();
-      return c;
-    };
-    return { pirate: couleur('', '.cs-sortie.pirate'), autre: couleur('', '.cs-sortie.autre'), tPirate: couleur('--route-pirate', null), tAutre: couleur('--route-autre', null) };
+  const couleurs = async (page: Any) => ({
+    pirate: await page.locator('.cs-sortie.pirate').evaluate((e: HTMLElement) => getComputedStyle(e).color),
+    autre: await page.locator('.cs-sortie.autre').evaluate((e: HTMLElement) => getComputedStyle(e).color),
+    tPirate: await page.evaluate((v: string) => { const i = document.body.appendChild(document.createElement('i')); i.style.color = `var(${v})`; const c = getComputedStyle(i).color; i.remove(); return c; }, '--route-pirate'),
+    tAutre: await page.evaluate((v: string) => { const i = document.body.appendChild(document.createElement('i')); i.style.color = `var(${v})`; const c = getComputedStyle(i).color; i.remove(); return c; }, '--route-autre'),
   });
 
   it('la flèche pirate et la flèche sans type ont la couleur de leur token, la légende du halo est là, dans les deux thèmes', async () => {
