@@ -277,7 +277,7 @@ export const RAYON_ETOILE_MIN = 3;
 export const RAYON_ETOILE_MAX = 12;
 export function rayonEtoile(taille: number): number {
   const t = Number.isFinite(taille) ? Math.min(1, Math.max(0, taille)) : 0.5;
-  return RAYON_ETOILE_MIN + (RAYON_ETOILE_MAX - RAYON_ETOILE_MIN) * t;
+  return Math.round((RAYON_ETOILE_MIN + (RAYON_ETOILE_MAX - RAYON_ETOILE_MIN) * t) * 100) / 100;
 }
 
 /** Fill of a star: the free colour when set, else the colour of its class (a datum of the core), else `null` (the class is not known yet). */
