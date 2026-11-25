@@ -59,12 +59,13 @@ describe('E-23 le halo de transition et les flèches de sortie', { skip: skipBro
   }, { timeout: 180000 });
   after(async () => { await browser?.close(); srv?.stop(); });
 
+  // The sky is dark in both themes and redefines the route tokens (`.cs-ciel`): the reference is read inside it.
   // No named inner function in `evaluate`: the test loader would inject a helper the page does not have.
   const couleurs = async (page: Any) => ({
     pirate: await page.locator('.cs-sortie.pirate').evaluate((e: HTMLElement) => getComputedStyle(e).color),
     autre: await page.locator('.cs-sortie.autre').evaluate((e: HTMLElement) => getComputedStyle(e).color),
-    tPirate: await page.evaluate((v: string) => { const i = document.body.appendChild(document.createElement('i')); i.style.color = `var(${v})`; const c = getComputedStyle(i).color; i.remove(); return c; }, '--route-pirate'),
-    tAutre: await page.evaluate((v: string) => { const i = document.body.appendChild(document.createElement('i')); i.style.color = `var(${v})`; const c = getComputedStyle(i).color; i.remove(); return c; }, '--route-autre'),
+    tPirate: await page.evaluate((v: string) => { const i = (document.querySelector('.cs-ciel') as HTMLElement).appendChild(document.createElement('i')); i.style.color = `var(${v})`; const c = getComputedStyle(i).color; i.remove(); return c; }, '--route-pirate'),
+    tAutre: await page.evaluate((v: string) => { const i = (document.querySelector('.cs-ciel') as HTMLElement).appendChild(document.createElement('i')); i.style.color = `var(${v})`; const c = getComputedStyle(i).color; i.remove(); return c; }, '--route-autre'),
   });
 
   it('la flèche pirate et la flèche sans type ont la couleur de leur token, la légende du halo est là, dans les deux thèmes', async () => {
