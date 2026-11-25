@@ -172,6 +172,10 @@ pub fn dessiner_avec(
     let mut sans_nouvelles = asp.clone();
     if let Value::Object(o) = &mut sans_nouvelles {
         o.retain(|k, _| !crate::edition::est_nouvelle(k));
+        // The sign of `courbure` only mirrors the tail: the seed reads its magnitude, so −c is +c flipped.
+        if let Some(c) = o.get("courbure").and_then(Value::as_f64).filter(|c| *c < 0.0) {
+            o.insert("courbure".into(), json!(-c));
+        }
     }
     let canon = json!({ "type": type_corps, "aspect": sans_nouvelles }).to_string();
     let ctx = Ctx {

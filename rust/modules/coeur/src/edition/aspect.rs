@@ -26,7 +26,7 @@ pub(crate) const NOMBRES: [(&str, f64, f64); 31] = [
     ("torsion", 0.0, 4.0),
     ("longueur", 0.0, 2.0),
     ("ouverture", 0.0, 1.0),
-    ("courbure", 0.0, 1.0),
+    ("courbure", -1.0, 1.0),
     ("force_gaz", 0.0, 2.0),
     ("force_poussiere", 0.0, 2.0),
     ("tete", 0.0, 5.0),
@@ -49,8 +49,12 @@ pub(crate) enum Genre {
     Entier(f64, f64),
     /// A colour `#rrggbb`, `null` clears it.
     Couleur,
+    /// One of the listed words.
+    Choix(&'static [&'static str]),
 }
 
+const ETOILES: &[&str] =
+    &["naine_rouge", "orange", "jaune_orange", "jaune", "jaune_vert", "blanche", "geante_rouge", "naine_blanche", "geante_bleue", "etoile"];
 const PLANETES: &[&str] = &["tellurique", "verrouillee", "glace", "rocheux", "lave", "gazeuse"];
 
 /// The keys of `kanevas-carte-rendu-aspects-reliefs` (AD-aspects-reliefs-1): name, kind and bound, and the
@@ -71,6 +75,9 @@ pub(crate) const NOUVELLES: &[(&str, Genre, &[&str])] = &[
     ("geysers", Genre::Nombre(0.0, 1.0), &["glace", "rocheux"]),
     ("couleur_fissures", Genre::Couleur, &["glace", "rocheux", "lave"]),
     ("cratere_glace", Genre::Nombre(0.0, 1.0), &["glace"]),
+    ("activite", Genre::Nombre(0.0, 1.0), ETOILES),
+    ("intensite", Genre::Nombre(0.0, 2.0), ETOILES),
+    ("vue", Genre::Choix(&["profil", "face"]), &["comete"]),
 ];
 
 /// Is `k` a key of the slice?
@@ -93,6 +100,11 @@ fn valider_nouvelle(type_astre: &str, k: &str, v: &Value) -> Result<(), ErreurEd
             nombre_dans(v, k, min, max)?;
             if v.as_f64().is_some_and(|n| n.fract() != 0.0) {
                 return Err(ErreurEdition::HorsBornes(format!("`{k}` must be an integer")));
+            }
+        }
+        Genre::Choix(mots) => {
+            if !v.as_str().is_some_and(|m| mots.contains(&m)) {
+                return Err(ErreurEdition::HorsBornes(format!("`{k}` must be one of: {}", mots.join(", "))));
             }
         }
         Genre::Couleur => {
