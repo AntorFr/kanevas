@@ -97,18 +97,49 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
     let br = c.bruit;
     let nuit_def = [0.55, 0.65, 1.0];
 
+    // Several seas: low walls along the borders of large cells split the water into basins.
+    let mur_de = |p: V3| -> f32 {
+        let f = 0.75 + 0.55 * mers.sqrt();
+        let (f1, f2, _) = br.cellules([p[0] * f + 31.0, p[1] * f, p[2] * f]);
+        1.0 - lisse(0.0, 0.16, f2 - f1)
+    };
+    // The land sinks by an offset found on a grid of the visible disc so the walls take no water share
+    // (the same sea level as with one sea, whatever the seed): bisection on the share below the level.
+    let decalage = if kind == Kind::Tellurique && mers > 1.0 {
+        let niveau = (0.3 + 0.4 * mer) * lisse(0.0, 0.05, mer);
+        let mut pts: Vec<(f32, f32)> = Vec::new();
+        let g = 36;
+        for j in 0..g {
+            for i in 0..g {
+                let (nx, ny) = ((i as f32 + 0.5) / g as f32 * 2.0 - 1.0, (j as f32 + 0.5) / g as f32 * 2.0 - 1.0);
+                if nx * nx + ny * ny >= 1.0 {
+                    continue;
+                }
+                let nz = (1.0 - nx * nx - ny * ny).sqrt();
+                let p = tourner([nx, ny, nz]);
+                pts.push((br.fbm([p[0] * 2.2, p[1] * 2.2, p[2] * 2.2], oct), mur_de(p)));
+            }
+        }
+        let cible = pts.iter().filter(|(h, _)| *h < niveau).count();
+        let (mut lo, mut hi) = (-0.6f32, 0.6f32);
+        for _ in 0..16 {
+            let mid = 0.5 * (lo + hi);
+            let n = pts.iter().filter(|(h, m)| *h + 0.3 * m + mid < niveau).count();
+            // more water than the target: raise the land (a larger offset)
+            if n > cible { lo = mid } else { hi = mid }
+        }
+        0.5 * (lo + hi)
+    } else {
+        0.0
+    };
+
     // The height field: continents, craters, crests, ridges. Cheap, called twice per pixel for the relief.
     let hauteur = |p: V3| -> f32 {
         match kind {
             Kind::Tellurique | Kind::Verrouillee => {
                 let h = br.fbm([p[0] * 2.2, p[1] * 2.2, p[2] * 2.2], oct);
                 if kind == Kind::Tellurique && mers > 1.0 {
-                    // Several seas: low walls along the borders of large cells split the water into basins,
-                    // and the land sinks by the mean height of the walls (measured), so the sea share holds within a few points.
-                    let f = 0.75 + 0.55 * mers.sqrt();
-                    let (f1, f2, _) = br.cellules([p[0] * f + 31.0, p[1] * f, p[2] * f]);
-                    let mur = 1.0 - lisse(0.0, 0.16, f2 - f1);
-                    h + 0.3 * (mur - 0.235)
+                    h + 0.3 * mur_de(p) + decalage
                 } else {
                     h
                 }
