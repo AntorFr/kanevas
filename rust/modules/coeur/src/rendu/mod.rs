@@ -20,7 +20,7 @@ pub use catalogue::{catalogue_defaut, types};
 pub(crate) use catalogue::{famille, Famille};
 
 /// Version of the renderer: part of the cache hash (AD-142), so a better rendering moves no body.
-pub const VERSION_RENDU: u32 = 2;
+pub const VERSION_RENDU: u32 = 3;
 pub const COTE_MIN: u32 = 16;
 pub const COTE_MAX: u32 = 2048;
 
@@ -167,7 +167,17 @@ pub fn dessiner_avec(
     }
 
     // `taille` is the body's size on the map, not a property of its picture.
-    let canon = json!({ "type": type_corps, "aspect": asp }).to_string();
+    // The keys of `NOUVELLES` change how the body is drawn, never which body it is: they are left out of the seed,
+    // so a neutral value draws the bytes of a body without the key (AD-aspects-reliefs-1).
+    let mut sans_nouvelles = asp.clone();
+    if let Value::Object(o) = &mut sans_nouvelles {
+        o.retain(|k, _| !crate::edition::est_nouvelle(k));
+        // The sign of `courbure` only mirrors the tail: the seed reads its magnitude, so −c is +c flipped.
+        if let Some(c) = o.get("courbure").and_then(Value::as_f64).filter(|c| *c < 0.0) {
+            o.insert("courbure".into(), json!(-c));
+        }
+    }
+    let canon = json!({ "type": type_corps, "aspect": sans_nouvelles }).to_string();
     let ctx = Ctx {
         cote: cote as usize,
         demi: cote as f32 / 2.0,

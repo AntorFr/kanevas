@@ -26,7 +26,7 @@ pub(crate) const NOMBRES: [(&str, f64, f64); 31] = [
     ("torsion", 0.0, 4.0),
     ("longueur", 0.0, 2.0),
     ("ouverture", 0.0, 1.0),
-    ("courbure", 0.0, 1.0),
+    ("courbure", -1.0, 1.0),
     ("force_gaz", 0.0, 2.0),
     ("force_poussiere", 0.0, 2.0),
     ("tete", 0.0, 5.0),
@@ -40,8 +40,83 @@ pub(crate) const NOMBRES: [(&str, f64, f64); 31] = [
 pub(crate) const COULEURS: [&str; 7] = ["halo_couleur", "lumiere_couleur", "couleur", "gaz", "poussiere", "brume", "fond"];
 const AUTRES: [&str; 9] = ["palette", "nature", "sens", "serree", "variantes", "tache", "bandes_couleurs", "anneau", "disparue"];
 
+/// What a key of `NOUVELLES` holds.
+#[derive(Clone, Copy)]
+pub(crate) enum Genre {
+    /// A number in `[min, max]`.
+    Nombre(f64, f64),
+    /// An integer in `[min, max]`.
+    Entier(f64, f64),
+    /// A colour `#rrggbb`, `null` clears it.
+    Couleur,
+    /// One of the listed words.
+    Choix(&'static [&'static str]),
+}
+
+const ETOILES: &[&str] =
+    &["naine_rouge", "orange", "jaune_orange", "jaune", "jaune_vert", "blanche", "geante_rouge", "naine_blanche", "geante_bleue", "etoile"];
+const PLANETES: &[&str] = &["tellurique", "verrouillee", "glace", "rocheux", "lave", "gazeuse"];
+
+/// The keys of `kanevas-carte-rendu-aspects-reliefs` (AD-aspects-reliefs-1): name, kind and bound, and the
+/// types that draw it. The one list: validation, the sorting of `trier_aspect` and the exclusion of these keys from
+/// the seed of a body (a neutral value draws the bytes of a body without the key) all read it.
+pub(crate) const NOUVELLES: &[(&str, Genre, &[&str])] = &[
+    ("couleur_nuages", Genre::Couleur, &["tellurique", "verrouillee"]),
+    ("opacite_nuages", Genre::Nombre(0.0, 1.0), &["tellurique", "verrouillee"]),
+    ("terre_seche", Genre::Nombre(0.0, 1.0), &["tellurique", "verrouillee"]),
+    ("etirement", Genre::Nombre(0.25, 4.0), &["tellurique", "verrouillee", "gazeuse"]),
+    ("eclairs", Genre::Nombre(0.0, 1.0), &["tellurique", "gazeuse"]),
+    ("inclinaison", Genre::Nombre(-90.0, 90.0), PLANETES),
+    ("mers", Genre::Entier(1.0, 8.0), &["tellurique"]),
+    ("atmosphere_epaisseur", Genre::Nombre(0.0, 1.0), PLANETES),
+    ("canyons", Genre::Nombre(0.0, 1.0), &["rocheux", "tellurique"]),
+    ("lave", Genre::Nombre(0.0, 1.0), &["rocheux"]),
+    ("cristaux", Genre::Nombre(0.0, 1.0), &["glace", "rocheux"]),
+    ("geysers", Genre::Nombre(0.0, 1.0), &["glace", "rocheux"]),
+    ("couleur_fissures", Genre::Couleur, &["glace", "rocheux", "lave"]),
+    ("cratere_glace", Genre::Nombre(0.0, 1.0), &["glace"]),
+    ("activite", Genre::Nombre(0.0, 1.0), ETOILES),
+    ("intensite", Genre::Nombre(0.0, 2.0), ETOILES),
+    ("vue", Genre::Choix(&["profil", "face"]), &["comete"]),
+];
+
+/// Is `k` a key of the slice?
+pub(crate) fn est_nouvelle(k: &str) -> bool {
+    NOUVELLES.iter().any(|(n, _, _)| *n == k)
+}
+
 fn cle_connue(k: &str) -> bool {
-    NOMBRES.iter().any(|(n, _, _)| *n == k) || COULEURS.contains(&k) || AUTRES.contains(&k)
+    NOMBRES.iter().any(|(n, _, _)| *n == k) || COULEURS.contains(&k) || AUTRES.contains(&k) || est_nouvelle(k)
+}
+
+/// A key of `NOUVELLES`: bound, integer or colour, then the types that draw it.
+fn valider_nouvelle(type_astre: &str, k: &str, v: &Value) -> Result<(), ErreurEdition> {
+    let Some((_, genre, types)) = NOUVELLES.iter().find(|(n, _, _)| *n == k) else { return Ok(()) };
+    match *genre {
+        Genre::Nombre(min, max) => {
+            nombre_dans(v, k, min, max)?;
+        }
+        Genre::Entier(min, max) => {
+            nombre_dans(v, k, min, max)?;
+            if v.as_f64().is_some_and(|n| n.fract() != 0.0) {
+                return Err(ErreurEdition::HorsBornes(format!("`{k}` must be an integer")));
+            }
+        }
+        Genre::Choix(mots) => {
+            if !v.as_str().is_some_and(|m| mots.contains(&m)) {
+                return Err(ErreurEdition::HorsBornes(format!("`{k}` must be one of: {}", mots.join(", "))));
+            }
+        }
+        Genre::Couleur => {
+            if !(v.is_null() || est_couleur(v)) {
+                return Err(ErreurEdition::HorsBornes(format!("`{k}` must be a colour `#rrggbb`")));
+            }
+        }
+    }
+    if !types.contains(&type_astre) {
+        return Err(ErreurEdition::Invalide(format!("`{k}` is not drawn on a `{type_astre}` body, only on: {}", types.join(", "))));
+    }
+    Ok(())
 }
 
 /// Checks the JSON `json` (an object, at most 4 KiB) as the aspect of a body of type `type_astre`: known keys
@@ -56,8 +131,15 @@ pub fn valider_aspect(type_astre: &str, json: &str) -> Result<String, ErreurEdit
         if !cle_connue(k) {
             return Err(ErreurEdition::CleInconnue(k.clone()));
         }
+        if est_nouvelle(k) {
+            valider_nouvelle(type_astre, k, v)?;
+            continue;
+        }
         if let Some((_, min, max)) = NOMBRES.iter().find(|(n, _, _)| n == k) {
             nombre_dans(v, k, *min, *max)?;
+            if *k == "courbure" && type_astre != "comete" {
+                return Err(ErreurEdition::Invalide(format!("`{k}` is not drawn on a `{type_astre}` body, only on: comete")));
+            }
             if *k == "graine" || *k == "rayons" || *k == "bras" || *k == "crateres_nombre" {
                 if v.as_f64().is_some_and(|n| n.fract() != 0.0) {
                     return Err(ErreurEdition::HorsBornes(format!("`{k}` must be an integer")));
