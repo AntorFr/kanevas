@@ -458,6 +458,8 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                 col = ajoute(col, s.emis);
                 // Lights of the night side: an emission weighted by the night amount, nothing on a lit pixel.
                 let nuit_lum = 1.0 - eclair;
+                // A locked world has no sea (-inf): everything is land, so the lights use a finite, very low level.
+                let niveau_mer = if niveau_mer.is_finite() { niveau_mer } else { -10.0 };
                 if lumieres && nuit_lum > 0.0 {
                     let mut lum = [0.0f32; 3];
                     if villes > 0.0 {
