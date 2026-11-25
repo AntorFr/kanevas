@@ -28,36 +28,41 @@ describe('B-63 : relations vers un personnage', { skip: skipBrowser }, () => {
     srv?.stop();
   });
 
-  const cas: Array<[string, string, string, RegExp]> = [
-    ['allié de', 'Suie', 'PNJ', /allié de\s*·\s*Suie/],
-    ['ennemi de', 'Le Prieur masqué', 'PNJ', /ennemi de\s*·\s*Le Prieur masqué/],
-    ['allié de', 'Léa Brisefer', 'PJ', /allié de\s*·\s*Léa Brisefer/],
-  ];
-  for (const [nature, cible, _k, rx] of cas) {
-    test(`${nature} → ${cible} : ligne, rechargement, retrait`, { timeout: 120000 }, async () => {
-      const page = antor;
-      await page.goto(`/univers/${U}/fiche/${ids['Dame Ombeline de Val-Fortin']}`);
-      await page.getByRole('heading', { level: 1, name: 'Dame Ombeline de Val-Fortin' }).waitFor();
-      const b = section(page, 'Apparence').getByRole('group', { name: 'Relations' });
-      await b.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
-      await b.getByLabel('Nature').selectOption({ label: nature });
-      await b.getByLabel('Type de fiche').selectOption({ label: 'Personnage' });
-      await b.getByRole('button', { name: new RegExp(`^${cible}`) }).first().click();
-      const [rep] = await Promise.all([
-        page.waitForResponse((r: Any) => r.request().method() === 'POST' && /\/relations$/.test(r.url())),
-        b.getByRole('button', { name: rxExact('Relier') }).click(),
-      ]);
-      assert.equal(rep.status(), 201);
-      const ligne = () => section(page, 'Apparence').locator('.relation', { hasText: cible });
-      await ligne().first().waitFor();
-      assert.match((await ligne().first().innerText()).replace(/\s+/g, ' '), rx);
-      await page.reload();
-      await page.getByRole('heading', { level: 1, name: 'Dame Ombeline de Val-Fortin' }).waitFor();
-      await ligne().first().waitFor();
-      assert.match((await ligne().first().innerText()).replace(/\s+/g, ' '), rx);
-      await ligne().first().getByRole('button', { name: /^Retirer la relation/ }).click();
-      await page.waitForFunction((c: string) => !Array.from(document.querySelectorAll('.relation')).some((e) => e.textContent?.includes(c)), cible);
-      assert.equal(await ligne().count(), 0);
-    });
+  async function cas(nature: string, cible: string, rx: RegExp) {
+    const page = antor;
+    await page.goto(`/univers/${U}/fiche/${ids['Dame Ombeline de Val-Fortin']}`);
+    await page.getByRole('heading', { level: 1, name: 'Dame Ombeline de Val-Fortin' }).waitFor();
+    const b = section(page, 'Apparence').getByRole('group', { name: 'Relations' });
+    await b.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
+    await b.getByLabel('Nature').selectOption({ label: nature });
+    await b.getByLabel('Type de fiche').selectOption({ label: 'Personnage' });
+    // The candidate list loads after the type is chosen: wait for the target, then for its pick to register.
+    const candidat = b.getByRole('button', { name: new RegExp(`^${cible}`) }).first();
+    await candidat.waitFor();
+    await candidat.click();
+    await b.getByRole('button', { name: new RegExp(`^${cible}`), pressed: true }).first().waitFor();
+    const [rep] = await Promise.all([
+      page.waitForResponse((r: Any) => r.request().method() === 'POST' && /\/relations$/.test(r.url())),
+      b.getByRole('button', { name: rxExact('Relier') }).click(),
+    ]);
+    assert.equal(rep.status(), 201);
+    const ligne = () => section(page, 'Apparence').locator('.relation', { hasText: cible });
+    await ligne().first().waitFor();
+    assert.match((await ligne().first().innerText()).replace(/\s+/g, ' '), rx);
+    await page.reload();
+    await page.getByRole('heading', { level: 1, name: 'Dame Ombeline de Val-Fortin' }).waitFor();
+    await ligne().first().waitFor();
+    assert.match((await ligne().first().innerText()).replace(/\s+/g, ' '), rx);
+    const [sup] = await Promise.all([
+      page.waitForResponse((r: Any) => r.request().method() === 'DELETE' && /\/relations\/\d+$/.test(r.url())),
+      ligne().first().getByRole('button', { name: /^Retirer la relation/ }).click(),
+    ]);
+    assert.ok(sup.status() < 300, `DELETE ${sup.status()}`);
+    await ligne().first().waitFor({ state: 'detached' });
+    assert.equal(await ligne().count(), 0);
   }
+
+  test('allié de → Suie : ligne, rechargement, retrait', { timeout: 120000 }, () => cas('allié de', 'Suie', /allié de\s*·\s*Suie/));
+  test('ennemi de → Le Prieur masqué : ligne, rechargement, retrait', { timeout: 120000 }, () => cas('ennemi de', 'Le Prieur masqué', /ennemi de\s*·\s*Le Prieur masqué/));
+  test('allié de → Léa Brisefer : ligne, rechargement, retrait', { timeout: 120000 }, () => cas('allié de', 'Léa Brisefer', /allié de\s*·\s*Léa Brisefer/));
 });
