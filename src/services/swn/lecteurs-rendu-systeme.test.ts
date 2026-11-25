@@ -98,7 +98,7 @@ test('écrivain : les anciens noms et entiers restent acceptés et se convertiss
   poser('Zero', 24, { taille: 0 });
   assert.equal(lire('zero').taille, 0);
   poser('Defaut', 25, {});
-  assert.deepEqual(lire('defaut'), { taille: 0.45, couleur: '#8b9bf0' });
+  assert.deepEqual(lire('defaut'), { taille: 0.45, couleur: null });
 });
 
 test('écrivain : refus invalide avec champ pour une taille hors [0, 1], une couleur mal formée', () => {
