@@ -73,28 +73,28 @@ describe('E-21 la galaxie dessine ses étoiles par classe et par taille, le dial
   }, { timeout: 180000 });
   after(async () => { await browser?.close(); srv?.stop(); });
 
-  for (const schema of ['dark', 'light'] as const) {
-    it(`ouverture (${schema}) : Antor voit Port-Sel, Vael et Hesper dans la carte avec leurs noms, deux d’entre eux diffèrent par la taille ou la couleur`, async () => {
-      const { page, ctx } = await ouvre('antor', { schema });
-      for (const nom of ['Port-Sel', 'Vael', 'Hesper']) await systeme(page, nom).waitFor();
-      const carte = await page.locator('svg').filter({ has: page.locator('g.gx-systeme') }).first().boundingBox();
-      for (const nom of ['Port-Sel', 'Vael', 'Hesper']) {
-        const b = await systeme(page, nom).locator('.gx-point').boundingBox();
-        assert.ok(b.x >= carte.x && b.y >= carte.y && b.x + b.width <= carte.x + carte.width && b.y + b.height <= carte.y + carte.height, `${nom} est dans la carte`);
-        assert.ok(await systeme(page, nom).locator('text', { hasText: nom }).count() >= 1, `le nom ${nom} est écrit sur la carte`);
-      }
-      const [a, b] = [await disque(page, 'Port-Sel'), await disque(page, 'Vael')];
-      assert.ok(a.r !== b.r || a.fond !== b.fond, `deux systèmes définis diffèrent : ${JSON.stringify(a)} / ${JSON.stringify(b)}`);
-      const fondCarte = await page.locator('svg').filter({ has: page.locator('g.gx-systeme') }).first().evaluate((e: Element) => {
-        let n: Element | null = e;
-        while (n) { const c = getComputedStyle(n).backgroundColor; if (c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') return c; n = n.parentElement; }
-        return 'rgba(0, 0, 0, 0)';
-      });
-      if (schema === 'light') assert.notEqual(fondCarte, 'rgb(255, 255, 255)', 'la carte n’est plus blanche en thème clair');
-      await page.screenshot({ path: `${SHOTS}/ouverture-${schema}.png`, fullPage: true });
-      await ctx.close();
+  const ouverture = async (schema: 'light' | 'dark') => {
+    const { page, ctx } = await ouvre('antor', { schema });
+    for (const nom of ['Port-Sel', 'Vael', 'Hesper']) await systeme(page, nom).waitFor();
+    const carte = await page.locator('svg').filter({ has: page.locator('g.gx-systeme') }).first().boundingBox();
+    for (const nom of ['Port-Sel', 'Vael', 'Hesper']) {
+      const b = await systeme(page, nom).locator('.gx-point').boundingBox();
+      assert.ok(b.x >= carte.x && b.y >= carte.y && b.x + b.width <= carte.x + carte.width && b.y + b.height <= carte.y + carte.height, `${nom} est dans la carte`);
+      assert.ok(await systeme(page, nom).locator('text', { hasText: nom }).count() >= 1, `le nom ${nom} est écrit sur la carte`);
+    }
+    const [a, b] = [await disque(page, 'Port-Sel'), await disque(page, 'Vael')];
+    assert.ok(a.r !== b.r || a.fond !== b.fond, `deux systèmes définis diffèrent : ${JSON.stringify(a)} / ${JSON.stringify(b)}`);
+    const fondCarte = await page.locator('svg').filter({ has: page.locator('g.gx-systeme') }).first().evaluate((e: Element) => {
+      let n: Element | null = e;
+      while (n) { const c = getComputedStyle(n).backgroundColor; if (c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') return c; n = n.parentElement; }
+      return 'rgba(0, 0, 0, 0)';
     });
-  }
+    if (schema === 'light') assert.notEqual(fondCarte, 'rgb(255, 255, 255)', 'la carte n’est plus blanche en thème clair');
+    await page.screenshot({ path: `${SHOTS}/ouverture-${schema}.png`, fullPage: true });
+    await ctx.close();
+  };
+  it('ouverture sombre : Antor voit Port-Sel, Vael et Hesper dans la carte avec leurs noms, deux d’entre eux diffèrent par la taille ou la couleur', () => ouverture('dark'));
+  it('ouverture claire : Antor voit Port-Sel, Vael et Hesper dans la carte avec leurs noms, deux d’entre eux diffèrent par la taille ou la couleur, la carte n’est plus blanche', () => ouverture('light'));
 
   it('ouverture : le ciel de la galaxie d’essai n’est pas déclaré vide et Léa ne voit pas la Station fantôme', async () => {
     const { page, ctx } = await ouvre('lea');

@@ -1,4 +1,3 @@
-// ecrans: outil
 // Black-box tests of the feature kanevas-carte-rendu-galaxie-systemes (B-117 first part, AD-rendu-2 migration), written from its
 // sheet (« Livre », exit criterion), docs/parcours.md (B-117, P-28, P-30), docs/donnees.md (the conversion table) and docs/ecrans.md
 // (E-21) — not from the code. Real server in stub mode WITH its starting world (« Éneria d'essai », « Galaxie d'essai »: Port-Sel (0,0),
@@ -18,7 +17,7 @@ import { join } from 'node:path';
 import { after, describe, it } from 'node:test';
 import Database from 'better-sqlite3';
 import { migrate, openDb } from '../db/db.js';
-import { startServer, type Any, type Server } from './harnais.test.js';
+import { startServer, type Any, type Server } from '../e2e/harnais.test.js';
 
 const servers: Server[] = [];
 const tmp: string[] = [];
