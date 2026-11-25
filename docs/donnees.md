@@ -965,7 +965,7 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | `canyons` | `canyons` ([0, 1], default 0) | dark cuts in the relief; `rocheux`, `tellurique` |
 | `lave` (on a rocky body) | `lave` ([0, 1], default 0) | glowing veins in the lowest relief; `rocheux` (the type `lave` already is lava) |
 | `cristaux` | `cristaux` ([0, 1], default 0) | bright facets scattered on the surface; `glace`, `rocheux` |
-| `geysers` | `geysers` ([0, 1], default 0) | plumes rising from the surface and, at the limb, beyond the disc; `glace`, `rocheux` |
+| `geysers` | `geysers` ([0, 1], default 0) | plumes rising off the limb, drawn only at the edge of the disc (beyond it); `glace`, `rocheux` |
 | `couleur_fissures` | `couleur_fissures` (colour, `null` clears) | the colour of the cracks of `fissures` (default: today's); `glace`, `rocheux`, `lave` |
 | craters on ice (the reference's own setting for an icy body) | `cratere_glace` (new, [0, 1], default 0) | depth of the craters of an icy body; their number is `crateres_nombre` (`-aspects-socle`) read on `glace` too; `glace` |
 | atmosphere thickness | `atmosphere_epaisseur` (new, [0, 1], default 0.5 = today's) | width of the limb halo, `halo` stays its strength; every planet kind with a `halo` |
