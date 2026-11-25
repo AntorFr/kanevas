@@ -97,8 +97,8 @@ export function OngletElements({ systemeId, types, fiches, suite, peutEcrire }: 
             ))}
           </Champ>
           <div className="actions">
-            <Bouton variante="principal" type="submit" ecrit disabled={enCours}>Créer l’élément</Bouton>
             <Bouton type="button" onClick={() => setOuvert(false)}>Annuler</Bouton>
+            <Bouton variante="principal" type="submit" ecrit disabled={enCours}>Créer l’élément</Bouton>
           </div>
         </form>
       )}
