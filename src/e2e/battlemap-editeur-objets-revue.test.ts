@@ -214,8 +214,8 @@ describe('E-28 objets, calques, propriétés', { skip: skipBrowser }, () => {
     const larg = antor.getByLabel(/Largeur/);
     await larg.fill('32');
     await larg.press('Enter');
-    await antor.getByLabel(/Largeur/).and(antor.locator('input[value="32"]')).waitFor();
-    assert.equal((await lire(cid)).document.largeur, 32);
+    // wait for the written effect (read through the door), never for the typed value
+    await enregistre(cid, (d) => d.largeur === 32);
     await larg.fill('abc');
     await larg.press('Enter');
     await antor.getByText('Entrez un nombre entier de cases.').waitFor();
