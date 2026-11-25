@@ -955,7 +955,7 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | `brume` | `brume` (existing, colour `#rrggbb`, `null` clears) | direct: the haze of a nebula and the atmosphere veil of a world take this colour |
 | `graine` | `graine` | **always sent**, one per body (`graine_de(id)`): two bodies never share a picture |
 | `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | accepted key (the engine reads it, `valider_aspect` did not): object `{interieur [1.1, 2.5], exterieur, inclinaison [0.12, 1.2], angle, opacite [0, 1], couleur, couleur2}` each optional and bounded as the engine's own clamps; absent means **no ring** (the engine's random ring at 28 % goes) |
-| `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124) | new keys of the same names | `kanevas-carte-rendu-nuit`: added to the core with a bound and a test of the picture |
+| `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124) | new keys of the same names | `kanevas-carte-rendu-nuit`: drawn by the core, with a bound and a test of the picture (« The night side » below) |
 | `couleur_nuages`, `opacite_nuages` | `couleur_nuages` (colour, `null` clears), `opacite_nuages` ([0, 1], default 1) | direct: the tint of the cloud layer (default: the white of today) and the factor of its opacity; drawn on `tellurique`, and on `verrouillee` when `nuages` is above 0 (a locked world draws no cloud layer without one of these keys or `etirement`) |
 | `terre_seche` | `terre_seche` ([0, 1], default 0) | share of the land drawn dry (the palette's arid tone mixed in, the sea untouched); `tellurique`, `verrouillee` |
 | `etirement` | `etirement` ([0.25, 4], default 1) | stretch of the clouds along the parallels (1 = today's shape, 4 = long streaks); `tellurique`, `verrouillee`, `gazeuse` |
@@ -989,8 +989,8 @@ reference vocabulary into core keys follows the table below and is **the contrac
 
 | Key | Bound, default | Drawing |
 |---|---|---|
-| `villes` (cities, B-124) | [0, 1], default 0 | points of warm light on the **land** of the night side (never on the sea, never on the day side), as many and as bright as the value; their places come from the seed, so a body keeps its cities from one drawing to the next |
-| `lueur` (glow, B-124) | [0, 1], default 0 | a cold, soft glow (bioluminescence) over the night side, land and shallows alike, in veins that follow the relief; the value is its coverage and its brightness |
+| `villes` (cities, B-124) | [0, 1], default 0 | points of warm light on the **land** of the night side (never on the sea, never on the day side; a locked world has no sea, so all of its surface is land), as many and as bright as the value; their places come from the seed, so a body keeps its cities from one drawing to the next |
+| `lueur` (glow, B-124) | [0, 1], default 0 | a cold, soft glow (bioluminescence) over the night side, land and shallows alike (all of a locked world), in veins that follow the relief; the value is its coverage and its brightness |
 | `force_lueur` | [0, 2], default 1 | the strength of the two lights above (cities and glow) together: 0 draws neither, 1 the values as given, 2 twice as bright (clamped to white); alone, with neither `villes` nor `lueur`, it draws nothing |
 
 The colours are the core's (a warm yellow for the cities, a blue-green for the glow), not keys: no colour setting is added (out of the slice). The night side is the part of the disc the star does not light; the lights fade in over the terminator's band and the ring's shadow, and never touch a fully lit pixel, whose bytes are those of a body without the keys. A neutral value (`villes` 0 and `lueur` 0, whatever `force_lueur`; or absent keys) gives the bytes of a body without the keys. The three keys are listed in `NOUVELLES` (`-aspects-reliefs`, AD-aspects-reliefs-1) and so never land under `non_rendu`; `VERSION_RENDU` does not move (AD-nuit-1).
