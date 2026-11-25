@@ -110,8 +110,9 @@ export function FormSysteme({ base, mode, q, r, brouillon, version, cle, nbRoute
         <fieldset disabled={e.enCours} className="gx-gele">
           <Champ etiquette="Nom" value={v.nom} erreur={erreurNomMsg ?? champEchec('nom')} maxLength={200}
             onChange={(ev: { target: { value: string } }) => setV({ ...v, nom: ev.target.value })} />
-          <fieldset className="gx-etoile">
-            <legend>Étoile</legend>
+          <div className="gx-etoile" role="group" aria-labelledby="gx-etoile-titre">
+            <span className="gx-etoile-titre" id="gx-etoile-titre">Étoile</span>
+            <ApercuEtoile taille={v.taille} couleur={etoile.fond} taillePx={40} />
             <div className="gx-etoile-champs">
               <div className="champ">
                 <label className="lib-champ" htmlFor="gx-classe">Classe</label>
@@ -128,8 +129,7 @@ export function FormSysteme({ base, mode, q, r, brouillon, version, cle, nbRoute
               <ChampCouleur facultatif etiquette="Couleur" valeur={v.couleur} erreur={champEchec('couleur')}
                 onChange={(couleur) => setV({ ...v, couleur })} />
             </div>
-            <ApercuEtoile taille={v.taille} couleur={etoile.fond} taillePx={40} />
-          </fieldset>
+          </div>
           <Champ zone etiquette="Notes" value={v.notes}
             erreur={[...v.notes].length > 2000 ? '2 000 caractères au plus.' : champEchec('notes')}
             onChange={(ev: { target: { value: string } }) => setV({ ...v, notes: ev.target.value })} />
