@@ -22,6 +22,8 @@ describe('E-21 : fidélité des formulaires à la maquette', { skip: skipBrowser
     return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
   };
   const toucher = async (page: Any, q: number, r: number) => {
+    // the taller « Étoile » form can leave the page scrolled past the map once « Déplacer » has closed it
+    await page.locator('svg.gx-svg').scrollIntoViewIfNeeded();
     const p = await centre(page, 'Port-Sel');
     const v = await centre(page, 'Vael');
     const s = (v.x - p.x) / (7 * R3);
@@ -53,30 +55,15 @@ describe('E-21 : fidélité des formulaires à la maquette', { skip: skipBrowser
     const form = page.getByRole('region', { name: 'Nouveau système' });
     await form.waitFor();
 
-    const taille = form.getByRole('radiogroup', { name: 'Taille' });
-    const noms = await taille.getByRole('radio').allTextContents();
-    assert.deepEqual(noms, ['Petite', 'Moyenne', 'Grande']);
-    assert.equal(await form.locator('select').count(), 0, 'plus de liste déroulante');
-    assert.equal(await taille.getByRole('radio', { name: 'Moyenne' }).getAttribute('aria-checked'), 'true');
-    await taille.getByRole('radio', { name: 'Grande' }).click();
-    assert.equal(await taille.getByRole('radio', { name: 'Grande' }).getAttribute('aria-checked'), 'true');
-    assert.equal(await taille.getByRole('radio', { name: 'Moyenne' }).getAttribute('aria-checked'), 'false');
-    // single tab stop + arrow keys move the choice
-    assert.deepEqual(await taille.getByRole('radio').evaluateAll((els: Element[]) => els.map((e) => (e as HTMLElement).tabIndex)), [-1, -1, 0]);
-    await taille.getByRole('radio', { name: 'Grande' }).focus();
-    await page.keyboard.press('ArrowLeft');
-    assert.equal(await taille.getByRole('radio', { name: 'Moyenne' }).getAttribute('aria-checked'), 'true');
-    await page.keyboard.press('ArrowLeft');
-    assert.equal(await taille.getByRole('radio', { name: 'Petite' }).getAttribute('aria-checked'), 'true');
-    await page.keyboard.press('ArrowLeft');
-    assert.equal(await taille.getByRole('radio', { name: 'Grande' }).getAttribute('aria-checked'), 'true');
-    await page.keyboard.press('ArrowRight');
-    assert.equal(await taille.getByRole('radio', { name: 'Petite' }).getAttribute('aria-checked'), 'true');
-    await taille.getByRole('radio', { name: 'Grande' }).click();
-
-    const tops = await form.locator('.gx-couleurs label').evaluateAll((els: Element[]) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
-    assert.equal(tops.length, 6);
-    assert.equal(new Set(tops).size, 1, 'les six pastilles sur une seule ligne');
+    // E-21 (kanevas-carte-rendu-galaxie-systemes-ecran): the three buttons and the swatches gave way to the « Étoile » group
+    const groupe = form.getByRole('group', { name: 'Étoile' });
+    assert.equal(await groupe.getByLabel('Classe').evaluate((e: Element) => e.tagName), 'SELECT');
+    assert.equal(await groupe.getByLabel('Classe').locator('option').first().textContent(), 'Tirée de la clé');
+    assert.equal(await form.getByRole('radiogroup', { name: 'Taille' }).count(), 0, 'plus de trois boutons');
+    const curseur = groupe.locator('input[type=range]');
+    assert.equal(await curseur.inputValue(), '0.5', 'taille moyenne par défaut');
+    await curseur.fill('0.8');
+    assert.equal(await form.locator('.gx-couleurs').count(), 0, 'plus de pastilles');
     await page.screenshot({ path: `${SHOTS}/forme-nouveau.png`, fullPage: true });
 
     // « Déplacer » : le brouillon est gardé et le nouvel hexagone pris
@@ -86,7 +73,7 @@ describe('E-21 : fidélité des formulaires à la maquette', { skip: skipBrowser
     await toucher(page, 2, 0);
     await form.getByText('Hexagone (2, 0)').waitFor();
     assert.equal(await form.getByLabel('Nom', { exact: true }).inputValue(), 'Brouillon');
-    assert.equal(await taille.getByRole('radio', { name: 'Grande' }).getAttribute('aria-checked'), 'true');
+    assert.equal(await curseur.inputValue(), '0.8', 'le curseur garde sa valeur');
     await form.getByRole('button', { name: 'Placer', exact: true }).click();
     await systeme(page, 'Brouillon').waitFor();
     await c.ctx.close();
@@ -121,11 +108,10 @@ describe('E-21 : fidélité des formulaires à la maquette', { skip: skipBrowser
     await form.getByText(/Hexagone \(/).waitFor();
 
     await page.setViewportSize({ width: 390, height: 844 });
-    const tops = await form.locator('.gx-couleurs label').evaluateAll((els: Element[]) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
-    assert.equal(new Set(tops).size, 1, 'une ligne à 390 px');
-    const boite = await form.locator('.gx-couleurs').boundingBox();
-    const dernier = await form.locator('.gx-couleurs label').last().boundingBox();
-    assert.ok(dernier.x + dernier.width <= boite.x + boite.width + 1, 'rien ne déborde');
+    const g = form.getByRole('group', { name: 'Étoile' });
+    const [classe, curseur, couleur] = [await g.getByLabel('Classe').boundingBox(), await g.locator('input[type=range]').boundingBox(), await g.getByLabel('Couleur').boundingBox()];
+    assert.ok(curseur.y >= classe.y + classe.height - 1 && couleur.y >= curseur.y + curseur.height - 1, 'les trois champs sont empilés à 390 px');
+    assert.ok(classe.x + classe.width <= 391 && couleur.x + couleur.width <= 391, 'rien ne déborde');
     await page.screenshot({ path: `${SHOTS}/forme-390.png`, fullPage: true });
     await c.ctx.close();
   });

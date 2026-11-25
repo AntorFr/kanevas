@@ -46,6 +46,8 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     return { x: p.x + s * R3 * (q + r / 2), y: p.y + s * 1.5 * r };
   };
   const toucher = async (page: Any, q: number, r: number) => {
+    // the star group makes the form taller: once « Déplacer » has closed it the page can stay scrolled past the map
+    await page.locator('svg.gx-svg').scrollIntoViewIfNeeded();
     const p = await hex(page, q, r);
     await page.mouse.click(p.x, p.y);
   };
