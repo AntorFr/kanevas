@@ -565,3 +565,4 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/carte-rattache-texte-ecran.test.ts` | `E-11 : « Modifier » et « Vider » sont dans l’en-tête du bloc Texte, à droite du titre, avec leur icône` | affichage | — | gardé |
 | `src/e2e/carte-rattache-texte-ecran.test.ts` | `E-9 : le bloc « Cartes » est un libellé avec icône ; à 360 px le titre d’une carte reste lisible, le type et la pastille passent à la ligne` | affichage | — | gardé |
 | `src/e2e/carte-systeme-aspects-reliefs-ecran.test.ts` | `E-23 un corps à nuages colorés est dessiné avec sa clé > le sprite du corps change avec couleur_nuages, et la fenêtre montre la même teinte que la carte` | affichage | — | gardé |
+| `src/e2e/carte-systeme-nuit-ecran.test.ts` | `E-23 un monde à lueur montre une face nocturne lumineuse > la face nocturne du sprite s’éclaire avec lueur, et la fenêtre montre la même teinte que la carte` | affichage | — | gardé |
