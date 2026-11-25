@@ -181,6 +181,7 @@
 .cs-transition { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 6; stroke-linecap: round; }
 .cs-corps { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; border: 0; padding: 0; background: transparent; cursor: pointer; }
 .cs-corps:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* E-23 jump points: the halo fills the transition disc (gradient of --accent), the arrows take the route family colour. */
 .cs-halo { stroke: none; }
 .cs-sortie { position: absolute; transform: translate(-50%, -50%); width: 24px; height: 24px; padding: 0; border: 0; background: transparent; cursor: pointer;
   display: grid; place-items: center; color: var(--route-autre); }
