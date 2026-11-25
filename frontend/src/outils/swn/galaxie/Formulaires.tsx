@@ -93,7 +93,8 @@ export function FormSysteme({ base, mode, q, r, brouillon, version, cle, nbRoute
     if (m) return;
     if ([...v.notes].length > 2000) return;
     if (v.couleur !== '' && !couleurValide(v.couleur)) return;
-    const corps = { nom: v.nom.trim(), taille: v.taille, classe: v.classe === '' ? null : v.classe, couleur: v.couleur === '' ? null : v.couleur.toLowerCase(), notes: v.notes, secret: v.secret, q, r };
+    // The server reads the JSON integer 1 as the former « small » size (AD-galaxie-systemes-1): never send it.
+    const corps = { nom: v.nom.trim(), taille: Math.min(v.taille, 0.999), classe: v.classe === '' ? null : v.classe, couleur: v.couleur === '' ? null : v.couleur.toLowerCase(), notes: v.notes, secret: v.secret, q, r };
     const res = await e.envoyer(() => mode === 'modifier'
       ? appeler<{ cle: string }>('PATCH', `${base}/systemes/${encodeURIComponent(cle!)}`, { ...corps, version })
       : appeler<{ cle: string }>('POST', `${base}/systemes`, corps));
