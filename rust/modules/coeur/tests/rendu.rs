@@ -172,9 +172,9 @@ fn noir() -> Vec<&'static str> {
 }
 
 #[test]
-fn version_du_rendu_vaut_2() {
-    assert_eq!(VERSION_RENDU, 2);
-    assert_eq!(catalogue_defaut()["version"], 2);
+fn version_du_rendu_vaut_3() {
+    assert_eq!(VERSION_RENDU, 3);
+    assert_eq!(catalogue_defaut()["version"], 3);
 }
 
 /// Panne : `crateres_nombre` n'est plus lu (400 et 20 donnent la même densité) ou lu à l'envers.
