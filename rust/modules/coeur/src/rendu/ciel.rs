@@ -20,7 +20,12 @@ pub fn comete(c: &Ctx) -> Vec<Px> {
     let longueur = borne(c.f("longueur", 0.55), 0.1, 1.0);
     let ouv = borne(c.f("ouverture", 0.25), 0.02, 0.8);
     let tete = borne(c.f("tete", 1.2), 0.3, 3.0);
-    let courb = borne(c.f("courbure", 0.45), 0.0, 1.0);
+    let courb = borne(c.f("courbure", 0.45), -1.0, 1.0);
+    // The sign bends the tail to the other side: the noise reads the side-corrected coordinate, so −c is +c mirrored.
+    let signe = if courb < 0.0 { -1.0f32 } else { 1.0 };
+    // Head-on: the tails are foreshortened toward the viewer and spread into a halo round the nucleus.
+    let face = c.asp.get("vue").and_then(serde_json::Value::as_str) == Some("face");
+    let (raccourci, elargi) = if face { (0.3, 2.4) } else { (1.0, 1.0) };
     let fg = borne(c.f("force_gaz", 0.8), 0.0, 2.0);
     let fp = borne(c.f("force_poussiere", 0.7), 0.0, 2.0);
     let col_t = c.col("couleur", c.pal_i(0));
@@ -31,7 +36,7 @@ pub fn comete(c: &Ctx) -> Vec<Px> {
     let dir = norme([-sens * 0.8, 0.6, 0.0]);
     let angle_g = dir[1].atan2(dir[0]);
     let angle_p = angle_g + sens * -courb * 0.3;
-    let long = (0.3 + longueur) * cote * 0.95;
+    let long = (0.3 + longueur) * cote * 0.95 * raccourci;
     let rn = (cote * 0.022 * tete).max(1.2);
     let br = c.bruit;
     let mut sortie = vec![[0.0f32; 4]; n * n];
@@ -55,13 +60,13 @@ pub fn comete(c: &Ctx) -> Vec<Px> {
                 }
                 let u0 = -rx * ay + ry * ax;
                 let u = u0 - courbe * s * s / long_k * sens * -0.5;
-                let w = rn * 1.1 + large * s;
+                let w = (rn * 1.1 + large * s) * elargi;
                 let t = s / long_k;
                 let fond = (-(u / w).powi(2) * 1.6).exp() * (1.0 - t).powf(1.7);
                 let stries = if k == 1 {
-                    0.45 + 1.1 * br.fbm([s / (cote * 0.25) + 3.0, u / w * 1.6, 0.5], 3)
+                    0.45 + 1.1 * br.fbm([s / (cote * 0.25) + 3.0, signe * u / w * 1.6, 0.5], 3)
                 } else {
-                    0.65 + 0.7 * br.fbm([s / (cote * 0.4), u / w * 0.9, 9.5], 3)
+                    0.65 + 0.7 * br.fbm([s / (cote * 0.4), signe * u / w * 0.9, 9.5], 3)
                 };
                 let i = fond * stries * force * 1.15;
                 px = dessus(px, lueur(col, i));
