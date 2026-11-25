@@ -50,6 +50,13 @@ export function maillons(pathname: string, nomUnivers: string | undefined, titre
       return [{ libelle: 'Instance' }, { libelle: 'Administration' }];
     }
     if (pathname === '/systemes') return [{ libelle: 'Systèmes de jeu', icone: 'systemes' }];
+    // E-9 of a system's space: « <system> › <element> », the system's crumb leading back to its page.
+    const espace = matchPath('/systemes/:sid/fiches/:fid', pathname);
+    if (espace) {
+      const liste: Maillon[] = [{ libelle: section ?? 'Système', vers: `/systemes/${espace.params.sid}`, icone: 'systemes-court' }];
+      if (titre) liste.push({ libelle: titre });
+      return liste;
+    }
     if (matchPath('/systemes/:sid', pathname)) {
       const liste: Maillon[] = [{ libelle: 'Systèmes de jeu', vers: '/systemes', icone: 'systemes', long: true }];
       if (titre) liste.push({ libelle: titre, icone: 'systemes-court' });

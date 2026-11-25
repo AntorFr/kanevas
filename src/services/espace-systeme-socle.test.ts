@@ -29,7 +29,7 @@ const code = (fn: () => unknown) => {
   return 'aucune';
 };
 
-test('montée 0051 : chaque système (rattaché ou non) reçoit son espace, gabarits supprimée, sans membre', () => {
+test('montée 0052 : chaque système (rattaché ou non) reçoit son espace, gabarits supprimée, sans membre', () => {
   const db = openDb(':memory:');
   migrate(db, dossierJusqua(50));
   const d = '2026-10-01T00:00:00.000Z';

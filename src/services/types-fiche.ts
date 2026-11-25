@@ -300,6 +300,11 @@ export function reglerTypeUnivers(
   return typeDeLUnivers(db, compteId, universId, type);
 }
 
+/** The words of the settable types, for a screen outside any universe (E-15 names the types of a system with them). */
+export function motsDesTypesReglables(): { type: TypeFiche; singulier: string; pluriel: string; nouveau: string; icone: string }[] {
+  return TYPES.filter((t) => t.reglable).map((t) => ({ type: t.type, singulier: t.singulier, pluriel: t.pluriel, nouveau: t.nouveau, icone: t.icone }));
+}
+
 /** Types of a system as the system sets them (default enabled), reglable types only. */
 export function typesDuSysteme(db: Db, systemeId: number): { type: TypeFiche; active: boolean }[] {
   const lignes = new Map(

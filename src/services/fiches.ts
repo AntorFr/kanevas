@@ -718,7 +718,7 @@ export function lireFiche(
 
 /** The system whose hidden space is this universe row (AD-151), `null` for a real universe. */
 function systemeDeEspace(db: Db, universId: number): { id: number; nom: string } | null {
-  // `SELECT *`: a base held short of 0051 (the migration tests seed an old schema) has no space column.
+  // `SELECT *`: a base held short of 0052 (the migration tests seed an old schema) has no space column.
   const u = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as { espace_systeme_id?: number | null } | undefined;
   if (u?.espace_systeme_id == null) return null;
   return (db.prepare('SELECT id, nom FROM systemes_jeu WHERE id = ?').get(u.espace_systeme_id) as { id: number; nom: string } | undefined) ?? null;

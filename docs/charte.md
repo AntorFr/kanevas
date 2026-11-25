@@ -376,8 +376,8 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
 - C: `role="status"`, not dismissible; exact text in `docs/ecrans.md`. Lost connection: every
   write action is disabled (`aria-disabled`, 45 %).
 
-**System element banner** (`BandeauElementSysteme`, `frontend/src/ui/`, E-9, `kanevas-systemes-jeu`; guardian verdict).
-- V: a strip under the sheet header, before the first section, in the page and not sticky (the `Banner` above is an application state, full width under the top bar). `--surface-2` background, `--bord` bottom border, `--texte-2` text 13 px, `dices` icon 14 px, no tint of meaning: the word « lecture seule » carries the state. The system's name is a link to E-15 for who reads it. An actions zone on the right stays empty in `elements`; `surcharge` puts « Personnaliser pour cet univers » (small neutral `Button`) and the « Personnalisé » pill (`accent`) there, in components of its own.
+**System element banner** (`BandeauElement`, `frontend/src/ecrans/fiche/bandeau-element.tsx`, E-9, `kanevas-systemes-jeu`; guardian verdict).
+- V: a strip under the sheet header, before the first section, in the page and not sticky (the `Banner` above is an application state, full width under the top bar). `--accent-fond` background, `--accent-texte` text 13 px, `--bord` border on four sides, `Eye` icon 14 px (`lucide-react`), no tint of meaning: the word « lecture seule » carries the state. The system's name is a link to E-15 for who reads it. An actions zone on the right stays empty in `elements`; `surcharge` puts « Personnaliser pour cet univers » (small neutral `Button`) and the « Personnalisé » pill (`accent`) there, in components of its own.
 - C: `role="status"`, text « Élément de <système> — lecture seule », not dismissible; actions follow the text in tab order; under 760 px the strip stacks under the text; no animation. Absent in the system's own space for a GM of the system.
 
 **Assistant panel** (E-12, `kanevas-assistant-membre`).
