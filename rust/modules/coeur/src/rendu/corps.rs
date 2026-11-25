@@ -94,6 +94,13 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
     let geysers = borne(c.f("geysers", 0.0), 0.0, 1.0);
     let cratere_glace = borne(c.f("cratere_glace", 0.0), 0.0, 1.0);
     let couleur_fissures = c.asp.get("couleur_fissures").and_then(serde_json::Value::as_str).and_then(hex);
+    // The lights of the night side (AD-nuit-1): neutral at `villes` 0 and `lueur` 0, whatever `force_lueur`.
+    let villes = borne(c.f("villes", 0.0), 0.0, 1.0);
+    let lueur_k = borne(c.f("lueur", 0.0), 0.0, 1.0);
+    let force_lueur = borne(c.f("force_lueur", 1.0), 0.0, 2.0);
+    let lumieres = matches!(kind, Kind::Tellurique | Kind::Verrouillee) && force_lueur > 0.0 && (villes > 0.0 || lueur_k > 0.0);
+    // Sea level of a telluric world (a locked one has no sea: all of it is land).
+    let niveau_mer = if kind == Kind::Tellurique { (0.3 + 0.4 * mer) * lisse(0.0, 0.05, mer) } else { f32::NEG_INFINITY };
     let aride = hex(ARIDE).unwrap_or([0.6; 3]);
     // A locked world draws no clouds unless the aspect asks for a look of them.
     let nuages_verrouillee = nuages > 0.0 && (couleur_nuages.is_some() || opacite_nuages < 1.0 || etirement != 1.0);
@@ -449,6 +456,32 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                     col = ajoute(col, mul(lcol, sp * 0.8));
                 }
                 col = ajoute(col, s.emis);
+                // Lights of the night side: an emission weighted by the night amount, nothing on a lit pixel.
+                let nuit_lum = 1.0 - eclair;
+                if lumieres && nuit_lum > 0.0 {
+                    let mut lum = [0.0f32; 3];
+                    if villes > 0.0 {
+                        // Hot points on the land, as many and as bright as `villes`; the places come from the seed's noise.
+                        let terre = lisse(niveau_mer, niveau_mer + 0.02, h);
+                        if terre > 0.0 {
+                            let (f1, _, id) = br.cellules([p[0] * 16.0 - 13.0, p[1] * 16.0 + 7.0, p[2] * 16.0 + 4.0]);
+                            if alea(hache(id ^ 0xc171)) < villes * 0.5 {
+                                lum = ajoute(lum, mul([1.0, 0.78, 0.35], 0.9 * villes * lisse(0.18, 0.02, f1) * terre));
+                            }
+                        }
+                    }
+                    if lueur_k > 0.0 {
+                        // A cold veil on land and shallows (never the deep sea), in veins that follow the relief.
+                        let bas = lisse(niveau_mer - 0.25, niveau_mer - 0.15, h);
+                        if bas > 0.0 {
+                            let crete = br.crete([p[0] * 2.8 + 9.0, p[1] * 2.8 - 5.0, p[2] * 2.8 + 2.0], 4);
+                            let seuil = lerp(0.9, 0.5, lueur_k);
+                            let veine = lisse(seuil, seuil + 0.1, crete) * (0.5 + 0.5 * lisse(niveau_mer - 0.1, niveau_mer + 0.4, h));
+                            lum = ajoute(lum, mul([0.2, 0.85, 0.75], 0.55 * lueur_k * veine * bas));
+                        }
+                    }
+                    col = ajoute(col, mul(lum, force_lueur * nuit_lum));
+                }
                 // Lightning: small flashes inside the clouds, on the night side only.
                 if eclairs > 0.0 && s.nuage > 0.3 {
                     let nuit = 1.0 - lisse(0.0, 0.15, dif);
