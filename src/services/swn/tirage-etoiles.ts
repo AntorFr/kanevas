@@ -73,8 +73,14 @@ export function tirerEtoileComplete(graine: string, bx: number, by: number, entr
   return JSON.parse(json) as EtoileTiree | null;
 }
 
-/** The star drawn in a block, or none: `[q, r]` positions (zero or one). */
-export function tirerEtoiles(graine: string, bx: number, by: number, entrees: EntreesBloc): [number, number][] {
+/** Size of a drawn star (the core's `t`, 0.65 to 2.1) on the scale of a defined system, 0 to 1 (`docs/donnees.md`). */
+export const tailleSysteme = (t: number): number => Math.min(1, Math.max(0, (t - 0.65) / 1.45));
+
+/** A drawn star as the map carries it: `[q, r, taille, lettre]`, `taille` on the scale of a defined system (AD-galaxie-systemes-2). */
+export type EtoileGeneree = [number, number, number, string];
+
+/** The star drawn in a block, or none (zero or one). */
+export function tirerEtoiles(graine: string, bx: number, by: number, entrees: EntreesBloc): EtoileGeneree[] {
   const etoile = tirerEtoileComplete(graine, bx, by, entrees);
-  return etoile ? [[etoile.q, etoile.r]] : [];
+  return etoile ? [[etoile.q, etoile.r, tailleSysteme(etoile.taille), etoile.lettre]] : [];
 }

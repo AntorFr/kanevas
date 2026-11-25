@@ -23,10 +23,10 @@ const COULEURS: [string, string | null][] = [
   ['accent', '#8b9bf0'], ['table', '#3fc79a'], ['ambre', '#f2a33c'], ['danger', '#ec7b6f'], ['clair', '#ebecf0'], ['neutre', null],
 ];
 
-/** A database at 0051 with one system per table row (sizes then colours) plus children hung on the first one. */
-function base51(): Db {
+/** A database at 0050 with one system per table row (sizes then colours) plus children hung on the first one. */
+function base50(): Db {
   const db = openDb(':memory:');
-  migrate(db, dossierJusqua(51));
+  migrate(db, dossierJusqua(50));
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'antor', ?)").run(D);
   db.prepare("INSERT INTO univers (id, nom, cree_le, cle) VALUES (1, 'U', ?, 'univers-un')").run(D);
   db.prepare("INSERT INTO swn_galaxies (id, univers_id, titre, visible, graine, densite_defaut, version) VALUES (1, 1, 'G', 1, 'abc', 0.2, 1)").run();
@@ -41,7 +41,7 @@ function base51(): Db {
 }
 
 test('0052 : chaque taille 1 à 5 prend la valeur de sa ligne de table', () => {
-  const db = base51();
+  const db = base50();
   migrate(db);
   for (const [t, v] of TAILLES) {
     const l = db.prepare('SELECT taille FROM swn_systemes WHERE cle = ?').get(`t${t}`) as { taille: number };
@@ -50,7 +50,7 @@ test('0052 : chaque taille 1 à 5 prend la valeur de sa ligne de table', () => {
 });
 
 test('0052 : chacun des cinq noms de couleur prend son #rrggbb, neutre devient null', () => {
-  const db = base51();
+  const db = base50();
   migrate(db);
   for (const [c, v] of COULEURS) {
     const l = db.prepare('SELECT couleur FROM swn_systemes WHERE cle = ?').get(`c-${c}`) as { couleur: string | null };
@@ -60,7 +60,7 @@ test('0052 : chacun des cinq noms de couleur prend son #rrggbb, neutre devient n
 });
 
 test('0052 : classe et voile nuls, les autres colonnes et les ids sont conservés', () => {
-  const db = base51();
+  const db = base50();
   const avant = db.prepare('SELECT id, galaxie_id, univers_id, cle, nom, q, r, notes, secret, promu, version, version_importee, transition FROM swn_systemes ORDER BY id').all();
   migrate(db);
   const apres = db.prepare('SELECT id, galaxie_id, univers_id, cle, nom, q, r, notes, secret, promu, version, version_importee, transition FROM swn_systemes ORDER BY id').all();
@@ -71,7 +71,7 @@ test('0052 : classe et voile nuls, les autres colonnes et les ids sont conservé
 });
 
 test('0052 : routes, astres, formations et éléments suivent leur système, foreign_key_check vide, cascades vivantes', () => {
-  const db = base51();
+  const db = base50();
   db.prepare('INSERT INTO swn_routes (id, galaxie_id, univers_id, depuis_id, vers_id, publique, longueur) VALUES (1, 1, 1, 1, 2, 1, 3)').run();
   db.prepare('INSERT INTO swn_routes (id, galaxie_id, univers_id, depuis_id, vers_id, publique, longueur) VALUES (2, 1, 1, 3, 1, 0, 4)').run();
   db.prepare(`INSERT INTO swn_astres (id, systeme_id, cle, genre, type, heure, orbite, taille) VALUES (1, 1, 'etoile', 'etoile', 'G', 0, 0, 1)`).run();
@@ -82,7 +82,7 @@ test('0052 : routes, astres, formations et éléments suivent leur système, for
   const compte = (t: string) => (db.prepare(`SELECT count(*) AS n FROM ${t}`).get() as { n: number }).n;
   const avant = ['swn_routes', 'swn_astres', 'swn_formations', 'swn_elements'].map(compte);
 
-  assert.deepEqual(migrate(db), [52]);
+  assert.deepEqual(migrate(db), [51, 52]);
   assert.deepEqual(['swn_routes', 'swn_astres', 'swn_formations', 'swn_elements'].map(compte), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   assert.deepEqual(db.prepare('SELECT systeme_id FROM swn_astres ORDER BY id').all(), [{ systeme_id: 1 }, { systeme_id: 1 }]);
@@ -95,7 +95,7 @@ test('0052 : routes, astres, formations et éléments suivent leur système, for
 });
 
 test('0052 : la table refuse désormais une taille hors [0, 1] et une couleur qui n\'est pas #rrggbb, accepte classe et voile', () => {
-  const db = base51();
+  const db = base50();
   migrate(db);
   const ins = (cle: string, q: number, taille: unknown, couleur: unknown, classe: unknown = null, voile: unknown = null) =>
     db.prepare(`INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, classe, voile) VALUES (1, 1, ?, 'X', ?, 99, ?, ?, ?, ?)`)
@@ -113,7 +113,7 @@ test('0052 : la table refuse désormais une taille hors [0, 1] et une couleur qu
 });
 
 test('0052 : l\'index du bloc existe toujours, la clé et la case (galaxie, q, r) restent uniques', () => {
-  const db = base51();
+  const db = base50();
   migrate(db);
   const idx = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'index' AND name = 'idx_swn_systemes_bloc'").get() as { sql: string };
   assert.match(idx.sql, /swn_systemes \(univers_id, q, r\)/);
@@ -125,7 +125,7 @@ test('0052 : l\'index du bloc existe toujours, la clé et la case (galaxie, q, r
 });
 
 test('0052 : affichage_defaut vaut 1 sur les zones existantes, 0 et 1 seuls permis', () => {
-  const db = base51();
+  const db = base50();
   db.prepare("INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, secret) VALUES (1, 1, 'z', 'Z', '[[0,0],[1,0],[0,1]]', 'accent', 0)").run();
   db.prepare("INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, secret) VALUES (1, 1, 'z2', 'Z2', '[[0,0],[1,0],[0,1]]', 'neutre', 1)").run();
   migrate(db);

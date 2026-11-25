@@ -7,7 +7,8 @@ export const COULEURS = [
 ] as const;
 
 export const TAILLES_NOMS = [{ nom: 'petite', libelle: 'Petite' }, { nom: 'moyenne', libelle: 'Moyenne' }, { nom: 'grande', libelle: 'Grande' }] as const;
-export const tailleNom = (n: number): string => (n === 1 ? 'petite' : n === 3 ? 'grande' : 'moyenne');
+/** The size name nearest to a continuous size (the names are 0.15, 0.45, 0.75); provisional until the dialogue takes the number. */
+export const tailleNom = (n: number): string => (n < 0.3 ? 'petite' : n < 0.6 ? 'moyenne' : 'grande');
 
 /** A negative coordinate with the typographic minus: « Hexagone (4, −2) ». */
 export const entierAffiche = (n: number) => (n < 0 ? `−${Math.abs(n)}` : String(n));
@@ -51,7 +52,7 @@ export function erreurNom(nom: string): string | undefined {
 
 /** The seed of the stub used older colour names; they map onto the six of the server. */
 const ANCIENNES: Record<string, string> = { bleu: 'accent', vert: 'table', rouge: 'danger' };
-export const couleurServeur = (c: string): string => (COULEURS.some((x) => x.nom === c) ? c : ANCIENNES[c] ?? 'accent');
+export const couleurServeur = (c: string | null): string => (c !== null && COULEURS.some((x) => x.nom === c) ? c : (c !== null && ANCIENNES[c]) || 'accent');
 
 // ---- Writes of the interior of a system (AD-edition-5): each call answers the system as the read gives it.
 import { appeler } from '../../../api';

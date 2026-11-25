@@ -13,7 +13,7 @@ import { PanneauRoute, PanneauZone, RetraitSysteme } from './PanneauxEcriture';
 import Reglages from './Reglages';
 import Systeme from './Systeme';
 import { PanneauSystemeVue, Recherche, Trajet, type EtatPanneau } from './Panneaux';
-import { CONFLIT, couleurServeur, tailleNom } from './ecriture';
+import { CONFLIT, couleurServeur } from './ecriture';
 import type { Geste, PanneauSysteme, Reference, Resultat, Selection, SystemeCarte, Touche, VueGalaxie, VueTrajet } from './types';
 import './galaxie.css';
 
@@ -199,7 +199,7 @@ function CarteGalaxie({ universId, cible, prealable, suffixeMode }: PropsOutil) 
     setGeste(null);
     setFormulaire({
       k: 'systeme', mode: 'modifier', q: s.q, r: s.r, cle, version: s.version, nbRoutes: s.routes.length,
-      brouillon: { nom: s.nom, taille: tailleNom(s.taille), couleur: couleurServeur(s.couleur), notes: s.notes, secret: s.secret === true },
+      brouillon: { nom: s.nom, taille: s.taille, classe: s.classe ?? '', couleur: s.couleur ?? '', notes: s.notes, secret: s.secret === true },
       n: Date.now(),
     });
   }, []);

@@ -3,6 +3,7 @@
 // `BEGIN IMMEDIATE` transaction: guard, anchoring of a drawn system, gesture, `apresEcriture`. A refusal rolls
 // everything back, anchoring included. The core decides what a body or a zone may carry (AD-140): this file only
 // converts the three coordinate systems to `(orbite, heure)` and validates through it.
+import { tailleSysteme } from './tirage-etoiles.js';
 import type { Db } from '../../db/db.js';
 import { cleDe } from '../../outils/swn/regles/cle.js';
 import { chargerModule } from '../../wasm/charger.js';
@@ -187,8 +188,6 @@ export interface JetonSysteme { versionSysteme?: unknown }
 const systemeDe = (db: Db, g: LigneGalaxie, q: number, r: number): LigneSysteme | undefined =>
   db.prepare('SELECT * FROM swn_systemes WHERE galaxie_id = ? AND q = ? AND r = ?').get(g.id, q, r) as LigneSysteme | undefined;
 
-/** Size of a drawn star (the core's `t`, 0.65 to 2.1) on the scale of a defined system, 0 to 1 (`docs/donnees.md`). */
-const tailleSysteme = (t: number): number => Math.min(1, Math.max(0, (t - 0.65) / 1.45));
 
 /**
  * Anchors the drawn system of `(q, r)`: the `swn_systemes` row (E-21's promotion, `placerSysteme`) and the drawn
