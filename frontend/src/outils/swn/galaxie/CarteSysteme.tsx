@@ -6,7 +6,8 @@ import { lire, useConnexionPerdue } from '../../../api';
 import { chargerModule } from '../../../wasm/charger';
 import { Alerte, Bouton, BoutonIcone, Case, useToasts } from '../../../ui';
 import { APPUI_LONG_MS, DELAI_FLECHES_MS, pasFleche } from '../../../ui/glisser';
-import { centresNuage, coteDemande, dimensionsCorps, disposer, grainsAnneau, orbitesAstres, placeApresPas, placeDepuisPoint, PORTEE_COURONNE, queuesComete, RAYON_MIN_PX, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
+import { centresNuage, coteDemande, ECART_FLECHE_PX, libelleDistance, pointsDeSaut, dimensionsCorps, disposer, grainsAnneau, orbitesAstres, placeApresPas, placeDepuisPoint, PORTEE_COURONNE, queuesComete, RAYON_MIN_PX, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
+import { typeDeRoute, type FamilleRoute } from './type-route';
 import { Sprites, dessineurDuCoeur } from './carte-sprites';
 import { chargerClasses, cleSprite, eclairages, type Eclairage } from './lumiere-corps';
 import { placerEtiquettes, type CorpsEtiquette, type EtiquettePlacee, type Obstacle } from './etiquettes';
@@ -22,6 +23,10 @@ export const ZOOM_MAX = 4;
 const PAS = 1.5;
 const POLICE = '12px';
 const HAUTEUR_ETIQUETTE = 15;
+/** A jump arrow's disc for the labels (it is 14 × 12 px) and the longest name a jump label carries. */
+const RAYON_FLECHE = 9;
+const NOM_SORTIE_MAX = 24;
+const coupeNom = (nom: string) => ([...nom].length > NOM_SORTIE_MAX ? `${[...nom].slice(0, NOM_SORTIE_MAX - 1).join('').trimEnd()}…` : nom);
 /** A body waiting for the server's answer is dimmed by opacity alone (charte, drag gesture). */
 const OPACITE_ENVOI = 0.4;
 /** A finger that moves this far (px) before the long press is over is panning the view. */
@@ -35,6 +40,8 @@ export interface CroquisCarte {
   sorties: { q: number; r: number; heure: number }[];
 }
 declare global { interface Window { __carteSysteme?: () => CroquisCarte } }
+
+interface SortieDessinee { q: number; r: number; x: number; y: number; cap: number; distance: number; nom: string; type: string; famille: FamilleRoute }
 
 type Etat = 'chargement' | 'pret' | 'indisponible';
 
@@ -195,7 +202,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   );
 
   const cibles = useMemo(() => {
-    if (!dispo) return { liste: [] as CorpsEtiquette[], sorties: [] as { q: number; r: number; x: number; y: number; nom: string }[] };
+    if (!dispo) return { liste: [] as CorpsEtiquette[], sorties: [] as SortieDessinee[] };
     const liste: CorpsEtiquette[] = dispo.corps.map((c) => {
       const [x, y] = ecran(c.x, c.y);
       return { cle: c.cle, genre: c.genre, nom: nomAstre(c.astre), x, y, rayon: dimDe(c.cle).rayon };
@@ -210,14 +217,16 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
       const visible = !sobre || m.cle === selectionElement;
       liste.push({ cle: `element:${m.cle}`, genre: 'element', nom: visible ? nomElement(m.element) : '', x: m.x, y: m.y, rayon: COTE_MARQUE / 2 });
     }
-    const ex = planRef.current && dispo.transition > 0
-      ? sorties.map((s) => {
-        const [wx, wy] = planRef.current!(dispo.transition, s.heure);
-        const [x, y] = ecran(wx, wy);
-        return { q: s.q, r: s.r, x, y, nom: s.nom && s.nom !== '' ? s.nom : `Système sans nom (${s.q}, ${s.r})` };
-      })
+    const [hx, hy] = ecran(0, 0);
+    const ex: SortieDessinee[] = dispo.transition > 0
+      ? pointsDeSaut(sorties, dispo.transition * echelle, ECART_FLECHE_PX).map((p) => ({
+        q: p.q, r: p.r, x: hx + p.x, y: hy + p.y, cap: p.cap, distance: p.distance,
+        nom: p.nom && p.nom !== '' ? p.nom : `Système sans nom (${p.q}, ${p.r})`,
+        type: (p.type_lien ?? '').trim(), famille: typeDeRoute(p.type_lien),
+      }))
       : [];
-    for (const e of ex) liste.push({ cle: `sortie:${e.q},${e.r}`, genre: 'comete', nom: e.nom, x: e.x, y: e.y, rayon: 7 });
+    if (dispo.transition > 0) liste.push({ cle: 'zone:transition', genre: 'zone', nom: 'Zone de transition', x: hx - dispo.transition * echelle * Math.SQRT1_2, y: hy - dispo.transition * echelle * Math.SQRT1_2, rayon: 0 });
+    for (const e of ex) liste.push({ cle: `sortie:${e.q},${e.r}`, genre: 'comete', nom: `${coupeNom(e.nom)} · ${libelleDistance(e.distance)}`, x: e.x, y: e.y, rayon: RAYON_FLECHE });
     return { liste, sorties: ex };
   }, [dispo, ecran, echelle, sorties, marques, taille.w, selectionElement]);
 
@@ -228,6 +237,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     if (!dispo || !p) return liste;
     const [cx, cy] = ecran(0, 0);
     if (dispo.transition > 0) liste.push({ type: 'anneau', x: cx, y: cy, rayon: dispo.transition * echelle });
+    for (const e of cibles.sorties) liste.push({ type: 'disque', x: e.x, y: e.y, rayon: RAYON_FLECHE });
     for (const c of dispo.corps) {
       const [x, y] = ecran(c.x, c.y);
       // A star's glow is drawn out to ~0.9 of its sprite's half-side: a label does not sit on it (an obstacle, never part of the radius).
@@ -244,7 +254,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
       }
     }
     return liste;
-  }, [dispo, ecran, echelle, heures, mesureur, plan, dims]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dispo, ecran, echelle, heures, mesureur, plan, dims, cibles.sorties]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const etiquettes = useMemo(
     () => (taille.w > 0 ? placerEtiquettes(cibles.liste, { largeur: taille.w, hauteur: taille.h, zoom: vue.zoom }, mesureur, obstacles) : []),
@@ -543,7 +553,18 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
                   </g>
                 );
               })}
-              {dispo.transition > 0 && <circle className="cs-transition" cx={ccx} cy={ccy} r={dispo.transition * echelle} />}
+              {dispo.transition > 0 && (
+                <>
+                  <defs>
+                    <radialGradient id="cs-halo-degrade" cx="50%" cy="50%" r="50%">
+                      <stop offset="66.7%" style={{ stopColor: 'var(--accent)', stopOpacity: 0 }} />
+                      <stop offset="100%" style={{ stopColor: 'var(--accent)', stopOpacity: 0.22 }} />
+                    </radialGradient>
+                  </defs>
+                  <circle className="cs-halo" cx={ccx} cy={ccy} r={dispo.transition * echelle} fill="url(#cs-halo-degrade)" />
+                  <circle className="cs-transition" cx={ccx} cy={ccy} r={dispo.transition * echelle} />
+                </>
+              )}
             </svg>
             <canvas ref={toile} className="cs-toile" aria-hidden="true"
               width={Math.round(taille.w * dpr)} height={Math.round(taille.h * dpr)} style={{ width: taille.w, height: taille.h }} />
@@ -565,11 +586,17 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
               <button
                 key={`${s.q},${s.r}`}
                 type="button"
-                className="cs-sortie"
+                className={`cs-sortie ${s.famille}`}
+                data-famille={s.famille}
                 style={{ left: s.x, top: s.y }}
-                aria-label={`Aller au système ${s.nom}`}
+                aria-label={`Aller au système ${s.nom}, ${libelleDistance(s.distance)}${s.type ? `, route ${s.type}` : ''}`}
+                title={s.type || undefined}
                 onClick={() => navigate(`${adresseVoisin}${s.q}/${s.r}${suffixe}`)}
-              />
+              >
+                <svg width="14" height="12" viewBox="0 0 14 12" aria-hidden="true" style={{ transform: `rotate(${s.cap}rad)` }}>
+                  <polygon points="7,0 14,12 7,9 0,12" />
+                </svg>
+              </button>
             ))}
             {etiquettes.filter((e) => e.visible).map((e) => (
               <span key={e.cle} className={`cs-etiquette${e.cle.startsWith('zone:') ? ' zone' : e.cle.startsWith('sortie:') ? ' sortie' : e.cle.startsWith('element:') ? ' element' : ''}`}
