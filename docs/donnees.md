@@ -968,7 +968,7 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | `geysers` | `geysers` ([0, 1], default 0) | plumes rising off the limb, drawn only at the edge of the disc (beyond it); `glace`, `rocheux` |
 | `couleur_fissures` | `couleur_fissures` (colour, `null` clears) | the colour of the cracks of `fissures` (default: today's); `glace`, `rocheux`, `lave` |
 | craters on ice (the reference's own setting for an icy body) | `cratere_glace` (new, [0, 1], default 0) | depth of the craters of an icy body; their number is `crateres_nombre` (`-aspects-socle`) read on `glace` too; `glace` |
-| atmosphere thickness | `atmosphere_epaisseur` (new, [0, 1], default 0.5 = today's) | width of the limb halo, `halo` stays its strength; every planet kind with a `halo` |
+| atmosphere thickness | `atmosphere_epaisseur` (new, [0, 1], default 0.5 = today's) | width of the limb halo, `halo` stays its strength; the six planet kinds accept it (none is refused; with `halo` 0 it has nothing to widen) |
 | `activite` | `activite` ([0, 1], default 0) | flares and prominences at the limb of a star; `etoile` kinds |
 | `intensite` | `intensite` ([0, 2], default 1) | brightness of the disc and of the corona of a star (1 = today's); `etoile` kinds |
 | `vue` | `vue` (`"profil"` default, or `"face"`) | a comet seen from the side (tail drawn along its curve) or head-on (the tail foreshortened into a halo round the nucleus); `comete` |
