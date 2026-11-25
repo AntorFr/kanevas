@@ -325,6 +325,22 @@ fn ok(t: &str, j: Value) -> bool {
     valider_aspect(t, &j.to_string()).is_ok()
 }
 
+/// Panne : `courbure` acceptée sur un corps qui n'est pas une comète (AD-aspects-reliefs-1).
+#[test]
+fn courbure_est_refusee_hors_comete_quel_que_soit_le_signe() {
+    for t in ["tellurique", "gazeuse", "etoile_naine_rouge"] {
+        for c in [-0.5, 0.0, 0.5] {
+            if types_ok(t) {
+                assert!(!ok(t, json!({ "courbure": c })), "{t} {c}");
+            }
+        }
+    }
+}
+
+fn types_ok(t: &str) -> bool {
+    types().contains(&t)
+}
+
 #[test]
 fn les_bornes_de_chaque_cle_sont_acceptees_et_le_juste_au_dela_refuse() {
     for t in ETOILES {
