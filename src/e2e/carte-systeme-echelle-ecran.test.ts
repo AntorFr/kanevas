@@ -41,7 +41,7 @@ describe('E-23 les astres à l’échelle de leurs orbites', { skip: skipBrowser
     await a.ctx.close();
     const db = new Database(dbPath);
     try {
-      const centre = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,0)")
+      const centre = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#f2a33c','',0,0)")
         .run(gid, univers, 'ech-centre', 'Système neutre', O.q, O.r).lastInsertRowid as number;
       const ast = db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille) VALUES (?,?,?,?,?,?,?,?,?,?)');
       const id = (cle: string, genre: string, type: string, nom: string, orbite: number | null, heure: number, taille: number, parent: number | null = null) =>
