@@ -128,7 +128,7 @@ test('Léa ne voit rien du secret : vue, panneau, trajet, recherche ; la case ma
   // B-97: a hidden system is an empty hexagon, its drawn star included; every other hexagon reads as before.
   const attendu = JSON.parse(avant);
   for (const b of attendu.blocs) b.generes = b.generes.filter(([q, r]: number[]) => !(q === genere[0] && r === genere[1]));
-  assert.ok(JSON.stringify(JSON.parse(avant).blocs).includes(`[${genere[0]},${genere[1]}]`), 'l\'étoile tirée était visible avant');
+  assert.ok(JSON.stringify(JSON.parse(avant).blocs).includes(`[${genere[0]},${genere[1]},`), 'l\'étoile tirée était visible avant');
   assert.equal(JSON.stringify(lireBlocs(w.db, lea, w.univers, w.g, R0, R1)), JSON.stringify(attendu));
   assert.equal(JSON.stringify(lireBlocsGeneres(w.db, lea, w.univers, w.g, R0, R1)), blocsAvant);
   assert.equal(e.COULEURS.length > 0, true);

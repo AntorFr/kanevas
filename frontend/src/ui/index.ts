@@ -37,3 +37,4 @@ export * from './ligne-jeton';
 export * from './valeur-copiable';
 export * from './ligne-historique';
 export * from './comparaison';
+export * from './apercu-etoile';

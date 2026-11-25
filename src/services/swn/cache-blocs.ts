@@ -5,12 +5,12 @@ import { lirePlages } from '../../outils/swn/regles/forme.js';
 import type { Point } from '../../outils/swn/regles/hex.js';
 import { invalide } from '../erreurs.js';
 import type { Acteur } from '../types.js';
-import { entreesBloc, systemesExclusants, tirerEtoiles } from './tirage-etoiles.js';
+import { entreesBloc, systemesExclusants, tirerEtoiles, type EtoileGeneree } from './tirage-etoiles.js';
 import { reglagesDe } from './reglages.js';
 import { galaxieLisible, zonesLisibles, type NiveauLecture } from './galaxies.js';
 
 export interface CoordonneesBloc { bx: number; by: number }
-export interface BlocGenere extends CoordonneesBloc { generes: [number, number][] }
+export interface BlocGenere extends CoordonneesBloc { generes: EtoileGeneree[] }
 
 /** Inclusive block rectangle; safe integer arithmetic also bounds the work of the loops. */
 export function validerRectangle(de: CoordonneesBloc, a: CoordonneesBloc): void {
@@ -25,7 +25,7 @@ export function validerRectangle(de: CoordonneesBloc, a: CoordonneesBloc): void 
 const LIMITE = 4_000;
 // A single bounded LRU. Database namespaces prevent temporary databases (or a reopened
 // database with recycled identifiers) from sharing entries accidentally.
-const cache = new Map<string, readonly Point[]>();
+const cache = new Map<string, readonly EtoileGeneree[]>();
 const bases = new WeakMap<Db, number>();
 let prochaineBase = 0;
 type Compteur = { hits: number; generations: number };
@@ -86,7 +86,7 @@ export function lireBlocsGeneres(
       cache.set(cle, positions);
       if (cache.size > LIMITE) cache.delete(cache.keys().next().value!);
       // Callers may overlay systems or mutate their response without modifying the cache.
-      resultat.push({ bx, by, generes: positions.map(([q, r]) => [q, r]) });
+      resultat.push({ bx, by, generes: positions.map(([q, r, t, l]) => [q, r, t, l]) });
     }
   }
   return resultat;

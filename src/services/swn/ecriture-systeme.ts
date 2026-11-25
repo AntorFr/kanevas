@@ -3,6 +3,7 @@
 // `BEGIN IMMEDIATE` transaction: guard, anchoring of a drawn system, gesture, `apresEcriture`. A refusal rolls
 // everything back, anchoring included. The core decides what a body or a zone may carry (AD-140): this file only
 // converts the three coordinate systems to `(orbite, heure)` and validates through it.
+import { tailleSysteme } from './tirage-etoiles.js';
 import type { Db } from '../../db/db.js';
 import { cleDe } from '../../outils/swn/regles/cle.js';
 import { chargerModule } from '../../wasm/charger.js';
@@ -187,9 +188,6 @@ export interface JetonSysteme { versionSysteme?: unknown }
 const systemeDe = (db: Db, g: LigneGalaxie, q: number, r: number): LigneSysteme | undefined =>
   db.prepare('SELECT * FROM swn_systemes WHERE galaxie_id = ? AND q = ? AND r = ?').get(g.id, q, r) as LigneSysteme | undefined;
 
-/** Colour of a system from the class letter of its star (the six names of the palette) and size from its size. */
-const COULEUR_LETTRE: Record<string, string> = { M: 'danger', K: 'ambre', G: 'ambre', F: 'clair', A: 'clair', B: 'accent' };
-const tailleSysteme = (t: number): number => (t < 1.0 ? 0.15 : t < 1.6 ? 0.45 : 0.75);
 
 /**
  * Anchors the drawn system of `(q, r)`: the `swn_systemes` row (E-21's promotion, `placerSysteme`) and the drawn
@@ -205,7 +203,7 @@ function ancrerTire(db: Db, ac: Acteur, universId: number, g: LigneGalaxie, q: n
   // One signal per call, sent by the caller after the gesture (`sansSignal` holds back the one of `placerSysteme`).
   const { valeur } = sansSignal(() => placerSysteme(db, ac, universId, g.id, {
     nom: nom ?? `Système (${q}, ${r})`, q, r,
-    taille: tailleSysteme(tire.etoile.taille), couleur: COULEUR_LETTRE[tire.etoile.lettre] ?? 'accent',
+    taille: tailleSysteme(tire.etoile.taille), couleur: null, classe: tire.etoile.lettre,
   }));
   const ids = new Map<string, number>();
   const insererAstre = db.prepare(`INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille, aspect)

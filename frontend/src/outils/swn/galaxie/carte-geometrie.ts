@@ -271,3 +271,17 @@ export function orbitesAstres(d: Disposition): AnneauOrbite[] {
   }
   return out;
 }
+
+/** Radius (px) of the disc of a star of the galaxy map from its `taille` in [0, 1]: the same at every zoom (AD-galaxie-systemes-3, E-21). */
+export const RAYON_ETOILE_MIN = 3;
+export const RAYON_ETOILE_MAX = 12;
+export function rayonEtoile(taille: number): number {
+  const t = Number.isFinite(taille) ? Math.min(1, Math.max(0, taille)) : 0.5;
+  return Math.round((RAYON_ETOILE_MIN + (RAYON_ETOILE_MAX - RAYON_ETOILE_MIN) * t) * 100) / 100;
+}
+
+/** Fill of a star: the free colour when set, else the colour of its class (a datum of the core), else `null` (the class is not known yet). */
+export function couleurEtoile(libre: string | null | undefined, lettre: string | undefined, classes: ReadonlyMap<string, string>): string | null {
+  if (libre) return libre;
+  return (lettre && classes.get(lettre)) || null;
+}
