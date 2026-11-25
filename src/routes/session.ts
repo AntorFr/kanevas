@@ -155,7 +155,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
       if (!u) return;
       p.id = String(u.id);
       if (p.fid !== undefined && modele.startsWith('/api/univers/:id/fiches/:fid')) {
-        const f = resoudreFiche(app.db, u.id, p.fid);
+        const f = resoudreFiche(app.db, u.id, p.fid, request.session!.id);
         if (f) p.fid = String(f.id);
       }
     });

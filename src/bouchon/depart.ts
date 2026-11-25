@@ -91,7 +91,7 @@ export function semerBouchon(db: Db): boolean {
       (c) => c.name === 'espace_systeme_id',
     );
     const element = (sid: number, acteur: number, type: string, noms: string[]) => {
-      if (!espaces) return; // a base held short of 0051: the migration creates the spaces, the elements come later
+      if (!espaces) return; // a base held short of 0052: the migration creates the spaces, the elements come later
       const espace = (db.prepare('SELECT id FROM univers WHERE espace_systeme_id = ?').get(sid) as { id: number }).id;
       db.prepare("INSERT OR IGNORE INTO membres (univers_id, compte_id, role) VALUES (?, ?, 'mj')").run(espace, acteur);
       for (const titre of noms) {

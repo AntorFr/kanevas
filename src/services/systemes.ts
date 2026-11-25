@@ -96,7 +96,7 @@ export function creerEspacesManquants(db: Db): void {
  */
 export function creerEspaceSysteme(db: Db, systemeId: number, nom: string): number | null {
   if (espacesDifferes) return null;
-  // A base held short of 0051 (the migration tests seed an old schema, then climb) has no space column: the migration
+  // A base held short of 0052 (the migration tests seed an old schema, then climb) has no space column: the migration
   // creates the spaces of the systems already there.
   if (!aColonneEspace(db)) return null;
   const info = db
