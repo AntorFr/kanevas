@@ -65,6 +65,12 @@ pub(crate) const NOUVELLES: &[(&str, Genre, &[&str])] = &[
     ("inclinaison", Genre::Nombre(-90.0, 90.0), PLANETES),
     ("mers", Genre::Entier(1.0, 8.0), &["tellurique"]),
     ("atmosphere_epaisseur", Genre::Nombre(0.0, 1.0), PLANETES),
+    ("canyons", Genre::Nombre(0.0, 1.0), &["rocheux", "tellurique"]),
+    ("lave", Genre::Nombre(0.0, 1.0), &["rocheux"]),
+    ("cristaux", Genre::Nombre(0.0, 1.0), &["glace", "rocheux"]),
+    ("geysers", Genre::Nombre(0.0, 1.0), &["glace", "rocheux"]),
+    ("couleur_fissures", Genre::Couleur, &["glace", "rocheux", "lave"]),
+    ("cratere_glace", Genre::Nombre(0.0, 1.0), &["glace"]),
 ];
 
 /// Is `k` a key of the slice?

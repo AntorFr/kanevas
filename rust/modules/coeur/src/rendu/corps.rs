@@ -88,6 +88,12 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
     let etire = 1.0 / etirement;
     let eclairs = borne(c.f("eclairs", 0.0), 0.0, 1.0);
     let mers = c.f("mers", 1.0).round().max(1.0);
+    let canyons = borne(c.f("canyons", 0.0), 0.0, 1.0);
+    let lave_k = borne(c.f("lave", 0.0), 0.0, 1.0);
+    let cristaux = borne(c.f("cristaux", 0.0), 0.0, 1.0);
+    let geysers = borne(c.f("geysers", 0.0), 0.0, 1.0);
+    let cratere_glace = borne(c.f("cratere_glace", 0.0), 0.0, 1.0);
+    let couleur_fissures = c.asp.get("couleur_fissures").and_then(serde_json::Value::as_str).and_then(hex);
     let aride = hex(ARIDE).unwrap_or([0.6; 3]);
     // A locked world draws no clouds unless the aspect asks for a look of them.
     let nuages_verrouillee = nuages > 0.0 && (couleur_nuages.is_some() || opacite_nuages < 1.0 || etirement != 1.0);
@@ -133,6 +139,15 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
         0.0
     };
 
+    // Craters of an ice world: one layer whose cell frequency makes about `crateres_nombre` (60 by default) of them.
+    let creux_glace = |p: V3| -> f32 {
+        let n = crateres_nombre.unwrap_or(60.0);
+        let f = (n / 10.0).sqrt().max(0.5);
+        let (f1, _, id) = br.cellules([p[0] * f + 17.0, p[1] * f - 9.0, p[2] * f]);
+        let rayon = 0.2 + 0.25 * alea(id);
+        lisse(rayon, rayon * 0.7, f1)
+    };
+
     // The height field: continents, craters, crests, ridges. Cheap, called twice per pixel for the relief.
     let hauteur = |p: V3| -> f32 {
         match kind {
@@ -144,7 +159,10 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                     h
                 }
             }
-            Kind::Glace => 0.5 * br.fbm([p[0] * 3.0, p[1] * 3.0, p[2] * 3.0], oct) + 0.5 * br.crete([p[0] * 2.0, p[1] * 2.0, p[2] * 2.0], oct.min(4)),
+            Kind::Glace => {
+                let h = 0.5 * br.fbm([p[0] * 3.0, p[1] * 3.0, p[2] * 3.0], oct) + 0.5 * br.crete([p[0] * 2.0, p[1] * 2.0, p[2] * 2.0], oct.min(4));
+                if cratere_glace > 0.0 { h - 0.35 * cratere_glace * creux_glace(p) } else { h }
+            }
             Kind::Rocheux => {
                 let base = br.fbm([p[0] * 3.0, p[1] * 3.0, p[2] * 3.0], oct);
                 // Without `crateres_nombre` two layers whose density follows `cratere`; with it, one layer whose
@@ -180,6 +198,14 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
         lisse(0.62 - 0.5 * nuages, 0.8 - 0.5 * nuages, q * 0.8 + w * 0.2)
     };
 
+    // Narrow dark lines (canyons): ridged noise thresholded high, so they stay thin and aligned.
+    let ligne_canyon = |p: V3| -> f32 { lisse(0.8, 0.92, br.crete([p[0] * 2.4 - 7.0, p[1] * 2.4, p[2] * 2.4 + 3.0], 4)) };
+    // Clear crystals: isolated points, a fraction of the cells of a fine grid.
+    let cristal = |p: V3| -> f32 {
+        let (f1, _, id) = br.cellules([p[0] * 10.0 + 3.0, p[1] * 10.0, p[2] * 10.0 - 8.0]);
+        if alea(hache(id ^ 0xc415)) < cristaux * 0.5 { lisse(0.2, 0.05, f1) } else { 0.0 }
+    };
+
     let surface = |p: V3, h: f32, nrm: V3, d: f32| -> Surf {
         let pal = &c.pal;
         match kind {
@@ -206,6 +232,9 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                         let sec = br.fbm([p[0] * 1.7 - 6.0, p[1] * 1.7 + 2.0, p[2] * 1.7], 3);
                         let seuil = lerp(0.85, -0.1, terre_seche);
                         alb = melange(alb, aride, lisse(seuil, seuil + 0.1, sec) * 0.9);
+                    }
+                    if canyons > 0.0 {
+                        alb = melange(alb, mul(alb, 0.3), ligne_canyon(p) * canyons);
                     }
                 }
                 // Polar caps, with a ragged edge.
@@ -254,9 +283,15 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                 let mut alb = rampe(pal, 1.0 - m);
                 let crev = br.crete([p[0] * 3.5 + 2.0, p[1] * 3.5, p[2] * 3.5], 4);
                 let lignes = lisse(0.72, 0.9, crev) * fissures;
-                alb = melange(alb, mul(c.pal_i(pal.len() - 1), 0.55), lignes);
+                alb = melange(alb, couleur_fissures.unwrap_or_else(|| mul(c.pal_i(pal.len() - 1), 0.55)), lignes);
                 // Frost: lighter where the surface is high.
                 alb = melange(alb, c.pal_i(0), lisse(0.55, 0.9, h) * 0.5);
+                if cratere_glace > 0.0 {
+                    alb = melange(alb, mul(alb, 0.45), creux_glace(p) * cratere_glace);
+                }
+                if cristaux > 0.0 {
+                    alb = melange(alb, [0.97, 0.99, 1.0], cristal(p));
+                }
                 Surf { alb, emis: [0.0; 3], spec: 0.55, nuit: [0.6, 0.7, 1.0], nuage: 0.0 }
             }
             Kind::Rocheux => {
@@ -264,7 +299,28 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                 let mut alb = rampe(pal, m);
                 let tache = br.fbm([p[0] * 1.5 + 8.0, p[1] * 1.5, p[2] * 1.5], 3);
                 alb = mul(alb, 0.75 + 0.5 * tache);
-                Surf { alb, emis: [0.0; 3], spec: 0.0, nuit: [0.7, 0.75, 1.0], nuage: 0.0 }
+                let mut emis = [0.0; 3];
+                if canyons > 0.0 {
+                    alb = melange(alb, mul(alb, 0.3), ligne_canyon(p) * canyons);
+                }
+                // Coloured cracks: only when a colour is given, as strong as `fissures` or 0.6.
+                if let Some(col) = couleur_fissures {
+                    let crev = br.crete([p[0] * 3.5 + 2.0, p[1] * 3.5, p[2] * 3.5], 4);
+                    let force = if fissures > 0.0 { fissures } else { 0.6 };
+                    alb = melange(alb, col, lisse(0.72, 0.9, crev) * force);
+                }
+                // Lava: glowing veins in the low relief only.
+                if lave_k > 0.0 {
+                    let crev = br.crete([p[0] * 2.4 + 4.0, p[1] * 2.4, p[2] * 2.4], 4);
+                    let bas = lisse(0.2, 0.1, h);
+                    let veine = lisse(0.45, 0.7, crev) * bas * lave_k;
+                    alb = melange(alb, [1.0, 0.45, 0.1], veine);
+                    emis = mul([1.0, 0.45, 0.1], 1.3 * veine);
+                }
+                if cristaux > 0.0 {
+                    alb = melange(alb, [0.97, 0.99, 1.0], cristal(p));
+                }
+                Surf { alb, emis, spec: 0.0, nuit: [0.7, 0.75, 1.0], nuage: 0.0 }
             }
             Kind::Lave => {
                 // A dark crust broken by glowing cracks.
@@ -273,6 +329,7 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                 let braise = lisse(0.5, 0.82, crev);
                 let croute = melange(c.pal_i(0), c.pal_i(1), fond);
                 let chaud = melange(c.pal_i(2), c.pal_i(3), lisse(0.78, 1.0, crev));
+                let chaud = couleur_fissures.unwrap_or(chaud);
                 let alb = melange(croute, chaud, braise);
                 Surf { alb: melange(alb, croute, 0.5 * (1.0 - braise)), emis: mul(chaud, 1.6 * braise * (0.65 + 0.35 * fond)), spec: 0.0, nuit: [1.0, 0.9, 0.9], nuage: 0.0 }
             }
@@ -417,6 +474,25 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                 }
                 let corps: Px = [col[0] * cov, col[1] * cov, col[2] * cov, cov];
                 px = dessus(corps, px);
+            }
+            // Geysers: plumes rising off the limb, at places drawn from the seed (the body's own draws do not move).
+            if geysers > 0.0 && u > 0.97 && (kind == Kind::Glace || kind == Kind::Rocheux) {
+                let nb = 1 + (geysers * 3.0) as u32;
+                for i in 0..nb {
+                    let ang = alea(hache(c.graine ^ 0x6e75 ^ i.wrapping_mul(0x9e37))) * 6.2832;
+                    let (ax, ay) = (ang.cos(), ang.sin());
+                    let long = 0.12 + 0.2 * geysers * (0.6 + 0.4 * alea(hache(c.graine ^ 0x1a7 ^ i)));
+                    let along = (sx * ax + sy_ * ay) - 1.0;
+                    let perp = (sx * ay - sy_ * ax).abs();
+                    if along > -0.02 && along < long {
+                        let t = (along.max(0.0)) / long;
+                        let larg = 0.035 * (1.0 - 0.7 * t);
+                        let a = (1.0 - lisse(larg * 0.5, larg, perp)) * (1.0 - t) * 0.9;
+                        if a > 0.0 {
+                            px = dessus([0.92 * a, 0.96 * a, 1.0 * a, a], px);
+                        }
+                    }
+                }
             }
             if let Some(d) = devant {
                 px = dessus(d, px);
