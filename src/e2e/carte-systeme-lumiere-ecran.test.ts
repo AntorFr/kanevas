@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 import Database from 'better-sqlite3';
-import { connecte, launch, skipBrowser, startServer, type Any, type Server } from './harnais.test.ts';
+import { attendreTransitions, connecte, launch, skipBrowser, startServer, type Any, type Server } from './harnais.test.ts';
 
 const SHOTS = '/tmp/cap-carte-lumiere';
 const O = { q: 72, r: 73 };
@@ -28,7 +28,7 @@ describe('E-23 la face éclairée de chaque astre regarde son étoile', { skip: 
     return c;
   };
   /** Light barycentre of the canvas around a body, relative to its centre, in the sprite's own pixels (x right, y down). */
-  const barycentre = (page: Any, x: number, y: number, rayon: number) => page.evaluate(({ x, y, rayon }: Any) => {
+  const mesureBarycentre = ({ x, y, rayon }: Any) => {
     const t = document.querySelector('canvas.cs-toile') as HTMLCanvasElement;
     const k = t.width / t.getBoundingClientRect().width;
     const r = Math.max(4, Math.round(rayon * k));
@@ -42,7 +42,8 @@ describe('E-23 la face éclairée de chaque astre regarde son étoile', { skip: 
       s += l; bx += l * (i - r); by += l * (j - r);
     }
     return { dx: bx / s, dy: by / s };
-  }, { x, y, rayon });
+  };
+  const barycentre = (page: Any, x: number, y: number, rayon: number) => page.evaluate(mesureBarycentre, { x, y, rayon });
 
   before(async () => {
     mkdirSync(SHOTS, { recursive: true });
@@ -73,8 +74,14 @@ describe('E-23 la face éclairée de chaque astre regarde son étoile', { skip: 
 
   it('la face la plus claire de chaque planète et de la lune regarde son étoile', async () => {
     const { page, ctx } = await ouvrir(1280, 800);
-    // Sprites are drawn after the map is up: wait for the sharp ones, then read.
-    await page.waitForTimeout(3000);
+    // Sprites are drawn after the map is up: wait until the sharp ones light planet A on the right (the measured effect), then read.
+    const c0 = await croquis(page);
+    const pa0 = (c0.corps as Any[]).find((k) => k.cle === 'pa');
+    await page.waitForFunction(
+      ([mesure, arg]: Any) => (0, eval)(`(${mesure})`)(arg).dx > 0.5,
+      [mesureBarycentre.toString(), { x: pa0.x, y: pa0.y, rayon: pa0.rayon }],
+      { timeout: 30000 },
+    );
     const c = await croquis(page);
     const corps = (cle: string) => (c.corps as Any[]).find((k) => k.cle === cle);
     const a = await barycentre(page, corps('pa').x, corps('pa').y, corps('pa').rayon);
@@ -117,7 +124,9 @@ describe('E-23 la face éclairée de chaque astre regarde son étoile', { skip: 
       for (const [l, h] of [[1280, 800], [390, 780]] as const) {
         const { page, ctx } = await ouvrir(l, h);
         await page.evaluate((t: string) => { document.documentElement.setAttribute('data-theme', t); }, theme);
-        await page.waitForTimeout(2500);
+        await page.waitForFunction((t: string) => document.documentElement.getAttribute('data-theme') === t
+          && getComputedStyle(document.body).backgroundColor !== 'rgba(0, 0, 0, 0)', theme, { timeout: 30000 });
+        await attendreTransitions(page);
         await page.screenshot({ path: `${SHOTS}/${l}-${theme}.png`, fullPage: true });
         await ctx.close();
       }

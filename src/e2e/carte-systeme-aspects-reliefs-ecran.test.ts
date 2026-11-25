@@ -27,7 +27,27 @@ describe('E-23 un corps à nuages colorés est dessiné avec sa clé', { skip: s
     await c.page.goto(`/univers/${univers}/outils/swn/galaxie/${gid}/interieur/${O.q}/${O.r}`);
     await c.page.getByRole('heading', { name: /^Corps \(\d+\)$/ }).waitFor();
     await c.page.waitForFunction(() => ((window as Any).__carteSysteme?.()?.etiquettes ?? []).some((e: Any) => e.visible), undefined, { timeout: 30000 });
-    await c.page.waitForTimeout(3000);
+    // Sprites are drawn after the map is up: wait until every body's sprite zone holds opaque pixels and stopped changing (the effect), not a duration.
+    await c.page.waitForFunction(() => {
+      const w = window as Any;
+      const t = document.querySelector('canvas.cs-toile') as HTMLCanvasElement | null;
+      const corps = (w.__carteSysteme?.()?.corps ?? []) as Any[];
+      if (!t || !corps.length) return false;
+      const k = t.width / t.getBoundingClientRect().width;
+      const ctx = t.getContext('2d')!;
+      let signature = '';
+      for (const k0 of corps) {
+        const r = Math.max(4, Math.round(k0.rayon * k));
+        const d = ctx.getImageData(Math.round(k0.x * k) - r, Math.round(k0.y * k) - r, 2 * r, 2 * r).data;
+        let n = 0; let h = 0;
+        for (let i = 0; i < d.length; i += 4) { if (d[i + 3]! > 200) n++; h = (h * 31 + d[i]! + 7 * d[i + 1]! + 13 * d[i + 2]!) | 0; }
+        if (n < 4) return false;
+        signature += `${n}:${h};`;
+      }
+      const stable = w.__spritesVus === signature;
+      w.__spritesVus = signature;
+      return stable;
+    }, undefined, { timeout: 30000, polling: 300 });
     return c;
   };
   /** Pixels of the map's sprite of body `cle`, and its mean colour over the opaque pixels. */

@@ -201,8 +201,8 @@ describe('E-28 objets, calques, propriétés', { skip: skipBrowser }, () => {
     await antor.getByText('20 calques au plus.').first().waitFor();
     assert.equal((await lire(cid)).document.calques.length, 20);
   });
-  it('reprise du verify : champs de la carte actifs sans sélection, calque MJ seul hachuré, libellé « Asset retiré » sur le canevas', async () => {
-    const cid = await nouvelle('Reprise');
+  it('reprise du verify : champs de la carte actifs sans sélection', async () => {
+    const cid = await nouvelle('Reprise champs');
     await ouvrir(cid);
     // properties without selection: each field writes at once
     await onglet('Propriétés');
@@ -224,7 +224,10 @@ describe('E-28 objets, calques, propriétés', { skip: skipBrowser }, () => {
     await nom.press('Enter');
     await antor.getByText('Le nom fait de 1 à 80 caractères.').waitFor();
     assert.equal((await lire(cid)).titre, 'Salle des gardes');
-
+  });
+  it('reprise du verify : calque MJ seul hachuré', async () => {
+    const cid = await nouvelle('Reprise calque');
+    await ouvrir(cid);
     // MJ-only layer row is marked
     await onglet('Calques');
     await antor.getByRole('button', { name: 'Nouveau calque' }).click();
@@ -238,7 +241,9 @@ describe('E-28 objets, calques, propriétés', { skip: skipBrowser }, () => {
     const fond = await antor.locator('[data-calque="Objets 2"]').evaluate((el: Element) => getComputedStyle(el).backgroundImage);
     assert.match(fond, /repeating-linear-gradient/);
     assert.equal(await antor.locator('[data-calque="Objets"]').evaluate((el: Element) => getComputedStyle(el).backgroundImage), 'none');
-
+  });
+  it('reprise du verify : libellé « Asset retiré » sur le canevas', async () => {
+    const cid = await nouvelle('Reprise retire');
     // « Asset retiré » is real text on the canvas, for an element of a visible layer only
     const doc = (await lire(cid)).document;
     const obj = doc.calques.find((c: Any) => c.nom === 'Objets');
