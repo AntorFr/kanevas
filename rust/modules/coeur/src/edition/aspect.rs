@@ -137,6 +137,9 @@ pub fn valider_aspect(type_astre: &str, json: &str) -> Result<String, ErreurEdit
         }
         if let Some((_, min, max)) = NOMBRES.iter().find(|(n, _, _)| n == k) {
             nombre_dans(v, k, *min, *max)?;
+            if *k == "courbure" && type_astre != "comete" {
+                return Err(ErreurEdition::Invalide(format!("`{k}` is not drawn on a `{type_astre}` body, only on: comete")));
+            }
             if *k == "graine" || *k == "rayons" || *k == "bras" || *k == "crateres_nombre" {
                 if v.as_f64().is_some_and(|n| n.fract() != 0.0) {
                     return Err(ErreurEdition::HorsBornes(format!("`{k}` must be an integer")));
