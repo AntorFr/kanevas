@@ -263,3 +263,17 @@
 .sel-pastille[aria-checked="true"] { box-shadow: 0 0 0 3px var(--focus); }
 .sel-pastille:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 .sel-couleur { display: block; width: 16px; height: 16px; border-radius: 50%; background: var(--c, var(--element-accent)); }
+
+/* Groupe « Étoile » du dialogue d'un système, et étoile du panneau (E-21) */
+.gx-etoile { display: flex; gap: var(--e-3); align-items: flex-start; border: 0; padding: 0; margin: 0 0 var(--e-2); min-width: 0; }
+.gx-etoile legend { color: var(--texte-2); font-size: var(--t-13); padding: 0; margin-bottom: var(--e-1); float: left; width: 100%; }
+.gx-etoile legend + * { clear: both; }
+.gx-etoile-champs { flex: 1; min-width: 0; }
+.gx-classe { width: 100%; min-height: 44px; }
+.gx-etoile .apercu-etoile { margin-top: var(--e-1); }
+.gx-etoile-panneau { display: flex; align-items: center; gap: var(--e-3); margin: var(--e-2) 0; }
+@media (max-width: 600px) {
+  .gx-etoile { flex-direction: column-reverse; }
+  .gx-etoile .champ-couleur .bouton { min-height: 44px; }
+  .gx-etoile .curseur { min-height: 44px; }
+}

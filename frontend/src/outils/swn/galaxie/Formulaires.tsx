@@ -2,10 +2,11 @@ import { Check, X } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 
 import { appeler, useConnexionPerdue } from '../../../api';
-import { Bouton, Champ, Interrupteur, Segments } from '../../../ui';
+import { ApercuEtoile, Bouton, Champ, ChampCouleur, couleurValide, Curseur, Interrupteur } from '../../../ui';
+import { useEtoile } from './etoile-classes';
 import { cases, distanceHex } from './geo';
 import {
-  CONFLIT, COULEURS, couleurServeur, ECHEC_ECRITURE, entierAffiche, erreurNom, lireEchec, TAILLES_NOMS, type Echec,
+  CONFLIT, COULEURS, couleurServeur, ECHEC_ECRITURE, entierAffiche, erreurNom, lireEchec, type Echec,
 } from './ecriture';
 import type { RouteCarte, SystemeCarte, ZoneCarte } from './types';
 
@@ -67,7 +68,8 @@ function SelecteurCouleur({ valeur, onChange }: { valeur: string; onChange: (c: 
   );
 }
 
-export interface BrouillonSysteme { nom: string; taille: string; couleur: string; notes: string; secret: boolean }
+/** `classe` is a letter or `''` (« Tirée de la clé »); `couleur` is `#rrggbb` or `''` (none); `taille` is on [0, 1]. */
+export interface BrouillonSysteme { nom: string; taille: number; classe: string; couleur: string; notes: string; secret: boolean }
 
 /** « Nouveau système », « Promouvoir ce système » and « Modifier » share one form (E-21). */
 export function FormSysteme({ base, mode, q, r, brouillon, version, cle, nbRoutes, onFini, onAnnuler, onDeplacer, onRecharger, onIntrouvable }: {
@@ -79,6 +81,7 @@ export function FormSysteme({ base, mode, q, r, brouillon, version, cle, nbRoute
   const [ouvert] = useState({ q, r });
   const [erreurNomMsg, setErreurNom] = useState<string>();
   const e = useEnvoi('systeme', onIntrouvable);
+  const etoile = useEtoile(cle, v.taille, v.classe || null, couleurValide(v.couleur) ? v.couleur.toLowerCase() : null);
   const place = e.echec?.sorte === 'champ' ? e.echec : null;
   const titre = mode === 'nouveau' ? 'Nouveau système' : mode === 'promouvoir' ? 'Promouvoir ce système' : 'Modifier le système';
   const deplace = mode === 'modifier' && (q !== ouvert.q || r !== ouvert.r);
@@ -89,7 +92,8 @@ export function FormSysteme({ base, mode, q, r, brouillon, version, cle, nbRoute
     setErreurNom(m);
     if (m) return;
     if ([...v.notes].length > 2000) return;
-    const corps = { nom: v.nom.trim(), taille: v.taille, couleur: v.couleur, notes: v.notes, secret: v.secret, q, r };
+    if (v.couleur !== '' && !couleurValide(v.couleur)) return;
+    const corps = { nom: v.nom.trim(), taille: v.taille, classe: v.classe === '' ? null : v.classe, couleur: v.couleur === '' ? null : v.couleur.toLowerCase(), notes: v.notes, secret: v.secret, q, r };
     const res = await e.envoyer(() => mode === 'modifier'
       ? appeler<{ cle: string }>('PATCH', `${base}/systemes/${encodeURIComponent(cle!)}`, { ...corps, version })
       : appeler<{ cle: string }>('POST', `${base}/systemes`, corps));
@@ -106,10 +110,26 @@ export function FormSysteme({ base, mode, q, r, brouillon, version, cle, nbRoute
         <fieldset disabled={e.enCours} className="gx-gele">
           <Champ etiquette="Nom" value={v.nom} erreur={erreurNomMsg ?? champEchec('nom')} maxLength={200}
             onChange={(ev: { target: { value: string } }) => setV({ ...v, nom: ev.target.value })} />
-          <Segments legende="Taille" valeur={v.taille}
-            options={TAILLES_NOMS.map((t) => ({ valeur: t.nom, libelle: t.libelle }))}
-            onChange={(taille) => setV({ ...v, taille })} />
-          <SelecteurCouleur valeur={v.couleur} onChange={(couleur) => setV({ ...v, couleur })} />
+          <fieldset className="gx-etoile">
+            <legend>Étoile</legend>
+            <div className="gx-etoile-champs">
+              <div className="champ">
+                <label className="lib-champ" htmlFor="gx-classe">Classe</label>
+                <select id="gx-classe" className="gx-classe" value={v.classe} aria-invalid={champEchec('classe') ? true : undefined}
+                  onChange={(ev) => setV({ ...v, classe: ev.target.value })}>
+                  <option value="">Tirée de la clé</option>
+                  {etoile.classes.map((c) => <option key={c.lettre} value={c.lettre}>{c.libelle}</option>)}
+                </select>
+                {champEchec('classe') && <div className="erreur" role="alert">Erreur : {champEchec('classe')}</div>}
+              </div>
+              <Curseur etiquette="Taille" valeur={v.taille} min={0} max={1} pas={0.01}
+                affichage={(t) => t.toFixed(2)} erreur={champEchec('taille')}
+                onChange={(taille) => setV({ ...v, taille })} />
+              <ChampCouleur facultatif etiquette="Couleur" valeur={v.couleur} erreur={champEchec('couleur')}
+                onChange={(couleur) => setV({ ...v, couleur })} />
+            </div>
+            <ApercuEtoile taille={v.taille} couleur={etoile.fond} taillePx={40} />
+          </fieldset>
           <Champ zone etiquette="Notes" value={v.notes}
             erreur={[...v.notes].length > 2000 ? '2 000 caractères au plus.' : champEchec('notes')}
             onChange={(ev: { target: { value: string } }) => setV({ ...v, notes: ev.target.value })} />
@@ -235,7 +255,7 @@ export function FormZone({ base, points, cle, version, brouillon, onFini, onAnnu
   );
 }
 
-export const brouillonSystemeVide = (): BrouillonSysteme => ({ nom: '', taille: 'moyenne', couleur: 'accent', notes: '', secret: false });
+export const brouillonSystemeVide = (): BrouillonSysteme => ({ nom: '', taille: 0.5, classe: '', couleur: '', notes: '', secret: false });
 export const brouillonZoneVide = (): BrouillonZone => ({ nom: '', couleur: 'danger', densite: '', secret: false });
 
 /** « Modifier » of a route: its visibility and its type of link change (the ends and the length do not). */

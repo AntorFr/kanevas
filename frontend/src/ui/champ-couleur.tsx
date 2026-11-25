@@ -1,4 +1,4 @@
-import { Champ } from './composants';
+import { Bouton, Champ } from './composants';
 
 const FORME = /^#[0-9a-f]{6}$/i;
 
@@ -16,12 +16,15 @@ export function ChampCouleur({
   onChange,
   erreur,
   disabled,
+  facultatif,
 }: {
   etiquette: string;
   valeur: string;
   onChange: (valeur: string) => void;
   erreur?: string;
   disabled?: boolean;
+  /** An empty value is valid; a ghost « Effacer la couleur » shows while the field holds one. */
+  facultatif?: boolean;
 }) {
   const ok = couleurValide(valeur);
   const message = erreur ?? (valeur !== '' && !ok ? 'Couleur invalide : #rrggbb.' : undefined);
@@ -39,6 +42,9 @@ export function ChampCouleur({
         placeholder="#rrggbb"
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.currentTarget.value)}
       />
+      {facultatif && valeur !== '' && (
+        <Bouton variante="fantome" petit disabled={disabled} onClick={() => onChange('')}>Effacer la couleur</Bouton>
+      )}
     </div>
   );
 }

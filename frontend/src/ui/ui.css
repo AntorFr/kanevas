@@ -442,3 +442,7 @@ html:has(.barre-application) { scroll-padding-bottom: 6rem; }
 .bandeau-annulable .ba-texte { overflow-wrap: anywhere; }
 .bandeau-annulable .ba-note { flex-basis: 100%; color: var(--texte-2); }
 .bandeau-annulable .ba-erreur { color: var(--danger); }
+
+/* Aperçu d'étoile (apercu-etoile.tsx) */
+.apercu-etoile { flex: none; display: block; border-radius: var(--rayon-champ); background: var(--surface-2); }
+.apercu-etoile circle { fill: var(--surface-3); stroke: var(--texte-3); stroke-width: 1; vector-effect: non-scaling-stroke; }
