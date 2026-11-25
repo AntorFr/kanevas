@@ -99,10 +99,13 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
     const i = ids(request);
     const p = request.params as { q: string; r: string };
     const ent = (v: string) => (/^-?\d{1,12}$/.test(v) ? Number(v) : NaN);
-    const cote = (request.query as Record<string, unknown>).cote;
+    const requete = request.query as Record<string, unknown>;
+    const cote = requete.cote;
+    // A value that is not a single string (a repeated parameter) is passed as `''`, which the service refuses with its `champ`.
+    const brut = (v: unknown): string | undefined => (v === undefined ? undefined : typeof v === 'string' ? v : '');
     try {
       const vue = await illustrationAstre(app.db, acteur(request as never), i.univers, i.galaxie, ent(p.q), ent(p.r), i.cle!,
-        typeof cote === 'string' && /^\d{1,15}$/.test(cote) ? Number(cote) : NaN, { siEtag: request.headers['if-none-match'] });
+        typeof cote === 'string' && /^\d{1,15}$/.test(cote) ? Number(cote) : NaN, { siEtag: request.headers['if-none-match'], angle: brut(requete.angle), lumiere: brut(requete.lumiere) });
       reply.header('Cache-Control', 'private, no-cache').header('ETag', vue.etag);
       if (vue.octets === null) return reply.code(304).send();
       return reply.type(vue.type).send(vue.octets);

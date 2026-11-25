@@ -13,8 +13,8 @@ use serde_json::Value;
 use std::fmt;
 use wasm_bindgen::prelude::*;
 
-pub use aspect::valider_aspect;
-pub(crate) use aspect::{COULEURS, NOMBRES};
+pub use aspect::{trier_aspect, valider_aspect};
+pub(crate) use aspect::{est_nouvelle, COULEURS, NOMBRES};
 pub use formation::valider_formation;
 
 /// Largest JSON of an aspect, in bytes.
@@ -140,6 +140,12 @@ pub fn galactique_vers_orbite_heure_wasm(dq: f64, dr: f64, rayon: f64) -> Result
 #[wasm_bindgen(js_name = valider_aspect)]
 pub fn valider_aspect_wasm(type_astre: &str, json: &str) -> Result<String, JsError> {
     valider_aspect(type_astre, json).map_err(|e| JsError::new(&e.to_string()))
+}
+
+/// `{"garde", "inconnues"}`: the aspect without the keys the core does not know, and their paths; throws for a known key out of bounds.
+#[wasm_bindgen(js_name = trier_aspect)]
+pub fn trier_aspect_wasm(type_astre: &str, json: &str) -> Result<String, JsError> {
+    trier_aspect(type_astre, json).map_err(|e| JsError::new(&e.to_string()))
 }
 
 /// The parameters, re-serialised, when they are valid for `forme`; throws otherwise.

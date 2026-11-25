@@ -25,6 +25,9 @@ const DELAI_RENDU_MS = 60_000;
 
 interface Coeur { version_rendu(): number }
 
+/** The optional lighting of a picture (AD-aspects-socle-1): `angle` in degrees, `lumiere` as `#rrggbb`. Not quantised here. */
+export interface Eclairage { angle?: number; lumiere?: string }
+
 let coeur: Coeur | undefined;
 try {
   coeur = await chargerModule<Coeur>('coeur');
@@ -33,7 +36,7 @@ try {
 }
 
 /** Draws `aspectJson` at `cote` pixels and returns the WebP bytes; rejects on any failure. */
-export type Rendeur = (aspectJson: string, cote: number, versionRendu: number) => Promise<Uint8Array>;
+export type Rendeur = (aspectJson: string, cote: number, versionRendu: number, eclairage?: Eclairage) => Promise<Uint8Array>;
 
 export interface DepsIllustration {
   /** Replaces the worker (tests). It still runs under the queue. */
@@ -53,14 +56,14 @@ export interface IllustrationVue {
 }
 
 /** The worker: a thread of its own per render, so a crash or a hang costs only that render. */
-const rendreParWorker: Rendeur = (aspectJson, cote, versionRendu) => new Promise((resolve, reject) => {
+const rendreParWorker: Rendeur = (aspectJson, cote, versionRendu, eclairage = {}) => new Promise((resolve, reject) => {
   const ici = fileURLToPath(import.meta.url);
   const fichier = pathToFileURL(join(dirname(ici), `illustration-worker${ici.endsWith('.ts') ? '.ts' : '.js'}`)).href;
   // `eval` so that one call serves the compiled server and the sources: from `.ts` (tests, `npm run dev`) the thread registers tsx first.
   const charge = ici.endsWith('.ts')
     ? `import('tsx/esm/api').then((m) => { m.register(); return import(${JSON.stringify(fichier)}); })`
     : `import(${JSON.stringify(fichier)})`;
-  const worker = new Worker(charge, { eval: true, workerData: { aspectJson, cote, versionRendu } });
+  const worker = new Worker(charge, { eval: true, workerData: { aspectJson, cote, versionRendu, angle: eclairage.angle, lumiere: eclairage.lumiere } });
   let fini = false;
   const finir = (fn: () => void) => {
     if (fini) return;
@@ -118,7 +121,7 @@ export function etagCorrespond(siAucune: string | undefined, etag: string): bool
  */
 export async function illustrationAstre(
   db: Db, acteur: Acteur, universId: number, galaxieId: number, q: number, r: number, cle: string, cote: number,
-  options: { siEtag?: string } = {}, deps: DepsIllustration = {},
+  options: { siEtag?: string; angle?: string; lumiere?: string } = {}, deps: DepsIllustration = {},
 ): Promise<IllustrationVue> {
   const interieur = lireInterieur(db, acteur, universId, galaxieId, q, r);
   const astre = interieur.astres.find((a) => a.cle === cle);
@@ -126,23 +129,33 @@ export async function illustrationAstre(
   if (!Number.isInteger(cote) || cote < COTE_MIN || cote > COTE_MAX) {
     throw new ErreurService('invalide', `La taille de l'illustration doit être un entier entre ${COTE_MIN} et ${COTE_MAX}.`, undefined, 'cote');
   }
+  const eclairage: Eclairage = {};
+  if (options.angle !== undefined) {
+    const a = /^\d{1,3}$/.test(options.angle) ? Number(options.angle) : NaN;
+    if (!(a >= 0 && a < 360)) throw new ErreurService('invalide', "L'angle doit être un entier entre 0 et 359.", undefined, 'angle');
+    eclairage.angle = a;
+  }
+  if (options.lumiere !== undefined) {
+    if (!/^[0-9a-fA-F]{6}$/.test(options.lumiere)) throw new ErreurService('invalide', 'La lumière doit être une couleur de six chiffres hexadécimaux.', undefined, 'lumiere');
+    eclairage.lumiere = `#${options.lumiere.toLowerCase()}`;
+  }
   const version = deps.versionRendu ?? coeur?.version_rendu();
   if (version === undefined) throw indisponible();
   const aspect = { type: astre.type, taille: astre.taille, aspect: astre.aspect };
-  const hash = createHash('sha256').update(`${version}\n${canonique(aspect)}\n${cote}`).digest('hex');
+  const hash = createHash('sha256').update(`${version}\n${canonique(aspect)}\n${cote}\n${eclairage.angle ?? '-'}\n${eclairage.lumiere ?? '-'}`).digest('hex');
   const etag = `"${hash}"`;
   if (etagCorrespond(options.siEtag, etag)) return { etag, type: 'image/webp', octets: null };
 
   const racine = deps.racine ?? cacheAstresDir;
   const nom = `${hash}.webp`;
   try {
-    return { etag, type: 'image/webp', octets: await octetsDe(racine, nom, JSON.stringify(aspect), cote, version, deps.rendre ?? rendreParWorker) };
+    return { etag, type: 'image/webp', octets: await octetsDe(racine, nom, JSON.stringify(aspect), cote, version, eclairage, deps.rendre ?? rendreParWorker) };
   } catch {
     throw indisponible();
   }
 }
 
-async function octetsDe(racine: string, nom: string, aspectJson: string, cote: number, version: number, rendre: Rendeur): Promise<Buffer> {
+async function octetsDe(racine: string, nom: string, aspectJson: string, cote: number, version: number, eclairage: Eclairage, rendre: Rendeur): Promise<Buffer> {
   try {
     return await readFile(join(racine, nom));
   } catch {
@@ -152,7 +165,7 @@ async function octetsDe(racine: string, nom: string, aspectJson: string, cote: n
   const deja = enVol.get(cle);
   if (deja) return deja;
   const travail = sousFile(async () => {
-    const octets = Buffer.from(await rendre(aspectJson, cote, version));
+    const octets = Buffer.from(await rendre(aspectJson, cote, version, eclairage));
     await ecrireDerive(racine, nom, octets);
     return octets;
   }).finally(() => enVol.delete(cle));

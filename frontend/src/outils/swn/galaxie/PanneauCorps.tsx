@@ -1,12 +1,14 @@
 import { Minus, Plus } from 'lucide-react';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { Alerte, Bouton, BoutonIcone, Fenetre } from '../../../ui';
+import { chargerModule } from '../../../wasm/charger';
 import { COTE_FLOU, dessineurDuCoeur } from './carte-sprites';
-import { aspectDe } from './carte-geometrie';
+import { aspectDe, disposer, type Plan } from './carte-geometrie';
+import { chargerClasses, eclairages, type Eclairage } from './lumiere-corps';
 import { nomAstre, placeAstre, typeAstre } from './systeme-libelles';
 import { LigneFiche } from './Liens';
-import type { AstreSysteme } from './types';
+import type { AstreSysteme, InterieurSysteme } from './types';
 
 type Image =
   | { k: 'chargement' }
@@ -39,12 +41,13 @@ function useImage(adresse: string, actif: boolean, essai: number): Image {
 }
 
 /** The blurred version: the core's own drawing at 16 px, smoothed by the browser (never a flat disc). Null when the core cannot draw. */
-function useFlou(aspect: string): string | null {
+function useFlou(aspect: string, pret: boolean, e: Eclairage | undefined): string | null {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
+    if (!pret) return;
     let vivant = true;
     setUrl(null);
-    dessineurDuCoeur(aspect, COTE_FLOU).then(
+    dessineurDuCoeur(aspect, COTE_FLOU, e?.angle, e?.lumiere).then(
       (octets) => {
         if (!vivant) return;
         const c = document.createElement('canvas');
@@ -55,7 +58,7 @@ function useFlou(aspect: string): string | null {
       () => { /* the frame stays empty, the sharp version and the messages still work */ },
     );
     return () => { vivant = false; };
-  }, [aspect]);
+  }, [aspect, pret, e?.angle, e?.lumiere]);
   return url;
 }
 
@@ -67,8 +70,29 @@ function coteFenetre(): number {
   return Math.max(64, Math.min(2048, Math.round(dispo * dpr)));
 }
 
+/** The light of one body, the same value as the map's (E-23): `pret` once the core's plan and class colours are read. */
+function useEclairage(astre: AstreSysteme, interieur: InterieurSysteme | undefined): { pret: boolean; e: Eclairage | undefined } {
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [classes, setClasses] = useState(false);
+  useEffect(() => {
+    let vivant = true;
+    chargerModule('coeur').then((c) => {
+      if (vivant) setPlan(() => (r: number, h: number): [number, number] => { const v = c.orbite_heure_vers_plan(r, h); return [v[0]!, v[1]!]; });
+    }, () => { if (vivant) setPlan(null); });
+    void chargerClasses().then(() => { if (vivant) setClasses(true); });
+    return () => { vivant = false; };
+  }, []);
+  return useMemo(() => {
+    if (!interieur) return { pret: true, e: undefined };
+    if (!plan || !classes) return { pret: false, e: undefined };
+    return { pret: true, e: eclairages(disposer(interieur, plan).corps).get(astre.cle) };
+  }, [astre.cle, interieur, plan, classes]);
+}
+
 interface Props {
   astre: AstreSysteme;
+  /** The system the body belongs to: its star gives the lit side and the light. */
+  interieur?: InterieurSysteme;
   q: number;
   r: number;
   /** `…/galaxies/:gid`, the tool's base. */
@@ -80,16 +104,17 @@ interface Props {
 }
 
 /** E-23, the panel of a body: the same for a GM and a player, plus the GM's `actions`. The rows are those of E-21's `gx-panneau`. */
-export default function PanneauCorps({ astre, q, r, base, suffixe, actions }: Props) {
+export default function PanneauCorps({ astre, interieur, q, r, base, suffixe, actions }: Props) {
   const aspect = aspectDe(astre);
-  const flou = useFlou(aspect);
+  const { pret, e } = useEclairage(astre, interieur);
+  const flou = useFlou(aspect, pret, e);
   const [essai, setEssai] = useState(0);
   const [ouverte, setOuverte] = useState(false);
-  const adresse = (cote: number) => `${base}/interieur/${q}/${r}/astres/${encodeURIComponent(astre.cle)}/illustration?cote=${cote}${suffixe ? `&${suffixe.slice(1)}` : ''}`;
+  const adresse = (cote: number) => `${base}/interieur/${q}/${r}/astres/${encodeURIComponent(astre.cle)}/illustration?cote=${cote}${e ? `&angle=${e.angle}&lumiere=${(e.lumiere ?? '').replace('#', '')}` : ''}${suffixe ? `&${suffixe.slice(1)}` : ''}`;
   const [coteHd] = useState(coteFenetre);
-  const net = useImage(adresse(COTE_PANNEAU), true, essai);
+  const net = useImage(adresse(COTE_PANNEAU), pret, essai);
   const [essaiHd, setEssaiHd] = useState(0);
-  const hd = useImage(adresse(coteHd), ouverte, essaiHd);
+  const hd = useImage(adresse(coteHd), ouverte && pret, essaiHd);
   const nom = nomAstre(astre);
   const type = typeAstre(astre);
   const description = typeof (astre as { description?: unknown }).description === 'string' ? (astre as { description: string }).description : '';

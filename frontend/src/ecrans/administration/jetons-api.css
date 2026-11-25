@@ -15,7 +15,8 @@
 .ligne-table-jeton.inactif .cel-nom b { color: var(--texte-2); }
 .ligne-table-jeton .cel-prop { color: var(--texte); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ligne-table-jeton .cel-acces strong { color: var(--texte); font-weight: 500; }
-.ligne-table-jeton .cel-acces > span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.ligne-table-jeton .cel-acces > .acces-perm { display: block; margin-top: var(--e-1); color: var(--texte-3); }
+.ligne-table-jeton .cel-acces > .acces-niveaux { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .ligne-table-jeton .cel-actions .bouton { white-space: nowrap; }
 .ligne-table-jeton .cel-actions { display: flex; gap: var(--e-1); justify-content: flex-end; }
 .ligne-table-jeton.hors { opacity: .45; }
