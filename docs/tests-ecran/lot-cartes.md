@@ -3,7 +3,7 @@
 Inventory of the screen files of `src/e2e/` whose name starts with `galaxie-`, `cartes-`, `carte-`, `graphe-`, `relier-`, `relation-`, `relations-`, `bloc-`, `liees-`, `liens-`. Form and classes: [README](README.md).
 The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shared world they build is `src/routes/monde-lot-cartes.ts`, not a test file); the others were already there.
 
-**State of the lot.** 424 tests listed: 160 `affichage`, 86 `effet`, 178 `les deux`.
+**State of the lot.** 425 tests listed: 161 `affichage`, 86 `effet`, 178 `les deux`.
 - Decision `retiré`: the test is no more in `src/e2e/`; its door is green (replayed). These tests opened no browser: they read the API of a real server, and they run now on the app in-process.
 - Decision `allégé`: the effect expectations went to the door, the screen keeps what is displayed.
 - Decision `allégé` is also given, in the files lightened in pass 2 (`cartes-*`, `carte-illustree-ecran`, `galaxie-tenir-*`, `liens-ensemble-besoin`), to the `les deux` lines: the API reads of an effect (statuses, served background, filtered elements, leaks in a response, counts) are out; what stays is the visible result of the gesture and the client's own computation (keyboard/drag step, centre). The nine pure-API tests of `liens-ensemble-besoin` were removed (doors: `liens-lecture-besoin`, `liens-ecriture-besoin`, `liens-ecran-restantes`).
@@ -565,3 +565,4 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/carte-rattache-texte-ecran.test.ts` | `E-11 : « Modifier » et « Vider » sont dans l’en-tête du bloc Texte, à droite du titre, avec leur icône` | affichage | — | gardé |
 | `src/e2e/carte-rattache-texte-ecran.test.ts` | `E-9 : le bloc « Cartes » est un libellé avec icône ; à 360 px le titre d’une carte reste lisible, le type et la pastille passent à la ligne` | affichage | — | gardé |
 | `src/e2e/carte-systeme-aspects-reliefs-ecran.test.ts` | `E-23 un corps à nuages colorés est dessiné avec sa clé > le sprite du corps change avec couleur_nuages, et la fenêtre montre la même teinte que la carte` | affichage | — | gardé |
+| `src/e2e/carte-systeme-nuit-ecran.test.ts` | `E-23 un monde à lueur montre une face nocturne lumineuse > la face nocturne du sprite s’éclaire avec lueur, et la fenêtre montre la même teinte que la carte` | affichage | — | gardé |
