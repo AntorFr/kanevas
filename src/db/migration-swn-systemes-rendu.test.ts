@@ -82,7 +82,7 @@ test('0052 : routes, astres, formations et éléments suivent leur système, for
   const compte = (t: string) => (db.prepare(`SELECT count(*) AS n FROM ${t}`).get() as { n: number }).n;
   const avant = ['swn_routes', 'swn_astres', 'swn_formations', 'swn_elements'].map(compte);
 
-  assert.deepEqual(migrate(db), [52]);
+  assert.deepEqual(migrate(db), [51, 52]);
   assert.deepEqual(['swn_routes', 'swn_astres', 'swn_formations', 'swn_elements'].map(compte), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   assert.deepEqual(db.prepare('SELECT systeme_id FROM swn_astres ORDER BY id').all(), [{ systeme_id: 1 }, { systeme_id: 1 }]);
