@@ -158,7 +158,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     return () => o.disconnect();
   }, [etat]);
 
-  const ajuste = dispo && taille.w > 0 ? Math.max(8, Math.min(taille.w, taille.h) / 2 - (dispo.transition > 0 ? RESERVE_TRANSITION_PX : 0)) / (etendue * 1.12) : 1;
+  const ajuste = dispo && taille.w > 0 ? Math.max(8, Math.min(taille.w, taille.h) / 2 - (dispo.transition > 0 && dispo.transition >= etendue ? RESERVE_TRANSITION_PX : 0)) / (etendue * 1.12) : 1;
   const echelle = ajuste * vue.zoom;
   // Radius and sprite side in screen pixels: from the fit only, so a body keeps its size at every zoom (AD-echelle-1).
   const dims = useMemo(() => (dispo ? dimensionsCorps(dispo.corps, ajuste) : new Map<string, { rayon: number; cote: number }>()), [dispo, ajuste]);
