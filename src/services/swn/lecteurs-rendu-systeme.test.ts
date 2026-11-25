@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-// kanevas-carte-rendu-galaxie-systemes-migration : après la montée 0051, les lecteurs de `taille` et `couleur`
+// kanevas-carte-rendu-galaxie-systemes-migration : après la montée 0052, les lecteurs de `taille` et `couleur`
 // (lecture-carte, document-source) disent 0.75 et #f2a33c là où ils disaient 3 / « grande » et « ambre » ;
 // l'écrivain accepte encore les anciens noms et entiers (AD-rendu-8).
 process.env.NODE_ENV = 'test';

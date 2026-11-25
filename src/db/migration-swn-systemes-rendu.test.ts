@@ -1,4 +1,4 @@
-// Migration 0051 (AD-rendu-2, B-117, B-118): `swn_systemes` rebuilt on the conversion table of `docs/donnees.md`.
+// Migration 0052 (AD-rendu-2, B-117, B-118): `swn_systemes` rebuilt on the conversion table of `docs/donnees.md`.
 // The 0050 database is built by the test itself (migrations up to 0050, then SQL rows).
 import assert from 'node:assert/strict';
 import { copyFileSync, mkdirSync, mkdtempSync, readdirSync } from 'node:fs';
@@ -40,7 +40,7 @@ function base50(): Db {
   return db;
 }
 
-test('0051 : chaque taille 1 à 5 prend la valeur de sa ligne de table', () => {
+test('0052 : chaque taille 1 à 5 prend la valeur de sa ligne de table', () => {
   const db = base50();
   migrate(db);
   for (const [t, v] of TAILLES) {
@@ -49,7 +49,7 @@ test('0051 : chaque taille 1 à 5 prend la valeur de sa ligne de table', () => {
   }
 });
 
-test('0051 : chacun des cinq noms de couleur prend son #rrggbb, neutre devient null', () => {
+test('0052 : chacun des cinq noms de couleur prend son #rrggbb, neutre devient null', () => {
   const db = base50();
   migrate(db);
   for (const [c, v] of COULEURS) {
@@ -59,7 +59,7 @@ test('0051 : chacun des cinq noms de couleur prend son #rrggbb, neutre devient n
   assert.equal((db.prepare("SELECT couleur FROM swn_systemes WHERE cle = 'bleu'").get() as { couleur: unknown }).couleur, null);
 });
 
-test('0051 : classe et voile nuls, les autres colonnes et les ids sont conservés', () => {
+test('0052 : classe et voile nuls, les autres colonnes et les ids sont conservés', () => {
   const db = base50();
   const avant = db.prepare('SELECT id, galaxie_id, univers_id, cle, nom, q, r, notes, secret, promu, version, version_importee, transition FROM swn_systemes ORDER BY id').all();
   migrate(db);
@@ -70,7 +70,7 @@ test('0051 : classe et voile nuls, les autres colonnes et les ids sont conservé
   assert.equal(n.n, 0);
 });
 
-test('0051 : routes, astres, formations et éléments suivent leur système, foreign_key_check vide, cascades vivantes', () => {
+test('0052 : routes, astres, formations et éléments suivent leur système, foreign_key_check vide, cascades vivantes', () => {
   const db = base50();
   db.prepare('INSERT INTO swn_routes (id, galaxie_id, univers_id, depuis_id, vers_id, publique, longueur) VALUES (1, 1, 1, 1, 2, 1, 3)').run();
   db.prepare('INSERT INTO swn_routes (id, galaxie_id, univers_id, depuis_id, vers_id, publique, longueur) VALUES (2, 1, 1, 3, 1, 0, 4)').run();
@@ -82,7 +82,7 @@ test('0051 : routes, astres, formations et éléments suivent leur système, for
   const compte = (t: string) => (db.prepare(`SELECT count(*) AS n FROM ${t}`).get() as { n: number }).n;
   const avant = ['swn_routes', 'swn_astres', 'swn_formations', 'swn_elements'].map(compte);
 
-  assert.deepEqual(migrate(db), [51]);
+  assert.deepEqual(migrate(db), [52]);
   assert.deepEqual(['swn_routes', 'swn_astres', 'swn_formations', 'swn_elements'].map(compte), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   assert.deepEqual(db.prepare('SELECT systeme_id FROM swn_astres ORDER BY id').all(), [{ systeme_id: 1 }, { systeme_id: 1 }]);
@@ -94,7 +94,7 @@ test('0051 : routes, astres, formations et éléments suivent leur système, for
   assert.equal(compte('swn_systemes'), 11);
 });
 
-test('0051 : la table refuse désormais une taille hors [0, 1] et une couleur qui n\'est pas #rrggbb, accepte classe et voile', () => {
+test('0052 : la table refuse désormais une taille hors [0, 1] et une couleur qui n\'est pas #rrggbb, accepte classe et voile', () => {
   const db = base50();
   migrate(db);
   const ins = (cle: string, q: number, taille: unknown, couleur: unknown, classe: unknown = null, voile: unknown = null) =>
@@ -112,7 +112,7 @@ test('0051 : la table refuse désormais une taille hors [0, 1] et une couleur qu
   assert.equal((db.prepare('SELECT taille, couleur FROM swn_systemes WHERE id = ?').get(defaut.lastInsertRowid) as { taille: number }).taille, 0.45);
 });
 
-test('0051 : l\'index du bloc existe toujours, la clé et la case (galaxie, q, r) restent uniques', () => {
+test('0052 : l\'index du bloc existe toujours, la clé et la case (galaxie, q, r) restent uniques', () => {
   const db = base50();
   migrate(db);
   const idx = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'index' AND name = 'idx_swn_systemes_bloc'").get() as { sql: string };
@@ -124,7 +124,7 @@ test('0051 : l\'index du bloc existe toujours, la clé et la case (galaxie, q, r
   assert.throws(() => ins('neuf', 1, 0), /UNIQUE/);
 });
 
-test('0051 : affichage_defaut vaut 1 sur les zones existantes, 0 et 1 seuls permis', () => {
+test('0052 : affichage_defaut vaut 1 sur les zones existantes, 0 et 1 seuls permis', () => {
   const db = base50();
   db.prepare("INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, secret) VALUES (1, 1, 'z', 'Z', '[[0,0],[1,0],[0,1]]', 'accent', 0)").run();
   db.prepare("INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, secret) VALUES (1, 1, 'z2', 'Z2', '[[0,0],[1,0],[0,1]]', 'neutre', 1)").run();

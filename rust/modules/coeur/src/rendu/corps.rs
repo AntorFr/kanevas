@@ -37,6 +37,12 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
         [x * ct - p[1] * st, x * st + p[1] * ct, z]
     };
 
+    // The tilt alone, without the yaw, with the north up: the frame of an explicit `tache`.
+    let incliner = |n: V3| -> V3 {
+        let ys = -n[1];
+        [n[0] * ct - ys * st, n[0] * st + ys * ct, n[2]]
+    };
+
     // Light: direction on the screen, elevation toward the viewer.
     let a = c.f("lumiere", 135.0).to_radians();
     let el = borne(c.f("elevation", 0.5), 0.05, 1.2);
@@ -49,7 +55,7 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
     let halo_col = c.col("halo_couleur", [0.5, 0.7, 1.0]);
     let relief = borne(c.f("relief", 0.0), 0.0, 2.0);
 
-    // A gas giant may carry a ring: asked by the aspect, or drawn from the seed for a quarter of them.
+    // A gas giant may carry a ring, only when the aspect asks for it.
     let anneau = anneau_de(c, kind, &mut graine);
     let echelle = if anneau.is_some() { c.f("echelle", 0.62).min(0.46) } else { borne(c.f("echelle", 0.78), 0.2, 0.95) };
     let r_corps = c.demi * echelle;
@@ -62,6 +68,10 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
     let tempete = c.f("tempete", 0.0);
     let cratere = c.f("cratere", 0.0);
     let fissures = c.f("fissures", 0.0);
+    let turbulence = borne(c.f("turbulence", 1.0), 0.0, 2.0);
+    let crateres_nombre = c.asp.get("crateres_nombre").and_then(serde_json::Value::as_f64).map(|n| n as f32);
+    let tache = c.asp.get("tache").and_then(serde_json::Value::as_object);
+    let brume = c.asp.get("brume").and_then(serde_json::Value::as_str).and_then(hex);
     let br = c.bruit;
     let nuit_def = [0.55, 0.65, 1.0];
 
@@ -72,13 +82,23 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
             Kind::Glace => 0.5 * br.fbm([p[0] * 3.0, p[1] * 3.0, p[2] * 3.0], oct) + 0.5 * br.crete([p[0] * 2.0, p[1] * 2.0, p[2] * 2.0], oct.min(4)),
             Kind::Rocheux => {
                 let base = br.fbm([p[0] * 3.0, p[1] * 3.0, p[2] * 3.0], oct);
-                let (f1, _, id) = br.cellules([p[0] * 5.0, p[1] * 5.0, p[2] * 5.0]);
+                // Without `crateres_nombre` two layers whose density follows `cratere`; with it, one layer whose
+                // cell frequency makes about that many craters on the sphere (~10 cells per unit of f squared).
+                let (f_gros, plein) = match crateres_nombre {
+                    None => (5.0, 0.8),
+                    Some(n) => ((n / 10.0).sqrt().max(0.5), 1.0),
+                };
+                let (f1, _, id) = br.cellules([p[0] * f_gros, p[1] * f_gros, p[2] * f_gros]);
                 let rayon = 0.2 + 0.25 * alea(id);
-                let bol = if alea(hache(id ^ 77)) < 0.8 { lisse(rayon, rayon * 0.7, f1) * 0.9 - lisse(rayon * 1.0, rayon * 1.25, f1) * 0.35 * lisse(rayon * 1.4, rayon, f1) } else { 0.0 };
-                let (g1, _, gid) = br.cellules([p[0] * 11.0, p[1] * 11.0, p[2] * 11.0]);
-                let r2 = 0.12 + 0.15 * alea(gid);
-                let petit = lisse(r2, r2 * 0.65, g1) * 0.5;
-                base * 0.5 - (bol + petit) * (0.3 + 0.7 * cratere.min(1.0))
+                let bol = if alea(hache(id ^ 77)) < plein { lisse(rayon, rayon * 0.7, f1) * 0.9 - lisse(rayon * 1.0, rayon * 1.25, f1) * 0.35 * lisse(rayon * 1.4, rayon, f1) } else { 0.0 };
+                let petit = if crateres_nombre.is_some() {
+                    0.0
+                } else {
+                    let (g1, _, gid) = br.cellules([p[0] * 11.0, p[1] * 11.0, p[2] * 11.0]);
+                    let r2 = 0.12 + 0.15 * alea(gid);
+                    lisse(r2, r2 * 0.65, g1) * 0.5
+                };
+                if crateres_nombre == Some(0.0) { base * 0.5 } else { base * 0.5 - (bol + petit) * (0.3 + 0.7 * cratere.min(1.0)) }
             }
             Kind::Lave => br.fbm([p[0] * 2.5, p[1] * 2.5, p[2] * 2.5], oct),
             Kind::Gazeuse => 0.5,
@@ -89,7 +109,8 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
         let pal = &c.pal;
         match kind {
             Kind::Tellurique => {
-                let niveau = 0.3 + 0.4 * mer;
+                // No sea at all at 0: the level fades to nothing under 0.05.
+                let niveau = (0.3 + 0.4 * mer) * lisse(0.0, 0.05, mer);
                 let lat = p[1].abs();
                 let mut alb;
                 let mut spec = 0.0;
@@ -117,9 +138,12 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                 }
                 // Clouds: a bright layer lit like the ground, thicker toward the weather fronts.
                 if nuages > 0.0 {
-                    let q = br.fbm([p[0] * 2.6 + 11.0, p[1] * 4.2, p[2] * 2.6], oct);
                     let w = br.fbm([p[0] * 5.0 - 3.0, p[1] * 8.0, p[2] * 5.0 + 1.0], 3);
-                    let dens = lisse(0.62 - 0.22 * nuages, 0.8 - 0.2 * nuages, q * 0.8 + w * 0.2);
+                    // The streaks are bent by the turbulence (1 = the base shape).
+                    let tord = (turbulence - 1.0) * (w - 0.5) * 1.2;
+                    let q = br.fbm([p[0] * 2.6 + 11.0 + tord, p[1] * 4.2, p[2] * 2.6 - tord], oct);
+                    // A wide curve: at 1 the veil covers the disc.
+                    let dens = lisse(0.62 - 0.5 * nuages, 0.8 - 0.5 * nuages, q * 0.8 + w * 0.2);
                     alb = melange(alb, [0.96, 0.97, 1.0], dens * 0.92);
                     spec *= 1.0 - dens;
                 }
@@ -169,21 +193,35 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                 let lat = p[1];
                 let tur = br.fbm([p[0] * 2.0, p[1] * 6.0, p[2] * 2.0], oct);
                 let tur2 = br.fbm([p[0] * 5.0 + 7.0, p[1] * 14.0, p[2] * 5.0], oct.min(4));
-                let w = lat * (5.0 + 3.0 * c.bruit.valeur([3.3, 1.1, 0.5])) + (tur - 0.5) * 1.6 * bandes + (tur2 - 0.5) * 0.35;
+                let w = lat * (5.0 + 3.0 * c.bruit.valeur([3.3, 1.1, 0.5])) + (tur - 0.5) * 1.6 * bandes * turbulence + (tur2 - 0.5) * 0.35 * turbulence;
                 let b = 0.5 + 0.5 * (w * 6.2832 * 0.55).sin();
                 let b2 = 0.5 + 0.5 * (w * 6.2832 * 1.3 + 1.0).sin();
                 let t = borne(b * 0.7 + b2 * 0.3, 0.0, 1.0);
                 let mut alb = rampe(pal, t * 0.999);
                 alb = mul(alb, 0.82 + 0.3 * tur2);
                 if tempete > 0.0 {
-                    // A great storm, an oval at a seeded place in the south.
-                    let (cx, cyy, cz) = (0.35, -0.3, 0.88);
-                    let dx = (p[0] - cx) * 2.2;
-                    let dy = (p[1] - cyy) * 3.6;
-                    let dz = p[2] - cz;
-                    let dd = (dx * dx + dy * dy + dz * dz * 0.0).sqrt();
-                    let oeil = lisse(0.6, 0.0, dd + (tur2 - 0.5) * 0.25);
-                    alb = melange(alb, melange(c.pal_i(2), [1.0, 0.92, 0.8], 0.35), oeil * tempete.min(1.0) * 0.8);
+                    if let Some(t) = tache {
+                        // Placed by the aspect: `latitude` (north up), `taille`, `couleur`, in the body's tilt-only frame.
+                        let fl = |k: &str, d: f32| t.get(k).and_then(serde_json::Value::as_f64).map_or(d, |x| x as f32);
+                        let lat_t = borne(fl("latitude", -0.3), -1.0, 1.0);
+                        let taille = borne(fl("taille", 0.12), 0.02, 0.4);
+                        let col_t = t.get("couleur").and_then(serde_json::Value::as_str).and_then(hex).unwrap_or_else(|| c.pal_i(2));
+                        let q = incliner(nrm);
+                        let h = (1.0 - lat_t * lat_t).max(0.0).sqrt();
+                        let cx = h * 0.35f32.sin();
+                        let dd = (((q[0] - cx) / (taille * 2.0)).powi(2) + ((q[1] - lat_t) / taille).powi(2)).sqrt();
+                        let oeil = lisse(1.0, 0.0, dd + (tur2 - 0.5) * 0.25) * if q[2] > 0.0 { 1.0 } else { 0.0 };
+                        alb = melange(alb, col_t, oeil * tempete.min(1.0) * 0.8);
+                    } else {
+                        // A great storm, an oval at a seeded place in the south.
+                        let (cx, cyy, cz) = (0.35, -0.3, 0.88);
+                        let dx = (p[0] - cx) * 2.2;
+                        let dy = (p[1] - cyy) * 3.6;
+                        let dz = p[2] - cz;
+                        let dd = (dx * dx + dy * dy + dz * dz * 0.0).sqrt();
+                        let oeil = lisse(0.6, 0.0, dd + (tur2 - 0.5) * 0.25);
+                        alb = melange(alb, melange(c.pal_i(2), [1.0, 0.92, 0.8], 0.35), oeil * tempete.min(1.0) * 0.8);
+                    }
                 }
                 let _ = (nrm, h);
                 Surf { alb, emis: [0.0; 3], spec: 0.0, nuit: [0.6, 0.55, 0.7] }
@@ -274,6 +312,11 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
                     rim = ajoute(rim, mul(halo_col, (1.0 - nz).powi(2) * halo.min(1.0) * 0.5 * cote_jour));
                     col = ajoute(col, rim);
                 }
+                // The haze of a world: a veil of the `brume` colour, thicker toward the limb, on the lit side.
+                if let Some(b) = brume {
+                    let k = (0.25 + 0.75 * (1.0 - nz).powf(1.5)) * 0.4 * lisse(-0.35, 0.55, dif);
+                    col = melange(col, b, k);
+                }
                 let corps: Px = [col[0] * cov, col[1] * cov, col[2] * cov, cov];
                 px = dessus(corps, px);
             }
@@ -288,11 +331,15 @@ pub fn rendre(c: &Ctx, kind: Kind) -> Vec<Px> {
 
 fn anneau_de(c: &Ctx, kind: Kind, g: &mut Flux) -> Option<Anneau> {
     let v = c.asp.get("anneau");
-    let defaut_oui = kind == Kind::Gazeuse && v.is_none() && g.suivant() < 0.28;
+    // The former 28 % draw of a ring is made and dropped: the other draws of the seed do not move, and a ring
+    // exists only when the aspect asks for it.
+    if kind == Kind::Gazeuse && v.is_none() {
+        let _ = g.suivant();
+    }
     let on = match v {
         Some(serde_json::Value::Bool(b)) => *b,
         Some(serde_json::Value::Object(_)) => true,
-        _ => defaut_oui,
+        _ => false,
     };
     // Drawn in every case, so the other draws of the seed do not move with the ring.
     let ri = g.entre(1.3, 1.5);

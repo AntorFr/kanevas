@@ -1,4 +1,4 @@
-// Test helper: seeds the stub on a database still at a schema BEFORE migration 0051 (`swn_systemes.taille` an integer 1..5, `couleur` a name).
+// Test helper: seeds the stub on a database still at a schema BEFORE migration 0052 (`swn_systemes.taille` an integer 1..5, `couleur` a name).
 // The seeds write the new shape (0.75, `#8b9bf0`); the proxy turns those two values back into the old ones on the way in, so a
 // « montée avec le semis » test keeps its old-schema starting point.
 import type { Db } from './db.js';
@@ -33,7 +33,7 @@ export function ancienSchema(db: Db): Db {
 
 const TAILLE_NOUVELLE: Record<number, number> = { 1: 0.15, 2: 0.45, 3: 0.75, 4: 0.9, 5: 1 };
 const COULEUR_NOUVELLE: Record<string, string | null> = { accent: '#8b9bf0', table: '#3fc79a', ambre: '#f2a33c', danger: '#ec7b6f', clair: '#ebecf0', neutre: null };
-/** An old-schema `swn_systemes` row as migration 0051 must leave it (conversion table of `docs/donnees.md`; `classe` and `voile` null). */
-export function ligneApres0051<T extends { taille: number; couleur: string }>(l: T): Record<string, unknown> {
+/** An old-schema `swn_systemes` row as migration 0052 must leave it (conversion table of `docs/donnees.md`; `classe` and `voile` null). */
+export function ligneApres0052<T extends { taille: number; couleur: string }>(l: T): Record<string, unknown> {
   return { ...l, taille: TAILLE_NOUVELLE[l.taille], couleur: COULEUR_NOUVELLE[l.couleur] ?? null, classe: null, voile: null };
 }

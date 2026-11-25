@@ -16,7 +16,7 @@ process.env.KANEVAS_STUB = '1';
 process.env.DB_PATH = join(dossier, 'k.db');
 const { openDb, migrate } = await import('../../db/db.js');
 const { semerBouchon } = await import('../../bouchon/depart.js');
-const { ancienSchema, ligneApres0051 } = await import('../../db/semis-ancien.js');
+const { ancienSchema, ligneApres0052 } = await import('../../db/semis-ancien.js');
 const { plagesDe } = await import('./regles/forme.js');
 const GALAXIE = JSON.parse(readFileSync(fileURLToPath(new URL('../../../rust/modules/coeur/tests/fixtures/generation-galaxie.json', import.meta.url)), 'utf8'));
 
@@ -52,8 +52,8 @@ const cookie = async () => {
 const base = `/api/univers/${E}/outils/swn/galaxie/galaxies/${g}`;
 
 test('montée : les lignes de la base d’exemple sont celles d’avant, les deux tables sont là et vides, aucune clé étrangère cassée', () => {
-  // The 0051 migration of the same climb: systems on the new shape, zones with `affichage_defaut` 1; the rows are otherwise the same.
-  const attendu: any = { ...avant, swn_systemes: avant.swn_systemes.map(ligneApres0051), swn_zones: avant.swn_zones.map((z: any) => ({ ...z, affichage_defaut: 1 })) };
+  // The 0052 migration of the same climb: systems on the new shape, zones with `affichage_defaut` 1; the rows are otherwise the same.
+  const attendu: any = { ...avant, swn_systemes: avant.swn_systemes.map(ligneApres0052), swn_zones: avant.swn_zones.map((z: any) => ({ ...z, affichage_defaut: 1 })) };
   assert.deepEqual(instantane(app.db), attendu);
   for (const t of ['swn_reglages', 'swn_aspects']) assert.equal((app.db.prepare(`SELECT count(*) n FROM ${t}`).get() as any).n, 0, t);
   assert.deepEqual(app.db.pragma('foreign_key_check'), []);
@@ -85,5 +85,5 @@ test('montée : la galaxie montée accepte un premier réglage, la comète à 1 
   const interieur = (await app.inject({ method: 'GET', url: `${base}/interieur/-49/-48`, headers: h })).json();
   assert.ok(interieur.astres.some((a: any) => a.genre === 'comete'));
   assert.equal(app.db.prepare('SELECT count(*) n FROM swn_reglages').get().n, 1);
-  assert.deepEqual(instantane(app.db).swn_systemes, avant.swn_systemes.map(ligneApres0051), 'le système défini d’avant n’a pas bougé');
+  assert.deepEqual(instantane(app.db).swn_systemes, avant.swn_systemes.map(ligneApres0052), 'le système défini d’avant n’a pas bougé');
 });

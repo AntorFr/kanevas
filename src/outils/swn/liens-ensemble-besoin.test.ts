@@ -78,7 +78,8 @@ test('B-92 · une fiche que Léa ne lit pas : la planète est rendue à Léa com
   const lea = await w.interieur('lea', 62, 63);
   const lie = lea.astres.find((a: any) => a.cle === 'p3'); const libre = lea.astres.find((a: any) => a.cle === 'p4');
   assert.equal(lie.fiche, null);
-  assert.deepEqual({ ...lie, cle: '', version: 0 }, { ...libre, cle: '', version: 0 });
+  // (the seed comes from the key, B-114: the two bodies differ by it alone)
+  assert.deepEqual({ ...lie, cle: '', version: 0, aspect: { ...lie.aspect, graine: 0 } }, { ...libre, cle: '', version: 0, aspect: { ...libre.aspect, graine: 0 } });
   const corps = JSON.stringify(lea);
   assert.ok(!corps.includes('Projet Zéphyr') && !corps.includes(`"id":${secrete},`) && !corps.includes('fiche_id'));
   assert.equal((await w.req('lea', 'GET', `${w.api}/fiches/${secrete}`)).statusCode, 404);

@@ -32,7 +32,9 @@ interface Coeur {
   orbite_heure_vers_plan(orbite: number, heure: number): Float64Array;
   plan_vers_orbite_heure(x: number, y: number): Float64Array;
   heure_vers_voisin(q1: number, r1: number, q2: number, r2: number): number;
-  dessiner_astre(aspect: string, cote: number, versionRendu: number): Uint8Array;
+  dessiner_astre(aspect: string, cote: number, versionRendu: number, angle?: number, lumiere?: string): Uint8Array;
+  graine_de(cleSysteme: string, cleCorps: string): number;
+  trier_aspect(type: string, json: string): string;
   version_rendu(): number;
   catalogue_aspects(): string;
   types_astre(genre: string): string;
@@ -134,8 +136,8 @@ export async function planVersOrbiteHeure(x: number, y: number): Promise<[number
 }
 
 /** RGBA bytes (`cote * cote * 4`) of a body drawn from its aspect JSON (AD-carte-1). Throws if the core refuses (unknown type or version, side out of [16, 2048]). */
-export async function dessiner(aspect: string, cote: number, versionRendu: number): Promise<Uint8Array> {
-  return (await coeur()).dessiner_astre(aspect, cote, versionRendu);
+export async function dessiner(aspect: string, cote: number, versionRendu: number, angle?: number, lumiere?: string): Promise<Uint8Array> {
+  return (await coeur()).dessiner_astre(aspect, cote, versionRendu, angle, lumiere);
 }
 
 /** Version of the renderer, part of the cache hash (AD-142). */
@@ -162,6 +164,16 @@ export async function typesAstre(genre: string): Promise<string[]> {
 export async function galactiqueVersOrbiteHeure(dq: number, dr: number, rayon: number): Promise<[number, number]> {
   const p = (await coeur()).galactique_vers_orbite_heure(dq, dr, rayon);
   return [p[0]!, p[1]!];
+}
+
+/** Seed of a body from its system key and its own key (same pair, same value). */
+export async function graineDe(cleSysteme: string, cleCorps: string): Promise<number> {
+  return (await coeur()).graine_de(cleSysteme, cleCorps);
+}
+
+/** The aspect without the keys the core does not know (at any depth) and their paths (`aspect.x`); throws for a known key out of bounds. */
+export async function trierAspect(type: string, json: string): Promise<{ garde: Record<string, unknown>; inconnues: string[] }> {
+  return JSON.parse((await coeur()).trier_aspect(type, json));
 }
 
 /** The aspect JSON re-serialised if it is valid for the type (<= 4 KiB, known keys, bounds). Throws with the core's message otherwise. */

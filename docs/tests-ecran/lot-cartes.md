@@ -469,6 +469,12 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/carte-systeme-canvas-ecran.test.ts` | `le cœur indisponible : « La carte ne peut pas s’afficher ici. » et les listes restent` | affichage | — | gardé |
 | `src/e2e/carte-systeme-canvas-ecran.test.ts` | `hors ligne : « Connexion perdue. » une seule fois, la carte reste` | affichage | — | gardé |
 | `src/e2e/carte-systeme-canvas-ecran.test.ts` | `les deux thèmes : captures du ciel (1280 et 390 px), le ciel reste sombre` | affichage | — | gardé |
+| `src/e2e/carte-systeme-echelle-ecran.test.ts` | `E-23 les astres à l’échelle de leurs orbites > un astre garde sa taille entre deux zooms, la position seule suit` | affichage | — | gardé |
+| `src/e2e/carte-systeme-echelle-ecran.test.ts` | `E-23 les astres à l’échelle de leurs orbites > chaque astre a son orbite tracée, la lune sur celle de sa planète` | affichage | — | gardé |
+| `src/e2e/carte-systeme-echelle-ecran.test.ts` | `E-23 les astres à l’échelle de leurs orbites > captures dans les deux thèmes à 1280 et 390 px, tous les noms posés` | affichage | — | gardé |
+| `src/e2e/carte-systeme-lumiere-ecran.test.ts` | `E-23 la face éclairée de chaque astre regarde son étoile > la face la plus claire de chaque planète et de la lune regarde son étoile` | affichage | — | gardé |
+| `src/e2e/carte-systeme-lumiere-ecran.test.ts` | `E-23 la face éclairée de chaque astre regarde son étoile > « Voir l’illustration » d’une planète montre la même face que la carte` | affichage | — | gardé |
+| `src/e2e/carte-systeme-lumiere-ecran.test.ts` | `E-23 la face éclairée de chaque astre regarde son étoile > captures dans les deux thèmes à 1280 et 390 px` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `${l} px : un corps sélectionné ouvre son panneau (nom, type, lieu, hexagone) ; le ciel vide le ferme` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `un astre sans nom lit « Astre sans nom »` | affichage | — | gardé |
 | `src/e2e/carte-systeme-panneau-ecran.test.ts` | `le MJ lit le panneau de la joueuse et seulement trois gestes d’écriture de plus (E-23 édition)` | affichage | — | gardé |

@@ -55,8 +55,10 @@ export interface Atlas {
   points: PointAtlas[];
   elements: ElementAtlas[];
 }
+/** A key of an aspect the core does not know (B-114): the body is imported without it and the report names it. */
+export interface NonRendu { chemin: string; cle: string }
 export type LectureAtlas =
-  | { ok: true; atlas: Atlas }
+  | { ok: true; atlas: Atlas; nonRendu?: NonRendu[]; nonRenduTotal?: number }
   | { ok: false; refus: RefusAtlas[]; refusTotal: number };
 
 type Obj = Record<string, unknown>;
@@ -66,6 +68,8 @@ const present = (o: Obj, k: string): boolean => Object.hasOwn(o, k) && o[k] !== 
 class Lecteur {
   readonly refus: RefusAtlas[] = [];
   total = 0;
+  readonly nonRendu: NonRendu[] = [];
+  nonRenduTotal = 0;
   readonly cles = new Set<string>();
 
   refuser(chemin: string, champ: string, raison: string): void {
@@ -160,13 +164,21 @@ class Lecteur {
     return v;
   }
 
-  /** Through the core's validator; it returns the aspect re-serialised, which is the normalised value. */
+  /**
+   * Through the core's sorter (AD-aspects-socle-2): the keys it does not know, at any depth, leave the aspect and are listed
+   * under `non_rendu`; a known key out of bounds is still a refusal. It returns the aspect re-serialised, the normalised value.
+   */
   aspect(o: Obj, base: string, type: string | null): Obj | null {
     if (!present(o, 'aspect') || o.aspect === null) return null;
     if (!objet(o.aspect)) { this.refuser(`${base}aspect`, 'aspect', "L'aspect : un objet."); return null; }
     if (type === null) return null;
     try {
-      return JSON.parse(leCoeur().valider_aspect(type, JSON.stringify(o.aspect))) as Obj;
+      const tri = JSON.parse(leCoeur().trier_aspect(type, JSON.stringify(o.aspect))) as { garde: Obj; inconnues: string[] };
+      for (const inconnue of tri.inconnues) {
+        this.nonRenduTotal++;
+        if (this.nonRendu.length < MAX_REFUS_ATLAS) this.nonRendu.push({ chemin: base + inconnue, cle: inconnue.slice(inconnue.lastIndexOf('.') + 1) });
+      }
+      return tri.garde;
     } catch (e) {
       this.refuser(`${base}aspect`, 'aspect', e instanceof Error && e.message ? `Valeur refusée : ${e.message}` : 'Valeur refusée.');
       return null;
@@ -355,7 +367,7 @@ export function lireAtlas(corps: unknown): LectureAtlas {
   if (l.total > 0) return { ok: false, refus: l.refus, refusTotal: l.total };
   const atlas: Atlas = { etoiles, corps: lesCorps, zones, points, elements };
   if (transition !== undefined) atlas.transition = transition;
-  return { ok: true, atlas };
+  return { ok: true, atlas, ...(l.nonRenduTotal > 0 ? { nonRendu: l.nonRendu, nonRenduTotal: l.nonRenduTotal } : {}) };
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -370,6 +382,9 @@ export interface RapportAtlas {
   natures: Record<NatureAtlas, CompteursAtlas>;
   refus: RefusApplique[];
   refusTotal: number;
+  /** Only when the core did not know a key of an aspect (B-114); an atlas of the former format has neither field. */
+  non_rendu?: NonRendu[];
+  non_rendu_total?: number;
 }
 
 const vide = (): Record<NatureAtlas, CompteursAtlas> => Object.fromEntries(
@@ -414,6 +429,9 @@ class Annulation extends Error {}
 
 const json = (v: unknown): string => JSON.stringify(v);
 const memeJson = (stocke: string, v: unknown): boolean => json(JSON.parse(stocke)) === json(v);
+/** JSON with the keys sorted at every depth: two aspects are the same when this is. */
+const canon = (v: unknown): string => JSON.stringify(v, (_k, x: unknown) => (x !== null && typeof x === 'object' && !Array.isArray(x)
+  ? Object.fromEntries(Object.entries(x as Obj).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) : x));
 
 /**
  * Applies the atlas of the system `cleSysteme` of a galaxy, as the token's account, in one transaction: either every
@@ -430,6 +448,13 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
   const lecture = lireAtlas(corps);
   if (!lecture.ok) return rapportRefuse(lecture.refus, lecture.refusTotal);
   const atlas = lecture.atlas;
+  const nonRendu = lecture.nonRendu ? { non_rendu: lecture.nonRendu, non_rendu_total: lecture.nonRenduTotal } : {};
+  /** The seed the import writes into a new row that has none, and the one a row without seed is read with. */
+  const graineDe = (cle: string): number => leCoeur().graine_de(cleSysteme, cle);
+  const aspectDefaut = (type: string): Obj =>
+    ((JSON.parse(leCoeur().catalogue_aspects()) as { types: Record<string, Obj> }).types[type] ?? {});
+  /** An aspect with its seed, the posed one or `graine_de` (absent = `graine_de`: what replays compare). */
+  const avecGraine = (aspect: Obj, cle: string): Obj => ({ ...aspect, graine: aspect.graine ?? graineDe(cle) });
 
   // The sheets: the key (`cle`, or a former key) of a sheet, readable by the token's account.
   const role = roleDe(db, universId, acteur.compteId);
@@ -493,8 +518,9 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
     ficheId: number | null): boolean => item(nature, chemin, () => {
     const ligne = astre(cle);
     if (!ligne) {
+      // The seed is written here and only here, at the creation of the row, when the body has none (AD-aspects-socle-2).
       const commun = { type: voulu.type, nom: voulu.nom, taille: voulu.taille, orbite: voulu.orbite, heure: voulu.heure,
-        ...(voulu.aspect ? { aspect: voulu.aspect } : {}) };
+        aspect: avecGraine(voulu.aspect ?? aspectDefaut(voulu.type), cle) };
       if (genre === 'etoile') ajouterEtoile(db, acteur, universId, g.id, q, r, { ...commun, etoile_rang: rang }, IMPORT_CLE(cle));
       else {
         ajouterAstre(db, acteur, universId, g.id, q, r, {
@@ -517,7 +543,14 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
     if (ligne.orbite !== voulu.orbite && !(genre === 'etoile' && ligne.orbite === null && voulu.orbite === 0)) champs.orbite = voulu.orbite;
     if (ligne.heure !== voulu.heure) champs.heure = voulu.heure;
     if (ligne.taille !== voulu.taille) champs.taille = voulu.taille;
-    if (voulu.aspect !== null && !memeJson(ligne.aspect, voulu.aspect)) champs.aspect = voulu.aspect;
+    if (voulu.aspect !== null) {
+      // Compared with the seed normalised on both sides: a row older than the slice (no seed) is « inchangée », not rewritten.
+      const stocke = JSON.parse(ligne.aspect) as Obj;
+      if (canon(avecGraine(stocke, cle)) !== canon(avecGraine(voulu.aspect, cle))) {
+        // A seed the file does not carry stays what the row holds: the import never moves a drawn body.
+        champs.aspect = voulu.aspect.graine === undefined && stocke.graine !== undefined ? { ...voulu.aspect, graine: stocke.graine } : voulu.aspect;
+      }
+    }
     if (genre !== 'etoile' && voulu.description != null && ligne.description !== voulu.description) champs.description = voulu.description;
     const lier = ficheId !== null && ligne.fiche_id !== ficheId;
     if (Object.keys(champs).length === 0 && !lier) return 'inchangees';
@@ -597,9 +630,9 @@ export function appliquerAtlas(db: Db, acteur: Acteur, universId: number, galaxi
     const refusees = Object.fromEntries(NATURES_ATLAS.map((n) => [n, natures[n].refusees]));
     const rien = vide();
     for (const n of NATURES_ATLAS) rien[n].refusees = refusees[n]!;
-    return { appliquee: false, natures: rien, refus, refusTotal };
+    return { appliquee: false, natures: rien, refus, refusTotal, ...nonRendu };
   }
   // The document's recalculation proposal, once for the request (T-7, AD-atlas-3).
   if (modifie) apresEcriture(db, acteur.compteId, universId);
-  return { appliquee: true, natures, refus, refusTotal };
+  return { appliquee: true, natures, refus, refusTotal, ...nonRendu };
 }

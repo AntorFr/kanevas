@@ -129,8 +129,8 @@ export async function registerMcpRoutes(app: FastifyInstance) {
       const entete = request.headers.authorization;
       const m = typeof entete === 'string' ? /^Bearer (\S+)$/.exec(entete) : null;
       const jeton = m ? verifierJeton(app.db, m[1]!, app.horloge()) : null;
-      // A tool token opens no content route (K-6): the same refusal as any other.
-      if (!jeton || jeton.outils.length > 0) return reply.code(401).send(JETON_INVALIDE);
+      // A token without the content permission opens no content route (K-6): the same refusal as any other.
+      if (!jeton || !jeton.contenu) return reply.code(401).send(JETON_INVALIDE);
       const { univers: cle } = request.params as { univers?: string };
       if (cle === undefined) {
         request.accesMcp = { jetonId: jeton.id, compteId: jeton.compteId };
