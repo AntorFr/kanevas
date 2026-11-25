@@ -1,7 +1,7 @@
 import { ecrire } from './historique.js';
 import type { Db } from '../db/db.js';
 import { baseCleFiche, baseCleUnivers, cleFicheValide, cleUniversValide, CLE_FICHE_MAX, CLE_UNIVERS_MAX, estId, slug, suffixer } from './cles-forme.js';
-import { exigerRole, peutVoirFiche, roleDe } from './droits.js';
+import { exigerRole, lectureSysteme, peutVoirFiche, roleDe } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
 import { estTypeFiche } from './types-fiche.js';
 import type { Acteur } from './types.js';
@@ -127,7 +127,22 @@ export interface Resolution {
 }
 
 /** A sheet of the universe from an id (digits only), its key, or a former key; `null` if none. */
-export function resoudreFiche(db: Db, universId: number, reference: string): Resolution | null {
+export function resoudreFiche(db: Db, universId: number, reference: string, compteId?: number): Resolution | null {
+  return resoudreFicheDans(db, universId, reference) ?? (compteId === undefined ? null : resoudreElement(db, compteId, universId, reference));
+}
+
+/**
+ * An element of the system attached to the universe (its hidden space, AD-151), by id or key, for an account that reads
+ * the system (`lectureSysteme`, AD-152); `null` otherwise, so a universe with no such system answers as an unknown name.
+ */
+function resoudreElement(db: Db, compteId: number, universId: number, reference: string): Resolution | null {
+  const u = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as { systeme_id?: number | null } | undefined;
+  if (!u || u.systeme_id == null) return null;
+  const droit = lectureSysteme(db, compteId, u.systeme_id);
+  return droit ? resoudreFicheDans(db, droit.espaceId, reference) : null;
+}
+
+function resoudreFicheDans(db: Db, universId: number, reference: string): Resolution | null {
   if (estId(reference)) {
     const f = db.prepare('SELECT id, cle FROM fiches WHERE id = ? AND univers_id = ?').get(Number(reference), universId) as
       | { id: number; cle: string }
@@ -150,12 +165,12 @@ export function resoudreFiche(db: Db, universId: number, reference: string): Res
 /** A universe from an id (digits only), its key, or a former key; `null` if none. */
 export function resoudreUnivers(db: Db, reference: string): Resolution | null {
   if (estId(reference)) {
-    const u = db.prepare('SELECT id, cle FROM univers WHERE id = ?').get(Number(reference)) as
+    const u = db.prepare('SELECT id, cle FROM univers WHERE id = ? AND espace_systeme_id IS NULL').get(Number(reference)) as
       | { id: number; cle: string }
       | undefined;
     return u ? { ...u, ancienne: false } : null;
   }
-  const u = db.prepare('SELECT id, cle FROM univers WHERE cle = ?').get(reference) as { id: number; cle: string } | undefined;
+  const u = db.prepare('SELECT id, cle FROM univers WHERE cle = ? AND espace_systeme_id IS NULL').get(reference) as { id: number; cle: string } | undefined;
   if (u) return { ...u, ancienne: false };
   const a = db
     .prepare(
@@ -178,7 +193,13 @@ export function cleDeFicheLue(db: Db, compteId: number, universId: number, fiche
   const role = roleDe(db, universId, compteId);
   if (role === null) return null;
   const f = db.prepare('SELECT cle FROM fiches WHERE id = ? AND univers_id = ?').get(ficheId, universId) as { cle: string } | undefined;
-  return f && peutVoirFiche(db, role, ficheId, { compteId, modeJoueur: false }) ? f.cle : null;
+  if (f) return peutVoirFiche(db, role, ficheId, { compteId, modeJoueur: false }) ? f.cle : null;
+  // An element of the attached system: read in its space, at the account's right on the system (B-119).
+  const u = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as { systeme_id?: number | null } | undefined;
+  const droit = u?.systeme_id == null ? null : lectureSysteme(db, compteId, u.systeme_id);
+  if (!droit) return null;
+  const e = db.prepare('SELECT cle FROM fiches WHERE id = ? AND univers_id = ?').get(ficheId, droit.espaceId) as { cle: string } | undefined;
+  return e && peutVoirFiche(db, droit.role, ficheId, { compteId, modeJoueur: false }) ? e.cle : null;
 }
 
 /** Key of an universe by id, no right check. */

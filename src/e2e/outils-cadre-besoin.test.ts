@@ -51,7 +51,7 @@ const CAPTURES = process.env.KANEVAS_CAPTURES ?? '';
 
 before(async () => {
   if (skipBrowser) return;
-  srv = await startServer({ KANEVAS_SANS_SEMIS: '' }); // the starting data are the fixture
+  srv = await startServer({ KANEVAS_SANS_SEMIS: '', KANEVAS_SANS_SEMIS_BATTLEMAP: '1' }); // the starting data are the fixture
   browser = await launch();
   ({ ctx: ctxAntor, page: antor } = await connecte(browser, srv.base, 'Antor'));
   ({ ctx: ctxLea, page: lea } = await connecte(browser, srv.base, 'Léa'));
@@ -108,7 +108,7 @@ async function ouvrirSysteme(p: Any, id = SYS): Promise<void> {
   await p.getByRole('heading', { name: 'Essai A', level: 2 }).waitFor();
 }
 
-/** The system's tool cards (3 essai tools + swn/galaxie) are all displayed: counts of switches come after it. */
+/** The system's tool cards (3 essai tools, 2 swn tools, 3 battlemap tools) are all displayed: counts of switches come after it. */
 async function attendreCartesSysteme(p: Any, n = 4): Promise<void> {
   await p.waitForFunction((k: number) => document.querySelectorAll('section.outil-carte').length >= k, n, { timeout: 15000 });
 }
@@ -456,8 +456,8 @@ test('mira : sur « Système ancien » (sans responsable stocké) elle a l’int
   const A = carte(mira, 'Essai A');
   await attendreCartesSysteme(mira);
   assert.equal(await A.getByRole('switch').count(), 1);
-  // 4 interrupteurs : les trois outils d'essai et swn/galaxie (module swn, portée « tous »)
-  assert.equal(await mira.getByRole('switch').count(), 5);
+  // 8 interrupteurs : les trois outils d'essai, swn/galaxie et swn/vaisseaux (module swn), battlemap/generation, battlemap/assets et battlemap/cartes (module battlemap), portée « tous »
+  assert.equal(await mira.getByRole('switch').count(), 8);
   await ecrire(mira, /\/systemes\/4\/outils\/essai\/a\/activation$/, () => A.getByRole('switch').click());
   await A.getByText(rx('Système · Activé')).waitFor();
   await photo(mira, 'systeme-ancien-mira');
@@ -621,8 +621,14 @@ test('garde : Léa (Joueuse) n’a pas l’onglet, ni son adresse, ni son API, a
   await lea.goto(`/systemes/${SYS}?onglet=outils`);
   await lea.getByRole('heading', { name: "Système d'essai", level: 1 }).waitFor();
   assert.equal(await lea.getByRole('heading', { name: 'Essai A', level: 2 }).count(), 0);
-  assert.equal(await lea.getByRole('switch').count(), 0);
+  // sans gabarits, l'écran n'a que l'onglet « Types de fiche » (le paramètre est type=outils, pas onglet) : ses
+  // interrupteurs sont tous désactivés pour un lecteur
+  const actifs = await lea.getByRole('switch').evaluateAll((l: Any[]) =>
+    l.filter((e) => !e.disabled && e.getAttribute('aria-disabled') !== 'true').length);
+  assert.equal(actifs, 0);
   await photo(lea, 'lea-systeme-sans-onglet');
+  await ouvrirSysteme(antor);
+  const avant = await carte(antor, 'Essai A').getByRole('switch').getAttribute('aria-checked');
   for (const [m, u, c] of [
     ['GET', `/api/univers/${ENERIA}/outils`],
     ['GET', `/api/systemes/${SYS}/outils`],
@@ -635,7 +641,7 @@ test('garde : Léa (Joueuse) n’a pas l’onglet, ni son adresse, ni son API, a
   }
   // Léa did not change anything
   await ouvrirSysteme(antor);
-  assert.equal(await carte(antor, 'Essai A').getByRole('switch').getAttribute('aria-checked'), 'true');
+  assert.equal(await carte(antor, 'Essai A').getByRole('switch').getAttribute('aria-checked'), avant);
 });
 
 // --- transfert (dernier : il retire des droits à Antor) --------------------------------------------------
@@ -673,7 +679,7 @@ test('transfert : Antor transfère à Mira ; elle a l’interrupteur au système
   await ouvrirSysteme(mira);
   await mira.getByText(/Responsable : vous/).waitFor();
   await attendreCartesSysteme(mira);
-  assert.equal(await mira.getByRole('switch').count(), 5);
+  assert.equal(await mira.getByRole('switch').count(), 8);
   await photo(mira, 'apres-transfert-mira');
   // Mira really writes at the system now; Antor's write is refused
   const avantG = await carte(mira, 'Essai G').getByRole('switch').getAttribute('aria-checked');

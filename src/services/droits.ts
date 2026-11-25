@@ -10,7 +10,14 @@ export function roleDe(db: Db, universId: number, compteId: number): Role | null
   const row = db
     .prepare('SELECT role FROM membres WHERE univers_id = ? AND compte_id = ?')
     .get(universId, compteId) as { role: Role } | undefined;
-  return row?.role ?? null;
+  if (row) return row.role;
+  // The space of a system (AD-151) has no player rows: whoever reads the system reads its space as a player
+  // (AD-152), so the sheet services refuse a write with 403 and not 404 (AD-157).
+  const u = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as
+    | { espace_systeme_id?: number | null }
+    | undefined;
+  if (u?.espace_systeme_id == null) return null;
+  return lectureSysteme(db, compteId, u.espace_systeme_id)?.role ?? null;
 }
 
 /** A caller without a role gets "not found", as if the universe did not exist (B-4). */
@@ -18,6 +25,56 @@ export function exigerRole(db: Db, universId: number, compteId: number): Role {
   const role = roleDe(db, universId, compteId);
   if (!role) throw introuvable();
   return role;
+}
+
+/** The id of the hidden space of a system (AD-151), `null` for an unknown system. */
+export function espaceDe(db: Db, systemeId: number): number | null {
+  const r = db.prepare('SELECT id FROM univers WHERE espace_systeme_id = ?').get(systemeId) as { id: number } | undefined;
+  return r?.id ?? null;
+}
+
+/**
+ * The one read of a system's space (AD-152): the account's right on it, `null` when it has none. `role: 'mj'` for a GM of
+ * the system (a `membres` row of the space: every section, whichever address it enters by), `role: 'joueur'` for a member
+ * of an attached universe (the sections the players read). The role is the one to give `peutLireSection` /
+ * `sqlSectionLisible`, with no player mode: the right is the account's, never the address's.
+ */
+export function lectureSysteme(
+  db: Db,
+  compteId: number,
+  systemeId: number,
+): { espaceId: number; role: Role } | null {
+  const espaceId = espaceDe(db, systemeId);
+  if (espaceId === null) return null;
+  const ligne = db.prepare('SELECT role FROM membres WHERE univers_id = ? AND compte_id = ?').get(espaceId, compteId) as
+    | { role: Role }
+    | undefined;
+  if (ligne?.role === 'mj') return { espaceId, role: 'mj' };
+  const rattache = db
+    .prepare(
+      `SELECT 1 FROM univers u JOIN membres m ON m.univers_id = u.id
+       WHERE u.systeme_id = ? AND m.compte_id = ? LIMIT 1`,
+    )
+    .get(systemeId, compteId);
+  return rattache ? { espaceId, role: 'joueur' } : null;
+}
+
+/** Whether the account is a GM of the system (writes its elements, AD-152). */
+export function estMJDuSysteme(db: Db, compteId: number, systemeId: number): boolean {
+  return lectureSysteme(db, compteId, systemeId)?.role === 'mj';
+}
+
+/**
+ * The sections of a system's sheet that the account reads, in order; empty when it reads nothing (unknown system or
+ * sheet, another space's sheet, no right). A GM of the system who is also a member of an attached universe reads all.
+ */
+export function sectionsDuSysteme(db: Db, compteId: number, systemeId: number, ficheId: number): SectionRow[] {
+  const droit = lectureSysteme(db, compteId, systemeId);
+  if (!droit) return [];
+  const f = db.prepare('SELECT 1 FROM fiches WHERE id = ? AND univers_id = ?').get(ficheId, droit.espaceId);
+  if (!f) return [];
+  const rows = db.prepare('SELECT * FROM sections WHERE fiche_id = ? ORDER BY ordre, id').all(ficheId) as SectionRow[];
+  return rows.filter((s) => peutLireSection(droit.role, s, { compteId }));
 }
 
 /** GM only. No role → not found; a player → refused. */

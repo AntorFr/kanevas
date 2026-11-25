@@ -2,8 +2,8 @@ import '@fastify/multipart';
 import type { FastifyInstance } from 'fastify';
 
 import { changerCleFiche } from '../services/cles.js';
-import { roleDe } from '../services/droits.js';
-import { ErreurService, invalide, refuse } from '../services/erreurs.js';
+import { espaceDe, lectureSysteme, roleDe } from '../services/droits.js';
+import { ErreurService, introuvable, invalide, refuse } from '../services/erreurs.js';
 import { proposerRecalcul, recalculerSection } from '../services/sections-gerees.js';
 import {
   changerSousType,
@@ -35,6 +35,7 @@ import {
 } from '../services/sections.js';
 import { etiquettesProposees, poserEtiquetage } from '../services/etiquettes.js';
 import { exigerRole } from '../services/droits.js';
+import { changerAventureDuCompteRendu } from '../services/comptes_rendus.js';
 import { liees } from '../services/liees.js';
 import { estNature, listerNatures, type TypeNature } from '../services/natures.js';
 import { lireRelations, relierSection, retirerRelation } from '../services/relations.js';
@@ -58,6 +59,8 @@ export function acteur(request: { session?: { id: number } | null; query?: unkno
   return { compteId: request.session!.id, modeJoueur: q.mode === 'joueur' };
 }
 
+const acteurUnivers = acteur;
+
 function chaine(valeur: unknown, message: string): string {
   if (typeof valeur !== 'string') throw invalide(message);
   return valeur;
@@ -65,19 +68,39 @@ function chaine(valeur: unknown, message: string): string {
 
 const BASCULES = ['joueursLisent', 'joueursEcrivent', 'auteurLit', 'auteurEcrit'] as const;
 
-/** Sheets and sections; thin routes over `services/` (AD-2): no guard of their own. */
+/**
+ * Sheets and sections; thin routes over `services/` (AD-2): no guard of their own. The same handlers serve the
+ * sheets of a system's hidden space under `/api/systemes/:sys/fiches` (AD-157): the address names the system, the
+ * space is read from it, and the services decide with the account's right on the system (`roleDe`, AD-152).
+ */
 export function registerFichesRoutes(app: FastifyInstance) {
-  const base = '/api/univers/:id/fiches';
-  type P = { id: string; fid?: string; sid?: string; rid?: string };
+  monter(app, '/api/univers/:id/fiches', false);
+  app.register(async (espace) => {
+    // 404 for who reads nothing of the system, 403 for a reader who writes (AD-157), before any validation of the body.
+    espace.addHook('preHandler', async (request) => {
+      const sys = idDeChemin((request.params as { sys: string }).sys);
+      const droit = lectureSysteme(app.db, request.session!.id, sys);
+      if (!droit) throw introuvable();
+      if (request.method !== 'GET' && request.method !== 'HEAD' && droit.role !== 'mj') throw refuse();
+    });
+    monter(espace, '/api/systemes/:sys/fiches', true);
+  });
+}
+
+function monter(app: FastifyInstance, base: string, systeme: boolean) {
+  type P = { id?: string; sys?: string; fid?: string; sid?: string; rid?: string };
   const ids = (request: { params: unknown }) => {
     const p = request.params as P;
     return {
-      univers: idDeChemin(p.id),
+      univers: systeme ? (espaceDe(app.db, idDeChemin(p.sys!)) ?? 0) : idDeChemin(p.id!),
       fiche: p.fid === undefined ? 0 : idDeChemin(p.fid),
       section: p.sid === undefined ? 0 : idDeChemin(p.sid),
       relation: p.rid === undefined ? 0 : idDeChemin(p.rid),
     };
   };
+  // On a system's space the account's right is the one read, never the player mode of a screen (AD-152).
+  const acteur = (request: { session?: { id: number } | null; query?: unknown }): Acteur =>
+    systeme ? { compteId: request.session!.id } : acteurUnivers(request);
 
   app.post(base, async (request, reply) => {
     const b = corps(request);
@@ -103,13 +126,13 @@ export function registerFichesRoutes(app: FastifyInstance) {
   app.patch(`${base}/:fid`, async (request) => {
     const i = ids(request);
     const b = corps(request);
-    if (Object.keys(b).some((k) => !['titre', 'sousType', 'parent', 'statut', 'disparu', 'cle'].includes(k))) {
+    if (Object.keys(b).some((k) => !['titre', 'sousType', 'parent', 'statut', 'disparu', 'cle', 'campagne'].includes(k))) {
       throw invalide('Requête invalide.');
     }
     if (b.disparu !== undefined && typeof b.disparu !== 'boolean') throw invalide('Requête invalide.');
     if (
       b.titre === undefined && b.sousType === undefined && b.parent === undefined && b.statut === undefined &&
-      b.disparu === undefined && b.cle === undefined
+      b.disparu === undefined && b.cle === undefined && b.campagne === undefined
     ) {
       throw invalide('Rien à modifier.');
     }
@@ -122,6 +145,7 @@ export function registerFichesRoutes(app: FastifyInstance) {
     return app.db.transaction(() => {
       let fiche;
       if (b.statut !== undefined) fiche = changerStatutFiche(app.db, a, i.univers, i.fiche, b.statut);
+      if (b.campagne !== undefined) fiche = changerAventureDuCompteRendu(app.db, a, i.univers, i.fiche, b.campagne);
       if (b.titre !== undefined) fiche = renommerFiche(app.db, a, i.univers, i.fiche, b.titre as string);
       if (b.sousType !== undefined) fiche = changerSousType(app.db, a.compteId, i.univers, i.fiche, b.sousType);
       if (b.parent !== undefined) fiche = deplacerFiche(app.db, a, i.univers, i.fiche, b.parent as number | null);
@@ -209,7 +233,7 @@ export function registerFichesRoutes(app: FastifyInstance) {
   });
 
   // Sub-types of the sheets the caller reads, grouped without case, with their count.
-  app.get('/api/univers/:id/sous-types', async (request) => {
+  if (!systeme) app.get('/api/univers/:id/sous-types', async (request) => {
     const q = request.query as Record<string, unknown>;
     if (q.type !== undefined && typeof q.type !== 'string') throw invalide('Requête invalide.');
     return {
@@ -247,7 +271,7 @@ export function registerFichesRoutes(app: FastifyInstance) {
   });
 
   // Labels carried by at least one sheet the caller reads (AD-118 (4)).
-  app.get('/api/univers/:id/etiquettes', async (request) =>
+  if (!systeme) app.get('/api/univers/:id/etiquettes', async (request) =>
     etiquettesProposees(app.db, acteur(request), ids(request).univers),
   );
 
@@ -405,7 +429,7 @@ export function registerFichesRoutes(app: FastifyInstance) {
     return reply.code(201).send(r);
   });
 
-  app.get('/api/univers/:id/natures', async (request) => ({
+  if (!systeme) app.get('/api/univers/:id/natures', async (request) => ({
     natures: listerNatures(app.db, request.session!.id, idDeChemin((request.params as { id: string }).id)),
   }));
 

@@ -239,16 +239,6 @@ test('scénario (section d’une fiche aventure) : un lien visant une fiche d’
   assert.match(html, /lien-casse/);
 });
 
-test('entrée de système : [[…]] reste du texte', async () => {
-  const { app, antor } = await monter();
-  const liste = (await app.inject({ method: 'GET', url: '/api/systemes', headers: antor })).json();
-  const cof = (liste.systemes ?? liste).find((s: { nom: string }) => s.nom === 'CoF Mini');
-  const { creerGabarit } = await import('../services/systemes.js');
-  const idA = (app.db.prepare("SELECT id FROM comptes WHERE username = 'antor'").get() as { id: number }).id;
-  const g = creerGabarit(app.db, idA, cof.id, { type: 'regle', nom: 'Lien', contenu: 'Voir [[1|Aldric]] ici.' });
-  assert.equal((g as { html: string }).html, '<p>Voir [[1|Aldric]] ici.</p>\n');
-});
-
 test('assistant : Léa lit « Histoire » avec [Maître Aldric](fiche:id) et la Guilde sans identifiant ; Antor lit la source des deux', async () => {
   const { app, lame, fiche, section, idDe } = await monter();
   const port = fiche('Port-Sel');

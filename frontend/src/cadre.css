@@ -1,5 +1,5 @@
 /* The frame of every screen (docs/ecrans.md, mockup e09-fiche.html). Tokens only (docs/charte.md). */
-.cadre { --h-bouchon: 0px; min-height: 100vh; }
+.cadre { --h-bouchon: 0px; --h-ariane: 52px; min-height: 100vh; }
 /* The stub banner stays on top; the bar and the top bar start under it. */
 .cadre.avec-bouchon { --h-bouchon: 36px; }
 .cadre > .bandeau { position: sticky; top: 0; z-index: 30; height: var(--h-bouchon); padding-top: 0; padding-bottom: 0; }
@@ -69,7 +69,7 @@
 
 /* Top bar */
 .zone-principale { min-width: 0; display: flex; flex-direction: column; }
-.haute { position: sticky; top: var(--h-bouchon); z-index: 20; height: 52px; display: flex; align-items: center; gap: var(--e-3); padding: 0 var(--e-5);
+.haute { position: sticky; top: var(--h-bouchon); z-index: 20; height: var(--h-ariane); display: flex; align-items: center; gap: var(--e-3); padding: 0 var(--e-5);
   border-bottom: 1px solid var(--bord); background: var(--fond); }
 .bouton-menu { display: none; }
 .ariane { display: flex; align-items: center; gap: 2px; min-width: 0; flex: 1; font-size: var(--t-13); color: var(--texte-2); }
@@ -100,7 +100,7 @@
 .mode button:focus-visible { outline-offset: -2px; }
 
 /* Banners under the top bar: connection lost above the player-mode one */
-.bandeaux { position: sticky; top: calc(var(--h-bouchon) + 52px); z-index: 19; }
+.bandeaux { position: sticky; top: calc(var(--h-bouchon) + var(--h-ariane)); z-index: 19; }
 .bandeaux .bandeau { position: static; border-bottom: 1px solid var(--bord); padding-left: var(--e-5); padding-right: var(--e-5); }
 
 main.principal { flex: 1; min-width: 0; padding: var(--e-5) 28px; width: 100%; max-width: 1000px; margin-inline: auto; }

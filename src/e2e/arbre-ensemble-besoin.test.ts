@@ -53,6 +53,15 @@ const fil = (page: Any) => page.getByRole('navigation', { name: /Fil d.Ariane/i 
 async function filTexte(page: Any): Promise<string> {
   return (await fil(page).innerText()).replace(/\s*\n\s*/g, ' › ').replace(/\s+/g, ' ').replace(/^\S › /, '').trim();
 }
+// The type link comes from a request separate from the sheet: wait for the expected trail, with no fixed delay.
+async function filComplet(page: Any, attendu: string): Promise<void> {
+  await page.waitForFunction((voulu: string) => {
+    const nav = Array.from(document.querySelectorAll('nav')).find((n) => /Fil d.Ariane/i.test(n.getAttribute('aria-label') ?? ''));
+    if (!nav) return false;
+    const t = (nav as HTMLElement).innerText.replace(/\s*\n\s*/g, ' › ').replace(/\s+/g, ' ').replace(/^\S › /, '').trim();
+    return t === voulu;
+  }, attendu);
+}
 const arbre = (page: Any) => page.getByRole('tree');
 const noeud = (page: Any, titre: string) => arbre(page).getByRole('treeitem').filter({ hasText: titre });
 async function titres(page: Any): Promise<string[]> {
@@ -250,6 +259,7 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
     assert.equal(r1.status, 200, JSON.stringify(r1.corps));
     const docks = r1.corps.id;
     await ouvrir(antor, E, docks, 'Les Docks');
+    await filComplet(antor, 'Essai Kanka › Lieux › Les Docks');
     assert.equal(await filTexte(antor), 'Essai Kanka › Lieux › Les Docks');
 
     const lot2 = (await importer('POST', '/lots')).corps.lotId;
@@ -262,6 +272,7 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
     });
     assert.equal(rejeu.status, 200);
     await ouvrir(antor, E, docks, 'Les Docks');
+    await filComplet(antor, 'Essai Kanka › Lieux › Port-Sel Kanka › Les Docks');
     assert.equal(await filTexte(antor), 'Essai Kanka › Lieux › Port-Sel Kanka › Les Docks');
     await antor.screenshot({ path: `${SHOTS}/import-rejeu.png` });
 
@@ -275,6 +286,7 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
     });
     assert.equal(encore.status, 200);
     await ouvrir(antor, E, docks, 'Les Docks');
+    await filComplet(antor, 'Essai Kanka › Lieux › Port-Sel Kanka › Les Docks');
     assert.equal(await filTexte(antor), 'Essai Kanka › Lieux › Port-Sel Kanka › Les Docks');
   });
 });

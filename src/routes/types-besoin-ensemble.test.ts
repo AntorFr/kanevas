@@ -105,11 +105,17 @@ test('B-52 : une Joueuse ne donne ni ne change le sous-type, à la création com
   assert.deepEqual(liste((await w.req('antor', 'GET', `${base}?q=Camp de Léa`)).json), []);
 });
 
-test('B-42 : Mira, MJ d’un autre univers du système, règle les types de CoF Mini et la barre de Lame d’Ébène suit', async () => {
+test('B-42 : Mira, MJ du système (membre mj de son espace, AD-152), règle les types de CoF Mini et la barre de Lame d’Ébène suit', async () => {
   // Panne visée : le réglage du système est réservé au seul MJ qui l’a créé, ou ne se propage pas aux univers qui le suivent.
   const w = await monde();
   const systemes = (await w.req('mira', 'GET', '/api/systemes')).json as Any;
   const cof = (Array.isArray(systemes) ? systemes : systemes.systemes).find((s: Any) => s.nom === 'CoF Mini').id;
+  // MJ d'un univers rattaché, mais pas MJ du système : refusée, rien ne change
+  assert.equal((await w.req('mira', 'PUT', `/api/systemes/${cof}/types/note`, { active: false })).status, 403);
+  const avant = (await w.req('antor', 'GET', `/api/univers/${w.lame}/types`)).json as Any[];
+  assert.notEqual((avant.find((t) => t.type === 'note') as Any).actif ?? (avant.find((t) => t.type === 'note') as Any).active, false);
+  const espace = (w.app.db.prepare('SELECT id FROM univers WHERE espace_systeme_id = ?').get(cof) as { id: number }).id;
+  w.app.db.prepare("INSERT OR IGNORE INTO membres (univers_id, compte_id, role) VALUES (?, ?, 'mj')").run(espace, w.idC('mira'));
   const r = await w.req('mira', 'PUT', `/api/systemes/${cof}/types/note`, { active: false });
   assert.equal(r.status, 200);
   const types = (await w.req('antor', 'GET', `/api/univers/${w.lame}/types`)).json as Any[];

@@ -16,7 +16,6 @@ const { creerFiche } = await import('../services/fiches.js');
 const { ajouterSection, ecrireContenu, changerAudience } = await import('../services/sections.js');
 const { creerCompteRendu } = await import('../services/comptes_rendus.js');
 const { creerProposition } = await import('../services/propositions.js');
-const { creerSysteme, rattacherSysteme, creerGabarit } = await import('../services/systemes.js');
 const { catalogueDe } = await import('../services/assistant/catalogue.js');
 const { rendreMarkdown } = await import('../services/markdown.js');
 
@@ -138,7 +137,7 @@ test('plafond : section 100 000 accepté, 100 001 refusé (PUT et POST), /api/mo
   assert.equal(ok.statusCode, 200);
 });
 
-test('plafond : compte-rendu, scénario, entrée de système, proposition à 100 000 / 100 001, même message', () => {
+test('plafond : compte-rendu, scénario, proposition à 100 000 / 100 001, même message', () => {
   const db = openDb(':memory:');
   migrate(db);
   const antor = assurerCompte(db, 'antor');
@@ -172,11 +171,6 @@ test('plafond : compte-rendu, scénario, entrée de système, proposition à 100
   const scen = creerFiche(db, antor.id, u.id, { type: 'aventure', sousType: 'Scénario', titre: 'S', parent: camp.id });
   step('scenario', () => ajouterSection(db, antor.id, u.id, scen.id, { titre: 'Scénario', contenu: N }));
   assert.equal(msg(() => ajouterSection(db, antor.id, u.id, scen.id, { titre: 'Scénario 2', contenu: N1 })), MESSAGE);
-  // entrée de système
-  const sys = creerSysteme(db, antor.id, { nom: 'Sys' });
-  rattacherSysteme(db, antor.id, u.id, sys.id);
-  step('gabarit', () => creerGabarit(db, antor.id, sys.id, { type: 'regle', nom: 'G', contenu: N }));
-  assert.equal(msg(() => creerGabarit(db, antor.id, sys.id, { type: 'objet', nom: 'G2', contenu: N1 })), MESSAGE);
   // proposition
   const f = creerFiche(db, antor.id, u.id, { type: 'lieu', titre: 'L' });
   const sec = ajouterSection(db, antor.id, u.id, f.id, { titre: 'V', contenu: 'a' });

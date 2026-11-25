@@ -33,6 +33,8 @@
 
 /* Room under the editor for the floating assistant button while the « [[ » list is open. */
 .pied-md { scroll-margin-bottom: calc(var(--e-5) + 48px + var(--e-4)); }
+/* Room above the open list for the sticky bar (and the banner under it): the scroll aims at the list, so the margin goes there. */
+.liste-liens { scroll-margin-top: calc(var(--h-bouchon, 0px) + var(--h-ariane, 52px) + var(--e-4)); }
 .editeur-bloc:has(.liste-liens) { padding-bottom: calc(48px + var(--e-4)); }
 
 /* Files (B-55): upload lines under the field, and the warning that blocks nothing. */

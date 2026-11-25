@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import type { Db } from '../db/db.js';
-import { exigerMJ, exigerRole } from './droits.js';
+import { exigerMJ, exigerRole, lectureSysteme } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 
 /**
@@ -171,10 +171,11 @@ export interface TypeVue {
 export type EtatType = 'active' | 'desactive' | 'suivre';
 
 function systemeDe(db: Db, universId: number): number | null {
-  const r = db.prepare('SELECT systeme_id FROM univers WHERE id = ?').get(universId) as
-    | { systeme_id: number | null }
+  const r = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as
+    | { systeme_id: number | null; espace_systeme_id?: number | null }
     | undefined;
-  return r?.systeme_id ?? null;
+  // The space of a system follows the system's own settings (AD-151, AD-152).
+  return r?.espace_systeme_id ?? r?.systeme_id ?? null;
 }
 
 interface Decision {
@@ -299,6 +300,11 @@ export function reglerTypeUnivers(
   return typeDeLUnivers(db, compteId, universId, type);
 }
 
+/** The words of the settable types, for a screen outside any universe (E-15 names the types of a system with them). */
+export function motsDesTypesReglables(): { type: TypeFiche; singulier: string; pluriel: string; nouveau: string; icone: string }[] {
+  return TYPES.filter((t) => t.reglable).map((t) => ({ type: t.type, singulier: t.singulier, pluriel: t.pluriel, nouveau: t.nouveau, icone: t.icone }));
+}
+
 /** Types of a system as the system sets them (default enabled), reglable types only. */
 export function typesDuSysteme(db: Db, systemeId: number): { type: TypeFiche; active: boolean }[] {
   const lignes = new Map(
@@ -311,8 +317,8 @@ export function typesDuSysteme(db: Db, systemeId: number): { type: TypeFiche; ac
 }
 
 /**
- * Sets a type for a system. Same right as its templates (AD-94): GM of at least one attached
- * universe; a system none of the caller's universes uses → not found, reader only → refused.
+ * Sets a type for a system. GM of the system only (AD-152); a reader of it (member of an attached universe)
+ * → refused, an account that reads nothing of it → not found.
  */
 export function reglerTypeSysteme(
   db: Db,
@@ -321,14 +327,9 @@ export function reglerTypeSysteme(
   type: string,
   active: unknown,
 ): { type: string; active: boolean } {
-  const roles = db
-    .prepare(
-      `SELECT m.role FROM univers u JOIN membres m ON m.univers_id = u.id
-       WHERE u.systeme_id = ? AND m.compte_id = ?`,
-    )
-    .all(systemeId, compteId) as { role: string }[];
-  if (roles.length === 0) throw introuvable();
-  if (!roles.some((r) => r.role === 'mj')) throw refuse();
+  const droit = lectureSysteme(db, compteId, systemeId);
+  if (!droit) throw introuvable();
+  if (droit.role !== 'mj') throw refuse();
   typeReglable(type);
   if (typeof active !== 'boolean') throw invalide('État inconnu.');
   db.prepare(

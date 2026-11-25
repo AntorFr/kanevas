@@ -128,26 +128,6 @@ test('E-9 : le compte-rendu de même forme se lit mis en forme sur la fiche', op
   await page.close();
 });
 
-test('E-15 : une entrée de système écrite en Markdown se lit mise en forme', opts, async () => {
-  const m = await monde();
-  const sys = await api(C.antor, 'post', '/api/systemes', { nom: 'MD Mini' });
-  await api(C.antor, 'put', `${m.b}/systeme`, { systemeId: sys.id });
-  await api(C.antor, 'post', `/api/systemes/${sys.id}/gabarits`, { type: 'creature', nom: 'Gobelin', contenu: MD });
-  for (const c of [C.antor, C.lea]) {
-    const p = await c.ctx.newPage();
-    const d = surveiller(p);
-    await p.goto(`${srv.base}/systemes/${sys.id}`);
-    await p.waitForLoadState('networkidle');
-    const onglet = p.getByRole('tab', { name: /Créature/i });
-    if (await onglet.count()) await onglet.click();
-    await p.getByRole('button', { name: /Gobelin/ }).click();
-    await p.locator('.entree-contenu.md').waitFor();
-    await verifierRendu(p, '.entree-contenu.md');
-    assert.deepEqual(d, []);
-    await p.close();
-  }
-});
-
 test('E-12 : proposition rendue, « Source » brut dans les deux zones, « Rendu » revient', opts, async () => {
   const u = await api(C.antor, 'post', '/api/univers', { nom: 'Prop MD' });
   const b = `/api/univers/${u.id}`;

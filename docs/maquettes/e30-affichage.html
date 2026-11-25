@@ -1,0 +1,18 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Écran joueurs — Kanevas</title><style>
+/* MAQUETTE — SCREEN. Illustre docs/ecrans.md « E-29 / E-30 — detail of kanevas-battlemap-table ». Variables propres à la maquette ; le code prend les tokens. Données inventées. Le document prime. */
+:root{--i2:#a3a2a8;--te:#3fc79a;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#000;color:#f5f4f2;font:14px var(--sans);cursor:none}
+.frame{position:relative;width:100vw;height:50vh;border-bottom:1px dashed #333;overflow:hidden}
+.label{position:absolute;left:8px;top:6px;font-size:11px;color:#555;cursor:default}
+.vue{position:absolute;left:50%;top:50%;width:70%;height:78%;transform:translate(-50%,-50%);background:linear-gradient(#222 1px,transparent 1px) 0 0/40px 40px,linear-gradient(90deg,#222 1px,transparent 1px) 0 0/40px 40px,#17171c}
+.fl{position:absolute;background:#3a342c}.wl{position:absolute;background:#c9c3b8}.ob{position:absolute;border-radius:6px;background:#3a3470;border:1px solid #8b7cf6}
+.fog{position:absolute;background:#000}.tk{position:absolute;width:36px;height:36px;border-radius:50%;border:2px solid var(--te);background:#212127;display:flex;align-items:center;justify-content:center;font-size:12px}
+.attente{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--i2);font-size:20px;letter-spacing:.04em}
+.badge{position:absolute;right:12px;bottom:10px;font-size:12px;color:var(--i2);background:rgba(255,255,255,.08);padding:3px 9px;border-radius:99px}
+</style></head><body>
+<div class="frame"><span class="label">E-30 · vue partagée, pièce révélée</span><div class="vue">
+<div class="fl" style="left:40px;top:40px;width:300px;height:200px"></div><div class="wl" style="left:40px;top:40px;width:300px;height:3px"></div><div class="wl" style="left:40px;top:240px;width:300px;height:3px"></div>
+<div class="ob" style="left:80px;top:80px;width:80px;height:40px"></div><div class="tk" style="left:110px;top:170px">Mi</div><div class="tk" style="left:170px;top:180px">Vo</div><div class="tk" style="left:260px;top:120px;border-color:#f5f4f2">Ga</div>
+<div class="fog" style="left:340px;top:0;right:0;bottom:0"></div><div class="fog" style="left:0;top:0;width:340px;height:40px"></div><div class="fog" style="left:0;top:243px;width:340px;bottom:0"></div><div class="fog" style="left:0;top:40px;width:40px;height:203px"></div></div></div>
+<div class="frame"><span class="label">E-30 · aucune vue partagée</span><div class="attente">En attente du MJ</div><span class="badge">Reconnexion…</span></div>
+</body></html>

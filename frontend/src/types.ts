@@ -22,7 +22,6 @@ export interface SystemeCompte {
   id: number;
   nom: string;
   nbUnivers: number;
-  entrees: { regle: number; creature: number; objet: number };
   mesUnivers: { id: number; nom: string; role: Role }[];
   peutEcrire: boolean;
 }
