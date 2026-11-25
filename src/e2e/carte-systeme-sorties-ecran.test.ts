@@ -78,8 +78,10 @@ describe('E-23 le halo de transition et les flèches de sortie', { skip: skipBro
         assert.notEqual(c.pirate, c.autre);
         assert.equal(await page.locator('.cs-halo').count(), 1);
         const cr = await croquis(page);
-        const texte = (cr.etiquettes as Any[]).filter((e) => e.visible).map((e) => e.texte);
-        assert.ok(texte.includes('Voisin pirate · 3 cases'), `${theme} ${l} px : étiquette de la sortie : ${texte.join(' | ')}`);
+        const vue = (cr.etiquettes as Any[]).find((e) => e.cle === `sortie:${O.q + 1},${O.r}`);
+        assert.ok(vue?.visible, `${theme} ${l} px : l’étiquette de la sortie est posée`);
+        // wide: the whole « <nom> · 3 cases »; a phone may shorten it with « … » (placerEtiquettes), never drop the arrow
+        if (l >= 1000) assert.equal(vue.texte, 'Voisin pirate · 3 cases');
         await page.screenshot({ path: `${SHOTS}/${l}-${theme}.png`, fullPage: true });
         await ctx.close();
       }
