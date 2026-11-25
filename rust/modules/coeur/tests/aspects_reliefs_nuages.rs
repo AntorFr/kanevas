@@ -295,7 +295,7 @@ fn mers_a_4_plus_de_regions_d_eau_connexes_qu_a_1_et_la_part_d_eau_varie_de_moin
         }
         (regions, part)
     };
-    for graine in [1u32, 8, 9, 7] {
+    for graine in [1u32, 8, 9, 7, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 42, 100, 777, 2024] {
         let (r1, p1) = mesure(1, graine);
         let (r4, p4) = mesure(4, graine);
         assert!(p1 > 0.15 && p1 < 0.85, "a sea exists at 1 (seed {graine}): {p1}");
