@@ -24,6 +24,16 @@ import { attendre, connecte, launch, skipBrowser, startServer, type Any, type Se
 
 const png = (n: number) => ({ name: `ref-${n}.png`, mimeType: 'image/png', buffer: pngPlat([n * 20, 90, 160], 16) });
 
+// The panel lives in its own React root: the prefilled request lands in the field after the field is visible.
+// Wait for the value (by polling the DOM, no sleep) before any read.
+async function attendreValeur(champ: Any, attendue: string, fin = false): Promise<void> {
+  const handle = await champ.elementHandle();
+  await handle.ownerFrame().then((f: Any) => f.waitForFunction(
+    ([el, v, aLaFin]: [HTMLInputElement, string, boolean]) => (aLaFin ? el.value.endsWith(v) : el.value === v),
+    [handle, attendue, fin],
+  ));
+}
+
 describe('E-26 Direction artistique au navigateur', { skip: skipBrowser }, () => {
   let srv: Server;
   let browser: Any;
@@ -97,6 +107,7 @@ describe('E-26 Direction artistique au navigateur', { skip: skipBrowser }, () =>
     await champ.waitFor();
     const avant = (await direction()).texte as string;
     const demande = avant.trim() === '' ? 'Propose une direction artistique pour cet univers.' : 'Améliore la direction artistique en gardant son esprit.';
+    await attendreValeur(champ, demande);
     assert.equal(await champ.inputValue(), demande);
     assert.equal((await direction()).source === 'assistant', false, 'la demande préremplie n’est pas envoyée');
     await champ.fill('Propose une direction artistique pour cet univers.');
@@ -149,6 +160,7 @@ describe('E-26 Direction artistique au navigateur', { skip: skipBrowser }, () =>
     // texte écrit : la demande préremplie change
     assert.notEqual((await direction()).texte.trim(), '');
     await antor.getByRole('button', { name: 'Demander à l’assistant' }).click();
+    await attendreValeur(champ, 'Améliore la direction artistique en gardant son esprit.', true);
     assert.match(await champ.inputValue(), /Améliore la direction artistique en gardant son esprit\.$/);
   });
 
