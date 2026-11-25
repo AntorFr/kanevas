@@ -25,6 +25,11 @@ const POLICE = '12px';
 const HAUTEUR_ETIQUETTE = 15;
 /** A jump arrow's disc for the labels (it is 14 × 12 px) and the longest name a jump label carries. */
 const RAYON_FLECHE = 9;
+// Gap (px) from the hour circle to the centre of its mark: past the arrow of a jump point (12 px high) when the circle is the transition's.
+const DECALAGE_REPERE_PX = 14;
+const DECALAGE_REPERE_SORTIE_PX = 30;
+// Room kept round the fitted view when the transition dominates, so the hour marks and the exit labels stay inside the sky.
+const RESERVE_TRANSITION_PX = 44;
 const NOM_SORTIE_MAX = 24;
 const coupeNom = (nom: string) => ([...nom].length > NOM_SORTIE_MAX ? `${[...nom].slice(0, NOM_SORTIE_MAX - 1).join('').trimEnd()}…` : nom);
 /** A body waiting for the server's answer is dimmed by opacity alone (charte, drag gesture). */
@@ -153,7 +158,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     return () => o.disconnect();
   }, [etat]);
 
-  const ajuste = dispo && taille.w > 0 ? Math.min(taille.w, taille.h) / 2 / (etendue * 1.12) : 1;
+  const ajuste = dispo && taille.w > 0 ? Math.max(8, Math.min(taille.w, taille.h) / 2 - (dispo.transition > 0 ? RESERVE_TRANSITION_PX : 0)) / (etendue * 1.12) : 1;
   const echelle = ajuste * vue.zoom;
   // Radius and sprite side in screen pixels: from the fit only, so a body keeps its size at every zoom (AD-echelle-1).
   const dims = useMemo(() => (dispo ? dimensionsCorps(dispo.corps, ajuste) : new Map<string, { rayon: number; cote: number }>()), [dispo, ajuste]);
@@ -226,7 +231,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
       }))
       : [];
     if (dispo.transition > 0) liste.push({ cle: 'zone:transition', genre: 'zone', nom: 'Zone de transition', x: hx - dispo.transition * echelle * Math.SQRT1_2, y: hy - dispo.transition * echelle * Math.SQRT1_2, rayon: 0 });
-    for (const e of ex) liste.push({ cle: `sortie:${e.q},${e.r}`, genre: 'comete', nom: `${coupeNom(e.nom)} · ${libelleDistance(e.distance)}`, x: e.x, y: e.y, rayon: RAYON_FLECHE });
+    for (const e of ex) liste.push({ cle: `sortie:${e.q},${e.r}`, genre: 'comete', nom: `${coupeNom(e.nom)} · ${libelleDistance(e.distance)}`, x: e.x, y: e.y, rayon: RAYON_FLECHE, entier: true });
     return { liste, sorties: ex };
   }, [dispo, ecran, echelle, sorties, marques, taille.w, selectionElement]);
 
@@ -247,8 +252,9 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     }
     if (heures) {
       const rh = Math.max(dispo.transition, 3 * U);
+      const decalageRepere = dispo.transition >= 3 * U ? DECALAGE_REPERE_SORTIE_PX : DECALAGE_REPERE_PX;
       for (let h = 0; h < 12; h += 3) {
-        const [tx, ty] = ecran(...p(rh + 14 / Math.max(echelle, 0.01), h));
+        const [tx, ty] = ecran(...p(rh + decalageRepere / Math.max(echelle, 0.01), h));
         const m = mesureur(`${h === 0 ? 12 : h} h`);
         liste.push({ type: 'rect', x: tx - m.largeur / 2, y: ty - m.hauteur / 2, largeur: m.largeur, hauteur: m.hauteur });
       }
@@ -545,7 +551,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
               {heures && Array.from({ length: 12 }, (_, h) => {
                 const [x1, y1] = pointHeure(h, 0);
                 const [x2, y2] = pointHeure(h, rayonHeures);
-                const [tx, ty] = pointHeure(h, rayonHeures + 14 / Math.max(echelle, 0.01));
+                const [tx, ty] = pointHeure(h, rayonHeures + (dispo.transition >= 3 * U ? DECALAGE_REPERE_SORTIE_PX : DECALAGE_REPERE_PX) / Math.max(echelle, 0.01));
                 return (
                   <g key={h} className="cs-heure" data-heure={h}>
                     <line x1={x1} y1={y1} x2={x2} y2={y2} />
