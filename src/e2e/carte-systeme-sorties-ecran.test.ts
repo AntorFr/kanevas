@@ -80,9 +80,9 @@ describe('E-23 le halo de transition et les flèches de sortie', { skip: skipBro
         assert.equal(await page.locator('.cs-halo').count(), 1);
         const cr = await croquis(page);
         const vue = (cr.etiquettes as Any[]).find((e) => e.cle === `sortie:${O.q + 1},${O.r}`);
-        assert.ok(vue?.visible, `${theme} ${l} px : l’étiquette de la sortie est posée`);
-        // wide: the whole « <nom> · 3 cases »; a phone may shorten it with « … » (placerEtiquettes), never drop the arrow
-        if (l >= 1000) assert.equal(vue.texte, 'Voisin pirate · 3 cases');
+        // the arrow is always there; its label is the whole « <nom> · 3 cases » or absent, never shortened (docs/ecrans.md)
+        if (vue?.visible) assert.equal(vue.texte, 'Voisin pirate · 3 cases', `${theme} ${l} px : étiquette entière`);
+        if (l >= 1000) assert.ok(vue?.visible, `${theme} ${l} px : l’étiquette de la sortie est posée`);
         await page.screenshot({ path: `${SHOTS}/${l}-${theme}.png`, fullPage: true });
         await ctx.close();
       }
@@ -112,6 +112,32 @@ describe('E-23 le halo de transition et les flèches de sortie', { skip: skipBro
       for (const f of boites.autres as Any[]) assert.equal(se(e, f), false, `${e.id} recouvre ${f.id}`);
     }
     await ctx.close();
+  });
+
+  it('à 390 px : étiquettes de sortie entières ou absentes, repères d’heure écartés des flèches, tout tient dans le canvas', async () => {
+    for (const theme of ['dark', 'light'] as const) {
+      const { page, ctx } = await ouvrir('Antor', 390, 780, theme);
+      await page.locator('.cs-sortie').first().waitFor();
+      const cr = await croquis(page);
+      for (const e of (cr.etiquettes as Any[]).filter((x) => String(x.cle).startsWith('sortie:') && x.visible)) {
+        assert.match(String(e.texte), / · 3 cases$/, `${theme} : ${e.cle} entière`);
+      }
+      const sel = { ciel: '.cs-ciel', fleches: '.cs-sortie svg', reperes: '.cs-heure text', etiquettes: '.cs-etiquette' };
+      const m: Any = {};
+      for (const [k, s2] of Object.entries(sel)) {
+        m[k] = await page.locator(s2).evaluateAll((els: Element[]) => els.map((e) => {
+          const r = e.getBoundingClientRect();
+          return { id: e.getAttribute('data-cle') ?? e.getAttribute('aria-label') ?? e.parentElement?.getAttribute('aria-label') ?? e.textContent ?? '', x0: r.left, y0: r.top, x1: r.right, y1: r.bottom };
+        }));
+      }
+      m.ciel = m.ciel[0];
+      assert.ok(m.reperes.length >= 4, `${theme} : repères d’heure affichés`);
+      const touche = (a: Any, c: Any) => a.x0 < c.x1 + 2 && c.x0 < a.x1 + 2 && a.y0 < c.y1 + 2 && c.y0 < a.y1 + 2;
+      for (const r of m.reperes as Any[]) for (const f of m.fleches as Any[]) assert.equal(touche(r, f), false, `${theme} : repère « ${r.id} » touche ${f.id}`);
+      const dedans = (a: Any) => a.x0 >= m.ciel.x0 && a.y0 >= m.ciel.y0 && a.x1 <= m.ciel.x1 && a.y1 <= m.ciel.y1;
+      for (const a of [...m.reperes, ...m.etiquettes] as Any[]) assert.ok(dedans(a), `${theme} : « ${a.id} » dépasse du canvas`);
+      await ctx.close();
+    }
   });
 
   it('cliquer la flèche ouvre le système voisin ; l’aria-label de la pirate finit par « , route Pirate »', async () => {
