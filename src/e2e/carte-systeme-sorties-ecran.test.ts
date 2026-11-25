@@ -59,10 +59,16 @@ describe('E-23 le halo de transition et les flèches de sortie', { skip: skipBro
   }, { timeout: 180000 });
   after(async () => { await browser?.close(); srv?.stop(); });
 
+  // No named inner function in `evaluate`: the test loader would inject a helper the page does not have.
   const couleurs = async (page: Any) => page.evaluate(() => {
-    const lire = (sel: string) => { const e = document.querySelector(sel) as HTMLElement | null; return e ? getComputedStyle(e).color : null; };
-    const jeton = (nom: string) => { const p = document.createElement('i'); p.style.color = `var(${nom})`; document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return c; };
-    return { pirate: lire('.cs-sortie.pirate'), autre: lire('.cs-sortie.autre'), tPirate: jeton('--route-pirate'), tAutre: jeton('--route-autre') };
+    const couleur = (v: string, sel: string | null) => {
+      const e = sel ? document.querySelector(sel) as HTMLElement : document.body.appendChild(document.createElement('i'));
+      if (!sel) e.style.color = `var(${v})`;
+      const c = getComputedStyle(e).color;
+      if (!sel) e.remove();
+      return c;
+    };
+    return { pirate: couleur('', '.cs-sortie.pirate'), autre: couleur('', '.cs-sortie.autre'), tPirate: couleur('--route-pirate', null), tAutre: couleur('--route-autre', null) };
   });
 
   it('la flèche pirate et la flèche sans type ont la couleur de leur token, la légende du halo est là, dans les deux thèmes', async () => {
@@ -95,11 +101,11 @@ describe('E-23 le halo de transition et les flèches de sortie', { skip: skipBro
     const { page, ctx } = await ouvrir('Antor', 390, 780);
     await page.locator('.cs-sortie').first().waitFor();
     const boites = await page.evaluate(() => {
-      const b = (e: Element) => { const r = e.getBoundingClientRect(); return { x0: r.left, y0: r.top, x1: r.right, y1: r.bottom, id: e.getAttribute('data-cle') ?? e.getAttribute('aria-label') ?? '' }; };
-      return {
-        etiquettes: [...document.querySelectorAll('.cs-etiquette')].map(b),
-        autres: [...document.querySelectorAll('.cs-corps, .cs-sortie svg')].map(b),
-      };
+      const rects = [...document.querySelectorAll('.cs-etiquette, .cs-corps, .cs-sortie svg')].map((e) => {
+        const r = e.getBoundingClientRect();
+        return { etiquette: e.classList.contains('cs-etiquette'), x0: r.left, y0: r.top, x1: r.right, y1: r.bottom, id: e.getAttribute('data-cle') ?? e.getAttribute('aria-label') ?? e.tagName };
+      });
+      return { etiquettes: rects.filter((r) => r.etiquette), autres: rects.filter((r) => !r.etiquette) };
     });
     const se = (a: Any, c: Any) => a.x0 < c.x1 && c.x0 < a.x1 && a.y0 < c.y1 && c.y0 < a.y1;
     for (const [i, e] of (boites.etiquettes as Any[]).entries()) {
