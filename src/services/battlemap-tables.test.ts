@@ -365,7 +365,7 @@ test('0049 : une base au schéma 0048 (carte, univers) monte sans perte ; contra
   const doc = '{"schema":1}';
   db.prepare("INSERT INTO bm_cartes (id, univers_id, titre, visible, largeur, hauteur, taille_case, document, version, cree_le, modifie_le) VALUES (1, 1, 'C', 1, 4, 4, 70, ?, 3, 'x', 'x')").run(doc);
   const avant = db.prepare('SELECT * FROM bm_cartes').all();
-  assert.deepEqual(migrate(db), [49, 50, 51]);
+  assert.deepEqual(migrate(db), [49, 50, 51, 52]);
   assert.deepEqual(db.prepare('SELECT * FROM bm_cartes').all(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const t = (etat: string, v = 1, c = 1) => db.prepare("INSERT INTO bm_tables (carte_id, etat, version, cree_le, modifie_le) VALUES (?, ?, ?, 'x', 'x')").run(c, etat, v);

@@ -24,7 +24,7 @@ async function monde() {
   for (const c of ['antor', 'lea']) h[c] = await connecter(app, c);
   const E = one(app, 'SELECT id FROM univers WHERE nom = ?', "Éneria d'essai").id as number;
   const g = one(app, 'SELECT id FROM swn_galaxies WHERE univers_id = ?', E).id as number;
-  const sid = app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,0)")
+  const sid = app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.5,NULL,'',0,0)")
     .run(g, E, 'ecl-sys', 'ecl-sys', 70, 71).lastInsertRowid as number;
   const astre = (cle: string, aspect: string) => app.db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, type, orbite, heure, taille, aspect) VALUES (?,?,?,?,?,?,?,?)')
     .run(sid, cle, 'planete', 'rocheux', 2, 4, 0.1, aspect);
