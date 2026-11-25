@@ -409,9 +409,9 @@ test('0046 : montée depuis 0045, données gardées, contraintes vivantes, RESTR
   db.prepare("INSERT INTO univers (id, cle, nom, cree_le) VALUES (1, 'un', 'U', '2026-11-01T00:00:00.000Z')").run();
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'a', 'x')").run();
   const avant = db.prepare('SELECT * FROM univers').all();
-  assert.deepEqual(migrate(db), [46, 47, 48, 49, 50, 51]);
+  assert.deepEqual(migrate(db), [46, 47, 48, 49, 50, 51, 52]);
   assert.deepEqual(tables(), ['bm_assets', 'bm_cartes', 'bm_direction', 'bm_direction_images', 'bm_lots', 'bm_lots_lignes', 'bm_pions_proprietaires', 'bm_tables']);
-  assert.deepEqual(db.prepare('SELECT * FROM univers').all(), avant);
+  assert.deepEqual(db.prepare('SELECT * FROM univers').all(), avant.map((u) => ({ ...(u as object), espace_systeme_id: null })));
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   assert.deepEqual(migrate(db), []);
   const fic = (i: number) => db.prepare("INSERT INTO fichiers (id, univers_id, nom, type, taille, disque, visibilite, ajoute_par, ajoute_le) VALUES (?, 1, 'f', 'image/png', 1, ?, 'joueurs', 1, 'x')").run(i, `d${i}`);

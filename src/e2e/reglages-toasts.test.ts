@@ -124,23 +124,3 @@ test('E-14 : enregistrer, créer et rattacher, rattacher, détacher donnent leur
   await voit(p, 'Ouvrir le système');
   await p.screenshot({ path: '/tmp/rv-reglages-parametres-1440.png' });
 });
-
-test('E-15 : ajouter et modifier une entrée donnent leur toast, sans prendre le focus', opts, async () => {
-  await p.getByRole('link', { name: 'Ouvrir le système' }).click();
-  await p.getByRole('heading', { name: 'CoF Toast', level: 1 }).waitFor();
-  await attendre(p);
-  await p.getByRole('tab', { name: /^Créatures( \d+)?$/ }).click();
-  await p.getByRole('button', { name: rxExact('Ajouter une créature') }).click();
-  await p.getByLabel(/^Nom(?! du système)/).fill('Garde');
-  await p.getByLabel('Contenu').fill('Lance');
-  await p.getByRole('button', { name: rxExact('Ajouter') }).click();
-  await toastDe(p, '« Garde » ajouté').waitFor();
-  assert.ok(await p.evaluate(() => !document.activeElement?.closest('.toasts')));
-
-  await p.getByText('Garde', { exact: true }).first().click();
-  await p.getByRole('button', { name: rxExact('Modifier') }).click();
-  await p.getByLabel('Contenu').fill('Lance et bouclier');
-  await p.getByRole('button', { name: rxExact('Enregistrer') }).click();
-  await toastDe(p, '« Garde » enregistré').waitFor();
-  assert.ok((await texte(p)).includes('Lance et bouclier'));
-});

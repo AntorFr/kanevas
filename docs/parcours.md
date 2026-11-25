@@ -1583,20 +1583,21 @@ is never deduced from a role in a universe, the admin grants it explicitly.
   in a universe by a gesture on a system. *(P-27)*
 
 ### P-27 — One pistol, four universes (Antor, GM of four universes on Stars Without Number; the admin once)
-1. The admin opens the system (E-15), panel « GMs of the system », and adds Antor (B-114). — E-15.
-2. Antor opens the system, adds « Laser pistol » (type object) with its sections. — E-15, then E-9.
-3. In universe 1, he searches « pistol »: one hit with the system pictogram; he opens it, read-only, under a banner « Element of
-   <system> ». — E-17, E-9.
-4. He presses « Customise for this universe », changes the damage, saves: universe 1 now lists his version marked
+1. The admin opens « Administration » (E-5), then the system in its list, then the tab « MJ du système » of E-15, and adds Antor (B-114). — E-5, E-15.
+2. Antor opens « Systèmes de jeu » (E-16: the system is listed since he is its GM, even with no universe), opens the system and presses « Nouvel élément » (E-15 form: name, type), then opens « Laser pistol » (type object) and writes its sections. — E-15, then E-9.
+3. In universe 1, he searches « pistol »: one hit with the system pictogram; he opens it, read-only, under a banner « Élément de
+   <système> ». — E-17, E-9. *(Slice split: `kanevas-systemes-jeu-elements` carries steps 1, 2, 7 and 9 and, for step 3, the hit in the universe's list and the reading under the banner, without the pictogram; `recherche` adds the pictogram and the filter, `surcharge` carries steps 4 to 6 and 8, and the confirmation naming the universes in step 7.)*
+4. He presses « Personnaliser pour cet univers », changes the damage, saves: universe 1 now lists his version marked
    « customised »; universes 2 to 4 still show the original. — E-9.
-5. In universe 2, he turns on « Hide the system's elements »: the pistol disappears from the search, his own sheets stay. — E-17.
-6. Back in universe 1 he presses « Go back to the system's element »: the copy goes after a confirmation. — E-9.
-7. Later Antor deletes « Laser pistol » from the system (confirmation naming the universes that customised it): universe 1's copy stays,
+5. In universe 2, he turns on « Masquer les éléments du système »: the pistol disappears from the search, his own sheets stay. — E-17.
+6. Back in universe 1 he presses « Revenir à l'élément du système »: the copy goes after a confirmation. — E-9.
+7. Later Antor deletes « Laser pistol » from the system (a window giving the **number** of universes that customised it; the confirmation naming the account's own universes comes with slice `surcharge`): universe 1's copy stays,
    now an ordinary sheet of universe 1, no longer marked « customised » (B-120). — E-9, E-15.
 8. Antor detaches universe 4 from the system in its settings (confirmation: « the customised sheets stay in the universe »), or moves it to
    another system: its copies stay as ordinary sheets (B-120). — E-14.
-9. The admin removes Antor from the GMs of the system (« Remove », B-114): nobody can edit the system any more, even if he was the last. — E-15.
+9. The admin removes Antor from the GMs of the system (« Retirer », B-114): nobody can edit the system any more, even if he was the last. — E-15.
 Léa (player of universe 3) reads the same original, only its player-readable sections, and sees no button to edit.
+*Failure paths:* the admin types an unknown identifier or an account already GM → the message below the field, nothing added; Antor opens an element another GM deleted meanwhile → « Page introuvable. » when he was reading, « Cet élément n'existe plus. » when he was editing, back to the list; his GM right is removed while he edits → « Vous ne pouvez plus modifier ce système. » on the next write, his text kept. *Moment of strength (slice `elements`):* step 3, the element read under its banner from a universe's list, after step 2 — the same pistol, found in four universes, edited once.
 
 ### P-28 — A key reads and writes a system (Monsieur, with his agent)
 He creates a token (« Mes jetons d'API », E-23 of `kanevas-synchro`), gives it level « write » on the system (choice described in E-23's « Systems » block), and the agent

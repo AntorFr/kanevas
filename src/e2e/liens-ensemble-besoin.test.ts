@@ -350,30 +350,3 @@ describe('B-36 : « Mentionnée dans », bords et exclusions', () => {
     await page.close();
   });
 });
-
-describe('B-33 : une entrée de système (E-15)', opts, () => {
-  test('exclusion : dans une entrée de système, [[…]] reste du texte (API et éditeur sans liste)', async () => {
-    const systeme = (await ok(C.antor, 'get', '/api/systemes/1')).gabarits[0];
-    const texte = `Voir [[${id['Maître Aldric']}|Maître Aldric]] et [[cle:x:y|z]]`;
-    const r = await http(C.antor, 'put', `/api/systemes/1/gabarits/${systeme.id}`, { nom: systeme.nom, contenu: texte, version: systeme.version });
-    assert.equal(r.status, 200, JSON.stringify(r.json));
-    const apres = (await ok(C.antor, 'get', '/api/systemes/1')).gabarits.find((g: Any) => g.id === systeme.id);
-    assert.equal(apres.html, `<p>Voir [[${id['Maître Aldric']}|Maître Aldric]] et [[cle:x:y|z]]</p>\n`);
-    const page = await C.antor.ctx.newPage();
-    await page.goto(`${srv.base}/systemes/1`);
-    await page.waitForLoadState('networkidle');
-    await page.getByRole('tab', { name: /Règles/ }).click();
-    await page.getByRole('button', { name: new RegExp(systeme.nom) }).click();
-    assert.match(await page.locator('.entree-contenu').innerText(), /\[\[\d+\|Maître Aldric\]\]/);
-    assert.equal(await page.locator('.entree-contenu a').count(), 0);
-    await page.getByRole('button', { name: 'Modifier', exact: true }).click();
-    assert.equal(await page.getByRole('button', { name: 'Lien vers une fiche' }).count(), 0);
-    const champ = page.getByRole('textbox', { name: /Contenu/ });
-    await champ.fill('');
-    await champ.pressSequentially('[[ald');
-    await attendre(page);
-    assert.equal(await page.getByRole('listbox').count(), 0, 'pas de liste dans une entrée de système');
-    await page.screenshot({ path: `${SHOTS}/liens-systeme-edition.png` });
-    await page.close();
-  });
-});

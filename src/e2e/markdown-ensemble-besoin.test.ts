@@ -119,28 +119,6 @@ test('B-32 critère : Antor écrit, Aperçu, Enregistrer ; Léa lit le formaté,
   void sid;
 });
 
-test('B-32 exclusion : l’entrée de système lue par Léa (rendu seul) sans source pour elle', opts, async () => {
-  const m = await monde('Entree MD');
-  const sys = await api(C.antor, 'post', '/api/systemes', { nom: 'Mini' });
-  await api(C.antor, 'put', `${m.b}/systeme`, { systemeId: sys.id });
-  await api(C.antor, 'post', `/api/systemes/${sys.id}/gabarits`, { type: 'creature', nom: 'Gobelin', contenu: '**crochu** [[x]]' });
-  // entry on screen for Léa: formatted, no editor, no source field
-  const p = await C.lea.ctx.newPage();
-  await p.goto(`${srv.base}/systemes/${sys.id}`);
-  await p.waitForLoadState('networkidle');
-  const onglet = p.getByRole('tab', { name: /Créature/i });
-  if (await onglet.count()) await onglet.click();
-  await p.getByRole('button', { name: /Gobelin/ }).click();
-  const md = p.locator('.entree-contenu.md');
-  await md.waitFor();
-  assert.equal(await md.locator('strong').innerText(), 'crochu');
-  assert.match(await md.innerText(), /\[\[x\]\]/);
-  assert.equal(await p.getByRole('textbox').count(), 0);
-  assert.equal(await p.getByRole('radio', { name: 'Aperçu' }).count(), 0);
-  await p.screenshot({ path: '/tmp/kanevas-ensemble-entree-lea.png' });
-  await p.close();
-});
-
 test('B-32 exclusion : HTML brut, schémas hors http/https/mailto (toutes casses) et image externe restent du texte', opts, async () => {
   const m = await monde('Hostile MD');
   await sectionLue(

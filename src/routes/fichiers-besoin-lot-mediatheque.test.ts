@@ -205,7 +205,7 @@ test('B-31 · un gabarit ne s’écrit pas sans être MJ : Teo (aucun univers ra
   const m = await monter();
   const sid = (await m.app.inject({ method: 'GET', url: '/api/systemes', headers: m.lea })).json().find((s: Any) => s.nom === 'CoF Mini').id;
   const ecrire = (h: Any, id: number) =>
-    m.app.inject({ method: 'POST', url: `/api/systemes/${id}/gabarits`, headers: h, payload: { type: 'creature', nom: 'Intrus', contenu: 'x' } });
+    m.app.inject({ method: 'PUT', url: `/api/systemes/${id}/types/objet`, headers: h, payload: { active: false } });
   assert.equal((await ecrire(m.teo, sid)).statusCode, 404);
   assert.equal((await ecrire(m.lea, sid)).statusCode, 403);
 });
