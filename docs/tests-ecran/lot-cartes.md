@@ -472,11 +472,6 @@ The doors written by this lot are in `src/routes/*-lot-cartes.test.ts` (the shar
 | `src/e2e/carte-systeme-echelle-ecran.test.ts` | `E-23 les astres à l’échelle de leurs orbites > un astre garde sa taille entre deux zooms, la position seule suit` | affichage | — | gardé |
 | `src/e2e/carte-systeme-echelle-ecran.test.ts` | `E-23 les astres à l’échelle de leurs orbites > chaque astre a son orbite tracée, la lune sur celle de sa planète` | affichage | — | gardé |
 | `src/e2e/carte-systeme-echelle-ecran.test.ts` | `E-23 les astres à l’échelle de leurs orbites > captures dans les deux thèmes à 1280 et 390 px, tous les noms posés` | affichage | — | gardé |
-| `src/e2e/carte-systeme-sorties-ecran.test.ts` | `E-23 le halo de transition et les flèches de sortie > la flèche pirate et la flèche sans type ont la couleur de leur token, la légende du halo est là, dans les deux thèmes` | affichage | — | gardé |
-| `src/e2e/carte-systeme-sorties-ecran.test.ts` | `E-23 le halo de transition et les flèches de sortie > à 1280 px la légende « Zone de transition » est affichée` | affichage | — | gardé |
-| `src/e2e/carte-systeme-sorties-ecran.test.ts` | `E-23 le halo de transition et les flèches de sortie > à 390 px aucune étiquette ne recouvre un astre, un nom ni une flèche (boîtes du DOM)` | affichage | — | gardé |
-| `src/e2e/carte-systeme-sorties-ecran.test.ts` | `E-23 le halo de transition et les flèches de sortie > cliquer la flèche ouvre le système voisin ; l’aria-label de la pirate finit par « , route Pirate »` | affichage | — | gardé |
-| `src/e2e/carte-systeme-sorties-ecran.test.ts` | `E-23 le halo de transition et les flèches de sortie > une joueuse ne voit que la flèche de la route publique, sans trou ni compte` | affichage | — | gardé |
 | `src/e2e/carte-systeme-lumiere-ecran.test.ts` | `E-23 la face éclairée de chaque astre regarde son étoile > la face la plus claire de chaque planète et de la lune regarde son étoile` | affichage | — | gardé |
 | `src/e2e/carte-systeme-lumiere-ecran.test.ts` | `E-23 la face éclairée de chaque astre regarde son étoile > « Voir l’illustration » d’une planète montre la même face que la carte` | affichage | — | gardé |
 | `src/e2e/carte-systeme-lumiere-ecran.test.ts` | `E-23 la face éclairée de chaque astre regarde son étoile > captures dans les deux thèmes à 1280 et 390 px` | affichage | — | gardé |
