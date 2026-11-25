@@ -25,6 +25,8 @@ export interface JetonVue {
   modifieParAdmin: { par: number; le: string } | null;
   /** Keys `module/outil` of a tool token, empty for a content token. */
   outils?: string[];
+  /** Whether it reaches the content routes (B-jeton-1). */
+  contenu?: boolean;
   etat: 'actif' | 'revoque' | 'expire';
   proprietaire: string;
 }
@@ -38,10 +40,14 @@ export interface OutilOffrable {
   univers: number[];
 }
 
-/** « outils : Essai G, Essai X » (a tool no longer offered keeps its key), or null for a content token. */
+/**
+ * The permissions of a line, after its accesses: « contenu + outils : Galaxie, Essai G » (a tool no longer offered keeps its key),
+ * « outils : Galaxie » for a tool-only token, null for a content-only token (nothing to read twice).
+ */
 export function libelleOutils(j: JetonVue, offrables: OutilOffrable[]): string | null {
   if (!j.outils || j.outils.length === 0) return null;
-  return `outils : ${j.outils.map((c) => offrables.find((o) => o.cle === c)?.libelle ?? c).join(', ')}`;
+  const liste = j.outils.map((c) => offrables.find((o) => o.cle === c)?.libelle ?? c).join(', ');
+  return `${j.contenu === false ? '' : 'contenu + '}outils : ${liste}`;
 }
 
 /** A universe the owner may choose. */

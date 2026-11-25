@@ -6,7 +6,7 @@ import { ErreurApi, appeler } from '../../api';
 export const MAX_MESSAGE = 2000;
 export const MAX_HISTORIQUE = 20;
 
-export type TypeEvenement = 'fiche_creee' | 'section_modifiee' | 'section_completee' | 'image_attachee' | 'proposition_creee';
+export type TypeEvenement = 'fiche_creee' | 'section_modifiee' | 'section_completee' | 'image_attachee' | 'proposition_creee' | 'direction_ecrite' | 'lot_prepare' | 'carte_composee';
 
 /** The client never gives up before this (an image request lasts 270 s at most, AD-90). */
 export const DELAI_REQUETE_MS = 300_000;
@@ -15,7 +15,7 @@ export const DELAI_REQUETE_MS = 300_000;
 export interface Evenement {
   type: TypeEvenement;
   libelle: string;
-  cible: { type: 'fiche' | 'proposition'; [cle: string]: string | number };
+  cible: { type: 'fiche' | 'proposition' | 'direction' | 'lot' | 'carte'; [cle: string]: string | number };
 }
 
 export interface MessageAffiche {
@@ -95,6 +95,7 @@ async function demander(universId: number, message: string, historique: MessageA
       etat: 'repos',
       messages: [...etat.messages, { role: 'assistant', content: r.reponse, evenements: r.evenements ?? [] }],
     });
+    if (r.evenements?.some((ev) => ev.type === 'direction_ecrite')) directionsEcrites.forEach((f) => f());
   } catch (e) {
     if (mine !== generation) return;
     const occupe = e instanceof ErreurApi && e.statut === 429;
@@ -124,6 +125,19 @@ const demandesOuverture = new Set<() => void>();
 export function surDemandeOuverture(f: () => void): () => void {
   demandesOuverture.add(f);
   return () => demandesOuverture.delete(f);
+}
+
+/** Opens the panel (the request of a screen, or a proposal to show). */
+export function demanderOuverture() {
+  demandesOuverture.forEach((f) => f());
+}
+
+const directionsEcrites = new Set<() => void>();
+
+/** E-26 reloads its text when an answer carries `direction_ecrite` (the banner survives from the server's `source`). */
+export function surDirectionEcrite(f: () => void): () => void {
+  directionsEcrites.add(f);
+  return () => directionsEcrites.delete(f);
 }
 
 /** Shows a proposal in the thread (once) and asks the panel to open on it. */

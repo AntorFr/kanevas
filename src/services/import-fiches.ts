@@ -1,5 +1,5 @@
 import { avecContexte } from './historique.js';
-import { creerCompteRendu, TITRE_SECTION_COMPTE_RENDU } from './comptes_rendus.js';
+import { changerAventureDuCompteRendu, creerCompteRendu, TITRE_SECTION_COMPTE_RENDU } from './comptes_rendus.js';
 import type { Db } from '../db/db.js';
 import { exigerMJ } from './droits.js';
 import { cleValide } from './import.js';
@@ -462,12 +462,17 @@ function ecrire(
   }
 
   if (e.creeLe && e.creeLe !== existante.cree_le) prevenir('fiche', 'creeLe non modifiable, ignorée');
-  if (e.type === 'compte_rendu' && e.campagneId !== (JSON.parse(existante.charge) as { campagne_id?: number }).campagne_id) {
-    prevenir('fiche', 'campagne non modifiable, ignorée');
-  }
   // What the body carries is compared with the rows as they are now (B-47, AD-138): each field sent that
   // differs is written, a field not sent is left, nothing is removed by omission.
   let ecrit = false;
+
+  if (
+    e.type === 'compte_rendu' && existante.type === 'compte_rendu' && e.campagneId !== undefined &&
+    e.campagneId !== (JSON.parse(existante.charge) as { campagne_id?: number }).campagne_id
+  ) {
+    changerAventureDuCompteRendu(db, { compteId }, universId, existante.id, e.campagneId);
+    ecrit = true;
+  }
 
   if (existante.titre !== e.titre) {
     renommerFiche(db, compteId, universId, existante.id, e.titre);

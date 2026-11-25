@@ -2,7 +2,7 @@
 
 export type Issue = 'creees' | 'mises_a_jour' | 'inchangees' | 'refusees' | 'supprimees';
 export type Nature = 'fiches' | 'fichiers' | 'relations' | 'cartes';
-/** `supprimees` exists on the `fiches` nature only (AD-119 (4)); absent elsewhere and in older batches. */
+/** `supprimees` exists on the `fiches` and `fichiers` natures (AD-119 (4), AD-fichiers-suppr-1); absent elsewhere and in older batches. */
 export type Compteurs = Record<string, Partial<Record<Issue, number>>>;
 
 export interface OutilVue { cle: string; libelle: string }
