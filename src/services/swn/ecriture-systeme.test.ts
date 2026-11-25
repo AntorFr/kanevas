@@ -68,7 +68,8 @@ test('ancrer : lignes égales à la réponse de tirer_systeme, voisins inchangé
     }
   }
   // same bodies as the read before anchoring
-  const strip = (v: any) => v.astres.map((x: any) => [x.cle, x.genre, x.parent_cle, x.orbite, x.heure, x.taille, x.type, JSON.stringify(x.aspect)]);
+  const strip = (v: any) => v.astres.map((x: any) => [x.cle, x.genre, x.parent_cle, x.orbite, x.heure, x.taille, x.type, JSON.stringify({ ...x.aspect, graine: undefined })]);
+  // (the seed of a defined body is filled in at the read, AD-aspects-socle-2: a drawn one has none)
   assert.deepEqual(strip(r.interieur), strip(avant));
   assert.deepEqual(r.interieur.formations.map((z: any) => [z.cle, z.parametres]), avant.formations.map((z: any) => [z.cle, z.parametres]));
   // neighbours' draw is unchanged

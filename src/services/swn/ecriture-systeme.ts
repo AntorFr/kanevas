@@ -20,6 +20,8 @@ export interface Coeur {
   galactique_vers_orbite_heure(dq: number, dr: number, rayon: number): Float64Array;
   types_astre(genre: string): string;
   valider_aspect(type: string, json: string): string;
+  trier_aspect(type: string, json: string): string;
+  graine_de(cle_systeme: string, cle_corps: string): number;
   valider_formation(forme: string, json: string): string;
   catalogue_aspects(): string;
 }
