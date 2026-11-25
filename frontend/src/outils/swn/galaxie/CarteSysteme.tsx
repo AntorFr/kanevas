@@ -27,9 +27,9 @@ const HAUTEUR_ETIQUETTE = 15;
 const RAYON_FLECHE = 9;
 // Gap (px) from the hour circle to the centre of its mark: past the arrow of a jump point (12 px high) when the circle is the transition's.
 const DECALAGE_REPERE_PX = 14;
-const DECALAGE_REPERE_SORTIE_PX = 30;
+const DECALAGE_REPERE_SORTIE_PX = 26;
 // Room kept round the fitted view when the transition dominates, so the hour marks and the exit labels stay inside the sky.
-const RESERVE_TRANSITION_PX = 44;
+const RESERVE_TRANSITION_PX = 30;
 const NOM_SORTIE_MAX = 24;
 const coupeNom = (nom: string) => ([...nom].length > NOM_SORTIE_MAX ? `${[...nom].slice(0, NOM_SORTIE_MAX - 1).join('').trimEnd()}…` : nom);
 /** A body waiting for the server's answer is dimmed by opacity alone (charte, drag gesture). */
