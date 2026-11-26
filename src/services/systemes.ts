@@ -1,5 +1,7 @@
 import type { Db } from '../db/db.js';
 import { exigerMJ, lectureSysteme } from './droits.js';
+import { ecrire } from './historique.js';
+import { detacherCopiesDeUnivers } from './surcharge.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import type { Role } from './types.js';
 
@@ -120,6 +122,18 @@ export function creerSysteme(db: Db, compteId: number, entree: { nom: string }):
   return db.transaction(() => insererSysteme(db, nom, compteId))();
 }
 
+/**
+ * The single writer of `univers.systeme_id` (AD-surcharge-3). A change of system (or a detachment) turns the universe's
+ * copies into ordinary sheets, in the same transaction; the same system again writes nothing more.
+ */
+function changerSysteme(db: Db, compteId: number, universId: number, systemeId: number | null): void {
+  ecrire(db, compteId, () => {
+    const avant = (db.prepare('SELECT systeme_id FROM univers WHERE id = ?').get(universId) as { systeme_id: number | null }).systeme_id;
+    if (avant !== systemeId) detacherCopiesDeUnivers(db, universId);
+    db.prepare('UPDATE univers SET systeme_id = ? WHERE id = ?').run(systemeId, universId);
+  });
+}
+
 /** Attaches the universe to a system, or detaches it with `null`. GM only; unknown system → invalid. */
 export function rattacherSysteme(
   db: Db,
@@ -132,7 +146,7 @@ export function rattacherSysteme(
     const ok = db.prepare('SELECT 1 FROM systemes_jeu WHERE id = ?').get(systemeId);
     if (!ok) throw invalide('Système inconnu.');
   }
-  db.prepare('UPDATE univers SET systeme_id = ? WHERE id = ?').run(systemeId, universId);
+  db.transaction(() => changerSysteme(db, compteId, universId, systemeId))();
 }
 
 /** Creates the system and attaches the universe in one transaction: a taken name does neither. */
@@ -146,7 +160,7 @@ export function creerEtRattacherSysteme(
   const nom = validerNomSysteme(entree.nom);
   return db.transaction(() => {
     const s = insererSysteme(db, nom, compteId);
-    db.prepare('UPDATE univers SET systeme_id = ? WHERE id = ?').run(s.id, universId);
+    changerSysteme(db, compteId, universId, s.id);
     return s;
   })();
 }

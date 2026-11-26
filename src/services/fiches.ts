@@ -1,4 +1,5 @@
 import { blocsDeFiche } from '../outils/blocs.js';
+import { copiesDe, detacherCopiesDe } from './surcharge.js';
 import type { Db } from '../db/db.js';
 import {
   exigerMJ,
@@ -376,6 +377,8 @@ export interface BilanSuppression {
   taches?: number;
   scenarios?: number;
   comptesRendus?: number;
+  /** An element of a system with customised copies (AD-surcharge-3): the copies that become ordinary sheets, not deleted. */
+  fichesDevenuesOrdinaires?: number;
 }
 
 /**
@@ -411,6 +414,7 @@ function recenser(db: Db, f: FicheRow): BilanSuppression & { disques: string[] }
     fichiers,
     enfants: n('SELECT COUNT(*) AS n FROM fiches WHERE parent_id = ?', f.id),
     parent,
+    ...(copiesDe(db, f.id) > 0 ? { fichesDevenuesOrdinaires: copiesDe(db, f.id) } : {}),
     ...(f.type === 'aventure'
       ? {
           taches: n('SELECT COUNT(*) AS n FROM taches_preparation WHERE fiche_id = ?', f.id),
@@ -455,6 +459,7 @@ export function supprimerFiche(db: Db, acteur: Acteur, universId: number, ficheI
   const f = porteSuppression(db, acteur, universId, ficheId, true);
   const { disques } = ecrire(db, acteur.compteId, () => {
     const bilan = recenser(db, f);
+    detacherCopiesDe(db, f.id);
     db.prepare('UPDATE fiches SET parent_id = ? WHERE parent_id = ?').run(f.parent_id, f.id);
     db.prepare('DELETE FROM relations WHERE cible_fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM elements_carte WHERE fiche_id = ?').run(f.id);

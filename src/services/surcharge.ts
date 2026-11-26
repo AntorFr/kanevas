@@ -147,3 +147,22 @@ export function copiesDeElement(
 export function nombreDePersonnalisees(db: Db, universId: number): number {
   return (db.prepare('SELECT COUNT(*) AS n FROM fiches WHERE univers_id = ? AND surcharge_de IS NOT NULL').get(universId) as { n: number }).n;
 }
+
+/**
+ * The element goes (AD-surcharge-3, B-120): every copy of it, in any universe, becomes an ordinary sheet. Called inside the
+ * caller's write context, so the `detachee` line of the trigger carries the account that deletes. Writes nothing without a copy.
+ * Returns the number of copies detached.
+ */
+export function detacherCopiesDe(db: Db, ficheId: number): number {
+  return db.prepare('UPDATE fiches SET surcharge_de = NULL WHERE surcharge_de = ?').run(ficheId).changes;
+}
+
+/** The universe leaves its system: its copies become ordinary sheets, in the transaction of the change. */
+export function detacherCopiesDeUnivers(db: Db, universId: number): number {
+  return db.prepare('UPDATE fiches SET surcharge_de = NULL WHERE univers_id = ? AND surcharge_de IS NOT NULL').run(universId).changes;
+}
+
+/** Sheets of other universes that stop being a copy of this one when it goes (the bilan of its deletion). */
+export function copiesDe(db: Db, ficheId: number): number {
+  return (db.prepare('SELECT COUNT(*) AS n FROM fiches WHERE surcharge_de = ?').get(ficheId) as { n: number }).n;
+}
