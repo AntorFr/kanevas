@@ -138,7 +138,7 @@ const systemesDe = (db: Db, r: { id: number; compte_id: number }): AccesSysteme[
     .all(r.id) as { id: number; nom: string; niveau: NiveauPose }[])
     .map((x) => ({ ...x, plusLecteur: lectureSysteme(db, r.compte_id, x.id) === null }));
 
-const versJeton = (db: Db, r: JetonRow): Jeton => ({
+const versJeton = (db: Db, r: JetonRow, systemes?: AccesSysteme[]): Jeton => ({
   id: r.id,
   compteId: r.compte_id,
   nom: r.nom,
@@ -156,7 +156,7 @@ const versJeton = (db: Db, r: JetonRow): Jeton => ({
       : null,
   outils: outilsDe(db, r.id),
   contenu: r.contenu === 1,
-  systemes: systemesDe(db, r),
+  systemes: systemes ?? systemesDe(db, r),
 });
 
 const ligne = (db: Db, id: number): JetonRow | undefined =>
@@ -502,7 +502,8 @@ function inserer(
     }
     // The column defaults to 1: only a token without content says so.
     if (!contenu) db.prepare('UPDATE jetons_api SET contenu = 0 WHERE id = ?').run(lastInsertRowid);
-    return versJeton(db, ligne(db, Number(lastInsertRowid))!);
+    // A token with no system reads no table of systems (the seed also runs on bases older than 0053).
+    return versJeton(db, ligne(db, Number(lastInsertRowid))!, systemes.length === 0 ? [] : undefined);
   })();
 }
 
