@@ -1,8 +1,9 @@
 import type { Db } from '../db/db.js';
 import { espaceDe, exigerRole, lectureSysteme } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
-import { creerFiche, lireFiche, supprimerFiche } from './fiches.js';
+import { creerFiche, lireFiche, poserDetacheurDeCopies, supprimerFiche } from './fiches.js';
 import { ecrire } from './historique.js';
+import { poserDetacheurDUnivers } from './systemes.js';
 import { insererSection } from './sections.js';
 import type { Acteur, FicheVue } from './types.js';
 
@@ -162,7 +163,9 @@ export function detacherCopiesDeUnivers(db: Db, universId: number): number {
   return db.prepare('UPDATE fiches SET surcharge_de = NULL WHERE univers_id = ? AND surcharge_de IS NOT NULL').run(universId).changes;
 }
 
-/** Sheets of other universes that stop being a copy of this one when it goes (the bilan of its deletion). */
-export function copiesDe(db: Db, ficheId: number): number {
-  return (db.prepare('SELECT COUNT(*) AS n FROM fiches WHERE surcharge_de = ?').get(ficheId) as { n: number }).n;
-}
+/** Copies of the element (the bilan of its deletion counts them as sheets that become ordinary). */
+const compterCopies = (db: Db, ficheId: number): number =>
+  (db.prepare('SELECT COUNT(*) AS n FROM fiches WHERE surcharge_de = ?').get(ficheId) as { n: number }).n;
+
+poserDetacheurDeCopies(detacherCopiesDe, compterCopies);
+poserDetacheurDUnivers(detacherCopiesDeUnivers);

@@ -1,7 +1,6 @@
 import type { Db } from '../db/db.js';
 import { exigerMJ, lectureSysteme } from './droits.js';
 import { ecrire } from './historique.js';
-import { detacherCopiesDeUnivers } from './surcharge.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import type { Role } from './types.js';
 
@@ -122,6 +121,12 @@ export function creerSysteme(db: Db, compteId: number, entree: { nom: string }):
   return db.transaction(() => insererSysteme(db, nom, compteId))();
 }
 
+/** Registered by `services/surcharge.ts` when loaded (it reaches this file through `fiches.ts`: a direct import would be a cycle). */
+let detacheurDUnivers: (db: Db, universId: number) => number = () => 0;
+export function poserDetacheurDUnivers(f: (db: Db, universId: number) => number): void {
+  detacheurDUnivers = f;
+}
+
 /**
  * The single writer of `univers.systeme_id` (AD-surcharge-3). A change of system (or a detachment) turns the universe's
  * copies into ordinary sheets, in the same transaction; the same system again writes nothing more.
@@ -129,7 +134,7 @@ export function creerSysteme(db: Db, compteId: number, entree: { nom: string }):
 function changerSysteme(db: Db, compteId: number, universId: number, systemeId: number | null): void {
   ecrire(db, compteId, () => {
     const avant = (db.prepare('SELECT systeme_id FROM univers WHERE id = ?').get(universId) as { systeme_id: number | null }).systeme_id;
-    if (avant !== systemeId) detacherCopiesDeUnivers(db, universId);
+    if (avant !== null && avant !== systemeId) detacheurDUnivers(db, universId);
     db.prepare('UPDATE univers SET systeme_id = ? WHERE id = ?').run(systemeId, universId);
   });
 }

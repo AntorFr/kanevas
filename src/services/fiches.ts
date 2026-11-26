@@ -1,5 +1,4 @@
 import { blocsDeFiche } from '../outils/blocs.js';
-import { copiesDe, detacherCopiesDe } from './surcharge.js';
 import type { Db } from '../db/db.js';
 import {
   exigerMJ,
@@ -366,6 +365,19 @@ export function changerTypeFiche(
   return versFiche(chargerFiche(db, universId, ficheId));
 }
 
+/**
+ * Detaching of the copies of a deleted element (AD-surcharge-3). `services/surcharge.ts`, the only writer of
+ * `surcharge_de`, registers it when loaded (it imports this file: a direct import would be a cycle). Without it
+ * the delete of an element with a copy fails on the foreign key, never silently.
+ */
+let detacheurDeCopies: (db: Db, ficheId: number) => number = () => 0;
+let compteurDeCopies: (db: Db, ficheId: number) => number = () => 0;
+export function poserDetacheurDeCopies(detacher: (db: Db, ficheId: number) => number, compter: (db: Db, ficheId: number) => number): void {
+  detacheurDeCopies = detacher;
+  compteurDeCopies = compter;
+}
+const copiesDe = (db: Db, ficheId: number): number => compteurDeCopies(db, ficheId);
+
 export interface BilanSuppression {
   sections: number;
   relations: number;
@@ -459,7 +471,7 @@ export function supprimerFiche(db: Db, acteur: Acteur, universId: number, ficheI
   const f = porteSuppression(db, acteur, universId, ficheId, true);
   const { disques } = ecrire(db, acteur.compteId, () => {
     const bilan = recenser(db, f);
-    detacherCopiesDe(db, f.id);
+    detacheurDeCopies(db, f.id);
     db.prepare('UPDATE fiches SET parent_id = ? WHERE parent_id = ?').run(f.parent_id, f.id);
     db.prepare('DELETE FROM relations WHERE cible_fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM elements_carte WHERE fiche_id = ?').run(f.id);
