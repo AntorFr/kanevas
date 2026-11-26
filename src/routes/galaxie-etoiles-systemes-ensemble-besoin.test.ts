@@ -17,6 +17,7 @@ import { join } from 'node:path';
 import { after, describe, it } from 'node:test';
 import Database from 'better-sqlite3';
 import { migrate, openDb } from '../db/db.js';
+import { classeDeCle } from '../wasm/coeur.js';
 import { startServer, type Any, type Server } from '../e2e/harnais.test.js';
 
 const servers: Server[] = [];
@@ -318,7 +319,8 @@ describe('B-117 lecture : les blocs portent classe et taille de chaque étoile t
       const s = systemeDes(b, nom.toLowerCase().replace('é', 'e'));
       assert.ok(s, nom);
       assert.ok(typeof s.taille === 'number' && s.taille >= 0 && s.taille <= 1, `taille ${s.taille}`);
-      lues.push(`${s.classe}|${s.taille}`);
+      // The server draws nothing for a class left null: the browser draws it from the key and the size by the core (AD-galaxie-systemes-1).
+      lues.push(`${s.classe ?? await classeDeCle(nom.toLowerCase().replace('é', 'e'), s.taille)}|${s.taille}`);
     }
     assert.ok(new Set(lues).size >= 2, `deux systèmes au moins diffèrent : ${lues.join(' ; ')}`);
   });
