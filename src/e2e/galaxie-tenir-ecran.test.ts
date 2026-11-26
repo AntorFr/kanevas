@@ -246,7 +246,7 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     // the map reloads after the write: « Recentrer » is pressed again until the reloaded zone is framed
     for (let i = 0; i < 20 && (await systeme(page, 'Relais').count()) === 0; i++) {
       await page.getByRole('button', { name: 'Recentrer' }).click();
-      await page.waitForTimeout(300);
+      await systeme(page, 'Relais').first().waitFor({ timeout: 500 }).catch(() => undefined);
     }
     await attendreSysteme(page, 'Relais');
 
