@@ -4,7 +4,7 @@ import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 
 import type { Db } from '../db/db.js';
-import { attachmentsDir } from '../config/env.js';
+import { attachmentsDir, env } from '../config/env.js';
 import {
   ajouterFichier,
   choisirIllustration,
@@ -21,10 +21,11 @@ import { changerStatutFiche, creerFiche, deplacerFiche, lireFiche, marquerDispar
 import { creerCompteRendu } from '../services/comptes_rendus.js';
 import { ajouterTache } from '../services/preparation.js';
 import { assurerCompte } from '../services/comptes.js';
-import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
+import { creerEspacesManquants, creerEtRattacherSysteme, differerEspaces, rattacherSysteme } from '../services/systemes.js';
 import { creerJetonDeValeur } from '../services/jetons.js';
 import { creerUnivers } from '../services/univers.js';
 import { modulesActifs } from '../outils/registre.js';
+import { semerBattlemap } from './semis-battlemap.js';
 import { creerSystemeAncienPourBouchon, poserActivation } from '../services/outils.js';
 import { semerGalaxieEssai } from '../services/swn/galaxies.js';
 import { appliquerCatalogue } from '../services/catalogues.js';
@@ -53,7 +54,7 @@ export function semerBouchon(db: Db): boolean {
     (c) => c.name === 'parent_id',
   );
 
-  db.transaction(() => {
+  differerEspaces(() => db.transaction(() => {
     const lame = creerUnivers(db, id.antor, {
       nom: "Lame d'Ébène",
       description: 'Une cité marchande rongée par les secrets.',
@@ -84,22 +85,33 @@ export function semerBouchon(db: Db): boolean {
     rattacherSysteme(db, id.mira, landes.id, cof.id);
     const cof2 = creerEtRattacherSysteme(db, id.admin, cendres.id, { nom: 'Chroniques Oubliées Fantasy' });
 
-    const gab = (sid: number, acteur: number, type: string, noms: string[]) => {
-      for (const nom of noms) {
-        creerGabarit(db, acteur, sid, { type, nom, contenu: `${nom} : entrée de démonstration.` });
+    // The elements of a system are sheets of its hidden space (AD-151). The seed grants the system's GMs the way the
+    // admin does (a `membres` row of the space, AD-152), then writes through the sheet services.
+    const espaces = (db.prepare('PRAGMA table_info(univers)').all() as { name: string }[]).some(
+      (c) => c.name === 'espace_systeme_id',
+    );
+    const element = (sid: number, acteur: number, type: string, noms: string[]) => {
+      if (!espaces) return; // a base held short of 0052: the migration creates the spaces, the elements come later
+      const espace = (db.prepare('SELECT id FROM univers WHERE espace_systeme_id = ?').get(sid) as { id: number }).id;
+      db.prepare("INSERT OR IGNORE INTO membres (univers_id, compte_id, role) VALUES (?, ?, 'mj')").run(espace, acteur);
+      for (const titre of noms) {
+        const f = creerFiche(db, acteur, espace, { type, titre, sections: [{ titre: 'Description', joueursLisent: true }] });
+        const section = lireFiche(db, { compteId: acteur }, espace, f.id).sections[0]!;
+        ecrireContenu(db, acteur, espace, f.id, section.id, `${titre} : entrée de démonstration.`, section.version);
       }
     };
-    gab(cof.id, id.antor, 'regle', ['Attaque au contact', 'Points de chance', 'Repos']);
-    gab(cof.id, id.antor, 'creature', [
+    const elements: (() => void)[] = []; // written last: the sheets of the universes keep their ids
+    elements.push(() => element(cof.id, id.antor, 'regle', ['Attaque au contact', 'Points de chance', 'Repos']));
+    elements.push(() => element(cof.id, id.antor, 'creature', [
       'Gobelin des Landes',
       'Loup des brumes',
       "Sentinelle d'Ébène",
       'Vouivre des tourbières',
-    ]);
-    gab(cof.id, id.antor, 'objet', ['Lame grise', 'Sceau de Val-Fortin']);
-    gab(cof2.id, id.admin, 'regle', ['Initiative', 'Voies de capacité']);
-    gab(cof2.id, id.admin, 'creature', ['Squelette de garde', 'Ogre des collines']);
-    gab(cof2.id, id.admin, 'objet', ['Potion de soin', 'Bâton de mage']);
+    ]));
+    elements.push(() => element(cof.id, id.antor, 'objet', ['Lame grise', 'Sceau de Val-Fortin']));
+    elements.push(() => element(cof2.id, id.admin, 'regle', ['Initiative', 'Voies de capacité']));
+    elements.push(() => element(cof2.id, id.admin, 'creature', ['Squelette de garde', 'Ogre des collines']));
+    elements.push(() => element(cof2.id, id.admin, 'objet', ['Potion de soin', 'Bâton de mage']));
 
     // A sheet with one section per title; `lue` = players read it (otherwise GM only).
     const fiche = (
@@ -320,7 +332,9 @@ export function semerBouchon(db: Db): boolean {
         titre: 'Séance 12', texte: 'La compagnie poursuit la piste du sceau brisé.',
       });
     }
-  })();
+    creerEspacesManquants(db);
+    for (const ecrire of elements) ecrire();
+  })());
   return true;
 }
 
@@ -421,6 +435,7 @@ export async function semerIllustrations(db: Db, racine: string = attachmentsDir
   supprimerFichier(fresque.jeton, racine);
 
   await semerFichiers(db, racine);
+  if (!env.KANEVAS_SANS_SEMIS_BATTLEMAP && modulesActifs().some((m) => m.nom === 'battlemap')) await semerBattlemap(db, racine);
 }
 
 /**

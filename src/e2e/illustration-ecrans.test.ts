@@ -319,7 +319,8 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     assert.ok(r.status() < 300);
     await grille(lea, 'objets').catch(() => undefined);
     await grille(antor, 'objets');
-    const t = antor.locator('a.carte .titre').first();
+    const t = antor.locator(`a.carte .titre[title="${long.slice(0, 120)}"]`).first();
+    await t.waitFor();
     assert.equal(await t.getAttribute('title'), long.slice(0, 120));
     const h = await t.evaluate((e: HTMLElement) => ({ h: e.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(e).lineHeight) }));
     assert.ok(h.h <= h.lh * 2 + 1, `title height ${h.h} for line-height ${h.lh}`);

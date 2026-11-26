@@ -128,6 +128,11 @@
 .liste-statut-champ { display: inline-block; flex: none; }
 .liste-statut-champ svg { right: 10px; }
 .liste-statut-champ .liste-statut { padding-right: var(--e-6); }
+/* Stacked variant (E-15 « Nouvel élément »): title, then one field per line, then the buttons. */
+.formulaire-ligne.empile { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: var(--e-4); }
+.formulaire-ligne.empile h3 { font: 600 var(--t-14)/1.3 var(--police-texte); }
+.formulaire-ligne.empile .champ { flex: none; min-width: 0; }
+.formulaire-ligne.empile .actions { justify-content: flex-end; }
 .formulaire-ligne.ouvert .actions { display: flex; gap: var(--e-2); }
 
 /* ---------- La grille de cartes de fiches (E-8, kanevas-illustrations) ---------- */

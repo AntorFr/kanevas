@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 
 import type { Evenement, TypeEvenement } from '../fil';
+import { BlocCarte, BlocDirection, BlocLot } from './battlemap';
 import { Ecriture } from './ecriture';
 import { ImageAttachee } from './image-attachee';
 import { Proposition } from './proposition';
@@ -22,4 +23,7 @@ export const blocs: Partial<Record<TypeEvenement, ComponentType<PropsBloc>>> = {
   section_completee: Ecriture,
   image_attachee: ImageAttachee,
   proposition_creee: Proposition,
+  direction_ecrite: BlocDirection,
+  lot_prepare: BlocLot,
+  carte_composee: BlocCarte,
 };

@@ -52,8 +52,10 @@ export interface Jeton {
   niveauTous: NiveauPose | null;
   univers: AccesUnivers[];
   modifieParAdmin: { par: number; le: string } | null;
-  /** The tools it writes (K-6); empty is the content token. */
+  /** The tools it writes (K-6). */
   outils: string[];
+  /** Whether it reaches the content routes (column `contenu`). */
+  contenu: boolean;
 }
 
 /** The token of a request: the guard gives it the universe of the address. */
@@ -101,6 +103,7 @@ interface JetonRow {
   niveau_tous: NiveauPose | null;
   modifie_par_admin_par: number | null;
   modifie_par_admin_le: string | null;
+  contenu: number;
 }
 
 const universDe = (db: Db, jetonId: number): AccesUnivers[] =>
@@ -132,6 +135,7 @@ const versJeton = (db: Db, r: JetonRow): Jeton => ({
       ? { par: r.modifie_par_admin_par, le: r.modifie_par_admin_le }
       : null,
   outils: outilsDe(db, r.id),
+  contenu: r.contenu === 1,
 });
 
 const ligne = (db: Db, id: number): JetonRow | undefined =>
@@ -254,7 +258,7 @@ function verifierSaisie(entree: { nom: unknown; dureeJours: unknown }): { nom: s
   return { nom, duree: entree.dureeJours as number };
 }
 
-type EntreeJeton = { nom: unknown; dureeJours: unknown; acces: unknown; outils?: unknown };
+type EntreeJeton = { nom: unknown; dureeJours: unknown; acces: unknown; outils?: unknown; contenu?: unknown };
 type EntreeJetonUnivers = { nom: unknown; dureeJours: unknown; outils?: unknown };
 
 /**
@@ -279,8 +283,12 @@ export function creerJeton(
   if (typeof a !== 'number') {
     const { nom, duree } = verifierSaisie(a);
     const acces = normaliser(db, compteId, a.acces, new Set());
+    // Compatibility: an absent `contenu` is « content unless tools are asked » (B-jeton-1).
+    if (a.contenu !== undefined && typeof a.contenu !== 'boolean') throw champ('Erreur : les permissions sont invalides.', 'permissions');
+    const contenu = a.contenu ?? a.outils === undefined;
     const outils = a.outils === undefined ? [] : outilsChoisis(db, compteId, acces, a.outils);
-    return { jeton: inserer(db, compteId, nom, duree, valeur, b instanceof Date ? b : new Date(), acces, outils), valeur };
+    if (!contenu && outils.length === 0) throw champ('Cochez au moins une permission.', 'permissions');
+    return { jeton: inserer(db, compteId, nom, duree, valeur, b instanceof Date ? b : new Date(), acces, outils, contenu), valeur };
   }
   const universId = a;
   const entree = b as EntreeJetonUnivers;
@@ -310,7 +318,7 @@ function outilsChoisis(
   brut: unknown,
 ): string[] {
   const faux = () => champ('Erreur : un outil ne reçoit pas de catalogue dans cet univers.', 'outils');
-  if (!Array.isArray(brut) || brut.length === 0 || brut.some((o) => typeof o !== 'string')) throw faux();
+  if (!Array.isArray(brut) || brut.some((o) => typeof o !== 'string')) throw faux();
   const offerts = new Set(
     outilsOffrables(db, compteId)
       .filter((o) => o.univers.some((u) => {
@@ -331,7 +339,7 @@ export interface OutilOffrable extends OutilProposable {
 /** The tools offered in the universes where the account is a GM, in registry order. */
 export function outilsOffrables(db: Db, compteId: number): OutilOffrable[] {
   const parCle = new Map<string, OutilOffrable>();
-  const mj = db.prepare("SELECT univers_id AS id FROM membres WHERE compte_id = ? AND role = 'mj' ORDER BY univers_id").all(compteId) as { id: number }[];
+  const mj = db.prepare("SELECT m.univers_id AS id FROM membres m JOIN univers u ON u.id = m.univers_id WHERE m.compte_id = ? AND m.role = 'mj' AND u.espace_systeme_id IS NULL ORDER BY m.univers_id").all(compteId) as { id: number }[];
   for (const { id } of mj) {
     for (const o of proposables(db, id)) {
       const e = parCle.get(o.cle) ?? { ...o, univers: [] };
@@ -372,6 +380,7 @@ function inserer(
   maintenant: Date,
   acces: { tous: boolean; niveauTous: NiveauPose | null; lignes: { universId: number; niveau: NiveauAcces }[] },
   outils: string[],
+  contenu: boolean = outils.length === 0,
 ): Jeton {
   const creeLe = maintenant.toISOString();
   const expireLe = new Date(maintenant.getTime() + duree * JOUR_MS).toISOString();
@@ -386,6 +395,8 @@ function inserer(
     for (const outil of outils) {
       db.prepare('INSERT INTO jetons_outils (jeton_id, outil) VALUES (?, ?)').run(lastInsertRowid, outil);
     }
+    // The column defaults to 1: only a token without content says so.
+    if (!contenu) db.prepare('UPDATE jetons_api SET contenu = 0 WHERE id = ?').run(lastInsertRowid);
     return versJeton(db, ligne(db, Number(lastInsertRowid))!);
   })();
 }
@@ -554,7 +565,7 @@ export function universChoisissables(db: Db, compteId: number): UniversChoisissa
   return db
     .prepare(
       `SELECT u.id, u.cle, u.nom, m.role FROM membres m JOIN univers u ON u.id = m.univers_id
-        WHERE m.compte_id = ? ORDER BY u.nom COLLATE NOCASE, u.id`,
+        WHERE m.compte_id = ? AND u.espace_systeme_id IS NULL ORDER BY u.nom COLLATE NOCASE, u.id`,
     )
     .all(compteId) as UniversChoisissable[];
 }
@@ -574,7 +585,7 @@ export function universDuJeton(
   const lignes = db
     .prepare(
       `SELECT u.id, u.cle, u.nom FROM membres m JOIN univers u ON u.id = m.univers_id
-        WHERE m.compte_id = ? AND u.cle > ? ORDER BY u.cle`,
+        WHERE m.compte_id = ? AND u.espace_systeme_id IS NULL AND u.cle > ? ORDER BY u.cle`,
     )
     .all(jeton.compteId, apres ?? '') as { id: number; cle: string; nom: string }[];
   const atteints = lignes.flatMap((u) => {

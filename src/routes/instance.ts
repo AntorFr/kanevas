@@ -10,6 +10,10 @@ import {
   listerUniversInstance,
   retirerMembreInstance,
   type ActeurInstance,
+  listerSystemesInstance,
+  listerMJSysteme,
+  ajouterMJSysteme,
+  retirerMJSysteme,
 } from '../services/instance.js';
 import { fondCarteMaxMo, FOND_CARTE_MAX_MO_MAX, FOND_CARTE_MAX_MO_MIN, poserReglage } from '../services/reglages.js';
 import { ErreurService } from '../services/erreurs.js';
@@ -120,6 +124,25 @@ export function registerInstanceRoutes(app: FastifyInstance) {
   app.delete('/api/instance/univers/:id/membres/:compteId', async (request, reply) => {
     const p = request.params as { id: string; compteId: string };
     retirerMembreInstance(app.db, acteur(request), idDeChemin(p.id), idDeChemin(p.compteId));
+    return reply.code(204).send();
+  });
+
+  // AD-157: the systems and their GMs (the space's members), with no floor of one GM (B-114).
+  app.get('/api/instance/systemes', async (request) => listerSystemesInstance(app.db, acteur(request)));
+
+  app.get('/api/instance/systemes/:sid/membres', async (request) =>
+    listerMJSysteme(app.db, acteur(request), idDeChemin((request.params as { sid: string }).sid)),
+  );
+
+  app.post('/api/instance/systemes/:sid/membres', async (request, reply) => {
+    const sid = idDeChemin((request.params as { sid: string }).sid);
+    const { username } = corpsAjout(request);
+    return reply.code(201).send(ajouterMJSysteme(app.db, acteur(request), sid, username));
+  });
+
+  app.delete('/api/instance/systemes/:sid/membres/:compteId', async (request, reply) => {
+    const p = request.params as { sid: string; compteId: string };
+    retirerMJSysteme(app.db, acteur(request), idDeChemin(p.sid), idDeChemin(p.compteId));
     return reply.code(204).send();
   });
 }
