@@ -13,6 +13,7 @@ import {
   validerAspectType,
   validerReglages,
   versionGenerateurCourante,
+  versionRendu,
   versionsGenerateur,
   galactiqueVersOrbiteHeure,
   hexVersPlan,
@@ -93,13 +94,14 @@ async function afficherSystemes(): Promise<void> {
 // Bodies drawn from their aspect (AD-carte-1): the bytes as hexadecimal per aspect, and what the refusals throw.
 const ASPECTS_RENDU = ['{"type":"tellurique"}', '{"type":"jaune"}', '{"type":"gazeuse","aspect":{"palette":["#102030","#a0b0c0"]}}'];
 async function afficherRendu(): Promise<void> {
+  const version = await versionRendu();
   const images: string[] = [];
-  for (const a of ASPECTS_RENDU) images.push(Array.from(await dessiner(a, 32, 1), (o) => o.toString(16).padStart(2, '0')).join(''));
+  for (const a of ASPECTS_RENDU) images.push(Array.from(await dessiner(a, 32, version), (o) => o.toString(16).padStart(2, '0')).join(''));
   sortie('coeur-rendu').textContent = JSON.stringify(images);
   const refus: boolean[] = [];
   for (const [a, c] of [['{"type":"licorne"}', 32], ['{"type":"tellurique"}', 8]] as const) {
     try {
-      await dessiner(a, c, 1);
+      await dessiner(a, c, version);
       refus.push(false);
     } catch {
       refus.push(true);
