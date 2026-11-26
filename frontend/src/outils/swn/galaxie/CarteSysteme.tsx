@@ -30,6 +30,8 @@ const DECALAGE_REPERE_PX = 14;
 const DECALAGE_REPERE_SORTIE_PX = 26;
 // Room kept round the fitted view when the transition dominates, so the hour marks and the exit labels stay inside the sky.
 const RESERVE_TRANSITION_PX = 30;
+// The reserve is for the phone layout, where the canvas is short; a wide canvas keeps its fit (the bodies keep their scale).
+const LARGEUR_TELEPHONE_PX = 600;
 const NOM_SORTIE_MAX = 24;
 const coupeNom = (nom: string) => ([...nom].length > NOM_SORTIE_MAX ? `${[...nom].slice(0, NOM_SORTIE_MAX - 1).join('').trimEnd()}…` : nom);
 /** A body waiting for the server's answer is dimmed by opacity alone (charte, drag gesture). */
@@ -158,7 +160,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     return () => o.disconnect();
   }, [etat]);
 
-  const ajuste = dispo && taille.w > 0 ? Math.max(8, Math.min(taille.w, taille.h) / 2 - (dispo.transition > 0 && dispo.transition >= etendue ? RESERVE_TRANSITION_PX : 0)) / (etendue * 1.12) : 1;
+  const ajuste = dispo && taille.w > 0 ? Math.max(8, Math.min(taille.w, taille.h) / 2 - (dispo.transition > 0 && dispo.transition >= etendue && taille.w <= LARGEUR_TELEPHONE_PX ? RESERVE_TRANSITION_PX : 0)) / (etendue * 1.12) : 1;
   const echelle = ajuste * vue.zoom;
   // Radius and sprite side in screen pixels: from the fit only, so a body keeps its size at every zoom (AD-echelle-1).
   const dims = useMemo(() => (dispo ? dimensionsCorps(dispo.corps, ajuste) : new Map<string, { rayon: number; cote: number }>()), [dispo, ajuste]);
@@ -497,7 +499,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   useEffect(() => {
     window.__carteSysteme = () => ({
       pret: etat === 'pret' && taille.w > 0, largeur: taille.w, hauteur: taille.h, zoom: vueRef.current.zoom, decalage: [vueRef.current.dx, vueRef.current.dy],
-      corps: cibles.liste.map((c) => ({ cle: c.cle, genre: c.genre, x: c.x, y: c.y, rayon: dimDe(c.cle).rayon })),
+      corps: cibles.liste.filter((c) => c.cle !== 'zone:transition').map((c) => ({ cle: c.cle, genre: c.genre, x: c.x, y: c.y, rayon: dimDe(c.cle).rayon })),
       etiquettes,
       sorties: sorties.map((s) => ({ q: s.q, r: s.r, heure: s.heure })),
     });
