@@ -1,7 +1,8 @@
 import { createHash, randomBytes } from 'node:crypto';
 
 import type { Db } from '../db/db.js';
-import { exigerMJ, roleDe } from './droits.js';
+import { estMJDuSysteme, exigerMJ, lectureSysteme, roleDe } from './droits.js';
+import { listerSystemes } from './systemes.js';
 import type { Role } from './types.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
 import { applicable, type DeclarationOutil } from '../outils/declaration.js';
@@ -22,6 +23,14 @@ export interface AccesUnivers {
   universId: number;
   nom: string;
   niveau: NiveauAcces;
+}
+
+/** A game system a token reaches (AD-155): its level, and whether the owner still reads the system. */
+export interface AccesSysteme {
+  id: number;
+  nom: string;
+  niveau: NiveauPose;
+  plusLecteur: boolean;
 }
 
 /** The accesses as written by the owner or the admin (a creation or a change). */
@@ -56,6 +65,8 @@ export interface Jeton {
   outils: string[];
   /** Whether it reaches the content routes (column `contenu`). */
   contenu: boolean;
+  /** The systems it reaches (`jetons_systemes`, AD-155), by name. */
+  systemes: AccesSysteme[];
 }
 
 /** The token of a request: the guard gives it the universe of the address. */
@@ -118,6 +129,15 @@ const outilsDe = (db: Db, jetonId: number): string[] =>
   (db.prepare('SELECT outil FROM jetons_outils WHERE jeton_id = ? ORDER BY outil').all(jetonId) as { outil: string }[])
     .map((r) => r.outil);
 
+const systemesDe = (db: Db, r: { id: number; compte_id: number }): AccesSysteme[] =>
+  (db
+    .prepare(
+      `SELECT js.systeme_id AS id, s.nom, js.niveau FROM jetons_systemes js
+         JOIN systemes_jeu s ON s.id = js.systeme_id WHERE js.jeton_id = ? ORDER BY s.nom COLLATE NOCASE, s.id`,
+    )
+    .all(r.id) as { id: number; nom: string; niveau: NiveauPose }[])
+    .map((x) => ({ ...x, plusLecteur: lectureSysteme(db, r.compte_id, x.id) === null }));
+
 const versJeton = (db: Db, r: JetonRow): Jeton => ({
   id: r.id,
   compteId: r.compte_id,
@@ -136,6 +156,7 @@ const versJeton = (db: Db, r: JetonRow): Jeton => ({
       : null,
   outils: outilsDe(db, r.id),
   contenu: r.contenu === 1,
+  systemes: systemesDe(db, r),
 });
 
 const ligne = (db: Db, id: number): JetonRow | undefined =>
@@ -246,6 +267,82 @@ export function niveauEffectif(
   return { niveau: role === null ? 'aucun' : acces, role };
 }
 
+/**
+ * What a token reaches on a game system, and the account's right on it **now** (AD-systemes-api-2). The level is the
+ * token's row (`aucun` with no row — no « tous » for a system, AD-155); the right is read from `membres` at each call and
+ * never stored: `mj` for a GM of the system, `lecteur` for a member of an attached universe, else `null`.
+ */
+export function niveauSysteme(
+  db: Db,
+  jeton: { id: number; compteId: number },
+  systemeId: number,
+): { niveau: NiveauAcces; droit: 'mj' | 'lecteur' | null } {
+  const row = db
+    .prepare('SELECT niveau FROM jetons_systemes WHERE jeton_id = ? AND systeme_id = ?')
+    .get(jeton.id, systemeId) as { niveau: NiveauPose } | undefined;
+  const droit = lectureSysteme(db, jeton.compteId, systemeId);
+  return { niveau: row?.niveau ?? 'aucun', droit: droit === null ? null : droit.role === 'mj' ? 'mj' : 'lecteur' };
+}
+
+/**
+ * The rows to store for `systemes` (AD-systemes-api-3), or `invalide` (`champ: systemes`) before any write. A system must
+ * be one the owner reads and `ecriture` one it is a GM of — except a row the token already carries, which may be kept or
+ * lowered, never raised. A non-empty list needs the content permission.
+ */
+function normaliserSystemes(
+  db: Db,
+  proprietaire: number,
+  jetonId: number | null,
+  brut: unknown,
+  contenu: boolean,
+): { id: number; niveau: NiveauPose }[] {
+  const faux = () => champ('Erreur : les systèmes sont invalides.', 'systemes');
+  if (!Array.isArray(brut)) throw faux();
+  const portes = new Map<number, NiveauPose>();
+  if (jetonId !== null) {
+    for (const r of db.prepare('SELECT systeme_id AS id, niveau FROM jetons_systemes WHERE jeton_id = ?').all(jetonId) as { id: number; niveau: NiveauPose }[]) {
+      portes.set(r.id, r.niveau);
+    }
+  }
+  const vus = new Set<number>();
+  const lignes: { id: number; niveau: NiveauPose }[] = [];
+  for (const b of brut as { id?: unknown; niveau?: unknown }[]) {
+    if (typeof b !== 'object' || b === null || Array.isArray(b)) throw faux();
+    if (!Number.isInteger(b.id) || (b.niveau !== 'lecture' && b.niveau !== 'ecriture')) throw faux();
+    const id = b.id as number;
+    if (vus.has(id)) throw faux();
+    vus.add(id);
+    const porte = portes.get(id);
+    const lit = lectureSysteme(db, proprietaire, id) !== null;
+    if (!lit && porte === undefined) throw faux();
+    if (b.niveau === 'ecriture' && !estMJDuSysteme(db, proprietaire, id) && porte !== 'ecriture') throw faux();
+    if (!lit && porte === 'lecture' && b.niveau !== 'lecture') throw faux();
+    lignes.push({ id, niveau: b.niveau });
+  }
+  if (lignes.length > 0 && !contenu) throw faux();
+  return lignes;
+}
+
+function poserSystemes(db: Db, jetonId: number, lignes: { id: number; niveau: NiveauPose }[]): void {
+  db.prepare('DELETE FROM jetons_systemes WHERE jeton_id = ?').run(jetonId);
+  for (const l of lignes) {
+    db.prepare('INSERT INTO jetons_systemes (jeton_id, systeme_id, niveau) VALUES (?, ?, ?)').run(jetonId, l.id, l.niveau);
+  }
+}
+
+/** The systems an account may put in a token (E-5): the ones it reads, with its right on each. */
+export function systemesChoisissables(
+  db: Db,
+  compteId: number,
+): { id: number; nom: string; peutEcrire: boolean; droit: 'mj' | 'lecteur' }[] {
+  return listerSystemes(db, compteId).map((s) => ({
+    id: s.id,
+    nom: s.nom,
+    peutEcrire: s.peutEcrire,
+    droit: s.peutEcrire ? 'mj' : 'lecteur',
+  }));
+}
+
 // ---------------------------------------------------------------------------------------------------
 // Creation
 
@@ -258,7 +355,9 @@ function verifierSaisie(entree: { nom: unknown; dureeJours: unknown }): { nom: s
   return { nom, duree: entree.dureeJours as number };
 }
 
-type EntreeJeton = { nom: unknown; dureeJours: unknown; acces: unknown; outils?: unknown; contenu?: unknown };
+type EntreeJeton = {
+  nom: unknown; dureeJours: unknown; acces: unknown; outils?: unknown; contenu?: unknown; systemes?: unknown;
+};
 type EntreeJetonUnivers = { nom: unknown; dureeJours: unknown; outils?: unknown };
 
 /**
@@ -288,7 +387,11 @@ export function creerJeton(
     const contenu = a.contenu ?? a.outils === undefined;
     const outils = a.outils === undefined ? [] : outilsChoisis(db, compteId, acces, a.outils);
     if (!contenu && outils.length === 0) throw champ('Cochez au moins une permission.', 'permissions');
-    return { jeton: inserer(db, compteId, nom, duree, valeur, b instanceof Date ? b : new Date(), acces, outils, contenu), valeur };
+    const systemes = a.systemes === undefined ? [] : normaliserSystemes(db, compteId, null, a.systemes, contenu);
+    return {
+      jeton: inserer(db, compteId, nom, duree, valeur, b instanceof Date ? b : new Date(), acces, outils, contenu, systemes),
+      valeur,
+    };
   }
   const universId = a;
   const entree = b as EntreeJetonUnivers;
@@ -381,6 +484,7 @@ function inserer(
   acces: { tous: boolean; niveauTous: NiveauPose | null; lignes: { universId: number; niveau: NiveauAcces }[] },
   outils: string[],
   contenu: boolean = outils.length === 0,
+  systemes: { id: number; niveau: NiveauPose }[] = [],
 ): Jeton {
   const creeLe = maintenant.toISOString();
   const expireLe = new Date(maintenant.getTime() + duree * JOUR_MS).toISOString();
@@ -392,6 +496,7 @@ function inserer(
       )
       .run(compteId, nom, empreinteDe(valeur), creeLe, expireLe, acces.tous ? 1 : 0, acces.niveauTous);
     poserLignes(db, Number(lastInsertRowid), acces.lignes);
+    if (systemes.length > 0) poserSystemes(db, Number(lastInsertRowid), systemes);
     for (const outil of outils) {
       db.prepare('INSERT INTO jetons_outils (jeton_id, outil) VALUES (?, ?)').run(lastInsertRowid, outil);
     }
@@ -422,6 +527,7 @@ export function modifierAcces(
   jetonId: number,
   acces: unknown,
   maintenant: Date = new Date(),
+  systemes?: unknown,
 ): Jeton {
   return db.transaction(() => {
     const row = jetonDe(db, acteur, jetonId);
@@ -430,8 +536,11 @@ export function modifierAcces(
     }
     const portes = new Set(universDe(db, row.id).map((u) => u.universId));
     const n = normaliser(db, row.compte_id, acces, portes);
+    // Validated before any write; a missing key leaves the rows, `[]` removes them all.
+    const lignesSystemes = systemes === undefined ? null : normaliserSystemes(db, row.compte_id, row.id, systemes, row.contenu === 1);
     db.prepare('UPDATE jetons_api SET tous = ?, niveau_tous = ? WHERE id = ?').run(n.tous ? 1 : 0, n.niveauTous, row.id);
     poserLignes(db, row.id, n.lignes);
+    if (lignesSystemes !== null) poserSystemes(db, row.id, lignesSystemes);
     const parAdmin = acteur.compteId !== row.compte_id;
     db.prepare('UPDATE jetons_api SET modifie_par_admin_par = ?, modifie_par_admin_le = ? WHERE id = ?').run(
       parAdmin ? acteur.compteId : null,
