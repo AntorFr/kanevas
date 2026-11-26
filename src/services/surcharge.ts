@@ -168,4 +168,4 @@ const compterCopies = (db: Db, ficheId: number): number =>
   (db.prepare('SELECT COUNT(*) AS n FROM fiches WHERE surcharge_de = ?').get(ficheId) as { n: number }).n;
 
 poserDetacheurDeCopies(detacherCopiesDe, compterCopies);
-poserDetacheurDUnivers(detacherCopiesDeUnivers);
+poserDetacheurDUnivers((db, compteId, universId) => ecrire(db, compteId, () => detacherCopiesDeUnivers(db, universId)));
