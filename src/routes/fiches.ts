@@ -4,6 +4,7 @@ import type { FastifyInstance } from 'fastify';
 import { changerCleFiche } from '../services/cles.js';
 import { espaceDe, lectureSysteme, roleDe } from '../services/droits.js';
 import { ErreurService, introuvable, invalide, refuse } from '../services/erreurs.js';
+import { copiesDeElement, personnaliser, revenir } from '../services/surcharge.js';
 import { proposerRecalcul, recalculerSection } from '../services/sections-gerees.js';
 import {
   changerSousType,
@@ -75,6 +76,17 @@ const BASCULES = ['joueursLisent', 'joueursEcrivent', 'auteurLit', 'auteurEcrit'
  */
 export function registerFichesRoutes(app: FastifyInstance) {
   monter(app, '/api/univers/:id/fiches', false);
+  // Customising an element of the universe's system (AD-157, AD-surcharge-1); `:fid` is the element or its copy.
+  app.post('/api/univers/:id/fiches/:fid/personnaliser', async (request, reply) => {
+    const p = request.params as { id: string; fid: string };
+    const r = personnaliser(app.db, acteur(request), idDeChemin(p.id), idDeChemin(p.fid));
+    return reply.code(r.creee ? 201 : 200).send(r.fiche);
+  });
+  app.delete('/api/univers/:id/fiches/:fid/personnalisation', async (request, reply) => {
+    const p = request.params as { id: string; fid: string };
+    revenir(app.db, acteur(request), idDeChemin(p.id), idDeChemin(p.fid));
+    return reply.code(204).send();
+  });
   app.register(async (espace) => {
     // 404 for who reads nothing of the system, 403 for a reader who writes (AD-157), before any validation of the body.
     espace.addHook('preHandler', async (request) => {
@@ -84,6 +96,11 @@ export function registerFichesRoutes(app: FastifyInstance) {
       if (request.method !== 'GET' && request.method !== 'HEAD' && droit.role !== 'mj') throw refuse();
     });
     monter(espace, '/api/systemes/:sys/fiches', true);
+    // What the confirmations of E-14 and E-15 announce (AD-surcharge-4); a GM of the system only.
+    espace.get('/api/systemes/:sys/fiches/:fid/copies', async (request) => {
+      const p = request.params as { sys: string; fid: string };
+      return copiesDeElement(app.db, request.session!.id, idDeChemin(p.sys), idDeChemin(p.fid));
+    });
   });
 }
 

@@ -9,6 +9,7 @@ import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { supprimerFichier } from './stockage.js';
 import { retirerUniversDesJetons } from './jetons.js';
 import type { Acteur, Role, Univers } from './types.js';
+import { nombreDePersonnalisees } from './surcharge.js';
 
 interface UniversRow {
   id: number;
@@ -53,6 +54,7 @@ export function creerUnivers(
 export interface SystemeRef {
   id: number;
   nom: string;
+  personnalisees?: number;
 }
 
 /** The system of a universe as the universe shows it: `null` when detached (AD-94). */
@@ -111,7 +113,13 @@ export function lireUnivers(
     | UniversRow
     | undefined;
   if (!row) throw introuvable(); // a system's space is never entered as a universe (AD-151)
-  return { ...versUnivers(row), role, systeme: systemeRef(db, universId) };
+  const systeme = systemeRef(db, universId);
+  // `systeme.personnalisees`: the GM's count of customised sheets, absent for a player (AD-surcharge-4).
+  return {
+    ...versUnivers(row),
+    role,
+    systeme: systeme && role === 'mj' ? { ...systeme, personnalisees: nombreDePersonnalisees(db, universId) } : systeme,
+  };
 }
 
 /**
