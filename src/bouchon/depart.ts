@@ -84,8 +84,6 @@ export function semerBouchon(db: Db): boolean {
     const cof = creerEtRattacherSysteme(db, id.antor, lame.id, { nom: 'CoF Mini' });
     rattacherSysteme(db, id.mira, landes.id, cof.id);
     const cof2 = creerEtRattacherSysteme(db, id.admin, cendres.id, { nom: 'Chroniques Oubliées Fantasy' });
-    // `kanevas-systemes-jeu-api-ecran`: a system attached to no universe, of which Antor is a GM (E-23, « Écriture » offered).
-    const swn = creerSysteme(db, id.antor, { nom: 'Stars Without Number' });
 
     // The elements of a system are sheets of its hidden space (AD-151). The seed grants the system's GMs the way the
     // admin does (a `membres` row of the space, AD-152), then writes through the sheet services.
@@ -111,7 +109,14 @@ export function semerBouchon(db: Db): boolean {
       'Vouivre des tourbières',
     ]));
     elements.push(() => element(cof.id, id.antor, 'objet', ['Lame grise', 'Sceau de Val-Fortin']));
-    elements.push(() => element(swn.id, id.antor, 'objet', ['Fusil laser']));
+    // `kanevas-systemes-jeu-api-ecran`: a system attached to no universe, of which Antor is a GM (E-23, « Écriture »
+    // offered). Written with the elements: a base held short of 0052 has no space, hence no GM of a system.
+    elements.push(() => {
+      if (!espaces) return;
+      const swn = creerSysteme(db, id.antor, { nom: 'Stars Without Number' });
+      creerEspacesManquants(db); // the seed still defers the spaces: this one is given its own
+      element(swn.id, id.antor, 'objet', ['Fusil laser']);
+    });
     elements.push(() => element(cof2.id, id.admin, 'regle', ['Initiative', 'Voies de capacité']));
     elements.push(() => element(cof2.id, id.admin, 'creature', ['Squelette de garde', 'Ogre des collines']));
     elements.push(() => element(cof2.id, id.admin, 'objet', ['Potion de soin', 'Bâton de mage']));
