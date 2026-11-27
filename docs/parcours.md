@@ -314,7 +314,7 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   never matches a word that sits only in a GM block he cannot read. *(P-24)*
 - **B-99** — Every sheet has a **readable key** `type:name`, unique in the universe: an imported
   sheet keeps its origin key; a sheet born in Kanevas receives one at creation from its type and
-  title (« Ténébria », a place → `lieu:tenebria`; taken → `lieu:tenebria-2`). Renaming the sheet or
+  title (« Ormévane », a place → `lieu:ormevane`; taken → `lieu:ormevane-2`). Renaming the sheet or
   changing its type does not change it. The GM sees it on E-9 and changes it, warned that what cites
   it will no longer find it; a former key keeps leading to the sheet — an import or a read by a former key reaches the
   same sheet, never a duplicate. A key is `<type>:<name>` for a sheet born in Kanevas (lowercase
@@ -1341,7 +1341,7 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
    moved: the agent reads it again and asks Monsieur.
 4. The agent creates « Les Veilleurs », a faction: Kanevas gives it `faction:les-veilleurs` (B-99),
    which the agent writes into its faction data; the agent's data cite sheets by key
-   (`lieu:tenebria`), and Monsieur opens `/univers/eneria/lieu/tenebria` (B-101) to read what it wrote.
+   (`lieu:ormevane`), and Monsieur opens `/univers/eneria/lieu/ormevane` (B-101) to read what it wrote.
 
 ### P-25 — Manage one's tokens (Léa, player; Antor, GM)
 1. Léa opens « Mes jetons d'API » (**E-23**), creates « Agent de Léa », « tous mes univers », in
@@ -1363,7 +1363,7 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
 2. He opens it, compares with the previous value, and restores it (B-103); the history now carries his
    restoration. A sheet deleted by mistake two weeks ago: he reads its sections in the history and
    copies back what he needs.
-3. He changes the key `lieu:tenebria-2` to `lieu:tenebria-la-noire` on E-9 (B-99), and the universe's
+3. He changes the key `lieu:ormevane-2` to `lieu:ormevane-la-noire` on E-9 (B-99), and the universe's
    identifier `eneria-v2` back to `eneria` on E-14 (B-100); the former addresses still open the sheet.
 
 ### The battle map (`kanevas-battlemap`)
