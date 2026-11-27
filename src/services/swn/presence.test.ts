@@ -24,7 +24,7 @@ function monde() {
   const a = (u: string, modeJoueur = false) => ({ compteId: cid(u), modeJoueur });
   for (const t of ['swn_routes', 'swn_zones', 'swn_systemes']) db.prepare(`DELETE FROM ${t} WHERE galaxie_id=?`).run(g);
   const poser = (q_: number, r: number, o: { secret?: boolean; nom?: string } = {}) =>
-    db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu, transition) VALUES (?,?,?,?,?,?,3,'accent','',?,0,NULL)")
+    db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu, transition) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,0,NULL)")
       .run(g, univers, `s${q_}_${r}`, o.nom ?? `S ${q_} ${r}`, q_, r, o.secret ? 1 : 0).lastInsertRowid as number;
   let n = 0;
   const astre = (sid: number, genre: string, fiche: number, extra: Record<string, unknown> = {}) => {

@@ -12,7 +12,7 @@ import {
 } from './galaxies.js';
 
 export interface SystemeVue {
-  id: number; cle: string; nom: string; q: number; r: number; taille: number; couleur: string; secret?: boolean;
+  id: number; cle: string; nom: string; q: number; r: number; taille: number; couleur: string | null; classe?: string; secret?: boolean;
   version?: number;
 }
 export interface BoutRoute { cle: string; q: number; r: number }
@@ -23,6 +23,7 @@ export interface VueBlocs { blocs: BlocGenere[]; systemes: SystemeVue[]; routes:
 
 function systemeVue(s: LigneSysteme, niveau: NiveauLecture): SystemeVue {
   const vue: SystemeVue = { id: s.id, cle: s.cle, nom: s.nom, q: s.q, r: s.r, taille: s.taille, couleur: s.couleur };
+  if (s.classe !== null) vue.classe = s.classe;
   if (niveau === 'mj') { vue.secret = estMasque(s); vue.version = s.version; }
   return vue;
 }
@@ -77,7 +78,7 @@ export function lireBlocs(
 }
 
 export interface PanneauSysteme {
-  nom: string; q: number; r: number; taille: number; couleur: string; notes: string;
+  nom: string; q: number; r: number; taille: number; couleur: string | null; classe?: string; notes: string;
   routes: { avec: { cle: string; nom: string }; longueur: number }[];
   lien: string;
   /** Level `mj` only. */
@@ -99,6 +100,7 @@ export function lireSysteme(db: Db, acteur: Acteur, universId: number, galaxieId
   }
   const panneau: PanneauSysteme = { nom: s.nom, q: s.q, r: s.r, taille: s.taille, couleur: s.couleur, notes: s.notes, routes,
     lien: `/univers/${universId}/outils/swn/galaxie/${galaxie.id}?systeme=${encodeURIComponent(s.cle)}` };
+  if (s.classe !== null) panneau.classe = s.classe;
   if (niveau === 'mj') Object.assign(panneau, { id: s.id, secret: estMasque(s), promu: s.promu === 1, version: s.version });
   return panneau;
 }

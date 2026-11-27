@@ -12,6 +12,7 @@ delete process.env.DB_PATH;
 
 const { buildApp } = await import('../../app.js');
 const { semerBouchon } = await import('../../bouchon/depart.js');
+const { ancienSchema } = await import('../../db/semis-ancien.js');
 const { avantSemis, apresSemis } = await import('../../db/jetons-pour-semis.js');
 const { encoderSession, SESSION_COOKIE } = await import('../../services/session.js');
 const { catalogueDe } = await import('../../services/assistant/catalogue.js');
@@ -248,7 +249,7 @@ test('0031 : montée depuis 0030 avec le semis, conceptions gardées, equipage N
   db.exec('ALTER TABLE univers ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN cle TEXT; ALTER TABLE fiches ADD COLUMN creee_via TEXT; ALTER TABLE sections ADD COLUMN cle TEXT');
   db.exec('CREATE TABLE cles_anciennes (univers_id, cle, fiche_id); CREATE TABLE univers_cles_anciennes (cle, univers_id)');
   avantSemis(db);
-  semerBouchon(db);
+  semerBouchon(ancienSchema(db));
   apresSemis(db);
   db.exec('DROP TABLE cles_anciennes; DROP TABLE univers_cles_anciennes; ALTER TABLE univers DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN cle; ALTER TABLE fiches DROP COLUMN creee_via; ALTER TABLE sections DROP COLUMN cle');
   for (const [t, cs] of Object.entries(c32)) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} DROP COLUMN ${c}`);
@@ -256,7 +257,7 @@ test('0031 : montée depuis 0030 avec le semis, conceptions gardées, equipage N
   const n = () => (db.prepare('SELECT COUNT(*) n FROM swn_conceptions').get() as any).n as number;
   const avant = db.prepare('SELECT fiche_id, coque_cle, choix, resultat, version FROM swn_conceptions ORDER BY fiche_id').all();
   assert.ok(n() >= 2);
-  assert.deepEqual(migrate(db), [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51]);
+  assert.deepEqual(migrate(db), [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]);
   assert.deepEqual(db.prepare('SELECT fiche_id, coque_cle, choix, resultat, version FROM swn_conceptions ORDER BY fiche_id').all(), avant);
   assert.equal((db.prepare('SELECT COUNT(*) n FROM swn_conceptions WHERE equipage IS NOT NULL').get() as any).n, 0);
   assert.deepEqual(db.pragma('foreign_key_check'), []);

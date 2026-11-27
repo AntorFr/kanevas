@@ -56,7 +56,7 @@ describe('E-23 lier un corps à une fiche : dialogue, panneau, bloc de la fiche'
     fichePrivee = await fiche(a.page, 'Vael III (privée)', false);
     await a.ctx.close();
     sql((db) => {
-      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,?)");
+      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',0,?)");
       const ast = db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille) VALUES (?,?,?,?,?,?,?,?,?,?)');
       for (const [p, nom, promu, pre] of [[D, 'Vael', 1, 'd']] as const) {
         const id = Number(sys.run(gid, univers, `lk-${pre}`, nom, p.q, p.r, promu).lastInsertRowid);

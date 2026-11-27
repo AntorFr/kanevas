@@ -3,12 +3,12 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
-import { Bouton } from '../../../ui';
+import { ApercuEtoile, Bouton } from '../../../ui';
+import { useEtoile } from './etoile-classes';
 import { CommutateurMasque } from './Masquer';
 import { cases, distanceHex } from './geo';
 import type { PanneauSysteme, Reference, Resultat, VueTrajet } from './types';
 
-const TAILLES: Record<number, string> = { 1: 'Petite', 2: 'Moyenne', 3: 'Grande' };
 
 
 /** The search of readable systems: from 2 characters, the latest query wins. */
@@ -117,6 +117,8 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
   const saisie = useRef<HTMLInputElement>(null);
   useEffect(() => { setCopie(false); setChamp(null); }, [selection]);
   useEffect(() => { if (champ !== null) saisie.current?.select(); }, [champ]);
+  const lu = etat.k === 'ok' ? etat.s : null;
+  const etoile = useEtoile(selection.k === 'systeme' ? selection.cle : undefined, lu?.taille ?? 0.5, lu?.classe, lu?.couleur);
 
   if (selection.k === 'genere') {
     const d = mesure ? distanceHex(selection, mesure) : null;
@@ -156,8 +158,12 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
   return (
     <section className="gx-bloc gx-panneau" aria-label="Système sélectionné">
       <div className="gx-tete"><h2>{s.nom}</h2>{estSecret && <span className="pastille mj">MJ seul</span>}</div>
+      <div className="gx-etoile-panneau">
+        <ApercuEtoile taille={s.taille} couleur={etoile.fond} taillePx={56}
+          libelle={etoile.libelle ? `Étoile de classe ${etoile.libelle}` : 'Étoile'} />
+        <span>{etoile.libelle ? `Classe ${etoile.libelle}` : 'Étoile'}</span>
+      </div>
       <dl className="gx-kv">
-        <dt>Taille</dt><dd>{TAILLES[s.taille] ?? `Taille ${s.taille}`}</dd>
         {s.notes !== '' && <><dt>Notes</dt><dd className="gx-notes">{s.notes}</dd></>}
         {d !== null && mesure && <><dt>Distance</dt><dd>{cases(d)} depuis {mesure.nom}</dd></>}
         {s.routes.length > 0 && <><dt>Routes</dt><dd><ul className="gx-routes">{s.routes.map((r) => <li key={r.avec.cle}>{r.avec.nom} · {cases(r.longueur)}</li>)}</ul></dd></>}

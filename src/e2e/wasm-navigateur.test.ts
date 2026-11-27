@@ -114,7 +114,7 @@ test('the coeur module in Chromium draws the fixtures\' systems and the exact JS
 
 test('the coeur module in Chromium draws the same bytes as the Node binding (AD-carte-1) and refuses an unknown type and a side of 8', { skip: skipBrowser }, async () => {
   const { dessiner, versionRendu } = await import('../wasm/coeur.js');
-  const { fusionnerReglages, reglagesDefaut, tirerSysteme, typesCatalogue, validerAspectType, validerReglages, versionGenerateurCourante, versionsGenerateur } = await import('../wasm/coeur.js');
+  const { classeDeCle, classesEtoile, fusionnerReglages, reglagesDefaut, tirerSysteme, typesCatalogue, validerAspectType, validerReglages, versionGenerateurCourante, versionsGenerateur } = await import('../wasm/coeur.js');
   const v = await versionRendu();
   const aspects = ['{"type":"tellurique"}', '{"type":"jaune"}', '{"type":"gazeuse","aspect":{"palette":["#102030","#a0b0c0"]}}'];
   const page = await browser.newPage();
@@ -162,6 +162,15 @@ test('the coeur module in Chromium draws the same bytes as the Node binding (AD-
     assert.equal(g.catalogue, await typesCatalogue());
     assert.equal(g.comete, await tirerSysteme(0, 0, 0.8, 'K', 1, '{"frequences":{"comete":1}}'));
     assert.deepEqual(g.refus, [true, true, true, true]);
+    // the star classes (B-117): the browser binding gives the Node binding's values
+    await page.waitForFunction(() => document.getElementById('coeur-classes')?.textContent, undefined, { timeout: 30_000 });
+    const k = JSON.parse((await page.textContent('#coeur-classes'))!);
+    assert.equal(k.liste, await classesEtoile());
+    assert.equal(JSON.parse(k.liste).length, 7);
+    const attendus: string[] = [];
+    for (const t of [0, 0.5, 1]) for (let i = 0; i < 20; i++) attendus.push(await classeDeCle(`cle-${i}`, t));
+    assert.deepEqual(k.tirages, attendus);
+    assert.equal(k.refus, true);
   } finally {
     await page.close();
   }

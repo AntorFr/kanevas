@@ -64,7 +64,7 @@ test('lecture d\'une zone d\'ensemble : bloc et panneau rendent plages et décom
 test('la densité d\'une zone d\'ensemble agit sur les blocs ; un trou de l\'ensemble n\'en reçoit pas', () => {
   // The core draws block (20,20) of seed 'essai-1' at the candidate hexagon (101,103): its density decides whether the star is kept.
   const w = monde();
-  const bloc = () => lireBlocs(w.db, w.antor, w.univers, w.gid, { bx: 20, by: 20 }, { bx: 20, by: 20 }).blocs[0]!.generes;
+  const bloc = () => lireBlocs(w.db, w.antor, w.univers, w.gid, { bx: 20, by: 20 }, { bx: 20, by: 20 }).blocs[0]!.generes.map(([q, r]) => [q, r]);
   const sans = bloc(); assert.deepEqual(sans, [[101, 103]]);
   const carreZone = carre(5).map(([q, r]) => [q + 100, r + 100]);
   const vide = e.dessinerZone(w.db, w.antor, w.univers, w.gid, { nom: 'Vide', contour: { hexagones: carreZone }, densite: 0 });

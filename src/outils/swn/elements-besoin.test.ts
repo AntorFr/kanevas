@@ -13,6 +13,7 @@ process.env.KANEVAS_STUB = '1';
 delete process.env.DB_PATH;
 const { buildApp } = await import('../../app.js');
 const { semerBouchon } = await import('../../bouchon/depart.js');
+const { ligneApres0052 } = await import('../../db/semis-ancien.js');
 const { creerFiche } = await import('../../services/fiches.js');
 const { creerJeton } = await import('../../services/jetons.js');
 const { trouverCompte } = await import('../../services/comptes.js');
@@ -41,7 +42,7 @@ async function monde() {
   for (const t of ['swn_routes', 'swn_zones', 'swn_systemes']) app.db.prepare(`DELETE FROM ${t} WHERE galaxie_id=?`).run(g);
   const systeme = (cle: string, q: number, r: number, secret: number) => {
     const s = app.db.prepare(
-      "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',?,0)")
+      "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,0)")
       .run(g, E, cle, cle === 'ouvert' ? 'Vael' : 'Caché', q, r, secret).lastInsertRowid as number;
     const astre = (c: string, genre: string, type: string, orbite: number, heure: number) =>
       app.db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, type, orbite, heure, taille) VALUES (?,?,?,?,?,?,1)').run(s, c, genre, type, orbite, heure);
@@ -316,7 +317,7 @@ test('0044 : la montée depuis le schéma précédent garde les lignes existante
   const avant = [db.prepare('SELECT * FROM swn_systemes').all(), db.prepare('SELECT * FROM swn_astres').all()];
   const appliquees = migrate(db);
   assert.ok(appliquees.includes(44), String(appliquees));
-  assert.deepEqual([db.prepare('SELECT * FROM swn_systemes').all(), db.prepare('SELECT * FROM swn_astres').all()], avant);
+  assert.deepEqual([db.prepare('SELECT * FROM swn_systemes').all(), db.prepare('SELECT * FROM swn_astres').all()], [(avant[0] as any[]).map(ligneApres0052), avant[1]]);
   assert.equal(db.prepare('SELECT count(*) n FROM swn_elements').get().n, 0);
   assert.throws(() => db.prepare("INSERT INTO swn_elements (systeme_id, cle, genre, nom, orbite, heure) VALUES (1, 'x', 'moto', 'X', 1, 1)").run());
   db.prepare("INSERT INTO swn_elements (systeme_id, cle, genre, nom, orbite, heure) VALUES (1, 'x', 'station', 'X', 1, 1)").run();

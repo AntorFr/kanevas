@@ -31,7 +31,7 @@ function monde() {
   for (const t of ['swn_routes', 'swn_zones', 'swn_systemes']) db.prepare(`DELETE FROM ${t} WHERE galaxie_id=?`).run(g);
   db.prepare('UPDATE swn_galaxies SET graine=?, densite_defaut=? WHERE id=?').run(FS.graine, FG.densites.defaut, g);
   const poser = (q_: number, r: number, o: { secret?: boolean; nom?: string | null } = {}) =>
-    db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',?,0)")
+    db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,0)")
       .run(g, univers, `s${q_}_${r}`, o.nom === undefined ? `S ${q_} ${r}` : o.nom, q_, r, o.secret ? 1 : 0).lastInsertRowid as number;
   const route = (d: number, v: number, publique: boolean) =>
     db.prepare('INSERT INTO swn_routes (galaxie_id, univers_id, depuis_id, vers_id, publique, longueur) VALUES (?,?,?,?,?,3)')

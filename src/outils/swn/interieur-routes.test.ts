@@ -23,9 +23,9 @@ async function monde() {
   const E = one(app, 'SELECT id FROM univers WHERE nom = ?', "Éneria d'essai").id as number;
   const S = one(app, 'SELECT id FROM systemes_jeu WHERE nom = ?', "Système d'essai").id as number;
   const g = one(app, 'SELECT id FROM swn_galaxies WHERE univers_id = ?', E).id as number;
-  const sid = app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',1,0)")
+  const sid = app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',1,0)")
     .run(g, E, 'int-secret', 'Caché', 40, 41, ).lastInsertRowid as number;
-  const sid2 = app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,0)")
+  const sid2 = app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',0,0)")
     .run(g, E, 'int-ouvert', 'Ouvert', 42, 43).lastInsertRowid as number;
   app.db.prepare("INSERT INTO swn_astres (systeme_id, cle, genre, type, orbite, heure, taille) VALUES (?,?,?,?,?,?,?)").run(sid2, 'ano', 'planete', 'anomalie', 2, 4, 0.1);
   const get = (who: string, path: string, base = `/api/univers/${E}/outils/swn/galaxie/galaxies/${g}/interieur`) =>

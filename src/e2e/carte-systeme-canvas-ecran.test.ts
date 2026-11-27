@@ -50,7 +50,7 @@ describe('E-23 le système sur un canvas', { skip: skipBrowser, timeout: 600000 
     await a.ctx.close();
     sql((db) => {
       const E = univers;
-      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',?,0)");
+      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,0)");
       const centre = sys.run(gid, E, 'cv-centre', 'Centre-canvas', O.q, O.r, 0).lastInsertRowid as number;
       const voisinPublic = sys.run(gid, E, 'cv-est', 'Voisin-est', O.q + 1, O.r, 0).lastInsertRowid as number;
       const voisinPrive = sys.run(gid, E, 'cv-ouest', 'Voisin-privé', O.q - 1, O.r, 0).lastInsertRowid as number;

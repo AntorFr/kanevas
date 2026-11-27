@@ -6,6 +6,7 @@ import { distanceHex } from '../../outils/swn/regles/hex.js';
 import { ErreurService } from '../erreurs.js';
 import type { Acteur } from '../types.js';
 import { lireBlocsGeneres } from './cache-blocs.js';
+import { classeConnue } from './classes-etoile.js';
 import { surSourceModifiee } from '../crochets-outils.js';
 import { exigerEcritureGalaxie, OUTIL_GALAXIE, type LigneGalaxie, type LigneRoute, type LigneSysteme, type LigneZone } from './galaxies.js';
 
@@ -15,8 +16,13 @@ import { exigerEcritureGalaxie, OUTIL_GALAXIE, type LigneGalaxie, type LigneRout
  */
 
 export const COULEURS = ['accent', 'table', 'ambre', 'danger', 'neutre', 'clair'] as const;
-/** The three sizes of the interface, stored as the column's integers. */
-const TAILLES: Record<string, number> = { petite: 1, moyenne: 2, grande: 3 };
+/** Conversion table of `docs/donnees.md`: the former sizes (names and integers 1 to 5) and the six palette names of a system, as the column now stores them. */
+export const TAILLES_ANCIENNES: Record<string, number> = { petite: 0.15, moyenne: 0.45, grande: 0.75 };
+export const TAILLE_ENTIERE: Record<number, number> = { 1: 0.15, 2: 0.45, 3: 0.75, 4: 0.9, 5: 1 };
+export const COULEURS_ANCIENNES: Record<string, string | null> = {
+  accent: '#8b9bf0', table: '#3fc79a', ambre: '#f2a33c', danger: '#ec7b6f', clair: '#ebecf0', neutre: null,
+};
+const TAILLES = TAILLES_ANCIENNES;
 const BORNE = 100_000;
 const NOTES_MAX = 2_000;
 
@@ -57,8 +63,22 @@ function coordonnee(champ: 'q' | 'r', v: unknown): number {
 }
 function tailleValide(v: unknown): number {
   if (typeof v === 'string' && Object.hasOwn(TAILLES, v)) return TAILLES[v]!;
-  if (Number.isInteger(v) && (v as number) >= 1 && (v as number) <= 5) return v as number;
-  throw invalideChamp('taille', 'Taille : petite, moyenne ou grande.');
+  if (typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 5) return TAILLE_ENTIERE[v]!;
+  if (typeof v === 'number' && v >= 0 && v <= 1) return v;
+  throw invalideChamp('taille', 'Taille : un nombre de 0 à 1, ou petite, moyenne ou grande.');
+}
+/** A system's colour: `#rrggbb`, null, or one of the six former names (`neutre` is null). */
+function couleurSystemeValide(v: unknown): string | null {
+  if (typeof v === 'string' && Object.hasOwn(COULEURS_ANCIENNES, v)) return COULEURS_ANCIENNES[v]!;
+  if (typeof v === 'string' && /^#[0-9a-f]{6}$/.test(v)) return v;
+  if (v === null) return null;
+  throw invalideChamp('couleur', 'Couleur inconnue.');
+}
+/** A system's star class: a letter of the core, or null (drawn from the key and the size at reading). */
+function classeValide(v: unknown): string | null {
+  if (v === null) return null;
+  if (classeConnue(v)) return v;
+  throw invalideChamp('classe', 'Classe inconnue.');
 }
 function couleurValide(v: unknown): string {
   if (typeof v === 'string' && (COULEURS as readonly string[]).includes(v)) return v;
@@ -131,14 +151,15 @@ function estGenere(db: Db, acteur: Acteur, universId: number, g: LigneGalaxie, q
   return !!bloc && bloc.generes.some(([gq, gr]) => gq === q && gr === r);
 }
 
-export interface SystemeNormalise { nom: string; q: number; r: number; taille: number; couleur: string; notes: string; secret: boolean }
+export interface SystemeNormalise { nom: string; q: number; r: number; taille: number; couleur: string | null; classe: string | null; notes: string; secret: boolean }
 /** The fields of a system as written, defaults applied; `invalide` with the field otherwise. */
 export function normaliserSysteme(entree: unknown): SystemeNormalise {
   const c = corps(entree);
   return {
     nom: nomValide(c.nom), q: coordonnee('q', c.q), r: coordonnee('r', c.r),
     taille: a(c, 'taille') ? tailleValide(c.taille) : TAILLES.moyenne!,
-    couleur: a(c, 'couleur') ? couleurValide(c.couleur) : 'accent',
+    couleur: a(c, 'couleur') ? couleurSystemeValide(c.couleur) : null,
+    classe: a(c, 'classe') ? classeValide(c.classe) : null,
     notes: a(c, 'notes') ? notesValides(c.notes) : '',
     secret: a(c, 'secret') ? boolValide('secret', c.secret) : false,
   };
@@ -161,7 +182,7 @@ export function routesDeSysteme(db: Db, systemeId: number): { id: number; versio
 }
 
 export interface SystemeEntree {
-  nom: unknown; q: unknown; r: unknown; taille?: unknown; couleur?: unknown; notes?: unknown; secret?: unknown;
+  nom: unknown; q: unknown; r: unknown; taille?: unknown; couleur?: unknown; classe?: unknown; notes?: unknown; secret?: unknown;
 }
 export interface ResultatSysteme { id: number; cle: string; version: number; promu: boolean }
 
@@ -171,12 +192,12 @@ export function placerSysteme(db: Db, acteur: Acteur | number, universId: number
   const ac = acteurDe(acteur);
   return db.transaction(() => {
     const g = exigerEcritureGalaxie(db, ac, universId, galaxieId);
-    const { nom, q, r, taille, couleur, notes, secret } = normaliserSysteme(s);
+    const { nom, q, r, taille, couleur, classe, notes, secret } = normaliserSysteme(s);
     caseLibre(db, g, q, r);
     const promu = importe ? false : estGenere(db, ac, universId, g, q, r);
     const cle = importe?.cle ?? cleDe(nom, clesDe(db, 'swn_systemes', g.id));
-    const id = Number(db.prepare(`INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(g.id, universId, cle, nom, q, r, taille, couleur, notes, secret ? 1 : 0, promu ? 1 : 0).lastInsertRowid);
+    const id = Number(db.prepare(`INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, classe, notes, secret, promu)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(g.id, universId, cle, nom, q, r, taille, couleur, classe, notes, secret ? 1 : 0, promu ? 1 : 0).lastInsertRowid);
     apresEcriture(db, ac.compteId, universId);
     return { id, cle, version: 1, promu };
   })();
@@ -203,7 +224,8 @@ export function modifierSysteme(db: Db, acteur: Acteur | number, universId: numb
     const sets: string[] = [], vals: unknown[] = [];
     if (a(c, 'nom')) { sets.push('nom = ?'); vals.push(nomValide(c.nom)); }
     if (a(c, 'taille')) { sets.push('taille = ?'); vals.push(tailleValide(c.taille)); }
-    if (a(c, 'couleur')) { sets.push('couleur = ?'); vals.push(couleurValide(c.couleur)); }
+    if (a(c, 'couleur')) { sets.push('couleur = ?'); vals.push(couleurSystemeValide(c.couleur)); }
+    if (a(c, 'classe')) { sets.push('classe = ?'); vals.push(classeValide(c.classe)); }
     if (a(c, 'notes')) { sets.push('notes = ?'); vals.push(notesValides(c.notes)); }
     if (a(c, 'secret')) { sets.push('secret = ?'); vals.push(boolValide('secret', c.secret) ? 1 : 0); }
     const q = a(c, 'q') ? coordonnee('q', c.q) : s.q, r = a(c, 'r') ? coordonnee('r', c.r) : s.r;

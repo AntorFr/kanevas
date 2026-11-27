@@ -11,6 +11,7 @@ process.env.NODE_ENV = 'test';
 delete process.env.KANEVAS_STUB;
 const { migrate, openDb } = await import('../../db/db.js');
 const { semerBouchon } = await import('../../bouchon/depart.js');
+const { ancienSchema, ligneApres0052 } = await import('../../db/semis-ancien.js');
 const { viderCacheBlocs } = await import('./cache-blocs.js');
 const { lireInterieur } = await import('./interieur.js');
 const { plagesDe } = await import('../../outils/swn/regles/forme.js');
@@ -38,7 +39,7 @@ function monde() {
       .run(g, univers, z.nom, z.nom, z.densite, JSON.stringify(plagesDe(z.hexagones)));
   }
   const poser = (q_: number, r: number, o: { secret?: boolean; nom?: string; transition?: number | null } = {}) => {
-    const id = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu, transition) VALUES (?,?,?,?,?,?,3,'accent','',?,0,?)")
+    const id = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu, transition) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,0,?)")
       .run(g, univers, `s${q_}_${r}`, o.nom ?? `S ${q_} ${r}`, q_, r, o.secret ? 1 : 0, o.transition ?? null).lastInsertRowid as number;
     return id;
   };
@@ -262,15 +263,15 @@ test('0043 : montée depuis 0042 avec le semis, systèmes inchangés, transition
   const source = new URL('../../db/migrations/', import.meta.url);
   for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 42) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
-  assert.equal(semerBouchon(db), true);
+  assert.equal(semerBouchon(ancienSchema(db)), true);
   const lignes = () => db.prepare('SELECT * FROM swn_systemes ORDER BY id').all();
   const avant = lignes();
   assert.ok(avant.length > 0);
   assert.ok(!('transition' in (avant[0] as object)));
-  assert.deepEqual(migrate(db), [43, 44, 45, 46, 47, 48, 49, 50, 51]);
+  assert.deepEqual(migrate(db), [43, 44, 45, 46, 47, 48, 49, 50, 51, 52]);
   const apres = lignes() as any[];
   assert.equal(apres.length, avant.length);
-  for (let i = 0; i < avant.length; i++) assert.deepEqual({ ...apres[i], transition: undefined }, { ...(avant[i] as object), transition: undefined });
+  for (let i = 0; i < avant.length; i++) assert.deepEqual({ ...apres[i], transition: undefined }, { ...ligneApres0052(avant[i] as any), transition: undefined });
   assert.ok(apres.every((l) => l.transition === null));
   for (const t of ['swn_astres', 'swn_formations']) assert.equal((db.prepare(`SELECT COUNT(*) n FROM ${t}`).get() as any).n, 0);
   assert.deepEqual(db.pragma('foreign_key_check'), []);

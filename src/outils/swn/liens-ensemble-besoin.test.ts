@@ -28,7 +28,7 @@ async function monde() {
   const g = one(app, 'SELECT id FROM swn_galaxies WHERE univers_id = ?', E).id as number;
   for (const t of ['swn_routes', 'swn_zones', 'swn_systemes']) app.db.prepare(`DELETE FROM ${t} WHERE galaxie_id=?`).run(g);
   const sys = (cle: string, nom: string, q: number, r: number, secret = 0) => app.db.prepare(
-    "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',?,0)")
+    "INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,0)")
     .run(g, E, cle, nom, q, r, secret).lastInsertRowid as number;
   const astre = (sid: number, cle: string, nom: string | null, orbite: number, heure: number, genre = 'planete') =>
     app.db.prepare("INSERT INTO swn_astres (systeme_id, cle, genre, type, nom, orbite, heure, taille) VALUES (?,?,?,'rocheux',?,?,?,0.1)").run(sid, cle, genre, nom, orbite, heure);

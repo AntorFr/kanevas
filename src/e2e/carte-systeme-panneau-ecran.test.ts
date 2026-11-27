@@ -49,7 +49,7 @@ describe('E-23 le panneau d’un corps', { skip: skipBrowser, timeout: 600000 },
     await a.ctx.close();
     const db = new Database(dbPath);
     try {
-      const centre = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,0)")
+      const centre = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',0,0)")
         .run(gid, univers, 'pn-centre', 'Centre-panneau', O.q, O.r).lastInsertRowid as number;
       const ast = db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille) VALUES (?,?,?,?,?,?,?,?,?,?)');
       TYPES.forEach(([cle, genre, type], i) => ast.run(centre, cle, genre, null, 0, type, cle === 'gamma' ? null : `Corps-${cle}`, cle === 'soleil' ? 0 : i, cle === 'alpha' ? 7 : i + 1, 0.3));

@@ -16,6 +16,7 @@ process.env.KANEVAS_STUB = '1';
 process.env.DB_PATH = join(dossier, 'k.db');
 const { openDb, migrate } = await import('../../db/db.js');
 const { semerBouchon } = await import('../../bouchon/depart.js');
+const { ancienSchema, ligneApres0052 } = await import('../../db/semis-ancien.js');
 const { plagesDe } = await import('./regles/forme.js');
 const GALAXIE = JSON.parse(readFileSync(fileURLToPath(new URL('../../../rust/modules/coeur/tests/fixtures/generation-galaxie.json', import.meta.url)), 'utf8'));
 
@@ -29,7 +30,7 @@ const instantane = (db: any) => Object.fromEntries(tables.map((t) => [t, db.prep
 const db = openDb(process.env.DB_PATH);
 migrate(db, ancien + '/');
 assert.equal(db.prepare("SELECT count(*) n FROM sqlite_master WHERE name IN ('swn_reglages','swn_aspects')").get().n, 0, 'le schéma précédent n’a ni l’une ni l’autre table');
-assert.equal(semerBouchon(db), true);
+assert.equal(semerBouchon(ancienSchema(db)), true);
 const E = db.prepare('SELECT id FROM univers WHERE nom = ?').get("Éneria d'essai").id as number;
 const g = db.prepare('SELECT id FROM swn_galaxies WHERE univers_id = ?').get(E).id as number;
 for (const t of ['swn_routes', 'swn_zones', 'swn_systemes']) db.prepare(`DELETE FROM ${t} WHERE galaxie_id=?`).run(g);
@@ -51,7 +52,9 @@ const cookie = async () => {
 const base = `/api/univers/${E}/outils/swn/galaxie/galaxies/${g}`;
 
 test('montée : les lignes de la base d’exemple sont celles d’avant, les deux tables sont là et vides, aucune clé étrangère cassée', () => {
-  assert.deepEqual(instantane(app.db), avant);
+  // The 0052 migration of the same climb: systems on the new shape, zones with `affichage_defaut` 1; the rows are otherwise the same.
+  const attendu: any = { ...avant, swn_systemes: avant.swn_systemes.map(ligneApres0052), swn_zones: avant.swn_zones.map((z: any) => ({ ...z, affichage_defaut: 1 })) };
+  assert.deepEqual(instantane(app.db), attendu);
   for (const t of ['swn_reglages', 'swn_aspects']) assert.equal((app.db.prepare(`SELECT count(*) n FROM ${t}`).get() as any).n, 0, t);
   assert.deepEqual(app.db.pragma('foreign_key_check'), []);
   assert.deepEqual(migrate(app.db), [], 'rejouée, la montée ne fait rien');
@@ -82,5 +85,5 @@ test('montée : la galaxie montée accepte un premier réglage, la comète à 1 
   const interieur = (await app.inject({ method: 'GET', url: `${base}/interieur/-49/-48`, headers: h })).json();
   assert.ok(interieur.astres.some((a: any) => a.genre === 'comete'));
   assert.equal(app.db.prepare('SELECT count(*) n FROM swn_reglages').get().n, 1);
-  assert.deepEqual(instantane(app.db).swn_systemes, avant.swn_systemes, 'le système défini d’avant n’a pas bougé');
+  assert.deepEqual(instantane(app.db).swn_systemes, avant.swn_systemes.map(ligneApres0052), 'le système défini d’avant n’a pas bougé');
 });

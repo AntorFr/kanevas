@@ -3,7 +3,7 @@ export interface VueGalaxie {
   id: number; titre: string; visible?: boolean; version: number; niveau: 'mj' | 'joueur'; porteeSaut: number;
   reference: Reference | null;
 }
-export interface SystemeCarte { id: number; cle: string; nom: string; q: number; r: number; taille: number; couleur: string; secret?: boolean; version?: number }
+export interface SystemeCarte { id: number; cle: string; nom: string; q: number; r: number; taille: number; couleur: string | null; classe?: string; secret?: boolean; version?: number }
 export interface RouteCarte {
   id: number; depuis: { cle: string; q: number; r: number }; vers: { cle: string; q: number; r: number };
   longueur: number; publique?: boolean; version?: number; type_lien?: string;
@@ -12,11 +12,11 @@ export interface ZoneCarte { id: number; nom: string; contour: [number, number][
   /** Set zone only (B-84): canonical ranges `[r, q0, q1]` and their hexagon count; `contour` is then empty. */
   plages?: [number, number, number][]; hexagones?: number }
 export interface VueBlocs {
-  blocs: { bx: number; by: number; generes: [number, number][] }[];
+  blocs: { bx: number; by: number; generes: [number, number, number, string][] }[];
   systemes: SystemeCarte[]; routes: RouteCarte[]; zones: ZoneCarte[];
 }
 export interface PanneauSysteme {
-  nom: string; q: number; r: number; taille: number; couleur: string; notes: string;
+  nom: string; q: number; r: number; taille: number; couleur: string | null; classe?: string; notes: string;
   routes: { avec: { cle: string; nom: string }; longueur: number }[]; lien: string;
   /** Level `mj` only. */
   id?: number; secret?: boolean; promu?: boolean; version?: number;

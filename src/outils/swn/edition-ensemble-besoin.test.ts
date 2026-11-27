@@ -418,7 +418,7 @@ test('B-93 exclusion : un en-tête Authorization ne donne aucun droit d\'écritu
 
 test('B-93 exclusion : un système défini secret est « introuvable » en écriture pour la joueuse, dans le même corps que la lecture', async () => {
   const w = await monde();
-  w.app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',1,0)")
+  w.app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',1,0)")
     .run(w.g, w.E, 'cache', 'Caché', 40, 41);
   const lecture = await w.lire('lea', 40, 41);
   assert.equal(lecture.statusCode, 404);

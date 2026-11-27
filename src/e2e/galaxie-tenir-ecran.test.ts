@@ -46,6 +46,8 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     return { x: p.x + s * R3 * (q + r / 2), y: p.y + s * 1.5 * r };
   };
   const toucher = async (page: Any, q: number, r: number) => {
+    // the star group makes the form taller: once « Déplacer » has closed it the page can stay scrolled past the map
+    await page.locator('svg.gx-svg').scrollIntoViewIfNeeded();
     const p = await hex(page, q, r);
     await page.mouse.click(p.x, p.y);
   };
@@ -98,6 +100,8 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     // Placer un système : Port Noir sur un hexagone anonyme (1, 0), « Secret (MJ seul) » activé
     await page.getByRole('button', { name: 'Placer un système' }).click();
     await page.getByText('Touchez un hexagone.').waitFor();
+    // the map opens on the whole known zone: the hexagon (1, 0) sits under the touch area of a system until the view is one step closer
+    await page.getByRole('button', { name: 'Zoom avant' }).click();
     await toucher(page, 1, 0);
     await section(page, 'Nouveau système').waitFor();
     await page.getByLabel('Nom', { exact: true }).fill('Port Noir');
@@ -232,10 +236,19 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     await page.getByRole('button', { name: 'Modifier', exact: true }).click();
     await section(page, 'Modifier le système').getByRole('button', { name: 'Déplacer' }).click();
     await page.getByText('Touchez le nouvel hexagone.').waitFor();
+    // the map opens on the whole known zone: one step closer so the hexagon (7, -1) is not under the touch area of a system
+    await page.getByRole('button', { name: 'Zoom avant' }).click();
     await toucher(page, 7, -1);
     await section(page, 'Modifier le système').getByText(/routes seront recalculées/).waitFor();
     await section(page, 'Modifier le système').getByRole('button', { name: 'Enregistrer', exact: true }).click();
     await page.waitForFunction(() => !document.querySelector('section[aria-label="Modifier le système"]'));
+    // the step closer taken for the touch is undone: the whole known zone is in view again
+    // the map reloads after the write: « Recentrer » is pressed again until the reloaded zone is framed
+    for (let i = 0; i < 20 && (await systeme(page, 'Relais').count()) === 0; i++) {
+      await page.getByRole('button', { name: 'Recentrer' }).click();
+      await systeme(page, 'Relais').first().waitFor({ timeout: 500 }).catch(() => undefined);
+    }
+    await attendreSysteme(page, 'Relais');
 
     // Antor ouvre « Modifier » ; Mira modifie Vael avec la version lue ; Antor enregistre → conflit, puis « Recharger »
     await systeme(page, 'Vael').click();
@@ -330,6 +343,8 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     // nom vide
     await page.getByRole('button', { name: 'Placer un système' }).click();
     await page.getByText('Touchez un hexagone.').waitFor();
+    // the map opens on the whole known zone: one step closer so the empty hexagon is clear of the touch areas and of the corner controls
+    await page.getByRole('button', { name: 'Zoom avant' }).click();
     const [vq, vr] = await hexVide(page);
     await toucher(page, vq, vr);
     const form = section(page, 'Nouveau système');

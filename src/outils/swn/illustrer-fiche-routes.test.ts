@@ -24,7 +24,7 @@ async function monde() {
   const g = one(app, 'SELECT id FROM swn_galaxies WHERE univers_id = ?', E).id as number;
   const fiche = app.db.prepare("INSERT INTO fiches (cle, creee_via, univers_id, type, titre, charge, cree_le, modifie_le) VALUES ('k' || hex(randomblob(6)), 'ecran', ?, 'lieu', 'Port', '{}', 1, 1)").run(E).lastInsertRowid as number;
   app.db.prepare("INSERT INTO sections (cle, fiche_id, titre, ordre, contenu, modifie_le, joueurs_lisent) VALUES ('texte', ?, 'Texte', 1, '', '2026-01-01', 1)").run(fiche);
-  const sid = app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,'s','S',62,63,3,'accent','',0,0)").run(g, E).lastInsertRowid as number;
+  const sid = app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,'s','S',62,63,0.75,'#8b9bf0','',0,0)").run(g, E).lastInsertRowid as number;
   const astre = (cle: string, f: number | null) => app.db.prepare("INSERT INTO swn_astres (systeme_id, cle, genre, type, orbite, heure, taille, nom, fiche_id) VALUES (?,?,'planete','rocheux',2,4,0.1,?,?)").run(sid, cle, cle, f);
   astre('lie', fiche); astre('libre', null);
   const base = `/api/univers/${E}/outils/swn/galaxie/galaxies/${g}/interieur`;

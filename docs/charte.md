@@ -323,13 +323,19 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   Joueur : vous voyez ce que voit un joueur. »
 - C: `role="radiogroup"`, two `role="radio"`; ← → switch; the banner is `role="status"`.
 
-**Segments** (an exclusive choice among a few: the galaxy system « Taille », E-21; `frontend/src/ui/segments.tsx`).
+**Segments** (an exclusive choice among a few; `frontend/src/ui/segments.tsx`; the galaxy system « Taille » of E-21 is now a `Curseur`, no longer a `Segments`).
 - V: the segments sit on a `--surface-2` background, radius `--rayon-champ`, each at least 44 px high; the checked one
   on `--accent` / `--sur-accent`; the legend above, `--texte-2` 13 px. Disabled: 45 % opacity.
 - C: `role="radiogroup"` labelled by the legend, one `role="radio"` per segment with `aria-checked`; a single tab stop
   (the checked segment); ← → ↑ ↓ move and select, wrapping around.
 - *`mj` variant* (`variante="mj"`, the GM's « Déplacer » three-frame choice): the checked segment on `--mj-fond` / `--mj` inset-bordered by `--mj-bord`, instead of the accent.
 
+
+**ApercuEtoile** (the star of a system as the galaxy map draws it: E-21's system dialogue at 40 px and its panel at 56 px; `frontend/src/ui/apercu-etoile.tsx`, `kanevas-carte-rendu-galaxie-systemes`).
+- V: an SVG disc on `--surface-2`, radius from `rayonEtoile(taille)` (the map's own function), filled with the free colour if set, else the colour of the class (a datum of the core, `classes_etoile()`, like a free colour: no token), outlined 1 px `--texte-3` so a pale star stays visible on the light ground. No hexadecimal in the component. No animation; redrawn live while the slider moves.
+- C: `aria-hidden="true"` in the dialogue (the « Classe » field says it); in the panel `role="img"` with `aria-label` « Étoile de classe <label> », colour never saying it alone. A Player gets it in the panel only.
+- Contrast: the outline against `--surface-2` is measured with `contraste.py` in both themes before the screen is built (task `-ecran`).
+**ChampCouleur — optional variant** (`frontend/src/ui/champ-couleur.tsx`): an empty value is valid when the field is optional; a ghost `Bouton` « Effacer la couleur » shows when it holds a value; the server's `champ: couleur` refusal goes through `erreur`. **Curseur** also serves E-21 (size, `pas` 0.01, `affichage`).
 **Conversion line** (`LigneConversion`, `frontend/src/ui/composants.tsx`; the « = Orbite 4 · 7 h » line under the « Déplacer » fields).
 - V: 13 px `--texte-2`, tabular figures, one line; « = — » while the entry is not valid.
 - C: `aria-live="polite"`; each field of the form points to it with `aria-describedby`. Its text comes from `texteConversion` (`ui/glisser.ts`).
@@ -637,3 +643,5 @@ Tokens marked *(new)* are added without changing anything existing.
 - V: the tokens of `Toast` (`--surface`, `--ombre-flottant`, radius `--rayon-champ`, 40 px, icon `circle-check` in `--table`, 13 px text); between the text and « Fermer », an action in `--accent-texte`, 13 px, weight 500, underlined on hover and focus, target at least 24 px, ring `--focus`; at 390 px full width minus the assistant button, the text wraps on two lines before the action is cut.
 - C: `ToastInfo.action?: {libelle; href | onClick}` and `useToasts().toast(texte, action?)`; the action is a real link or button reachable by keyboard; a toast with an action does not fade after 4 s but stays while the pointer or focus is on it, or until « Fermer » (WCAG 2.2.1); announced in the `role="status"` region, never takes the focus; no motion under `prefers-reduced-motion`. A failure is never a toast (`Alerte` with action).
 - Inventory by path: `CadreBlocFiche` lives in `frontend/src/ecrans/fiche/bloc-fiche.tsx` (not in `ui/`) and frames « Sur la carte spatiale ».
+
+**Star class colours are data, not tokens** (`kanevas-carte-rendu-galaxie-systemes`, verdict of the gardien): the seven colours of `classes_etoile()` (`docs/donnees.md`) belong to the core, as a system's free `couleur` belongs to its row; a star keeps its colour in both themes and is outlined 1 px `--texte-3`. No hexadecimal of a class in `frontend/`.

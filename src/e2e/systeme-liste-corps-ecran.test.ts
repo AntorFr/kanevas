@@ -42,7 +42,7 @@ describe('E-23 liste des corps d’un système', { skip: skipBrowser, timeout: 4
     await a.ctx.close();
     sql((db) => {
       const E = univers;
-      const ins = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',?,0)");
+      const ins = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,0)");
       const g = gid;
       const ouvert = ins.run(g, E, 'sl-ouvert', 'Ouvert-test', 42, 43, 0).lastInsertRowid;
       ins.run(g, E, 'sl-secret', 'Caché-test', 40, 41, 1);

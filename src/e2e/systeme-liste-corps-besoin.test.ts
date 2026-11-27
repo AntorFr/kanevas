@@ -54,7 +54,7 @@ describe('E-23 liste des corps : parcours P-22 en version texte', { skip: skipBr
     }
     await a.ctx.close();
     sql((db) => {
-      const ins = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,0)");
+      const ins = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',0,0)");
       const astre = db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille) VALUES (?,?,?,?,?,?,?,?,?,?)');
       const zone = db.prepare('INSERT INTO swn_formations (systeme_id, cle, forme, parametres) VALUES (?,?,?,?)');
       // 1. a defined system of every kind of body, inserted out of order

@@ -20,7 +20,7 @@ function monde() {
   const univers = q('SELECT id FROM univers WHERE nom = ?', "Éneria d'essai")[0].id as number;
   const g = q('SELECT id FROM swn_galaxies WHERE univers_id = ?', univers)[0].id as number;
   for (const t of ['swn_routes', 'swn_zones', 'swn_systemes']) db.prepare(`DELETE FROM ${t} WHERE galaxie_id=?`).run(g);
-  const sid = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu, transition) VALUES (?,?,?,?,?,?,3,'accent','',0,0,NULL)")
+  const sid = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu, transition) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',0,0,NULL)")
     .run(g, univers, 's', 'Port', 3, 4).lastInsertRowid as number;
   const ins = db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, description, orbite, heure, taille, aspect) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
   ins.run(sid, 'e', 'etoile', null, 0, 'orange', null, null, 0, 0, 0.2, '{}');

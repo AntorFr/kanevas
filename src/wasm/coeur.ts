@@ -18,6 +18,8 @@ interface Coeur {
   hex_vers_plan(q: number, r: number): Float64Array;
   plan_vers_hex(x: number, y: number): Int32Array;
   densite_defaut(): number;
+  classes_etoile(): string;
+  classe_de_cle(cle: string, taille: number): string;
   tirer_systeme(q: number, r: number, taille: number, lettre: string, version: number, valeurs: string): string;
   reglages_defaut(version: number): string;
   valider_reglages(version: number, surcharge: string): string;
@@ -182,4 +184,14 @@ export async function validerAspect(type: string, json: string): Promise<string>
 /** The parameters JSON re-serialised if they are valid for the shape (`anneau` or `nuage`, <= 8 KiB). Throws with the core's message otherwise. */
 export async function validerFormation(forme: string, json: string): Promise<string> {
   return (await coeur()).valider_formation(forme, json);
+}
+
+/** The seven star classes of the core as JSON: `[{ lettre, libelle, couleur }]`. */
+export async function classesEtoile(): Promise<string> {
+  return (await coeur()).classes_etoile();
+}
+
+/** The class letter drawn from a key and a size in [0, 1]; never `V`. Throws on a size out of range. */
+export async function classeDeCle(cle: string, taille: number): Promise<string> {
+  return (await coeur()).classe_de_cle(cle, taille);
 }
