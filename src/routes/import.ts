@@ -46,8 +46,8 @@ declare module 'fastify' {
 }
 
 /**
- * What a route of this scope accepts (K-6): `contenu` the content token only, `outil` a token
- * carrying the tool of the address, `ouverture` the opening of a batch (the token's kind decides),
+ * What a route of this scope accepts (K-6): `contenu` a token with the content permission, `outil` a token
+ * carrying the tool of the address, `ouverture` the opening of a batch (content, or the tool of `?outil=`),
  * `lot` any token (a batch of its universe). A route without one is refused.
  */
 export type PorteeImport = 'contenu' | 'outil' | 'ouverture' | 'lot';
@@ -60,11 +60,11 @@ declare module 'fastify' {
 
 function porteeOuverte(portee: PorteeImport | undefined, jeton: Jeton, request: FastifyRequest): boolean {
   switch (portee) {
-    case 'contenu': return jeton.outils.length === 0;
+    case 'contenu': return jeton.contenu;
     case 'lot': return true;
     case 'ouverture': {
       const { outil } = request.query as { outil?: unknown };
-      if (outil === undefined) return jeton.outils.length === 0;
+      if (outil === undefined) return jeton.contenu;
       return typeof outil === 'string' && jeton.outils.includes(outil);
     }
     case 'outil': {

@@ -42,7 +42,7 @@ test('migration 0050 sur une base au schéma 0049 : les lignes existantes prenne
   migrate(db, dir);
   db.prepare("INSERT INTO univers (id, nom, cle, cree_le) VALUES (1, 'U', 'u1', 'x')").run();
   db.prepare("INSERT INTO bm_direction (univers_id, texte, texte_precedent, version, modifie_le) VALUES (1, 'Ancien', 'Avant', 4, 'x')").run();
-  assert.deepEqual(migrate(db), [50, 51, 52, 53, 54]);
+  assert.deepEqual(migrate(db), [50, 51, 52, 53, 54, 55]);
   assert.deepEqual(db.prepare('SELECT texte, texte_precedent, version, source FROM bm_direction').all(),
     [{ texte: 'Ancien', texte_precedent: 'Avant', version: 4, source: 'mj' }]);
   assert.throws(() => db.prepare("UPDATE bm_direction SET source = 'autre'").run(), /CHECK/);

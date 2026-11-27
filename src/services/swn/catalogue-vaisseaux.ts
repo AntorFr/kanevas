@@ -140,7 +140,7 @@ function ligne(nature: NatureCatalogueVaisseau, r: Ligne): LigneCatalogue {
   return { nature, cle: r.cle, nom: r.nom, donnees, masque: Boolean(r.masque), version: r.version };
 }
 const colonnes = (nature: NatureCatalogueVaisseau) => CHAMPS[nature].map((c) => c.nom);
-/** Columns of 0054: a 0 not yet stored is left out of the write, so a row is written the same on a schema that predates them. */
+/** Columns of 0055: a 0 not yet stored is left out of the write, so a row is written the same on a schema that predates them. */
 const DE_0054 = new Set(['composants', 'composants_par_classe', 'mod_int_con']);
 const aStocker = (c: Champ, v: unknown) => c.type === 'oui-non' ? Number(v) : c.type === 'choix' || ((c.type === 'liste4' || (c.type === 'libre' && c.json)) && v !== null) ? JSON.stringify(v) : v;
 

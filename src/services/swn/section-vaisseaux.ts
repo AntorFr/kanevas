@@ -71,7 +71,7 @@ export function apresEcriture(ctx: ContexteSection, ecrit: EcritSection): void {
   if (existante) {
     // The skill is written only when it moves: the column (NOT NULL DEFAULT 0, migration 0033) is absent from a base
     // still at 0030, which older montée tests seed through this very function, so an unchanged value is never written.
-    // `pj` and `robots` (migration 0043) and `mod_int_con` (0054) follow the same rule.
+    // `pj` and `robots` (migration 0043) and `mod_int_con` (0055) follow the same rule.
     const optionnelles = ([['reparation', c.reparation], ['pj', c.pj ?? 0], ['robots', c.robots ?? 0], ['mod_int_con', c.modIntCon ?? 0]] as const)
       .filter(([nom, v]) => ((existante as unknown as Record<string, number | undefined>)[nom] ?? 0) !== v);
     ctx.db.prepare(`UPDATE swn_conceptions SET section_id = ?, coque_cle = ?, choix = ?, version_reglages = ?,

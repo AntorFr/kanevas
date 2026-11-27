@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { migrate, openDb } from './db.js';
 import { versionsSource } from '../services/swn/calcul-vaisseau.js';
 
-// 0052 (H-4, H-5, B-94): the fittings table is rebuilt (the CHECK of `effet` takes `support_automatisation`) with `capacite`;
+// 0053 (H-4, H-5, B-94): the fittings table is rebuilt (the CHECK of `effet` takes `support_automatisation`) with `capacite`;
 // `effet_jeu` on six tables, `pj` / `robots` on the designs; no row changes value, no version moves.
 const SRC = new URL('./migrations/', import.meta.url).pathname;
 function dossierJusqua(max: number): string {
@@ -20,7 +20,7 @@ const SIX = ['coques', 'moteurs', 'amenagements', 'defenses', 'armes', 'modifica
 
 function base() {
   const db = openDb(':memory:');
-  migrate(db, dossierJusqua(51));
+  migrate(db, dossierJusqua(52));
   db.prepare("INSERT INTO univers (id, nom, cle, cree_le) VALUES (1, 'U', 'univ-essai', '2026-11-01T00:00:00.000Z')").run();
   db.prepare(`INSERT INTO swn_catalogue_coques (proprietaire, univers_id, cle, nom, classe, cout, pv, ca, puissance, masse, emports, facteur_cout, facteur_puissance, facteur_masse, version_catalogue)
     VALUES ('univers', 1, 'c', 'Coque', 2, 10, 5, 10, 10, 8, 1, 1, 1, 1, 'v7')`).run();
@@ -38,7 +38,7 @@ function base() {
   return db;
 }
 
-test('0052 : montée depuis 0051, valeurs de la table reconstruite gardées, nouvelles colonnes à NULL / 0, versions et conception inchangées', () => {
+test('0053 : montée depuis 0052, valeurs de la table reconstruite gardées, nouvelles colonnes à NULL / 0, versions et conception inchangées', () => {
   const db = base();
   const noms = (t: string) => (db.pragma(`table_info(${t})`) as { name: string }[]).map((c) => c.name);
   assert.ok(!noms('swn_catalogue_amenagements').includes('capacite'));
@@ -47,7 +47,7 @@ test('0052 : montée depuis 0051, valeurs de la table reconstruite gardées, nou
   const avantK = db.prepare('SELECT * FROM swn_conceptions').get() as any;
   const avantV = versionsSource(db, 1);
 
-  assert.deepEqual(migrate(db), [52, 53, 54]);
+  assert.deepEqual(migrate(db), [53, 54, 55]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
 
   const apresA = db.prepare('SELECT * FROM swn_catalogue_amenagements ORDER BY cle').all() as any[];
@@ -74,7 +74,7 @@ test('0052 : montée depuis 0051, valeurs de la table reconstruite gardées, nou
   assert.equal(c.version_catalogue, 'v7');
 });
 
-test('0052 : index uniques et cascade survivent à la reconstruction, CHECK de effet, capacite, effet_jeu, pj, robots', () => {
+test('0053 : index uniques et cascade survivent à la reconstruction, CHECK de effet, capacite, effet_jeu, pj, robots', () => {
   const db = base();
   migrate(db);
   const ins = (cle: string, extra: Record<string, unknown> = {}) => {

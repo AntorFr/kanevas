@@ -1,5 +1,5 @@
 -- migrate: sans-cles-etrangeres
--- B-94, H-8, H-10 (kanevas-concepteur-vaisseaux-cibles; number 0053 taken (0048 before the catch-up of main) at merge, AD-51).
+-- B-94, H-8, H-10 (kanevas-concepteur-vaisseaux-cibles; number 0054 taken (0048 before the catch-ups of main) at merge, AD-51).
 -- The CHECK of `effet` takes `surdimensionne` and `moteur_niveau` (SQLite does not widen a CHECK): `swn_catalogue_modifications` is rebuilt
 -- on the procedure of 0036, every row copied as it is. No design is touched (a design line is JSON: `cibles` is stored at the next save,
 -- H-cibles-1 (1)) and no catalogue version moves.

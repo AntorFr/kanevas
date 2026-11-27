@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { migrate, openDb } from './db.js';
 import { versionsSource } from '../services/swn/calcul-vaisseau.js';
 
-// 0051 (B-94, H-2, H-3): `moteur_spike` (0/1, default 1) on the hulls, `limite_par` (NULL or 'armes') on the fittings; no row rewritten, no version moved.
+// 0052 (B-94, H-2, H-3): `moteur_spike` (0/1, default 1) on the hulls, `limite_par` (NULL or 'armes') on the fittings; no row rewritten, no version moved.
 const SRC = new URL('./migrations/', import.meta.url).pathname;
 function dossierJusqua(max: number): string {
   const dir = join(mkdtempSync(join(tmpdir(), 'mig-')), 'm') + '/';
@@ -16,7 +16,7 @@ function dossierJusqua(max: number): string {
   return dir;
 }
 
-test('0051 : montée depuis 0050, coque à moteur_spike 1, aménagement à limite_par NULL, conception et versions inchangées, CHECK posés', () => {
+test('0052 : montée depuis 0050, coque à moteur_spike 1, aménagement à limite_par NULL, conception et versions inchangées, CHECK posés', () => {
   const db = openDb(':memory:');
   migrate(db, dossierJusqua(50));
   const noms = (t: string) => (db.pragma(`table_info(${t})`) as { name: string }[]).map((c) => c.name);
@@ -36,7 +36,7 @@ test('0051 : montée depuis 0050, coque à moteur_spike 1, aménagement à limit
   const avantA = db.prepare('SELECT * FROM swn_catalogue_amenagements').get() as any;
   const avantK = db.prepare('SELECT * FROM swn_conceptions').get();
 
-  assert.deepEqual(migrate(db), [51, 52, 53, 54]);
+  assert.deepEqual(migrate(db), [51, 52, 53, 54, 55]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
 
   const c = db.prepare('SELECT * FROM swn_catalogue_coques').get() as any;
@@ -45,7 +45,7 @@ test('0051 : montée depuis 0050, coque à moteur_spike 1, aménagement à limit
   assert.equal(a.limite_par, null);
   for (const [k, x] of Object.entries(avantC)) assert.deepEqual(c[k], x, `coque.${k}`);
   for (const [k, x] of Object.entries(avantA)) assert.deepEqual(a[k], x, `amenagement.${k}`);
-  assert.deepEqual(db.prepare('SELECT * FROM swn_conceptions').get(), { ...(avantK as object), pj: 0, robots: 0, mod_int_con: 0 }); // 0043 adds pj and robots, 0054 mod_int_con, at 0
+  assert.deepEqual(db.prepare('SELECT * FROM swn_conceptions').get(), { ...(avantK as object), pj: 0, robots: 0, mod_int_con: 0 }); // 0043 adds pj and robots, 0055 mod_int_con, at 0
   assert.deepEqual(v(), avantV);
   assert.equal(c.version, avantC.version); assert.equal(c.version_catalogue, 'v7');
 
