@@ -463,7 +463,7 @@ export async function registerImportRoutes(app: FastifyInstance) {
       });
 
       // The ship designs of the designer (I-1): the token carries `swn/vaisseaux`; a disabled tool answers like an unknown path.
-      scope.put(`${base}/outils/:module/:outil/vaisseaux/conceptions`, {
+      scope.put(`${base}/outils/:module/:outil/conceptions`, {
         config: { portee: 'outil' }, errorHandler: erreurFichier,
       }, async (request, reply) => {
         if (cleOutil(request) !== OUTIL_VAISSEAUX) return reply.callNotFound();
