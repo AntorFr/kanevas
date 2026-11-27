@@ -1630,8 +1630,8 @@ the map or a rule **without the music stopping**.
 - **B-121** — Each universe has a **sound library** written by its GMs; each game system has one, written by the GMs of the
   system (B-114); a universe reads the sounds of its own library and of its system's. *(P-30)*
 - **B-122** — A sound is **one** sound in the instance: a **common part** (name, key, description, type, generic tags,
-  source, author, licence, address and origin reference, « seamless loop », « listened ») that **any GM who sees the sound**
-  edits, and a **part per library** (visibility, the library's own tags, Notes in Markdown with GM blocks) that only that
+  source, author, licence, address and origin reference, « seamless loop », « listened », « private » (hidden from the GMs of libraries that do not hold it, B-128)) that **any GM who sees the sound**
+  edits, and a **part per library** (visibility to players, the library's own tags, Notes in Markdown with GM blocks) that only that
   library's GMs write. Importing never copies. *(P-31)*
 - **B-123** — A sound's file exists **once on the disk**, however many libraries hold it; two deposits of identical bytes
   take one place; when the first is visible to the depositor, Kanevas says so and offers to import it instead of creating a
@@ -1681,7 +1681,7 @@ the map or a rule **without the music stopping**.
   previous in a crossfade, loops if « boucle » is on; **bruitage** once, over the rest. A click starts, a second stops,
   with a 1.5 s fade; the entry's playing mode can override the sound's type. *(P-33)*
 - **B-138** — **The sound does not stop when the GM navigates**: the player lives above the pages, with an always-visible
-  bar of what plays. Outside the table any sound found in a library or on a sheet plays with its type's rule. *(P-33)*
+  bar of what plays. Outside the table any sound found in a library plays with its type's rule, and every entry of E-36 on a sheet carries its own play button, for a player as for the GM, with the same rules. *(P-33)*
 - **B-139** — A sound **starts at once**: the section's sounds are preloaded, a 30-minute file plays by ranges without
   waiting for the whole file, at its real type; a background and a track from another source come out at a similar level
   without touching a volume. *(P-33)*
