@@ -5,11 +5,12 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ErreurApi, appeler, lire } from '../api';
 import { useTitreAriane } from '../cadre-contexte';
 import type { Ecran } from '../registre';
-import { Bouton, BoiteDialogue, Champ, ErreurChargement, PageIntrouvable, Pastille, SqueletteFiche, useToasts } from '../ui';
+import { Alerte, Bouton, BoiteDialogue, Champ, ErreurChargement, PageIntrouvable, Pastille, SqueletteFiche, useToasts } from '../ui';
 import { Eye } from 'lucide-react';
 import { iconeDeNom } from '../types-contexte';
 import type { FicheVue } from './fiche/types';
 import { SectionEspace } from './systeme/section-espace';
+import { FenetreCopies, useCopies } from './fiche/fenetre-copies';
 import './ecrans.css';
 import './fiche/fiche.css';
 
@@ -22,6 +23,39 @@ interface Entete {
 }
 
 type Etat = { k: 'chargement' } | { k: 'erreur' } | { k: 'introuvable' } | { k: 'ok'; fiche: FicheVue; entete: Entete };
+
+/** E-15: the confirmation of the deletion of an element, with the count of its copies read at each opening (AD-surcharge-4). */
+function SuppressionElement({ sid, fiche, enCours, echec, onConfirmer, onFermer }: {
+  sid: string;
+  fiche: FicheVue;
+  enCours: boolean;
+  echec?: string;
+  onConfirmer: () => void;
+  onFermer: () => void;
+}) {
+  const [copies, relire] = useCopies(sid, fiche.id);
+  return (
+    <BoiteDialogue
+      titre={`Supprimer « ${fiche.titre} » ?`}
+      texte={
+        copies.k === 'chargement' ? <span role="status">Vérification…</span>
+          : copies.k === 'erreur' ? <span role="alert">Impossible de vérifier les copies. Réessayez.</span>
+          : 'Cet élément disparaît du système pour tous les univers.'
+      }
+      action="Supprimer l’élément"
+      libelleEnCours="Suppression…"
+      desactive={copies.k !== 'ok'}
+      enCours={enCours}
+      onConfirmer={onConfirmer}
+      onFermer={() => { if (!enCours) onFermer(); }}
+      reperage={() => document.querySelector<HTMLElement>('main h1')}
+    >
+      {copies.k === 'erreur' && <Bouton onClick={relire}>Réessayer</Bouton>}
+      {copies.k === 'ok' && <FenetreCopies copies={copies.copies} />}
+      {echec && <Alerte>{echec}</Alerte>}
+    </BoiteDialogue>
+  );
+}
 
 /**
  * E-9 of a system's space (`/systemes/:sid/fiches/:fid`, AD-157): an element is read by who reads the system and written
@@ -149,7 +183,7 @@ function FicheEspace() {
           <Bouton ecrit icone={Trash2} onClick={() => setSupprimer(true)}>Supprimer l’élément</Bouton>
         </div>
       )}
-      {echec && <div className="alerte echec" role="alert"><span>{echec}</span></div>}
+      {echec && !supprimer && <div className="alerte echec" role="alert"><span>{echec}</span></div>}
       {fiche.sections.length === 0 ? (
         <div className="etat vide-fiche"><p>{ecrit ? 'Cet élément n’a pas encore de section.' : 'Aucune section.'}</p></div>
       ) : (
@@ -180,15 +214,8 @@ function FicheEspace() {
         </div>
       )}
       {supprimer && (
-        <BoiteDialogue
-          titre={`Supprimer « ${fiche.titre} » ?`}
-          texte="Cet élément disparaît du système pour tous les univers."
-          action="Supprimer l’élément"
-          enCours={enCours}
-          onConfirmer={() => void retirer()}
-          onFermer={() => setSupprimer(false)}
-          reperage={() => document.querySelector<HTMLElement>('main h1')}
-        />
+        <SuppressionElement sid={sid!} fiche={fiche} enCours={enCours} echec={echec}
+          onConfirmer={() => void retirer()} onFermer={() => { setSupprimer(false); setEchec(undefined); }} />
       )}
     </article>
   );

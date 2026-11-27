@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { MarqueDisparu, classeDisparu } from '../ecrans/fiche/marque';
+import { MarquePersonnalise } from '../ecrans/fiche/marque-personnalise';
 import type { Fiche } from '../ecrans/fiche/types';
 import { adresseIllustration, useMJSeul } from '../ecrans/fiche/vignette';
 import { badgeFiche, iconeDuType, marqueDe, useTypes } from '../types-contexte';
@@ -52,6 +53,7 @@ export function LigneFicheLiee({ universId, fiche, qualificatif, via }: {
       <Link className="jeton cible titre-liee" to={`/univers/${universId}/fiche/${fiche.id}`} title={fiche.titre}>
         {fiche.titre}
       </Link>
+      {fiche.origine === 'surcharge' && <MarquePersonnalise />}
       {fiche.type === 'personnage' && (
         <span className={`badge-type${fiche.charge.pj ? ' pj' : ''}`}>{badgeFiche(types, fiche)}</span>
       )}

@@ -1,4 +1,4 @@
-import { ArrowRightLeft, Ellipsis, FolderInput, History, Info, ImageOff, ImagePlus, ImageUp, Lock, Tags, Trash2, TriangleAlert, type LucideIcon } from 'lucide-react';
+import { ArrowRightLeft, Ellipsis, Undo2, FolderInput, History, Info, ImageOff, ImagePlus, ImageUp, Lock, Tags, Trash2, TriangleAlert, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -19,6 +19,8 @@ import { TitreFiche } from './titre';
 import { CleFiche } from './cle-fiche';
 import { SupprimerFiche } from './supprimer';
 import { lignesDuType } from './lignes/registre';
+import { MarquePersonnalise } from './marque-personnalise';
+import { FenetreRevenir } from './actions-surcharge';
 
 const AIDE = 'Visible de tous ceux qui voient la fiche.';
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
@@ -50,10 +52,14 @@ interface Props {
   /** The server said 403: the account is no longer GM. */
   onDroitPerdu: () => void;
   onIntrouvable: () => void;
+  /** The system of the universe: the target of « Voir l'élément du système » on a customisation. */
+  systemeId?: number;
+  /** Beside the title's row: « Personnaliser pour cet univers » on an element (E-9). */
+  actionsElement?: React.ReactNode;
 }
 
 /** E-9 header: type badge and title, with the illustration at the left when there is one (AD-93). */
-export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icone, message, setMessage, rafraichir, onDroitPerdu, onIntrouvable }: Props) {
+export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icone, message, setMessage, rafraichir, onDroitPerdu, onIntrouvable, systemeId, actionsElement }: Props) {
   const { toast } = useToasts();
   const naviguer = useNavigate();
   const [confirmer, setConfirmer] = useState(false);
@@ -64,6 +70,8 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
   const [etiquetage, setEtiquetage] = useState(false);
   const [deplacement, setDeplacement] = useState(false);
   const [suppression, setSuppression] = useState(false);
+  const [retour, setRetour] = useState(false);
+  const copie = fiche.origine === 'surcharge';
   const mjSeul = useMJSeul(fiche, true);
   const alias = fiche.alias ?? [];
   const etiquettes = fiche.etiquettes ?? [];
@@ -272,6 +280,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
               </span>
             )}
             {gestion && mjSeul.badge}
+            {actionsElement}
             {/* « ⋯ » (E-9): « Changer le type… » (not for a report) and, for an imported sheet, its origin. */}
             {gestion && (
 
@@ -294,6 +303,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                   { libelle: 'Déplacer sous…', icone: FolderInput, onChoisir: () => setDeplacement(true) },
                   { libelle: 'Alias et étiquettes…', icone: Tags, onChoisir: () => setEtiquetage(true) },
                   { libelle: 'Historique', icone: History, onChoisir: () => naviguer(`/univers/${universId}/historique?fiche=${fiche.id}`) },
+                  ...(copie ? [{ libelle: 'Revenir à l’élément du système', icone: Undo2, danger: true, onChoisir: () => setRetour(true) }] : []),
                   ...(fiche.cleOrigine ? [{ separateur: true as const }] : []),
                   ...(fiche.cleOrigine
                     ? [
@@ -318,6 +328,14 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
           {gestion && mjSeul.aide}
           <TitreFiche universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir}
             onDroitPerdu={droitFichePerdu} onIntrouvable={onIntrouvable} />
+          {copie && (
+            <p className="ligne-surcharge">
+              <MarquePersonnalise />
+              {fiche.surchargeDe !== undefined && systemeId !== undefined && (
+                <Link to={`/systemes/${systemeId}/fiches/${fiche.surchargeDe}`}>Voir l’élément du système</Link>
+              )}
+            </p>
+          )}
           <CleFiche universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir} onDroitPerdu={droitFichePerdu} />
           {lignesDuType(fiche.type).map((l, i) => (
             <l.composant key={i} universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir} />
@@ -353,6 +371,9 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
       {gestion && suppression && (
         <SupprimerFiche universId={universId} fiche={fiche} onFermer={() => setSuppression(false)}
           onDroitPerdu={droitFichePerdu} onIntrouvable={onIntrouvable} />
+      )}
+      {gestion && copie && retour && (
+        <FenetreRevenir universId={universId} fiche={fiche} onFermer={() => setRetour(false)} onDroitPerdu={droitFichePerdu} />
       )}
       {gestion && deplacement && (
         <DeplacerSous universId={universId} fiche={fiche} onFermer={() => setDeplacement(false)} rafraichir={rafraichir} onDroitPerdu={onDroitPerdu} />

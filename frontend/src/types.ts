@@ -7,7 +7,8 @@ export interface UniversListe {
   nom: string;
   description: string;
   role: Role;
-  systeme?: { id: number; nom: string } | null;
+  /** `personnalisees`: the GM's count of customised sheets (AD-surcharge-4), absent for a player. */
+  systeme?: { id: number; nom: string; personnalisees?: number } | null;
   nbMembres?: number;
 }
 

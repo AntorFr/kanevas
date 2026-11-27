@@ -5361,6 +5361,8 @@ It adds to the screens `-elements` laid out (E-9 of the element opened from a un
 
 In the system's space (E-9 and E-15 opened from `/systemes/:sid`) there is no « Personnaliser »: customising is a gesture of a universe.
 
+*Delivered by `kanevas-systemes-jeu-surcharge-ecrans`.* The button sits in the title's row of `EnteteFiche` (`actionsElement`); the mark and the link « Voir l'élément du système » are on the line under the title (`ligne-surcharge`), the link going to `/systemes/<id of the universe's system>/fiches/<surchargeDe>`; `BandeauElement` is now the muted line (no fill, no border). « Revenir à l'élément du système » is the danger entry of the sheet's menu. E-14: `verifierCopies` in `parametres.tsx` rereads `systeme.personnalisees` before « Rattacher » (another system or none) and « Créer et rattacher » on an attached universe; E-15: `SuppressionElement` in `systeme-fiche.tsx` reads `…/copies` at each opening.
+
 Mockup: `docs/maquettes/e09-personnalisation.html` (the element with its button, the customisation with its mark and menu, the three windows).
 
 *Components (verdict of the design-system guardian, `kanevas-systemes-jeu-surcharge`).* Existing, eight: `Pastille` (`accent`, Lucide icon 12 px), `Bouton` (primary, danger, ghost), `BoiteDialogue` (danger, 36 px icon pastille, body scrolling under 760 px), `Menu`, `Toast`, `Champ` states, `Chargement`, `ErreurChargement`. New, one, which is only a text-rendering function: the count sentence of `FenetreCopies`; no token is created. `MarquePersonnalise`, `ActionsSurcharge` and `FenetreCopies` live under `frontend/src/ecrans/fiche/`, not in `ui/`. Errors are inline with `role="alert"`; the read-only reminder is no full-width `Bandeau`. The charte gets one line in § 4.
