@@ -275,7 +275,7 @@ export function verifierDeclaration(module: DeclarationModule): void {
     }
     if (outil.importation) {
       const noms = outil.importation.natures.map((n) => n.nom);
-      if (new Set(noms).size !== noms.length) throw new Error('Duplicate importation nature.');
+      if (new Set(noms).size !== noms.length || noms.some((n) => outil.catalogue?.natures.some((c) => c.nom === n))) throw new Error('Duplicate importation nature.');
     }
     verifierReglages(outil.reglages);
     outils.set(outil.cle, outil);
