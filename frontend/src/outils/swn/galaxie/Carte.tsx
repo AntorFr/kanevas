@@ -523,6 +523,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
           <li><span className="gx-p depart" />Départ / arrivée</li>
           <li><span className="gx-p route" />Route</li>
           <li><span className="gx-p zone" />Zone</li>
+          {[...classes].map(([lettre, c]) => <li key={lettre}><span className="gx-p" style={{ background: c }} />Étoile {lettre}</li>)}
         </ul>
       </div>
     </div>
