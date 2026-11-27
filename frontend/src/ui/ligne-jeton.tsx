@@ -18,6 +18,7 @@ export function LigneJeton({
   nom,
   pastilles,
   acces,
+  acces2,
   meta,
   actions,
   inactif,
@@ -26,6 +27,8 @@ export function LigneJeton({
   nom: string;
   pastilles?: ReactNode;
   acces: ReactNode;
+  /** Second line of accesses (« Systèmes : … »), softer. */
+  acces2?: ReactNode;
   meta: string[];
   actions?: ReactNode;
   inactif?: boolean;
@@ -45,6 +48,7 @@ export function LigneJeton({
           {pastilles}
         </div>
         <div className="ligne-jeton-acces">{acces}</div>
+        {acces2 && <div className="ligne-jeton-acces secondaire">{acces2}</div>}
         <div className="ligne-jeton-meta">{meta.join(' · ')}</div>
       </div>
       {actions && <div className="ligne-jeton-actions">{actions}</div>}

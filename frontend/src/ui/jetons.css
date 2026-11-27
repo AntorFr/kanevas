@@ -25,6 +25,9 @@
 .liste-acces-titre { min-width: 0; overflow-wrap: anywhere; }
 .liste-acces-nom small { color: var(--texte-3); font-size: var(--t-12); white-space: nowrap; }
 .liste-acces-erreur { margin: var(--e-2) 0 0; color: var(--danger); font-size: var(--t-13); }
+.liste-acces.defile { max-height: 24rem; overflow-y: auto; }
+.liste-acces > li > .liste-acces-ligne-erreur { flex: 1 0 100%; margin: 0; color: var(--danger); font-size: var(--t-13); }
+.liste-acces-nom .liste-acces-suffixe { white-space: normal; }
 @media (max-width: 760px) {
   .liste-acces > li { flex-direction: column; align-items: stretch; }
   .liste-acces-nom { flex: none; }
@@ -46,6 +49,7 @@
 .ligne-jeton-nom b { font-size: var(--t-14); font-weight: 500; color: var(--texte); }
 .ligne-jeton.inactif .ligne-jeton-nom b { color: var(--texte-2); }
 .ligne-jeton-acces { font-size: var(--t-13); color: var(--texte-2); overflow-wrap: anywhere; }
+.ligne-jeton-acces.secondaire { color: var(--texte-3); }
 .ligne-jeton-acces strong { color: var(--texte); font-weight: 500; }
 .ligne-jeton-acces small { color: var(--texte-3); font-size: inherit; }
 .ligne-jeton-meta { font-size: var(--t-13); color: var(--texte-3); }
