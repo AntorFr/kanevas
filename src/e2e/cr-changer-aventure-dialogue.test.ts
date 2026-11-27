@@ -4,7 +4,7 @@
 // here only what the user sees. Real server in stub mode + real Chromium.
 import { mkdirSync } from 'node:fs';
 import assert from 'node:assert/strict';
-import { after, before, describe, test } from 'node:test';
+import { after, before, beforeEach, describe, test } from 'node:test';
 
 import { type Any, connecte, launch, skipBrowser, startServer, type Server } from './harnais.test.js';
 
@@ -17,6 +17,7 @@ let antor: Any;
 let lea: Any;
 let U = 0;
 let couronne = 0;
+let landes = 0;
 let cr = 0;
 
 async function api(page: Any, method: string, url: string, data?: unknown): Promise<Any> {
@@ -45,11 +46,22 @@ describe('kanevas-cr-aventure-ecran-dialogue, E-9 Changer d’aventure', { skip:
     const mk = async (titre: string) =>
       (await api(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'aventure', titre, sections: [{ titre: 'Présentation', joueursLisent: true }] })).id as number;
     couronne = await mk('La Couronne brisée');
-    await mk('Les Landes noires');
+    landes = await mk('Les Landes noires');
     cr = (await api(antor, 'POST', `/api/univers/${U}/comptes-rendus`, { campagneId: couronne, titre: 'Séance 7', texte: 'Le sceau cède.' })).id;
     await antor.goto(`/univers/${U}`);
     await lea.goto(`/univers/${U}`);
   }, { timeout: 120000 });
+  // Any adventure besides the two of `before` is a leftover of a previous test: remove it (loop, the list is paged).
+  async function purger(): Promise<void> {
+    for (let tour = 0; tour < 5; tour++) {
+      const restes = ((await api(antor, 'GET', `/api/univers/${U}/fiches?type=aventure`)).fiches ?? []).filter((f: Any) => f.id !== couronne && f.id !== landes);
+      if (restes.length === 0) return;
+      for (let i = 0; i < restes.length; i += 10) {
+        await Promise.all(restes.slice(i, i + 10).map((f: Any) => api(antor, 'DELETE', `/api/univers/${U}/fiches/${f.id}`)));
+      }
+    }
+  }
+  beforeEach(purger, { timeout: 120000 });
   after(async () => {
     await browser?.close();
     srv?.stop();
@@ -116,21 +128,26 @@ describe('kanevas-cr-aventure-ecran-dialogue, E-9 Changer d’aventure', { skip:
     assert.match(await ligne(antor).innerText(), /La Couronne brisée/, 'annuler ne change rien');
   });
 
-  test('plus de 100 aventures : 100 d’abord, « Charger la suite » ajoute le reste', async () => {
-    for (let i = 0; i < 102; i++) await api(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'aventure', titre: `Aventure en masse ${String(i).padStart(3, '0')}` });
-    await ouvrir(antor, cr, 'Séance 7');
-    await bouton(antor).click();
-    const d = antor.getByRole('dialog');
-    const radios = d.getByRole('radiogroup').getByRole('radio');
-    await d.getByRole('button', { name: 'Charger la suite' }).waitFor();
-    assert.equal(await radios.count(), 100);
-    await d.getByRole('button', { name: 'Charger la suite' }).click();
-    await d.getByRole('button', { name: 'Charger la suite' }).waitFor({ state: 'detached' });
-    assert.equal(await radios.count(), 104, '2 (Couronne, Landes) + 102');
-    await shot(antor, 'suite-chargee');
-    await d.getByRole('button', { name: 'Annuler' }).click();
-    for (const f of (await api(antor, 'GET', `/api/univers/${U}/fiches?type=aventure&q=masse`)).fiches ?? []) {
-      await api(antor, 'DELETE', `/api/univers/${U}/fiches/${f.id}`);
+  test('plus de 100 aventures : 100 d’abord, « Charger la suite » ajoute le reste', { timeout: 180000 }, async () => {
+    try {
+      for (let i = 0; i < 102; i += 12) {
+        await Promise.all(Array.from({ length: Math.min(12, 102 - i) }, (_, k) =>
+          api(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'aventure', titre: `Aventure en masse ${String(i + k).padStart(3, '0')}` })));
+      }
+      await ouvrir(antor, cr, 'Séance 7');
+      await bouton(antor).click();
+      const d = antor.getByRole('dialog');
+      const radios = d.getByRole('radiogroup').getByRole('radio');
+      const suite = d.getByRole('button', { name: 'Charger la suite' });
+      await suite.waitFor({ timeout: 60000 });
+      assert.equal(await radios.count(), 100);
+      await suite.click();
+      await suite.waitFor({ state: 'detached', timeout: 60000 });
+      assert.equal(await radios.count(), 104, '2 (Couronne, Landes) + 102');
+      await shot(antor, 'suite-chargee');
+      await d.getByRole('button', { name: 'Annuler' }).click();
+    } finally {
+      await purger();
     }
   });
 
