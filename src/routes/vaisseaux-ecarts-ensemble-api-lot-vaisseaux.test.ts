@@ -161,7 +161,7 @@ describe('B-85 (2) réparation minimale à part de l’effet', () => {
   const rep = (m: Monde, choix: Any[], reparation?: number) => calc(m, { coque: 'fregate-r', choix, ...(reparation === undefined ? {} : { reparation }) });
   const alertes = (r: Rep) => r.json.alertes.filter((a: Any) => a.code === 'reparation_insuffisante');
 
-  it('Blindage à 10 % (armure +2) qui exige 2 : armure 7, ligne 30 000 cr hors prix (B-95) ; compétence 1 → alerte au texte exact', async () => {
+  it('Blindage à 10 % (armure +2) qui exige 2 : armure 7 et +30 000 cr comme avant ; compétence 1 → alerte au texte exact', async () => {
     const m = await monde();
     const r = await rep(m, [mods('blindage-r')], 1);
     assert.equal(r.status, 200, r.texte);
