@@ -458,6 +458,10 @@ login and callback return `404`: no degraded mode. A set but
 empty or invalid value (malformed URL), however, makes startup fail
 (`ZodError`, `src/config/env.ts`).
 
+## Built web page (per version)
+
+Each `v*` tag also publishes `kanevas-web-<version>.tar.gz` (and its `.sha256`) on its GitHub Release: the page and the server already built, with the stub launcher, for another repository that serves Kanevas without building it (no Rust, `wasm-bindgen` or Docker). With Node >= 20 and npm: `gh release download v<version> --repo AntorFr/kanevas --pattern 'kanevas-web-<version>.tar.gz'`, `tar xzf kanevas-web-<version>.tar.gz`, `node lancer-bouchon.mjs --port 3001` (installs the production dependencies on first run, then prints the address of the stub). See `ARCHITECTURE.md`, `kanevas-web-publie`.
+
 ## Deployment
 
 Outside this repository: Helm chart `charts/kanevas` in `smart-home-charts`,
