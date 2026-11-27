@@ -6,7 +6,9 @@ export type GenreCorps = 'etoile' | 'planete' | 'comete' | 'anomalie' | 'compagn
 /** A body of the map in screen pixels: `x`, `y` its centre, `rayon` its disc (0 for a zone, which only anchors its label). */
 export interface CorpsEtiquette { cle: string; genre: GenreCorps; nom: string; x: number; y: number; rayon: number;
   /** Disc a label must also clear (a star's corona, wider than its body); the label sits beside it. Defaults to `rayon`. */
-  halo?: number }
+  halo?: number;
+  /** The label is shown whole or not at all (a jump point's « name · n cases »): never shortened. */
+  entier?: boolean }
 
 /** What is drawn on the map and a label must not touch either: an hour mark (rect), a corona (disc), the transition circle (ring: crossing it is meeting it). */
 export type Obstacle =
@@ -74,9 +76,11 @@ const sechevauchent = (a: Rect, b: Rect) =>
   a.x < b.x + b.largeur + MARGE && b.x < a.x + a.largeur + MARGE && a.y < b.y + b.hauteur + MARGE && b.y < a.y + a.hauteur + MARGE;
 
 /** Rectangles of the four sides of a body, at one distance: below, above, right, left. */
-const candidats = (corps: CorpsEtiquette, m: Mesure, d: number): Rect[] => {
+const candidats = (corps: CorpsEtiquette, m: Mesure, d: number, obstacles: Obstacle[] = []): Rect[] => {
   const { largeur: l, hauteur: h } = m;
-  const c = { ...corps, rayon: Math.max(corps.rayon, corps.halo ?? 0) };
+  // A disc obstacle centred on the body (a star's corona) is part of what the label sits beside.
+  const couronne = Math.max(0, ...obstacles.map((o) => (o.type === 'disque' && Math.abs(o.x - corps.x) < 0.5 && Math.abs(o.y - corps.y) < 0.5 ? o.rayon : 0)));
+  const c = { ...corps, rayon: Math.max(corps.rayon, corps.halo ?? 0, couronne) };
   return [
     { x: c.x - l / 2, y: c.y + c.rayon + d, largeur: l, hauteur: h },
     { x: c.x - l / 2, y: c.y - c.rayon - d - h, largeur: l, hauteur: h },
@@ -101,19 +105,19 @@ export function placerEtiquettes(corps: CorpsEtiquette[], vue: VueEtiquettes, me
     const plein = coupe(c.nom);
     let trouve: EtiquettePlacee | null = null;
     if (!replie && plein) {
-      const longueurs = [...Array(Math.max(0, [...plein].length - 2)).keys()].map((k) => [...plein].length - k);
+      const longueurs = c.entier ? [[...plein].length] : [...Array(Math.max(0, [...plein].length - 2)).keys()].map((k) => [...plein].length - k);
       for (let k = 0; k < longueurs.length && !trouve; k++) {
         const texte = k === 0 ? plein : raccourci(plein, longueurs[k] ?? 2);
         const m = mesurer(texte);
         for (const d of DISTANCES) {
-          const r = candidats(c, m, d).find(libre);
+          const r = candidats(c, m, d, obstacles).find(libre);
           if (r) { trouve = { cle: c.cle, ...r, texte, visible: true }; placees.push(r); break; }
         }
       }
-      if (!trouve && [...plein].length <= 2) {
+      if (!trouve && !c.entier && [...plein].length <= 2) {
         const m = mesurer(plein);
         for (const d of DISTANCES) {
-          const r = candidats(c, m, d).find(libre);
+          const r = candidats(c, m, d, obstacles).find(libre);
           if (r) { trouve = { cle: c.cle, ...r, texte: plein, visible: true }; placees.push(r); break; }
         }
       }

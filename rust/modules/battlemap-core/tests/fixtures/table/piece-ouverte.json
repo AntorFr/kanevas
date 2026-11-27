@@ -1,0 +1,140 @@
+{
+  "document": {
+    "schema": 1,
+    "largeur": 8,
+    "hauteur": 5,
+    "calques": [
+      {
+        "id": "sol",
+        "nom": "Sol",
+        "type": "sol",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": false
+      },
+      {
+        "id": "murs",
+        "nom": "Murs",
+        "type": "mur",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": false
+      },
+      {
+        "id": "objets",
+        "nom": "Objets",
+        "type": "objet",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": false
+      }
+    ],
+    "sols": [],
+    "murs": [
+      {
+        "calque": "murs",
+        "x": 1,
+        "y": 1,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 1,
+        "y": 3,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 2,
+        "y": 1,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 2,
+        "y": 3,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 3,
+        "y": 1,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 3,
+        "y": 3,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 1,
+        "y": 1,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 1,
+        "y": 2,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 4,
+        "y": 2,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      }
+    ],
+    "elements": []
+  },
+  "contexte": {},
+  "cas": [
+    {
+      "nom": "une pièce ouverte sur l'extérieur remplit la carte",
+      "lot": [
+        {
+          "type": "reveler_piece",
+          "x": 2,
+          "y": 2
+        }
+      ],
+      "attendu": {
+        "ok": true,
+        "revele_tout": true
+      }
+    },
+    {
+      "nom": "depuis l'extérieur de la pièce ouverte, toute la carte aussi",
+      "lot": [
+        {
+          "type": "reveler_piece",
+          "x": 7,
+          "y": 4
+        }
+      ],
+      "attendu": {
+        "ok": true,
+        "revele_tout": true
+      }
+    }
+  ]
+}

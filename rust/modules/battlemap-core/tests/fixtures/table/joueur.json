@@ -1,0 +1,1295 @@
+{
+  "document": {
+    "schema": 1,
+    "largeur": 10,
+    "hauteur": 6,
+    "calques": [
+      {
+        "id": "sol",
+        "nom": "Sol",
+        "type": "sol",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": false
+      },
+      {
+        "id": "murs",
+        "nom": "Murs",
+        "type": "mur",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": false
+      },
+      {
+        "id": "objets",
+        "nom": "Objets",
+        "type": "objet",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": false
+      },
+      {
+        "id": "mj",
+        "nom": "Calque MJ secret",
+        "type": "objet",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": true
+      },
+      {
+        "id": "cache",
+        "nom": "Calque masque secret",
+        "type": "objet",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": false
+      }
+    ],
+    "sols": [
+      {
+        "calque": "sol",
+        "x": 0,
+        "y": 0,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 1,
+        "y": 0,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 2,
+        "y": 0,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 3,
+        "y": 0,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 0,
+        "y": 1,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 1,
+        "y": 1,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 2,
+        "y": 1,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 3,
+        "y": 1,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 0,
+        "y": 2,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 1,
+        "y": 2,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 2,
+        "y": 2,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 3,
+        "y": 2,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 8,
+        "y": 4,
+        "asset_id": "dalle"
+      }
+    ],
+    "murs": [
+      {
+        "calque": "murs",
+        "x": 0,
+        "y": 0,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 0,
+        "y": 3,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 1,
+        "y": 0,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 1,
+        "y": 3,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 2,
+        "y": 0,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 2,
+        "y": 3,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 3,
+        "y": 0,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 3,
+        "y": 3,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 0,
+        "y": 0,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 4,
+        "y": 0,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 0,
+        "y": 1,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 4,
+        "y": 1,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": true
+      },
+      {
+        "calque": "murs",
+        "x": 0,
+        "y": 2,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 4,
+        "y": 2,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      }
+    ],
+    "elements": [
+      {
+        "id": "e-chaise",
+        "calque": "objets",
+        "asset_id": "chaise",
+        "x": 1.5,
+        "y": 0.5,
+        "rotation": 0,
+        "miroir": false,
+        "echelle": 1.0
+      },
+      {
+        "id": "e-relique",
+        "calque": "objets",
+        "asset_id": "asset-mj-secret",
+        "x": 2.5,
+        "y": 0.5,
+        "rotation": 0,
+        "miroir": false,
+        "echelle": 1.0
+      },
+      {
+        "id": "e-piege",
+        "calque": "mj",
+        "asset_id": "piege-secret",
+        "x": 2.5,
+        "y": 1.5,
+        "rotation": 0,
+        "miroir": false,
+        "echelle": 1.0
+      },
+      {
+        "id": "e-cache",
+        "calque": "cache",
+        "asset_id": "objet-calque-masque-secret",
+        "x": 1.5,
+        "y": 2.5,
+        "rotation": 0,
+        "miroir": false,
+        "echelle": 1.0
+      },
+      {
+        "id": "e-tresor",
+        "calque": "objets",
+        "asset_id": "tresor-sous-brouillard",
+        "x": 8.5,
+        "y": 4.5,
+        "rotation": 0,
+        "miroir": false,
+        "echelle": 1.0
+      }
+    ]
+  },
+  "contexte": {
+    "empreintes": {
+      "geant": [
+        2,
+        2
+      ]
+    },
+    "proprietaires": [
+      "mien",
+      "mien2",
+      "cache",
+      "dessous",
+      "geant1",
+      "p0",
+      "p1",
+      "p2",
+      "p3",
+      "p4",
+      "p5",
+      "p6",
+      "p7",
+      "p8",
+      "p9",
+      "p10"
+    ]
+  },
+  "cas": [
+    {
+      "nom": "un déplacement de son pion",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 2,
+          "y": 1
+        }
+      ],
+      "attendu": {
+        "ok": true,
+        "revele": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "nom": "dix déplacements de ses pions",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 1,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 3,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 1,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 3,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 1,
+          "y": 1
+        }
+      ],
+      "attendu": {
+        "ok": true
+      }
+    },
+    {
+      "nom": "un pion déposé sous le brouillard (destination libre)",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 9,
+          "y": 5
+        }
+      ],
+      "attendu": {
+        "ok": true,
+        "pions": [
+          {
+            "id": "mien",
+            "x": 9,
+            "y": 5
+          }
+        ],
+        "vue_joueur_sans": [
+          "mien"
+        ],
+        "mj_garde": [
+          "mien"
+        ]
+      }
+    },
+    {
+      "nom": "un pion d'autrui",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [
+        {
+          "type": "deplacer_pion",
+          "id": "autrui",
+          "x": 2,
+          "y": 1
+        }
+      ],
+      "attendu": {
+        "ok": false,
+        "code": "pion_non_proprietaire"
+      }
+    },
+    {
+      "nom": "un pion masqué (même s'il lui appartient)",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [
+        {
+          "type": "deplacer_pion",
+          "id": "cache",
+          "x": 3,
+          "y": 1
+        }
+      ],
+      "attendu": {
+        "ok": false,
+        "code": "pion_non_proprietaire"
+      }
+    },
+    {
+      "nom": "un pion sous le brouillard (même s'il lui appartient)",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [
+        {
+          "type": "deplacer_pion",
+          "id": "dessous",
+          "x": 8,
+          "y": 4
+        }
+      ],
+      "attendu": {
+        "ok": false,
+        "code": "pion_non_proprietaire"
+      }
+    },
+    {
+      "nom": "un id inconnu",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [
+        {
+          "type": "deplacer_pion",
+          "id": "inconnu",
+          "x": 1,
+          "y": 1
+        }
+      ],
+      "attendu": {
+        "ok": false,
+        "code": "pion_non_proprietaire"
+      }
+    },
+    {
+      "nom": "un lot mêlant déplacement et révélation",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 1,
+          "y": 1
+        },
+        {
+          "type": "reveler_rect",
+          "x": 5,
+          "y": 0,
+          "l": 1,
+          "h": 1
+        }
+      ],
+      "attendu": {
+        "ok": false,
+        "code": "pion_non_proprietaire"
+      }
+    },
+    {
+      "nom": "une autre commande seule",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [
+        {
+          "type": "retirer_pion",
+          "id": "mien"
+        }
+      ],
+      "attendu": {
+        "ok": false,
+        "code": "pion_non_proprietaire"
+      }
+    },
+    {
+      "nom": "un lot vide",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [],
+      "attendu": {
+        "ok": false,
+        "code": "pion_non_proprietaire"
+      }
+    },
+    {
+      "nom": "un 11e déplacement",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 1,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 3,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 1,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 2,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 3,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 0,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 1,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 2,
+          "y": 1
+        }
+      ],
+      "attendu": {
+        "ok": false,
+        "code": "pion_non_proprietaire"
+      }
+    },
+    {
+      "nom": "une emprise hors carte",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 10,
+          "y": 0
+        }
+      ],
+      "attendu": {
+        "ok": false,
+        "code": "position_invalide",
+        "index": 0
+      }
+    },
+    {
+      "nom": "un mouvement valide puis un pion d'autrui : tout refusé",
+      "acteur": "joueur",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 4,
+          "h": 3
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien",
+          "nom": "Mira",
+          "x": 0,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "mien2",
+          "nom": "Tolk",
+          "x": 1,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "autrui",
+          "nom": "Autre",
+          "x": 2,
+          "y": 0
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "cache",
+          "nom": "Embusque",
+          "x": 3,
+          "y": 0,
+          "visible": false
+        },
+        {
+          "type": "ajouter_pion",
+          "id": "dessous",
+          "nom": "Brume",
+          "x": 8,
+          "y": 5
+        }
+      ],
+      "lot": [
+        {
+          "type": "deplacer_pion",
+          "id": "mien",
+          "x": 1,
+          "y": 1
+        },
+        {
+          "type": "deplacer_pion",
+          "id": "autrui",
+          "x": 2,
+          "y": 1
+        }
+      ],
+      "attendu": {
+        "ok": false,
+        "code": "pion_non_proprietaire"
+      }
+    }
+  ]
+}

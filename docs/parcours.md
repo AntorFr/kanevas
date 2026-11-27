@@ -296,6 +296,7 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   in « lecture + écriture » writes only where that player may write. A token restricted to tools
   (`kanevas-outils`, B-65) keeps that restriction, set on E-23: it writes those tools' data and no
   content, whatever its level. *(P-25)*
+- **B-jeton-1** *(kanevas-jeton-unique)* — A token's permissions **add up**: when creating it, its owner chooses « Contenu » and/or any offerable tools (at least one), so that **one key** can import the galaxy and write sheets, or several keys split the work — his choice. The accesses (universes, level) are shared by all its permissions and the account's role decides at each use, as before; permissions are fixed at creation; tokens created before keep their value, scope and behaviour. *(P-jeton-unique-1, E-23, E-5)*
 - **B-95** — The **instance admin** sees every token of the instance on E-5 (name, owner, accesses,
   last use), **revokes** any of them and **changes its accesses**; the owner sees on E-23 « Modifié par
   l'admin » or « Révoqué par l'admin ». « Tous mes univers » takes **exceptions** — a universe at another
@@ -427,6 +428,21 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
 - **B-21** — When a GM asks their assistant (E-12) to update the world from a report,
   the assistant proposes new section content without writing anything; the GM sees the current and
   proposed content, then applies or abandons it in one action. Nothing applies itself. *(P-5)*
+
+- **B-cr-aventure-1** — *(`kanevas-cr-aventure`)* The GM **changes the adventure of an existing session
+  report**, from the report's sheet (E-9), among the adventures of the universe, with the rules of its creation
+  (B-19: an adventure he reads, of the same universe). The sheet keeps its id, its sections, its relations and the links that
+  aim at it; nothing is deleted and recreated. A member who is not a GM does not see the gesture. *(P-4, step 3)*
+- **B-cr-aventure-2** — *(`kanevas-cr-aventure`)* The **import** writes the adventure (`campagne`, an origin key)
+  of a report that already exists, like the other header fields (B-47) and under the header fingerprint
+  (AD-139); the batch counts it as a written sheet; it no longer answers « campagne non modifiable, ignorée ». A key that is not an
+  adventure of the universe stays refused (« campagne inconnue »). *(P-10)*
+- **B-cr-aventure-3** — *(`kanevas-cr-aventure`)* The **export** gives the new adventure of a moved report, with no
+  work of its own once B-cr-aventure-1 and 2 are delivered (`GET /export`, AD-export-1, gives each sheet in its read form, at the instant of the snapshot): verified, not built. *(P-10)*
+- **B-cr-aventure-4** — *(`kanevas-cr-aventure`)* The block « Comptes-rendus » of an **adventure's sheet** (B-60) also lists
+  the reports of its scenarios (all its descendants of type adventure reached through an unbroken chain of adventures by parent, at any depth, that the reader reads; an adventure filed under a sheet of another type is left out; an unread scenario cuts off what is under it), each with the **name of its own scenario**;
+  the sheet of a scenario lists its own, as before. Without it, filing a report under its scenario would make it disappear from its
+  campaign's page. *(P-4)*
 
 ### Maps
 - **B-22** — A GM creates an illustrated map (a background image dropped onto the map, freely
@@ -812,6 +828,7 @@ the frame says « Image indisponible. » and keeps « Remplacer » and « Retire
    publish it — it opens as a **sheet** (E-9) of type session report, which names the adventure.
 3. They edit it later; others read it from the adventure or the **report list**
    (E-13).
+   *(`kanevas-cr-aventure`)* Maëlle, the GM, finds a report filed under the whole campaign instead of its scenario: she opens it, « Changer d'aventure… » (E-9), picks the scenario and confirms; the « Campagne » line names it at once and the report keeps its address, its relations and the links that aim at it. If the write fails, the dialog says so and keeps her choice; if the scenario was deleted meanwhile, it says « Introuvable. » and offers the list again. Under a campaign, the reports of all its scenarios, however deep, show on its page with the scenario's name.
 
 ### P-5 — Update the world after the game (GM)
 1. They read reports (E-13 → E-9).
@@ -890,7 +907,10 @@ He first wants a disposable trial, then the real collection, without duplicates 
    **campaigns** first, then sheets, parents first (origin key, type, title, parent, aliases,
    labels, Markdown sections with their `[[…]]` links, GM blocks, images,
    audience) — session reports with their campaign key —, then relations, and closes the batch
-   (the order from AD-104).
+   (the order from AD-104). *(`kanevas-cr-aventure`)* A report already in Kanevas whose `campagne` key now names another adventure
+   (a scenario, say) is moved by the replay: the sheet is counted as written, its id, relations and links stay, and no
+   « campagne non modifiable » warning appears; a key that is not an adventure of the universe is a counted refusal « campagne inconnue ».
+   The next export gives the new adventure.
    Files, images and documents, first go into the **media library** (E-19), each with its
    permissions — « Réservée au MJ » for those Kanka only displays in GM content, « Visible des
    joueurs » otherwise —, including the 385 MB unused by any sheet; sheets reference them.
@@ -1284,6 +1304,12 @@ From the private Éneria repository, a script reads `atlas/systemes/*.yaml`, `sy
 (the galaxy already created on Éneria's seed by the conversion of P-20); the batch report counts created, unchanged and refused elements (bodies and map elements alike, each by its key). *Moment fort:* the GM opens the galaxy and a system of
 the lore and finds Éneria's bodies at their places with their illustrations. *Failure path:* a refused element is reported with its path in the file and nothing is half written (as P-20).
 
+### P-jeton-unique-1 — One key for the galaxy and the sheets (Monsieur, GM, Éneria's import)
+1. On « Mes jetons d'API » (E-23) Monsieur chooses « Créer un jeton », names it « Import Éneria », and in « Ce que le jeton peut faire » leaves « Contenu » checked and checks « Galaxie ». He picks « Une liste d'univers » (Éneria, lecture + écriture) and creates it; the value is shown once.
+2. His script uses that one key: it imports the galaxy (`PUT …/outils/swn/galaxie/…`, batch opened with `?outil=swn/galaxie`) and writes sheets (`PUT …/fiches/<cle>`, batch without `?outil=`). No second key, no second variable in the script.
+3. *Alternative:* he prefers one key per script (a content key for the lore, a tool key for the galaxy): the same form, one box each. Nothing forces either choice.
+4. *Failure path:* nothing checked → « Cochez au moins une permission. » and nothing is created. A key without « Galaxie » on the galaxy route: 401 `jeton_invalide`, as today. Tokens made before this slice work as they did.
+
 ### P-22 — Bring Kanevas up to date from the Éneria base (Monsieur, GM, a Saturday, Mac)
 1. The script opens a batch (`POST /lots`), then reads the lists of sheets, files and maps (B-105,
    B-90) and compares each fingerprint with the one it kept at its last run. A file sent again
@@ -1369,6 +1395,118 @@ secret body gives « Page introuvable. », byte for byte like an unknown one.
 In « create / edit » mode Antor places a system, draws a route, moves a body by hand (B-121). On a defined system he sets its **star** — class, continuous size, optional free colour — in the system's dialogue (B-117), and on each zone of the galaxy the switch « Displayed when the map opens » (B-118). His atlas script pushes the new
 format (B-122) and the bodies' settings; the report names the settings that stay unrendered. *Moment fort:* the recipe: both maps side by side at the same framing, and Monsieur judges (B-123).
 
+### The battle map (`kanevas-battlemap`)
+
+> *Decisions of Monsieur, 2026-11-11 (triage): a dedicated tool of the tool registry (`kanevas-outils`);
+> a Rust core compiled to WebAssembly, no separate service; the table first, then remote play; an image
+> engine that makes **assets only** — a map is a composition, never one generated picture. Inspired by
+> Dungeonfog, which Monsieur is not satisfied with: its principles (asset libraries, layered composition,
+> a table display), done better. Ids B-96…B-110, P-26…P-29, E-25…E-30, AD-150…AD-165 are this epic's; the
+> sibling epic `kanevas-carte-spatiale` holds B-86…B-95, P-22…P-25, E-23…E-24, AD-138…AD-149.*
+
+- **B-96** — Each universe has an **asset library**: pictures of a **category** (object, vessel, scenery,
+  floor texture, wall texture) that a map knows how to place. An asset carries a name, its category, its
+  **footprint in cells** (width × height, whole cells; a floor or wall texture has none), whether it is
+  **seen from above** (an asset that is not top-down is flagged and still usable), free tags, and is a file of the media
+  library (B-54), so it keeps its visibility rule. The GM and the players read the library (a player sees
+  the assets the GM left visible); only the GM writes it. *(P-26)*
+- **B-97** — The GM **adds assets by hand**: dropping images in the library (several at once, each
+  named from its file and given the category chosen for the drop), picking images already in the media
+  library, then correcting any property one by one or by selection. Removing an asset used by maps first
+  says on how many maps it is placed. *(P-26)*
+- **B-98** — Each universe has an **art direction**: a text (Markdown, the style, palette, mood, what to avoid) and
+  **reference images** (media-library files). The GM edits it by hand; the assistant can propose and write it on
+  request, the previous text being kept one step for « Annuler ». Players do not see it: its reference images and the draft files are GM-only files of the library. *(P-26)*
+- **B-99** — **Optional — batch generation**: the GM lists the assets he wants (a name, a category, a
+  footprint, an optional hint each; or asks the assistant to draft the list from a theme), starts a **batch**
+  and the image engine makes them one after the other, each prompt built from the art direction. Each result
+  lands in the library as a **draft** to accept, regenerate with a remark, or discard; nothing enters a map
+  before it is accepted. The batch shows its progress, the GM can **stop** it (every line not yet accepted is discarded after a confirmation, drafts and failures included — AD-157), and it survives a restart: the line that was running and the lines still waiting are marked *interrupted* and the GM resumes them with one click, never silently. Without an image engine the
+  entry is absent and everything else works with a library filled by hand. *(P-26)*
+- **B-100** — The assistant has **dedicated skills** for the tool (writing an art direction, briefing an
+  asset batch, composing a map from the library): instruction documents shipped with the tool, which it loads
+  on demand, so that an agent that knows nothing of battle maps does the work in the universe's style. *(P-26, P-27)*
+- **B-101** — The GM **composes a map**: a grid (size in cells, cell size in pixels of the reference raster, 70 by default; both editable later, a reduction refused while elements lie outside the new limits), **floors**
+  painted by texture, **walls** drawn along the cell edges (with doors as a wall variant: a door is a drawn passage that stays a limit for a room and has no open / closed state), **assets placed**
+  anywhere on the grid (snapped to the grid or free, a switch of the editor, rotated by quarter turns, mirrored, scaled), organised in **layers**
+  (floor, walls, objects, plus layers the GM creates, renames, orders and deletes, each of a type floor, wall or object). The map is saved as the GM works. *(P-27)*
+- **B-102** — The editor has the comforts of a real tool: select several elements and move, duplicate (copy / paste), delete them;
+  **undo and redo** (this session); a layer can be hidden, locked, or made **GM-only** (its content never
+  reaches a player); zoom and pan; a search in the library from the editor. *(P-27)*
+- **B-103** — The **assistant composes a map** from the library on request (« une taverne de 20×14 cases,
+  deux salles, une cave »): it uses only assets of the library, creates the map, and the GM opens it in the
+  editor and retouches it by hand. A request that needs an asset the library lacks says which one. *(P-27)*
+- **B-104** — A composed map is **one of the universe's maps** (E-10, with its visibility); an **element** of the document (E-28) or a **token** of the table (E-29) can
+  be linked to a **sheet** of the universe; from the map, a reader opens it under the usual reading rules (AD-64), in the GM's
+  and the players' play screen (E-29) — not on the table display (E-30), which has no control. *(P-27, P-3)*
+- **B-105** — **At the table**: the GM opens the map in play mode and a **display for the players**
+  (a second screen — a TV, a tablet — opened on the same account type, chrome-less) shows it, **driven by the GM**: he
+  chooses what part of the map is shown (zoom and position) and which layers (a layer menu of the play screen). The table account is any member account of the universe (a player member left logged in on the TV, or the GM in a second window): the display always shows the player view. *(P-28)*
+- **B-106** — **Tokens**: the GM puts tokens on the map (from a character or creature sheet, an asset of the library or
+  a plain disc with a name; « Ajouter un pion » in the play screen), moves them, shows or hides them, removes them, links a sheet to one. Each token may belong to a player. *(P-28)*
+- **B-107** — **Fog of war**: the map starts hidden to the players; the GM **reveals** areas by hand (painting
+  cells, revealing a rectangle or a whole **room**: the area enclosed by the walls and doors around a clicked cell), and can hide them again. What is hidden is never sent to a
+  player's device. *(P-28)*
+- **B-108** — **Remote play**: each player opens the map on his own device and **moves his own token**;
+  every screen — GM, table display, other players — updates within a second or two, with no reload. A player moves
+  only tokens that belong to him. Where the GM has switched remote play off (E-20), the players still follow live but only the GM moves tokens. *(P-29)*
+- **B-109** — The state of a table (tokens, fog, view) is **kept between sessions**: the GM resumes the map where
+  he left it, and can reset it. A lost connection never loses the state and the screen says so. *(P-28, P-29)*
+- **B-110** — The tool follows the registry: the GM enables it per universe (E-20), sets who sees it (hiding the library from a role hides its entry and panel, not the maps, which stay readable by whoever sees them), the assistant tools
+  disappear when it is disabled, and « Supprimer les données de l'outil… » counts what it will erase. *(P-26, P-21)*
+
+### P-26 — Fill a library in the universe's style (Antor, GM, Sunday evening, office)
+*« Éneria » is dark science-fiction, painted, worn metal; he wants a library for his ship interiors.*
+1. **E-26**: he writes the art direction (or asks the assistant — « Demander à l'assistant » opens E-12 with the request —
+   which writes a text from the universe's sheets; E-26 shows « Texte modifié par l'assistant » with « Annuler », he corrects
+   the text or cancels it) and adds three reference images from the media library.
+2. **E-25**: he drops fifteen images he already owns (Dungeonfog assets he bought, if any): each lands with the category
+   of the drop, he fixes footprints in a selection (« 2×1 » for the bunks).
+3. For what is missing he opens **E-27**: twelve lines (« Couchette », « Console de commande »…), « Lancer » — twelve drafts
+   arrive one by one, each shown on a neutral grid; he accepts nine, regenerates two with a remark (« plus usé »), discards one.
+4. The next day the assistant, asked for « dix décors de station abandonnée », drafts the list through the dedicated skill: the
+   answer carries « Lot préparé : 10 assets » and « Ouvrir »; in E-27 the batch waits as « Préparé », he starts it there.
+5. Léa (player) opens **E-25** and finds the assets Antor left visible; nothing to write, no art direction. If the library loads badly she reads « Impossible de charger la bibliothèque. » and « Réessayer »; if it is empty, « La bibliothèque est vide. ».
+*Highlight*: step 3, the drafts that appear one by one in his style.
+*Failure*: no image engine — the generation entry is absent, steps 1 and 2 stand; a batch is already prepared or running — the assistant answers « Un lot est déjà préparé ou en cours. Ouvrez-le dans la génération. »; « Annuler » after a hand edit elsewhere — « Ce texte a changé depuis que vous l'avez ouvert. » and « Recharger »; offline — « Annuler » is disabled; the cancellation fails — « L'annulation a échoué. Réessayez. »; the assistant is unavailable (no token) — the button « Demander à l'assistant » is absent, steps 1 to 3 stand by hand; one asset fails — its line says « Échec »
+with « Réessayer », the others go on; the batch is interrupted by a restart — the running line is marked
+« Interrompu » and « Reprendre » restarts it; a file that is not an image — refused with its name; removing an asset says on how many maps it is placed; the art direction was changed elsewhere — « Ce texte a changé… » and « Recharger »; a ninth reference — refused; the library holds 5 000 assets — « Bibliothèque pleine ».
+
+### P-27 — Compose a map (Antor, GM; the assistant)
+1. In **E-10** he chooses « Nouvelle carte » ▸ « Carte composée » (the tool enabled): the dialog asks a name and a size (30 × 20 cells); **E-28** opens.
+2. He paints a floor, draws the walls of two rooms with a door, drops consoles and bunks from the library panel, puts the
+   consoles on an « Objets » layer, a hidden trap room on a GM-only layer; he undoes a wrong wall.
+3. Another map: in the assistant (E-12) « Compose une cantine de 20×14 avec une cuisine et une réserve » — the assistant
+   answers with a link; **E-28** shows the map, he moves two tables and replaces a floor.
+   *Detail of `kanevas-battlemap-editeur` (steps 1, 2 and 4).* Step 1: the dialog's « Créer » opens E-28 on a map with the layers « Sol », « Murs », « Objets », the Sol tool armed and the hint of the empty map. Step 2: Antor chooses a floor card in the Bibliothèque tab, paints a rectangle (shift-drag), picks Mur and drags the outline of the first room, then the second, Porte and clicks one segment; he picks two console cards, places them (the editor moved the active layer to « Objets »); « Nouveau calque » ▸ « Réservé au MJ » (type Objet, « MJ seul » on) takes the trap room's elements; a wrong wall is undone with Ctrl+Z; the saving indicator reads « Enregistré » a second after each gesture. Step 4: he selects a console, « Lier une fiche… », types « Terminal », picks the sheet; « Ouvrir la fiche » opens it. He closes the tab and reopens the map from E-10: everything is there (a floor, six walls and a door, two objects, the GM-only layer). Failure paths: a second tab writing first — « Cette carte a changé » + « Recharger »; a network cut — « Enregistrement impossible, nouvelle tentative… » and the work kept; a resize that leaves an element out — « Des éléments sont hors des nouvelles limites. ».
+4. On the console **element** (E-28, Properties) he links the sheet « Terminal de la passerelle »; at the table a player will open it from the map (E-29). A token is linked in E-29.
+*Highlight*: step 3, the assistant's map that he keeps by hand.
+*Failure*: a player asks the assistant for a map — it answers that this is the GM's, nothing is written; the library lacks a kitchen asset — the answer names it and builds the rest; the assistant is unavailable — no panel, the map is made by hand (step 1); two writes at once — the second says
+« Cette carte a changé » and « Recharger »; the map is full (limits of AD-163) — « Carte pleine »; an asset removed meanwhile — a
+placeholder « Asset retiré » for the GM, absent for players. Removed assets are counted on confirmation (« Utilisé sur 3 cartes »).
+
+### P-28 — Play at the table (Antor, GM; the table display; Léa and Roxane at the table)
+1. **E-29**: he opens the map in play mode; on the TV, **E-30** (opened once on a member account of the universe, the table account) shows « En attente du MJ ».
+2. He shows the map: the display follows his zoom and the layers he chose; the fog hides everything but the entrance; with « Ajouter un pion » he places three tokens (Léa's
+   Mira from her sheet, Roxane's Vox, a guard as a plain disc), gives two of them their owner.
+3. The party opens the door: he reveals the room by painting it; the guard token is shown; he moves it.
+4. At the break he leaves; the next Saturday he reopens the map: tokens and fog are as he left them.
+*Highlight*: step 3, the room that appears on the TV.
+   *Detail of `kanevas-battlemap-table`.* Step 1: « Jouer » in the editor opens E-29 and creates the table; « Écran joueurs » opens E-30 in another window (or the TV's browser), whose account is an ordinary member of the universe. Step 2: with « Vue partagée » on, his zoom is the display's; « Ajouter un pion » ▸ Fiche (« Mira »), Asset, Disque (« Garde »), and « Propriétaire… » on two; the fog is the black ground at the display. Step 3: « Révéler » ▸ Pièce, a click in the room: it appears on the display within two seconds; the guard, in it, is seen; he drags it. Step 4: next Saturday « Jouer » finds the tokens and the fog as left; « Réinitialiser la table… » empties them. A player opening the map from E-10 reads the same revealed map on E-29, and « Suivre le MJ » is on.
+*Failure*: the display is closed — the GM sees « Aucun écran joueur connecté » (not an error); connection lost — the GM's
+screen keeps the map, actions disabled, « Connexion perdue. », and the state resumes on reconnection.
+   *Also in step 3 and 4*: « Masquer » paints the fog back, « Effacer la vue » returns the display to « En attente du MJ », « Ouvrir la fiche » on Mira's token opens her sheet in a side panel, « Lier une fiche… » / « Délier » and « Retirer le pion » edit a token. Other failures: « La partie n'a pas commencé. » (a player or the display before the GM's first « Jouer »), « Cette table a changé » ▸ « Recharger », « Table pleine » at 200 tokens.
+
+### P-29 — Play remotely (Antor, GM; Léa and Roxane, each at home)
+1. Each player opens the map (E-29, player mode) on her phone or computer; she sees what has been revealed and her token.
+2. Léa drags Mira: Roxane and Antor see it move; Léa cannot move the guard.
+3. Antor reveals the corridor: both screens uncover it; he scrolls the shared view and chooses « Suivre le MJ » or not (per
+   player, kept in her browser).
+4. Roxane loses her connection: her screen says so and rejoins by itself, with the current state.
+5. Antor switches « Jeu à distance » off (E-20, the card of `battlemap/cartes`): the players keep following live, their rings and drag go, the line « Seul le MJ déplace les pions. » appears; switched on again, they come back.
+*Failure*: a player who owns no token (or the table account) sees the map and moves nothing, with no hint (remote play on; with it off she sees the line « Seul le MJ déplace les pions. » like everyone); a player moves a token that is not hers — refused, the token goes back, « Ce pion n’est pas à vous. »; a stale
+version — silently refetched; the GM hides the map (E-10) — « Page introuvable. » for the players.
+
 ## Out of scope
 
 - *(`kanevas-synchro`)* **A list of the keys deleted since the import**, as such: refused — a script
@@ -1389,10 +1527,10 @@ format (B-122) and the bodies' settings; the report names the settings that stay
   user **JSON export or import of a design**, **podcasts**, **offline maps**, **hot-loading** third-party code, a
   **generic tool engine**, and the **campaign link** (timeline, public part) deferred to faction turns. A player does not create a sheet
   (existing rule): the GM creates the ship sheet, the player designs as the section author.
-- **Live play**: no initiative, animated combat or fog of war; the table remains
-  physical.
 - *(kanevas-taille-images)* **A free size in pixels, cropping, a caption and a gallery** for the images of a
   text: three standard sizes and three placements cover the need; reopened if a GM asks for more.
+- **Live play**: no initiative or animated combat; the table remains physical. *(Amended by
+  `kanevas-battlemap`: a hand-driven fog of war and a table display are now in, B-105…B-108.)*
 - *(kanevas-scenarios)* **A calendar of sessions** (dates, who was there) and a **play log per
   scenario** (« joué le 12 octobre avec Léa et Mira ») — the status says where an adventure
   stands, not when; reopened if the GM asks for the history of a campaign.
@@ -1439,6 +1577,11 @@ format (B-122) and the bodies' settings; the report names the settings that stay
 - **Calendar or timeline, dice roller, offline use (PWA)**: untriaged.
   Since `kanevas-icones` (AD-135), Kanevas is installable (manifest, icons) but ships **no service worker and no offline cache**: the installed app needs the network, and offline use stays untriaged.
 - **Edit history, export, public sharing.** *(`kanevas-synchro`: a history of writes enters, 90 days of lines and 30 of previous values, B-102, B-103; a whole-universe export by token, B-92; public sharing stays out.)*
+- *(kanevas-battlemap)* **A whole map generated as one image**: the image engine makes assets only (Monsieur, 2026-11-11);
+  **door states (open / closed) and doors that block sight**; **importing Dungeonfog maps** (Monsieur has none; their assets enter the library like any dropped image); **automatic
+  fog** (line of sight, light sources, dynamic lighting): the GM reveals by hand; **initiative, dice, combat rules,
+  measuring and automatic movement ranges**; **maps larger than 200 × 200 cells**; **animated assets and sound**; **exporting
+  or printing** a composed map (the print feature, later); **cross-universe or cross-account libraries**; **voice or video**.
 
 ### P-26 — Hide a system and its elements (Antor, GM; Léa, Player)
 
@@ -1496,6 +1639,11 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 | Each entity serves a journey | tool setting P-17, P-21 · owner P-17 · managed section P-19 · token scope P-20 · catalogues P-17, P-19 · placed systems, routes, zones P-18 · design P-19 — **holds**. |
 | Gaps filled by a written choice | one `swn` module with two tools (AD-121); the galaxy map is a module table (`swn_galaxies`) that E-10 adds to its list, `cartes` does not change (AD-122); owner of a system created before the epic: any attached GM, since the creator is not stored; no real dependency between the two tools (the mechanism is exercised with a trial module); the GM document: a sheet chosen or created from E-21; a player sees all non-secret systems (no per-player “known systems”); the engine for a journey is chosen in the tool; who creates a ship (the GM creates the sheet, the player designs if they are its author: “a player does not create a sheet” rule retained); E-22 in two states (list, workshop); caching a block according to reading level ([TO VERIFY], AD-132). Tests on real data run in pods, never in CI (Monsieur's decision, 2026-10-16). |
 
+## Cross-check of the `kanevas-battlemap` framing
+
+- Each need has a journey: B-96, B-97, B-98, B-99, B-100 → P-26; B-101…B-104 → P-27; B-105…B-107, B-109 → P-28; B-108, B-109 → P-29; B-110 → P-21 (tool removal), P-26.
+- Each human gesture has a screen: library E-25; art direction E-26; batch E-27; editor E-28; GM play E-29 (and player play); table display E-30; the creation entry is E-10; tool enabling is E-20; the assistant (B-98, B-100, B-103) is E-12.
+- Each role has its column: GM everything; player reads the library, plays the tokens that are his (E-29 player mode) and reads E-30; the instance admin and a non-member see nothing.
 ## Cross-check of the `kanevas-carte-spatiale` scoping
 
 | Check | Result |

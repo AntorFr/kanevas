@@ -6,8 +6,10 @@ import { lire, useConnexionPerdue } from '../../../api';
 import { chargerModule } from '../../../wasm/charger';
 import { Alerte, Bouton, BoutonIcone, Case, useToasts } from '../../../ui';
 import { APPUI_LONG_MS, DELAI_FLECHES_MS, pasFleche } from '../../../ui/glisser';
-import { centresNuage, coteDemande, disposer, grainsAnneau, placeApresPas, placeDepuisPoint, PORTEE_COURONNE, queuesComete, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
+import { centresNuage, coteDemande, ECART_FLECHE_PX, libelleDistance, pointsDeSaut, dimensionsCorps, disposer, grainsAnneau, orbitesAstres, placeApresPas, placeDepuisPoint, PORTEE_COURONNE, queuesComete, RAYON_MIN_PX, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
+import { typeDeRoute, type FamilleRoute } from './type-route';
 import { Sprites, dessineurDuCoeur } from './carte-sprites';
+import { chargerClasses, cleSprite, eclairages, type Eclairage } from './lumiere-corps';
 import { placerEtiquettes, type CorpsEtiquette, type EtiquettePlacee, type Obstacle } from './etiquettes';
 import { lireEchecEdition, useEdition, type EchecEdition } from './Edition';
 import { COTE_MARQUE, placerMarques } from './elements-geometrie';
@@ -21,6 +23,15 @@ export const ZOOM_MAX = 4;
 const PAS = 1.5;
 const POLICE = '12px';
 const HAUTEUR_ETIQUETTE = 15;
+/** A jump arrow's disc for the labels (it is 14 × 12 px) and the longest name a jump label carries. */
+const RAYON_FLECHE = 9;
+// Gap (px) from the hour circle to the centre of its mark: past the arrow of a jump point (12 px high) when the circle is the transition's.
+const DECALAGE_REPERE_PX = 14;
+const DECALAGE_REPERE_SORTIE_PX = 26;
+// Room kept round the fitted view when the transition dominates, so the hour marks and the exit labels stay inside the sky.
+const RESERVE_TRANSITION_PX = 30;
+const NOM_SORTIE_MAX = 24;
+const coupeNom = (nom: string) => ([...nom].length > NOM_SORTIE_MAX ? `${[...nom].slice(0, NOM_SORTIE_MAX - 1).join('').trimEnd()}…` : nom);
 /** A body waiting for the server's answer is dimmed by opacity alone (charte, drag gesture). */
 const OPACITE_ENVOI = 0.4;
 /** A finger that moves this far (px) before the long press is over is panning the view. */
@@ -34,6 +45,8 @@ export interface CroquisCarte {
   sorties: { q: number; r: number; heure: number }[];
 }
 declare global { interface Window { __carteSysteme?: () => CroquisCarte } }
+
+interface SortieDessinee { q: number; r: number; x: number; y: number; cap: number; distance: number; nom: string; type: string; famille: FamilleRoute }
 
 type Etat = 'chargement' | 'pret' | 'indisponible';
 
@@ -145,11 +158,19 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     return () => o.disconnect();
   }, [etat]);
 
-  const ajuste = dispo && taille.w > 0 ? Math.min(taille.w, taille.h) / 2 / (etendue * 1.12) : 1;
+  const ajuste = dispo && taille.w > 0 ? Math.max(8, Math.min(taille.w, taille.h) / 2 - (dispo.transition > 0 && dispo.transition >= etendue ? RESERVE_TRANSITION_PX : 0)) / (etendue * 1.12) : 1;
   const echelle = ajuste * vue.zoom;
+  // Radius and sprite side in screen pixels: from the fit only, so a body keeps its size at every zoom (AD-echelle-1).
+  const dims = useMemo(() => (dispo ? dimensionsCorps(dispo.corps, ajuste) : new Map<string, { rayon: number; cote: number }>()), [dispo, ajuste]);
+  const dimDe = (cle: string) => dims.get(cle) ?? { rayon: RAYON_MIN_PX, cote: 2 * RAYON_MIN_PX };
   const cx = taille.w / 2 + vue.dx;
   const cy = taille.h / 2 + vue.dy;
   const ecran = useCallback((x: number, y: number): [number, number] => [cx + x * echelle, cy + y * echelle], [cx, cy, echelle]);
+
+  // The light of each body (E-23): the angle toward its star and that star's colour, once the core's class colours are read.
+  const [classesLues, setClassesLues] = useState(false);
+  useEffect(() => { void chargerClasses().then(() => setClassesLues(true)); }, []);
+  const lumieres = useMemo(() => (dispo && classesLues ? eclairages(dispo.corps) : new Map<string, Eclairage>()), [dispo, classesLues]);
 
   // Sprites: the blurred version of every body at once, the sharp one once the zoom has settled.
   const sprites = useRef<Sprites | null>(null);
@@ -161,12 +182,15 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   useEffect(() => {
     if (!dispo || taille.w === 0) return;
     const demander = () => {
-      for (const c of dispo.corps) sprites.current?.demander(c.cle, c.aspect, coteDemande(c.cote * echelle, dpr));
+      for (const c of dispo.corps) {
+        const e = lumieres.get(c.cle);
+        sprites.current?.demander(cleSprite(c.cle, e), c.aspect, coteDemande(dimDe(c.cle).cote, dpr), e?.angle, e?.lumiere);
+      }
     };
     // First pass at once (the blurred versions come first in the queue); later zooms wait for the gesture to settle.
     const t = setTimeout(demander, 0);
     return () => clearTimeout(t);
-  }, [dispo, taille.w, echelle, dpr]);
+  }, [dispo, taille.w, dims, dpr, lumieres]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // Labels.
   const mesureur = useMemo(() => {
@@ -178,18 +202,15 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
 
   // The marks of the elements the reader reads (the answer holds no other), placed on their orbit or around their body.
   const marques = useMemo(
-    () => (dispo && plan ? placerMarques(affiche.elements ?? [], dispo.corps, plan, ecran, echelle) : []),
-    [dispo, plan, affiche, ecran, echelle],
+    () => (dispo && plan ? placerMarques(affiche.elements ?? [], dispo.corps, plan, ecran, echelle, new Map([...dims].map(([k, v]) => [k, v.rayon]))) : []),
+    [dispo, plan, affiche, ecran, echelle, dims],
   );
 
   const cibles = useMemo(() => {
-    if (!dispo) return { liste: [] as CorpsEtiquette[], sorties: [] as { q: number; r: number; x: number; y: number; nom: string }[] };
+    if (!dispo) return { liste: [] as CorpsEtiquette[], sorties: [] as SortieDessinee[] };
     const liste: CorpsEtiquette[] = dispo.corps.map((c) => {
       const [x, y] = ecran(c.x, c.y);
-      const rayon = Math.max(4, c.rayon * echelle);
-      // A star's glow is drawn out to ~0.9 of its sprite's half-side: a label does not sit on it.
-      const halo = c.astre.genre === 'etoile' ? Math.max(rayon, (c.cote * echelle) / 2 * PORTEE_COURONNE) : undefined;
-      return { cle: c.cle, genre: c.genre, nom: nomAstre(c.astre), x, y, rayon, ...(halo ? { halo } : {}) };
+      return { cle: c.cle, genre: c.genre, nom: nomAstre(c.astre), x, y, rayon: dimDe(c.cle).rayon };
     });
     for (const z of dispo.zones) {
       const [x, y] = ecran(z.ancre[0], z.ancre[1]);
@@ -201,14 +222,16 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
       const visible = !sobre || m.cle === selectionElement;
       liste.push({ cle: `element:${m.cle}`, genre: 'element', nom: visible ? nomElement(m.element) : '', x: m.x, y: m.y, rayon: COTE_MARQUE / 2 });
     }
-    const ex = planRef.current && dispo.transition > 0
-      ? sorties.map((s) => {
-        const [wx, wy] = planRef.current!(dispo.transition, s.heure);
-        const [x, y] = ecran(wx, wy);
-        return { q: s.q, r: s.r, x, y, nom: s.nom && s.nom !== '' ? s.nom : `Système sans nom (${s.q}, ${s.r})` };
-      })
+    const [hx, hy] = ecran(0, 0);
+    const ex: SortieDessinee[] = dispo.transition > 0
+      ? pointsDeSaut(sorties, dispo.transition * echelle, ECART_FLECHE_PX).map((p) => ({
+        q: p.q, r: p.r, x: hx + p.x, y: hy + p.y, cap: p.cap, distance: p.distance,
+        nom: p.nom && p.nom !== '' ? p.nom : `Système sans nom (${p.q}, ${p.r})`,
+        type: (p.type_lien ?? '').trim(), famille: typeDeRoute(p.type_lien),
+      }))
       : [];
-    for (const e of ex) liste.push({ cle: `sortie:${e.q},${e.r}`, genre: 'comete', nom: e.nom, x: e.x, y: e.y, rayon: 7 });
+    if (dispo.transition > 0) liste.push({ cle: 'zone:transition', genre: 'zone', nom: 'Zone de transition', x: hx - dispo.transition * echelle * Math.SQRT1_2, y: hy - dispo.transition * echelle * Math.SQRT1_2, rayon: 0 });
+    for (const e of ex) liste.push({ cle: `sortie:${e.q},${e.r}`, genre: 'comete', nom: `${coupeNom(e.nom)} · ${libelleDistance(e.distance)}`, x: e.x, y: e.y, rayon: RAYON_FLECHE, entier: true });
     return { liste, sorties: ex };
   }, [dispo, ecran, echelle, sorties, marques, taille.w, selectionElement]);
 
@@ -219,21 +242,25 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     if (!dispo || !p) return liste;
     const [cx, cy] = ecran(0, 0);
     if (dispo.transition > 0) liste.push({ type: 'anneau', x: cx, y: cy, rayon: dispo.transition * echelle });
+    for (const e of cibles.sorties) liste.push({ type: 'disque', x: e.x, y: e.y, rayon: RAYON_FLECHE });
     for (const c of dispo.corps) {
-      if (c.genre !== 'comete') continue;
       const [x, y] = ecran(c.x, c.y);
-      liste.push(...queuesComete(x, y, c.cote * echelle, c.astre.aspect));
+      // A star's glow is drawn out to ~0.9 of its sprite's half-side: a label does not sit on it (an obstacle, never part of the radius).
+      if (c.astre.genre === 'etoile') liste.push({ type: 'disque', x, y, rayon: dimDe(c.cle).cote / 2 * PORTEE_COURONNE });
+      if (c.genre !== 'comete') continue;
+      liste.push(...queuesComete(x, y, dimDe(c.cle).cote, c.astre.aspect));
     }
     if (heures) {
       const rh = Math.max(dispo.transition, 3 * U);
+      const decalageRepere = dispo.transition >= 3 * U ? DECALAGE_REPERE_SORTIE_PX : DECALAGE_REPERE_PX;
       for (let h = 0; h < 12; h += 3) {
-        const [tx, ty] = ecran(...p(rh + 14 / Math.max(echelle, 0.01), h));
+        const [tx, ty] = ecran(...p(rh + decalageRepere / Math.max(echelle, 0.01), h));
         const m = mesureur(`${h === 0 ? 12 : h} h`);
         liste.push({ type: 'rect', x: tx - m.largeur / 2, y: ty - m.hauteur / 2, largeur: m.largeur, hauteur: m.hauteur });
       }
     }
     return liste;
-  }, [dispo, ecran, echelle, heures, mesureur, plan]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [dispo, ecran, echelle, heures, mesureur, plan, dims, cibles.sorties]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const etiquettes = useMemo(
     () => (taille.w > 0 ? placerEtiquettes(cibles.liste, { largeur: taille.w, hauteur: taille.h, zoom: vue.zoom }, mesureur, obstacles) : []),
@@ -280,16 +307,16 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
       const maintenant = performance.now();
       for (const c of dispo.corps) {
         const [x, y] = ecran(c.x, c.y);
-        const cote = c.cote * echelle;
+        const cote = dimDe(c.cle).cote;
         if (x + cote < 0 || y + cote < 0 || x - cote > taille.w || y - cote > taille.h) continue;
-        for (const { image: im, alpha } of sprites.current?.couches(c.cle, coteDemande(cote, dpr), maintenant) ?? []) {
+        for (const { image: im, alpha } of sprites.current?.couches(cleSprite(c.cle, lumieres.get(c.cle)), coteDemande(cote, dpr), maintenant) ?? []) {
           g.globalAlpha = enEnvoiRef.current.has(c.cle) ? alpha * OPACITE_ENVOI : alpha;
           g.drawImage(im, x - cote / 2 + c.decalage[0] * cote, y - cote / 2 + c.decalage[1] * cote, cote, cote);
         }
         g.globalAlpha = 1;
         if (c.cle === selection) {
           g.strokeStyle = jeton.accent; g.lineWidth = 2;
-          g.beginPath(); g.arc(x, y, Math.max(8, c.rayon * echelle + 5), 0, 7); g.stroke();
+          g.beginPath(); g.arc(x, y, Math.max(8, dimDe(c.cle).rayon + 5), 0, 7); g.stroke();
         }
       }
       if (sprites.current?.enFondu(performance.now())) image = requestAnimationFrame(tracer);
@@ -470,7 +497,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   useEffect(() => {
     window.__carteSysteme = () => ({
       pret: etat === 'pret' && taille.w > 0, largeur: taille.w, hauteur: taille.h, zoom: vueRef.current.zoom, decalage: [vueRef.current.dx, vueRef.current.dy],
-      corps: cibles.liste.map((c) => ({ cle: c.cle, genre: c.genre, x: c.x, y: c.y, rayon: c.rayon })),
+      corps: cibles.liste.filter((c) => c.cle !== 'zone:transition').map((c) => ({ cle: c.cle, genre: c.genre, x: c.x, y: c.y, rayon: dimDe(c.cle).rayon })),
       etiquettes,
       sorties: sorties.map((s) => ({ q: s.q, r: s.r, heure: s.heure })),
     });
@@ -481,13 +508,8 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     return <Alerte>La carte ne peut pas s’afficher ici.</Alerte>;
   }
 
-  const orbitesTracees = dispo
-    ? Array.from({ length: Math.min(40, Math.max(1, Math.ceil(Math.max(
-      ...interieur.astres.map((a) => (typeof a.orbite === 'number' ? a.orbite : 0)),
-      ...interieur.formations.map((f) => Number(f.forme === 'anneau' ? f.parametres.a : f.parametres.orbite) || 0),
-      Number(interieur.transition) || 0,
-    ) - 0.3))) }, (_, i) => i + 1)
-    : [];
+  // One ring per body, at its own orbit (a moon around its planet): AD-echelle-1.
+  const anneaux = dispo ? orbitesAstres(dispo) : [];
   const rayonHeures = dispo ? Math.max(dispo.transition, 3 * U) : 0;
   const pointHeure = (h: number, r: number): [number, number] => { const p = planRef.current; return p ? ecran(...p(r, h)) : [0, 0]; };
   const [ccx, ccy] = ecran(0, 0);
@@ -522,31 +544,43 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
         {dispo && taille.w > 0 && (
           <>
             <svg className="cs-traits" width={taille.w} height={taille.h} aria-hidden="true">
-              {orbites && orbitesTracees.map((o) => (
-                <circle key={o} className="cs-orbite" cx={ccx} cy={ccy} r={rayonOrbite(o) * echelle} />
-              ))}
+              {orbites && anneaux.map((o) => {
+                const [ox, oy] = ecran(o.cx, o.cy);
+                return <circle key={o.cle} className="cs-orbite" data-cle={o.cle} cx={Math.round(ox)} cy={Math.round(oy)} r={o.rayon * echelle} />;
+              })}
               {heures && Array.from({ length: 12 }, (_, h) => {
                 const [x1, y1] = pointHeure(h, 0);
                 const [x2, y2] = pointHeure(h, rayonHeures);
-                const [tx, ty] = pointHeure(h, rayonHeures + 14 / Math.max(echelle, 0.01));
+                const [tx, ty] = pointHeure(h, rayonHeures + (dispo.transition >= 3 * U ? DECALAGE_REPERE_SORTIE_PX : DECALAGE_REPERE_PX) / Math.max(echelle, 0.01));
                 return (
                   <g key={h} className="cs-heure" data-heure={h}>
                     <line x1={x1} y1={y1} x2={x2} y2={y2} />
-                    {h % 3 === 0 && <text x={tx} y={ty} textAnchor="middle" dominantBaseline="middle">{h === 0 ? 12 : h} h</text>}
+                    {h % 3 === 0 && <text x={Math.round(tx)} y={Math.round(ty)} textAnchor="middle" dominantBaseline="middle">{h === 0 ? 12 : h} h</text>}
                   </g>
                 );
               })}
-              {dispo.transition > 0 && <circle className="cs-transition" cx={ccx} cy={ccy} r={dispo.transition * echelle} />}
+              {dispo.transition > 0 && (
+                <>
+                  <defs>
+                    <radialGradient id="cs-halo-degrade" cx="50%" cy="50%" r="50%">
+                      <stop offset="66.7%" style={{ stopColor: 'var(--accent)', stopOpacity: 0 }} />
+                      <stop offset="100%" style={{ stopColor: 'var(--accent)', stopOpacity: 0.22 }} />
+                    </radialGradient>
+                  </defs>
+                  <circle className="cs-halo" cx={ccx} cy={ccy} r={dispo.transition * echelle} fill="url(#cs-halo-degrade)" />
+                  <circle className="cs-transition" cx={ccx} cy={ccy} r={dispo.transition * echelle} />
+                </>
+              )}
             </svg>
             <canvas ref={toile} className="cs-toile" aria-hidden="true"
               width={Math.round(taille.w * dpr)} height={Math.round(taille.h * dpr)} style={{ width: taille.w, height: taille.h }} />
             {dispo.corps.map((c) => (
-              <BoutonCorps key={c.cle} c={c} ecran={ecran} echelle={echelle} choisi={c.cle === selection} onChoisir={() => onSelection(c.cle)}
+              <BoutonCorps key={c.cle} c={c} rayon={dimDe(c.cle).rayon} ecran={ecran} choisi={c.cle === selection} onChoisir={() => onSelection(c.cle)}
                 glissable={mj && !perdue && deplacable(c.astre)} />
             ))}
             {dispo.corps.filter((c) => enEnvoi.has(c.cle)).map((c) => {
               const [x, y] = ecran(c.x, c.y);
-              return <span key={c.cle} className="cs-enregistrement" style={{ left: x, top: y + Math.max(10, c.rayon * echelle) + 4 }}>Enregistrement…</span>;
+              return <span key={c.cle} className="cs-enregistrement" style={{ left: x, top: y + Math.max(10, dimDe(c.cle).rayon) + 4 }}>Enregistrement…</span>;
             })}
             {marques.map((m) => (
               <MarqueElement key={m.cle} cle={m.cle} x={m.x} y={m.y} icone={m.element.aspect.icone} couleur={m.element.aspect.couleur}
@@ -558,15 +592,21 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
               <button
                 key={`${s.q},${s.r}`}
                 type="button"
-                className="cs-sortie"
+                className={`cs-sortie ${s.famille}`}
+                data-famille={s.famille}
                 style={{ left: s.x, top: s.y }}
-                aria-label={`Aller au système ${s.nom}`}
+                aria-label={`Aller au système ${s.nom}, ${libelleDistance(s.distance)}${s.type ? `, route ${s.type}` : ''}`}
+                title={s.type || undefined}
                 onClick={() => navigate(`${adresseVoisin}${s.q}/${s.r}${suffixe}`)}
-              />
+              >
+                <svg width="14" height="12" viewBox="0 0 14 12" aria-hidden="true" style={{ transform: `rotate(${s.cap}rad)` }}>
+                  <polygon points="7,0 14,12 7,9 0,12" />
+                </svg>
+              </button>
             ))}
             {etiquettes.filter((e) => e.visible).map((e) => (
               <span key={e.cle} className={`cs-etiquette${e.cle.startsWith('zone:') ? ' zone' : e.cle.startsWith('sortie:') ? ' sortie' : e.cle.startsWith('element:') ? ' element' : ''}`}
-                data-cle={e.cle} style={{ left: e.x, top: e.y }}>{e.texte}</span>
+                data-cle={e.cle} style={{ left: Math.round(e.x), top: Math.round(e.y) }}>{e.texte}</span>
             ))}
           </>
         )}
@@ -581,11 +621,11 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   );
 }
 
-function BoutonCorps({ c, ecran, echelle, choisi, onChoisir, glissable }: {
-  c: CorpsPlace; ecran: (x: number, y: number) => [number, number]; echelle: number; choisi: boolean; onChoisir: () => void; glissable: boolean;
+function BoutonCorps({ c, rayon, ecran, choisi, onChoisir, glissable }: {
+  c: CorpsPlace; rayon: number; ecran: (x: number, y: number) => [number, number]; choisi: boolean; onChoisir: () => void; glissable: boolean;
 }) {
   const [x, y] = ecran(c.x, c.y);
-  const d = Math.max(22, c.rayon * echelle * 2);
+  const d = Math.max(22, rayon * 2);
   return (
     <button
       type="button"

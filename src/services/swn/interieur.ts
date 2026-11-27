@@ -19,6 +19,7 @@ import { fusionSurcharges, surchargesDe } from './catalogue-aspects.js';
 interface Coeur {
   tirer_systeme(q: number, r: number, taille: number, lettre: string, version: number, valeurs: string): string;
   transition_defaut(astres: string, formations: string): number;
+  graine_de(cle_systeme: string, cle_corps: string): number;
 }
 
 // Loaded once at import so that the service stays synchronous; a failed load makes every read throw the generic error.
@@ -130,8 +131,8 @@ export function lireInterieur(
 ): InterieurVue {
   const { galaxie, niveau } = galaxieLisible(db, acteur, universId, galaxieId);
   if (!Number.isSafeInteger(q) || !Number.isSafeInteger(r)) throw introuvable();
-  const ligne = db.prepare('SELECT id, nom, transition FROM swn_systemes WHERE galaxie_id = ? AND q = ? AND r = ?')
-    .get(galaxie.id, q, r) as { id: number; nom: string; transition: number | null } | undefined;
+  const ligne = db.prepare('SELECT id, cle, nom, transition FROM swn_systemes WHERE galaxie_id = ? AND q = ? AND r = ?')
+    .get(galaxie.id, q, r) as { id: number; cle: string; nom: string; transition: number | null } | undefined;
   if (ligne) {
     if (!systemeLisible(db, acteur, ligne.id)) throw introuvable();
     const lignesAstres = db.prepare(`SELECT a.cle, a.genre, p.cle AS parent_cle, a.etoile_rang, a.type, a.nom, a.orbite, a.heure,
@@ -155,7 +156,7 @@ export function lireInterieur(
       ...el, aspect: aspectLu(el.genre, aspect), fiche: fiches.get(fiche_id ?? -1) ?? null,
       ...(description ? { description } : {}), reserve: estReserve({ reserve }),
     }));
-    const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, avecAspectEffectif(db, galaxie.id, astres), formations, reglagesDe(db, galaxie.id).versionGenerateur, elements);
+    const vue = composer(q, r, ligne.nom, 'defini', ligne.transition, avecAspectEffectif(db, galaxie.id, astres, ligne.cle), formations, reglagesDe(db, galaxie.id).versionGenerateur, elements);
     return niveau === 'mj' ? ouvrirEcriture(vue, ligneVersion(db, ligne.id)) : sansJetons(vue);
   }
   // No row: the star must be the one the block's draw holds at (q, r), with the exclusions of every reader.
@@ -166,9 +167,15 @@ export function lireInterieur(
 }
 
 /** Each body with its effective aspect (AD-reglages-6): the galaxy's override of its type under its own aspect. */
-function avecAspectEffectif(db: Db, galaxieId: number, astres: AstreVue[]): AstreVue[] {
+function avecAspectEffectif(db: Db, galaxieId: number, astres: AstreVue[], cleSysteme?: string): AstreVue[] {
   const surcharges = surchargesDe(db, galaxieId);
-  return astres.map((a) => ({ ...a, aspect: fusionSurcharges(surcharges, a.type, a.aspect) }));
+  return astres.map((a) => {
+    const aspect = fusionSurcharges(surcharges, a.type, a.aspect);
+    // A defined body without a seed (a row older than the slice, a body made on a screen) is drawn with the seed the import
+    // would have written, filled in here at the read and never stored (AD-aspects-socle-2): one body, one picture for every reader.
+    if (cleSysteme !== undefined && aspect.graine === undefined) return { ...a, aspect: { ...aspect, graine: leCoeur().graine_de(cleSysteme, a.cle) } };
+    return { ...a, aspect };
+  });
 }
 
 /**

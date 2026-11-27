@@ -32,14 +32,29 @@ export function placeApresPas(orbite: number | null, heure: number, pas: { orbit
   };
 }
 
-const RAYON_MIN = 5;
-const RAYON_MAX = 64;
-/** Disc radius of a body in world pixels, from its `taille` (an orbit-unit radius): bounded so no body hides the map. */
-export const rayonCorps = (a: Pick<AstreSysteme, 'taille' | 'genre'>): number =>
-  Math.min(RAYON_MAX, Math.max(RAYON_MIN, (Number.isFinite(a.taille) ? a.taille : 0.1) * U * 4.5));
+/** Smallest radius of a body on screen, in pixels (AD-echelle-1): it wins over the half-spacing. */
+export const RAYON_MIN_PX = 3;
+/** Radius of a body per unit of `taille × U × ajuste` (the factor the map used before the scale). */
+export const K_CORPS = 4.5;
+/** A star's disc is this part of the brute radius of a planet of the same size. */
+export const ETOILE_FACTEUR = 0.35;
+/** Distance of the first moon from its planet, and the step between two moons, in world units (AD-echelle-1). */
+export const DISTANCE_LUNE_0 = 0.6 * U;
+export const PAS_LUNE = 0.25 * U;
+
+/** World distance of the moon of this rank (0, 1…) from its planet: it reads the rank only, never a radius. */
+export const distanceLune = (rang: number): number => DISTANCE_LUNE_0 + PAS_LUNE * rang;
+
+/** Radius in screen pixels of a body, the same at every zoom: `ecartOrbite` is the spacing in fitted-view pixels (`ecartMonde × ajuste`),
+ *  `taille` the body's `taille` (an orbit-unit radius), `ajuste` the fit. The floor wins over half the spacing. */
+export function rayonAstre(taille: number, ecartOrbite: number, genre: GenreCorps, ajuste = 1): number {
+  const brute = (Number.isFinite(taille) ? taille : 0.1) * U * ajuste * K_CORPS;
+  const voulu = genre === 'etoile' || genre === 'compagne' ? ETOILE_FACTEUR * brute : brute;
+  return Math.max(RAYON_MIN_PX, Math.min(ecartOrbite / 2, voulu));
+}
 
 /** Part of the half-side of a sprite that the disc of its family takes (see the renderer): the rest is atmosphere or corona. */
-function fraction(a: AstreSysteme): number {
+export function fraction(a: AstreSysteme): number {
   if (a.genre === 'etoile') return 0.4;
   if (a.genre === 'comete') return 0.35;
   if (a.type === 'anomalie' || a.type === 'nebuleuse' || a.type === 'ceinture' || a.type === 'asteroides') return 0.8;
@@ -53,9 +68,9 @@ function decalageDe(a: AstreSysteme): [number, number] {
   return [-sens * 0.3, 0.22];
 }
 
-/** A body placed in the world. `cote` is the side of its sprite in world pixels. */
+/** A body placed in the world (positions only: the screen radius and the sprite side are computed from the fit, `dimensionsCorps`). */
 export interface CorpsPlace {
-  cle: string; genre: GenreCorps; nom: string | null; astre: AstreSysteme; x: number; y: number; rayon: number; cote: number;
+  cle: string; genre: GenreCorps; nom: string | null; astre: AstreSysteme; x: number; y: number;
   /** The aspect JSON `dessiner` takes (the same object the illustration route draws, AD-carte-2). */
   aspect: string;
   /** Shift of the sprite from the body's centre, as a fraction of its side (a comet's head is not at the middle of its picture). */
@@ -83,8 +98,7 @@ export function disposer(s: InterieurSysteme, plan: Plan): Disposition {
   const corps: CorpsPlace[] = [];
   const parCle = new Map<string, CorpsPlace>();
   const place = (a: AstreSysteme, x: number, y: number) => {
-    const rayon = rayonCorps(a);
-    const c: CorpsPlace = { cle: a.cle, genre: genreDe(a), nom: a.nom, astre: a, x, y, rayon, cote: (rayon * 2) / fraction(a), aspect: aspectDe(a), decalage: decalageDe(a) };
+    const c: CorpsPlace = { cle: a.cle, genre: genreDe(a), nom: a.nom, astre: a, x, y, aspect: aspectDe(a), decalage: decalageDe(a) };
     corps.push(c);
     parCle.set(a.cle, c);
   };
@@ -101,8 +115,7 @@ export function disposer(s: InterieurSysteme, plan: Plan): Disposition {
     const mere = a.parent_cle === null ? undefined : parCle.get(a.parent_cle);
     const k = rang.get(a.parent_cle ?? '') ?? 0;
     rang.set(a.parent_cle ?? '', k + 1);
-    const r = rayonCorps(a);
-    const [dx, dy] = plan((mere ? mere.rayon : 0) + r + 9 + 11 * k, num(a.heure));
+    const [dx, dy] = plan(distanceLune(k), num(a.heure));
     place(a, (mere?.x ?? 0) + dx, (mere?.y ?? 0) + dy);
   }
   // Keep the answer's order (the list's order, and the keyboard's).
@@ -122,7 +135,7 @@ export function disposer(s: InterieurSysteme, plan: Plan): Disposition {
 
   const transition = rayonOrbite(Math.max(0, num(s.transition, 0)));
   let etendue = Math.max(transition, 3 * U);
-  for (const c of corps) etendue = Math.max(etendue, Math.hypot(c.x, c.y) + c.rayon);
+  for (const c of corps) etendue = Math.max(etendue, Math.hypot(c.x, c.y));
   // An element by orbit and hour extends the system as a body does; one on a body is already inside it.
   for (const e of s.elements ?? []) if (e.sur === null) etendue = Math.max(etendue, rayonOrbite(Math.max(0, num(e.orbite))) + 14);
   for (const z of zones) {
@@ -206,3 +219,123 @@ export function queuesComete(x: number, y: number, cote: number, aspect: Record<
     queue(angleGaz - sens * courb * 0.3, long * 0.85, ouv * 1.1, courb * 0.9),
   ];
 }
+
+/** The spacing, in world units, a body has to its neighbours (AD-echelle-1): for a body hung on the centre the smallest gap to another
+ *  distinct orbit radius (two bodies on one radius are not neighbours; the central star counts as radius 0); alone, its own orbit radius;
+ *  a moon's is `PAS_LUNE`; a planet with moons is capped at `U` so its radius stays under the first moon. */
+export function ecartsOrbites(corps: readonly CorpsPlace[]): Map<string, number> {
+  const rayonDe = (c: CorpsPlace) => (c.genre === 'etoile' ? 0 : rayonOrbite(Math.max(0, num(c.astre.orbite))));
+  const centre = corps.filter((c) => c.astre.genre !== 'lune');
+  const rayons = centre.map(rayonDe);
+  const avecLunes = new Set(corps.filter((c) => c.astre.genre === 'lune' && c.astre.parent_cle !== null).map((c) => c.astre.parent_cle));
+  const out = new Map<string, number>();
+  centre.forEach((c, i) => {
+    let ecart = Infinity;
+    for (const r of rayons) { const d = Math.abs(r - rayons[i]!); if (d > 1e-9 && d < ecart) ecart = d; }
+    if (!Number.isFinite(ecart)) ecart = rayons[i]!;
+    out.set(c.cle, avecLunes.has(c.cle) ? Math.min(ecart, U) : ecart);
+  });
+  for (const c of corps) if (c.astre.genre === 'lune') out.set(c.cle, PAS_LUNE);
+  return out;
+}
+
+/** Radius (screen pixels, the same at every zoom) and sprite side of every body, from the fit `ajuste` of the whole system. */
+export function dimensionsCorps(corps: readonly CorpsPlace[], ajuste: number): Map<string, { rayon: number; cote: number }> {
+  const ecarts = ecartsOrbites(corps);
+  const out = new Map<string, { rayon: number; cote: number }>();
+  for (const c of corps) {
+    const rayon = rayonAstre(c.astre.taille, (ecarts.get(c.cle) ?? 0) * ajuste, c.genre, ajuste);
+    out.set(c.cle, { rayon, cote: (rayon * 2) / fraction(c.astre) });
+  }
+  return out;
+}
+
+/** An orbit ring, in world units: its centre (a moon's is its planet) and its radius. */
+export interface AnneauOrbite { cle: string; cx: number; cy: number; rayon: number }
+
+/** One ring per body that has an orbit: at its own radius around the centre, a moon at `distanceLune(rang)` around its planet. */
+export function orbitesAstres(d: Disposition): AnneauOrbite[] {
+  const parCle = new Map(d.corps.map((c) => [c.cle, c]));
+  const rang = new Map<string, number>();
+  const out: AnneauOrbite[] = [];
+  for (const c of d.corps) {
+    if (c.astre.genre === 'lune') {
+      const cleMere = c.astre.parent_cle ?? '';
+      const k = rang.get(cleMere) ?? 0;
+      rang.set(cleMere, k + 1);
+      const mere = parCle.get(cleMere);
+      out.push({ cle: c.cle, cx: mere?.x ?? 0, cy: mere?.y ?? 0, rayon: distanceLune(k) });
+    } else if (c.genre !== 'etoile') {
+      out.push({ cle: c.cle, cx: 0, cy: 0, rayon: rayonOrbite(Math.max(0, num(c.astre.orbite))) });
+    }
+  }
+  return out;
+}
+
+/** Minimum distance, in screen pixels along the circle, between two jump arrows (AD-sorties-2). */
+export const ECART_FLECHE_PX = 16;
+
+/** A jump point: the exit, its heading (radians, 12 at the top, clockwise: the exit's real hour) and the place of its arrow on the circle. */
+export type PointDeSaut<S extends { q: number; r: number; heure: number }> = S & { cap: number; x: number; y: number };
+
+/**
+ * Where the arrows of a system's exits sit on a circle of `rayonPx` around the origin (AD-sorties-2). The heading is
+ * `heure / 12 · 2π` and never moves; the place is the heading's, except that two places closer than `ecartPx` along the
+ * circle are pushed apart symmetrically by the smallest angle that restores the gap (a chain of three or more as one group).
+ * Pure; the result is ordered by `heure` then `(q, r)`, whatever the order of the input.
+ */
+export function pointsDeSaut<S extends { q: number; r: number; heure: number }>(sorties: readonly S[], rayonPx: number, ecartPx: number): PointDeSaut<S>[] {
+  const tri = [...sorties].sort((a, b) => a.heure - b.heure || a.q - b.q || a.r - b.r);
+  const n = tri.length;
+  const TOUR = 2 * Math.PI;
+  const caps = tri.map((s) => (s.heure / 12) * TOUR);
+  const pas = rayonPx > 0 ? ecartPx / rayonPx : 0;
+  const EPS = 1e-9;
+  let angles = caps.map((c) => ((c % TOUR) + TOUR) % TOUR);
+  if (n > 1 && pas > 0 && pas * n < TOUR) {
+    // Start the walk after the widest gap, so that no group straddles the origin of the angles.
+    const ordre = angles.map((_, i) => i).sort((i, j) => angles[i]! - angles[j]! || i - j);
+    let debut = 0;
+    let plus = -1;
+    ordre.forEach((idx, k) => {
+      const suivant = ordre[(k + 1) % n]!;
+      const g = (angles[suivant]! - angles[idx]! + TOUR) % TOUR || (n === 1 ? TOUR : 0);
+      if (g > plus + EPS) { plus = g; debut = (k + 1) % n; }
+    });
+    const lin = ordre.map((_, k) => ordre[(debut + k) % n]!);
+    const base = angles[lin[0]!]!;
+    const a = lin.map((i) => (angles[i]! - base + TOUR) % TOUR);
+    let groupes: number[][] = [];
+    a.forEach((v, k) => {
+      const g = groupes[groupes.length - 1];
+      if (g && v - a[g[g.length - 1]!]! < pas - EPS) g.push(k); else groupes.push([k]);
+    });
+    const poser = (g: number[]): number[] => {
+      const m = g.reduce((s, k, j) => s + a[k]! - j * pas, 0) / g.length;
+      return g.map((_, j) => m + j * pas);
+    };
+    for (;;) {
+      const pos = groupes.map(poser);
+      let fusion = -1;
+      for (let k = 0; k + 1 < groupes.length; k++) {
+        if (pos[k + 1]![0]! - pos[k]![pos[k]!.length - 1]! < pas - EPS) { fusion = k; break; }
+      }
+      if (fusion < 0) {
+        const nouveaux = [...angles];
+        groupes.forEach((g, k) => g.forEach((idx, j) => { nouveaux[lin[idx]!] = (((base + pos[k]![j]!) % TOUR) + TOUR) % TOUR; }));
+        angles = nouveaux;
+        break;
+      }
+      groupes = [...groupes.slice(0, fusion), [...groupes[fusion]!, ...groupes[fusion + 1]!], ...groupes.slice(fusion + 2)];
+    }
+  }
+  return tri.map((s, i) => ({
+    ...s,
+    cap: caps[i]! % TOUR,
+    x: Math.sin(angles[i]!) * rayonPx,
+    y: -Math.cos(angles[i]!) * rayonPx,
+  }));
+}
+
+/** « 1 case », « n cases ». */
+export const libelleDistance = (n: number): string => (n === 1 ? '1 case' : `${n} cases`);

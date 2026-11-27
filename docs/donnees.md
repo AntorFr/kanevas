@@ -37,6 +37,11 @@ backend service functions, called in the same way by routes and agent tools
 | **API token** *(kanevas-import)* | name, fingerprint (never the value), creation date, expiry date, revocation date, last use | universe, account of the GM who created it (the actor) | universe GMs (without the value) | creation: GM; revocation: any universe GM (B-45, B-46) — *`kanevas-synchro`: the token belongs to an account, seen, created and revoked by its owner, seen, modified and revoked by the instance admin; no longer by GMs (B-94, B-95)* |
 | **import batch** *(kanevas-import)* | opening date, closing date, state, counters (created, updated, unchanged, refused, warnings), report of refusals and warnings | universe, token | universe GMs | the server, for a script presenting a token (B-49) |
 | **proposal** | proposed content, original content fingerprint (the section's `version`, AD-59), creation date, application date | universe, requesting account, section, source report | its requester only | created by the GM's agent; applied once by its requester, if the section has not changed (B-21) |
+| **asset** *(kanevas-battlemap)* | name, category, footprint in cells, top-down, tags, state (valid \| draft) | universe, file | the universe's members (a GM-only file: the GM) | GM; the generation |
+| **art direction** *(kanevas-battlemap)* | style text (+ previous text), reference images | universe, files | GM | GM; the assistant on the GM's request |
+| **asset batch** *(kanevas-battlemap)* | lines (name, category, footprint, hint, state, draft) | universe, assets | GM | GM; the engine run |
+| **composed map** *(kanevas-battlemap)* | title, size in cells, visible, document (layers, floors, walls, elements) | universe, assets, sheets | members, filtered by the core (AD-156) | GM |
+| **table state** *(kanevas-battlemap)* | tokens, fog, shared view, token owners | composed map, accounts | members, filtered by the core | GM; a player for her own tokens |
 
 **Search indexes**: two full-text indexes (FTS5), one on sheet titles, the other on section titles and content, kept
 up to date by the database (triggers); no answer comes out without going through the
@@ -458,7 +463,7 @@ as is; `recherche_fiches` triggers are recreated.
 | `types_systeme` | `systeme_id`, `type`, `active` (boolean) | primary key `(systeme_id, type)` (5); → `systemes_jeu`; no row: the product default (enabled) |
 | `types_univers` | `univers_id`, `type`, `active` (boolean) | primary key `(univers_id, type)` (5); → `univers`; no row: the universe inherits from its system |
 | `jetons_api` | *(since migration 0038 there is no `univers_id`: the universes a token reaches are in `jetons_univers`, see the amendment below)* `id`, `compte_id`, `nom`, `empreinte`, `cree_le`, `expire_le`, `revoque_le` (null: active), `dernier_usage_le` (null: never) | → `comptes`; unique `empreinte` (7); `nom` 1 to 80; `CHECK (expire_le > cree_le)`; at most one year: service |
-| `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (null: in progress), `dernier_ecrit_le`, `compteurs` (JSON: per nature — `fiches`, `fichiers`, `relations` (`campagnes` and `scenarios` no longer exist since `kanevas-scenarios-suivi`: adventures are sheets, counted in `fiches`) — `{creees, mises_a_jour, inchangees, refusees}`, integers ≥ 0; nature `fiches` adds `supprimees`, written by `DELETE /fiches/:cle`, `kanevas-import-tenir`), `avertissements`, `en_attente` (integers ≥ 0; pending links and references at closure), `rapport` (JSON: at most 1,000 entries, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api`; « abandonné » (abandoned) is not stored: open with `dernier_ecrit_le` older than 24 h |
+| `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (null: in progress), `dernier_ecrit_le`, `compteurs` (JSON: per nature — `fiches`, `fichiers`, `relations` (`campagnes` and `scenarios` no longer exist since `kanevas-scenarios-suivi`: adventures are sheets, counted in `fiches`) — `{creees, mises_a_jour, inchangees, refusees}`, integers ≥ 0; nature `fiches` adds `supprimees`, written by `DELETE /fiches/:cle`, `kanevas-import-tenir`; nature `fichiers` adds it too, written by `DELETE /fichiers/:cle` and absent until a first file is deleted in the batch), `avertissements`, `en_attente` (integers ≥ 0; pending links and references at closure), `rapport` (JSON: at most 1,000 entries, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api`; « abandonné » (abandoned) is not stored: open with `dernier_ecrit_le` older than 24 h |
 
 **Added columns** (`ALTER TABLE … ADD COLUMN`, as in 0002 and 0006):
 
@@ -687,7 +692,7 @@ Invariants, in sentences:
 7. A design is attached to **one sheet** in the same universe and to **one managed section** of that sheet.
 8. A placed system, a route, a zone, a design belong to **one universe**; deleting the universe deletes them.
 9. A route connects two **placed** systems in the same universe; its grid length is that of the coordinates.
-10. A tool token carries a **scope**: the set of tools it can write; without a scope, it writes no tool.
+10. A token carries a **scope** *(kanevas-jeton-unique, B-jeton-1)*: the content (`jetons_api.contenu`) and/or the set of tools it can write (`jetons_outils`); never neither. Without tools it writes no tool; without `contenu` it opens no content route.
 11. Disabling deletes no row; only the delete action does, in a transaction.
 
 ### Logical
@@ -731,7 +736,8 @@ Invariants, in sentences:
 |---|---|---|
 | `essai_catalogue_elements` | `niveau` (`systeme`/`univers`), `systeme_id` or `univers_id`, `nature` (`coques`/`armes`), `cle`, `nom`, `masse` (real), `cout` (integer), `portee` (`courte`/`longue`, null for a hull), `masque` (boolean, default false), `version` (integer, +1 on each change), `version_catalogue` (text) | the owner is two nullable columns (exactly one set: `CHECK`), so uniqueness is two partial unique indexes: `(systeme_id, nature, cle)` where `niveau = 'systeme'`, `(univers_id, nature, cle)` where `niveau = 'univers'`; `CHECK (masse >= 0 AND cout >= 0)`; `CHECK (niveau = 'univers' OR masque = 0)` — a system element is never masked; `portee` set exactly for `armes`; → `systemes_jeu`, → `univers` ON DELETE CASCADE |
 | `essai_catalogue_retraits` | `univers_id`, `nature`, `cle` (of a system element) | primary key `(univers_id, nature, cle)`; → `univers` ON DELETE CASCADE; deleting the row restores the element |
-| `jetons_outils` | `jeton_id`, `outil` | (core, K-6) primary key `(jeton_id, outil)`; → `jetons_api` ON DELETE CASCADE; no row = a content token |
+| `jetons_outils` | `jeton_id`, `outil` | (core, K-6) primary key `(jeton_id, outil)`; → `jetons_api` ON DELETE CASCADE; no row = no tool (*kanevas-jeton-unique*: it no longer says « content token », `jetons_api.contenu` does) |
+| `jetons_api.contenu` *(kanevas-jeton-unique, migration 0051, renumbered from 0046 when `main` was caught up, AD-51)* | column | `INTEGER NOT NULL DEFAULT 1 CHECK (contenu IN (0, 1))`; 1 = the token opens the content routes (`/api/v1` sheets, files, maps, export, `/mcp`). The migration sets 0 on every token that has a `jetons_outils` row (they keep working as today: tools only) and leaves 1 on the others. « At least one of `contenu` or a tool » is the service's rule (`creerJeton`, `invalide`, `champ: permissions`), not a `CHECK` (a `CHECK` cannot read another table); a token whose tools are deleted with the tool's data keeps the permissions it has, `contenu` included |
 
 `lots_import.outil` (core): null for a content batch, else the `module/outil` whose natures the counters carry. A tool batch's `compteurs` keys are the tool's declared natures (the content batch keeps the fixed list).
 
@@ -762,6 +768,42 @@ Rollback: an earlier image ignores the new tables; managed sections keep their t
 **Rule `kanevas-taille-images` (B-taille-1).** No column: an image's size and placement are the title of its
 reference in the text of a section (`![alt](fichier:N "moyen-droite")`, AD-taille-1). Same read and write
 rights as the text; a title that is not one of the nine `<size>-<placement>` pairs changes nothing.
+
+## `kanevas-battlemap` — data
+
+Module tables, prefixed `bm_`, created by the module's migrations (number taken at merge, AD-51). No change to the core
+tables: a composed map is **not** a row of `cartes` (its `forme` stays `illustree` | `graphe`); it is a tool map that E-10
+lists through `DeclarationCarte.cartes()` (AD-155). Every row is in a universe; deleting the universe or the tool's data
+removes them (the files stay in the media library unless the GM removes them).
+
+| Table | Columns (excluding keys) | Constraints |
+|---|---|---|
+| `bm_assets` | `id`, `univers_id`, `fichier_id` → `fichiers`, `nom`, `categorie` (`objet` \| `vaisseau` \| `decor` \| `sol` \| `mur`), `largeur`, `hauteur` (cells, null for `sol`/`mur`), `vue_dessus` (bool), `tags` (JSON array, ≤ 10 × 30 chars), `etat` (`valide` \| `brouillon`), `cree_le` | `nom` 1–80; footprint 1–20; one file may back one asset only; ≤ 5 000 per universe; the file's visibility is that of the library (AD-117), `mj` makes the asset GM-only |
+| `bm_direction` | `univers_id` (primary), `texte`, `texte_precedent`, `version`, `source` (`mj` \| `assistant`, AD-battlemap-assistant-3), `modifie_le` | `texte` ≤ 5 000 chars |
+| `bm_direction_images` | `univers_id`, `fichier_id`, `legende`, `rang` | ≤ 8 per universe |
+| `bm_lots` | `id`, `univers_id`, `cree_par`, `etat` (`prepare` \| `en_cours` \| `termine`), `cree_le`, `modifie_le` | ≤ 1 batch not `termine` per universe; `prepare` = built (by the GM's list or the assistant), not started; a batch is `termine` when every line is `accepte` or `ecarte` (a draft or a failure keeps it open, so « Régénérer » / « Réessayer » leave it `en_cours`; a `termine` batch is never reopened) |
+| `bm_lots_lignes` | `id`, `lot_id`, `rang` (order in the batch, from 1), `nom`, `categorie`, `largeur`, `hauteur` (1 by default for `objet`, `vaisseau`, `decor`; null for `sol`/`mur`), `indice` (optional hint, ≤ 200), `remarque` (≤ 500), `etat` (`attente` \| `en_cours` \| `brouillon` \| `echec` \| `interrompu` \| `accepte` \| `ecarte`), `asset_id` (the draft asset; the only link between a line and its asset), `code_echec` | ≤ 20 lines per batch; `(lot_id, rang)` unique; `code_echec` is a fixed code, never an engine message; « regenerate » and « discard » delete the draft asset and its file (`asset_id` becomes null); removing an accepted asset sets the line's `asset_id` to null (`ON DELETE SET NULL`); the draft file is created `mj` and becomes `joueurs` only when accepted |
+| `bm_cartes` | `id`, `univers_id`, `titre`, `visible`, `largeur`, `hauteur` (cells, ≤ 200), `taille_case` (px of the reference raster, 70 by default), `document` (JSON, AD-154), `version`, `cree_le`, `modifie_le` | `titre` 1–80; `document` ≤ 2 MB, validated by the core |
+| `bm_tables` | `carte_id` (primary, → `bm_cartes` ON DELETE CASCADE), `etat` (JSON: tokens, fog bitmap, shared view, hidden layers), `version`, `modifie_le` | one per map; tokens ≤ 200; the fog is a bitmap of the map's cells |
+| `bm_pions_proprietaires` | `carte_id` (→ `bm_cartes` ON DELETE CASCADE), `pion` (token id in `etat`), `compte_id` | `compte_id` is a member of the universe; the token owner is read only here (AD-159); removing a token or resetting the table deletes its lines in the same transaction, and a line without a token in `etat` is ignored at read |
+
+**The map document** (`bm_cartes.document`) holds: `calques[]` (id, nom, type `sol` \| `mur` \| `objet`, `visible` (the editor's eye, never read by a player), `verrouille`, `mj_seul`),
+`sols` (per layer, a sparse list of cells with `asset_id`), `murs[]` (cell-edge segments with `asset_id`, `porte` and `calque`, a layer of type `mur`),
+`elements[]` (`asset_id`, x, y in cells with a fraction, `rotation` 0/90/180/270, `miroir`, `echelle`, `calque`, optional
+`fiche_id`). It never carries bytes or HTML. **The table state** holds `pions[]` (id, nom, `asset_id` or null, `fiche_id` or null,
+x, y, `visible`), the fog, the shared view (center, zoom) and the layers **hidden** from the players, a list of layer ids (`calques_masques`; the only per-layer switch a player's read follows, besides `mj_seul` which always hides): empty at the table's creation, so a layer created later is shown, and an id whose layer no longer exists is ignored. A token is a table object, an *element* a document object: the sheet link of an element is `elements[].fiche_id`, that of a token `pions[].fiche_id`.
+
+**Rules.** (1) Only the GM outside player mode writes a map, the library, the art direction, a batch, and moves any token; a
+player moves only the tokens of `bm_pions_proprietaires` whose `compte_id` is hers, within the map. (2) A player's read of a
+map or of the table state is **filtered on the server by the core** (AD-156): GM-only layers and elements, hidden tokens, GM-only
+assets, and everything under the fog are absent from what is sent; no count says what was filtered. (3) An `asset_id` or
+`fiche_id` in a document belongs to the same universe; a `fiche_id` reaches a player only if the sheet is readable (the
+element then carries no title otherwise). (4) Removing an asset leaves its references in the documents and in `pions[].asset_id` (the GM sees a
+placeholder, players nothing; a visible token whose asset is GM-only shows the players a plain disc with its name); `bm_direction_images.fichier_id` is `ON DELETE CASCADE` (the reference vanishes with its file); a media-library file still backing an asset cannot be deleted, E-19 saying « Ce fichier est utilisé par la bibliothèque d'assets. »; `bm_assets.fichier_id` is `ON DELETE RESTRICT` as `elements_carte` is, so rows of `bm_*` are always deleted before library files (see AD-150). (5) A draft asset (`brouillon`) is not
+offered by the editor, the assistant or players. (6) `bm_tables.version` and `bm_cartes.version` rise at each accepted write;
+a write with an older version is refused `conflit`.
+
+**Migration plan.** Expand only — new tables; nothing to migrate or contract; rollback: an earlier image ignores the tables.
 ## Framing of `kanevas-synchro` (2026-11-01): the model
 
 **Conceptual.** No new entity of the game: a map gains an **origin key**, an **attached sheet** and a
@@ -820,7 +862,6 @@ the backup of the file is a manual gesture before the deploy.
 **sheet** and a **universe** have a **readable key**, with their **former keys**; a **history line**
 records one write, with a **previous value** for 30 days.
 
-**Logical.**
 - `jetons_api`: `univers_id` and the « GM who created it » give way to `compte_id` (the owner) and
   `tous` (boolean) with `niveau_tous` (`lecture` | `ecriture`, when `tous`); child
   `jetons_univers (jeton_id, univers_id, niveau)` — the list when not `tous`; with `tous`, the exceptions —
@@ -891,6 +932,8 @@ table below is written with neutral names; the script that converts Éneria's `a
 - `swn_astres.aspect` keeps its bound (4,000 characters) and `swn_formations.etoile_rang` and `swn_astres.etoile_rang` already exist (migration 0043): B-122's « the star a formation or a point turns round » is
   a field of the **format**, not a column. A moon already carries an hour around its planet.
 
+**Count of `kanevas-carte-rendu-aspects-socle`: 15 rows of this table** (`mer`, `nuages`, `calottes`, `relief`, palettes, `crateres`, atmosphere, `turbulence`, `tache`, colours of the bands, `poussiere`, `brume`, `graine`, `anneaux`, `disparue`), each with a measured-value test of the core; the keys of the last row of reliefs (`couleur_nuages`… `vue`) and `villes`/`lueur` belong to `-aspects-reliefs` and `-nuit`; `voile` is the system's. The call parameters `angle` and `lumiere` (AD-aspects-socle-1) are not keys of an aspect and not rows.
+
 **Vocabulary of `aspect` (the core, `valider_aspect`).** The GM's catalogue of settings keeps its names; the conversion of an entry of the
 reference vocabulary into core keys follows the table below and is **the contract of the atlas's producer** (the core receives core keys only); **a key the core does not know is reported by name in the import report**
 (`non_rendu`, never silently dropped, B-114). Rules: each formula is tested by the core on measured values; the same name does not mean the same thing
@@ -899,20 +942,67 @@ reference vocabulary into core keys follows the table below and is **the contrac
 | Reference setting | Core key | Conversion |
 |---|---|---|
 | sea level `mer` | `mer` | table by measurement (a measured correspondence, never below the core's 5 % floor); « no sea » = a `mer` of 0 plus palette without water |
-| cloud cover `nuages` | `nuages` | table by measurement (0.9 of the reference is a covered sky; the core's curve reaches 57 %); the core's curve is widened to a full veil |
+| cloud cover `nuages` | `nuages` | table by measurement (0.9 of the reference is a covered sky; the core's curve reaches 57 %); the core's curve is widened to a full veil (at `nuages` 1 the veil covers at least 90 % of the disc, measured) |
 | `calottes` (latitude where ice begins; 1.2 = none) | `calottes` (a quantity) | `calottes = clamp((1 − latitude) / 0.28, 0, 1)` |
 | `relief` | `relief` | ≈ 0.6 × reference, bound of the validator aligned on the engine's [0, 2] |
 | named palettes (`terre`, `ocean`, `glace`, `roche`, `couleurs`, `croute`, `jour`/`nuit`/`crepuscule`) | `palette` | sampled to 1–16 colours in the order the core reads (ice is read upside down) |
-| `crateres` (a count) | `cratere` (a depth) | ≈ count / 220; count and size law are new keys (`crateres_nombre`) |
+| `crateres` (a count) | `cratere` (a depth) and `crateres_nombre` (new, integer [0, 2000]) | `cratere = clamp(count / 220, 0, 1)`; `crateres_nombre` is the number of craters the core draws (absent: its density follows `cratere`); one size law, the core's |
 | `atmosphere`, `force_atmo` | `halo_couleur`, `halo` | direct, the type's default sent when absent |
+| `turbulence` | `turbulence` (new, [0, 2], default 1) | direct: amplitude of the distortion of the bands of a gas giant and of the streaks of a telluric surface (the engine's factor `(tur − 0.5) × 1.6`, multiplied by it); 0 gives straight bands |
+| `tache` (a storm, a spot) | `tache` (new, object) | `{latitude [−1, 1], taille [0.02, 0.4], couleur}`, every key optional (defaults: `tempete` decides whether one is drawn, mid-latitude, 0.12, the palette's third colour); `tempete` stays the intensity of the engine's own spot, `tache` places and colours it; unknown keys inside it are reported (`non_rendu`) |
+| colours of the bands `couleurs` of a gas giant | `bandes_couleurs` (new, list of 1 to 16 `#rrggbb`) | sampled in the order the core reads; when present the bands of a gas giant read it in place of `palette`; `palette` stays the body's (the reference's `couleurs` of a giant is a palette: the producer may send either, the core draws the same) |
+| `poussiere` | `poussiere` (existing, colour `#rrggbb`, `null` clears) | direct: the dust tail of a comet and the dust of a nebula take this colour; the reference's dust quantity is the existing `force_poussiere` [0, 2] |
+| `brume` | `brume` (existing, colour `#rrggbb`, `null` clears) | direct: the haze of a nebula and the atmosphere veil of a world take this colour |
 | `graine` | `graine` | **always sent**, one per body (`graine_de(id)`): two bodies never share a picture |
-| `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | new accepted key; absent means **no ring** (the engine's random ring at 28 % goes) |
-| `couleur_nuages`, `opacite_nuages`, `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124), `terre_seche`, `etirement`, `eclairs`, `inclinaison`, `geysers`, `couleur_fissures`, `mers`, `canyons`, `lave`, `cristaux`, `activite`, `intensite`, `vue` | new keys of the same names | added to the core one by one, each with a bound and a test of the picture |
-| `disparue` (a star gone, B-122) | `disparue` (boolean, on a star only) | direct; true draws a dim remnant, never an ordinary star; the atlas writes it from `corps[].etat: "disparue"` |
+| `anneaux`, `couleur_anneaux`, `opacite_anneaux` | `anneau` (object, or `false`) | accepted key (the engine reads it, `valider_aspect` did not): object `{interieur [1.1, 2.5], exterieur, inclinaison [0.12, 1.2], angle, opacite [0, 1], couleur, couleur2}` each optional and bounded as the engine's own clamps; absent means **no ring** (the engine's random ring at 28 % goes) |
+| `villes` (cities of the night side, B-124), `lueur`, `force_lueur` (glow, B-124) | new keys of the same names | `kanevas-carte-rendu-nuit`: drawn by the core, with a bound and a test of the picture (« The night side » below) |
+| `couleur_nuages`, `opacite_nuages` | `couleur_nuages` (colour, `null` clears), `opacite_nuages` ([0, 1], default 1) | direct: the tint of the cloud layer (default: the white of today) and the factor of its opacity; drawn on `tellurique`, and on `verrouillee` when `nuages` is above 0 (a locked world draws no cloud layer without one of these keys or `etirement`) |
+| `terre_seche` | `terre_seche` ([0, 1], default 0) | share of the land drawn dry (the palette's arid tone mixed in, the sea untouched); `tellurique`, `verrouillee` |
+| `etirement` | `etirement` ([0.25, 4], default 1) | stretch of the clouds along the parallels (1 = today's shape, 4 = long streaks); `tellurique`, `verrouillee`, `gazeuse` |
+| `eclairs` | `eclairs` ([0, 1], default 0) | flashes in the clouds on the night side, as many as the value and `nuages` allow; `tellurique`, `gazeuse` |
+| `inclinaison` | `inclinaison` ([−90, 90] degrees, default 0) | tilt of the body's axis: the caps and the bands turn by it (not the ring's `anneau.inclinaison`, a key of its own object); every planet kind |
+| `mers` (several seas) | `mers` (integer [1, 8], default 1) | number of separate basins sharing the `mer` level (the total sea share holds within a few points); `tellurique` only (a locked world has no sea level) |
+| `canyons` | `canyons` ([0, 1], default 0) | dark cuts in the relief; `rocheux`, `tellurique` |
+| `lave` (on a rocky body) | `lave` ([0, 1], default 0) | glowing veins in the lowest relief; `rocheux` (the type `lave` already is lava) |
+| `cristaux` | `cristaux` ([0, 1], default 0) | bright facets scattered on the surface; `glace`, `rocheux` |
+| `geysers` | `geysers` ([0, 1], default 0) | plumes rising off the limb, drawn only at the edge of the disc (beyond it); `glace`, `rocheux` |
+| `couleur_fissures` | `couleur_fissures` (colour, `null` clears) | the colour of the cracks of `fissures` (default: today's); `glace`, `rocheux`, `lave` |
+| craters on ice (the reference's own setting for an icy body) | `cratere_glace` (new, [0, 1], default 0) | depth of the craters of an icy body; their number is `crateres_nombre` (`-aspects-socle`) read on `glace` too; `glace` |
+| atmosphere thickness | `atmosphere_epaisseur` (new, [0, 1], default 0.5 = today's) | width of the limb halo, `halo` stays its strength; the six planet kinds accept it (none is refused; with `halo` 0 it has nothing to widen) |
+| `activite` | `activite` ([0, 1], default 0) | flares and prominences at the limb of a star; `etoile` kinds |
+| `intensite` | `intensite` ([0, 2], default 1) | brightness of the disc and of the corona of a star (1 = today's); `etoile` kinds |
+| `vue` | `vue` (`"profil"` default, or `"face"`) | a comet seen from the side (tail drawn along its curve) or head-on (the tail foreshortened into a halo round the nucleus); `comete` |
+| signed curvature | `courbure` (existing; bound widened from [0, 1] to [−1, 1]) | a negative value bends the tail to the other side; [0, 1] draws exactly as before; `comete` |
+| `couleur_anneaux`, `opacite_anneaux` | `anneau.couleur`, `anneau.couleur2`, `anneau.opacite` (accepted since `-aspects-socle`) | no new key: this slice proves by a measured test that the ring takes its colours and its opacity (the tint of its pixels, the visibility of the body behind it) |
+| `disparue` (a star gone, B-122) | `disparue` (new, boolean, on a star only: refused on any other type) | direct; true draws a dim remnant (the star's disc at a fifth of its brightness, no corona, no rays), never an ordinary star; the atlas writes it from `corps[].etat: "disparue"` |
 | `voile` | `swn_systemes.voile` | the system's only; the veil of a nebula is `parametres.voile` of its zone (below) |
+
+**Applicability (AD-aspects-reliefs-1).** A key is accepted on the kinds the row names; on another kind it is refused (`invalide`, with the path and the kinds), as `disparue` is on a non-star. In an atlas this is the all-or-nothing refusal of AD-atlas-3 (the whole atlas is refused, one line per refusal with its path); only a key the core does not know at all is reported under `non_rendu`, the body still imported (B-114). The kinds are the core's: planets `tellurique`, `verrouillee`, `glace`, `rocheux`, `lave`, `gazeuse`; stars (every class); `comete`.
+
+**Count of `kanevas-carte-rendu-aspects-reliefs`: 18 rows of this table** (`couleur_nuages` and `opacite_nuages` share one; the ring is the last, with no new key; the slice's `livre` lists the settings, this table the rows). New keys of the core: `terre_seche`, `etirement`, `eclairs`, `inclinaison`, `mers`, `canyons`, `lave`, `cristaux`, `geysers`, `couleur_fissures`, `couleur_nuages`, `opacite_nuages`, `cratere_glace`, `atmosphere_epaisseur`, `activite`, `intensite`, `vue` (17); `courbure` widens. `villes`, `lueur`, `force_lueur` stay with `-nuit`.
 
 **Atlas format (AD-atlas-2, extended).** Every addition is optional (an atlas of the former format stays valid, byte for byte): `lunes[].type` takes every type of the core
 (not only rocky/ice/lava); `zones[].etoile` and `points[].etoile` (a star's `cle`, default the main one; `zones[].etoile` written to `swn_formations.etoile_rang` and `points[].etoile` to `swn_astres.etoile_rang` (a comet's star), both columns existing; AD-atlas-2 gives `etoile` to `corps[]` only) `corps[].lunes[].heure` is the hour around the planet;
 `voile` (a colour) on the system; `classe`, `taille` (continuous) and `couleur` (free) on a defined system (the former names and sizes still accepted); `corps[].etat: "disparue"` on a star (written as `aspect.disparue`, B-122); `zones[].voile` and `zones[].lentille` (written in the formation's `parametres`); each body's `aspect` may carry the keys above. Refusals keep AD-atlas-3 (all or nothing, path of each refusal).
 
+**The night side (`kanevas-carte-rendu-nuit`, B-124, AD-nuit-1).** Three keys of `aspect`, drawn by the core on the side turned away from the star, accepted on `tellurique` and `verrouillee` (a living world; any other kind refuses them with the path and the kinds, AD-aspects-reliefs-1):
+
+| Key | Bound, default | Drawing |
+|---|---|---|
+| `villes` (cities, B-124) | [0, 1], default 0 | points of warm light on the **land** of the night side (never on the sea, never on the day side; a locked world has no sea, so all of its surface is land), as many and as bright as the value; their places come from the seed, so a body keeps its cities from one drawing to the next |
+| `lueur` (glow, B-124) | [0, 1], default 0 | a cold, soft glow (bioluminescence) over the night side, land and shallows alike (all of a locked world), in veins that follow the relief; the value is its coverage and its brightness |
+| `force_lueur` | [0, 2], default 1 | the strength of the two lights above (cities and glow) together: 0 draws neither, 1 the values as given, 2 twice as bright (clamped to white); alone, with neither `villes` nor `lueur`, it draws nothing |
+
+The colours are the core's (a warm yellow for the cities, a blue-green for the glow), not keys: no colour setting is added (out of the slice). The night side is the part of the disc the star does not light; the lights fade in over the terminator's band and the ring's shadow, and never touch a fully lit pixel, whose bytes are those of a body without the keys. A neutral value (`villes` 0 and `lueur` 0, whatever `force_lueur`; or absent keys) gives the bytes of a body without the keys. The three keys are listed in `NOUVELLES` (`-aspects-reliefs`, AD-aspects-reliefs-1) and so never land under `non_rendu`; `VERSION_RENDU` does not move (AD-nuit-1).
+
 **Rules kept.** A body has no secret of its own (the system's hides it); `lisibilite.ts` stays the only reader of `secret`; the import never overwrites what the GM changed (AD-atlas-3).
+
+## `kanevas-cr-aventure` scope: the model
+
+No new entity, no migration. A session report's adventure is `fiches.charge.campagne_id` (unchanged); it becomes **writable by the GM** after creation.
+
+Rules:
+1. `campagne_id` is written by `creerCompteRendu` and by one new service function of `services/comptes_rendus.ts`, `changerAventureDuCompteRendu`, run inside `ecrire` (history, AD-147, and `modifie_le` by the triggers). The target is read with `aventureLue` (same guard as the creation); GM outside player mode only; an id that is not a readable sheet, or a target that is not a readable adventure of the universe: `introuvable` (as the creation); a readable sheet that is not a session report: `invalide` (400 on the route, as the other type-bound fields of `PATCH`); a player or a GM in player mode: the refusals of `changerStatutFiche` (AD-cr-aventure-5); the same adventure: no write.
+2. Nothing else of the sheet moves (id, key, sections, relations, `liens`, `parent_id`).
+3. The list `listerComptesRendus({campagneId})` returns the reports whose adventure is that one **or any descendant of it of type `aventure` that the caller reads** (reached through a chain of `aventure` sheets by `parent_id`, at any depth — the 50 levels of AD-115 cannot be exceeded; the walk tests the caller's read at each node, so a scenario the caller does not read brings nothing, nor does what is under it; an adventure under a sheet of another type is not a scenario); each line carries its own adventure (`campagneId`, `campagneNom`), from which the screen shows the scenario's name when it differs from the page's adventure. The deletion count of an adventure (AD-119) stays on direct reports. The filter is one for every reader of `listerComptesRendus({campagneId})` (the route `?campagne=`, E-9's block, E-13's list (through the route's filter, there is no screen filter); no assistant list calls it): all give the widened result with each line's own adventure; nothing else widens (the deletion count, the « Campagne » line of a report, the bilan).
+4. The import fingerprint of the header (AD-139) already holds `campagne_id` for a report: a change of adventure is a change of header.

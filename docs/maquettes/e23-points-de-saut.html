@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>E-23 — Jump points and transition halo</title><style>
+/*
+MAQUETTE — E-23, jump points and the transition halo (kanevas-carte-rendu-habillage-sorties, B-115).
+Illustrates docs/ecrans.md « Jump points and transition halo » and docs/charte.md « Jump points ». The document wins over the mockup.
+Invented data (the public repository carries no data of Éneria). The sky is dark in both themes: one picture serves both.
+Neighbours: Hesper (3 cases, pirate route), Vael (1 case, public), Orne (5 cases, route « convoi » = no token, neutral).
+*/
+:root{--ciel:#0b0b10;--ciel-halo:rgba(0,0,0,.9);--texte:#ebecf0;--texte-2:#a6a7b0;--accent:#8b9bf0;--ciel-trait:rgba(160,170,255,.34);
+--route-public:#5ad1c4;--route-private:#efe27a;--route-pirate:#ff6b6b;--route-autre:#a6a7b0}
+body{margin:0;background:#121317;color:var(--texte);font:14px system-ui,sans-serif;padding:16px}
+.carte{position:relative;width:520px;height:420px;background:radial-gradient(circle at 50% 40%,#17182a,#0b0b10);border-radius:12px;border:1px solid rgba(255,255,255,.08)}
+svg{position:absolute;inset:0}
+.lab{font-size:12px;fill:var(--texte);paint-order:stroke;stroke:var(--ciel-halo);stroke-width:3px}
+.lab.zone{fill:var(--texte-2);font-style:italic}
+.fl{stroke:var(--ciel);stroke-width:1.2}
+.public{fill:var(--route-public)}.pirate{fill:var(--route-pirate)}.autre{fill:var(--route-autre)}
+</style></head><body>
+<div class="carte"><svg viewBox="0 0 520 420" role="img" aria-label="Map of a system with three jump points">
+<defs><radialGradient id="h"><stop offset="66%" stop-color="#8b9bf0" stop-opacity="0"/><stop offset="100%" stop-color="#8b9bf0" stop-opacity=".22"/></radialGradient></defs>
+<circle cx="260" cy="190" r="150" fill="url(#h)"/>
+<circle cx="260" cy="190" r="150" fill="none" stroke="#8b9bf0" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round"/>
+<circle cx="260" cy="190" r="70" fill="none" stroke="var(--ciel-trait)"/>
+<circle cx="260" cy="190" r="14" fill="#f2c36b"/><circle cx="330" cy="190" r="6" fill="#6fa3d8"/>
+<!-- arrows: centre on the circle, tip outward along the bearing -->
+<g transform="translate(386.5 115) rotate(60)"><polygon class="fl pirate" points="0,-9 6,5 0,2 -6,5"/></g>
+<g transform="translate(260 40)"><polygon class="fl public" points="0,-9 6,5 0,2 -6,5"/></g>
+<g transform="translate(160 296) rotate(-140)"><polygon class="fl autre" points="0,-9 6,5 0,2 -6,5"/></g>
+<text class="lab" x="396" y="105">Hesper · 3 cases</text>
+<text class="lab" x="260" y="26" text-anchor="middle">Vael · 1 case</text>
+<text class="lab" x="150" y="326" text-anchor="end">Système sans nom (-2, 4) · 5 cases</text>
+<text class="lab zone" x="140" y="110" text-anchor="end">Zone de transition</text>
+</svg></div>
+<p style="max-width:520px;color:#a6a7b0">Arrow 14 × 12 px, same size at every zoom; label « name · n cases »; legend « Zone de transition » on the circle. The colour is never the only carrier of the type (aria-label and title).</p>
+</body></html>
