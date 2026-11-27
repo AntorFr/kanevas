@@ -1,6 +1,6 @@
 import type { Db } from '../db/db.js';
 import { extraireLiens, reecrireLiens } from './markdown.js';
-import { audienceDe, peutLireSection, peutVoirFiche, resolveurLiens, roleDe, sqlFicheLisible, vueMJ } from './droits.js';
+import { audienceDe, lectureSysteme, peutLireSection, peutVoirFiche, resolveurLiens, roleDe, sqlFicheLisible, vueMJ } from './droits.js';
 import {
   champsDeCharge,
   empreinteEntete,
@@ -99,6 +99,7 @@ export interface PageFichesApi {
 
 interface LigneFiche {
   id: number;
+  univers_id: number;
   titre: string;
   type: string;
   sous_type: string | null;
@@ -134,6 +135,19 @@ function lecteurDe(db: Db, acteur: Acteur, universId: number): Lecteur {
     return cles.get(id) ?? null;
   };
   return { db, universId, role, acteur, mj, cleDe, lisibles: new Map() };
+}
+
+/**
+ * The reader of the elements of the system attached to the universe (AD-155): the account's right on the system, but
+ * always at player level and never in player mode — the universe's door shows the system as its readers see it. `null`
+ * when no system is attached or the account reads none.
+ */
+function lecteurElements(db: Db, acteur: Acteur, universId: number): Lecteur | null {
+  const u = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as { systeme_id?: number | null } | undefined;
+  if (!u || u.systeme_id == null) return null;
+  const droit = lectureSysteme(db, acteur.compteId, u.systeme_id);
+  if (!droit) return null;
+  return { ...lecteurDe(db, { compteId: acteur.compteId }, droit.espaceId), role: 'joueur', mj: false, cleDe: () => null };
 }
 
 function ficheLisible(l: Lecteur, ficheId: number): boolean {
@@ -284,7 +298,14 @@ function composer(l: Lecteur, f: LigneFiche): FicheApi | null {
 export function lireFicheApi(db: Db, acteur: Acteur, universId: number, reference: string): FicheApi {
   const l = lecteurDe(db, acteur, universId);
   const res = resoudreFiche(db, universId, reference);
-  if (res === null) throw introuvable();
+  if (res === null) {
+    // An element of the attached system, by id only (its key is the space's, which a universe address does not resolve).
+    const e = /^\d+$/.test(reference) ? lecteurElements(db, acteur, universId) : null;
+    const el = e === null ? undefined : (db.prepare('SELECT * FROM fiches WHERE id = ? AND univers_id = ?').get(Number(reference), e.universId) as LigneFiche | undefined);
+    const vue = e === null || el === undefined ? null : composer(e, el);
+    if (vue === null) throw introuvable();
+    return vue;
+  }
   const f = db.prepare('SELECT * FROM fiches WHERE id = ? AND univers_id = ?').get(res.id, universId) as
     | LigneFiche
     | undefined;
@@ -318,13 +339,21 @@ export function listerFichesApi(
   if (!Number.isInteger(apres) || apres < 0) {
     throw new ErreurService('invalide', '« apres » doit être un identifiant.', undefined, 'apres');
   }
+  const e = lecteurElements(db, acteur, universId);
   const cond = sqlFicheLisible(l.role, l.acteur, 'f');
+  const condE = e === null ? null : sqlFicheLisible(e.role, e.acteur, 'f');
+  const propres = `(f.univers_id = ?${cond ? ` AND ${cond.sql}` : ''})`;
+  const deSysteme = e === null ? '' : ` OR (f.univers_id = ?${condE ? ` AND ${condE.sql}` : ''})`;
   const stmt = db.prepare(
     `SELECT f.* FROM fiches f
-      WHERE f.univers_id = ? AND f.id > ?${depuis === null ? '' : ' AND f.modifie_le > ?'}${cond ? ` AND ${cond.sql}` : ''}
+      WHERE (${propres}${deSysteme}) AND f.id > ?${depuis === null ? '' : ' AND f.modifie_le > ?'}
       ORDER BY f.id`,
   );
-  const params = [universId, apres, ...(depuis === null ? [] : [depuis]), ...(cond?.params ?? [])];
+  const params = [
+    universId, ...(cond?.params ?? []),
+    ...(e === null ? [] : [e.universId, ...(condE?.params ?? [])]),
+    apres, ...(depuis === null ? [] : [depuis]),
+  ];
   const lignes: LigneFicheApi[] = [];
   let suivant: number | null = null;
   for (const f of stmt.iterate(...params) as Iterable<LigneFiche>) {
@@ -332,7 +361,7 @@ export function listerFichesApi(
       suivant = lignes[lignes.length - 1]!.id;
       break;
     }
-    const c = composer(l, f);
+    const c = composer(e !== null && f.univers_id === e.universId ? e : l, f);
     if (c === null) continue;
     lignes.push({
       id: c.id,

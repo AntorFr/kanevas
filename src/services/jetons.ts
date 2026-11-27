@@ -76,6 +76,12 @@ export interface JetonRequete extends Jeton {
   niveau: NiveauAcces;
 }
 
+/** The token of a request on a system (AD-systemes-api-1): no universe; `niveau` is the effective access (the lesser of the row and the right). */
+export interface JetonSysteme extends Jeton {
+  systemeId: number;
+  niveau: NiveauAcces;
+}
+
 export type EtatJeton = 'actif' | 'revoque' | 'expire';
 
 /** A listed token: its state and its owner's name. */
