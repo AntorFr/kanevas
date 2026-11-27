@@ -17,6 +17,7 @@ rust/                             Cargo workspace (AD-rust-1): `modules/<name>/`
 src/wasm/, frontend/src/wasm/       Wasm loaders (server, browser) and their tests; see the « Rust / WebAssembly » section below
 scripts/rust-wasm.sh              `npm run build:wasm`: compiles each crate of `rust/modules/` to Wasm into `rust/pkg/<module>/`
 scripts/faux-setup-token.mjs        The stub's `claude setup-token` (copied into the image)
+scripts/assembler-web.mjs, lancer-bouchon.mjs   `node scripts/assembler-web.mjs <dest> <version>`: assembles the web archive of a version from the built `dist/`; `lancer-bouchon.mjs`: starts the stub with Node alone (copied to the archive's root). Tests: `src/scripts-tests/archive-web.test.ts` (archive + launcher on the repository's `dist/`), `docker-publish-web.test.ts` (the workflow's `web` job)
 scripts/controle-langue.mjs        `npm run controle-langue`: French words left and facts kept (reference commit in controle-langue.base)
 scripts/tests-attestes.mjs           `node scripts/tests-attestes.mjs`: plays the whole suite on the committed tree and writes the per-test TAP report `resultats.tap` (ignored by git); it is the suite declared in `.sdlc.yaml`, `attester` plays it and posts the status
 scripts/niveaux-tests.mjs            Pure logic of the test levels (file choice for `--local`, name lookup for the replay), imported by the two scripts; tested in `src/scripts-tests/`
@@ -40,7 +41,7 @@ src/
 assets/brand/kanevas-marge/         The « Marge » icon pack (source of the identity; `frontend/public/` holds byte copies, AD-135)
 docs/                             Retained design, as built (and `docs/tests-ecran/`: the rule « the effect through its door, the display on screen », the inventory of every screen test, the before/after durations — read it before writing a screen test, and add a line to a `lot-*.md` for each new one): journeys, screens, data, charter, `mcp.md` (the MCP door for an external agent); maquettes/ = HTML pages to open in a browser (e09-fiche.html is the charter's reference)
 frontend/                         React + Vite (the map editor E-28 is `src/outils/battlemap/cartes/`: `index.tsx` the screen, `moteur.ts` and `interaction.ts` the tools, `enregistreur.ts` the saving; its canvas is `src/ui/canevas-carte.tsx`; the play screen E-29 and the display E-30 are `src/outils/battlemap/table/` (`jeu.tsx`, `affichage.tsx`, the stream client `../flux.ts`, the play canvas `src/ui/canevas-jeu.tsx`); the core it loads is `rust/modules/battlemap-core`): charter (ui/), screens (src/ecrans/, including E-5 administration.tsx and E-24 historique.tsx), sidebar
-.github/workflows/docker-publish.yml   CI: GHCR image on an attested tag (no test played; no workflow plays the suite)
+.github/workflows/docker-publish.yml   CI: GHCR image, and the job `web` (the built page on the tag's Release), on an attested tag (no test played; no workflow plays the suite)
 ```
 
 The sheet type list comes from the server; the frontend holds only the icon → component table, in `frontend/src/types-contexte.tsx` (where a new type's icon is added).
@@ -458,6 +459,21 @@ selection (`/connexion-bouchon`, AD-55). `GET /api/auth/config` returns `{oidcEn
 login and callback return `404`: no degraded mode. A set but
 empty or invalid value (malformed URL), however, makes startup fail
 (`ZodError`, `src/config/env.ts`).
+
+## Built web page (per version)
+
+Each `v*` tag also publishes `kanevas-web-<version>.tar.gz` (and its `.sha256`) on its GitHub Release: the page and the server already built, with the stub launcher, for another repository that serves Kanevas without building it (no Rust, `wasm-bindgen` or Docker). `<version>` is the tag without its `v`. The job runs from the first tag after this feature: until then no Release carries the archive (the Dockerfile stage and the upload are proven by that first tag).
+
+Needs Node >= 20 and npm, and network access on the first run (npm and the prebuilt `better-sqlite3` binary are downloaded; a few tens of seconds). The archive has no wrapping directory: extract it into an **empty** directory.
+
+```
+gh release download v<version> --repo AntorFr/kanevas --pattern 'kanevas-web-<version>.tar.gz*'   # or the plain URL of the Release assets (public repository)
+sha256sum -c kanevas-web-<version>.tar.gz.sha256        # in the download directory
+mkdir kanevas-web && tar xzf kanevas-web-<version>.tar.gz -C kanevas-web && cd kanevas-web
+node lancer-bouchon.mjs --port 3001                     # [--data DIR]
+```
+
+It prints `http://127.0.0.1:3001/` once the server answers; `/` redirects to the stub's sign-in page, where you pick an account. The data is throwaway (a temporary directory removed at exit) unless `--data DIR` keeps it. See `ARCHITECTURE.md`, `kanevas-web-publie`.
 
 ## Deployment
 

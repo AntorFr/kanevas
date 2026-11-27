@@ -99,3 +99,62 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # AD-web-publie-5: the built web page, attached to the Release of the tag, behind the same
+  # attestation as the image. No Rust here: the Dockerfile's `web` stage does the build (shared cache).
+  web:
+    needs: attestation
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+
+      - name: Export the web stage
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: web
+          build-args: |
+            APP_VERSION=${{ steps.meta.outputs.version }}
+          platforms: linux/amd64
+          outputs: type=local,dest=${{ runner.temp }}/web
+          cache-from: type=gha
+
+      - name: Archive and checksum
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -eu
+          mkdir -p "$RUNNER_TEMP/out"
+          archive="kanevas-web-${VERSION}.tar.gz"
+          tar -C "$RUNNER_TEMP/web" -czf "$RUNNER_TEMP/out/$archive" .
+          (cd "$RUNNER_TEMP/out" && sha256sum "$archive" > "$archive.sha256")
+
+      - name: Attach to the Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -eu
+          tag="${GITHUB_REF_NAME}"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            pre=""
+            case "$tag" in *-*) pre="--prerelease" ;; esac
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --verify-tag \
+              --title "$tag" --notes 'Web build of this version.' $pre
+          fi
+          gh release upload "$tag" --repo "$GITHUB_REPOSITORY" --clobber \
+            "$RUNNER_TEMP/out/kanevas-web-${VERSION}.tar.gz" \
+            "$RUNNER_TEMP/out/kanevas-web-${VERSION}.tar.gz.sha256"

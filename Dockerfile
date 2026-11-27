@@ -46,6 +46,18 @@ COPY --from=wasm /app/rust/pkg ./rust/pkg
 
 RUN npm run build
 
+# Web archive stage (AD-web-publie-4): the built page and the stub's server, exported by the release job.
+# Not an ancestor of the runtime stage: the image is unchanged.
+FROM build AS web-assemblage
+
+ARG APP_VERSION=0.0.0-dev
+
+RUN node scripts/assembler-web.mjs /web "${APP_VERSION}"
+
+FROM scratch AS web
+
+COPY --from=web-assemblage /web/ /
+
 FROM node:20-bookworm-slim AS runtime
 
 WORKDIR /app
