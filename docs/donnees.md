@@ -938,7 +938,7 @@ Migration: next free number when the slice merges (AD-51); existing systems get 
 | `niveau` | TEXT NOT NULL | `CHECK (niveau IN ('lecture', 'ecriture'))`; there is **no** `aucun` row: a system the token does not reach has no row |
 
 Primary key `(jeton_id, systeme_id)`; index on `systeme_id`. Written only by `services/jetons.ts` (creation, change of accesses), in the transaction that
-writes the token or replaces its rows; read only there (`accesSysteme`, `niveauSysteme`). A token revoked or expired keeps its rows, like `jetons_univers`.
+writes the token or replaces its rows; read only there (`systemesDe`, private; `niveauSysteme`, exported). A token revoked or expired keeps its rows, like `jetons_univers`.
 **Never stored: the account's right.** A row says what the token may reach; whether the account is a GM of the system or reads it is read from `membres` of the space and of the
 attached universes at each use (AD-144, AD-152) — removing a GM of a system, or an account from a universe, changes no `jetons_systemes` row.
 Rule (token and system): a row may be written only for a system the account **reads** at that moment, and `ecriture` only where it is a GM of the system; a row already carried
