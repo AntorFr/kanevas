@@ -240,3 +240,28 @@ test('admin : la boîte d’E-5 montre les systèmes du propriétaire', opts, as
   assert.deepEqual(lignesDe(m.app, 'Jeton d’Antor'), [{ id: m.swn, niveau: 'lecture' }]);
   await ctx.close();
 });
+
+test('mise en page : la ligne « Systèmes » de deux systèmes tient sur une ligne à 1440 px, actions flottantes', opts, async () => {
+  const m = await monde();
+  const { ctx, page } = await connecte(browser, m.base, 'Antor');
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ouvrir(page);
+  await ouvrirCreation(page, 'Deux systèmes');
+  await radio(page, SWN, 'Écriture').click();
+  await radio(page, 'Chroniques Oubliées Fantasy', 'Lecture').click();
+  await page.getByRole('button', { name: 'Créer le jeton' }).click();
+  await page.locator('code').first().waitFor();
+  await page.getByRole('button', { name: 'J’ai copié le jeton' }).click();
+  const l = page.locator('.ligne-jeton').filter({ hasText: 'Deux systèmes' });
+  await l.waitFor();
+  const acces = l.locator('.ligne-jeton-acces.secondaire');
+  assert.match((await acces.textContent()) ?? '', /Chroniques Oubliées Fantasy : lecture · Stars Without Number : écriture/);
+  const lignes = await acces.evaluate((e: Element) => {
+    const r = document.createRange();
+    r.selectNodeContents(e);
+    return new Set(Array.from(r.getClientRects()).map((x) => Math.round(x.top / 4))).size;
+  });
+  assert.equal(lignes, 1, 'le texte tient sur une seule ligne');
+  assert.equal(await l.locator('.ligne-jeton-actions').evaluate((e: Element) => getComputedStyle(e).position), 'absolute');
+  await ctx.close();
+});
