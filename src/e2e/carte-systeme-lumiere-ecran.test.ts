@@ -89,7 +89,10 @@ describe('E-23 la face éclairée de chaque astre regarde son étoile', { skip: 
     const b = await barycentre(page, corps('pb').x, corps('pb').y, corps('pb').rayon);
     assert.ok(b.dx > 0.5, `planète B, à gauche de sa compagne : éclairée à droite (${b.dx})`);
     const l = await barycentre(page, corps('pa-lune').x, corps('pa-lune').y, corps('pa-lune').rayon);
-    assert.ok(l.dx > 0 && l.dy < 0, `lune A, sous sa planète : éclairée vers le haut et la droite (${l.dx}, ${l.dy})`);
+    // The moon's place depends on the fit's scale: what is seen is the light looking at the star, whatever the direction on screen.
+    const lune = corps('pa-lune'), etoile = corps('etoile');
+    const versEtoile = (etoile.x - lune.x) * l.dx + (etoile.y - lune.y) * l.dy;
+    assert.ok(versEtoile > 0, `lune A : éclairée du côté de son étoile (${l.dx}, ${l.dy} ; étoile à ${etoile.x - lune.x}, ${etoile.y - lune.y})`);
     await ctx.close();
   });
 

@@ -183,14 +183,21 @@
 .cs-transition { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 6; stroke-linecap: round; }
 .cs-corps { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; border: 0; padding: 0; background: transparent; cursor: pointer; }
 .cs-corps:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.cs-sortie { position: absolute; transform: translate(-50%, -50%); width: 18px; height: 18px; border-radius: 50%; padding: 0; cursor: pointer;
-  border: 2px solid var(--accent); background: var(--ciel); }
-.cs-sortie::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--accent); }
+/* E-23 jump points: the halo fills the transition disc (gradient of --accent), the arrows take the route family colour. */
+.cs-halo { stroke: none; }
+.cs-sortie { position: absolute; transform: translate(-50%, -50%); width: 24px; height: 24px; padding: 0; border: 0; background: transparent; cursor: pointer;
+  display: grid; place-items: center; color: var(--route-autre); }
+@media (pointer: coarse) { .cs-sortie { width: 44px; height: 44px; } }
+.cs-sortie.public { color: var(--route-public); }
+.cs-sortie.private { color: var(--route-private); }
+.cs-sortie.pirate { color: var(--route-pirate); }
+.cs-sortie.autre { color: var(--route-autre); }
+.cs-sortie svg { display: block; overflow: visible; }
+.cs-sortie polygon { fill: currentColor; stroke: var(--ciel); stroke-width: 1; stroke-linejoin: round; }
 .cs-sortie:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .cs-etiquette { position: absolute; white-space: nowrap; pointer-events: none; line-height: 15px; color: var(--texte);
   text-shadow: 0 0 4px var(--ciel-halo), 0 0 8px var(--ciel-halo); }
 .cs-etiquette.zone { color: var(--texte-2); font-style: italic; }
-.cs-etiquette.sortie { color: var(--accent); }
 
 /* E-23, the panel of a body and its picture (no new panel class: `gx-bloc gx-panneau`). The panel sits right of the sky, below it on a phone. */
 .cs-zone { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e-3); align-items: start; }

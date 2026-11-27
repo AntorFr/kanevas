@@ -73,4 +73,4 @@ export interface InterieurSysteme {
   peutEcrire?: true; versionSysteme?: number;
 }
 /** An exit towards a neighbouring system (`…/interieur/:q/:r/sorties`); a hidden neighbour or a private route has no entry. */
-export interface SortieSysteme { q: number; r: number; heure: number; nom: string | null }
+export interface SortieSysteme { q: number; r: number; heure: number; nom: string | null; /** Length of the route to this neighbour. */ distance: number; /** Type of that route, `null` without one. */ type_lien: string | null }

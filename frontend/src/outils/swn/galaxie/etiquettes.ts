@@ -6,7 +6,9 @@ export type GenreCorps = 'etoile' | 'planete' | 'comete' | 'anomalie' | 'compagn
 /** A body of the map in screen pixels: `x`, `y` its centre, `rayon` its disc (0 for a zone, which only anchors its label). */
 export interface CorpsEtiquette { cle: string; genre: GenreCorps; nom: string; x: number; y: number; rayon: number;
   /** Disc a label must also clear (a star's corona, wider than its body); the label sits beside it. Defaults to `rayon`. */
-  halo?: number }
+  halo?: number;
+  /** The label is shown whole or not at all (a jump point's « name · n cases »): never shortened. */
+  entier?: boolean }
 
 /** What is drawn on the map and a label must not touch either: an hour mark (rect), a corona (disc), the transition circle (ring: crossing it is meeting it). */
 export type Obstacle =
@@ -103,7 +105,7 @@ export function placerEtiquettes(corps: CorpsEtiquette[], vue: VueEtiquettes, me
     const plein = coupe(c.nom);
     let trouve: EtiquettePlacee | null = null;
     if (!replie && plein) {
-      const longueurs = [...Array(Math.max(0, [...plein].length - 2)).keys()].map((k) => [...plein].length - k);
+      const longueurs = c.entier ? [[...plein].length] : [...Array(Math.max(0, [...plein].length - 2)).keys()].map((k) => [...plein].length - k);
       for (let k = 0; k < longueurs.length && !trouve; k++) {
         const texte = k === 0 ? plein : raccourci(plein, longueurs[k] ?? 2);
         const m = mesurer(texte);
@@ -112,7 +114,7 @@ export function placerEtiquettes(corps: CorpsEtiquette[], vue: VueEtiquettes, me
           if (r) { trouve = { cle: c.cle, ...r, texte, visible: true }; placees.push(r); break; }
         }
       }
-      if (!trouve && [...plein].length <= 2) {
+      if (!trouve && !c.entier && [...plein].length <= 2) {
         const m = mesurer(plein);
         for (const d of DISTANCES) {
           const r = candidats(c, m, d, obstacles).find(libre);

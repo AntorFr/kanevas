@@ -16,7 +16,7 @@ try {
   coeur = undefined;
 }
 
-export interface SortieVue { q: number; r: number; heure: number; nom: string | null }
+export interface SortieVue { q: number; r: number; heure: number; nom: string | null; distance: number; type_lien: string | null }
 
 /**
  * The exits of the system at `(q, r)`. It opens with the guards of `lireInterieur` (the same `introuvable`), then lists
@@ -39,7 +39,7 @@ export function lireSorties(
     const voisin = autre === null ? undefined : parId.get(autre);
     if (!voisin || voisin.id === origine.id || vus.has(voisin.id)) continue;
     vus.add(voisin.id);
-    sorties.push({ q: voisin.q, r: voisin.r, heure: coeur.heure_vers_voisin(q, r, voisin.q, voisin.r), nom: voisin.nom });
+    sorties.push({ q: voisin.q, r: voisin.r, heure: coeur.heure_vers_voisin(q, r, voisin.q, voisin.r), nom: voisin.nom, distance: ro.longueur, type_lien: ro.type_lien });
   }
   return sorties;
 }

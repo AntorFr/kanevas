@@ -33,9 +33,9 @@ function monde() {
   const poser = (q_: number, r: number, o: { secret?: boolean; nom?: string | null } = {}) =>
     db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.75,'#8b9bf0','',?,0)")
       .run(g, univers, `s${q_}_${r}`, o.nom === undefined ? `S ${q_} ${r}` : o.nom, q_, r, o.secret ? 1 : 0).lastInsertRowid as number;
-  const route = (d: number, v: number, publique: boolean) =>
-    db.prepare('INSERT INTO swn_routes (galaxie_id, univers_id, depuis_id, vers_id, publique, longueur) VALUES (?,?,?,?,?,3)')
-      .run(g, univers, d, v, publique ? 1 : 0);
+  const route = (d: number, v: number, publique: boolean, longueur = 3, type: string | null = null) =>
+    db.prepare('INSERT INTO swn_routes (galaxie_id, univers_id, depuis_id, vers_id, publique, longueur, type_lien) VALUES (?,?,?,?,?,?,?)')
+      .run(g, univers, d, v, publique ? 1 : 0, longueur, type);
   return { db, univers, g, a, poser, route };
 }
 const code = (f: () => unknown) => { try { f(); } catch (e: any) { return `${e.code ?? e.constructor.name}|${e.message}`; } return 'aucune'; };
@@ -48,17 +48,17 @@ test('une route publique vers un voisin lisible donne son entrée à l\'heure at
   const sw = w.poser(O.q, O.r + 1, { nom: 'Sud-est' }); // 5 h
   const no = w.poser(O.q, O.r - 1, { nom: 'Nord' });    // 11 h
   w.route(o, e, true);
-  w.route(sw, o, true); // inverse direction
-  w.route(o, no, true);
+  w.route(sw, o, true, 5, 'pirate'); // inverse direction
+  w.route(o, no, true, 7);
   for (const u of ['lea', 'antor']) {
     assert.deepEqual(tri(lireSorties(w.db, w.a(u), w.univers, w.g, O.q, O.r)), tri([
-      { q: O.q + 1, r: O.r, heure: 3, nom: 'Est' },
-      { q: O.q, r: O.r + 1, heure: 5, nom: 'Sud-est' },
-      { q: O.q, r: O.r - 1, heure: 11, nom: 'Nord' },
+      { q: O.q + 1, r: O.r, heure: 3, nom: 'Est', distance: 3, type_lien: null },
+      { q: O.q, r: O.r + 1, heure: 5, nom: 'Sud-est', distance: 5, type_lien: 'pirate' },
+      { q: O.q, r: O.r - 1, heure: 11, nom: 'Nord', distance: 7, type_lien: null },
     ]));
   }
   // From the neighbour, the exit points back at the opposite hour.
-  assert.deepEqual(lireSorties(w.db, w.a('lea'), w.univers, w.g, O.q + 1, O.r), [{ q: O.q, r: O.r, heure: 9, nom: 'Origine' }]);
+  assert.deepEqual(lireSorties(w.db, w.a('lea'), w.univers, w.g, O.q + 1, O.r), [{ q: O.q, r: O.r, heure: 9, nom: 'Origine', distance: 3, type_lien: null }]);
 });
 
 test('une route privée ne donne aucune entrée à la joueuse ni au MJ en mode joueur ; le MJ la lit', () => {
@@ -66,12 +66,14 @@ test('une route privée ne donne aucune entrée à la joueuse ni au MJ en mode j
   const o = w.poser(O.q, O.r);
   const pub = w.poser(O.q + 1, O.r);
   const priv = w.poser(O.q - 1, O.r);
-  w.route(o, pub, true);
-  w.route(o, priv, false);
-  const un = [{ q: O.q + 1, r: O.r, heure: 3, nom: `S ${O.q + 1} ${O.r}` }];
+  w.route(o, pub, true, 4, 'pirate');
+  w.route(o, priv, false, 9, 'secret');
+  const un = [{ q: O.q + 1, r: O.r, heure: 3, nom: `S ${O.q + 1} ${O.r}`, distance: 4, type_lien: 'pirate' }];
   assert.deepEqual(lireSorties(w.db, w.a('lea'), w.univers, w.g, O.q, O.r), un);
   assert.deepEqual(lireSorties(w.db, w.a('antor', true), w.univers, w.g, O.q, O.r), un);
   assert.deepEqual(tri(lireSorties(w.db, w.a('antor'), w.univers, w.g, O.q, O.r)).map((s) => s.heure), [9, 3]);
+  // The GM sees the private route with its own distance and type.
+  assert.deepEqual(lireSorties(w.db, w.a('antor'), w.univers, w.g, O.q, O.r).find((x) => x.q === O.q - 1), { q: O.q - 1, r: O.r, heure: 9, nom: `S ${O.q - 1} ${O.r}`, distance: 9, type_lien: 'secret' });
 });
 
 test('une route vers un voisin masqué ne donne aucune entrée à la joueuse ni au MJ en mode joueur ; le MJ la lit', () => {
@@ -81,7 +83,7 @@ test('une route vers un voisin masqué ne donne aucune entrée à la joueuse ni 
   w.route(o, cache, true);
   assert.deepEqual(lireSorties(w.db, w.a('lea'), w.univers, w.g, O.q, O.r), []);
   assert.deepEqual(lireSorties(w.db, w.a('antor', true), w.univers, w.g, O.q, O.r), []);
-  assert.deepEqual(lireSorties(w.db, w.a('antor'), w.univers, w.g, O.q, O.r), [{ q: O.q + 1, r: O.r, heure: 3, nom: 'Caché' }]);
+  assert.deepEqual(lireSorties(w.db, w.a('antor'), w.univers, w.g, O.q, O.r), [{ q: O.q + 1, r: O.r, heure: 3, nom: 'Caché', distance: 3, type_lien: null }]);
 });
 
 test('la réponse ne trahit pas les sorties cachées : même liste avec ou sans elles, une seule entrée par voisin', () => {

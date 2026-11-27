@@ -77,6 +77,9 @@ pub(crate) const NOUVELLES: &[(&str, Genre, &[&str])] = &[
     ("cratere_glace", Genre::Nombre(0.0, 1.0), &["glace"]),
     ("activite", Genre::Nombre(0.0, 1.0), ETOILES),
     ("intensite", Genre::Nombre(0.0, 2.0), ETOILES),
+    ("villes", Genre::Nombre(0.0, 1.0), &["tellurique", "verrouillee"]),
+    ("lueur", Genre::Nombre(0.0, 1.0), &["tellurique", "verrouillee"]),
+    ("force_lueur", Genre::Nombre(0.0, 2.0), &["tellurique", "verrouillee"]),
     ("vue", Genre::Choix(&["profil", "face"]), &["comete"]),
 ];
 

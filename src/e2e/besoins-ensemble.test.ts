@@ -726,13 +726,15 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
   test('B-29 membres : erreur de chargement, retrait impossible hors connexion', async () => {
     const { antor } = await table(UNIVERS + ' B29m');
     const p = antor.page;
-    await p.route('**/api/univers/*/membres', (r: Any) => r.fulfill({ status: 500, body: '{}' }));
+    // One handler for the whole test, never removed: a request still in flight when « Réessayer » is clicked keeps its answer.
+    let panne = true;
+    await p.route('**/api/univers/*/membres', (r: Any) => (panne ? r.fulfill({ status: 500, body: '{}' }) : r.continue()));
     await p.reload();
     await voit(p, 'Impossible de charger les membres.');
-    await p.unroute('**/api/univers/*/membres');
+    panne = false;
     await p.getByRole('button', { name: rxExact('Réessayer') }).first().click();
-    await attendre(p);
     await p.getByRole('button', { name: /^Retirer / }).first().waitFor({ state: 'visible' });
+    await attendre(p);
     await antor.ctx.setOffline(true);
     await voit(p, 'Connexion perdue.');
     assert.equal(await p.getByRole('button', { name: rxExact('Ajouter') }).isDisabled(), true);
