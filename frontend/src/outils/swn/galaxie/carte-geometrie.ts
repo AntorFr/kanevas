@@ -271,3 +271,71 @@ export function orbitesAstres(d: Disposition): AnneauOrbite[] {
   }
   return out;
 }
+
+/** Minimum distance, in screen pixels along the circle, between two jump arrows (AD-sorties-2). */
+export const ECART_FLECHE_PX = 16;
+
+/** A jump point: the exit, its heading (radians, 12 at the top, clockwise: the exit's real hour) and the place of its arrow on the circle. */
+export type PointDeSaut<S extends { q: number; r: number; heure: number }> = S & { cap: number; x: number; y: number };
+
+/**
+ * Where the arrows of a system's exits sit on a circle of `rayonPx` around the origin (AD-sorties-2). The heading is
+ * `heure / 12 · 2π` and never moves; the place is the heading's, except that two places closer than `ecartPx` along the
+ * circle are pushed apart symmetrically by the smallest angle that restores the gap (a chain of three or more as one group).
+ * Pure; the result is ordered by `heure` then `(q, r)`, whatever the order of the input.
+ */
+export function pointsDeSaut<S extends { q: number; r: number; heure: number }>(sorties: readonly S[], rayonPx: number, ecartPx: number): PointDeSaut<S>[] {
+  const tri = [...sorties].sort((a, b) => a.heure - b.heure || a.q - b.q || a.r - b.r);
+  const n = tri.length;
+  const TOUR = 2 * Math.PI;
+  const caps = tri.map((s) => (s.heure / 12) * TOUR);
+  const pas = rayonPx > 0 ? ecartPx / rayonPx : 0;
+  const EPS = 1e-9;
+  let angles = caps.map((c) => ((c % TOUR) + TOUR) % TOUR);
+  if (n > 1 && pas > 0 && pas * n < TOUR) {
+    // Start the walk after the widest gap, so that no group straddles the origin of the angles.
+    const ordre = angles.map((_, i) => i).sort((i, j) => angles[i]! - angles[j]! || i - j);
+    let debut = 0;
+    let plus = -1;
+    ordre.forEach((idx, k) => {
+      const suivant = ordre[(k + 1) % n]!;
+      const g = (angles[suivant]! - angles[idx]! + TOUR) % TOUR || (n === 1 ? TOUR : 0);
+      if (g > plus + EPS) { plus = g; debut = (k + 1) % n; }
+    });
+    const lin = ordre.map((_, k) => ordre[(debut + k) % n]!);
+    const base = angles[lin[0]!]!;
+    const a = lin.map((i) => (angles[i]! - base + TOUR) % TOUR);
+    let groupes: number[][] = [];
+    a.forEach((v, k) => {
+      const g = groupes[groupes.length - 1];
+      if (g && v - a[g[g.length - 1]!]! < pas - EPS) g.push(k); else groupes.push([k]);
+    });
+    const poser = (g: number[]): number[] => {
+      const m = g.reduce((s, k, j) => s + a[k]! - j * pas, 0) / g.length;
+      return g.map((_, j) => m + j * pas);
+    };
+    for (;;) {
+      const pos = groupes.map(poser);
+      let fusion = -1;
+      for (let k = 0; k + 1 < groupes.length; k++) {
+        if (pos[k + 1]![0]! - pos[k]![pos[k]!.length - 1]! < pas - EPS) { fusion = k; break; }
+      }
+      if (fusion < 0) {
+        const nouveaux = [...angles];
+        groupes.forEach((g, k) => g.forEach((idx, j) => { nouveaux[lin[idx]!] = (((base + pos[k]![j]!) % TOUR) + TOUR) % TOUR; }));
+        angles = nouveaux;
+        break;
+      }
+      groupes = [...groupes.slice(0, fusion), [...groupes[fusion]!, ...groupes[fusion + 1]!], ...groupes.slice(fusion + 2)];
+    }
+  }
+  return tri.map((s, i) => ({
+    ...s,
+    cap: caps[i]! % TOUR,
+    x: Math.sin(angles[i]!) * rayonPx,
+    y: -Math.cos(angles[i]!) * rayonPx,
+  }));
+}
+
+/** « 1 case », « n cases ». */
+export const libelleDistance = (n: number): string => (n === 1 ? '1 case' : `${n} cases`);
