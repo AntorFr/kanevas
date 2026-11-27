@@ -203,6 +203,28 @@ export function audienceDe(s: SectionRow): Audience {
 }
 
 /**
+ * The copies a universe holds of elements of its system (AD-surcharge-2): `{original → copie}` for the given ids.
+ * A base held short of migration 0053 has no column and no copy.
+ */
+export function copiesDeUnivers(db: Db, universId: number, originalIds: number[]): Map<number, number> {
+  const copies = new Map<number, number>();
+  if (originalIds.length === 0) return copies;
+  let lignes: { id: number; surcharge_de: number }[];
+  try {
+    lignes = db
+      .prepare(
+        `SELECT id, surcharge_de FROM fiches
+          WHERE univers_id = ? AND surcharge_de IN (SELECT value FROM json_each(?))`,
+      )
+      .all(universId, JSON.stringify(originalIds)) as { id: number; surcharge_de: number }[];
+  } catch {
+    return copies;
+  }
+  for (const l of lignes) copies.set(l.surcharge_de, l.id);
+  return copies;
+}
+
+/**
  * The resolver of the `[[…]]` links of a text for one reader (AD-116, AD-96): one query for all the
  * links, the rendering decided by the target — a readable sheet is a link, an unreadable one is text,
  * a vanished one (`casse`) or a waiting key (`attente`) is marked for the GM outside player mode only.
@@ -235,7 +257,51 @@ export function resolveurLiens(
     lisible: number;
   }[];
   const parId = new Map(lignes.map((l) => [l.id, l]));
+  // A link written on an element of the system reads as the universe's copy of it (AD-surcharge-2): the copy is
+  // read at the reader's right like any sheet of the universe; the link keeps the id it was written with.
+  const absents = ids.filter((i) => !parId.has(i));
+  const copies = copiesDeUnivers(db, universId, absents);
+  if (copies.size > 0) {
+    const ciblees = db
+      .prepare(
+        `SELECT f.id, f.type, f.cle, ${lisible ? `(${lisible.sql})` : '1'} AS lisible
+           FROM fiches f WHERE f.univers_id = ? AND f.id IN (SELECT value FROM json_each(?))`,
+      )
+      .all(...(lisible?.params ?? []), universId, JSON.stringify([...copies.values()])) as {
+      id: number;
+      type: string;
+      cle: string | null;
+      lisible: number;
+    }[];
+    const parCopie = new Map(ciblees.map((l) => [l.id, l]));
+    for (const [original, copie] of copies) {
+      const l = parCopie.get(copie);
+      if (l) parId.set(original, l);
+    }
+  }
   const parCle = new Map(lignes.flatMap((l) => (l.cle !== null ? [[l.cle, l] as const] : [])));
+  // An element of the attached system without a copy here reads as itself, at the account's right on the system
+  // (AD-157): the link keeps its id, the universe's address opens it (`lireFiche`).
+  const restants = ids.filter((i) => !parId.has(i));
+  if (restants.length > 0) {
+    const u = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as { systeme_id?: number | null } | undefined;
+    const droit = u?.systeme_id != null ? lectureSysteme(db, acteur.compteId, u.systeme_id) : null;
+    if (droit) {
+      const lisibleSys = sqlFicheLisible(droit.role, { compteId: acteur.compteId }, 'f');
+      const elements = db
+        .prepare(
+          `SELECT f.id, f.type, f.cle, ${lisibleSys ? `(${lisibleSys.sql})` : '1'} AS lisible
+             FROM fiches f WHERE f.univers_id = ? AND f.id IN (SELECT value FROM json_each(?))`,
+        )
+        .all(...(lisibleSys?.params ?? []), droit.espaceId, JSON.stringify(restants)) as {
+        id: number;
+        type: string;
+        cle: string | null;
+        lisible: number;
+      }[];
+      for (const l of elements) parId.set(l.id, l);
+    }
+  }
   const marques = vueMJ(role, acteur);
   return (cible) => {
     const f = cible.id !== null ? parId.get(cible.id) : parCle.get(cible.cle ?? '');
