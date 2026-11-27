@@ -6,7 +6,7 @@ import { lire, useConnexionPerdue } from '../../../api';
 import { chargerModule } from '../../../wasm/charger';
 import { Alerte, Bouton, BoutonIcone, Case, useToasts } from '../../../ui';
 import { APPUI_LONG_MS, DELAI_FLECHES_MS, pasFleche } from '../../../ui/glisser';
-import { centresNuage, coteDemande, ECART_FLECHE_PX, libelleDistance, pointsDeSaut, dimensionsCorps, disposer, grainsAnneau, orbitesAstres, placeApresPas, placeDepuisPoint, PORTEE_COURONNE, queuesComete, RAYON_MIN_PX, rayonOrbite, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
+import { centresNuage, coteDemande, ECART_FLECHE_PX, libelleDistance, pointsDeSaut, dimensionsCorps, disposer, grainsAnneau, orbitesAstres, placeApresPas, placeDepuisPoint, COTE_COURONNE_PX, PORTEE_COURONNE, queueDeComete, queuesComete, RAYON_MIN_PX, RAYON_TETE_MIN_PX, rayonOrbite, trajectoireDeComete, U, type CorpsPlace, type Disposition, type Plan } from './carte-geometrie';
 import { typeDeRoute, type FamilleRoute } from './type-route';
 import { Sprites, dessineurDuCoeur } from './carte-sprites';
 import { chargerClasses, cleSprite, eclairages, type Eclairage } from './lumiere-corps';
@@ -72,7 +72,7 @@ const ELEMENTS_ETIQUETES = 8;
 /** The sky's colours for the canvas, read from the tokens (a canvas cannot take a CSS variable). */
 const lireTokens = (el: Element) => {
   const s = getComputedStyle(el);
-  return { accent: s.getPropertyValue('--accent').trim(), trait: s.getPropertyValue('--ciel-trait').trim() };
+  return { accent: s.getPropertyValue('--accent').trim(), trait: s.getPropertyValue('--ciel-trait').trim(), or: s.getPropertyValue('--ciel-or').trim() };
 };
 
 /** E-23, the canvas (AD-carte-3): the interior as `lireInterieur` answered it, drawn by the core; nothing is filtered here. */
@@ -235,6 +235,16 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
     return { liste, sorties: ex };
   }, [dispo, ecran, echelle, sorties, marques, taille.w, selectionElement]);
 
+  // A comet's tail as drawn (AD-cometes-1): away from the star it turns round, in screen pixels (its length follows the fit, never the zoom).
+  const queueDe = (c: CorpsPlace) => {
+    const etoile = dispo?.corps.find((e) => e.astre.genre === 'etoile' && e.astre.etoile_rang === c.astre.etoile_rang)
+      ?? dispo?.corps.find((e) => e.astre.genre === 'etoile' && e.astre.etoile_rang === 0) ?? { x: 0, y: 0 };
+    const la = typeof c.astre.aspect?.longueur === 'number' ? c.astre.aspect.longueur : 0.55;
+    const q = queueDeComete({ x: c.x, y: c.y, orbite: c.astre.orbite ?? undefined, heure: c.astre.heure ?? undefined, aspect: c.astre.aspect }, etoile, la);
+    return { etoile, queue: { ...q, longueur: q.longueur * ajuste } };
+  };
+  const cometeChoisie = dispo?.corps.find((c) => c.genre === 'comete' && c.cle === selection) ?? null;
+
   // What a label must clear besides the bodies: the hour marks (when drawn) and the transition circle.
   const obstacles = useMemo(() => {
     const liste: Obstacle[] = [];
@@ -248,7 +258,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
       // A star's glow is drawn out to ~0.9 of its sprite's half-side: a label does not sit on it (an obstacle, never part of the radius).
       if (c.astre.genre === 'etoile') liste.push({ type: 'disque', x, y, rayon: dimDe(c.cle).cote / 2 * PORTEE_COURONNE });
       if (c.genre !== 'comete') continue;
-      liste.push(...queuesComete(x, y, dimDe(c.cle).cote, c.astre.aspect));
+      liste.push(...queuesComete(x, y, dimDe(c.cle).cote, c.astre.aspect, queueDe(c).queue));
     }
     if (heures) {
       const rh = Math.max(dispo.transition, 3 * U);
@@ -303,15 +313,78 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
           }
         }
       }
+      // The trajectories (AD-cometes-2) under the sprites: dashes in the sky's trait colour, the chosen comet's whole and gold, on top.
+      const cometes = dispo.corps.filter((c) => c.genre === 'comete');
+      const rMaxExt = Math.max(0, ...dispo.corps.filter((c) => c.astre.genre !== 'lune').map((c) => c.astre.orbite ?? 0)) * 1.25;
+      const trajets: { cle: string; couleur: string; epaisseur: number; tirets: boolean }[] = [];
+      for (const c of [...cometes.filter((k) => k.cle !== selection), ...cometes.filter((k) => k.cle === selection)]) {
+        const choisie = c.cle === selection;
+        const { points } = trajectoireDeComete({ x: c.x, y: c.y, orbite: c.astre.orbite ?? undefined, heure: c.astre.heure ?? undefined, aspect: c.astre.aspect },
+          queueDe(c).etoile, Math.max(rMaxExt, c.astre.orbite ?? 0));
+        g.strokeStyle = choisie ? jeton.or : jeton.trait; g.lineWidth = choisie ? 2 : 1;
+        g.setLineDash(choisie ? [] : [4, 4]);
+        g.beginPath();
+        points.forEach(([wx, wy], i) => { const [px, py] = ecran(wx, wy); if (i === 0) g.moveTo(px, py); else g.lineTo(px, py); });
+        g.stroke();
+        g.setLineDash([]);
+        trajets.push({ cle: c.cle, couleur: g.strokeStyle as string, epaisseur: g.lineWidth, tirets: !choisie });
+      }
+      t.setAttribute('data-trajet-comete', JSON.stringify(trajets));
+      const queues: { cle: string; angle: number; longueur: number }[] = [];
       g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
       const maintenant = performance.now();
       for (const c of dispo.corps) {
         const [x, y] = ecran(c.x, c.y);
         const cote = dimDe(c.cle).cote;
         if (x + cote < 0 || y + cote < 0 || x - cote > taille.w || y - cote > taille.h) continue;
-        for (const { image: im, alpha } of sprites.current?.couches(cleSprite(c.cle, lumieres.get(c.cle)), coteDemande(cote, dpr), maintenant) ?? []) {
-          g.globalAlpha = enEnvoiRef.current.has(c.cle) ? alpha * OPACITE_ENVOI : alpha;
-          g.drawImage(im, x - cote / 2 + c.decalage[0] * cote, y - cote / 2 + c.decalage[1] * cote, cote, cote);
+        const couches = sprites.current?.couches(cleSprite(c.cle, lumieres.get(c.cle)), coteDemande(cote, dpr), maintenant) ?? [];
+        if (c.genre === 'comete') {
+          // The picture turned about its head, faded along the tail up to its length (the head offset turns with it).
+          const { queue } = queueDe(c);
+          const sens = typeof c.astre.aspect?.sens === 'number' && c.astre.aspect.sens < 0 ? -1 : 1;
+          queues.push({ cle: c.cle, angle: queue.rotation + Math.atan2(0.6, -sens * 0.8), longueur: queue.longueur });
+          const demi = Math.ceil(Math.max(cote * 1.5, queue.longueur + 4));
+          const oc = document.createElement('canvas');
+          oc.width = oc.height = Math.ceil(2 * demi * dpr);
+          const o = oc.getContext('2d');
+          if (o) {
+            o.setTransform(dpr, 0, 0, dpr, demi * dpr, demi * dpr);
+            o.imageSmoothingEnabled = true; o.imageSmoothingQuality = 'high';
+            o.rotate(queue.rotation);
+            for (const { image: im, alpha } of couches) {
+              o.globalAlpha = alpha;
+              o.drawImage(im, -cote / 2 + c.decalage[0] * cote, -cote / 2 + c.decalage[1] * cote, cote, cote);
+            }
+            o.setTransform(dpr, 0, 0, dpr, demi * dpr, demi * dpr);
+            o.globalAlpha = 1;
+            o.globalCompositeOperation = 'destination-in';
+            const fondu = o.createLinearGradient(0, 0, queue.dx * queue.longueur, queue.dy * queue.longueur);
+            fondu.addColorStop(0, 'rgba(0,0,0,1)'); fondu.addColorStop(0.6, 'rgba(0,0,0,1)'); fondu.addColorStop(1, 'rgba(0,0,0,0)');
+            o.fillStyle = fondu;
+            o.fillRect(-demi, -demi, 2 * demi, 2 * demi);
+            g.globalAlpha = enEnvoiRef.current.has(c.cle) ? OPACITE_ENVOI : 1;
+            g.drawImage(oc, x - demi, y - demi, 2 * demi, 2 * demi);
+          }
+          // Readability (AD-cometes-3): a head never under RAYON_TETE_MIN_PX, and a coma when the picture is small.
+          const teinte = typeof c.astre.aspect?.couleur === 'string' && /^#[0-9a-f]{3,8}$/i.test(c.astre.aspect.couleur) ? c.astre.aspect.couleur : jeton.or;
+          g.globalAlpha = 1;
+          if (cote < COTE_COURONNE_PX) {
+            const coma = g.createRadialGradient(x, y, 0, x, y, 12);
+            coma.addColorStop(0, teinte); coma.addColorStop(1, 'rgba(0,0,0,0)');
+            g.globalCompositeOperation = 'lighter';
+            g.fillStyle = coma;
+            g.beginPath(); g.arc(x, y, 12, 0, 7); g.fill();
+            g.globalCompositeOperation = 'source-over';
+          }
+          if (dimDe(c.cle).rayon < RAYON_TETE_MIN_PX) {
+            g.fillStyle = teinte;
+            g.beginPath(); g.arc(x, y, RAYON_TETE_MIN_PX, 0, 7); g.fill();
+          }
+        } else {
+          for (const { image: im, alpha } of couches) {
+            g.globalAlpha = enEnvoiRef.current.has(c.cle) ? alpha * OPACITE_ENVOI : alpha;
+            g.drawImage(im, x - cote / 2 + c.decalage[0] * cote, y - cote / 2 + c.decalage[1] * cote, cote, cote);
+          }
         }
         g.globalAlpha = 1;
         if (c.cle === selection) {
@@ -319,6 +392,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
           g.beginPath(); g.arc(x, y, Math.max(8, dimDe(c.cle).rayon + 5), 0, 7); g.stroke();
         }
       }
+      t.setAttribute('data-queue-comete', JSON.stringify(queues));
       if (sprites.current?.enFondu(performance.now())) image = requestAnimationFrame(tracer);
     };
     tracer();
@@ -529,7 +603,7 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
         ref={racine}
         className="cs-ciel"
         role="application"
-        aria-label="Carte du système"
+        aria-label={cometeChoisie ? `Carte du système. Trajectoire de ${nomAstre(cometeChoisie.astre)} affichée` : 'Carte du système'}
         aria-describedby="gx-liste-corps"
         data-zoom={vue.zoom.toFixed(3)}
         data-pret={etat === 'pret' && taille.w > 0 ? 'oui' : 'non'}
