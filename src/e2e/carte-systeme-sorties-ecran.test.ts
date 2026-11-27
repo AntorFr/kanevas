@@ -140,6 +140,19 @@ describe('E-23 le halo de transition et les flèches de sortie', { skip: skipBro
     }
   });
 
+  it('à 1440 px, la transition dominant l’étendue : les repères d’heure (12 h, 6 h comprises) tiennent entiers dans le canvas, dans les deux thèmes', async () => {
+    for (const theme of ['dark', 'light'] as const) {
+      const { page, ctx } = await ouvrir('Antor', 1440, 900, theme);
+      await page.locator('.cs-sortie').first().waitFor();
+      const ciel = await page.locator('.cs-ciel').evaluate((e: Element) => { const r = e.getBoundingClientRect(); return { x0: r.left, y0: r.top, x1: r.right, y1: r.bottom }; });
+      const reperes = (await page.locator('.cs-heure text').evaluateAll((els: Element[]) => els.map((e) => { const r = e.getBoundingClientRect(); return { id: e.textContent ?? '', x0: r.left, y0: r.top, x1: r.right, y1: r.bottom }; }))) as Any[];
+      const ids = reperes.map((r) => r.id.trim());
+      for (const h of ['12 h', '6 h']) assert.ok(ids.includes(h), `${theme} : repère « ${h} » affiché (${ids.join('|')})`);
+      for (const r of reperes) assert.ok(r.x0 >= ciel.x0 && r.y0 >= ciel.y0 && r.x1 <= ciel.x1 && r.y1 <= ciel.y1, `${theme} : « ${r.id} » dépasse du canvas`);
+      await ctx.close();
+    }
+  });
+
   it('cliquer la flèche ouvre le système voisin ; l’aria-label de la pirate finit par « , route Pirate »', async () => {
     const { page, ctx } = await ouvrir('Antor', 1280, 800);
     const f = page.locator('.cs-sortie.pirate');
