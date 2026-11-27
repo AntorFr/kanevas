@@ -1696,7 +1696,7 @@ the map or a rule **without the music stopping**.
 
 1. In the sound library of the universe (E-31) he deposits a file (« Ajouter un son »): the file is measured, a
    duplicate he can see is announced with « Importer celui-là ». *Failure*: file over the limit (B-135), unreadable
-   format, a taken key.
+   format.
 2. On the sound (E-32) he sets type, generic tags, description, source and licence, ticks « listened » after hearing it.
 3. He finds the sounds still to classify (« no tag in Émotion ») and goes on.
 4. The system's GM does the same in the system's library (E-15, tab « Sons »).

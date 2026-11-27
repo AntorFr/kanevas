@@ -947,6 +947,7 @@ library parts serves the three levels; the global library is not stored, it is a
 | Entity | Content |
 |---|---|
 | `sons` | the **common part**: `id`, `cle` (unique in the instance, `cles_anciennes`-style history like AD-146), `nom`, `type` (`musique`\|`fond`\|`bruitage`), `description` (Markdown), `source`, `auteur`, `licence`, `adresse`, `reference_origine`, `boucle_sans_couture`, `ecoute`, `prive`, `octets_id`, `version` (optimistic check of the common part: a stale edit is refused `son_modifie`, conflit), `depose_le`, `modifie_le` |
+| `sons_cles_anciennes` | `cle` (unique), `son_id`, `change_le`: the former keys of a sound, which keep resolving (AD-146); written by `cles.ts` only |
 | `sons_octets` | **one row per file on disk**: `id`, `empreinte` (SHA-256, unique), `disque` (name under `<db dir>/attachments/`), `taille`, measures: `format`, `duree_ms`, `debit`, `frequence`, `canaux`, `lufs`, `crete_dbtp`, `lra`, `mesure_le` (null while measuring). Written only by the sound services; erased only by the purge |
 | `sons_bibliotheques` | the **part per library**: `son_id`, `univers_id` (a universe or a space), `visibilite` (`joueurs`\|`mj`), `notes` (Markdown), `notes_public` (the Notes without their `:::mj` blocks, computed by `contenuPublic`, AD-114, written with `notes` only), `ajoute_le`; unique (`son_id`, `univers_id`). A sound with no row is an **orphan** |
 | `sons_tags_locaux` | `son_id`, `univers_id`, `tag` (free text, 1 to 40 characters, unique per library and sound) |
@@ -973,10 +974,11 @@ first slice's merge):
    `sons`, sets `son_id` to null and `manquant_nom` to the name in their `sections_sons` entries (the only write of an entry
    apart from `poserSonsDeSection` and the deletion below), `sons_octets` goes when nothing refers to it, then the file.
    Deleting a section, a sheet or a universe deletes its `sections_sons` rows in the same transaction, by a function of
-   `services/sons.ts` that `supprimerFiche` and `supprimerUnivers` call; their bilan does not count them.
+   `services/sons.ts` that `supprimerFiche`, `supprimerUnivers` **and the deletion of a single section of a living sheet** (E-9) call; their bilan does not count them.
    A key is drawn by `cles.ts` (`tirerCleSon`) at a screen's deposit, never typed; the import carries its own: on a key held by
    a sound outside the target library it answers `cle_prise` (the key is the only thing it tells); changed only by
-   `changerCleSon` (the old key keeps resolving, AD-146).
+   `changerCleSon` (the old key keeps resolving, AD-146): the former keys are rows of `sons_cles_anciennes` (`cle`, `son_id`, `change_le`; a key in use cannot be a former key of another sound, `cle_prise`), read and written by `cles.ts` only; the key is changed from E-32 (field « Clé », common part, any GM who sees the sound) and by `PATCH` of the common part (`cle`).
+   **Concurrent edit**: the common part carries `version`; `PATCH /sons/:cle` and the screen's save send the `version` they read, a stale one is refused `son_modifie` (conflit, the current common part in the body).
 6. **Deduplication**: the digest is computed while the file is written (`ecrireFlux`); an existing `sons_octets` row is
    reused; the reply says `son_existant` (409, with the key) **only** when the identical sound is visible to the account;
    otherwise a new sound shares the bytes without any word about the other (no leak of a private sound).
