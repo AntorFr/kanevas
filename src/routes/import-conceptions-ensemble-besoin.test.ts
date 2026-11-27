@@ -73,13 +73,9 @@ async function monde(): Promise<Monde> {
     precedent = r.json.lotId as number; return precedent;
   };
   // The documented route is `…/outils/swn/vaisseaux/conceptions` (fiche, I-1, README). The B-95 test below plays it alone.
-  // The other tests reach the behaviour through the path the server answers on today if the documented one is not served,
-  // so that one wrong path does not hide every other verdict.
   const conceptions: Monde['conceptions'] = async (l, corps, j) => {
     const q = l === null ? '' : `?lot=${l}`;
-    const r = await api('PUT', `/outils/swn/vaisseaux/conceptions${q}`, corps, j);
-    if (r.status !== 404) return r;
-    return api('PUT', `/outils/swn/vaisseaux/vaisseaux/conceptions${q}`, corps, j);
+    return api('PUT', `/outils/swn/vaisseaux/conceptions${q}`, corps, j);
   };
   const catalogues = async (l: number) => {
     for (const f of ['catalogue-essai.json', 'catalogue-essai-conceptions.json']) {
@@ -397,7 +393,7 @@ describe('jetons, lot, taille, univers, outil désactivé', () => {
     const m = await monde();
     const lot = await m.lot();
     const voisin = ((await m.antor('GET', '/api/univers')).json as Any[]).find((u) => u.nom === 'Univers voisin').id;
-    const chemin = (u: number) => `/api/import/v1/univers/${u}/outils/swn/vaisseaux/vaisseaux/conceptions?lot=${lot}`;
+    const chemin = (u: number) => `/api/import/v1/univers/${u}/outils/swn/vaisseaux/conceptions?lot=${lot}`;
     const h = { authorization: `Bearer ${m.jeton}` };
     const autre = await appel(m.srv.base, h, 'PUT', chemin(voisin), exemple('conceptions-essai.json'));
     const inconnu = await appel(m.srv.base, h, 'PUT', chemin(99999), exemple('conceptions-essai.json'));

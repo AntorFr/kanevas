@@ -30,7 +30,7 @@ async function monde() {
     app.inject({ method, url: `${prefixe}/univers/${univers}${url}`, headers: { authorization: `Bearer ${valeur}` }, payload: payload as any });
   const ouvrir = async (valeur = t) => (await req(valeur, 'POST', `/lots?outil=${T}`)).json().lotId as number;
   const put = (valeur: string, corps: unknown, lot?: number, prefixe = '/api/import/v1', univers = E) =>
-    req(valeur, 'PUT', `/outils/${T}/vaisseaux/conceptions${lot ? `?lot=${lot}` : ''}`, corps, univers, prefixe);
+    req(valeur, 'PUT', `/outils/${T}/conceptions${lot ? `?lot=${lot}` : ''}`, corps, univers, prefixe);
   const catalogue = async (lot: number) => {
     for (const f of ['catalogue-essai.json', 'catalogue-essai-conceptions.json']) {
       const r = await req(t, 'PUT', `/outils/${T}/catalogue?niveau=univers&lot=${lot}`, ex(f));
