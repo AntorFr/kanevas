@@ -5352,5 +5352,5 @@ where to find it, with « Placer le son » for a GM; a removed sound shows « So
 E-35: a section with no sound is not a group; a table with no sound says so and links to E-36. E-38: nothing orphan →
 « Aucun son à purger » ; a confirmation names the count and the size to be freed.
 
-**Mockups** (to draw in the next pass, `docs/maquettes/`): E-34 + E-35 (the table with the bar, the structuring screen)
+**Mockups** (`docs/maquettes/e31-table-lecteur.html`: E-34 + E-35; `e31-bibliotheque-sons.html`: E-31 + E-32) — E-34 + E-35 (the table with the bar, the structuring screen)
 and E-31 + E-32. E-36, E-37 and E-38 follow the sheet and the administration conventions already in the charter.
