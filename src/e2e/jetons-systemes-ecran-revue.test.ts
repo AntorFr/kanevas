@@ -263,5 +263,7 @@ test('mise en page : la ligne « Systèmes » de deux systèmes tient sur une li
   });
   assert.equal(lignes, 1, 'le texte tient sur une seule ligne');
   assert.equal(await l.locator('.ligne-jeton-actions').evaluate((e: Element) => getComputedStyle(e).position), 'absolute');
+  await l.hover();
+  await page.screenshot({ path: `${CAP}/ligne-deux-systemes-1440.png` });
   await ctx.close();
 });
