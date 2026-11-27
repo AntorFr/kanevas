@@ -71,6 +71,8 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
     return { vx: p.x, vy: p.y, s: TAILLE_MIN };
   });
   const cadree = useRef(false);
+  // The opening frame follows the known zone while blocks still arrive (a far system only shows once its block is in), until the reader moves the view.
+  const cadrageAuto = useRef(false);
   const [donnees, setDonnees] = useState<Donnees>(vide);
   const [premier, setPremier] = useState(true);
   const [echec, setEchec] = useState(false);
@@ -82,6 +84,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
   // A write happened: everything loaded is stale. Requests still in flight are marked so their answer is dropped.
   const generation = useRef(0);
   const encours = useRef(0);
+  const setVueUtilisateur: typeof setVue = useCallback((v) => { cadrageAuto.current = false; setVue(v); }, []);
   const vueRef = useRef(vue);
   vueRef.current = vue;
 
@@ -144,12 +147,15 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
 
   // Once every visible block of the wide first view is in, frame the systems (unless a link already centred the view).
   useEffect(() => {
-    if (cadree.current || premier || echec) return;
+    if (premier || echec) return;
+    if (cadree.current && !cadrageAuto.current) return;
     for (let by = visibles.by0; by <= visibles.by1; by++) {
       for (let bx = visibles.bx0; bx <= visibles.bx1; bx++) if (!donnees.blocs.has(cleBloc(bx, by))) return;
     }
-    cadree.current = true;
-    if (!centrer) setVue(cadrage());
+    if (centrer) { cadree.current = true; return; }
+    const v = cadrage();
+    if (!cadree.current) { cadree.current = true; cadrageAuto.current = true; }
+    setVue((o) => (Math.abs(o.vx - v.vx) < 1e-6 && Math.abs(o.vy - v.vy) < 1e-6 && Math.abs(o.s - v.s) < 1e-6 ? o : v));
   }); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -250,7 +256,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
       e.preventDefault();
       const r = el.getBoundingClientRect();
       const p = { x: e.clientX - r.left, y: e.clientY - r.top };
-      setVue((v) => zoomerAutour(v, borne(v.s * Math.exp(-e.deltaY / 400)), p));
+      setVueUtilisateur((v) => zoomerAutour(v, borne(v.s * Math.exp(-e.deltaY / 400)), p));
     };
     el.addEventListener('wheel', roue, { passive: false });
     return () => el.removeEventListener('wheel', roue);
@@ -289,14 +295,14 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
     if (pointeurs.current.size >= 2) {
       const dm = distancePointeurs()!;
       const s = borne((g.s0 * dm.d) / g.d0);
-      setVue({ s, vx: g.ancre.x - (dm.m.x - taille.w / 2) / s, vy: g.ancre.y - (dm.m.y - taille.h / 2) / s });
+      setVueUtilisateur({ s, vx: g.ancre.x - (dm.m.x - taille.w / 2) / s, vy: g.ancre.y - (dm.m.y - taille.h / 2) / s });
       return;
     }
     if (!g.bouge && g.depart && Math.hypot(p.x - g.depart.x, p.y - g.depart.y) > 4) {
       g.bouge = true;
       capter(e.pointerId);
     }
-    if (g.bouge) setVue((v) => ({ ...v, vx: v.vx - (p.x - avant.x) / v.s, vy: v.vy - (p.y - avant.y) / v.s }));
+    if (g.bouge) setVueUtilisateur((v) => ({ ...v, vx: v.vx - (p.x - avant.x) / v.s, vy: v.vy - (p.y - avant.y) / v.s }));
   }
   function haut(e: React.PointerEvent) {
     pointeurs.current.delete(e.pointerId);
@@ -511,8 +517,8 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
         </div>
       )}
       <div className="gx-zoom">
-        <Bouton aria-label="Zoom avant" title="Zoom avant" onClick={() => setVue((v) => ({ ...v, s: borne(v.s * 1.4) }))} disabled={vue.s >= TAILLE_MAX}><Plus size={16} aria-hidden="true" /></Bouton>
-        <Bouton aria-label="Zoom arrière" title="Zoom arrière" onClick={() => setVue((v) => ({ ...v, s: borne(v.s / 1.4) }))} disabled={vue.s <= sMin + 1e-6}><Minus size={16} aria-hidden="true" /></Bouton>
+        <Bouton aria-label="Zoom avant" title="Zoom avant" onClick={() => setVueUtilisateur((v) => ({ ...v, s: borne(v.s * 1.4) }))} disabled={vue.s >= TAILLE_MAX}><Plus size={16} aria-hidden="true" /></Bouton>
+        <Bouton aria-label="Zoom arrière" title="Zoom arrière" onClick={() => setVueUtilisateur((v) => ({ ...v, s: borne(v.s / 1.4) }))} disabled={vue.s <= sMin + 1e-6}><Minus size={16} aria-hidden="true" /></Bouton>
         <Bouton icone={Crosshair} onClick={() => setVue(cadrage())}>Recentrer</Bouton>
       </div>
       <div className="gx-legende-zone">
