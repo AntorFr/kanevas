@@ -14,6 +14,9 @@ import {
   appliquerCatalogueParJeton, apercuCatalogueParJeton, niveauDeRequete,
 } from '../services/import-catalogue.js';
 import { importerAtlasParJeton, importerGalaxieParJeton } from '../services/swn/import-galaxie-lot.js';
+import { importerConceptionsParJeton } from '../services/swn/import-conceptions-lot.js';
+import { OUTIL_VAISSEAUX } from '../services/swn/calcul-vaisseau.js';
+import { exigerOutil } from '../services/outils.js';
 import { listerGalaxiesImport } from '../services/swn/import-galaxie.js';
 import { OUTIL_GALAXIE } from '../services/swn/galaxies.js';
 import { lireContexteImport } from '../services/import.js';
@@ -457,6 +460,20 @@ export async function registerImportRoutes(app: FastifyInstance) {
         const { gid, cle } = request.params as { gid: string; cle: string };
         const { lot } = request.query as { lot?: unknown };
         return importerAtlasParJeton(app.db, jetonDe(request), lotDeRequete(lot), entier(gid), cle, request.body, app.horloge());
+      });
+
+      // The ship designs of the designer (I-1): the token carries `swn/vaisseaux`; a disabled tool answers like an unknown path.
+      scope.put(`${base}/outils/:module/:outil/vaisseaux/conceptions`, {
+        config: { portee: 'outil' }, errorHandler: erreurFichier,
+      }, async (request, reply) => {
+        if (cleOutil(request) !== OUTIL_VAISSEAUX) return reply.callNotFound();
+        const j = jetonDe(request);
+        try { exigerOutil(app.db, { compteId: j.compteId }, j.universId, OUTIL_VAISSEAUX); } catch (e) {
+          if (e instanceof ErreurService && e.code === 'introuvable') return reply.callNotFound();
+          throw e;
+        }
+        const { lot } = request.query as { lot?: unknown };
+        return importerConceptionsParJeton(app.db, j, lotDeRequete(lot), request.body, app.horloge());
       });
 
       scope.post(`${base}/lots/:lid/clore`, { config: { portee: 'lot' } }, async (request) => {

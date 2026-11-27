@@ -61,6 +61,12 @@ export const swnVaisseaux: DeclarationGenerateur = {
   },
   catalogue: catalogueVaisseaux,
   donnees: donneesVaisseaux,
+  importation: {
+    natures: [{ nom: 'conceptions', libelle: 'conception', libellePluriel: 'conceptions' }],
+    // Lazy: the import reaches the sheet services, which import the registry (a cycle, as for `routes` below).
+    appliquer: async (db, acteur, universId, _cible, corps) =>
+      (await import('../../services/swn/import-conceptions.js')).importerConceptions(db, acteur, universId, corps),
+  },
   ecran: { libelle: 'Concepteur de vaisseaux', icone: 'Rocket' },
   outilsAssistant: outilVaisseau,
   sections: [{
