@@ -100,7 +100,7 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
   test('Antor : deux systèmes, « Lecture seule » sur le second seulement', opts, async () => {
     await va(antor, '/systemes');
     const cartes = antor.locator('.carte-dessin');
-    assert.equal(await cartes.count(), 3); // + « Système d'essai » (kanevas-outils-cadre)
+    assert.equal(await cartes.count(), 4); // + « Système d'essai » (kanevas-outils-cadre) + « Stars Without Number » (kanevas-systemes-jeu-api-ecran)
     const cof = cartes.filter({ hasText: /CoF Mini/ });
     const chro = cartes.filter({ hasText: /Chroniques Oubliées Fantasy/ });
     assert.equal(await chro.filter({ hasText: 'Lecture seule' }).count(), 1);

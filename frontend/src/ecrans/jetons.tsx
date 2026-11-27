@@ -6,7 +6,8 @@ import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import { BoiteDialogue, Bouton, ChargementListe, ErreurChargement, LigneJeton, ListeJetons, Pastille, useToasts } from '../ui';
 import { FormulaireJeton } from './jetons/formulaire';
-import { MOT_NIVEAU, libelleOutils, metaJeton, type JetonVue, type OutilOffrable, type UniversChoix } from './jetons/format';
+import { MOT_NIVEAU, libelleOutils, metaJeton, type JetonVue, type OutilOffrable, type SystemeChoix, type UniversChoix } from './jetons/format';
+import { AccesSystemes } from './jetons/systemes';
 import './ecrans.css';
 import './liste.css';
 
@@ -69,6 +70,9 @@ function PastillesJeton({ j }: { j: JetonVue }) {
 /** E-23 Mes jetons d'API: every account's own tokens (B-94), outside any universe. */
 function MesJetons() {
   const [charge, recharger] = useCharge<Reponse>('/api/compte/jetons');
+  // The systems the account reads: only to word the second line of a token (« vous n'êtes plus MJ »).
+  const [lecture] = useCharge<SystemeChoix[]>('/api/systemes');
+  const lus = lecture.etat === 'ok' ? lecture.valeur : undefined;
   const derniere = useRef<Reponse | undefined>(undefined);
   if (charge.etat === 'ok') derniere.current = charge.valeur;
   const donnees = charge.etat === 'ok' ? charge.valeur : charge.etat === 'chargement' ? derniere.current : undefined;
@@ -144,6 +148,7 @@ function MesJetons() {
                 nom={j.nom}
                 pastilles={<PastillesJeton j={j} />}
                 acces={<AccesLigne j={j} univers={univers} outils={outilsOffrables} />}
+                acces2={j.systemes && j.systemes.length > 0 ? <AccesSystemes j={j} lus={lus} /> : undefined}
                 meta={metaJeton(j, maintenant)}
                 inactif={j.etat !== 'actif'}
                 hors={perdue}

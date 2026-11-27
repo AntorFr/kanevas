@@ -7,6 +7,7 @@ import {
   outilsOffrables,
   modifierAcces,
   revoquerJeton,
+  systemesChoisissables,
   universChoisissables,
   type ActeurJeton,
 } from '../services/jetons.js';
@@ -42,14 +43,14 @@ export function registerJetonsRoutes(app: FastifyInstance) {
     const { jeton, valeur } = creerJeton(
       app.db,
       request.session!.id,
-      { nom: b.nom, dureeJours: b.dureeJours, acces: b.acces, outils: b.outils, contenu: b.contenu },
+      { nom: b.nom, dureeJours: b.dureeJours, acces: b.acces, outils: b.outils, contenu: b.contenu, systemes: b.systemes },
       app.horloge(),
     );
     return reply.code(201).send({ jeton, valeur });
   });
 
   app.patch('/api/compte/jetons/:jid', async (request) =>
-    ({ jeton: modifierAcces(app.db, proprietaire(request), jid(request), corps(request).acces, app.horloge()) }));
+    ({ jeton: modifierAcces(app.db, proprietaire(request), jid(request), corps(request).acces, app.horloge(), corps(request).systemes) }));
 
   app.delete('/api/compte/jetons/:jid', async (request) =>
     ({ jeton: revoquerJeton(app.db, proprietaire(request), jid(request), app.horloge()) }));
@@ -60,15 +61,17 @@ export function registerJetonsRoutes(app: FastifyInstance) {
     const jetons = listerJetonsInstance(app.db, admin(request), filtre, app.horloge());
     const univers: Record<number, ReturnType<typeof universChoisissables>> = {};
     const outils: Record<number, ReturnType<typeof outilsOffrables>> = {};
+    const systemes: Record<number, ReturnType<typeof systemesChoisissables>> = {};
     for (const j of jetons) {
       univers[j.compteId] ??= universChoisissables(app.db, j.compteId);
       outils[j.compteId] ??= outilsOffrables(app.db, j.compteId);
+      systemes[j.compteId] ??= systemesChoisissables(app.db, j.compteId);
     }
-    return { jetons, univers, outilsOffrables: outils };
+    return { jetons, univers, outilsOffrables: outils, systemesChoisissables: systemes };
   });
 
   app.patch('/api/instance/jetons/:jid', async (request) =>
-    ({ jeton: modifierAcces(app.db, admin(request), jid(request), corps(request).acces, app.horloge()) }));
+    ({ jeton: modifierAcces(app.db, admin(request), jid(request), corps(request).acces, app.horloge(), corps(request).systemes) }));
 
   app.delete('/api/instance/jetons/:jid', async (request) =>
     ({ jeton: revoquerJeton(app.db, admin(request), jid(request), app.horloge()) }));

@@ -27,9 +27,27 @@ export interface JetonVue {
   outils?: string[];
   /** Whether it reaches the content routes (B-jeton-1). */
   contenu?: boolean;
+  /** The systems it reaches (AD-155), by name; `plusLecteur`: the owner no longer reads the system. */
+  systemes?: AccesSystemeVue[];
   etat: 'actif' | 'revoque' | 'expire';
   proprietaire: string;
 }
+
+export interface AccesSystemeVue {
+  id: number;
+  nom: string;
+  niveau: 'lecture' | 'ecriture';
+  plusLecteur: boolean;
+}
+
+/** A game system the owner reads (`GET /api/systemes`, `systemesChoisissables`): « Écriture » only where `peutEcrire`. */
+export interface SystemeChoix {
+  id: number;
+  nom: string;
+  peutEcrire: boolean;
+}
+
+export type NiveauSysteme = 'aucun' | 'lecture' | 'ecriture';
 
 /** A tool the owner may offer to a token (`outilsOffrables` of the service). */
 export interface OutilOffrable {
@@ -136,4 +154,23 @@ export function metaJeton(j: JetonVue, maintenant: number): string[] {
     dernierUsage(j.dernierUsageLe, maintenant),
     j.etat === 'expire' ? `expiré le ${dateCourte(j.expireLe)}` : `expire le ${dateCourte(j.expireLe)}`,
   ];
+}
+
+export const MOT_NIVEAU_SYSTEME = { lecture: 'lecture', ecriture: 'écriture' } as const;
+
+/** The levels of the block « Systèmes de jeu » of a token, by system id (what the token carries). */
+export function systemesDe(j?: JetonVue): Record<number, NiveauSysteme> {
+  const par: Record<number, NiveauSysteme> = {};
+  for (const s of j?.systemes ?? []) par[s.id] = s.niveau;
+  return par;
+}
+
+/** The body `systemes`: the lines off « — », among the ones the form shows (never a level of a system it does not list). */
+export function corpsSystemes(lignes: { id: number }[], valeurs: Record<number, NiveauSysteme>): { id: number; niveau: 'lecture' | 'ecriture' }[] {
+  const out: { id: number; niveau: 'lecture' | 'ecriture' }[] = [];
+  for (const l of lignes) {
+    const v = valeurs[l.id];
+    if (v === 'lecture' || v === 'ecriture') out.push({ id: l.id, niveau: v });
+  }
+  return out;
 }

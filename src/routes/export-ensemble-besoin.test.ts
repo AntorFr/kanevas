@@ -130,7 +130,10 @@ describe('B-92 : un appel exporte tout l\'univers', () => {
     assert.equal(lignes[lignes.length - 1].type, 'fin');
     assert.equal(lignes[lignes.length - 1].lignes, lignes.length - 1, 'fin.lignes = lignes écrites avant elle, en-tête comprise');
     const fiches = ofType(lignes, 'fiche');
-    const liste = (await api(jetons.antorLec, lame('/fiches'))).json.fiches as Any[];
+    // The list also carries the elements of an attached system (AD-155); the export never does (AD-systemes-api-2).
+    const propres = new Set((app.db.prepare('SELECT id FROM fiches WHERE univers_id = ?').all(U.lame) as { id: number }[]).map((r) => r.id));
+    const liste = ((await api(jetons.antorLec, lame('/fiches'))).json.fiches as Any[]).filter((x) => propres.has(x.id));
+    assert.ok(fiches.every((x) => propres.has(x.id)), 'l\'export ne porte que des fiches de l\'univers');
     const fichiers = (await api(jetons.antorLec, lame('/fichiers'))).json.fichiers as Any[];
     const cartes = (await api(jetons.antorLec, lame('/cartes'))).json.cartes as Any[];
     assert.equal(fiches.length, liste.length);
@@ -309,7 +312,8 @@ describe('B-92 : exclusions, ce que la joueuse ne lit pas', () => {
     const aldric = ofType(lea.lignes, 'fiche').find((f) => f.entete.titre === 'Maître Aldric');
     assert.deepEqual(aldric.sections.map((s: Any) => s.titre), ['Apparence']);
     assert.equal(lea.rep.texte.includes('Vérité'), false);
-    const listeLea = ((await api(jetons.leaLec, lame('/fiches'))).json.fiches as Any[]).length;
+    const propresLea = new Set((app.db.prepare('SELECT id FROM fiches WHERE univers_id = ?').all(U.lame) as { id: number }[]).map((r) => r.id));
+    const listeLea = ((await api(jetons.leaLec, lame('/fiches'))).json.fiches as Any[]).filter((x) => propresLea.has(x.id)).length;
     assert.equal(lea.lignes[0].fiches, listeLea, 'l\'en-tête compte ce que la joueuse lit, pas les fiches cachées');
     assert.ok(lea.lignes[0].fiches < mj.lignes[0].fiches);
     assert.equal(lea.lignes[0].fiches, ofType(lea.lignes, 'fiche').length);
