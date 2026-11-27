@@ -115,7 +115,16 @@ describe('E-23 la queue et la trajectoire d’une comète', { skip: skipBrowser,
     await attendre(page, 'data-queue-comete', 'comete');
     for (let i = 0; i < 8; i++) await page.getByRole('button', { name: /Zoom arrière/ }).click();
     await page.waitForFunction(() => (window as Any).__carteSysteme().zoom <= 0.51);
-    await page.waitForTimeout(300);
+    // wait for the head's pixels to be drawn (the canvas is transparent where nothing is drawn), not for a delay
+    await page.waitForFunction(() => {
+      const co = (window as Any).__carteSysteme().corps.find((c: Any) => c.cle === 'comete');
+      const cv = document.querySelector('canvas.cs-toile') as HTMLCanvasElement | null;
+      if (!co || !cv) return false;
+      const r = cv.getBoundingClientRect(); const k = cv.width / r.width;
+      const d = cv.getContext('2d')!.getImageData(Math.round(co.x * k) - 1, Math.round(co.y * k) - 1, 3, 3).data;
+      let a = 0; for (let i = 3; i < d.length; i += 4) a += d[i];
+      return a > 0;
+    }, undefined, { timeout: 30000 });
     const { corps } = await page.evaluate(() => (window as Any).__carteSysteme());
     const co = corps.find((c: Any) => c.cle === 'comete');
     // pixels at the head: not the sky's background (the canvas is transparent where nothing is drawn)
