@@ -43,7 +43,7 @@ async function monter() {
 test('B-99 : deux univers peuvent porter chacun lieu:nyx ; la clé est unique par univers seulement', async () => {
   const w = await monter();
   const a = await w.univers('Eneria');
-  const b = await w.univers('Tenebria');
+  const b = await w.univers('Ormevane');
   assert.equal((await w.fiche(a.id, 'lieu', 'Nyx')).cle, 'lieu:nyx');
   assert.equal((await w.fiche(b.id, 'lieu', 'Nyx')).cle, 'lieu:nyx');
   assert.equal((await w.fiche(a.id, 'lieu', 'Nyx')).cle, 'lieu:nyx-2');
@@ -73,21 +73,21 @@ test('B-99 : forme de la clé tapée par le MJ — majuscule, espace, accent, a:
 test('B-99/B-101 : après changement de clé, l’id numérique mène à l’adresse de la NOUVELLE clé, l’ancienne clé lit la même fiche', async () => {
   const w = await monter();
   const u = await w.univers('Eneria');
-  const f = await w.fiche(u.id, 'lieu', 'Ténébria');
-  assert.equal(f.cle, 'lieu:tenebria');
-  const p = await w.req(w.antor, 'PATCH', `/api/univers/${u.id}/fiches/${f.id}`, { cle: 'lieu:tenebria-la-noire' });
+  const f = await w.fiche(u.id, 'lieu', 'Ormévane');
+  assert.equal(f.cle, 'lieu:ormevane');
+  const p = await w.req(w.antor, 'PATCH', `/api/univers/${u.id}/fiches/${f.id}`, { cle: 'lieu:ormevane-la-noire' });
   assert.equal(p.statusCode, 200, p.body);
   const r = await w.app.inject({ method: 'GET', url: `/univers/${u.id}/fiche/${f.id}`, headers: w.antor });
   assert.equal(r.statusCode, 302);
-  assert.equal(r.headers.location, '/univers/eneria/lieu/tenebria-la-noire');
-  const parAncienne = await w.req(w.antor, 'GET', `/api/univers/eneria/fiches/${encodeURIComponent('lieu:tenebria')}`);
+  assert.equal(r.headers.location, '/univers/eneria/lieu/ormevane-la-noire');
+  const parAncienne = await w.req(w.antor, 'GET', `/api/univers/eneria/fiches/${encodeURIComponent('lieu:ormevane')}`);
   assert.equal(parAncienne.statusCode, 200, parAncienne.body);
   assert.equal(parAncienne.json().id, f.id);
-  assert.equal(parAncienne.json().cle, 'lieu:tenebria-la-noire');
+  assert.equal(parAncienne.json().cle, 'lieu:ormevane-la-noire');
   // une nouvelle fiche au même titre ne prend pas l'ancienne clé de la première
-  const autre = await w.fiche(u.id, 'lieu', 'Ténébria');
-  assert.notEqual(autre.cle, 'lieu:tenebria');
-  const refus = await w.req(w.antor, 'PATCH', `/api/univers/${u.id}/fiches/${autre.id}`, { cle: 'lieu:tenebria' });
+  const autre = await w.fiche(u.id, 'lieu', 'Ormévane');
+  assert.notEqual(autre.cle, 'lieu:ormevane');
+  const refus = await w.req(w.antor, 'PATCH', `/api/univers/${u.id}/fiches/${autre.id}`, { cle: 'lieu:ormevane' });
   assert.equal(refus.statusCode, 409);
   assert.equal(refus.json().code, 'cle_prise');
   await w.app.close();
@@ -114,14 +114,14 @@ test('B-101 : une clé compte_rendu:seance-3 s’adresse /univers/<u>/compte_ren
 test('B-100/B-101 : /univers/<id>/parametres renvoie 302 vers /univers/eneria/parametres ; l’id d’une fiche d’un autre univers ne se lit pas sous celui-ci', async () => {
   const w = await monter();
   const a = await w.univers('Eneria');
-  const b = await w.univers('Tenebria');
+  const b = await w.univers('Ormevane');
   const fb = await w.fiche(b.id, 'lieu', 'Nyx');
   const r = await w.app.inject({ method: 'GET', url: `/univers/${a.id}/parametres`, headers: w.antor });
   assert.equal(r.statusCode, 302);
   assert.equal(r.headers.location, '/univers/eneria/parametres');
   const mauvais = await w.app.inject({ method: 'GET', url: `/univers/${a.id}/fiche/${fb.id}`, headers: w.antor });
   assert.notEqual(mauvais.statusCode, 302, 'ne mène pas à la fiche de l’autre univers');
-  assert.doesNotMatch(String(mauvais.headers.location ?? ''), /tenebria/);
+  assert.doesNotMatch(String(mauvais.headers.location ?? ''), /ormevane/);
   const api = await w.req(w.antor, 'GET', `/api/univers/${a.id}/fiches/${fb.id}`);
   assert.equal(api.statusCode, 404);
   await w.app.close();
@@ -131,7 +131,7 @@ test('B-100/B-101 : /univers/<id>/parametres renvoie 302 vers /univers/eneria/pa
 test('B-100 : identifiant d’univers — pris, ancien d’un autre, majuscule, tiret bas refusés ; l’ancien mène encore à l’univers', async () => {
   const w = await monter();
   const a = await w.univers('Eneria');
-  const b = await w.univers('Tenebria');
+  const b = await w.univers('Ormevane');
   const patch = (id: number, cle: string) => w.req(w.antor, 'PATCH', `/api/univers/${id}`, { cle });
   assert.equal((await patch(b.id, 'eneria')).statusCode, 409);
   assert.equal((await patch(a.id, 'eneria-v2')).statusCode, 200);
@@ -148,7 +148,7 @@ test('B-100 : identifiant d’univers — pris, ancien d’un autre, majuscule, 
   assert.equal(lu.json().id, a.id);
   assert.equal(lu.json().cle, 'eneria-v2');
   const liste = (await w.req(w.antor, 'GET', '/api/univers')).json() as { id: number; cle: string }[];
-  assert.deepEqual(liste.map((x) => x.cle).sort(), ['eneria-v2', 'tenebria']);
+  assert.deepEqual(liste.map((x) => x.cle).sort(), ['eneria-v2', 'ormevane']);
   await w.app.close();
 });
 

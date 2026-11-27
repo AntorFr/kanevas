@@ -30,7 +30,7 @@ async function monter() {
   const antor = id('antor');
   const u = creerUnivers(app.db, antor, { nom: 'Lame' });
   ajouterMembre(app.db, antor, u.id, 'lea', 'joueur');
-  const f = creerFiche(app.db, antor, u.id, { type: 'lieu', titre: 'Tenebria' });
+  const f = creerFiche(app.db, antor, u.id, { type: 'lieu', titre: 'Ormevane' });
   const ouverte = ajouterSection(app.db, antor, u.id, f.id, { titre: 'Histoire', contenu: 'Fondée sous la cendre.' });
   changerAudience(app.db, antor, u.id, f.id, ouverte.id, { joueursLisent: true, joueursEcrivent: true });
   const lecteur = ajouterSection(app.db, antor, u.id, f.id, { titre: 'Rumeurs', contenu: 'Lecture seule.' });
@@ -131,7 +131,7 @@ test('joueuse : écrit la section qu’elle peut écrire (empreinte lue), pas ce
     const te = await m.appel(c, 'modifier_entete', { fiche: String(m.f.id), empreinte: fi.empreinteEnTete, titre: 'Pwned' });
     for (const r of [rel, cr, del, te]) assert.equal(r.erreur, true, r.t);
     assert.equal(lignes(m, m.f.id).length, n);
-    assert.equal((m.app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(m.f.id) as { titre: string }).titre, 'Tenebria');
+    assert.equal((m.app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(m.f.id) as { titre: string }).titre, 'Ormevane');
     await c.close();
   } finally { await m.app.close(); }
 });
@@ -151,13 +151,13 @@ test('creer_fiche rend la clé lisible ; modifier_entete : réussit si une secti
 
     const f = await lire(m, c, m.f.id);
     ecrireContenu(m.app.db, m.antor, m.u.id, m.f.id, m.ouverte.id, 'Une section a bougé', 1);
-    const ok = await m.appel(c, 'modifier_entete', { fiche: String(m.f.id), empreinte: f.empreinteEnTete, titre: 'Tenebria la Grise' });
+    const ok = await m.appel(c, 'modifier_entete', { fiche: String(m.f.id), empreinte: f.empreinteEnTete, titre: 'Ormevane la Grise' });
     assert.equal(ok.erreur, false, ok.t);
     assert.equal(ok.d.inchangee, false);
     // même empreinte (périmée maintenant) : refus, rien écrit
     const ko = await m.appel(c, 'modifier_entete', { fiche: String(m.f.id), empreinte: f.empreinteEnTete, titre: 'Autre' });
     assert.equal(ko.sc?.code, 'section_modifiee');
-    assert.equal((m.app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(m.f.id) as { titre: string }).titre, 'Tenebria la Grise');
+    assert.equal((m.app.db.prepare('SELECT titre FROM fiches WHERE id = ?').get(m.f.id) as { titre: string }).titre, 'Ormevane la Grise');
     const sans = await m.appel(c, 'modifier_entete', { fiche: String(m.f.id), titre: 'Z' });
     assert.deepEqual([sans.sc?.code, sans.sc?.champ], ['invalide', 'empreinte']);
     await c.close();

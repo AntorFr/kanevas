@@ -36,7 +36,7 @@ async function monter() {
   const u = creerUnivers(app.db, antor, { nom: 'Lame' });
   const autre = creerUnivers(app.db, antor, { nom: 'Autre' });
   ajouterMembre(app.db, antor, u.id, 'lea', 'joueur');
-  const f = creerFiche(app.db, antor, u.id, { type: 'lieu', titre: 'Tenebria' });
+  const f = creerFiche(app.db, antor, u.id, { type: 'lieu', titre: 'Ormevane' });
   const histoire = ajouterSection(app.db, antor, u.id, f.id, { titre: 'Histoire', contenu: 'Fondée sous un ciel de cendre.\n\n:::mj\nle mot zorglub du traitre\n:::\n' });
   changerAudience(app.db, antor, u.id, f.id, histoire.id, { joueursLisent: true });
   const secret = ajouterSection(app.db, antor, u.id, f.id, { titre: 'Vérité', contenu: 'quasimodo seul chez le MJ' });
@@ -163,8 +163,8 @@ test('B-98 chercher_texte rend le passage : fiche, section et extrait autour du 
     const c = await m.client(`/mcp/${m.cle}`, m.jeton('lea').valeur);
     const r = (await m.appel(c, 'chercher_texte', { mots: 'cendre' })).json();
     assert.equal(r.passages.length, 1);
-    assert.equal(r.passages[0].fiche, 'lieu:tenebria');
-    assert.equal(r.passages[0].titreFiche, 'Tenebria');
+    assert.equal(r.passages[0].fiche, 'lieu:ormevane');
+    assert.equal(r.passages[0].titreFiche, 'Ormevane');
     assert.equal(r.passages[0].titre, 'Histoire');
     assert.equal(r.passages[0].extrait, 'Fondée sous un ciel de **cendre**.');
     assert.equal(r.curseur, null);
@@ -180,13 +180,13 @@ test('B-98 la joueuse ne trouve jamais un mot présent seulement dans un bloc MJ
       for (const outil of ['chercher_texte', 'chercher']) {
         const r = await m.appel(lea, outil, { mots: mot });
         assert.ok(!r.texte.includes(mot), `${outil} ${mot} : ${r.texte}`);
-        assert.ok(!r.texte.includes('lieu:tenebria'), `${outil} ${mot} : ${r.texte}`);
+        assert.ok(!r.texte.includes('lieu:ormevane'), `${outil} ${mot} : ${r.texte}`);
       }
     }
     // lire_fiche / lire_section ne livrent pas non plus le contenu caché
-    const fiche = await m.appel(lea, 'lire_fiche', { fiche: 'lieu:tenebria' });
+    const fiche = await m.appel(lea, 'lire_fiche', { fiche: 'lieu:ormevane' });
     assert.ok(!fiche.texte.includes('zorglub') && !fiche.texte.includes('quasimodo'));
-    const sec = await m.appel(lea, 'lire_section', { fiche: 'lieu:tenebria', sectionId: m.secret.id });
+    const sec = await m.appel(lea, 'lire_section', { fiche: 'lieu:ormevane', sectionId: m.secret.id });
     assert.equal(sec.erreur, true);
     assert.ok(!sec.texte.includes('quasimodo'));
     await lea.close();
@@ -195,7 +195,7 @@ test('B-98 la joueuse ne trouve jamais un mot présent seulement dans un bloc MJ
     for (const mot of ['zorglub', 'quasimodo']) {
       const r = (await m.appel(mj, 'chercher_texte', { mots: mot })).json();
       assert.equal(r.passages.length, 1, mot);
-      assert.equal(r.passages[0].fiche, 'lieu:tenebria');
+      assert.equal(r.passages[0].fiche, 'lieu:ormevane');
     }
     await mj.close();
   } finally { await m.app.close(); }
@@ -207,7 +207,7 @@ test('B-98 un mot absent partout : aucun passage rendu (le besoin ne dit pas la 
     const c = await m.client(`/mcp/${m.cle}`, m.jeton('antor').valeur);
     const r = await m.appel(c, 'chercher_texte', { mots: 'introuvablemotxyz' });
     assert.ok(r.erreur || r.json().passages.length === 0, r.texte);
-    assert.ok(!r.texte.includes('lieu:tenebria'));
+    assert.ok(!r.texte.includes('lieu:ormevane'));
     await c.close();
   } finally { await m.app.close(); }
 });
@@ -247,14 +247,14 @@ test('B-97 mentions : les fiches qui en citent une autre, lues avec le jeton lec
   try {
     const sevrak = creerFiche(m.app.db, m.antor, m.u.id, { type: 'lieu', titre: 'Sevrak' });
     const ecr = await m.client(`/mcp/${m.cle}`, m.jeton('antor', ECRITURE, 'Ecr').valeur);
-    const lue = (await m.appel(ecr, 'lire_fiche', { fiche: 'lieu:tenebria' })).json();
-    const r = await m.appel(ecr, 'relier', { fiche: 'lieu:tenebria', sectionId: lue.sections[0].id, cible: 'lieu:sevrak', qualificatif: 'voisine' });
+    const lue = (await m.appel(ecr, 'lire_fiche', { fiche: 'lieu:ormevane' })).json();
+    const r = await m.appel(ecr, 'relier', { fiche: 'lieu:ormevane', sectionId: lue.sections[0].id, cible: 'lieu:sevrak', qualificatif: 'voisine' });
     assert.equal(r.erreur, false, r.texte);
     await ecr.close();
     const c = await m.client(`/mcp/${m.cle}`, m.jeton('antor').valeur);
     const ment = (await m.appel(c, 'mentions', { fiche: `lieu:sevrak` })).json();
     assert.equal(ment.mentions.length, 1);
-    assert.ok(JSON.stringify(ment.mentions).includes('lieu:tenebria'));
+    assert.ok(JSON.stringify(ment.mentions).includes('lieu:ormevane'));
     assert.equal(ment.curseur, null);
     void sevrak;
     await c.close();
@@ -265,13 +265,13 @@ test('B-102 lire_historique rend l’historique d’une fiche au MJ ; la joueuse
   const m = await monter();
   try {
     const mj = await m.client(`/mcp/${m.cle}`, m.jeton('antor').valeur);
-    const h = await m.appel(mj, 'lire_historique', { fiche: 'lieu:tenebria' });
+    const h = await m.appel(mj, 'lire_historique', { fiche: 'lieu:ormevane' });
     assert.equal(h.erreur, false);
     assert.ok(h.json().lignes.length >= 1);
-    assert.ok(h.json().lignes.every((l: { ficheCle: string }) => l.ficheCle === 'lieu:tenebria'));
+    assert.ok(h.json().lignes.every((l: { ficheCle: string }) => l.ficheCle === 'lieu:ormevane'));
     await mj.close();
     const lea = await m.client(`/mcp/${m.cle}`, m.jeton('lea').valeur);
-    const r = await m.appel(lea, 'lire_historique', { fiche: 'lieu:tenebria' });
+    const r = await m.appel(lea, 'lire_historique', { fiche: 'lieu:ormevane' });
     assert.equal(r.erreur, true);
     assert.ok(!r.texte.includes('ficheCle'));
     await lea.close();
@@ -282,12 +282,12 @@ test('B-97/B-110 écriture : empreinte lue → la section est écrite et l’his
   const m = await monter();
   try {
     const c = await m.client(`/mcp/${m.cle}`, m.jeton('antor', ECRITURE, 'Agent Éneria').valeur);
-    const lue = (await m.appel(c, 'lire_fiche', { fiche: 'lieu:tenebria' })).json();
+    const lue = (await m.appel(c, 'lire_fiche', { fiche: 'lieu:ormevane' })).json();
     const sec = lue.sections.find((s: { titre: string }) => s.titre === 'Histoire');
-    const w = await m.appel(c, 'ecrire_section', { fiche: 'lieu:tenebria', sectionId: sec.id, contenu: 'Fondée sous un ciel de braise.', empreinte: sec.empreinte });
+    const w = await m.appel(c, 'ecrire_section', { fiche: 'lieu:ormevane', sectionId: sec.id, contenu: 'Fondée sous un ciel de braise.', empreinte: sec.empreinte });
     assert.equal(w.erreur, false, w.texte);
     assert.equal(m.contenu(sec.id), 'Fondée sous un ciel de braise.');
-    const lignes = (await m.appel(c, 'lire_historique', { fiche: 'lieu:tenebria' })).json().lignes;
+    const lignes = (await m.appel(c, 'lire_historique', { fiche: 'lieu:ormevane' })).json().lignes;
     const ligne = lignes.find((l: { origine: string }) => l.origine === 'mcp');
     assert.ok(ligne, JSON.stringify(lignes));
     assert.equal(ligne.action, 'modifiee');
@@ -302,18 +302,18 @@ test('B-110 écriture : une section changée depuis la lecture n’est pas écra
   try {
     const agent = await m.client(`/mcp/${m.cle}`, m.jeton('antor', ECRITURE, 'Agent A').valeur);
     const autre = await m.client(`/mcp/${m.cle}`, m.jeton('antor', ECRITURE, 'Agent B').valeur);
-    const lue = (await m.appel(agent, 'lire_fiche', { fiche: 'lieu:tenebria' })).json();
+    const lue = (await m.appel(agent, 'lire_fiche', { fiche: 'lieu:ormevane' })).json();
     const sec = lue.sections.find((s: { titre: string }) => s.titre === 'Histoire');
-    const deB = (await m.appel(autre, 'lire_section', { fiche: 'lieu:tenebria', sectionId: sec.id })).json();
-    assert.equal((await m.appel(autre, 'ecrire_section', { fiche: 'lieu:tenebria', sectionId: sec.id, contenu: 'Version de B.', empreinte: deB.empreinte })).erreur, false);
+    const deB = (await m.appel(autre, 'lire_section', { fiche: 'lieu:ormevane', sectionId: sec.id })).json();
+    assert.equal((await m.appel(autre, 'ecrire_section', { fiche: 'lieu:ormevane', sectionId: sec.id, contenu: 'Version de B.', empreinte: deB.empreinte })).erreur, false);
 
-    const refus = await m.appel(agent, 'ecrire_section', { fiche: 'lieu:tenebria', sectionId: sec.id, contenu: 'Version de A.', empreinte: sec.empreinte });
+    const refus = await m.appel(agent, 'ecrire_section', { fiche: 'lieu:ormevane', sectionId: sec.id, contenu: 'Version de A.', empreinte: sec.empreinte });
     assert.equal(refus.erreur, true);
     assert.match(refus.texte, /section_modifiee/);
     assert.equal(m.contenu(sec.id), 'Version de B.');
 
-    const relue = (await m.appel(agent, 'lire_section', { fiche: 'lieu:tenebria', sectionId: sec.id })).json();
-    const ok = await m.appel(agent, 'ecrire_section', { fiche: 'lieu:tenebria', sectionId: sec.id, contenu: 'Version de A.', empreinte: relue.empreinte });
+    const relue = (await m.appel(agent, 'lire_section', { fiche: 'lieu:ormevane', sectionId: sec.id })).json();
+    const ok = await m.appel(agent, 'ecrire_section', { fiche: 'lieu:ormevane', sectionId: sec.id, contenu: 'Version de A.', empreinte: relue.empreinte });
     assert.equal(ok.erreur, false, ok.texte);
     assert.equal(m.contenu(sec.id), 'Version de A.');
     await agent.close(); await autre.close();
@@ -324,7 +324,7 @@ test('B-110 écriture sans empreinte : refusée (invalide), rien n’est écrit'
   const m = await monter();
   try {
     const c = await m.client(`/mcp/${m.cle}`, m.jeton('antor', ECRITURE).valeur);
-    const r = await m.appel(c, 'ecrire_section', { fiche: 'lieu:tenebria', sectionId: m.histoire.id, contenu: 'Sans empreinte.' });
+    const r = await m.appel(c, 'ecrire_section', { fiche: 'lieu:ormevane', sectionId: m.histoire.id, contenu: 'Sans empreinte.' });
     assert.equal(r.erreur, true);
     assert.notEqual(m.contenu(m.histoire.id), 'Sans empreinte.');
     await c.close();
@@ -336,7 +336,7 @@ test('B-97 un jeton lecture ne peut pas écrire en appelant l’outil par son no
   try {
     const c = await m.client(`/mcp/${m.cle}`, m.jeton('antor', LECTURE).valeur);
     const avant = m.contenu(m.histoire.id);
-    const r = await m.appel(c, 'ecrire_section', { fiche: 'lieu:tenebria', sectionId: m.histoire.id, contenu: 'Piraté.', empreinte: 'abc' });
+    const r = await m.appel(c, 'ecrire_section', { fiche: 'lieu:ormevane', sectionId: m.histoire.id, contenu: 'Piraté.', empreinte: 'abc' });
     assert.equal(r.erreur, true);
     assert.match(r.texte, /lecture_seule/);
     assert.equal(m.contenu(m.histoire.id), avant);
@@ -351,13 +351,13 @@ test('B-97 le droit effectif est le plus faible du jeton et du rôle : un jeton 
   const m = await monter();
   try {
     const c = await m.client(`/mcp/${m.cle}`, m.jeton('lea', ECRITURE).valeur);
-    const lue = (await m.appel(c, 'lire_fiche', { fiche: 'lieu:tenebria' })).json();
+    const lue = (await m.appel(c, 'lire_fiche', { fiche: 'lieu:ormevane' })).json();
     const sec = lue.sections.find((s: { titre: string }) => s.titre === 'Histoire');
     const avant = m.contenu(m.histoire.id);
-    const r = await m.appel(c, 'ecrire_section', { fiche: 'lieu:tenebria', sectionId: sec.id, contenu: 'Réécrite par Léa.', empreinte: sec.empreinte });
+    const r = await m.appel(c, 'ecrire_section', { fiche: 'lieu:ormevane', sectionId: sec.id, contenu: 'Réécrite par Léa.', empreinte: sec.empreinte });
     assert.equal(r.erreur, true, r.texte);
     assert.equal(m.contenu(m.histoire.id), avant);
-    const h = await m.appel(c, 'lire_historique', { fiche: 'lieu:tenebria' });
+    const h = await m.appel(c, 'lire_historique', { fiche: 'lieu:ormevane' });
     assert.equal(h.erreur, true);
     await c.close();
   } finally { await m.app.close(); }

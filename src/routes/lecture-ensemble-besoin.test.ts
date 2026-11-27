@@ -119,16 +119,16 @@ after(() => void app.close());
 
 describe('B-105 : la liste des fiches de l\'univers', () => {
   it('nominal : chaque entrée porte id, clé, marque, type, titre, deux empreintes de 32 hex et la date du dernier changement', async () => {
-    const f = await nouvelle('Ténébria');
+    const f = await nouvelle('Ormévane');
     const r = await api(jetons.antorLec, lame('/fiches'));
     assert.equal(r.status, 200, r.texte);
     const e = r.json.fiches.find((x: Any) => x.id === f.id);
     assert.ok(e, 'la fiche neuve est listée');
     assert.equal(e.cle, f.cle);
-    assert.match(e.cle, /^lieu:tenebria-/);
+    assert.match(e.cle, /^lieu:ormevane-/);
     assert.equal(e.creee_via, 'ecran', 'née dans Kanevas');
     assert.equal(e.type, 'lieu');
-    assert.equal(e.titre, `Ténébria ${n}`);
+    assert.equal(e.titre, `Ormévane ${n}`);
     assert.match(e.empreinte, HEX32);
     assert.match(e.empreinte_entete, HEX32);
     assert.match(e.modifie_le, /^\d{4}-\d{2}-\d{2}T/);
