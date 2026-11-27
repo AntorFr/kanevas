@@ -285,8 +285,9 @@ export function calculer(
       const assiette = e.reduction_base === 'coque' ? coque.cout : coutLigne
       coutLigne = Math.max(0, coutLigne - Math.floor((assiette * e.reduction_cout_pct! + 50) / 100))
     }
-    prix += coutLigne
+    // B-95: a modification's cost stays on its own line (and the install / refit totals), never in the price or upkeep.
     if (l.nature === 'modifications') coutsMods.set(i, coutLigne)
+    else prix += coutLigne
     if (e.cout_pct !== undefined || reduit) coutsLigne.set(i, coutLigne)
     if (e.effet === 'vitesse') effetVitesse += (e.valeur ?? 0) * q
     if (e.effet === 'armure') effetArmure += (e.valeur ?? 0) * q
