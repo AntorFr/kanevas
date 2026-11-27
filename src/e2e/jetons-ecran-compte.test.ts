@@ -117,6 +117,8 @@ test('tous_avec_exception_tiret_puis_modifier_et_revoquer', opts, async () => {
   const id = (m.app.db.prepare('SELECT id FROM jetons_api WHERE nom = ?').get('Tout sauf Essai') as { id: number }).id;
   assert.ok(id);
   await page.getByRole('button', { name: 'Modifier les accès de Tout sauf Essai' }).click();
+  await page.getByText('Les permissions d’un jeton ne changent pas : créez-en un autre.').waitFor();
+  assert.equal(await page.getByRole('group', { name: 'Ce que le jeton peut faire' }).count(), 0, 'pas de permissions à modifier');
   await ligneUnivers(page, 'Essai Kanka').getByRole('radio', { name: 'Lecture', exact: true }).click();
   await page.getByRole('button', { name: 'Enregistrer' }).click();
   await page.getByText('Accès enregistrés.').waitFor();
@@ -200,20 +202,27 @@ test('jeton_outils_essai_g_ligne_catalogue_ecrit_fiches_401', opts, async () => 
   await ouvrir(page);
   await page.getByRole('button', { name: 'Créer un jeton' }).first().click();
   await page.getByLabel('Nom').fill('Jeton outil');
-  await page.getByRole('radio', { name: 'Outils', exact: true }).click();
-  // Nothing ticked: refused, nothing created.
+  const groupe = page.getByRole('group', { name: 'Ce que le jeton peut faire' });
+  assert.equal(await groupe.getByRole('checkbox', { name: /Contenu/ }).isChecked(), true, 'Contenu coché par défaut');
+  assert.equal(await groupe.getByRole('checkbox', { name: /Essai G/ }).isChecked(), false, 'l’outil décoché par défaut');
+  // Nothing ticked: refused, no request, nothing created.
+  await groupe.getByRole('checkbox', { name: /Contenu/ }).uncheck();
+  const posts: string[] = [];
+  page.on('request', (r: { method: () => string; url: () => string }) => { if (r.method() === 'POST') posts.push(r.url()); });
   await page.getByRole('button', { name: 'Créer le jeton' }).click();
-  await page.getByText('Cochez au moins un outil.').waitFor();
+  await page.getByText('Cochez au moins une permission.').waitFor();
   await page.screenshot({ path: `${CAP}/outils-vide.png` });
+  assert.equal(posts.length, 0, 'aucune requête partie');
   assert.equal((m.app.db.prepare('SELECT COUNT(*) n FROM jetons_api WHERE nom = ?').get('Jeton outil') as { n: number }).n, 0);
-  await page.getByRole('group', { name: 'Outils' }).getByText(/Essai G/).click();
+  await groupe.getByRole('checkbox', { name: /Contenu/ }).check();
+  await groupe.getByRole('checkbox', { name: /Essai G/ }).check();
   await page.getByRole('button', { name: 'Créer le jeton' }).click();
   const code = page.locator('code').first();
   await code.waitFor();
   const valeur = (await code.textContent()) as string;
   await page.getByRole('button', { name: 'J’ai copié le jeton' }).click();
   await page.locator('.ligne-jeton').filter({ hasText: 'Jeton outil' }).waitFor();
-  assert.match((await page.locator('.ligne-jeton').first().textContent()) ?? '', /outils : Essai G/);
+  assert.match((await page.locator('.ligne-jeton').first().textContent()) ?? '', /contenu \+ outils : Essai G/);
   await page.screenshot({ path: `${CAP}/outils-liste.png` });
   const appel = (methode: string, url: string, corps?: unknown) =>
     fetch(`${m.base}/api/import/v1/univers/${eneria}${url}`, {
@@ -222,7 +231,8 @@ test('jeton_outils_essai_g_ligne_catalogue_ecrit_fiches_401', opts, async () => 
       body: corps ? JSON.stringify(corps) : undefined,
     });
   const put = await appel('PUT', '/fiches/x', { titre: 'X', type: 'personnage' });
-  assert.equal(put.status, 401);
+  assert.notEqual(put.status, 401, 'le contenu est ouvert');
+  assert.notEqual(put.status, 403);
   const cat = await appel('PUT', '/outils/essai/g/catalogue', exemple);
   assert.equal(cat.status, 200, await cat.text());
   const autre = await appel('PUT', '/outils/essai/h/catalogue', exemple);

@@ -67,8 +67,7 @@ async function attendre(p: Any, re: RegExp) {
   await p.waitForFunction(({ s, f }: Any) => new RegExp(s, f).test(document.body.innerText.replace(/[  ]/g, ' ')), { s: re.source, f: re.flags }, { timeout: 15000 });
 }
 async function absent(p: Any, re: RegExp) {
-  // let the debounced calculation settle, then check
-  await p.waitForTimeout(1200);
+  // called after an `attendre` that proves the calculation arrived (or on a design at rest): nothing is pending, no fixed wait
   assert.doesNotMatch(norm(await p.locator('.vx-resultats').innerText()) + ' ' + await corps(p), re);
 }
 async function ajouter(p: Any, nom: string) {
@@ -108,7 +107,6 @@ describe('E-22 mods du livre', { skip: skipBrowser, timeout: 300000 }, () => {
       // two refitted: alert gone, refit 5 × 20 000 × 2 and 12 components
       await integre(p).fill('2');
       await attendre(p, /Refonte\s*:?\s*200 000 cr, 12 composants/);
-      await p.waitForTimeout(800);
       assert.doesNotMatch(await corps(p), /mods entretenus/);
       // three refitted with Repair 1: the watch alert, saving stays allowed
       await integre(p).fill('3');

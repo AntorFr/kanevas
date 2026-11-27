@@ -218,12 +218,24 @@ describe('E-23 éléments : le MJ place, déplace et réserve ; la joueuse ne vo
         var tous = function (q) { return Array.prototype.slice.call(document.querySelectorAll(q)).map(r); };
         return { etiquettes: tous('.cs-etiquette'), corps: tous('.cs-corps'), marques: tous('button.cs-element') };
       })()`);
+      // The drawn disc of each body: the map's hook gives its centre (relative to the map) and its screen radius; the offset of the map comes from the centre of the hit button.
+      const disques = await page.evaluate(`(() => {
+        var cr = window.__carteSysteme();
+        return cr.corps.filter(function (k) { return k.rayon > 0 && document.querySelector('.cs-corps[data-cle="' + k.cle + '"]'); }).map(function (k) {
+          var b = document.querySelector('.cs-corps[data-cle="' + k.cle + '"]').getBoundingClientRect();
+          return { id: k.cle, cx: b.x + b.width / 2, cy: b.y + b.height / 2, r: k.rayon };
+        });
+      })()`);
+      const surDisque = (e: Any, d: Any) => {
+        const px = Math.max(e.x, Math.min(d.cx, e.x + e.w)), py = Math.max(e.y, Math.min(d.cy, e.y + e.h));
+        return Math.hypot(px - d.cx, py - d.cy) < d.r - 0.5;
+      };
 
       const cognent = (a: Any, b: Any) => a.x < b.x + b.w - 0.5 && b.x < a.x + a.w - 0.5 && a.y < b.y + b.h - 0.5 && b.y < a.y + a.h - 0.5;
       assert.ok(rects.etiquettes.length > 0);
       for (const e of rects.etiquettes) {
-        // the hit square of a body is its sprite with its halo, wider than the disc the labels clear: judged strictly at 390 px, where the sprites are small
-        if (l === 390) for (const c of rects.corps) assert.ok(!cognent(e, c), `l’étiquette ${e.id} chevauche le corps ${c.id}`);
+        // judged against the drawn disc (the hook's screen radius), never the 22 px hit button, which is wider than the body at 390 px
+        if (l === 390) for (const d of disques) assert.ok(!surDisque(e, d), `l’étiquette ${e.id} chevauche le corps ${d.id}`);
         for (const m of rects.marques) assert.ok(!cognent(e, m), `l’étiquette ${e.id} chevauche la marque ${m.id}`);
       }
       for (let i = 0; i < rects.etiquettes.length; i++) for (let j = i + 1; j < rects.etiquettes.length; j++) {

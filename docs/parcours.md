@@ -296,6 +296,7 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   in « lecture + écriture » writes only where that player may write. A token restricted to tools
   (`kanevas-outils`, B-65) keeps that restriction, set on E-23: it writes those tools' data and no
   content, whatever its level. *(P-25)*
+- **B-jeton-1** *(kanevas-jeton-unique)* — A token's permissions **add up**: when creating it, its owner chooses « Contenu » and/or any offerable tools (at least one), so that **one key** can import the galaxy and write sheets, or several keys split the work — his choice. The accesses (universes, level) are shared by all its permissions and the account's role decides at each use, as before; permissions are fixed at creation; tokens created before keep their value, scope and behaviour. *(P-jeton-unique-1, E-23, E-5)*
 - **B-95** — The **instance admin** sees every token of the instance on E-5 (name, owner, accesses,
   last use), **revokes** any of them and **changes its accesses**; the owner sees on E-23 « Modifié par
   l'admin » or « Révoqué par l'admin ». « Tous mes univers » takes **exceptions** — a universe at another
@@ -427,6 +428,21 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
 - **B-21** — When a GM asks their assistant (E-12) to update the world from a report,
   the assistant proposes new section content without writing anything; the GM sees the current and
   proposed content, then applies or abandons it in one action. Nothing applies itself. *(P-5)*
+
+- **B-cr-aventure-1** — *(`kanevas-cr-aventure`)* The GM **changes the adventure of an existing session
+  report**, from the report's sheet (E-9), among the adventures of the universe, with the rules of its creation
+  (B-19: an adventure he reads, of the same universe). The sheet keeps its id, its sections, its relations and the links that
+  aim at it; nothing is deleted and recreated. A member who is not a GM does not see the gesture. *(P-4, step 3)*
+- **B-cr-aventure-2** — *(`kanevas-cr-aventure`)* The **import** writes the adventure (`campagne`, an origin key)
+  of a report that already exists, like the other header fields (B-47) and under the header fingerprint
+  (AD-139); the batch counts it as a written sheet; it no longer answers « campagne non modifiable, ignorée ». A key that is not an
+  adventure of the universe stays refused (« campagne inconnue »). *(P-10)*
+- **B-cr-aventure-3** — *(`kanevas-cr-aventure`)* The **export** gives the new adventure of a moved report, with no
+  work of its own once B-cr-aventure-1 and 2 are delivered (`GET /export`, AD-export-1, gives each sheet in its read form, at the instant of the snapshot): verified, not built. *(P-10)*
+- **B-cr-aventure-4** — *(`kanevas-cr-aventure`)* The block « Comptes-rendus » of an **adventure's sheet** (B-60) also lists
+  the reports of its scenarios (all its descendants of type adventure reached through an unbroken chain of adventures by parent, at any depth, that the reader reads; an adventure filed under a sheet of another type is left out; an unread scenario cuts off what is under it), each with the **name of its own scenario**;
+  the sheet of a scenario lists its own, as before. Without it, filing a report under its scenario would make it disappear from its
+  campaign's page. *(P-4)*
 
 ### Maps
 - **B-22** — A GM creates an illustrated map (a background image dropped onto the map, freely
@@ -788,6 +804,7 @@ the frame says « Image indisponible. » and keeps « Remplacer » and « Retire
    publish it — it opens as a **sheet** (E-9) of type session report, which names the adventure.
 3. They edit it later; others read it from the adventure or the **report list**
    (E-13).
+   *(`kanevas-cr-aventure`)* Maëlle, the GM, finds a report filed under the whole campaign instead of its scenario: she opens it, « Changer d'aventure… » (E-9), picks the scenario and confirms; the « Campagne » line names it at once and the report keeps its address, its relations and the links that aim at it. If the write fails, the dialog says so and keeps her choice; if the scenario was deleted meanwhile, it says « Introuvable. » and offers the list again. Under a campaign, the reports of all its scenarios, however deep, show on its page with the scenario's name.
 
 ### P-5 — Update the world after the game (GM)
 1. They read reports (E-13 → E-9).
@@ -866,7 +883,10 @@ He first wants a disposable trial, then the real collection, without duplicates 
    **campaigns** first, then sheets, parents first (origin key, type, title, parent, aliases,
    labels, Markdown sections with their `[[…]]` links, GM blocks, images,
    audience) — session reports with their campaign key —, then relations, and closes the batch
-   (the order from AD-104).
+   (the order from AD-104). *(`kanevas-cr-aventure`)* A report already in Kanevas whose `campagne` key now names another adventure
+   (a scenario, say) is moved by the replay: the sheet is counted as written, its id, relations and links stay, and no
+   « campagne non modifiable » warning appears; a key that is not an adventure of the universe is a counted refusal « campagne inconnue ».
+   The next export gives the new adventure.
    Files, images and documents, first go into the **media library** (E-19), each with its
    permissions — « Réservée au MJ » for those Kanka only displays in GM content, « Visible des
    joueurs » otherwise —, including the 385 MB unused by any sheet; sheets reference them.
@@ -1281,6 +1301,12 @@ a token whose creator is no longer GM, or an unknown system, gets the usual `jet
 From the private Éneria repository, a script reads `atlas/systemes/*.yaml`, `systemes.yaml` and `astres.yaml` (the ships, cities and stations of a system's file travel as its `elements` list), and sends them to the import API of the target galaxy
 (the galaxy already created on Éneria's seed by the conversion of P-20); the batch report counts created, unchanged and refused elements (bodies and map elements alike, each by its key). *Moment fort:* the GM opens the galaxy and a system of
 the lore and finds Éneria's bodies at their places with their illustrations. *Failure path:* a refused element is reported with its path in the file and nothing is half written (as P-20).
+
+### P-jeton-unique-1 — One key for the galaxy and the sheets (Monsieur, GM, Éneria's import)
+1. On « Mes jetons d'API » (E-23) Monsieur chooses « Créer un jeton », names it « Import Éneria », and in « Ce que le jeton peut faire » leaves « Contenu » checked and checks « Galaxie ». He picks « Une liste d'univers » (Éneria, lecture + écriture) and creates it; the value is shown once.
+2. His script uses that one key: it imports the galaxy (`PUT …/outils/swn/galaxie/…`, batch opened with `?outil=swn/galaxie`) and writes sheets (`PUT …/fiches/<cle>`, batch without `?outil=`). No second key, no second variable in the script.
+3. *Alternative:* he prefers one key per script (a content key for the lore, a tool key for the galaxy): the same form, one box each. Nothing forces either choice.
+4. *Failure path:* nothing checked → « Cochez au moins une permission. » and nothing is created. A key without « Galaxie » on the galaxy route: 401 `jeton_invalide`, as today. Tokens made before this slice work as they did.
 
 ### P-22 — Bring Kanevas up to date from the Éneria base (Monsieur, GM, a Saturday, Mac)
 1. The script opens a batch (`POST /lots`), then reads the lists of sheets, files and maps (B-105,

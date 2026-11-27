@@ -1,4 +1,4 @@
--- B-93, B-94, H-9, H-mods-1 (kanevas-concepteur-vaisseaux-mods-livre-donnees; number 0054 taken at merge, AD-51).
+-- B-93, B-94, H-9, H-mods-1 (kanevas-concepteur-vaisseaux-mods-livre-donnees; number 0055 taken at merge, AD-51).
 -- Pretech components of a modification (`composants` 0..99, `composants_par_classe` 0/1) and the engineer's Int + Con modifier of a design
 -- (`mod_int_con`, -10..10), all by ALTER TABLE … ADD COLUMN with a default: no row is rewritten, no catalogue version moves, the effect
 -- CHECK of `swn_catalogue_modifications` is not touched. `integre` is a key of the JSON lines of a design: no column.

@@ -217,8 +217,8 @@ describe('E-28 objets, calques, propriétés', { skip: skipBrowser }, () => {
       (r) => r.request().method() === 'PATCH' && new URL(r.url()).pathname.endsWith(`/cartes/${cid}`) && r.ok(),
     );
     await larg.press('Enter');
-    await ecrite;
-    assert.equal((await lire(cid)).document.largeur, 32);
+    // wait for the written effect (read through the door), never for the typed value
+    await enregistre(cid, (d) => d.largeur === 32);
     await larg.fill('abc');
     await larg.press('Enter');
     await antor.getByText('Entrez un nombre entier de cases.').waitFor();
