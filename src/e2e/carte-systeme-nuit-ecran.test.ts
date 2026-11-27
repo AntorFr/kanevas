@@ -28,7 +28,19 @@ describe('E-23 un monde à lueur montre une face nocturne lumineuse', { skip: sk
     await c.page.goto(`/univers/${univers}/outils/swn/galaxie/${gid}/interieur/${O.q}/${O.r}`);
     await c.page.getByRole('heading', { name: /^Corps \(\d+\)$/ }).waitFor();
     await c.page.waitForFunction(() => ((window as Any).__carteSysteme?.()?.etiquettes ?? []).some((e: Any) => e.visible), undefined, { timeout: 30000 });
-    await c.page.waitForTimeout(3000);
+    // The sprites are drawn once every body has opaque pixels at its centre on the canvas (the effect, never a duration).
+    await c.page.waitForFunction(() => {
+      const corps = ((window as Any).__carteSysteme?.()?.corps ?? []) as Any[];
+      const t = document.querySelector('canvas.cs-toile') as HTMLCanvasElement | null;
+      if (!t || !corps.length) return false;
+      const k = t.width / t.getBoundingClientRect().width;
+      const g = t.getContext('2d')!;
+      return corps.every((b: Any) => {
+        const x = Math.round(b.x * k), y = Math.round(b.y * k);
+        if (x < 1 || y < 1 || x >= t.width - 1 || y >= t.height - 1) return false;
+        return g.getImageData(x - 1, y - 1, 3, 3).data.some((v, i) => i % 4 === 3 && v > 200);
+      });
+    }, undefined, { timeout: 30000 });
     return c;
   };
   /** Pixels of the map's sprite of body `cle`, and its mean colour over the opaque pixels. */
