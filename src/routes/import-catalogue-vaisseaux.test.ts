@@ -35,7 +35,7 @@ test('jeton d\'outil : le catalogue des vaisseaux d\'un univers compte les sept 
   assert.deepEqual(r.json().refus, [{ nature: 'coques', cle: 'dreadnought', champ: 'classe', raison: r.json().refus[0].raison }]);
   const l = (await req('GET', `/lots/${lid}`)).json();
   const crees = Object.fromEntries(Object.entries(l.compteurs).map(([k, v]: any) => [k, v.creees]));
-  assert.deepEqual(crees, { coques: 3, moteurs: 2, amenagements: 2, defenses: 1, armes: 2, modifications: 1, exemples: 7 });
+  assert.deepEqual(crees, { coques: 3, moteurs: 2, amenagements: 2, defenses: 1, armes: 2, modifications: 1, exemples: 7, conceptions: 0 });
   assert.equal(l.compteurs.coques.refusees, 1);
   assert.equal((app.db.prepare('SELECT COUNT(*) n FROM swn_catalogue_coques WHERE proprietaire = ?').get('univers') as any).n, 3);
   // rejeu : tout inchangé
