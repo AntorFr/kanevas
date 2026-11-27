@@ -5320,3 +5320,37 @@ the name of its own scenario (a link to its sheet, the neutral `badge-type` pill
 
 Cross-check: B-cr-aventure-1 → E-9 line « Campagne », `PATCH /fiches/:fid {campagne}`; B-cr-aventure-4 → E-9 block, `GET /comptes-rendus?campagne=` (same route, wider
 filter); B-cr-aventure-2 and 3 have no screen (import and export).
+
+## Screen details for `kanevas-sons` (2026-11-27)
+
+Inventory additions (to merge in the table above at the slices' delivery): **E-31 Sound library**, **E-32 Sound**, **E-33
+Global sound library**, **E-34 Player bar**, **E-35 Table**, **E-36 Section sounds**, **E-37 Generic sound tags**, **E-38 Sound
+purge**; E-15 gains the tab « Sons » (E-31 on the system), E-5 « Limites » gains the one file limit (B-135), E-9 gains
+E-36 and the play button of `son:cle:K`. Journeys: P-30 to P-36.
+
+| Screen | Reached from | Purpose |
+|---|---|---|
+| **E-31 Sound library** `/univers/:id/sons` (and `/systemes/:sid/sons`, tab of E-15) | sidebar « Sons » (GM and players, shown when the universe has a library) | list and search the library (own and system's, marked); hear in one click; « Ajouter un son » (GM) |
+| **E-32 Sound** `/univers/:id/sons/:cle` | a row of E-31, of E-33, an entry of E-36 | common part, library part, measures, « Utilisé dans », import / remove, history |
+| **E-33 Global sound library** `/sons` | user menu « Bibliothèque globale » (GM only: no entry otherwise, 404 for others) | search with generic tags only, hear, « Importer dans… » |
+| **E-34 Player bar** | `Cadre.tsx`, on every page once something plays | what plays, stop each, volumes, « Tout couper » |
+| **E-35 Table** `/univers/:id/fiches/:fid/table` | « Table » button of E-9 (GM) | groups of buttons per section, rules of B-137 |
+| **E-36 Section sounds** | in E-9, per section, beside attached files | the ordered list of entries; players see the entries they may |
+| **E-37 Generic sound tags** | E-5 « Tags de sons » | categories and values, counts before removal |
+| **E-38 Sound purge** | E-5 « Purge des sons » | orphan sounds, a box each, size, « Effacer les sons cochés » |
+
+Roles × actions: **player** E-31 (sounds opened to him), E-32 read-only (common part, his library's part where visible;
+no Notes of GM blocks), E-34, E-36 read; **GM** all of E-31 to E-36 on the libraries he writes (E-33 as a GM of any
+universe or system); **system's GM** E-31/E-32 on the system; **admin** E-37, E-38, E-5 limit, and E-31/E-32 as a GM where
+he is one; **player mode** (GM seeing as a player) shows what a player sees and plays.
+
+States of E-31: empty (« Aucun son — Ajouter un son »; players: « Aucun son pour l'instant »); loading; no result with
+the filters named and « Effacer les filtres »; a sound **non écouté** carries a mark; a file in measure (« Mesure en
+cours ») plays but shows no loudness; error « Fichier trop lourd (limite X Mo) ». E-34: nothing playing = the bar is
+hidden; the browser's audio block = « Cliquer pour activer le son ». E-36: a **missing sound** shows its description and
+where to find it, with « Placer le son » for a GM; a removed sound shows « Son retiré de la bibliothèque : <nom> ».
+E-35: a section with no sound is not a group; a table with no sound says so and links to E-36. E-38: nothing orphan →
+« Aucun son à purger » ; a confirmation names the count and the size to be freed.
+
+**Mockups** (to draw in the next pass, `docs/maquettes/`): E-34 + E-35 (the table with the bar, the structuring screen)
+and E-31 + E-32. E-36, E-37 and E-38 follow the sheet and the administration conventions already in the charter.

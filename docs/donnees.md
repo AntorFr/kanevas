@@ -938,3 +938,42 @@ Rules:
 2. Nothing else of the sheet moves (id, key, sections, relations, `liens`, `parent_id`).
 3. The list `listerComptesRendus({campagneId})` returns the reports whose adventure is that one **or any descendant of it of type `aventure` that the caller reads** (reached through a chain of `aventure` sheets by `parent_id`, at any depth — the 50 levels of AD-115 cannot be exceeded; the walk tests the caller's read at each node, so a scenario the caller does not read brings nothing, nor does what is under it; an adventure under a sheet of another type is not a scenario); each line carries its own adventure (`campagneId`, `campagneNom`), from which the screen shows the scenario's name when it differs from the page's adventure. The deletion count of an adventure (AD-119) stays on direct reports. The filter is one for every reader of `listerComptesRendus({campagneId})` (the route `?campagne=`, E-9's block, E-13's list (through the route's filter, there is no screen filter); no assistant list calls it): all give the widened result with each line's own adventure; nothing else widens (the deletion count, the « Campagne » line of a report, the bilan).
 4. The import fingerprint of the header (AD-139) already holds `campagne_id` for a report: a change of adventure is a change of header.
+
+## `kanevas-sons` scope: the sound library (2026-11-27; migration 0053 and the following ones, numbered when each slice merges, AD-51)
+
+A library is **a universe or a system's space** (AD-151: a system's space is a hidden `univers` row), so one table of
+library parts serves the three levels; the global library is not stored, it is a query.
+
+| Entity | Content |
+|---|---|
+| `sons` | the **common part**: `id`, `cle` (unique in the instance, `cles_anciennes`-style history like AD-146), `nom`, `type` (`musique`\|`fond`\|`bruitage`), `description` (Markdown), `source`, `auteur`, `licence`, `adresse`, `reference_origine`, `boucle_sans_couture`, `ecoute`, `prive`, `octets_id`, `version`, `depose_le`, `modifie_le` |
+| `sons_octets` | **one row per file on disk**: `id`, `empreinte` (SHA-256, unique), `disque` (name under `<db dir>/attachments/`), `taille`, measures: `format`, `duree_ms`, `debit`, `frequence`, `canaux`, `lufs`, `crete_dbtp`, `lra`, `mesure_le` (null while measuring). Written only by the sound services; erased only by the purge |
+| `sons_bibliotheques` | the **part per library**: `son_id`, `univers_id` (a universe or a space), `visibilite` (`joueurs`\|`mj`), `notes` (Markdown), `ajoute_le`; unique (`son_id`, `univers_id`). A sound with no row is an **orphan** |
+| `sons_tags_locaux` | `son_id`, `univers_id`, `tag` (free text, 1 to 40 characters, unique per library and sound) |
+| `sons_categories`, `sons_valeurs` | the generic tags: a category (`nom`, `position`) and its values (`nom`, `position`); seeded by the migration with *Genre* and *Émotion* (the starting list is data, kept by the admin, never in code) |
+| `sons_tags` | `son_id`, `valeur_id`: generic tags of the common part |
+| `sections_sons` | the sounds of a section, ordered: `section_id`, `position`, `son_id` (nullable), `manquant_description`, `manquant_ou` (when `son_id` is null), `libelle`, `lecture` (`fond`\|`musique`\|`bruitage`\|null = the sound's type), `gain_db`, `boucle`, `consigne` |
+| `recherche_sons`, `recherche_sons_notes` | FTS5, candidates only (AD-21): the common part (name, description, author, reference); the Notes per library. Kept by triggers |
+| `reglages_instance` | `fichiers_max_mo` replaces `fond_carte_max_mo` (same value kept by the migration; one limit for every file, B-135) |
+
+**Rules** (rule 15, new; the rules numbered 14 by `kanevas-systemes-jeu` and 15 here are listed with the others at the
+first slice's merge):
+1. **Reading a sound in a universe**: a row of `sons_bibliotheques` for the universe or for its system's space, and for a
+   player `visibilite = 'joueurs'`; the system's row decides in every universe of the system. No role: `introuvable`.
+2. **Writing the common part**: GM (outside player mode) of any library holding the sound, or any GM for a sound he sees
+   in the global library; players never. **Writing the library part**: GM of that universe, GM of that system.
+3. **Global library**: the account is GM of at least one universe or system; a sound with `prive` shows only to the GMs
+   of the libraries that hold it; an orphan is public or private as it was; no deposit there.
+4. **A section's entry** is read when the reader reads the section **and** the sound (rule 1); a sound of a library the
+   section's universe does not read is a **missing sound under its name** (computed at read, never stored: no write on
+   removal). A section of a system's space may carry only sounds of that system's library.
+5. **Deleting**: removing a sound from a library deletes its `sons_bibliotheques` and `sons_tags_locaux` rows, nothing
+   else; `supprimerUnivers` does the same for the universe; an orphan is erased only by the purge, which deletes the
+   `sons`, their `sections_sons` entries become missing sounds (`son_id` null with the name kept), `sons_octets` goes when
+   nothing refers to it, then the file.
+6. **Deduplication**: the digest is computed while the file is written (`ecrireFlux`); an existing `sons_octets` row is
+   reused; the reply says `son_existant` (409, with the key) **only** when the identical sound is visible to the account;
+   otherwise a new sound shares the bytes without any word about the other (no leak of a private sound).
+7. **Measures** are written by the measuring service only, never by a caller; `gain` of reading is computed from them and
+   the type (never stored apart from the measures).
+8. **Admin**: generic tags and purge are the instance admin's (session group, AD-86; a token has a route only under AD-sons-8).

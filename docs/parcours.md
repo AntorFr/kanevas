@@ -1609,3 +1609,141 @@ tools; the assistant of the universe does the same for a GM of the system (a mer
 system element (plain `[[…]]` links are resolved); propagating a later change of the system's element into its
 customisations (the copy is independent, and it outlives its original, B-120; a notice « the system's element changed since » is a later idea); deleting a system;
 several systems per universe; MCP tools or assistant tools beyond the sheet gestures of B-118 (types and tools of a system, catalogue, members).
+
+## Framing of `kanevas-sons` (2026-11-27)
+
+A **sound library**: music, long backgrounds and one-shot effects, kept once in the instance and seen through three
+libraries (a universe's, a game system's, the global one), played at the table by the GM, linked to sheet sections
+(one section per scene of a scenario) and to texts. Owner's brief of 22/11 (kept in the epic's discussion) is the source;
+this framing turns it into journeys, screens, data and decisions. Nothing of Éneria enters this repository: examples are
+neutral (AD-131).
+
+**Audience.** The GM writes and plays; the system's GMs (B-114) write the system's library; a player browses and hears
+what is opened to him; the instance admin keeps the generic tags and purges; an agent or a script (API, MCP) searches,
+deposits and places sounds. Circumstances: the GM at his computer, in Chrome, mid-session, who opens an NPC sheet,
+the map or a rule **without the music stopping**.
+
+### Needs
+
+*Libraries and the sound itself*
+
+- **B-121** — Each universe has a **sound library** written by its GMs; each game system has one, written by the GMs of the
+  system (B-114); a universe reads the sounds of its own library and of its system's. *(P-30)*
+- **B-122** — A sound is **one** sound in the instance: a **common part** (name, key, description, type, generic tags,
+  source, author, licence, address and origin reference, « seamless loop », « listened ») that **any GM who sees the sound**
+  edits, and a **part per library** (visibility, the library's own tags, Notes in Markdown with GM blocks) that only that
+  library's GMs write. Importing never copies. *(P-31)*
+- **B-123** — A sound's file exists **once on the disk**, however many libraries hold it; two deposits of identical bytes
+  take one place; when the first is visible to the depositor, Kanevas says so and offers to import it instead of creating a
+  duplicate. The file is erased only by the purge (B-134). *(P-30, P-35)*
+- **B-124** — A sound has a **type**, fixed (`musique`, `fond`, `bruitage`), that says how it plays by default (B-137);
+  the type is edited with the common part. *(P-30)*
+- **B-125** — **Generic tags** are a list of categories and values kept by the admin (starting with *Genre* and
+  *Émotion*); a sound takes several values of one category; they are the only tags visible in the global library. A
+  library's **own tags** are free, written by its GMs, read only there. Neither is the sheets' labels (AD-118). *(P-30, P-35)*
+- **B-126** — On deposit Kanevas **measures** the file (duration, format, bit rate, sample rate, channels, size, integrated
+  loudness, true peak, loudness range) and derives a **playback gain** per type; none of it is typed. *(P-30)*
+- **B-127** — **Search**: free text (name, description, Notes, author), type, generic tags (values of a category add up,
+  categories cumulate), own tags, « no tag in category X » (to classify), duration range, source, seamless loop,
+  listened or not, since a date; every sound is **heard in one click** before being imported, classified or placed. *(P-30, P-31, P-34)*
+- **B-128** — The **global library** gathers every sound of every universe and system; any GM (of a universe or of a
+  system) searches, hears and **imports** into a library he writes; players never see it. A sound is **never deposited
+  into it**: it enters through a universe or a system. *(P-31)*
+- **B-129** — A sound deposited **private** appears in the global library only to the GMs of libraries that already hold
+  it; any of them may make it public or private again; there is no owner. *(P-31)*
+- **B-130** — In a universe each sound is « for the players » or « GM only »; players browse and hear what it opens to them,
+  in their universe and its system; a system sound carries its visibility in every universe of the system. *(P-34)*
+- **B-131** — A sound held by **no** universe and no system stays in the instance, in the global library, and can be
+  imported again, until the purge. Removing a sound from a library first shows the sections that carry it. *(P-30, P-35)*
+
+*Links*
+
+- **B-132** — A section of any sheet carries an **ordered list of sounds** (a sound or a **missing sound** with its
+  description and where to find it; a label; the playing mode; a gain; a loop; an instruction). A scenario has **one
+  section per scene**. A player sees an entry only if he reads the section **and** the sound (two guards). A sound removed
+  from the universe leaves a missing sound under its name, never a hole. *(P-32, P-34)*
+- **B-133** — A text can hold a sound (`son:cle:K`), shown as a play button; a reader without the right sees what a hidden
+  file link shows. A sound lists « Used in » for the sections the reader reads, never a count of the others. *(P-32)*
+
+*Administration*
+
+- **B-134** — The admin **adds, renames and removes** generic categories and values (the screen says how many sounds a
+  removal touches); and **purges**: the sounds in no library listed with their size, **each with a box**, only the ticked
+  ones erased, file included. *(P-35)*
+- **B-135** — **One size limit for every file** of the instance (sounds, media library, map backgrounds), set by the
+  admin in « Limites ». *(P-35)*
+
+*Playing*
+
+- **B-136** — A sheet opens as a **table**: each section carrying sounds is a group of buttons, in the order of the
+  sections; a general volume, one per type, one per sound, the list of what plays, « Tout couper ». *(P-33)*
+- **B-137** — Playing rules by type: **fond** loops, several at once; **musique** one at a time, the next replaces the
+  previous in a crossfade, loops if « boucle » is on; **bruitage** once, over the rest. A click starts, a second stops,
+  with a 1.5 s fade; the entry's playing mode can override the sound's type. *(P-33)*
+- **B-138** — **The sound does not stop when the GM navigates**: the player lives above the pages, with an always-visible
+  bar of what plays. Outside the table any sound found in a library or on a sheet plays with its type's rule. *(P-33)*
+- **B-139** — A sound **starts at once**: the section's sounds are preloaded, a 30-minute file plays by ranges without
+  waiting for the whole file, at its real type; a background and a track from another source come out at a similar level
+  without touching a volume. *(P-33)*
+
+*Doors*
+
+- **B-140** — The import API and the MCP door **search, read, deposit, import, edit and place** sounds within the
+  account's right (token level on a universe or a system, AD-155; the lesser of it and the account's right, AD-144); the
+  generic tags and the purge have an admin route. *(P-36)*
+
+### P-30 — The GM builds and classifies a library (GM, system's GM)
+
+1. In the sound library of the universe (E-31) he deposits a file (« Ajouter un son »): the file is measured, a
+   duplicate he can see is announced with « Importer celui-là ». *Failure*: file over the limit (B-135), unreadable
+   format, a taken key.
+2. On the sound (E-32) he sets type, generic tags, description, source and licence, ticks « listened » after hearing it.
+3. He finds the sounds still to classify (« no tag in Émotion ») and goes on.
+4. The system's GM does the same in the system's library (E-15, tab « Sons »).
+5. Removing a sound from the library first shows the sections that carry it.
+
+### P-31 — The GM imports from the global library (GM)
+
+1. In E-33 he searches (generic tags and text), hears a sound; a private sound of another library is not there.
+2. « Importer dans… » picks a library he writes: the sound is in it, same file; he adds his own tags and Notes (E-32).
+3. He corrects the description: every library holding the sound sees it. He makes it private or public again.
+
+### P-32 — The GM prepares a scene (GM, agent)
+
+1. In the sheet (E-9) a section's « Sons » list (E-36): he adds a library sound or a missing sound, sets label, mode,
+   gain, loop, instruction, order; for a scenario each scene is a section.
+2. In the text of a section he writes `son:cle:K` where a button is wanted.
+3. The agent does the same through the MCP door (P-36).
+
+### P-33 — The GM plays the session (GM)
+
+1. He opens the scenario as a **table** (E-35): one group per scene; he starts a background, a music, an effect with the
+   rules of B-137.
+2. He opens an NPC sheet, the map, a rule: the bar of the player (E-34) keeps playing and stays reachable; he stops one
+   sound, changes a volume, « Tout couper ».
+3. Outside a table he plays a sound found in E-31 or on a sheet. *Failure*: a missing sound is shown as such, plays
+   nothing; the browser blocks sound before a first gesture: the table asks for one click.
+
+### P-34 — A player hears what is opened to him (player)
+
+He browses the library of his universe (E-31): only sounds « for the players » and the system's, hears them, hears the
+effect on the sheet of his weapon. He sees neither the global library, nor GM-only sounds, nor the entries of sections he
+does not read.
+
+### P-35 — The admin keeps tags and purges (instance admin)
+
+1. In « Administration » (E-5), « Tags de sons » (E-37): adds, renames, removes categories and values, seeing the count.
+2. « Purge des sons » (E-38): the orphan sounds with size, unticks what he keeps, erases the rest.
+3. In « Limites » he sets the one file limit.
+
+### P-36 — An agent or a script deposits and places sounds (token, MCP)
+
+The script deposits a library through `PUT /sons/:son`, files and parts; the agent searches (`chercher_sons`), imports,
+edits, and writes the sounds of each scene's section; the admin routes keep the generic tags.
+
+### Out of scope of `kanevas-sons`
+
+- The players' screen (scene images on a second screen); producing a sound inside Kanevas; random variants of an effect
+  (later: an entry carrying several sounds); sound on the players' devices; online services (Spotify, YouTube).
+- Playing from a phone or tablet is not a target: the table aims at the GM's computer, in Chrome.
+- The media library (AD-117) is untouched except for the shared size limit (B-135).
