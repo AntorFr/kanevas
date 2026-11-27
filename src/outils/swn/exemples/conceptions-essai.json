@@ -1,0 +1,49 @@
+{
+  "conceptions": [
+    {
+      "cle": "essai-eclaireur-leger",
+      "titre": "Éclaireur léger",
+      "coque": "eclaireur",
+      "choix": [
+        { "nature": "moteurs", "cle": "moteur-1", "quantite": 1 }
+      ]
+    },
+    {
+      "cle": "essai-eclaireur-blinde",
+      "titre": "Éclaireur blindé",
+      "coque": "eclaireur",
+      "choix": [
+        { "nature": "moteurs", "cle": "moteur-1", "quantite": 1 },
+        { "nature": "defenses", "cle": "blindage", "quantite": 1 }
+      ]
+    },
+    {
+      "cle": "essai-fregate-de-ligne",
+      "titre": "Frégate de ligne",
+      "coque": "fregate",
+      "visibilite": "joueurs",
+      "choix": [
+        { "nature": "moteurs", "cle": "moteur-2", "quantite": 1 },
+        { "nature": "amenagements", "cle": "cabines", "quantite": 1 },
+        { "nature": "armes", "cle": "laser", "quantite": 2 }
+      ]
+    },
+    {
+      "cle": "essai-croiseur-complet",
+      "titre": "Croiseur complet",
+      "coque": "croiseur",
+      "equipage": 10,
+      "pj": 2,
+      "robots": 1,
+      "choix": [
+        { "nature": "moteurs", "cle": "moteur-2", "quantite": 1 },
+        { "nature": "amenagements", "cle": "soute", "quantite": 1 },
+        { "nature": "amenagements", "cle": "automatisation", "quantite": 1 },
+        { "nature": "armes", "cle": "laser", "quantite": 2 },
+        { "nature": "armes", "cle": "canon-leger", "quantite": 1, "magasins": 2 },
+        { "nature": "modifications", "cle": "renfort", "quantite": 2, "integre": 1 },
+        { "nature": "modifications", "cle": "montage", "quantite": 1, "cibles": [{ "nature": "armes", "cle": "laser", "quantite": 1 }] }
+      ]
+    }
+  ]
+}

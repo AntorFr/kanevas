@@ -1,0 +1,41 @@
+{
+  "catalogue": "swn/vaisseaux",
+  "version": "2026-11-essai-conceptions",
+  "coques": [],
+  "moteurs": [],
+  "amenagements": [
+    {
+      "cle": "automatisation",
+      "nom": "Système d'automatisation",
+      "cout": 6000,
+      "puissance": 1,
+      "masse": 1,
+      "x_cout": false,
+      "x_puissance": false,
+      "x_masse": false,
+      "pv": 0,
+      "ca": 0,
+      "limite": 1,
+      "effet": "support_automatisation"
+    }
+  ],
+  "defenses": [],
+  "armes": [],
+  "modifications": [
+    {
+      "cle": "montage",
+      "nom": "Montage spécialisé",
+      "cout": 3000,
+      "puissance": 0,
+      "masse": 0,
+      "x_cout": false,
+      "x_puissance": false,
+      "x_masse": false,
+      "pv": 0,
+      "ca": 0,
+      "limite": 0,
+      "effet": "montages_specialises"
+    }
+  ],
+  "exemples": []
+}
