@@ -171,4 +171,47 @@ describe('kanevas-systemes-jeu-surcharge-ecrans : personnaliser et revenir', { s
     await pa.getByText('Personnalisé', { exact: true }).waitFor();
     assert.equal(await pa.getByRole('button', { name: /^Autres actions sur « Bouclier/ }).count(), 0, 'pas de menu, donc pas de « Revenir »');
   });
+
+  it('à 360 px, les fenêtres E-15 et de retour empilent leurs boutons : l’action d’abord, « Annuler » en dernier', { timeout: 180000 }, async () => {
+    const s = await startServer();
+    const browser = await launch();
+    aFermer.push(async () => {
+      await browser.close();
+      s.stop();
+    });
+    const antor = await connecte(browser, s.base, 'Antor');
+    const mira = await connecte(browser, s.base, 'Mira');
+    const admin = await connecte(browser, s.base, 'Admin');
+    for (const c of [antor, mira, admin]) c.page.setDefaultTimeout(60000);
+    const uid = (await (await antor.ctx.request.post('/api/univers', { data: { nom: 'Cime', description: 'd' } })).json()).id;
+    const sid = (await (await antor.ctx.request.post(`/api/univers/${uid}/systeme-nouveau`, { data: { nom: 'Theta' } })).json()).id;
+    assert.ok((await admin.ctx.request.post(`/api/instance/systemes/${sid}/membres`, { data: { username: 'mira' } })).status() < 300);
+    const elId = (await (await mira.ctx.request.post(`/api/systemes/${sid}/fiches`, { data: { type: 'objet', titre: 'Heaume', sections: [{ titre: 'D', joueursLisent: true }] } })).json()).id;
+    const copie = (await (await antor.ctx.request.post(`/api/univers/${uid}/fiches/${elId}/personnaliser`)).json()).id;
+
+    const ordre = async (page: Any, action: string) => {
+      const dlg = page.getByRole('alertdialog');
+      await dlg.waitFor();
+      await attendre(page);
+      const ba = await dlg.getByRole('button', { name: action, exact: true }).boundingBox();
+      const bn = await dlg.getByRole('button', { name: 'Annuler', exact: true }).boundingBox();
+      assert.ok(ba && bn);
+      assert.ok(ba.y + ba.height <= bn.y + 1, `« ${action} » au-dessus de « Annuler » (${ba.y} / ${bn.y})`);
+      assert.ok(Math.abs(ba.x - bn.x) < 2 && Math.abs(ba.width - bn.width) < 2, 'boutons empilés, même largeur');
+    };
+
+    const pm: Any = mira.page;
+    await pm.setViewportSize({ width: 360, height: 780 });
+    await pm.goto(`/systemes/${sid}/fiches/${elId}`);
+    await pm.getByRole('button', { name: 'Supprimer l’élément' }).click();
+    await ordre(pm, 'Supprimer l’élément');
+
+    const pa: Any = antor.page;
+    await pa.setViewportSize({ width: 360, height: 780 });
+    await pa.goto(`/univers/${uid}/fiche/${copie}`);
+    await pa.getByRole('heading', { level: 1, name: 'Heaume' }).waitFor();
+    await pa.getByRole('button', { name: /^Autres actions sur « (?!D)/ }).click();
+    await pa.getByRole('menuitem', { name: 'Revenir à l’élément du système' }).click();
+    await ordre(pa, 'Revenir à l’élément');
+  });
 });
