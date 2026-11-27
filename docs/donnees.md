@@ -976,4 +976,4 @@ first slice's merge):
    otherwise a new sound shares the bytes without any word about the other (no leak of a private sound).
 7. **Measures** are written by the measuring service only, never by a caller; `gain` of reading is computed from them and
    the type (never stored apart from the measures).
-8. **Admin**: generic tags and purge are the instance admin's (session group, AD-86; a token has a route only under AD-sons-8).
+8. **Admin**: generic tags and purge are the instance admin's (session group, AD-86; a token never opens these routes, AD-sons-8).
