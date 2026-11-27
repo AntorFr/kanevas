@@ -161,12 +161,12 @@ describe('B-85 (2) réparation minimale à part de l’effet', () => {
   const rep = (m: Monde, choix: Any[], reparation?: number) => calc(m, { coque: 'fregate-r', choix, ...(reparation === undefined ? {} : { reparation }) });
   const alertes = (r: Rep) => r.json.alertes.filter((a: Any) => a.code === 'reparation_insuffisante');
 
-  it('Blindage à 10 % (armure +2) qui exige 2 : armure 7 et +30 000 cr comme avant ; compétence 1 → alerte au texte exact', async () => {
+  it('Blindage à 10 % (armure +2) qui exige 2 : armure 7, ligne 30 000 cr hors prix (B-95) ; compétence 1 → alerte au texte exact', async () => {
     const m = await monde();
     const r = await rep(m, [mods('blindage-r')], 1);
     assert.equal(r.status, 200, r.texte);
     assert.equal(r.json.resultat.armure, 7);
-    assert.equal(r.json.resultat.prix, 330000);
+    assert.equal(r.json.resultat.prix, 300000);
     assert.equal(ligne(r, 'blindage-r').cout, 30000);
     assert.deepEqual(alertes(r).map((a: Any) => [a.niveau, a.texte]), [['a_surveiller', "« Blindage d'essai » : réparation 2 au moins (1 choisie)."]]);
     assert.deepEqual(r.json.resultat.reparation, { choisie: 1, min: 2 });
@@ -473,7 +473,7 @@ describe('Catalogue antérieur sans ces champs : même résultat qu’avant', ()
     assert.equal(avant.json.resultat.soutes, 10);
     assert.equal(avant.json.resultat.vitesse, 5);
     assert.equal(avant.json.resultat.armure, 7);
-    assert.equal(avant.json.resultat.prix, 300000 + 1000 + 1000 + 30000);
+    assert.equal(avant.json.resultat.prix, 300000 + 1000 + 1000);
     assert.equal(avant.json.resultat.reparation, null);
     const bis = await m.antor('POST', `${m.V}/catalogue/application`, catalogue('ecarts-2'));
     assert.equal(bis.status, 200, bis.texte);

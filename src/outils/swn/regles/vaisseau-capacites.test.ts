@@ -87,7 +87,7 @@ test('H-capacites-1 (3) : diviseur 2 sur 610 000 → 305 000, entretien 15 250, 
   // line part prices of a cout_pct line are not divided; the robots are not either
   const pct = { nature: 'modifications' as const, cle: 'b', nom: 'B', quantite: 1, element: { ...base, cout_pct: 10, effet: 'armure', valeur: 2 } }
   const d = calculer(c, [pct as any], { ...R, diviseurPrix: 2 })
-  assert.equal(d.lignes[0]!.cout, 61000); assert.equal(d.prix, 335500)
+  assert.equal(d.lignes[0]!.cout, 61000); assert.equal(d.prix, 305000)
 })
 
 test('H-4 : effetsJeu dans l\'ordre des lignes, rien pour un élément sans effet ; texte de section', () => {

@@ -98,7 +98,7 @@ const REFERENCES: Array<[string, string, Any[], number, number, number, number, 
   ['fregate-de-ligne', 'fregate', [l('moteurs', 'moteur-2'), l('amenagements', 'cabines'), l('amenagements', 'soute'), l('armes', 'laser', 2)], 700000, 30, 14, 5, 1, 2, 3, 28, 35000, 15, []],
   ['fregate-a-l-extreme', 'fregate', [l('moteurs', 'moteur-2'), l('amenagements', 'cabines', 2), l('armes', 'laser', 3)], 815000, 30, 14, 0, 3, 3, 3, 33, 40750, 15, [['a_surveiller', 'Plus aucune réserve de puissance.']]],
   ['fregate-gourmande', 'fregate', [l('moteurs', 'moteur-2'), l('amenagements', 'cabines', 3), l('armes', 'laser', 3)], 855000, 30, 14, -1, -3, 3, 3, 35, 42750, 15, [['bloquante', 'Puissance insuffisante : −1'], ['bloquante', 'Masse insuffisante : −3']]],
-  ['croiseur-de-transport', 'croiseur', [l('moteurs', 'moteur-2'), l('amenagements', 'soute'), l('amenagements', 'cabines'), l('armes', 'laser', 2), l('armes', 'canon-leger'), l('modifications', 'renfort'), l('defenses', 'blindage')], 1966000, 69, 16, 27, 3, 3, 5, 79, 98300, 15, [['a_surveiller', '1 mod entretenu, Maintenance 0']]],
+  ['croiseur-de-transport', 'croiseur', [l('moteurs', 'moteur-2'), l('amenagements', 'soute'), l('amenagements', 'cabines'), l('armes', 'laser', 2), l('armes', 'canon-leger'), l('modifications', 'renfort'), l('defenses', 'blindage')], 1961000, 69, 16, 27, 3, 3, 5, 79, 98050, 15, [['a_surveiller', '1 mod entretenu, Maintenance 0']]],
   ['fregate-sans-moteur', 'fregate', [l('amenagements', 'cabines'), l('armes', 'laser')], 465000, 30, 14, 15, 13, 1, 3, 19, 23250, null, [['a_surveiller', 'Aucun moteur de saut : ce vaisseau ne peut pas voyager.']]],
 ];
 

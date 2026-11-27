@@ -28,7 +28,7 @@ test('Y-3 : exigence de réparation, par champ ou par effet, alerte exacte à la
   const al = (ls: LigneResolue[], c: number) => rep(ls, c).alertes.filter((a) => a.code === 'reparation_insuffisante').map((a) => a.texte)
   const blind = L('modifications', "Blindage d'essai", { effet: 'armure', valeur: 2, cout: 30000, reparation_min: 2 })
   const r = rep([blind], 1)
-  assert.equal(r.armure, 7); assert.equal(r.prix, 330000)
+  assert.equal(r.armure, 7); assert.equal(r.prix, 300000)
   assert.deepEqual(r.reparation, { choisie: 1, min: 2 })
   assert.deepEqual(al([blind], 1), ["« Blindage d'essai » : réparation 2 au moins (1 choisie)."])
   for (const c of [2, 3]) assert.deepEqual(al([blind], c), [])
