@@ -100,6 +100,7 @@ export function FenetreRevenir({ universId, fiche, onFermer, onDroitPerdu }: {
         </>
       }
       action="Revenir à l’élément"
+      empilee
       libelleEnCours="Retour…"
       icone={TriangleAlert}
       enCours={enCours}

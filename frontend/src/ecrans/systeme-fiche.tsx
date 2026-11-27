@@ -43,6 +43,7 @@ function SuppressionElement({ sid, fiche, enCours, echec, onConfirmer, onFermer 
           : 'Cet élément disparaît du système pour tous les univers.'
       }
       action="Supprimer l’élément"
+      empilee
       libelleEnCours="Suppression…"
       desactive={copies.k !== 'ok'}
       enCours={enCours}
