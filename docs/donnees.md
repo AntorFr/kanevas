@@ -923,7 +923,7 @@ table below is written with neutral names; the script that converts Éneria's `a
   system's existing dialogue (three fields), never by a screen of its own.
 
   **Conversion table (`kanevas-carte-rendu-galaxie-systemes`, tested line by line).** Size: `1` → 0.15, `2` → 0.45, `3` → 0.75, `4` → 0.9, `5` → 1
-  (the aliases `petite`, `moyenne`, `grande` of the writers and of the old atlas give 0.15, 0.45 and 0.75). Colour: `accent` → `#8b9bf0`, `table` → `#3fc79a`,
+  (the aliases `petite`, `moyenne`, `grande` of the writers and of the old atlas give 0.15, 0.45 and 0.75). **The whole number `1` is read as the old size (0.15), never as the maximum**: a writer that wants the largest star sends a number below 1 (the dialogue sends at most 0.9999); `0` and every other number in (0, 1) are read as given. Colour: `accent` → `#8b9bf0`, `table` → `#3fc79a`,
   `ambre` → `#f2a33c`, `danger` → `#ec7b6f`, `clair` → `#ebecf0`, and `neutre` (the old default, « no colour chosen ») → null; the six names stay accepted as aliases
   by the writers and give the same values. `classe` of a migrated row is null (drawn from its key and its size). The three other columns of the slice are written by
   other slices: `voile` (`#rrggbb`, nullable, by the atlas import) and `swn_zones.affichage_defaut` (by the zone routes).
