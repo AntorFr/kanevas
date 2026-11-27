@@ -3,7 +3,7 @@
 Inventory of the screen files of `src/e2e/` whose name starts with `outils-`, `systemes-`, `reglages-`, `pieces-`, `tenir-`, `types-`, `natures-`, `sous-`, `sections-`, `markdown-`, `alias-` or `recherche-` (58 files at the start of the lot). Form and classes: [README](README.md).
 The doors written by this lot are `src/routes/*-lot-outils.test.ts` and `src/services/outils-assistant-lot-outils.test.ts`; the others were already there (`src/routes/outils.test.ts`, `outils-suppression.test.ts`, `sections-gerees-api.test.ts`, `natures-relations.test.ts`, `fichiers*.test.ts`, `systemes.test.ts`, `tenir-*.test.ts`, …).
 
-**State of the lot: complete.** 513 tests listed: 373 `affichage`, 93 `effet`, 47 `les deux`.
+**State of the lot: complete.** 516 tests listed: 376 `affichage`, 93 `effet`, 47 `les deux`.
 - Decision `retiré` (93): the screen test is gone from `src/e2e/`, its door is green. Several never opened a browser (a real server and fetch, an in-memory database: the catalogue ensemble, the tool-frame assistant, the types migration and import API, the alias import cases): they were moved to `src/routes/` or `src/services/` as they were.
 - Decision `allégé` (46): the effect expectations (status codes, rows, what another account reads through the API, the database) went to the door; the display stays. An API call kept in a screen test only seeds the page (a setting, a catalogue, a proposal) and is no more asserted.
 - Decision `gardé`: 385 `affichage` lines, and one `les deux` line kept expressly: the counts « Port (2) » / « Port (3) » of the sub-type filter of `types-besoin-verification` are what the user sees, the server rule being its door (`types-besoin-ensemble.test.ts`).
@@ -532,3 +532,6 @@ The doors written by this lot are `src/routes/*-lot-outils.test.ts` and `src/ser
 | `src/e2e/types-ecrans-reglage.test.ts` | `kanevas-types-ecrans-reglage, au navigateur > E-14 : univers sans système « Par défaut · activé », sans note de contradiction` | affichage | — | gardé |
 | `src/e2e/types-ecrans-reglage.test.ts` | `kanevas-types-ecrans-reglage, au navigateur > Léa : E-14 « Page introuvable. » ; E-15 « Lecture seule », interrupteurs désactivés` | affichage | — | gardé |
 | `src/e2e/types-ecrans-reglage.test.ts` | `kanevas-types-ecrans-reglage, au navigateur > refus serveur : E-15 remet l’interrupteur ; E-14 remet la bascule ; « L’action n’a pas abouti. Réessayez. »` | affichage | — | gardé |
+| `src/e2e/systemes-surcharge-ecrans.test.ts` | `kanevas-systemes-jeu-surcharge-ecrans : personnaliser et revenir > Antor personnalise, voit la marque, la perd en revenant ; Léa n’a aucun bouton ; E-15 et E-14 annoncent les copies et les seuls noms du compte` | affichage | — | gardé |
+| `src/e2e/systemes-surcharge-ecrans.test.ts` | `kanevas-systemes-jeu-surcharge-ecrans : personnaliser et revenir > un MJ en mode joueur n’a ni « Personnaliser » ni « Revenir »` | affichage | — | gardé |
+| `src/e2e/systemes-surcharge-ecrans.test.ts` | `kanevas-systemes-jeu-surcharge-ecrans : personnaliser et revenir > à 360 px, les fenêtres E-15 et de retour empilent leurs boutons : l’action d’abord, « Annuler » en dernier` | affichage | — | gardé |
