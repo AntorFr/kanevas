@@ -1185,7 +1185,7 @@ function conditionElements(
   // An element the universe has customised is listed through its copy, once (AD-surcharge-2). A base held short of
   // 0053 has no column, hence no copy to hide.
   if (colonneSurcharge(db)) {
-    where.push('NOT EXISTS (SELECT 1 FROM fiches c WHERE c.surcharge_de = f.id AND c.univers_id = ?)');
+    where.push('NOT EXISTS (SELECT 1 FROM fiches c WHERE f.id = c.surcharge_de AND c.univers_id = ?)');
     params.push(universId);
   }
   if (options.type !== undefined) {
