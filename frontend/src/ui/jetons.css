@@ -50,12 +50,17 @@
 .ligne-jeton.inactif .ligne-jeton-nom b { color: var(--texte-2); }
 .ligne-jeton-acces { font-size: var(--t-13); color: var(--texte-2); overflow-wrap: anywhere; }
 .ligne-jeton-acces.secondaire { color: var(--texte-3); }
+.ligne-jeton-acces .sans-coupure { white-space: nowrap; }
 .ligne-jeton-acces strong { color: var(--texte); font-weight: 500; }
 .ligne-jeton-acces small { color: var(--texte-3); font-size: inherit; }
 .ligne-jeton-meta { font-size: var(--t-13); color: var(--texte-3); }
 .ligne-jeton-actions { flex: none; display: flex; gap: var(--e-1); opacity: 0; transition: opacity var(--duree) var(--courbe); }
 .ligne-jeton:hover .ligne-jeton-actions, .ligne-jeton:focus-within .ligne-jeton-actions { opacity: 1; }
 @media (hover: none) { .ligne-jeton-actions { opacity: 1; } }
+/* Desktop: the actions float over the row's right end, so the text keeps the whole width (mockup e23, .actions-ligne). */
+@media (min-width: 761px) and (hover: hover) {
+  .ligne-jeton-actions { position: absolute; top: 10px; right: 10px; padding: 2px; border-radius: var(--rayon-champ); background: var(--surface-2); }
+}
 .ligne-jeton.hors { opacity: .45; }
 @media (max-width: 760px) {
   .ligne-jeton { align-items: flex-start; flex-wrap: wrap; }

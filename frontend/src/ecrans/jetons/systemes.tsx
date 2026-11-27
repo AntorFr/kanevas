@@ -128,7 +128,7 @@ export function AccesSystemes({ j, lus }: { j: JetonVue; lus?: SystemeChoix[] })
         return (
           <span key={s.id}>
             {i > 0 && ' · '}
-            {s.nom} : {MOT_NIVEAU_SYSTEME[s.niveau]}
+            <span className="sans-coupure">{s.nom} : {MOT_NIVEAU_SYSTEME[s.niveau]}</span>
             {s.plusLecteur && <small> (plus lecteur)</small>}
             {plusMJ && <small> ({SUFFIXE_PLUS_MJ})</small>}
           </span>
