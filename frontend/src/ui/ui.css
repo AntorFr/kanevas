@@ -184,6 +184,10 @@ a { color: var(--accent-texte); }
 .boite h2 { font-size: var(--t-16); font-weight: 600; }
 .boite p { margin: var(--e-1) 0 0; color: var(--texte-2); font-size: var(--t-14); }
 .boite-actions { display: flex; justify-content: flex-end; gap: var(--e-2); margin-top: var(--e-5); }
+@media (max-width: 600px) {
+  .boite-actions.empilee { flex-direction: column-reverse; align-items: stretch; }
+  .boite-actions.empilee button { justify-content: center; min-height: 44px; white-space: nowrap; }
+}
 .boite-corps { flex: 1; min-width: 0; }
 
 .etat { text-align: center; color: var(--texte-2); padding: var(--e-5) var(--e-4); }

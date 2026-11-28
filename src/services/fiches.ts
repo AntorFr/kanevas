@@ -1,6 +1,7 @@
 import { blocsDeFiche } from '../outils/blocs.js';
 import type { Db } from '../db/db.js';
 import {
+  copiesDeUnivers,
   exigerMJ,
   exigerRole,
   lectureSysteme,
@@ -43,6 +44,8 @@ import {
 export const LIMITE_LISTE = 100;
 
 interface FicheRow {
+  /** The element a copy customises (AD-153); absent on a base held short of 0054. */
+  surcharge_de?: number | null;
   id: number;
   univers_id: number;
   type: TypeFiche;
@@ -365,6 +368,19 @@ export function changerTypeFiche(
   return versFiche(chargerFiche(db, universId, ficheId));
 }
 
+/**
+ * Detaching of the copies of a deleted element (AD-surcharge-3). `services/surcharge.ts`, the only writer of
+ * `surcharge_de`, registers it when loaded (it imports this file: a direct import would be a cycle). Without it
+ * the delete of an element with a copy fails on the foreign key, never silently.
+ */
+let detacheurDeCopies: (db: Db, ficheId: number) => number = () => 0;
+let compteurDeCopies: (db: Db, ficheId: number) => number = () => 0;
+export function poserDetacheurDeCopies(detacher: (db: Db, ficheId: number) => number, compter: (db: Db, ficheId: number) => number): void {
+  detacheurDeCopies = detacher;
+  compteurDeCopies = compter;
+}
+const copiesDe = (db: Db, ficheId: number): number => compteurDeCopies(db, ficheId);
+
 export interface BilanSuppression {
   sections: number;
   relations: number;
@@ -376,6 +392,8 @@ export interface BilanSuppression {
   taches?: number;
   scenarios?: number;
   comptesRendus?: number;
+  /** An element of a system with customised copies (AD-surcharge-3): the copies that become ordinary sheets, not deleted. */
+  fichesDevenuesOrdinaires?: number;
 }
 
 /**
@@ -411,6 +429,7 @@ function recenser(db: Db, f: FicheRow): BilanSuppression & { disques: string[] }
     fichiers,
     enfants: n('SELECT COUNT(*) AS n FROM fiches WHERE parent_id = ?', f.id),
     parent,
+    ...(copiesDe(db, f.id) > 0 ? { fichesDevenuesOrdinaires: copiesDe(db, f.id) } : {}),
     ...(f.type === 'aventure'
       ? {
           taches: n('SELECT COUNT(*) AS n FROM taches_preparation WHERE fiche_id = ?', f.id),
@@ -455,6 +474,7 @@ export function supprimerFiche(db: Db, acteur: Acteur, universId: number, ficheI
   const f = porteSuppression(db, acteur, universId, ficheId, true);
   const { disques } = ecrire(db, acteur.compteId, () => {
     const bilan = recenser(db, f);
+    detacheurDeCopies(db, f.id);
     db.prepare('UPDATE fiches SET parent_id = ? WHERE parent_id = ?').run(f.parent_id, f.id);
     db.prepare('DELETE FROM relations WHERE cible_fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM elements_carte WHERE fiche_id = ?').run(f.id);
@@ -706,6 +726,11 @@ export function lireFiche(
 ): FicheVue {
   exigerRole(db, universId, acteur.compteId);
   const espace = espaceDeLecture(db, universId, ficheId);
+  // An element the universe has customised opens as its copy (AD-surcharge-2): a stale link or bookmark still lands.
+  if (espace) {
+    const copie = copiesDeUnivers(db, universId, [ficheId]).get(ficheId);
+    if (copie !== undefined) return lireFiche(db, acteur, universId, copie, formeLiens);
+  }
   // An element of the attached system, opened from a universe: the account's right on the system decides what is
   // read, never the address of entry nor the player mode (AD-157).
   if (espace) {
@@ -713,7 +738,27 @@ export function lireFiche(
   }
   const vue = lireFicheDans(db, acteur, universId, ficheId, formeLiens);
   const propre = systemeDeEspace(db, universId);
+  const copieDe = propre ? null : ficheSurcharge(db, ficheId);
+  if (copieDe !== null) {
+    const lit = lectureSysteme(db, acteur.compteId, systemeDeUnivers(db, universId));
+    return { ...vue, origine: 'surcharge', ...(lit ? { surchargeDe: copieDe } : {}) };
+  }
   return propre ? { ...vue, origine: 'systeme', systeme: propre } : { ...vue, origine: 'univers' };
+}
+
+function colonneSurcharge(db: Db): boolean {
+  return (db.prepare("SELECT 1 FROM pragma_table_info('fiches') WHERE name = 'surcharge_de'").get() as unknown) !== undefined;
+}
+
+function systemeDeUnivers(db: Db, universId: number): number {
+  const u = db.prepare('SELECT systeme_id FROM univers WHERE id = ?').get(universId) as { systeme_id: number | null } | undefined;
+  return u?.systeme_id ?? -1;
+}
+
+/** `surcharge_de` of a sheet; `null` when none (and on a base held short of 0054). */
+function ficheSurcharge(db: Db, ficheId: number): number | null {
+  const r = db.prepare('SELECT * FROM fiches WHERE id = ?').get(ficheId) as { surcharge_de?: number | null } | undefined;
+  return r?.surcharge_de ?? null;
 }
 
 /** The system whose hidden space is this universe row (AD-151), `null` for a real universe. */
@@ -1033,7 +1078,7 @@ export function listerFiches(
     ? elementsDeLUnivers(db, acteur.compteId, universId)
     : null;
   if (element) {
-    const c = conditionElements(element, options);
+    const c = conditionElements(db, element, options, universId);
     if (c === null) return { fiches: [], suivant: null };
     const propres = where.join(' AND ');
     where.length = 0;
@@ -1086,7 +1131,7 @@ export function listerFiches(
       if (passages !== null) vue.passages = passages.get(r.id) ?? [];
       return vue;
     }
-    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur)), ...visibiliteVue(r), origine: 'univers', alias: e.alias, etiquettes: e.etiquettes };
+    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur)), ...visibiliteVue(r), origine: r.surcharge_de != null ? 'surcharge' : 'univers', alias: e.alias, etiquettes: e.etiquettes };
     if (r.lien_via) {
       const via = JSON.parse(r.lien_via) as { id: number; titre: string };
       if (via.id !== options.lie) f.via = via;
@@ -1129,12 +1174,20 @@ function elementsDeLUnivers(db: Db, compteId: number, universId: number): Elemen
 
 /** The conditions of the list on the elements of the system (type, sub-type, label, readable, search); `null`: nothing can match. */
 function conditionElements(
+  db: Db,
   e: ElementsLus,
   options: { type?: string; sousType?: string; etiquette?: string; recherche?: string },
+  universId: number,
 ): { sql: string; params: (string | number)[] } | null {
   const acteur = { compteId: e.compteId };
   const where = ['f.univers_id = ?'];
   const params: (string | number)[] = [e.espaceId];
+  // An element the universe has customised is listed through its copy, once (AD-surcharge-2). A base held short of
+  // 0054 has no column, hence no copy to hide.
+  if (colonneSurcharge(db)) {
+    where.push('NOT EXISTS (SELECT 1 FROM fiches c WHERE f.id = c.surcharge_de AND c.univers_id = ?)');
+    params.push(universId);
+  }
   if (options.type !== undefined) {
     where.push('f.type = ?');
     params.push(options.type);

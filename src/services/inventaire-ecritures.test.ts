@@ -26,6 +26,7 @@ const ECRIVAINS = [
   'membres.ts', // effacerAuteur
   'relations.ts', // relierSection, retirerRelation
   'sections-gerees.ts', // libererSections
+  'surcharge.ts', // personnaliser: fiches.surcharge_de, aliases of the copy
   'sections.ts', // insererSection, poserContenu, the section services
   'univers.ts', // supprimerUnivers
 ];

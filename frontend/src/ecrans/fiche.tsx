@@ -16,6 +16,7 @@ import { BlocMentions } from './fiche/mentions';
 import { BlocsOutils } from './fiche/blocs-outils';
 import { BlocContient } from './fiche/contient';
 import { BandeauElement } from './fiche/bandeau-element';
+import { BoutonPersonnaliser } from './fiche/actions-surcharge';
 import { EnteteFiche, type MessageIllustration } from './fiche/entete';
 import { blocsFicheVisibles, placeDe } from './fiche/registre-blocs-fiche';
 
@@ -223,6 +224,8 @@ function PageFiche() {
         gestion={gestion && etat.k === 'ok'}
         modeJoueur={mj && modeLu === 'joueur'}
         badge={badgeFiche(types, fiche)}
+        systemeId={univers.etat === 'ok' ? univers.valeur.systeme?.id : undefined}
+        actionsElement={element && role === 'mj' && modeEffectif === 'mj' ? <BoutonPersonnaliser universId={uid} fiche={fiche} /> : undefined}
         Icone={Icone}
         message={messageIll}
         setMessage={setMessageIll}

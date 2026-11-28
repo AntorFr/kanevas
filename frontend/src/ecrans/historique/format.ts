@@ -9,7 +9,7 @@ export interface LigneVue {
   ficheTitre: string;
   objet: 'entete' | 'section' | 'relation' | 'fiche';
   objetCle: string | null;
-  action: 'creee' | 'modifiee' | 'supprimee';
+  action: 'creee' | 'modifiee' | 'supprimee' | 'detachee';
   compte: { id: number; username: string } | null;
   jeton: { id: number; nom: string } | null;
   origine: string;
@@ -67,11 +67,14 @@ const CHAMPS: Record<string, string> = {
 
 /** What the line says it changed (docs/ecrans.md, E-24 « What a line says »). */
 export function libelleDe(l: LigneVue): string {
+  if (l.objet === 'fiche' && l.action === 'detachee') return 'Devenue fiche ordinaire';
   if (l.objet === 'fiche') return l.action === 'supprimee' ? 'Fiche supprimée' : 'Fiche créée';
-  if (l.objet === 'section') return `Section « ${l.sectionTitre ?? l.objetCle ?? ''} » ${VERBE.section[l.action]}`;
+  // `detachee` only exists on a sheet line (Devenue fiche ordinaire).
+  const verbe = l.action === 'detachee' ? 'modifiee' : l.action;
+  if (l.objet === 'section') return `Section « ${l.sectionTitre ?? l.objetCle ?? ''} » ${VERBE.section[verbe]}`;
   if (l.objet === 'relation') {
     const cible = l.cible ? ` vers ${l.cible}` : '';
-    return `Relation${cible} ${VERBE.relation[l.action]}`;
+    return `Relation${cible} ${VERBE.relation[verbe]}`;
   }
   return (l.champ !== null && CHAMPS[l.champ]) || 'En-tête modifié';
 }

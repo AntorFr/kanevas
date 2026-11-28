@@ -79,12 +79,12 @@ test('montée 0039 : données intactes, historique vide, déclencheurs posés', 
     const db = openDb(':memory:');
     assert.equal(migrate(db, dir + '/').at(-1), 38);
     semer(db);
-    // 0040 drops the four import marks: the data compared are the other columns.
+    // 0040 drops the four import marks, 0053 adds `surcharge_de` (always NULL after the climb): the data compared are the other columns.
     const avant = (t: string) => (db.prepare(`SELECT * FROM ${t} ORDER BY 1, 2`).all() as Record<string, unknown>[])
-      .map(({ dernier_import, version_importee, espace_systeme_id, ...r }) => r);
+      .map(({ dernier_import, version_importee, espace_systeme_id, surcharge_de, ...r }) => r);
     const tables = ['univers', 'fiches', 'sections', 'relations', 'fiche_alias', 'etiquettes', 'fiche_etiquettes', 'fichiers', 'fichiers_sections'];
     const snap = tables.map(avant);
-    assert.deepEqual(migrate(db), [39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53]);
+    assert.deepEqual(migrate(db), [39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54]);
     assert.deepEqual(tables.map(avant), snap, 'data untouched');
     assert.equal(lignes(db).length, 0, 'no past write reconstructed');
     assert.deepEqual(db.pragma('foreign_key_check'), []);

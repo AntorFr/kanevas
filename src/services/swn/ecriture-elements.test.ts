@@ -372,9 +372,10 @@ test('0044 : montée depuis 0043 avec le semis, tout reste, swn_elements neuve e
   assert.equal(semerBouchon(db), true);
   const tables = () => (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all() as any[]).map((x) => x.name);
   assert.ok(!tables().includes('swn_elements'));
-  const tout = (t: string) => db.prepare(`SELECT * FROM ${t} ORDER BY 1`).all();
+  // 0053 adds fiches.surcharge_de (NULL after the climb): not a datum to find again
+  const tout = (t: string) => (db.prepare(`SELECT * FROM ${t} ORDER BY 1`).all() as any[]).map(({ surcharge_de, ...r }) => r);
   const avant = { s: tout('swn_systemes'), a: tout('swn_astres'), f: tout('fiches'), g: tout('swn_galaxies') };
-  assert.deepEqual(migrate(db), [44, 45, 46, 47, 48, 49, 50, 51, 52, 53]);
+  assert.deepEqual(migrate(db), [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54]);
   assert.ok(tables().includes('swn_elements'));
   assert.deepEqual({ s: tout('swn_systemes'), a: tout('swn_astres'), f: tout('fiches'), g: tout('swn_galaxies') }, avant);
   assert.equal((db.prepare('SELECT COUNT(*) n FROM swn_elements').get() as any).n, 0);
