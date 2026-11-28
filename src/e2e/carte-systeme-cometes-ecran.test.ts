@@ -145,7 +145,7 @@ describe('E-23 la queue et la trajectoire d’une comète', { skip: skipBrowser,
           out.push(m);
         }
         return out;
-      }, { x: co.x + 8, y: co.y, n: Math.round(q.longueur) + 40 });
+      }, { x: co.x + 8, y: co.y, n: Math.min(Math.round(q.longueur) + 40, Math.floor(await page.locator('canvas.cs-toile').evaluate((cv: HTMLCanvasElement) => cv.getBoundingClientRect().width - 2 - 0)) - Math.round(co.x + 8)) });
       let saut = 0; for (let i = 1; i < colonnes.length; i++) saut = Math.max(saut, colonnes[i - 1] - colonnes[i]);
       assert.ok(saut <= 8, `pas d’arête franche à droite de la tête (chute max ${saut} sur ${colonnes})`);
       await page.screenshot({ path: `${SHOTS}/queue-pixels.png` });
@@ -193,4 +193,24 @@ describe('E-23 la queue et la trajectoire d’une comète', { skip: skipBrowser,
     await page.screenshot({ path: `${SHOTS}/390-dezoome.png` });
     await ctx.close();
   });
+  for (const [largeur, hauteur] of [[1440, 900], [390, 780]] as const) {
+    it(`à orbite 8, la queue dessinée mesure au moins 32 px hors coma, lue sur les pixels (${largeur} px)`, async () => {
+      const { page, ctx } = await ouvrir(largeur, hauteur);
+      await attendre(page, 'data-queue-comete', 'comete');
+      await page.locator('.cs-corps[data-cle="comete"]').click();
+      const { corps } = await page.evaluate(() => (window as Any).__carteSysteme());
+      const co = corps.find((c: Any) => c.cle === 'comete');
+      const q = (await crochet(page, 'data-queue-comete')).find((e: Any) => e.cle === 'comete');
+      assert.ok(q.longueur - 12 >= 32, `queue ${q.longueur} px : au moins 32 px hors coma de 12 px`);
+      // what is really painted (no recompute of the hook): ink along the axis between 14 and 44 px from the head, none far past the length
+      const dx = Math.cos(q.angle), dy = Math.sin(q.angle);
+      const pts = [14, 24, 34, 44].map((d) => [co.x + dx * d, co.y + dy * d]);
+      const alphas: number[] = await page.locator('canvas.cs-toile').evaluate((cv: HTMLCanvasElement, a: number[][]) => {
+        const r = cv.getBoundingClientRect(); const k = cv.width / r.width; const g = cv.getContext('2d')!;
+        return a.map(([x, y]) => { const d = g.getImageData(Math.round(x * k) - 1, Math.round(y * k) - 1, 3, 3).data; let m = 0; for (let i = 3; i < d.length; i += 4) m = Math.max(m, d[i]); return m; });
+      }, pts);
+      assert.ok(alphas[2] > 0, `de l’encre à 34 px de la tête, hors coma (${alphas})`);
+      await ctx.close();
+    });
+  }
 });
