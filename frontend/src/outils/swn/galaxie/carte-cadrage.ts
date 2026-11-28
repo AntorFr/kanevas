@@ -55,6 +55,11 @@ export function ajustement(b: Boite, fenetre: { w: number; h: number }): number 
   return Math.min((fenetre.w * (1 - 2 * MARGE_CADRAGE)) / largeur, (fenetre.h * (1 - 2 * MARGE_CADRAGE)) / hauteur);
 }
 
+/** The zoom of the first view, before any system is known: the lowest the cap allows, so that the first blocks reach the far systems (the framing then fits what came in). */
+export function zoomDecouverte(fenetre: { w: number; h: number }): number {
+  return Math.max(TAILLE_FOND, tailleMinimale(fenetre.w, fenetre.h) * (BLOCS_MAX / BLOCS_FENETRE_MAX));
+}
+
 /** The lowest zoom: today's, lowered to the fit of the known zone when it is wider, never under `TAILLE_FOND` nor past `BLOCS_FENETRE_MAX` blocks in the window. */
 export function zoomMinimal(fenetre: { w: number; h: number }, b: Boite | null): number {
   const base = tailleMinimale(fenetre.w, fenetre.h);

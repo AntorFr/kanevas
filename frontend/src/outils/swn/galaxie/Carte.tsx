@@ -5,8 +5,8 @@ import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { Bouton } from '../../../ui';
 import { EtatVide } from '../../../ui/etats';
 import { classeDeCle, classesEtoile } from '../../../wasm/coeur';
-import { abreger, abregerType, placerEtiquetteType, BLOCS_MAX, bloc, cases, COTE_BLOC, distanceHex, TAILLE_MAX, TAILLE_MIN, versHex, versPlan } from './geo';
-import { boiteGrille, boiteZoneConnue, cadrerZoneConnue, zoomMinimal } from './carte-cadrage';
+import { abreger, abregerType, placerEtiquetteType, BLOCS_MAX, bloc, cases, COTE_BLOC, distanceHex, TAILLE_MAX, versHex, versPlan } from './geo';
+import { TAILLE_FOND, boiteGrille, boiteZoneConnue, cadrerZoneConnue, zoomDecouverte, zoomMinimal } from './carte-cadrage';
 import { couleurEtoile, rayonEtoile } from './carte-geometrie';
 import { nomsVisibles, SEUIL_NOMS, type CandidatNom } from './carte-noms';
 import { ZoneHexagones } from './ZoneHexagones';
@@ -67,8 +67,8 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
   const depart = galaxie.reference ?? { q: 0, r: 0 };
   const [vue, setVue] = useState<Vue>(() => {
     const p = versPlan(depart.q, depart.r);
-    // Starts wide (raised to the lowest zoom once measured): the first blocks tell where the systems are, then the view is framed on them.
-    return { vx: p.x, vy: p.y, s: TAILLE_MIN };
+    // Starts wide (raised to the discovery zoom once measured): the first blocks tell where the systems are, then the view is framed on them.
+    return { vx: p.x, vy: p.y, s: TAILLE_FOND };
   });
   const cadree = useRef(false);
   // The opening frame follows the known zone while blocks still arrive (a far system only shows once its block is in), until the reader moves the view.
@@ -109,7 +109,8 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
   }, [donnees.systemes, tirees]);
 
   const boiteConnue = useMemo(() => boiteZoneConnue([...donnees.systemes.values()], [...donnees.zones.values()]), [donnees.systemes, donnees.zones]);
-  const sMin = zoomMinimal(taille, boiteConnue);
+  // Before the first framing nothing is known: the view opens as wide as the cap allows, to read the blocks where far systems may be.
+  const sMin = cadree.current ? zoomMinimal(taille, boiteConnue) : zoomDecouverte(taille);
   const borne = useCallback((s: number) => Math.min(TAILLE_MAX, Math.max(sMin, s)), [sMin]);
 
   useEffect(() => {
