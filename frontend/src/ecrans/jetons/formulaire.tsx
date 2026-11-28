@@ -1,16 +1,21 @@
 import { KeyRound, SlidersHorizontal } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 
 import { ErreurApi, appeler } from '../../api';
 import './jetons.css';
+import { BlocSystemes, lignesSystemes, type ListeSystemes } from './systemes';
 import { Alerte, Bouton, Case, ChoixSegmente, Champ, Fenetre, ListeAcces, ValeurCopiable, type ChoixAcces } from '../../ui';
 import {
   corpsAcces,
+  corpsSystemes,
   formeDe,
   formeVide,
   lignesDe,
   listeVide,
+  systemesDe,
   type FormeAcces,
+  type NiveauSysteme,
+  type SystemeChoix,
   type JetonVue,
   type OutilOffrable,
   type UniversChoix,
@@ -45,6 +50,7 @@ export function FormulaireJeton({
   url,
   titreModifier = 'Modifier les accès',
   admin = false,
+  systemesFournis,
   lireJeton,
   onFermer,
   onChange,
@@ -58,6 +64,8 @@ export function FormulaireJeton({
   titreModifier?: string;
   /** E-5: the admin edits the accesses of someone else's token (wording in the third person). */
   admin?: boolean;
+  /** E-5: the systems the OWNER reads, given by the list of tokens (else the box reads `GET /api/systemes`). */
+  systemesFournis?: SystemeChoix[];
   /** The current state of the token, read again on saving to notice a change made meanwhile. */
   lireJeton?: () => Promise<JetonVue | undefined>;
   onFermer: () => void;
@@ -82,6 +90,40 @@ export function FormulaireJeton({
 
   const creation = !jeton;
   const lignes = lignesDe(univers, forme, courant);
+  const [sys, setSys] = useState<Record<number, NiveauSysteme>>(() => systemesDe(jeton));
+  const [refus, setRefus] = useState<ReadonlySet<number>>(new Set());
+  const [lus, setLus] = useState<ListeSystemes>(systemesFournis ? { etat: 'ok', liste: systemesFournis } : { etat: 'chargement' });
+  const [essaiSys, setEssaiSys] = useState(0);
+  const chargerSystemes = useCallback(async (): Promise<ListeSystemes> => {
+    try {
+      return { etat: 'ok', liste: await appeler<SystemeChoix[]>('GET', '/api/systemes') };
+    } catch {
+      return { etat: 'erreur' };
+    }
+  }, []);
+  useEffect(() => {
+    if (systemesFournis) return;
+    let actif = true;
+    setLus({ etat: 'chargement' });
+    void chargerSystemes().then((r) => actif && setLus(r));
+    return () => {
+      actif = false;
+    };
+  }, [essaiSys, systemesFournis, chargerSystemes]);
+  // « Contenu » unchecked (or a tool-only token): the block is hidden, its values kept, no `systemes` sent.
+  const sansContenu = creation ? !contenu : jeton.contenu === false;
+  const lignesSys = lus.etat === 'ok' ? lignesSystemes(lus.liste, sys, courant, refus) : [];
+  const attendSystemes = !creation && lus.etat === 'chargement';
+
+  function poserSysteme(id: number, v: NiveauSysteme) {
+    setRefus((r) => {
+      if (!r.has(id)) return r;
+      const n = new Set(r);
+      n.delete(id);
+      return n;
+    });
+    setSys((m) => ({ ...m, [id]: v }));
+  }
 
   function poser(id: number, v: ChoixAcces) {
     setSansListe(false);
@@ -90,16 +132,25 @@ export function FormulaireJeton({
 
   async function soumettre(e?: FormEvent) {
     e?.preventDefault();
-    if (enCours) return;
+    if (enCours || attendSystemes) return;
     if (creation && nom.trim() === '') return setNomVide(true);
     if (creation && !contenu && outils.length === 0) return setSansPermission(true);
     if (listeVide(forme)) return setSansListe(true);
     setEnCours(true);
     setEchec(null);
     setChanges(false);
+    // No `systemes` key unless the lines are known and « Contenu » is on: the rows of a token are never guessed.
+    const systemes = lus.etat === 'ok' && !sansContenu ? { systemes: corpsSystemes(lignesSys, sys) } : {};
     try {
       if (creation) {
-        const r = await appeler<{ valeur: string }>('POST', url, { nom: nom.trim(), dureeJours: Number(duree), acces: corpsAcces(forme), contenu, outils });
+        const r = await appeler<{ valeur: string }>('POST', url, {
+          nom: nom.trim(),
+          dureeJours: Number(duree),
+          acces: corpsAcces(forme),
+          contenu,
+          outils,
+          ...systemes,
+        });
         setMontre({ nom: nom.trim(), valeur: r.valeur });
         onChange();
       } else {
@@ -112,11 +163,12 @@ export function FormulaireJeton({
             setCourant(frais);
             setOuvertLe(frais.modifieParAdmin?.le ?? null);
             setForme(formeDe(frais));
+            setSys(systemesDe(frais));
             setChanges(true);
           }
           return;
         }
-        await appeler('PATCH', url, { acces: corpsAcces(forme) });
+        await appeler('PATCH', url, { acces: corpsAcces(forme), ...systemes });
         onChange('Accès enregistrés.');
         onFermer();
       }
@@ -125,6 +177,18 @@ export function FormulaireJeton({
         setRevoque(true);
         onChange();
       } else if (err instanceof ErreurApi && err.statut === 400 && err.details?.champ === 'nom') setNomVide(true);
+      else if (err instanceof ErreurApi && err.statut === 400 && err.details?.champ === 'systemes' && !systemesFournis) {
+        // The rights moved while the box was open: read the real choices again, keep everything typed.
+        const r = await chargerSystemes();
+        setLus(r);
+        if (r.etat === 'ok') {
+          const lisibles = new Map(r.liste.map((x) => [x.id, x]));
+          setRefus(new Set(r.liste.filter((x) => !x.peutEcrire && sys[x.id] === 'ecriture' && jeton?.systemes?.find((a) => a.id === x.id)?.niveau !== 'ecriture').map((x) => x.id)));
+          // A system no longer read and not carried by the token leaves the form.
+          if (!r.liste.some((x) => !x.peutEcrire && sys[x.id] === 'ecriture')) setEchec('Impossible d’enregistrer.');
+          setSys((m) => Object.fromEntries(Object.entries(m).filter(([id]) => lisibles.has(Number(id)) || jeton?.systemes?.some((a) => a.id === Number(id)))));
+        } else setEchec('Impossible d’enregistrer.');
+      }
       else setEchec('Impossible d’enregistrer.');
     } finally {
       setEnCours(false);
@@ -235,6 +299,16 @@ export function FormulaireJeton({
               erreur={sansListe ? 'Choisissez au moins un univers.' : undefined}
             />
           )}
+          {!sansContenu && (
+            <BlocSystemes
+              systemes={lus}
+              lignes={lignesSys}
+              creation={creation}
+              desactive={enCours}
+              onChange={poserSysteme}
+              onReessayer={() => setEssaiSys((n) => n + 1)}
+            />
+          )}
           <p className="note-jeton">
             {admin
               ? 'Un jeton n’a jamais plus de droits que son compte : là où il est joueur, le jeton agit en joueur.'
@@ -244,7 +318,7 @@ export function FormulaireJeton({
           {echec && <Alerte>{echec}</Alerte>}
           <div className="fenetre-actions">
             <Bouton onClick={onFermer}>Annuler</Bouton>
-            <Bouton variante="principal" type="submit" ecrit enCours={enCours}>
+            <Bouton variante="principal" type="submit" ecrit enCours={enCours} disabled={attendSystemes}>
               {enCours ? (creation ? 'Création…' : 'Enregistrement…') : echec ? 'Réessayer' : creation ? 'Créer le jeton' : 'Enregistrer'}
             </Bouton>
           </div>

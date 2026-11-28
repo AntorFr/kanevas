@@ -5,7 +5,8 @@ import { ErreurApi, appeler, useConnexionPerdue } from '../../api';
 import { useCharge } from '../../cadre-contexte';
 import { Alerte, BoiteDialogue, Bouton, Champ, Chargement, ErreurChargement, Pastille, useToasts } from '../../ui';
 import { FormulaireJeton } from '../jetons/formulaire';
-import { MOT_NIVEAU, dateCourte, dernierUsage, libelleOutils, type JetonVue, type OutilOffrable, type UniversChoix } from '../jetons/format';
+import { MOT_NIVEAU, dateCourte, dernierUsage, libelleOutils, type JetonVue, type OutilOffrable, type SystemeChoix, type UniversChoix } from '../jetons/format';
+import { AccesSystemes } from '../jetons/systemes';
 import './jetons-api.css';
 
 interface Reponse {
@@ -14,10 +15,12 @@ interface Reponse {
   univers: Record<number, UniversChoix[]>;
   /** The tools each owner may offer, by owner id (words of the permissions of a line). */
   outilsOffrables?: Record<number, OutilOffrable[]>;
+  /** The systems each owner reads, by owner id (E-5's box offers the owner's, never the admin's). */
+  systemesChoisissables?: Record<number, SystemeChoix[]>;
 }
 
 /** E-5 accesses: « Tous les univers du compte — lecture · Éneria : — », or the list. */
-function Acces({ j, outils }: { j: JetonVue; outils: OutilOffrable[] }) {
+function Acces({ j, outils, lus }: { j: JetonVue; outils: OutilOffrable[]; lus?: SystemeChoix[] }) {
   const morceaux = j.univers.map((u) => `${u.nom} : ${MOT_NIVEAU[u.niveau]}`);
   const perm = libelleOutils(j, outils);
   const texte = morceaux.join(' · ');
@@ -33,6 +36,11 @@ function Acces({ j, outils }: { j: JetonVue; outils: OutilOffrable[] }) {
         <span className="acces-niveaux" title={texte}>{texte || (perm ? '' : '—')}</span>
       )}
       {perm && <span className="acces-perm">{perm}</span>}
+      {j.systemes && j.systemes.length > 0 && (
+        <span className="acces-perm acces-systemes">
+          <AccesSystemes j={j} lus={lus} />
+        </span>
+      )}
     </>
   );
 }
@@ -137,7 +145,7 @@ export function JetonsApi() {
               <Etat j={j} />
             </span>
             <span role="cell" className="cel-prop" title={j.proprietaire}>{j.proprietaire}</span>
-            <span role="cell" className="cel-acces"><Acces j={j} outils={donnees?.outilsOffrables?.[j.compteId] ?? []} /></span>
+            <span role="cell" className="cel-acces"><Acces j={j} outils={donnees?.outilsOffrables?.[j.compteId] ?? []} lus={donnees?.systemesChoisissables?.[j.compteId]} /></span>
             <span role="cell" className="cel-exp">
               <em className="etiquette-bloc">Expiration</em>
               {j.etat === 'expire' ? `expiré le ${dateCourte(j.expireLe)}` : dateCourte(j.expireLe)}
@@ -174,6 +182,7 @@ export function JetonsApi() {
           admin
           jeton={modif}
           univers={donnees?.univers[modif.compteId] ?? []}
+          systemesFournis={donnees?.systemesChoisissables?.[modif.compteId] ?? []}
           url={`/api/instance/jetons/${modif.id}`}
           lireJeton={async () => (await appeler<Reponse>('GET', '/api/instance/jetons')).jetons.find((x) => x.id === modif.id)}
           onFermer={() => setModif(null)}

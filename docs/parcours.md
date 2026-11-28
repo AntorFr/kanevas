@@ -1600,10 +1600,24 @@ Léa (player of universe 3) reads the same original, only its player-readable se
 *Failure paths:* the admin types an unknown identifier or an account already GM → the message below the field, nothing added; Antor opens an element another GM deleted meanwhile → « Page introuvable. » when he was reading, « Cet élément n'existe plus. » when he was editing, back to the list; his GM right is removed while he edits → « Vous ne pouvez plus modifier ce système. » on the next write, his text kept. *Moment of strength (slice `elements`):* step 3, the element read under its banner from a universe's list, after step 2 — the same pistol, found in four universes, edited once.
 
 ### P-28 — A key reads and writes a system (Monsieur, with his agent)
-He creates a token (« Mes jetons d'API », E-23 of `kanevas-synchro`), gives it level « write » on the system (choice described in E-23's « Systems » block), and the agent
+He creates a token (« Mes jetons d'API », E-23 of `kanevas-synchro`), gives it « Écriture » on the system (choice described in E-23's « Systèmes de jeu » block), and the agent
 lists and writes elements at `/api/v1/systemes/<id>/…`; the same token still opens his universes. — token screen, API.
+On the screen, the block shows only the systems the account reads, « Écriture » only where he is a GM of the system (Teo, who reads none, sees no block; Léa, a player of « Lame d'Ébène » attached to the system, sees « Lecture » only); when the list fails to load, the form stays usable and « Modifier les accès » touches no row; the admin opening Antor's token on E-5 sees Antor's systems, not his own. — token screen (E-23 « Mes jetons d'API », E-5 administration).
 His agent, connected to the MCP door of one of his universes with that token, lists and edits the same elements with the `systeme_*`
 tools; the assistant of the universe does the same for a GM of the system (a mere GM of the universe reads only). — MCP door, assistant.
+
+*The steps of the key (`kanevas-systemes-jeu-api`, the agent half is `kanevas-systemes-jeu-mcp-assistant`):*
+1. In « Mes jetons d'API » (E-23) Antor presses « Créer un jeton », names it, keeps « Tous mes univers », and in the block « Systèmes de jeu » sets « Stars Without Number »
+   (where the admin made him a GM, P-27 step 1) to « Écriture »; the value is shown once. — E-23.
+2. The agent calls `GET /api/v1/systemes/<id>/fiches` (the system's elements, all sections, because the account is a GM of the system), `POST …/fiches`
+   (« Pistolet laser », type `objet`) and `PUT …/fiches/<fid>/sections/<clé>` for its text; each answer carries the fingerprint of the next write (AD-140). — API.
+3. The same token reads, in universe 1, `GET /api/v1/univers/<clé>/fiches/id/<fid>` of that element: the player-readable sections only, with `origine`
+   and the system (the universe's door, whatever the token's rows on systems). — API.
+4. Later Antor opens « Modifier les accès » of the token and lowers the system to « Lecture »: the agent's next write answers 403 `lecture_seule`, its reads still work. If instead
+   the admin removes Antor from the GMs of the system (B-114), the token keeps « Écriture » on the list but the write answers 403 (the account's right wins, AD-144); the reads stay
+   if he still belongs to an attached universe, else the whole address answers 404. — E-23, API.
+   *Where the screen fails:* the admin, in E-5, opens Antor's token and sees Antor's systems, not his own, and changes one line the same way — E-5. When the list of systems does not load (creation or change), the block says « Impossible de charger les systèmes. » with « Réessayer », the rest of the form stays usable, and a creation made anyway gives a token without access to a system — E-23. If Antor was removed from the GMs between opening the box and saving, the save is refused with « Vous n'êtes plus MJ de ce système. » under the line, the box reloads the real choices and keeps what he typed — E-23 (400).
+5. A script whose token has no row on the system gets 404 on `/api/v1/systemes/<id>/…`, like an unknown system; it still reads the element from the universe's door at player level. — API.
 
 **Out of scope of `kanevas-systemes-jeu`:** importing a rules reference; typed relations between a universe's sheet and a
 system element (plain `[[…]]` links are resolved); propagating a later change of the system's element into its
