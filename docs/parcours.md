@@ -1727,6 +1727,9 @@ the map or a rule **without the music stopping**.
    sound, changes a volume, « Tout couper ».
 3. Outside a table he plays a sound found in E-31 or on a sheet. *Failure*: a missing sound is shown as such, plays
    nothing; the browser blocks sound before a first gesture: the table asks for one click.
+   Marc, GM of a scenario of two scenes, opens it as a table on his laptop before the evening. *Failures*: a scenario with no sound
+   says « Aucun son sur cette fiche. » and links to E-36 to add some; a sound whose file does not answer says « Fichier
+   introuvable » and plays nothing; a table that cannot be read says « Impossible de charger la table. » with « Réessayer ».
 
 ### P-34 — A player hears what is opened to him (player)
 
