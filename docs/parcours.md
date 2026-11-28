@@ -1750,6 +1750,6 @@ tags and purges the orphans it names, after reading the list; any other token on
 ### Out of scope of `kanevas-sons`
 
 - The players' screen (scene images on a second screen); producing a sound inside Kanevas; random variants of an effect
-  (later: an entry carrying several sounds); sound on the players' devices; online services (Spotify, YouTube).
+  (later: an entry carrying several sounds); sound on the players' devices (a player listening to the library from his own device is not that: see the next line); online services (Spotify, YouTube).
 - Playing from a phone or tablet is not a target for the GM: the table aims at the GM's computer, in Chrome. A player listening from a phone is supported (E-31 and E-34 at 390 px, no deposit there).
 - The media library (AD-117) is untouched except for the shared size limit (B-135).
