@@ -1700,9 +1700,9 @@ the map or a rule **without the music stopping**.
 
 1. In the sound library of the universe (E-31) he deposits a file (« Ajouter un son »): the file is measured, a
    duplicate he can see is announced with « Importer celui-là ». *Failure*: file over the limit (B-135), unreadable
-   format. A better recording of the same sound: on E-32 « Remplacer le fichier » keeps everything else and measures again.
+   format. A better recording of the same sound: on E-32 « Remplacer le fichier » keeps everything else and measures again, and « listened » goes back to off (the sound comes up again under « Non écouté »). *Failure* of the replacement: interrupted upload (« Envoi interrompu »), stale `version` (`son_modifie`).
 2. On the sound (E-32) he sets type, generic tags, description, source and licence, ticks « listened » after hearing it. His own tags and Notes (with GM blocks) are those of this library only: another library holding the sound never sees them. *Failure*: the key he types is taken (`cle_prise`); another GM saved the common part first (`son_modifie`: « Recharger »).
-3. He finds the sounds still to classify: in E-31 the tags menu offers « sans étiquette » per category (« sans étiquette » in Émotion), the chip « Non écouté » keeps the ones he has not heard; he ticks the values, hears the next one and goes on. The filters are in the address, so the list can be bookmarked or shared with a co-GM.
+3. He finds the sounds still to classify: in E-31 the tags menu offers « sans étiquette » per category (« sans étiquette » in Émotion), the chip « Non écouté » keeps the ones he has not heard; he ticks the values, hears the next one and goes on. The filters are in the address, so the list can be bookmarked or shared with a co-GM. A player who reads a sound (E-32) sees the Notes without GM blocks and the tags as text.
 4. The system's GM does the same in the system's library (E-15, tab « Sons »).
 5. Removing a sound from the library first shows the sections that carry it (from `kanevas-sons-sections`; before it, the dialog names the sound only).
 
