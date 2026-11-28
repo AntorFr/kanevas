@@ -8,7 +8,7 @@
 // TEST PLAN (world « Éneria d'essai »: Antor GM, Léa Player author of « Vent d'Orak » and « Étoile du soir », Teo added as Player)
 // Hand-calculated: Frégate R class 2 (cost 300 000, power 20, mass 20, speed 3, armour 5); Soute d'essai (cost 1 000, soute 10);
 // Blindage 10 % armour +2; Réacteur 1 power for 0,5 mass, 5 points at most; Cale doubles a cargo; Réparation asks 2.
-// B-83 pourcentage : choosing Blindage (gesture) shows « 10 % de la coque », « Ligne : 30 000 cr », price 330 000 cr, Armure 7
+// B-83 pourcentage : choosing Blindage (gesture) shows « 10 % de la coque », « Ligne : 30 000 cr », price stays 300 000 cr (the modification is not in it), Armure 7
 // B-83 points      : « Points échangés » at 3 reads « 3 points : −3 puissance, +1,5 masse » ; + → 4 « −4 puissance, +2 masse » ; 5 is the top (+ disabled) ;
 //                    0 the bottom (− disabled) ; 6 typed → invalid + « Points échangés : un nombre entier de 0 à 5. », typed value kept
 // B-83 visée       : Cale with no target → « Élément visé » select with « Choisir un élément », blocking alert, Enregistrer disabled ; target the Soute → « Soutes 20 »,
@@ -116,7 +116,7 @@ describe('B-83 · E-22 : modifications à coût en pourcentage et effets de jeu'
     assert.match(ligne, /10 % de la coque/);
     assert.match(ligne, /armure \+2/);
     await attendreResultat(p, /Armure\s*7/);
-    assert.match(await resultats(p), /Prix\s*330\s000\scr/);
+    assert.match(await resultats(p), /Prix\s*300\s000\scr/);
     await p.screenshot({ path: `${SHOTS}-pourcentage.png`, fullPage: true });
   });
 
