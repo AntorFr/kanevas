@@ -1766,9 +1766,10 @@ tags and purges the orphans it names, after reading the list; any other token on
    reads the confirmation (the sections that will show a missing sound), erases. *Failure*: bytes shared with a sound that stays free
    nothing and the line says so; one erasure fails (« 2 effacés, 1 n'a pas pu l'être. », the line stays ticked); a line was erased meanwhile
    (« 1 déjà effacé »); nothing is orphan (« Aucun son à purger »).
-   In « Limites » (E-5) she may also set the one size limit shared by every file of the instance (B-135, `-bibliotheque`).
-4. For a script, in E-23 she chooses « Tous mes univers », then the level « Administrateur » (third segment, hers alone), creates the token
+4. In « Limites » (E-5) she may also set the one size limit shared by every file of the instance (B-135, `-bibliotheque`).
+   *Failure*: an empty or out-of-range value is refused (« Entre 1 et 500 Mo. »); the save fails (« L'action n'a pas abouti. Réessayez. », the entry kept).
+5. For a script, in E-23 she chooses « Tous mes univers », then the level « Administrateur » (third segment, hers alone), creates the token
    and copies it (B-140). *Failure*: she unticks « Tous mes univers » (the level falls back to « Écriture » and says so); her account stops being the admin's while the form is open (« Ce niveau est réservé à l'administrateur. », the segment removed); the creation fails (the entries are kept).
-5. *API/script* (P-36): with a token of level « Administrateur » (E-23, offered to him alone, for « Tous mes univers » only) the same steps through
+6. *API/script* (P-36): with a token of level « Administrateur » (E-23, offered to her alone, for « Tous mes univers » only) the same steps through
    `/api/v1/instance/sons/…`: the script reads the list, then names the ids it erases; a token of another level gets 403 `niveau_insuffisant`;
    if the account stops being admin the token falls back to « Écriture » and the instance routes answer 403.

@@ -14,7 +14,7 @@ table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;text
 .barre{display:flex;align-items:center;gap:12px;justify-content:space-between}
 .fenetre{background:var(--s1);border:1px solid var(--red);border-radius:12px;padding:18px;max-width:440px;display:flex;flex-direction:column;gap:12px}.fenetre .acts{display:flex;gap:8px;justify-content:flex-end}
 .seg{display:inline-flex;border:1px solid var(--bs);border-radius:8px;overflow:hidden}.seg span{padding:6px 14px;color:var(--i2)}.seg .on{background:var(--vid);color:var(--vis)}
-@media(max-width:760px){table,tbody,tr,td{display:block}thead{display:none}tr{padding:8px 0;border-top:1px solid var(--b)}td{border:0;padding:2px 8px}input[type=text]{min-width:0;flex:1}.panneau{overflow-x:auto}.val{flex-wrap:wrap}.val .n{flex-basis:100%}.val button{flex:1}}
+@media(max-width:760px){table,tbody,tr,td{display:block}thead,thead tr{display:block}th{display:none;text-align:left}th:nth-child(2){display:block;padding:4px 8px}td[data-l]::before{content:attr(data-l) ' : ';color:var(--m,#9aa)}tr{padding:8px 0;border-top:1px solid var(--b)}td{border:0;padding:2px 8px}input[type=text]{min-width:0;flex:1}.panneau{overflow-x:auto}.val{flex-wrap:wrap}.val .n{flex-basis:100%}.val button{flex:1}}
 </style></head><body>
 <section><p class="label">E-37 — Tags de sons (administrateur)</p><div class="panneau">
 <h2>Tags de sons</h2><p class="note">Les tags génériques des sons : ceux des filtres de la bibliothèque et de la bibliothèque globale.</p>
@@ -31,17 +31,17 @@ table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;text
 <section><p class="label">E-37 — retrait d'une valeur</p><div class="fenetre"><h2>Retirer la valeur « Épique » de la catégorie « Genre » ?</h2>
 <p class="note">14 sons la portent ; ils la perdent, rien d'autre ne change.</p><div class="acts"><button>Annuler</button><button class="d">Retirer</button></div></div></section>
 <section><p class="label">E-38 — état initial : rien de coché</p><div class="panneau"><table><thead><tr><th></th><th>Sons sans bibliothèque</th><th>Type</th><th>Libère</th><th>Sections</th></tr></thead><tbody>
-<tr><td><input type="checkbox" aria-label="Taverne de nuit"></td><td>Taverne de nuit <span class="pastille">Privé</span></td><td>fond</td><td>4,2 Mo</td><td>Portée par 3 sections</td></tr>
-<tr><td><input type="checkbox" aria-label="Coup d'épée"></td><td>Coup d'épée</td><td>bruitage</td><td>0,3 Mo</td><td>—</td></tr></tbody></table>
+<tr><td><input type="checkbox" aria-label="Taverne de nuit"></td><td>Taverne de nuit <span class="pastille">Privé</span></td><td data-l="Type">fond</td><td data-l="Libère">4,2 Mo</td><td data-l="Sections">Portée par 3 sections</td></tr>
+<tr><td><input type="checkbox" aria-label="Coup d'épée"></td><td>Coup d'épée</td><td data-l="Type">bruitage</td><td data-l="Libère">0,3 Mo</td><td data-l="Sections">—</td></tr></tbody></table>
 <div class="barre"><span class="note">Rien de coché</span><button class="d" disabled>Effacer les sons cochés</button></div></div></section>
 <section><p class="label">E-38 — Purge des sons (administrateur), trois cases cochées</p><div class="panneau">
 <h2>Purge des sons</h2><p class="note">Ce qui n'est plus dans aucune bibliothèque. Chaque case part décochée : cochez ce que vous effacez.</p>
 <table><thead><tr><th></th><th>Sons sans bibliothèque</th><th>Type</th><th>Libère</th><th>Sections</th></tr></thead><tbody>
-<tr><td><input type="checkbox" checked aria-label="Taverne de nuit"></td><td>Taverne de nuit <span class="pastille">Privé</span></td><td>fond</td><td>4,2 Mo</td><td>Portée par 3 sections</td></tr>
-<tr><td><input type="checkbox" checked aria-label="Coup d'épée"></td><td>Coup d'épée</td><td>bruitage</td><td>0,3 Mo</td><td>—</td></tr>
-<tr><td><input type="checkbox" aria-label="Chant du forgeron"></td><td>Chant du forgeron</td><td>musique</td><td>0 Mo — fichier partagé avec un son conservé</td><td>Portée par 1 section</td></tr></tbody></table>
+<tr><td><input type="checkbox" checked aria-label="Taverne de nuit"></td><td>Taverne de nuit <span class="pastille">Privé</span></td><td data-l="Type">fond</td><td data-l="Libère">4,2 Mo</td><td data-l="Sections">Portée par 3 sections</td></tr>
+<tr><td><input type="checkbox" checked aria-label="Coup d'épée"></td><td>Coup d'épée</td><td data-l="Type">bruitage</td><td data-l="Libère">0,3 Mo</td><td data-l="Sections">—</td></tr>
+<tr><td><input type="checkbox" aria-label="Chant du forgeron"></td><td>Chant du forgeron</td><td data-l="Type">musique</td><td data-l="Libère">0 Mo — fichier partagé avec un son conservé</td><td data-l="Sections">Portée par 1 section</td></tr></tbody></table>
 <table><thead><tr><th></th><th>Fichiers inutilisés</th><th>Libère</th></tr></thead><tbody>
-<tr><td><input type="checkbox" checked aria-label="Fichier inutilisé 1"></td><td>Fichier inutilisé</td><td>5,3 Mo</td></tr></tbody></table>
+<tr><td><input type="checkbox" checked aria-label="Fichier inutilisé 1"></td><td>Fichier inutilisé</td><td data-l="Libère">5,3 Mo</td></tr></tbody></table>
 <div class="barre"><span class="note">2 sons et 1 fichier cochés — 9,8 Mo libérés</span><button class="d">Effacer les sons cochés</button></div>
 </div></section>
 <section><p class="label">E-38 — confirmation</p><div class="fenetre"><h2>Effacer 2 sons et 1 fichier, 9,8 Mo ?</h2>
