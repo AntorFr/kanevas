@@ -68,21 +68,22 @@ test('X-3 : blindage 10 % sur la coque à 300 000 : +30 000 au total et à la li
   const w = await monde();
   const a = (await w.ok({ coque: 'fregate-r', choix: [] })).resultat;
   const b = (await w.ok({ coque: 'fregate-r', choix: [L('modifications', 'blindage')] })).resultat;
-  assert.equal(a.prix, 300000); assert.equal(b.prix, 330000);
+  assert.equal(a.prix, 300000); assert.equal(b.prix, 300000); // B-95: the modification's price stays on its line
   assert.equal(b.lignes[0].cout, 30000);
   assert.equal(a.armure, 5); assert.equal(b.armure, 7);
   assert.ok(!('cout' in (await w.ok({ coque: 'fregate-r', choix: [L('amenagements', 'vide')] })).resultat.lignes[0]));
   // quantity 3 : percentage counted per unit, never multiplied by a class factor
   const c = (await w.ok({ coque: 'fregate-r', choix: [{ ...L('modifications', 'blindage'), quantite: 3 }] })).resultat;
-  assert.equal(c.prix, 390000); assert.equal(c.lignes[0].cout, 90000); assert.equal(c.armure, 11);
+  assert.equal(c.prix, 300000); assert.equal(c.lignes[0].cout, 90000); assert.equal(c.armure, 11);
 });
 
-test('X-3 : arrondi au demi supérieur au crédit (333 335 à 10 % → 33 334) et vitesse plancher 0', async () => {
+test('X-3 : arrondi au demi supérieur au crédit (333 335 à 10 % → 33 334) et vitesse négative gardée (H-6)', async () => {
   const w = await monde();
   const r = (await w.ok({ coque: 'rond', choix: [L('modifications', 'blindage')] })).resultat;
-  assert.equal(r.prix, 333335 + 33334); assert.equal(r.lignes[0].cout, 33334);
-  const v = (await w.ok({ coque: 'fregate-r', choix: [L('modifications', 'vif')] })).resultat;
-  assert.equal(v.vitesse, 0);
+  assert.equal(r.prix, 333335); assert.equal(r.lignes[0].cout, 33334);
+  const vr = await w.ok({ coque: 'fregate-r', choix: [L('modifications', 'vif')] });
+  assert.equal(vr.resultat.vitesse, -6);
+  assert.ok(codes(vr).includes('vitesse_negative'));
 });
 
 test('X-3 : cale visant soute-r rend des soutes 20 au lieu de 10 ; sans modification 10, sans soute null', async () => {
@@ -123,13 +124,17 @@ test('X-4 : points ou vise sur un élément qui n\'a pas l\'effet est invalide a
   assert.equal((await w.calcul({ coque: 'fregate-r', choix: [L('modifications', 'reacteur', { vise: { nature: 'armes', cle: 'canon-r' } })] })).json().champ, 'vise');
 });
 
-test('X-3 : munitions-x sur l\'arme à 2 magasins : munitions 6 000 → 12 000, masse de chargeurs 2 → 4', async () => {
+test('X-3 : munitions-x sans cible, sur l\'arme à 2 magasins : munitions 6 000 → 12 000, masse de chargeurs 2 inchangée (H-8 (4))', async () => {
   const w = await monde();
   const arme = L('armes', 'canon-r', { magasins: 2 });
   const sans = (await w.ok({ coque: 'fregate-r', choix: [arme] })).resultat;
-  const avec = (await w.ok({ coque: 'fregate-r', choix: [arme, L('modifications', 'munitions-x', { vise: { nature: 'armes', cle: 'canon-r' } })] })).resultat;
+  const avec = (await w.ok({ coque: 'fregate-r', choix: [arme, L('modifications', 'munitions-x')] })).resultat;
   assert.equal(sans.prix, 300000 + 6000); assert.equal(avec.prix, 300000 + 12000);
-  assert.equal(sans.masseLibre, 8 - 2); assert.equal(avec.masseLibre, 8 - 4);
+  assert.equal(sans.masseLibre, 8 - 2); assert.equal(avec.masseLibre, 8 - 2);
+  assert.ok(!codes(avec).includes('cible_invalide'));
+  // a `vise` sent with it is ignored: same totals, still no refusal
+  const ignore = (await w.ok({ coque: 'fregate-r', choix: [arme, L('modifications', 'munitions-x', { vise: { nature: 'amenagements', cle: 'soute-r' } })] })).resultat;
+  assert.equal(ignore.prix, avec.prix); assert.ok(!codes(ignore).includes('cible_invalide'));
 });
 
 test('X-3 : moteur-sys rend puissance 3 / masse 1,5 en classe 2 et 4 / 2 en classe 3', async () => {
@@ -158,7 +163,7 @@ test('X-5 : deux unités de moteur système lèvent moteur_systeme_multiple, blo
   assert.equal(a.niveau, 'bloquante'); assert.equal(a.texte, 'Un seul moteur système par vaisseau.');
 });
 
-test('X-5 : cible_invalide — sans visé, visé absent, visé sans soute ni arme ; bloquante, texte et ligne', async () => {
+test('X-5 : cible_invalide — sans visé, visé absent, visé sans soute ; bloquante, texte et ligne ; munitions-x n\'a plus de cible', async () => {
   const w = await monde();
   const cible = async (vise: object | undefined, extra: object[] = []) => {
     const r = await w.ok({ coque: 'fregate-r', choix: [...extra, L('modifications', 'cale', vise ? { vise } : {})] });
@@ -171,10 +176,11 @@ test('X-5 : cible_invalide — sans visé, visé absent, visé sans soute ni arm
   assert.equal(absent[0].texte, '« Cale » : l\'élément visé n\'est pas dans cette conception.');
   const vide = await cible({ nature: 'amenagements', cle: 'vide' }, [L('amenagements', 'vide')]);
   assert.equal(vide[0].texte, '« Cale » : cet élément ne peut pas être visé.');
-  const m = await w.ok({ coque: 'fregate-r', choix: [L('armes', 'canon-r'), L('modifications', 'munitions-x', { vise: { nature: 'amenagements', cle: 'soute-r' } })] });
-  assert.ok(codes(m).includes('cible_invalide'));
+  // `magasins_doubles` has no target any more (H-8 (4)): neither a missing nor a stray one is refused
+  const m = await w.ok({ coque: 'fregate-r', choix: [L('armes', 'canon-r'), L('modifications', 'munitions-x')] });
+  assert.ok(!codes(m).includes('cible_invalide'));
   const m2 = await w.ok({ coque: 'fregate-r', choix: [L('amenagements', 'vide'), L('modifications', 'munitions-x', { vise: { nature: 'amenagements', cle: 'vide' } })] });
-  assert.equal(m2.alertes.find((a: any) => a.code === 'cible_invalide').texte, '« Munitions X » : cet élément ne peut pas être visé.');
+  assert.ok(!codes(m2).includes('cible_invalide'));
 });
 
 test('X-5 : un choix bloquant n\'est pas enregistré (422), une cible valide l\'est', async () => {
@@ -261,5 +267,5 @@ test('X-3 : un catalogue sans aucun des champs donne le résultat d\'avant clé 
   assert.equal(r.prix, 302000); assert.equal(r.vitesse, 3); assert.equal(r.armure, 5);
   assert.equal(r.puissanceLibre, 8); assert.equal(r.masseLibre, 6);
   assert.equal(r.soutes, null); assert.equal(r.reparation, null);
-  assert.deepEqual(Object.keys(r).sort(), ['alertes', 'armure', 'ca', 'chantierJours', 'coque', 'emports', 'entretien', 'equipage', 'lignes', 'masseLibre', 'porteeSaut', 'prix', 'puissanceLibre', 'pv', 'reparation', 'soutes', 'vitesse']);
+  assert.deepEqual(Object.keys(r).sort(), ['alertes', 'armure', 'ca', 'capacites', 'chantierJours', 'composants', 'coque', 'diviseurPrix', 'effetsJeu', 'emports', 'entretien', 'equipage', 'fraisEquipage', 'installation', 'lignes', 'maintenance', 'masseLibre', 'porteeSaut', 'prix', 'puissanceLibre', 'pv', 'refonte', 'reparation', 'soutes', 'vitesse']);
 });

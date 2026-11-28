@@ -42,7 +42,7 @@ test('0051 : le jeton d’outil passe à contenu 0, les autres (révoqué compri
     db.prepare("INSERT INTO jetons_outils (jeton_id, outil) VALUES (2, 'swn')").run();
     db.prepare("INSERT INTO jetons_outils (jeton_id, outil) VALUES (4, 'swn')").run();
 
-    assert.deepEqual(migrate(db), [51]);
+    assert.deepEqual(migrate(db), [51, 52, 53, 54, 55]);
 
     assert.deepEqual(
       db.prepare('SELECT id, contenu, nom, empreinte, expire_le, revoque_le FROM jetons_api ORDER BY id').all(),

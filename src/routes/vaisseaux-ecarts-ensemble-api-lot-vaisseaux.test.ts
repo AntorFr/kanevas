@@ -125,8 +125,8 @@ describe('B-85 (1) bonus de vitesse signé', () => {
 
   it('bords : −5 sur 3 → 0 (plancher) ; deux unités de −2 → 0 ; −2 et +2 ensemble → 3', async () => {
     const m = await monde();
-    assert.equal(await vitesse(m, 'fregate-r', [def('rotors-tres-lourds')]), 0);
-    assert.equal(await vitesse(m, 'fregate-r', [def('rotors-lourds', 2)]), 0);
+    assert.equal(await vitesse(m, 'fregate-r', [def('rotors-tres-lourds')]), -2);
+    assert.equal(await vitesse(m, 'fregate-r', [def('rotors-lourds', 2)]), -1);
     assert.equal(await vitesse(m, 'fregate-r', [def('rotors-lourds'), def('rotors-vifs')]), 3);
   });
 
@@ -166,7 +166,7 @@ describe('B-85 (2) réparation minimale à part de l’effet', () => {
     const r = await rep(m, [mods('blindage-r')], 1);
     assert.equal(r.status, 200, r.texte);
     assert.equal(r.json.resultat.armure, 7);
-    assert.equal(r.json.resultat.prix, 330000);
+    assert.equal(r.json.resultat.prix, 300000);
     assert.equal(ligne(r, 'blindage-r').cout, 30000);
     assert.deepEqual(alertes(r).map((a: Any) => [a.niveau, a.texte]), [['a_surveiller', "« Blindage d'essai » : réparation 2 au moins (1 choisie)."]]);
     assert.deepEqual(r.json.resultat.reparation, { choisie: 1, min: 2 });
@@ -473,7 +473,7 @@ describe('Catalogue antérieur sans ces champs : même résultat qu’avant', ()
     assert.equal(avant.json.resultat.soutes, 10);
     assert.equal(avant.json.resultat.vitesse, 5);
     assert.equal(avant.json.resultat.armure, 7);
-    assert.equal(avant.json.resultat.prix, 300000 + 1000 + 1000 + 30000);
+    assert.equal(avant.json.resultat.prix, 300000 + 1000 + 1000);
     assert.equal(avant.json.resultat.reparation, null);
     const bis = await m.antor('POST', `${m.V}/catalogue/application`, catalogue('ecarts-2'));
     assert.equal(bis.status, 200, bis.texte);

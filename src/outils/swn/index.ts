@@ -48,9 +48,25 @@ export const swnVaisseaux: DeclarationGenerateur = {
   type: 'generateur', portee: 'tous', dependances: [],
   visibiliteParDefaut: { mj: true, joueur: true },
   usages: [{ nom: 'concevoir', mjSeul: false }, { nom: 'creer', mjSeul: true }, { nom: 'generer', mjSeul: true }],
-  reglages: {},
+  // H-capacites-1 (4): these concern the designer only; `portee_saut` stays a setting of the module.
+  reglages: {
+    diviseur_prix: { libelle: 'Diviseur de prix', aide: 'Le prix du livre est divisé par cette valeur (1, 2 ou 4) ; l\'entretien et le chantier le suivent.',
+      niveau: 'systeme+univers', forme: { type: 'choix', valeurs: ['1', '2', '4'] }, defaut: '1' },
+    cadence_chantier: { libelle: 'Cadence du chantier', aide: 'Crédits de prix construits par jour de chantier.',
+      niveau: 'systeme+univers', forme: { type: 'nombre', min: 1, max: 1_000_000, entier: true }, defaut: 25000 },
+    solde_jour: { libelle: 'Solde par jour', aide: 'Crédits de solde par jour et par membre d\'équipage payé.',
+      niveau: 'systeme+univers', forme: { type: 'nombre', min: 0, max: 100_000, entier: true }, defaut: 100 },
+    vivres_jour: { libelle: 'Vivres par jour', aide: 'Crédits de vivres par jour et par membre d\'équipage vivant.',
+      niveau: 'systeme+univers', forme: { type: 'nombre', min: 0, max: 100_000, entier: true }, defaut: 20 },
+  },
   catalogue: catalogueVaisseaux,
   donnees: donneesVaisseaux,
+  importation: {
+    natures: [{ nom: 'conceptions', libelle: 'conception', libellePluriel: 'conceptions' }],
+    // Lazy: the import reaches the sheet services, which import the registry (a cycle, as for `routes` below).
+    appliquer: async (db, acteur, universId, _cible, corps) =>
+      (await import('../../services/swn/import-conceptions.js')).importerConceptions(db, acteur, universId, corps),
+  },
   ecran: { libelle: 'Concepteur de vaisseaux', icone: 'Rocket' },
   outilsAssistant: outilVaisseau,
   sections: [{

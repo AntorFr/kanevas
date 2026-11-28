@@ -21,7 +21,7 @@ const GALAXIE = JSON.parse(readFileSync(fileURLToPath(new URL('../../../rust/mod
 
 const source = new URL('../../db/migrations/', import.meta.url);
 const ancien = mkdtempSync(join(tmpdir(), 'kanevas-migrations-avant-'));
-for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) < 45) copyFileSync(new URL(f, source), join(ancien, f));
+for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) !== 45) copyFileSync(new URL(f, source), join(ancien, f));
 
 const tables = ['swn_galaxies', 'swn_systemes', 'swn_routes', 'swn_zones', 'swn_astres', 'swn_formations'];
 const instantane = (db: any) => Object.fromEntries(tables.map((t) => [t, db.prepare(`SELECT * FROM ${t} ORDER BY id`).all()]));

@@ -57,13 +57,15 @@ test('W-2 les quatre effets du livre : valeurs de W-4', () => {
     assert.equal(calculer(coque(4, 300000), [mod('blindage_renforce', { valeur })], R, null, rep).armure, armure)
   }
   assert.equal(nu.armure, 5)
-  for (const [p, m, ep, em] of [[10, 1, 5, 1], [7, 3, 4, 1.5], [6, 4, 3, 2], [1, 1, 1, 1], [4, 2.5, 2, 1.5]] as const) {
+  // W-3 rounded down, at least 1: the use DROPS by P − max(1, ⌊P/2⌋) and M − max(1, ⌊M/2⌋); a unit of 1 is left as it is
+  for (const [p, m, ep, em] of [[10, 1, -5, 0], [7, 3, -4, -2], [6, 4, -3, -2], [1, 1, 0, 0], [4, 2.5, -2, -1.5]] as const) {
     const r = calculer(C2, [L('armes', 'laser-z', { emport: 1, puissance: p, masse: m }), mod('montages_specialises', {}, true)], R)
     assert.deepEqual(r.lignes[1]!.ajuste, { masse: em, puissance: ep }, `${p}/${m}`)
   }
+  // one mounting halves ONE unit: two lasers on the line change nothing to the figure
   const m2 = calculer(C2, [laser(2), mod('montages_specialises', {}, true)], R)
-  assert.deepEqual(m2.lignes[1]!.ajuste, { masse: 1, puissance: 10 })
-  assert.equal(calculer(C2, [laser(), mod('montages_specialises', {}, true)], R).puissanceLibre, 5)
+  assert.deepEqual(m2.lignes[1]!.ajuste, { masse: 0, puissance: -5 })
+  assert.equal(calculer(C2, [laser(), mod('montages_specialises', {}, true)], R).puissanceLibre, 15)
   for (const [q, plus, libre] of [[1, 5, 5], [2, 10, 0], [3, 15, -5]] as const) {
     const r = calculer(C2, [laser(), mod('surcharge_cumulable', { effet_pct: 50, limite: 3 }, true, q)], R)
     assert.deepEqual(r.lignes[1]!.ajuste, { puissance: plus }); assert.equal(r.puissanceLibre, libre)
@@ -71,7 +73,9 @@ test('W-2 les quatre effets du livre : valeurs de W-4', () => {
   assert.ok(codes(calculer(C2, [laser(), mod('surcharge_cumulable', { effet_pct: 50, limite: 3 }, true, 3)], R)).includes('puissance_insuffisante'))
   for (const effet of ['montages_specialises', 'surcharge_cumulable']) {
     assert.ok(codes(calculer(C2, [laser(), mod(effet, { effet_pct: 50 })], R)).includes('cible_invalide'), effet)
-    assert.ok(codes(calculer(C2, [laser(), { ...mod(effet, { effet_pct: 50 }), vise: { nature: 'amenagements', cle: 'soute-z' } }, soute(8)], R)).includes('cible_invalide'), effet)
+    const surFitting = codes(calculer(C2, [laser(), { ...mod(effet, { effet_pct: 50 }), vise: { nature: 'amenagements', cle: 'soute-z' } }, soute(8)], R))
+    // H-10 (3): a mounting may aim at a fitting, an overcharge at a weapon alone
+    assert.equal(surFitting.includes('cible_invalide'), effet === 'surcharge_cumulable', effet)
   }
 })
 

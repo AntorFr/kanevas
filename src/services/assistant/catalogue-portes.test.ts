@@ -85,7 +85,7 @@ test('porte mcp sans rôle ou univers inconnu : introuvable, comme l’assistant
 
 test('chercher_texte : un mot d’une section lisible rend fiche, section et extrait ; un mot d’une section fermée, rien pour le joueur', () => {
   const { db, antor, lea, u, ouverte, exec } = monde();
-  const f = creerFiche(db, antor.id, u.id, { type: 'lieu', titre: 'Tenebria' });
+  const f = creerFiche(db, antor.id, u.id, { type: 'lieu', titre: 'Ormevane' });
   const s = ouverte(f.id, 'Histoire', 'La cité fut fondée sous un ciel de cendre.');
   ajouterSection(db, antor.id, u.id, f.id, { titre: 'Secret', contenu: 'Une cendre noire cache le Traître.' });
   const d = ok(exec(lea.id, 'mcp', 'chercher_texte', { mots: 'cendre' }));
@@ -93,7 +93,7 @@ test('chercher_texte : un mot d’une section lisible rend fiche, section et ext
   assert.equal(d.passages.length, 1);
   const p = d.passages[0];
   assert.equal(p.ficheId, f.id);
-  assert.equal(p.titreFiche, 'Tenebria');
+  assert.equal(p.titreFiche, 'Ormevane');
   assert.equal(p.section, s.id);
   assert.equal(p.titre, 'Histoire');
   assert.match(p.extrait, /cendre/);
@@ -158,11 +158,11 @@ test('chercher_texte : pagination par curseur sans doublon, y compris quand une 
   assert.ok(fiches.size >= 5);
 });
 
-test('lire_fiche : lieu:tenebria, l’id, l’ancienne clé rendent la même fiche, avec les empreintes', () => {
+test('lire_fiche : lieu:ormevane, l’id, l’ancienne clé rendent la même fiche, avec les empreintes', () => {
   const { db, antor, lea, u, ouverte, exec } = monde();
-  const f = creerFiche(db, antor.id, u.id, { type: 'lieu', titre: 'Tenebria' });
+  const f = creerFiche(db, antor.id, u.id, { type: 'lieu', titre: 'Ormevane' });
   const cle = (db.prepare('SELECT cle FROM fiches WHERE id = ?').get(f.id) as any).cle as string;
-  assert.equal(cle, 'lieu:tenebria');
+  assert.equal(cle, 'lieu:ormevane');
   ouverte(f.id, 'Histoire', 'Vieille cité.');
   const cible = creerFiche(db, antor.id, u.id, { type: 'lieu', titre: 'Port' });
   const s2 = ouverte(cible.id, 'Description', 'Un port.');
@@ -171,13 +171,13 @@ test('lire_fiche : lieu:tenebria, l’id, l’ancienne clé rendent la même fic
   relierSection(db, antor.id, u.id, f.id, src.id, { cibleFicheId: cible.id, qualificatif: 'voisin' });
   void s2;
   for (const porte of ['mcp', 'assistant'] as const) {
-    const a = ok(exec(lea.id, porte, 'lire_fiche', { fiche: 'lieu:tenebria' }));
+    const a = ok(exec(lea.id, porte, 'lire_fiche', { fiche: 'lieu:ormevane' }));
     const b = ok(exec(lea.id, porte, 'lire_fiche', { fiche: f.id }));
     const c = ok(exec(lea.id, porte, 'lire_fiche', { fiche: String(f.id) }));
     assert.deepEqual(a, b);
     assert.deepEqual(a, c);
     assert.equal(a.id, f.id);
-    assert.equal(a.fiche, 'lieu:tenebria');
+    assert.equal(a.fiche, 'lieu:ormevane');
     assert.ok(typeof a.empreinte === 'string' && a.empreinte.length > 0);
     assert.ok(typeof a.empreinteEnTete === 'string' && a.empreinteEnTete.length > 0);
     assert.ok(a.sections.length >= 2);
@@ -187,10 +187,10 @@ test('lire_fiche : lieu:tenebria, l’id, l’ancienne clé rendent la même fic
     assert.equal(a.relations[0].cible.id, cible.id);
   }
   // l'ancienne clé résout encore ; la fiche se cite alors par la nouvelle
-  changerCleFiche(db, { compteId: antor.id }, u.id, f.id, 'lieu:tenebria-2');
-  const apres = ok(exec(lea.id, 'mcp', 'lire_fiche', { fiche: 'lieu:tenebria' }));
+  changerCleFiche(db, { compteId: antor.id }, u.id, f.id, 'lieu:ormevane-2');
+  const apres = ok(exec(lea.id, 'mcp', 'lire_fiche', { fiche: 'lieu:ormevane' }));
   assert.equal(apres.id, f.id);
-  assert.equal(apres.fiche, 'lieu:tenebria-2');
+  assert.equal(apres.fiche, 'lieu:ormevane-2');
 });
 
 test('lire_fiche / lire_section : clé inconnue, fiche d’un autre univers ou section fermée → « Introuvable. », identique', () => {
@@ -211,9 +211,9 @@ test('lire_fiche / lire_section : clé inconnue, fiche d’un autre univers ou s
 
 test('lire_section : empreinte rendue, et l’ancien champ ficheId est refusé', () => {
   const { db, antor, lea, u, ouverte, exec } = monde();
-  const f = creerFiche(db, antor.id, u.id, { type: 'lieu', titre: 'Tenebria' });
+  const f = creerFiche(db, antor.id, u.id, { type: 'lieu', titre: 'Ormevane' });
   const s = ouverte(f.id, 'Histoire', 'Vieille cité.');
-  const d = ok(exec(lea.id, 'mcp', 'lire_section', { fiche: 'lieu:tenebria', sectionId: s.id }));
+  const d = ok(exec(lea.id, 'mcp', 'lire_section', { fiche: 'lieu:ormevane', sectionId: s.id }));
   assert.ok(typeof d.empreinte === 'string' && d.empreinte.length > 0);
   const lf = ok(exec(lea.id, 'mcp', 'lire_fiche', { fiche: f.id }));
   assert.equal(lf.sections.find((x: any) => x.id === s.id).empreinte, d.empreinte);

@@ -6,7 +6,7 @@ import { appeler, ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { useTitreAriane } from '../../../cadre-contexte';
 import { Bouton, BoiteDialogue, Chargement, ErreurChargement, PageIntrouvable, Pastille } from '../../../ui';
 import { Equipage } from './Equipage';
-import { bornesEquipage, brouillonDe, choixDe, credits, exigeReparation, legende, ligneAjuste, memeBrouillon, motifDe, requete } from './format';
+import { bornesEquipage, brouillonDe, choixDe, credits, estAutomatisation, exigeReparation, legende, ligneAjuste, memeBrouillon, motifDe, nombre, requete, entierSigne } from './format';
 import { Effets } from './Effets';
 import { Alertes, Chiffres, ErreurCalcul } from './Resultats';
 import { Selecteur } from './Selecteur';
@@ -163,11 +163,18 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
     setOuvert(null);
   }
   const quantite = (l: Ligne, delta: number) =>
-    change((b) => ({ ...b, lignes: b.lignes.map((x) => (x === l ? { ...x, quantite: Math.max(1, Math.min(99, x.quantite + delta)) } : x)) }));
+    change((b) => ({ ...b, lignes: b.lignes.map((x) => {
+      if (x !== l) return x;
+      const q = Math.max(1, Math.min(99, x.quantite + delta));
+      // The rows follow the quantity: a new one is empty, the last ones leave with their choice.
+      return { ...x, quantite: q, ...(x.integre === undefined ? {} : { integre: Math.min(x.integre, q) }), ...(x.rangees ? { rangees: Array.from({ length: q }, (_, k) => x.rangees![k] ?? '') } : {}) };
+    }) }));
   const retirer = (l: Ligne) => {
     marquer(`points/${l.nature}/${l.cle}`, false);
+    marquer(`integre/${l.cle}`, false);
     change((b) => ({ ...b, lignes: b.lignes.filter((x) => x !== l) }));
   };
+  const integrer = (l: Ligne, n: number) => change((b) => ({ ...b, lignes: b.lignes.map((x) => (x === l ? { ...x, integre: n } : x)) }));
   const points = (l: Ligne, n: number) => change((b) => ({ ...b, lignes: b.lignes.map((x) => (x === l ? { ...x, points: n } : x)) }));
   const viser = (l: Ligne, valeur: string) => change((b) => ({
     ...b,
@@ -177,6 +184,11 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
       const [nature, ...cle] = valeur.split('/');
       return valeur === '' ? sans : { ...sans, vise: { nature: nature!, cle: cle.join('/') } };
     }),
+  }));
+
+  const rangee = (l: Ligne, rang: number, valeur: string) => change((b) => ({
+    ...b,
+    lignes: b.lignes.map((x) => (x === l ? { ...x, rangees: Array.from({ length: x.quantite }, (_, k) => (k === rang ? valeur : x.rangees?.[k] ?? '')) } : x)),
   }));
 
   const alertes: Alerte[] = calcul.alertes;
@@ -196,8 +208,14 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   const classe = resultat.coque.classe;
   // The repair block (B-83): a chosen element asks for a skill, the server's result carries one, or the design has one above 0.
   const demandeReparation = brouillon.lignes.some((l) => exigeReparation(infos[`${l.nature}/${l.cle}`]?.el.donnees));
-  const blocReparation = demandeReparation || resultat.reparation != null || brouillon.reparation > 0;
+  const avecMods = brouillon.lignes.some((l) => l.nature === 'modifications');
+  const integrees = brouillon.lignes.reduce((n, l) => (l.nature === 'modifications' ? n + Math.min(l.integre ?? 0, l.quantite) : n), 0);
+  const blocReparation = demandeReparation || resultat.reparation != null || brouillon.reparation > 0 || avecMods;
   const reparationAffichee = brouillon.reparation;
+  // « dont robots » (H-5): disabled with its muted line while no chosen line is the automation system and no robot is set (display only; the alert is the server's).
+  const automatisation = brouillon.lignes.some((l) => l.quantite > 0 && estAutomatisation(infos[`${l.nature}/${l.cle}`]?.el.donnees));
+  const robotsFige = !automatisation && brouillon.robots === 0;
+  const alerteEquipage = alertes.some((a) => a.code === 'equipage_robots');
   const invalide = equipageInvalide || Object.values(invalides).some(Boolean);
 
   async function enregistrer() {
@@ -222,7 +240,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
         setRefus(`Enregistrement refusé : ${premiere ? motifDe(premiere) : 'conception bloquée'}.`);
         setEssaiCalcul((n) => n + 1);
       } else if (e instanceof ErreurApi && e.statut === 403) setRefus('Enregistrement refusé : vous ne pouvez pas modifier cette conception.');
-      else setRefus('Enregistrement impossible.');
+      else setRefus('L’action n’a pas abouti. Réessayez.');
     } finally {
       setEnregistrement(false);
     }
@@ -338,7 +356,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
           </h2>
           <div className="vx-defile">
           <div className={estompe ? 'vx-estompe' : undefined} data-estompe={estompe || undefined}>
-            <Chiffres r={resultat} />
+            <Chiffres r={resultat} station={donneesCoque ? donneesCoque.moteur_spike === 0 : null} modifications={avecMods} integrees={integrees} />
           </div>
           {etatCalcul === 'erreur' && <ErreurCalcul onReessayer={() => setEssaiCalcul((n) => n + 1)} />}
           <div className="vx-alertes-zone"><Alertes alertes={alertes} /></div>
@@ -380,7 +398,25 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                 key={cleEquipage} valeur={equipageAffiche} bornes={bornes} lecture={!ecriture} desactive={verrou}
                 onChange={(n) => { setEquipageTouche(true); change((b) => ({ ...b, equipage: n })); }}
                 onInvalide={(v) => { setEquipageTouche(true); setEquipageInvalide(v); }}
+                enAlerte={alerteEquipage}
               />
+              <div className="vx-dont">
+                <span className="vx-dont-nom">dont joueurs</span>
+                <Equipage
+                  key={`pj-${cleEquipage}`} nom="dont joueurs" maximum={equipageAffiche ?? 0} valeur={brouillon.pj} bornes="" lecture={!ecriture} desactive={verrou}
+                  diminuer="Diminuer : dont joueurs" augmenter="Augmenter : dont joueurs" enAlerte={alerteEquipage}
+                  onChange={(n) => change((b) => ({ ...b, pj: n }))} onInvalide={(v) => marquer('pj', v)}
+                />
+              </div>
+              <div className="vx-dont">
+                <span className="vx-dont-nom">dont robots</span>
+                <Equipage
+                  key={`robots-${cleEquipage}`} nom="dont robots" maximum={equipageAffiche ?? 0} valeur={brouillon.robots} bornes="" lecture={!ecriture}
+                  desactive={verrou || robotsFige} ligne={robotsFige && ecriture ? 'Aucun système d’automatisation sur cette conception.' : undefined}
+                  diminuer="Diminuer : dont robots" augmenter="Augmenter : dont robots" enAlerte={alerteEquipage}
+                  onChange={(n) => change((b) => ({ ...b, robots: n }))} onInvalide={(v) => marquer('robots', v)}
+                />
+              </div>
             </div>
           )}
           {blocReparation && (
@@ -395,6 +431,23 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                 />
               ) : (
                 <p className="vx-lu">Compétence de réparation : {reparationAffichee}</p>
+              )}
+              {avecMods && (
+                <>
+                  {ecriture ? (
+                    <div className="vx-dont">
+                      <span className="vx-dont-nom">Modificateurs Int + Con</span>
+                      <Equipage
+                        key={`mic-${cleEquipage}`} nom="Modificateurs Int + Con" minimum={-10} maximum={10} valeur={brouillon.modIntCon} bornes="" lecture={false} desactive={verrou}
+                        diminuer="Diminuer : Modificateurs Int + Con" augmenter="Augmenter : Modificateurs Int + Con"
+                        onChange={(n) => change((b) => ({ ...b, modIntCon: n }))} onInvalide={(v) => marquer('modIntCon', v)}
+                      />
+                    </div>
+                  ) : (
+                    <p className="vx-lu">Modificateurs Int + Con : {entierSigne(brouillon.modIntCon)}</p>
+                  )}
+                  {resultat.maintenance != null && <p className="vx-lu vx-maintenance">Maintenance : {nombre(resultat.maintenance)}</p>}
+                </>
               )}
             </div>
           )}
@@ -428,6 +481,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                             <span className="vx-sous">{ligneAjuste(resultat.lignes.find((r) => r.nature === l.nature && r.cle === l.cle)?.ajuste)}</span>
                           )}
                           {infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition && <span className="vx-sous vx-condition">{infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition}</span>}
+                          {infos[`${l.nature}/${l.cle}`]?.el.donnees?.effet_jeu && <span className="vx-sous vx-condition vx-effet-jeu">{infos[`${l.nature}/${l.cle}`]?.el.donnees?.effet_jeu}</span>}
                         </div>
                         {infos[`${l.nature}/${l.cle}`]?.univers && <Pastille sens="neutre">Univers</Pastille>}
                         {retirees.has(i) && <Pastille sens="danger">Élément retiré de cet univers</Pastille>}
@@ -446,15 +500,30 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                         <Effets
                           ligne={l} info={infos[`${l.nature}/${l.cle}`]} infos={infos} lignes={brouillon.lignes} resultat={resultat}
                           alerte={alertes.find((a) => a.code === 'cible_invalide' && a.ligne === i)}
+                          alertes={alertes.filter((a) => a.ligne === i)} indice={i} onRangee={(k, v) => rangee(l, k, v)}
                           ecriture={ecriture} verrou={verrou} cle={cleEquipage}
                           onPoints={(n) => points(l, n)} onInvalide={(v) => marquer(`points/${l.nature}/${l.cle}`, v)} onVise={(v) => viser(l, v)}
                         />
+                        {l.nature === 'modifications' && (ecriture ? (
+                          <div className="vx-integre">
+                            <span className="vx-integre-nom">Intégrées à la coque</span>
+                            <Equipage
+                              key={`int-${l.cle}-${cleEquipage}`} nom="Intégrées à la coque" etiquette={`Intégrées à la coque : ${l.nom}`} maximum={l.quantite}
+                              valeur={Math.min(l.integre ?? 0, l.quantite)} bornes="" lecture={false} desactive={verrou}
+                              diminuer={`Diminuer les intégrées à la coque : ${l.nom}`} augmenter={`Augmenter les intégrées à la coque : ${l.nom}`}
+                              onChange={(n) => integrer(l, n)} onInvalide={(v) => marquer(`integre/${l.cle}`, v)}
+                            />
+                            <span className="vx-integre-sur">sur {l.quantite}</span>
+                          </div>
+                        ) : Math.min(l.integre ?? 0, l.quantite) > 0 && (
+                          <p className="vx-lu vx-integre">Intégrées à la coque : {Math.min(l.integre ?? 0, l.quantite)} sur {l.quantite}</p>
+                        ))}
                       </li>
                     ))}
                   </ul>
                 )}
                 {ouvert?.nature === n.nature && (
-                  <Selecteur universId={universId} suffixe={suffixe} nature={n.nature} titre={ouvert.titre} classeCoque={resultat.coque.classe} onChoisir={choisir} onFermer={() => setOuvert(null)} />
+                  <Selecteur universId={universId} suffixe={suffixe} nature={n.nature} titre={ouvert.titre} classeCoque={resultat.coque.classe} sansMoteur={donneesCoque?.moteur_spike === 0} onChoisir={choisir} onFermer={() => setOuvert(null)} />
                 )}
               </div>
             );

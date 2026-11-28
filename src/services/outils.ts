@@ -290,7 +290,10 @@ export function poserReglages(db: Db, compte: number | Acteur, cible: CibleOutil
     for (const [nom, valeur] of Object.entries(entree.valeurs)) {
       const r = Object.hasOwn(reglages, nom) ? reglages[nom] : undefined;
       if (!r || (r.niveau === 'univers' && cible.niveau === 'systeme')) throw invalide(nom);
-      if (!(valeur === null && cible.niveau === 'univers') && !schemaValeur(r.forme).safeParse(valeur).success) throw invalide(nom);
+      if (!(valeur === null && cible.niveau === 'univers') && !schemaValeur(r.forme).safeParse(valeur).success) {
+        // E-20: the ship designer's four settings name a refused bound, integer or choice in its own words.
+        throw cle === 'swn/vaisseaux' ? invalide(nom, 'Valeur hors limites.') : invalide(nom);
+      }
       if (r.protege && entree.confirme !== true) throw invalide(nom, 'Confirmation requise.', 'confirmation_requise');
     }
     const ligne = lireLigneOutil(db, cible, cle);

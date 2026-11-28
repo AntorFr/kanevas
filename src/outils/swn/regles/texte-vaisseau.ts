@@ -18,6 +18,17 @@ function lignesRegles(r: ResultatVaisseau): [string, string][] {
   return rows.flatMap(([k, n]): [string, string][] => n === null ? [] : [[k, entier(n)]])
 }
 
+/** H-mods-1: the four rows of the modification rules, each only when it has a value (a stored result before the slice has none). */
+function lignesMods(r: ResultatVaisseau): [string, string][] {
+  const jours = (n: number) => `${entier(n)} ${n < 2 ? 'jour' : 'jours'}`
+  const rows: [string, string][] = []
+  if (r.composants) rows.push(['Composants prétech', entier(r.composants)])
+  if (r.installation && r.installation.jours > 0) rows.push(['Installation', `${jours(r.installation.jours)} d'équipage, ${jours(r.installation.joursChantier)} avec chantier`])
+  if (r.maintenance !== null && r.maintenance !== undefined && r.lignes.some((l) => l.nature === 'modifications')) rows.push(['Maintenance', entier(r.maintenance)])
+  if (r.refonte && (r.refonte.cout > 0 || r.refonte.composants > 0)) rows.push(['Refonte', `${credits(r.refonte.cout)}, ${entier(r.refonte.composants)} ${r.refonte.composants < 2 ? 'composant' : 'composants'}`])
+  return rows
+}
+
 /** The measures table of V-6; shared with the example sheets so the layout cannot drift. */
 export function tableMesures(r: ResultatVaisseau, avecRegles = true): string {
   const jours = `${r.chantierJours} ${r.chantierJours < 2 ? 'jour' : 'jours'}`
@@ -27,6 +38,7 @@ export function tableMesures(r: ResultatVaisseau, avecRegles = true): string {
     ['PV', entier(r.pv)],
     ['CA', entier(r.ca)],
     ['Chantier', jours],
+    ...lignesMods(r),
     ['Entretien', `${credits(r.entretien)} / an`],
     ['Portée de saut', portee],
     ...(avecRegles ? lignesRegles(r) : []),
@@ -39,21 +51,29 @@ export function tableMesures(r: ResultatVaisseau, avecRegles = true): string {
 
 /** The « Choix » list of V-6, ordered by nature then name. */
 export function listeChoix(r: ResultatVaisseau): string {
+  const effet = new Map((r.effetsJeu ?? []).map((e) => [e.ligne, e.texte]))
   const choix = r.lignes
     .map((l, i) => ({ l, i }))
     .sort((a, b) => ORDRE.indexOf(a.l.nature) - ORDRE.indexOf(b.l.nature) || a.l.nom.localeCompare(b.l.nom, 'fr') || a.i - b.i)
-    .map(({ l }) => {
-      const vise = l.vise ? r.lignes.find((m) => m.nature === l.vise!.nature && m.cle === l.vise!.cle)?.nom ?? l.vise.cle : null
+    .map(({ l, i }) => {
+      const nomDe = (c: { nature: string; cle: string }) => r.lignes.find((m) => m.nature === c.nature && m.cle === c.cle)?.nom ?? c.cle
+      // « → Laser ×2 · Canon ×1 » with several targets (E-22); one target holds every installation and is named alone, as an old `vise` was.
+      const vise = l.cibles?.length ? l.cibles.map((c) => `${nomDe(c)}${c.quantite > 1 ? ` ×${c.quantite}` : ''}`).join(' · ')
+        : l.vise ? nomDe(l.vise) : null
       return `- ${l.quantite} × ${l.nom}${l.magasins ? ` (+${l.magasins} ${l.magasins < 2 ? 'magasin' : 'magasins'})` : ''}`
         + (l.points ? ` (${l.points} ${l.points < 2 ? 'point' : 'points'})` : '')
         + (vise === null ? '' : ` (→ ${vise})`)
         + (l.cout === undefined ? '' : ` — ${credits(l.cout)}`)
+        + (effet.has(i) ? `\n  - ${effet.get(i)}` : '')
     })
   return ['**Choix**', ...choix].join('\n')
 }
 
 export function texteVaisseau(r: ResultatVaisseau): string {
   const blocs = [`**${r.coque.nom}** — classe ${r.coque.classe}`, tableMesures(r), listeChoix(r)]
+  if (r.capacites && r.capacites.length > 0) {
+    blocs.push(['**Capacités**', ...r.capacites.map((c) => `- ${c.libelle} : ${Number.isInteger(c.valeur) ? entier(c.valeur) : String(c.valeur).replace('.', ',')} ${c.unite}`)].join('\n'))
+  }
   if (r.alertes.length > 0) {
     blocs.push(
       ['**Alertes**', ...r.alertes.map((a) => `- **${a.niveau === 'bloquante' ? 'Bloquante' : 'À surveiller'}** : ${a.texte}`)].join('\n'),

@@ -27,7 +27,7 @@ async function monter() {
   const u = creerUnivers(app.db, antor, { nom: 'Lame' });
   const autre = creerUnivers(app.db, antor, { nom: 'Autre' });
   ajouterMembre(app.db, antor, u.id, 'lea', 'joueur');
-  const f = creerFiche(app.db, antor, u.id, { type: 'lieu', titre: 'Tenebria' });
+  const f = creerFiche(app.db, antor, u.id, { type: 'lieu', titre: 'Ormevane' });
   const ouverte = ajouterSection(app.db, antor, u.id, f.id, { titre: 'Histoire', contenu: 'Fondée sous un ciel de cendre.\n\n:::mj\nle mot zorglub du traitre\n:::\n' });
   changerAudience(app.db, antor, u.id, f.id, ouverte.id, { joueursLisent: true });
   ajouterSection(app.db, antor, u.id, f.id, { titre: 'Secret', contenu: 'quasimodo seul chez le MJ' });
@@ -55,12 +55,12 @@ test('lecture : les outils sans écriture ; chercher_texte rend le passage et so
     const noms = (await c.listTools()).tools.map((t) => t.name).sort();
     assert.deepEqual(noms, ['chercher', 'chercher_texte', 'lire_fiche', 'lire_section', 'mentions']);
     const r = await c.callTool({ name: 'chercher_texte', arguments: { mots: 'cendre' } });
-    assert.match(m.texte(r), /Tenebria/);
+    assert.match(m.texte(r), /Ormevane/);
     assert.match(m.texte(r), /cendre/);
     for (const mot of ['zorglub', 'quasimodo']) {
       const v = await c.callTool({ name: 'chercher_texte', arguments: { mots: mot } });
       assert.ok(!m.texte(v).includes(mot) || v.isError, mot);
-      assert.ok(!/Tenebria/.test(m.texte(v)), `${mot} ne trouve rien`);
+      assert.ok(!/Ormevane/.test(m.texte(v)), `${mot} ne trouve rien`);
     }
     // lire_historique n'est pas offert ; l'appeler est « Introuvable. »
     const h = await c.callTool({ name: 'lire_historique', arguments: {} });

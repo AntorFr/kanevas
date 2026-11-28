@@ -3,7 +3,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { calculer, CADENCE_CHANTIER, TAUX_ENTRETIEN } from './vaisseau.js'
+import { calculer, CADENCE_CHANTIER_DEFAUT, TAUX_ENTRETIEN } from './vaisseau.js'
 import type { CoqueResolue, ElementResolu, LigneResolue, NatureVaisseau } from './vaisseau.js'
 import { texteVaisseau } from './texte-vaisseau.js'
 import { rendreMarkdown } from '../../../services/markdown.js'
@@ -35,7 +35,7 @@ const TABLEAU: [string, number, number, number, number, number, number, number, 
   ['fregate-de-ligne', 700000, 30, 14, 5, 1, 2, 3, 28, 35000, 15],
   ['fregate-a-l-extreme', 815000, 30, 14, 0, 3, 3, 3, 33, 40750, 15],
   ['fregate-gourmande', 855000, 30, 14, -1, -3, 3, 3, 35, 42750, 15],
-  ['croiseur-de-transport', 1966000, 69, 16, 27, 3, 3, 5, 79, 98300, 15],
+  ['croiseur-de-transport', 1961000, 69, 16, 27, 3, 3, 5, 79, 98050, 15],
   ['fregate-sans-moteur', 465000, 30, 14, 15, 13, 1, 3, 19, 23250, null],
 ]
 for (const [cle, prix, pv, ca, pl, ml, u, t, j, ent, portee] of TABLEAU) {
@@ -55,7 +55,11 @@ for (const [cle, prix, pv, ca, pl, ml, u, t, j, ent, portee] of TABLEAU) {
 
 test('alertes des exemples : seules celles du tableau', () => {
   const codes = (c: string) => exemple(c).alertes.map((a) => `${a.niveau}:${a.code}`)
-  for (const c of ['eclaireur-nu', 'eclaireur-arme', 'fregate-de-ligne', 'croiseur-de-transport']) assert.deepEqual(codes(c), [], c)
+  for (const c of ['eclaireur-nu', 'eclaireur-arme', 'fregate-de-ligne']) assert.deepEqual(codes(c), [], c)
+  // H-mods-1 (4): one modification kept up with no Repair (Maintenance 0) is the one watch alert of the transport cruiser.
+  assert.deepEqual(exemple('croiseur-de-transport').alertes.map((a) => [a.niveau, a.code, a.texte]), [
+    ['a_surveiller', 'maintenance_depassee', '1 mod entretenu, Maintenance 0'],
+  ])
   assert.deepEqual(exemple('fregate-a-l-extreme').alertes.map((a) => [a.niveau, a.code, a.texte]), [
     ['a_surveiller', 'reserve_nulle', 'Plus aucune réserve de puissance.'],
   ])
@@ -129,7 +133,7 @@ test('chantier : 700 000 cr = 28 jours exactement, 954 000 cr = 39, bord 25 000 
   assert.equal(r.chantierJours, 39)
   assert.equal(calculer({ ...c, cout: 949000 }, [], { porteeSaut: 5 }).chantierJours, 38)
   assert.equal(calculer({ ...c, cout: 25001 }, [], { porteeSaut: 5 }).chantierJours, 2)
-  assert.equal(CADENCE_CHANTIER, 25000)
+  assert.equal(CADENCE_CHANTIER_DEFAUT, 25000)
   assert.equal(TAUX_ENTRETIEN, 0.05)
 })
 
@@ -221,12 +225,13 @@ test('texte : à surveiller, portée absente « — », ordre des choix', () => 
   const debut = c.indexOf('**Choix**')
   assert.deepEqual(c.slice(debut).split('\n'), [
     '**Choix**', '- 1 × Moteur 2', '- 1 × Cabines', '- 1 × Soute', '- 1 × Blindage', '- 1 × Canon léger', '- 2 × Laser', '- 1 × Renfort de coque', '',
+    '**Alertes**', '- **À surveiller** : 1 mod entretenu, Maintenance 0', '',
   ])
 })
 
 test('texte : chantier au pluriel, deux jours, grand prix groupé', () => {
   const t = texteVaisseau(exemple('croiseur-de-transport'))
-  assert.ok(t.includes(`| Prix | 1${NBSP}966${NBSP}000${NBSP}cr |`))
+  assert.ok(t.includes(`| Prix | 1${NBSP}961${NBSP}000${NBSP}cr |`))
   assert.ok(t.includes('| Chantier | 79 jours |'))
   assert.ok(texteVaisseau(calculer({ ...coque('eclaireur'), cout: 30000 }, [], { porteeSaut: 5 })).includes('| Chantier | 2 jours |'))
 })
@@ -327,5 +332,5 @@ test('texte V-6 : « (+2 magasins) » et « (+1 magasin) » au singulier', () =>
 })
 test('canon-leger du jeu d\'essai : classe_min 3, le croiseur du tableau V-11 ne bouge pas', () => {
   assert.equal(essai.armes.find((a: { cle: string }) => a.cle === 'canon-leger').classe_min, 3)
-  assert.equal(exemple('croiseur-de-transport').prix, 1966000)
+  assert.equal(exemple('croiseur-de-transport').prix, 1961000)
 })

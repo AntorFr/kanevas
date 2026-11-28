@@ -94,6 +94,7 @@ describe('B-82 · E-22 : l’atelier dit vitesse, armure et équipage', { skip: 
     await champ(p).waitFor();
     assert.equal(await champ(p).inputValue(), '6');
     await p.getByText('6 à 20', { exact: true }).waitFor();
+    await p.locator("[aria-label=\"Résultats\"]").getByText("Vitesse").waitFor();
     const t = await resultats(p);
     assert.match(t, /Vitesse\s*4/);
     assert.match(t, /Armure\s*5/);

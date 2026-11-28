@@ -258,13 +258,13 @@ test('0045 : montée depuis 0044 avec le semis, galaxies inchangées, défauts e
   const dir = mkdtempSync(join(tmpdir(), 'migration-0045-'));
   const db = openDb(':memory:');
   const source = new URL('../../db/migrations/', import.meta.url);
-  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 44) copyFileSync(new URL(f, source), join(dir, f));
+  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 44 || Number(f.slice(0, 4)) === 52) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
   assert.equal(semerBouchon(db), true);
   const galaxies = () => db.prepare('SELECT * FROM swn_galaxies ORDER BY id').all();
   const avant = galaxies();
   assert.ok(avant.length > 0);
-  assert.deepEqual(migrate(db), [45, 46, 47, 48, 49, 50, 51]);
+  assert.deepEqual(migrate(db), [45, 46, 47, 48, 49, 50, 51, 53, 54, 55]);
   assert.deepEqual(galaxies(), avant);
   for (const t of ['swn_reglages', 'swn_aspects']) assert.equal((db.prepare(`SELECT count(*) n FROM ${t}`).get() as any).n, 0);
   assert.deepEqual(db.pragma('foreign_key_check'), []);

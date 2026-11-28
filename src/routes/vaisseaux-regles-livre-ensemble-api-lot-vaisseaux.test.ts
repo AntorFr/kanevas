@@ -9,8 +9,8 @@
 //                             bords   : masse 7,5 (libre 12,5) → 11,5 ; masse 3 (libre 17) → 15,5 ; libre 0,5 → 0,5 ; libre −2 inchangé ; fret absent reste absent
 //                             exclusions : après l'échange (libre 22 → 20) ; deux lignes de l'effet ne changent pas plus qu'une ; l'ordre des lignes ne change rien
 // B-87 (2) blindage renforcé  nominal : valeur 2, réparation 0 → 7 ; réparation 3 → 10 ; bords : valeur 0 + réparation 4 → 9 ; réparation 20 → 27 ; classe 3 → même armure
-// B-87 (3) montages spécialisés nominal : arme p10 m1 → +5 / +1 ; bords : p7 m3 → +4 / +1,5 ; p6 m4 → +3 / +2 ; p1 m1 → +1 / +1 ; m 2,5 → +1,5 ; deux armes → +10 / +1
-//                             échec   : aucune cible, cible qui n'est pas une arme → cible_invalide bloquante
+// B-87 (3) montages spécialisés nominal : arme p10 m1 → puissance −5, masse 0 ; bords : p7 m3 → −4 / −2 ; p6 m4 → −3 / −2 ; p1 m1 → rien (effet_sans_objet) ; m 2,5 → −1,5 ; deux armes → une unité, −5 / 0
+//                             échec   : aucune cible → cible_invalide bloquante ; un aménagement est une cible permise
 // B-87 (4) surcharge cumulable nominal : 1, 2, 3 installations de 50 % sur p10 → +5, +10, +15 ; bords : p3 → +2 (une), +4 (deux, arrondi par installation) ; 3 refusée à l'enregistrement
 //                             échec   : cible invalide → cible_invalide ; import : limite 2 et 3 acceptées, 0 et 1,5 refusées
 // Import : codes, paramètres et limites refusés avec leur champ, le reste passe ; champs créés, relus, inchangés au rejeu ; quatre anciens codes = effet inconnu ;
@@ -201,33 +201,35 @@ describe('B-87 (3) montages spécialisés : la moitié (minimum 1) de la puissan
     calc(m, sur('fregate-r', [armes(arme, q), mods(`montage-${arme}`, 1, vise('armes', arme))], plus));
   const ajuste = (r: Rep) => (r.json.resultat.lignes as Any[]).find((x) => x.cle.startsWith('montage-')).ajuste;
 
-  it('arme de puissance 10 et masse 1 : puissance +5, masse +1 (minimum), puissance libre 5', async () => {
+  it('arme de puissance 10 et masse 1 : la puissance baisse de 5, la masse de 0 (le besoin reste 1), puissance libre 15', async () => {
     const m = await monde();
     const r = await monter(m, 'laser-z');
     assert.equal(r.status, 200, r.texte);
-    assert.deepEqual(ajuste(r), { masse: 1, puissance: 5 });
-    assert.equal(r.json.resultat.puissanceLibre, 5);
+    assert.deepEqual(ajuste(r), { masse: 0, puissance: -5 });
+    assert.equal(r.json.resultat.puissanceLibre, 15);
   });
 
-  it('bords : puissance 7 masse 3 → +4 / +1,5 ; 6 et 4 → +3 / +2 ; 1 et 1 → +1 / +1 ; masse 2,5 → +1,5', async () => {
+  it('bords : puissance 7 masse 3 → −4 / −2 ; 6 et 4 → −3 / −2 ; 1 et 1 → rien (effet_sans_objet) ; masse 2,5 → −1,5', async () => {
     const m = await monde();
-    assert.deepEqual(ajuste(await monter(m, 'canon-z')), { masse: 1.5, puissance: 4 });
-    assert.deepEqual(ajuste(await monter(m, 'canon-p')), { masse: 2, puissance: 3 });
-    assert.deepEqual(ajuste(await monter(m, 'laser-u')), { masse: 1, puissance: 1 });
-    assert.equal(ajuste(await monter(m, 'canon-m')).masse, 1.5);
+    assert.deepEqual(ajuste(await monter(m, 'canon-z')), { masse: -2, puissance: -4 });
+    assert.deepEqual(ajuste(await monter(m, 'canon-p')), { masse: -2, puissance: -3 });
+    const u = await monter(m, 'laser-u');
+    assert.deepEqual(ajuste(u), { masse: 0, puissance: 0 });
+    assert.deepEqual((u.json.alertes as Any[]).filter((a) => a.code === 'effet_sans_objet').map((a) => a.niveau), ['a_surveiller']);
+    assert.equal(ajuste(await monter(m, 'canon-m')).masse, -1.5);
   });
 
-  it('bord : deux armes (totaux de la ligne 20 et 2) → puissance +10, masse +1', async () => {
+  it('bord : deux armes (totaux de la ligne 20 et 2) → une seule unité allégée : puissance −5, masse 0', async () => {
     const m = await monde();
-    assert.deepEqual(ajuste(await monter(m, 'laser-z', 2)), { masse: 1, puissance: 10 });
+    assert.deepEqual(ajuste(await monter(m, 'laser-z', 2)), { masse: 0, puissance: -5 });
   });
 
-  it('échec : sans cible, ou avec un aménagement pour cible → alerte bloquante cible_invalide', async () => {
+  it('échec : sans cible → cible_invalide bloquante ; un aménagement peut être visé par un montage (H-10 (3))', async () => {
     const m = await monde();
     const a = await calc(m, sur('fregate-r', [armes('laser-z'), mods('montage-laser-z')]));
     assert.deepEqual(cibleInvalide(a).map((x) => x.niveau), ['bloquante']);
     const b = await calc(m, sur('fregate-r', [amen('soute-z'), mods('montage-laser-z', 1, vise('amenagements', 'soute-z'))]));
-    assert.deepEqual(cibleInvalide(b).map((x) => x.niveau), ['bloquante']);
+    assert.deepEqual(cibleInvalide(b), []);
   });
 });
 
@@ -299,7 +301,7 @@ describe('B-87 import : refus avec leur champ, le reste passe', () => {
     assert.equal(r.json.natures.modifications.ajoutes, 2);
   });
 
-  it('montages spécialisés : limite 1 passe ; limite 2 et limite 0 refusées', async () => {
+  it('montages spécialisés : toute limite passe (H-8 : plus de limite 1 exigée)', async () => {
     const m = await monde(false);
     const b = { ...el, effet: 'montages_specialises', vise: { nature: 'armes', cle: 'laser-z' } };
     const cat = catalogue('m-1', { modifications: [
@@ -309,8 +311,8 @@ describe('B-87 import : refus avec leur champ, le reste passe', () => {
     ] });
     const r = await importer(m, cat);
     assert.equal(r.status, 200, r.texte);
-    assert.deepEqual(refus(r), { 'm-2': 'limite', 'm-0': 'limite' });
-    assert.equal(r.json.natures.modifications.ajoutes, 1);
+    assert.deepEqual(refus(r), {});
+    assert.equal(r.json.natures.modifications.ajoutes, 3);
   });
 
   it('surcharge cumulable : limite 1, 2, 3 et effet_pct 1 et 1 000 passent ; effet_pct 0, 1 001, absent refusés ; limite 0 et 1,5 refusées', async () => {
@@ -433,7 +435,7 @@ describe('B-87 fiches de règles et texte de la conception', () => {
     const r = await m.lea('PUT', `${m.V}/conceptions/${m.etoile}`, sur('fregate-r', choix, { version: vue.version }));
     assert.equal(r.status, 200, r.texte);
     const t = plat((await m.lea('GET', `/api/univers/${m.E}/fiches/${m.etoile}`)).json.sections.find((x: Any) => x.titre === 'Caractéristiques').html);
-    assert.match(t, /Surcharge L \(→ Laser Z\)/);
+    assert.match(t, /Surcharge L \(→ Laser Z ×2\)/);
     assert.equal((await m.lea('GET', `${m.V}/conceptions/${m.etoile}`)).json.resultat.puissanceLibre, 0);
   });
 });

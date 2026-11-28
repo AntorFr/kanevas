@@ -69,7 +69,7 @@ const L = (nature: string, cle: string, quantite = 1, extra: object = {}) => ({ 
 const M = (cle: string, quantite = 1, extra: object = {}) => L('modifications', cle, quantite, extra);
 const A = (cle: string, quantite = 1) => L('armes', cle, quantite);
 const AM = (cle: string, quantite = 1) => L('amenagements', cle, quantite);
-const sur = (cle: string, q = 1) => M('montage-l', q, { vise: VISE(cle) });
+const sur = (cle: string, q = 1) => M('montage-l', q, { cibles: [{ nature: 'armes', cle, quantite: q }] });
 const cod = (r: any) => r.alertes.map((a: any) => a.code);
 const ajuste = (r: any, i: number) => r.lignes[i].ajuste;
 
@@ -94,9 +94,9 @@ test('W-4 soutes optimisées : masse libre finale, ajuste, soute doublée', asyn
   assert.equal(r.masseLibre, 18);
   r = await c([AM('soute-z'), M('optimise-l'), M('optimise-2')]);
   assert.equal(r.masseLibre, 11); assert.equal(r.soutes, 20);
-  // the mounting's mass (laser 1 + mounting 1) is taken before the optimised holds (last step): 18 -> 16,5
+  // the laser's mass is 1 and the mounting leaves it at 1 (half of 1 is under the floor of 1): 19 before the optimised holds (last step), 19 -> 17,5
   r = await c([A('laser-z'), sur('laser-z'), M('optimise-l')]);
-  assert.equal(r.masseLibre, 16.5);
+  assert.equal(r.masseLibre, 17.5);
 });
 
 test('W-4 blindage renforcé : valeur + Réparation, une fois, toute classe', async () => {
@@ -117,26 +117,34 @@ test('W-4 blindage renforcé : valeur + Réparation, une fois, toute classe', as
 test('W-4 montages spécialisés', async () => {
   const w = await monde();
   const r = await w.ok({ coque: 'fregate-r', choix: [A('laser-z'), sur('laser-z')] });
-  assert.deepEqual(ajuste(r, 1), { masse: 1, puissance: 5 });
-  assert.equal(r.puissanceLibre, 5); assert.equal(r.masseLibre, 18);
+  // laser 10 / 1: the halving brings the need to 5 and (floor of 1) 1: the use drops by 5 power and 0 mass (H-8 (1), W-3 rounded down)
+  assert.deepEqual(ajuste(r, 1), { masse: 0, puissance: -5 });
+  assert.equal(r.puissanceLibre, 15); assert.equal(r.masseLibre, 19);
+  // one mounting halves ONE unit of its target: the line's quantity is not a factor
   const deux = await w.ok({ coque: 'fregate-r', choix: [A('laser-z', 2), sur('laser-z')] });
-  assert.deepEqual(ajuste(deux, 1), { masse: 1, puissance: 10 });
-  assert.equal(deux.puissanceLibre, -10);
+  assert.deepEqual(ajuste(deux, 1), { masse: 0, puissance: -5 });
+  assert.equal(deux.puissanceLibre, 5); assert.equal(deux.masseLibre, 18);
 });
 
 test('W-4 montages : les autres armes de W-4 par une visée choisie dans la demande', async () => {
   const w = await monde();
-  const cas: [string, number, number][] = [['canon-z', 4, 1.5], ['canon-p', 3, 2], ['laser-u', 1, 1], ['canon-m', 2, 1.5]];
+  // [weapon, power drop, mass drop]: 7/3 → 3/1 ; 6/4 → 3/2 ; 1/1 unchanged (nothing to halve) ; 4/2.5 → 2/1 (2.5 / 2 = 1.25, rounded down)
+  const cas: [string, number, number][] = [['canon-z', -4, -2], ['canon-p', -3, -2], ['laser-u', 0, 0], ['canon-m', -2, -1.5]];
   for (const [arme, p, m] of cas) {
     const r = await w.ok({ coque: 'fregate-r', choix: [A(arme), sur(arme)] });
     assert.deepEqual(ajuste(r, 1), { masse: m, puissance: p }, arme);
+    assert.equal(cod(r).includes('effet_sans_objet'), arme === 'laser-u', arme);
   }
 });
 
 test('W-3 cible_invalide pour montage et surcharge', async () => {
   const w = await monde();
   for (const m of ['montage-l', 'surcharge-l']) {
-    for (const choix of [[M(m, 1, { vise: undefined })], [A('laser-z'), M(m, 1, { vise: { nature: 'amenagements', cle: 'soute-z' } }), AM('soute-z')], [M(m, 1, { vise: VISE('canon-z') })]]) {
+    // no target ; a fitting (only a mounting may aim at one: the overcharge aims at weapons alone) ; a target absent from the design
+    const amenagement = [A('laser-z'), M(m, 1, { cibles: [{ nature: 'amenagements', cle: 'soute-z', quantite: 1 }] }), AM('soute-z')]
+    const sansCible = [M(m, 1, { vise: undefined })]
+    const absente = [M(m, 1, { cibles: [{ nature: 'armes', cle: 'canon-z', quantite: 1 }] })]
+    for (const choix of [sansCible, ...(m === 'surcharge-l' ? [amenagement] : []), absente]) {
       const r = await w.ok({ coque: 'fregate-r', choix });
       assert.ok(cod(r).includes('cible_invalide'), `${m} ${JSON.stringify(choix)}`);
       assert.equal(r.lignes.find((l: any) => l.cle === m).ajuste, undefined);
@@ -172,9 +180,10 @@ test('W-4 surcharge : arrondi par installation (canon-q, 3 à 50 %)', async () =
 test('W-2 ordre : le montage et la surcharge lisent la ligne avant tout ajustement', async () => {
   const w = await monde();
   const r = await w.ok({ coque: 'fregate-r', choix: [A('laser-z'), sur('laser-z'), M('surcharge-l', 1, { vise: VISE('laser-z') })] });
-  assert.deepEqual(ajuste(r, 1), { masse: 1, puissance: 5 });
-  assert.deepEqual(ajuste(r, 2), { puissance: 5 });
-  assert.equal(r.puissanceLibre, 0);
+  // halving first (10 → 5), then the overcharge on the halved 5: ⌊5 × 50 / 100 + ½⌋ = 3 (not 5 on the whole 10)
+  assert.deepEqual(ajuste(r, 1), { masse: 0, puissance: -5 });
+  assert.deepEqual(ajuste(r, 2), { puissance: 3 });
+  assert.equal(r.puissanceLibre, 12);
 });
 
 test('W-6 texte du vaisseau et assistant : (→ nom visé) et résultat identique à POST calcul', async () => {

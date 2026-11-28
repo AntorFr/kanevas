@@ -314,7 +314,7 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   never matches a word that sits only in a GM block he cannot read. *(P-24)*
 - **B-99** — Every sheet has a **readable key** `type:name`, unique in the universe: an imported
   sheet keeps its origin key; a sheet born in Kanevas receives one at creation from its type and
-  title (« Ténébria », a place → `lieu:tenebria`; taken → `lieu:tenebria-2`). Renaming the sheet or
+  title (« Ormévane », a place → `lieu:ormevane`; taken → `lieu:ormevane-2`). Renaming the sheet or
   changing its type does not change it. The GM sees it on E-9 and changes it, warned that what cites
   it will no longer find it; a former key keeps leading to the sheet — an import or a read by a former key reaches the
   same sheet, never a duplicate. A key is `<type>:<name>` for a sheet born in Kanevas (lowercase
@@ -648,6 +648,43 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   **specialised mountings** take half, at least 1, of the power and of the mass of the weapon they aim at; **overloading
   a weapon** may be taken several times and the installations add up. The four effects of B-86 are replaced, not kept.
   A catalogue that employs none of them keeps working as before. *(P-19, P-20)*
+
+### Ship designer rules (`kanevas-concepteur-vaisseaux`)
+
+*(kanevas-concepteur-vaisseaux — the rule ledger is `docs/vaisseaux-regles.md`; Monsieur's instruction of 2026-11-15: every
+rule of the book, one by one, before any proposal, so that no conversion meets one more.)*
+
+- **B-88** — The designer shall carry **every rule of the book** on hulls, fittings, defences, weapons and modifications:
+  each rule has a row in the ledger with its verdict (carried, text, outside the designer, or gap and the change that closes
+  it), and **no gap is left « to see at conversion »**. A rule that the designer shows without computing (a game effect) is
+  stated on the element, never silently dropped. *(P-19, P-22)*
+- **B-89** — The **target of a modification is chosen on the design, at installation**, never stated by the catalogue
+  (gap EC-14 of the ledger): a catalogue row says what the mod does, a design line says which weapon or fitting each installation aims at.
+  Several installations of one mod (specialised mountings, weapon overcharge, oversized mountings) may aim at **different**
+  elements; a mod that aims at nothing (compact magazines) is not asked for a target. Specialised mountings take **half,
+  rounded down, at least 1, of the power and of the mass of the target, per installation**; a weapon overcharge adds
+  50 % of the target's power per installation; oversized mountings let the ship mount a weapon or fitting of the class
+  above. *(P-19, P-22)*
+- **B-90** — The designer shall enforce the structure of the hulls and fittings as the book states it: a **weapon's minimum
+  class**; the **rounded-up** product of a hash multiplier; hulls **without a Spike drive** (stations); a fitting whose
+  count depends on another (auto-targeting: once per gun); a **speed that goes below 0**. *(P-19)*
+- **B-91** — The designer shall **compute the capacities** the book gives to fittings from the design (hidden cargo,
+  maximum crew, life-support duration, hydroponic and cold-sleep people, exodus colonists, lifeboats, luxury cabins, colony)
+  and **show the effect line** of every element; both read from the catalogue, never typed on the design. *(P-19)*
+- **B-92** — The designer shall give the **running cost of the crew** (pay and food per day, robots at 1 000 cr each, player
+  characters unpaid), a **build time** that follows the pace of the yard, and a **price divisor** (1, 2 or 4) for regions
+  where ships are easy to get; the three are settings of the module, kept by system, then universe. *(P-19)*
+- **B-93** — The designer shall carry the **modification rules of the book**: pretech components (flat or per hull class),
+  the engineer's **Maintenance** score and the alert when more mods are maintained than it allows, **installation days** (with
+  or without a yard), and the **refit** (a mod made part of the hull: no Maintenance, 5 × the credits, 2 × the components,
+  at most twice the Repair skill). *(P-19, P-22)*
+- **B-94** — A **design or catalogue saved before** this epic keeps working: a target stated as one for the whole line
+  stays valid, a catalogue that says none of the new fields reads as before, and no saved result changes without a new
+  save. *(P-19, P-22)*
+- **B-95** — The **ships of Éneria** (the ten examples and the four ships of the campaign) shall be converted by a replayable
+  script and pushed by the import API, **without any difference left open**: the reference figures (the prototype's prices,
+  HP, AC, power, mass, hardpoints, build days, upkeep) are replayed on the real data, and the report of what was not
+  converted is empty. *(P-22)*
 
 ### Spatial map (`kanevas-carte-spatiale`, Monsieur's decisions of 2026-11-11)
 
@@ -1103,12 +1140,19 @@ the density of generated systems never changes based on a territory she cannot s
    In the first slice, Léa shares the ship link with Roxane, a player
    who has no design of her own on it: Roxane reads « Étoile du soir » (Léa's second design, on a hull of the system, which she may read) read-only, with « Enregistrer » and « Annuler »
    absent, and « Vent d'Orak » is « Page introuvable. » for her (not hers to read).
+6. *(kanevas-concepteur-vaisseaux, B-90 to B-94; Léa goes on with the design of step 2, saved.)* **First, the compatibility (B-94):** a design saved before this epic (a line of specialised mountings carrying one `vise` for the whole line, written by an earlier slice) opens without error: each installation of the line shows that target in its own « Visée » row, the totals are those shown before, and nothing is rewritten until she saves; a design whose line had no target opens with the blocking alert of its line, « Choisissez l'élément visé » (with its count, « (1 installation sur 3) », when the line has several installations). Then Léa puts a weapon of class 3 on a hull of class 2: the blocking
+   alert « Classe de coque inadaptée » refuses the save; she chooses a lighter weapon. She sets « dont joueurs » and « dont robots »
+   and reads the crew cost per day and the robots' one-off cost (a robot without an automation fitting raises the blocking alert « Des robots exigent un système d'automatisation. »; she adds the fitting first, then the robots; more players than living crew, or a crew made only of robots, raise the two other blocking alerts of E-22); the results show the capacities the fittings give (hidden cargo,
+   maximum crew, provisions, lifeboats) and each element's effect line. On a station there is no Spike drive to choose and the
+   speed reads « N/A »; on another hull a speed malus reads « −1 » with the watch alert « Vitesse négative : malus aux jets de Pilotage »; an auto-targeting system beyond her number of weapons is refused with « Limite dépassée : … », and an element whose mass follows the hull factor weighs a whole number per installation, rounded up (B-90). She adds a specialised mounting and, in its « Visée » row (E-22), chooses which of her weapons it aims at (a second row for a second installation; a second specialised mounting on the same weapon is refused with « Cet élément est déjà visé par un montage spécialisé », while an overcharge may be aimed at it again); she adds a pretech modification, reads the components, the installation days and the Maintenance alert, and
+   makes one mod part of the hull (refit), then reads its cost. Antor changes the price divisor, the yard pace, the daily pay or the daily food on E-20 (a cadence of 0 is refused with « Valeur hors limites. »): her
+   design is « Calculée avec d'anciens réglages »; after « Recalculer » she reads « Chantier : N jours » (⌈price / pace⌉, 25 000 cr by default) for the new pace and the price « (÷2) » for a divisor of 2.
 *Highlight*: budgets recalculate before their eyes, and the sheet's section stays consistent with what
 is calculated.
 *Failure*: a recalculation that fails — « Le recalcul n'a pas abouti. Réessayez. », the text unchanged; the usage removed meanwhile — « Vous ne pouvez plus recalculer cette section. »; connection lost — « Connexion perdue. », the buttons disabled. Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
 désactivé », without editing; Roxane opens Léa's « Vent d'Orak », which she cannot read — « Page introuvable. »;
 two concurrent writes — the second refused with « Recharger »; calculating an invalid design —
-blocking alerts (a doubling with no target, a second system engine), « Enregistrer » refuses and explains why; Antor withdraws the hull of « Étoile du soir » from the universe or masks « Lance d'essai » — the design keeps its text, the line says « Élément retiré de cet univers » and « Enregistrer » stays disabled (withdrawn), or Léa still sees the masked element on her design but does not find it in her choices; on a phone, the catalogue is browsed in one column.
+blocking alerts (a doubling with no target, a second system engine), « Enregistrer » refuses and explains why; Antor withdraws the hull of « Étoile du soir » from the universe or masks « Lance d'essai » — the design keeps its text, the line says « Élément retiré de cet univers » and « Enregistrer » stays disabled (withdrawn), or Léa still sees the masked element on her design but does not find it in her choices; a save that fails reads « L'action n'a pas abouti. Réessayez. » and keeps every value typed (a forced « Intégrées à la coque » or « Modificateurs Int + Con » out of bounds is refused by the server the same way); on a phone, the catalogue is browsed in one column.
 
 ### P-20 — Migrate Éneria's current tools (Monsieur, Saturday, Mac and private repository)
 *Current files (map, ships) remain usable; Monsieur wants to switch over.*
@@ -1130,6 +1174,21 @@ refused (401/403 depending on the import API) and nothing written.
    conceptions, 3 éléments locaux de catalogue seront effacés »; at system level, it adds universes
    still using them.
 *Failure*: a GM who is not the system owner does not see system data deletion.
+
+### P-22 — Put Éneria's ships through the complete designer (Antor, GM, after the build)
+*(kanevas-concepteur-vaisseaux; the build waits for `kanevas-synchro`, Monsieur's decision of 2026-11-15)*
+1. At the Mac, **the conversion script** of the `eneria` repository (`_outils/kanevas`) reads the prototype's data and
+   writes the catalogue (12 hulls, 6 drives, 40 fittings, 9 defences, 19 weapons, 18 modifications, 10 examples) and the
+   14 designs; it states for each modification what it does, never which element it aims at. It pushes them through the
+   import API with an API token of the GM's account that reaches the universe and carries the tool `swn/vaisseaux` (AD-144, B-65; E-23; P-20 steps 1 to 3; the script, the token and the report are P-20's).
+2. **E-22** of « Éneria »: Antor opens a converted design, sees the price, HP, AC, power and mass of the prototype's
+   reference figures, the capacities and the crew costs, and the sheet's section in step. The campaign's ships
+   (`classe-hyperion`, `le-pie-rouge`, …) are opened and checked against their sheets.
+3. *(B-93)* The ten examples carry no modification, so the book's rules of modification (components, installation days, Maintenance, refit) are read on the four campaign designs that carry some: Antor opens one, reads « Composants prétech », « Installation » and « Maintenance » and checks them against the ledger's § 13.1. Only if a converted design carries a specialised mounting or an overcharge (none of the prototype's ten examples carries any modification), **E-22** asks which weapon each installation aims at:
+   the choice is on the design line and the section shows it. Otherwise the step is empty, and the rule is proved on constructed designs by the construction tasks (B-95, § 13 of `vaisseaux-regles.md`).
+4. The report of the conversion says « 0 non converti »; the figures replayed on the real data are the proof of B-95.
+*Failure*: a rule of the book that the catalogue cannot state stops the conversion with the rule named (the ledger's
+row): this is what B-88 forbids to remain.
 
 ### From properties to sheets and links (`kanevas-fiches-liees`)
 
@@ -1282,7 +1341,7 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
    moved: the agent reads it again and asks Monsieur.
 4. The agent creates « Les Veilleurs », a faction: Kanevas gives it `faction:les-veilleurs` (B-99),
    which the agent writes into its faction data; the agent's data cite sheets by key
-   (`lieu:tenebria`), and Monsieur opens `/univers/eneria/lieu/tenebria` (B-101) to read what it wrote.
+   (`lieu:ormevane`), and Monsieur opens `/univers/eneria/lieu/ormevane` (B-101) to read what it wrote.
 
 ### P-25 — Manage one's tokens (Léa, player; Antor, GM)
 1. Léa opens « Mes jetons d'API » (**E-23**), creates « Agent de Léa », « tous mes univers », in
@@ -1304,7 +1363,7 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
 2. He opens it, compares with the previous value, and restores it (B-103); the history now carries his
    restoration. A sheet deleted by mistake two weeks ago: he reads its sections in the history and
    copies back what he needs.
-3. He changes the key `lieu:tenebria-2` to `lieu:tenebria-la-noire` on E-9 (B-99), and the universe's
+3. He changes the key `lieu:ormevane-2` to `lieu:ormevane-la-noire` on E-9 (B-99), and the universe's
    identifier `eneria-v2` back to `eneria` on E-14 (B-100); the former addresses still open the sheet.
 
 ### The battle map (`kanevas-battlemap`)
@@ -1530,9 +1589,9 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 
 | Cross-check | Result |
 |---|---|
-| Each need has a journey | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 · B-80 P-19, P-20 · B-81 P-18, P-20 · B-82 P-19, P-20 · B-83 P-19, P-20 · B-84 P-18, P-20 · B-85 P-19, P-20 · B-86 P-19, P-20 · B-87 P-19, P-20 — **holds**. |
-| Each human action in a journey has a screen | P-17: E-15, E-20, E-14 · P-18: E-10, E-21, E-9 (GM document) · P-19: E-8/E-9, E-22 · P-20: the script (outside the product, like Kanka import); its result is read on E-18; real tests are in the private repository · P-21: E-20 — **holds**, with one action without a screen: conversion and replay (Monsieur's decision). |
-| Each screen has its data | E-20: `outils_systeme`, `outils_univers`, owner, catalogues (version, counts) · E-21: `swn_systemes`, `swn_routes`, `swn_zones`, generated blocks (not stored), seed · E-22: `swn_conceptions`, catalogues, `sections.gere_par` · E-9: `gere_par`, `source_version` — **holds**. |
+| Each need has a journey | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 · B-80 P-19, P-20 · B-81 P-18, P-20 · B-82 P-19, P-20 · B-83 P-19, P-20 · B-84 P-18, P-20 · B-85 P-19, P-20 · B-86 P-19, P-20 · B-87 P-19, P-20 · B-88 P-19, P-22 · B-89 P-19, P-22 · B-90 P-19 · B-91 P-19 · B-92 P-19 · B-93 P-19, P-22 · B-94 P-19, P-22 · B-95 P-22 — **holds**. |
+| Each human action in a journey has a screen | P-17: E-15, E-20, E-14 · P-18: E-10, E-21, E-9 (GM document) · P-19: E-8/E-9, E-22, and E-20 for the settings changed in step 6 (`diviseur_prix`, `cadence_chantier`, `solde_jour`, `vivres_jour`) · P-20: the script (outside the product, like Kanka import); its result is read on E-18; real tests are in the private repository · P-21: E-20 · P-22: step 1 is the script (outside the product), steps 2-3 on E-22 — **holds**, with one action without a screen: conversion and replay (Monsieur's decision). |
+| Each screen has its data | E-20: `outils_systeme`, `outils_univers`, owner, catalogues (version, counts), the concepteur settings (`diviseur_prix`, `cadence_chantier`, `solde_jour`, `vivres_jour`) · E-21: `swn_systemes`, `swn_routes`, `swn_zones`, generated blocks (not stored), seed · E-22: `swn_conceptions` (with the per-installation `cibles`, `pj`, `robots`, `integre`), catalogues, `sections.gere_par` · E-9: `gere_par`, `source_version` — **holds**. |
 | Each entity serves a journey | tool setting P-17, P-21 · owner P-17 · managed section P-19 · token scope P-20 · catalogues P-17, P-19 · placed systems, routes, zones P-18 · design P-19 — **holds**. |
 | Gaps filled by a written choice | one `swn` module with two tools (AD-121); the galaxy map is a module table (`swn_galaxies`) that E-10 adds to its list, `cartes` does not change (AD-122); owner of a system created before the epic: any attached GM, since the creator is not stored; no real dependency between the two tools (the mechanism is exercised with a trial module); the GM document: a sheet chosen or created from E-21; a player sees all non-secret systems (no per-player “known systems”); the engine for a journey is chosen in the tool; who creates a ship (the GM creates the sheet, the player designs if they are its author: “a player does not create a sheet” rule retained); E-22 in two states (list, workshop); caching a block according to reading level ([TO VERIFY], AD-132). Tests on real data run in pods, never in CI (Monsieur's decision, 2026-10-16). |
 

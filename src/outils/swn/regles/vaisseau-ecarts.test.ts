@@ -15,9 +15,9 @@ const L = (nature: NatureVaisseau, nom: string, e: Partial<ElementResolu>, extra
 const R = { porteeSaut: 5 }
 const rotors = (v: number) => L('modifications', 'rotors', { effet: 'vitesse', valeur: v })
 
-test('Y-3 : vitesse signée, plancher 0 sur le total', () => {
+test('Y-3 : vitesse signée, sans plancher (H-6), somme simple', () => {
   assert.equal(calculer(C2, [rotors(-2)], R).vitesse, 1)
-  assert.equal(calculer(C2, [rotors(-5)], R).vitesse, 0)
+  assert.equal(calculer(C2, [rotors(-5)], R).vitesse, -2)
   assert.equal(calculer(C2, [rotors(2)], R).vitesse, 5)
   // one floor on the total: −5 then +4 is 2, not 4
   assert.equal(calculer(C2, [rotors(-5), L('modifications', 'r2', { effet: 'vitesse', valeur: 4 })], R).vitesse, 2)
@@ -28,7 +28,7 @@ test('Y-3 : exigence de réparation, par champ ou par effet, alerte exacte à la
   const al = (ls: LigneResolue[], c: number) => rep(ls, c).alertes.filter((a) => a.code === 'reparation_insuffisante').map((a) => a.texte)
   const blind = L('modifications', "Blindage d'essai", { effet: 'armure', valeur: 2, cout: 30000, reparation_min: 2 })
   const r = rep([blind], 1)
-  assert.equal(r.armure, 7); assert.equal(r.prix, 330000)
+  assert.equal(r.armure, 7); assert.equal(r.prix, 300000)
   assert.deepEqual(r.reparation, { choisie: 1, min: 2 })
   assert.deepEqual(al([blind], 1), ["« Blindage d'essai » : réparation 2 au moins (1 choisie)."])
   for (const c of [2, 3]) assert.deepEqual(al([blind], c), [])

@@ -131,6 +131,10 @@ function importCatalogue(db: Db, acteur: Acteur, cible: CibleOutils, cle: string
     const retires = cible.niveau === 'univers'
       ? new Set(catalogue.stockage.retraits(db, cible.id).map((r) => key(r.nature, r.cle))) : new Set<string>();
     // Valid elements of the file, then the catalogue visible at the target level (a system import sees its own level only).
+    const valeurs = new Map<string, Record<string, unknown>>();
+    const trouve = (nature: string, cle: string): Record<string, unknown> | null =>
+      valeurs.get(key(nature, cle)) ?? catalogue.stockage.lirePar(db, target, nature, cle)?.donnees
+      ?? (cible.niveau === 'univers' && !retires.has(key(nature, cle)) ? catalogue.stockage.lirePar(db, { systemeId }, nature, cle)?.donnees ?? null : null);
     const existe = (nature: string, cle: string) => valides.has(key(nature, cle))
       || catalogue.stockage.lirePar(db, target, nature, cle) !== null
       || (cible.niveau === 'univers' && !retires.has(key(nature, cle))
@@ -160,9 +164,10 @@ function importCatalogue(db: Db, acteur: Acteur, cible: CibleOutils, cle: string
           reject(nature.nom, itemKey, champ, issueReason(issue)); continue;
         }
         const donnees = parsed.data as Record<string, unknown>;
-        const verdict = catalogue.verifier?.(nature.nom, donnees, { existe });
+        const verdict = catalogue.verifier?.(nature.nom, donnees, { existe, donnees: trouve });
         if (verdict) { reject(nature.nom, itemKey, verdict.champ, verdict.raison); continue; }
         valides.add(key(nature.nom, itemKey));
+        valeurs.set(key(nature.nom, itemKey), donnees);
         const old = catalogue.stockage.lirePar(db, target, nature.nom, itemKey);
         const gardees = catalogue.conserve?.(nature.nom, donnees) ?? donnees;
         const status = !old ? 'ajoutes' : old.nom !== donnees.nom || jsonCanonique(old.donnees) !== jsonCanonique(gardees) ? 'modifies' : 'inchanges';
