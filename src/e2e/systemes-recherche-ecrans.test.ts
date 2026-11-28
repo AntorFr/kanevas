@@ -53,7 +53,7 @@ describe('kanevas-systemes-jeu-recherche-ecrans : pastille et case du système',
     await p.screenshot({ path: '/tmp/kanevas-recherche-pastilles.png' });
 
     const caseSysteme = p.getByLabel('Masquer les éléments du système');
-    await caseSysteme.check();
+    await caseSysteme.click();
     await p.waitForURL(/sans-systeme=1/);
     await lignes.nth(1).waitFor();
     await p.waitForFunction(() => document.querySelectorAll('.ligne-recherche').length === 2);
@@ -71,7 +71,7 @@ describe('kanevas-systemes-jeu-recherche-ecrans : pastille et case du système',
 
     // E-8 : la même case sur la liste d'un type
     await p.goto(`/univers/${uid}/fiches/objet`);
-    await p.getByLabel('Masquer les éléments du système').check();
+    await p.getByLabel('Masquer les éléments du système').click();
     await p.waitForURL(/sans-systeme=1/);
     await p.getByRole('link', { name: /Pistolet à pompe/ }).waitFor();
     await p.waitForFunction(() => !document.body.innerText.includes('Pistolet laser'));
