@@ -40,7 +40,7 @@ test('0053 : un jeton de contenu, un d’outil et un révoqué restent lisibles,
     db.prepare("INSERT INTO jetons_outils (jeton_id, outil) VALUES (2, 'swn')").run();
     const avant = db.prepare('SELECT * FROM jetons_api ORDER BY id').all();
 
-    assert.deepEqual(migrate(db), [53]);
+    assert.deepEqual(migrate(db), [53, 54]);
 
     assert.deepEqual(db.prepare('SELECT * FROM jetons_api ORDER BY id').all(), avant, 'no token row moves');
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM jetons_systemes').get().n, 0);

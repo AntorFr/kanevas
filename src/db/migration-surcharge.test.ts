@@ -1,5 +1,5 @@
-// Migration 0053 (kanevas-systemes-jeu-surcharge-socle, AD-153, AD-147): `fiches.surcharge_de`, its partial unique index,
-// `historique.action` widened to `detachee` and the trigger that writes that line. Base: migrations 0001–0052 filled by hand.
+// Migration 0054 (kanevas-systemes-jeu-surcharge-socle, AD-153, AD-147): `fiches.surcharge_de`, its partial unique index,
+// `historique.action` widened to `detachee` and the trigger that writes that line. Base: migrations 0001–0053 filled by hand.
 import assert from 'node:assert/strict';
 import { cpSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -17,7 +17,7 @@ function baseAvant() {
   const dir = mkdtempSync(join(tmpdir(), 'kanevas-surcharge-'));
   const precedent = join(dir, 'precedent');
   cpSync(COMPLET, precedent, { recursive: true });
-  for (const f of readdirSync(precedent)) if (Number(/^(\d+)/.exec(f)?.[1] ?? 0) >= 53) rmSync(join(precedent, f));
+  for (const f of readdirSync(precedent)) if (Number(/^(\d+)/.exec(f)?.[1] ?? 0) >= 54) rmSync(join(precedent, f));
   const db: Any = openDb(join(dir, 'k.db'));
   migrate(db, precedent + '/');
   db.exec(`
@@ -36,11 +36,11 @@ function baseAvant() {
 const un = (db: Any, sql: string, ...p: unknown[]) => db.prepare(sql).get(...p);
 const tout = (db: Any, sql: string, ...p: unknown[]) => db.prepare(sql).all(...p);
 
-test('0053 : montée — aucune copie, fiches et historique intacts, rejeu vide, clés étrangères saines', () => {
+test('0054 : montée — aucune copie, fiches et historique intacts, rejeu vide, clés étrangères saines', () => {
   const { db, dir } = baseAvant();
   try {
     assert.ok(!tout(db, 'PRAGMA table_info(fiches)').some((c: Any) => c.name === 'surcharge_de'));
-    assert.deepEqual(migrate(db), [53]);
+    assert.deepEqual(migrate(db), [54]);
     assert.deepEqual(tout(db, 'SELECT id, titre, modifie_le, surcharge_de FROM fiches ORDER BY id'), [
       { id: 1, titre: 'Épée', modifie_le: '2026-01-02T00:00:00.000Z', surcharge_de: null },
       { id: 2, titre: 'Épée', modifie_le: '2026-01-02T00:00:00.000Z', surcharge_de: null },
@@ -59,7 +59,7 @@ test('0053 : montée — aucune copie, fiches et historique intacts, rejeu vide,
   } finally { db.close(); rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('0053 : un seul exemplaire par (univers, original) ; plusieurs copies ordinaires (NULL) restent permises', () => {
+test('0054 : un seul exemplaire par (univers, original) ; plusieurs copies ordinaires (NULL) restent permises', () => {
   const { db, dir } = baseAvant();
   try {
     migrate(db);
@@ -73,7 +73,7 @@ test('0053 : un seul exemplaire par (univers, original) ; plusieurs copies ordin
   } finally { db.close(); rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('0053 : vider surcharge_de écrit une ligne detachee dans l’univers de la copie, sans bouger modifie_le', () => {
+test('0054 : vider surcharge_de écrit une ligne detachee dans l’univers de la copie, sans bouger modifie_le', () => {
   const { db, dir } = baseAvant();
   try {
     migrate(db);
