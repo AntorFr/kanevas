@@ -204,7 +204,7 @@ export function audienceDe(s: SectionRow): Audience {
 
 /**
  * The copies a universe holds of elements of its system (AD-surcharge-2): `{original → copie}` for the given ids.
- * A base held short of migration 0053 has no column and no copy.
+ * A base held short of migration 0054 has no column and no copy.
  */
 export function copiesDeUnivers(db: Db, universId: number, originalIds: number[]): Map<number, number> {
   const copies = new Map<number, number>();

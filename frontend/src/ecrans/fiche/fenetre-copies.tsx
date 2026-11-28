@@ -53,7 +53,7 @@ export function FenetreCopies({ copies }: { copies: Copies }): ReactNode {
     <div className="fenetre-copies">
       <p>{phraseUnivers(copies.nbUnivers)}</p>
       {noms.length > 0 && <ul>{noms.map((n) => <li key={n}>{n}</li>)}</ul>}
-      <p>Leurs copies restent, comme fiches ordinaires.</p>
+      <p>{copies.nbUnivers === 1 ? 'Sa copie reste, comme fiche ordinaire.' : 'Leurs copies restent, comme fiches ordinaires.'}</p>
     </div>
   );
 }

@@ -280,7 +280,6 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
               </span>
             )}
             {gestion && mjSeul.badge}
-            {actionsElement}
             {/* « ⋯ » (E-9): « Changer le type… » (not for a report) and, for an imported sheet, its origin. */}
             {gestion && (
 
@@ -326,16 +325,15 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
             )}
           </div>
           {gestion && mjSeul.aide}
-          <TitreFiche universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir}
-            onDroitPerdu={droitFichePerdu} onIntrouvable={onIntrouvable} />
-          {copie && (
-            <p className="ligne-surcharge">
-              <MarquePersonnalise />
-              {fiche.surchargeDe !== undefined && systemeId !== undefined && (
-                <Link to={`/systemes/${systemeId}/fiches/${fiche.surchargeDe}`}>Voir l’élément du système</Link>
-              )}
-            </p>
-          )}
+          <div className="ligne-titre">
+            <TitreFiche universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir}
+              onDroitPerdu={droitFichePerdu} onIntrouvable={onIntrouvable} />
+            {copie && <MarquePersonnalise />}
+            {copie && fiche.surchargeDe !== undefined && systemeId !== undefined && (
+              <Link className="voir-systeme" to={`/systemes/${systemeId}/fiches/${fiche.surchargeDe}`}>Voir l’élément du système</Link>
+            )}
+            {actionsElement && <span className="ligne-titre-action">{actionsElement}</span>}
+          </div>
           <CleFiche universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir} onDroitPerdu={droitFichePerdu} />
           {lignesDuType(fiche.type).map((l, i) => (
             <l.composant key={i} universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir} />

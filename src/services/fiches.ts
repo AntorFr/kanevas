@@ -44,7 +44,7 @@ import {
 export const LIMITE_LISTE = 100;
 
 interface FicheRow {
-  /** The element a copy customises (AD-153); absent on a base held short of 0053. */
+  /** The element a copy customises (AD-153); absent on a base held short of 0054. */
   surcharge_de?: number | null;
   id: number;
   univers_id: number;
@@ -755,7 +755,7 @@ function systemeDeUnivers(db: Db, universId: number): number {
   return u?.systeme_id ?? -1;
 }
 
-/** `surcharge_de` of a sheet; `null` when none (and on a base held short of 0053). */
+/** `surcharge_de` of a sheet; `null` when none (and on a base held short of 0054). */
 function ficheSurcharge(db: Db, ficheId: number): number | null {
   const r = db.prepare('SELECT * FROM fiches WHERE id = ?').get(ficheId) as { surcharge_de?: number | null } | undefined;
   return r?.surcharge_de ?? null;
@@ -1183,7 +1183,7 @@ function conditionElements(
   const where = ['f.univers_id = ?'];
   const params: (string | number)[] = [e.espaceId];
   // An element the universe has customised is listed through its copy, once (AD-surcharge-2). A base held short of
-  // 0053 has no column, hence no copy to hide.
+  // 0054 has no column, hence no copy to hide.
   if (colonneSurcharge(db)) {
     where.push('NOT EXISTS (SELECT 1 FROM fiches c WHERE f.id = c.surcharge_de AND c.univers_id = ?)');
     params.push(universId);

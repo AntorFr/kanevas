@@ -374,6 +374,12 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .bandeau-element .be-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-left: auto; }
 /* Customisation (E-9, E-8, E-17): the mark, the link to the element, the button and its inline error, the counts of the windows. */
 .marque-personnalise { display: inline-flex; vertical-align: middle; flex: none; }
+.fiche > .boutons { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); margin: var(--e-2) 0; }
+.ligne-titre { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); }
+.ligne-titre > :first-child { min-width: 0; }
+.ligne-titre .voir-systeme { margin-left: auto; color: var(--accent-texte); text-decoration: underline; font-size: var(--t-13); }
+.ligne-titre-action { margin-left: auto; }
+.ligne-titre .voir-systeme + .ligne-titre-action { margin-left: 0; }
 .ligne-surcharge { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); margin: 0 0 var(--e-2); font-size: var(--t-13); }
 .ligne-surcharge a { color: var(--accent-texte); text-decoration: underline; }
 .action-surcharge { display: inline-flex; flex-direction: column; align-items: flex-start; gap: var(--e-1); }

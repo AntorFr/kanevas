@@ -1,5 +1,5 @@
 -- migrate: sans-cles-etrangeres
--- Migration 0053 (kanevas-systemes-jeu-surcharge-socle, number taken at merge, AD-51, AD-153, AD-158, AD-147): a sheet of a
+-- Migration 0054 (kanevas-systemes-jeu-surcharge-socle, number taken at merge, AD-51, AD-153, AD-158, AD-147): a sheet of a
 -- universe may be the customised copy of an element of the system's space. `surcharge_de` is the id of the original;
 -- at most one copy per (universe, element). The foreign key has no `ON DELETE` action: whoever deletes an original
 -- detaches its copies first (services/surcharge.ts), so a forgotten path fails loudly. What SQL cannot check (the
