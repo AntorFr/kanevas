@@ -110,6 +110,52 @@ describe('E-23 la queue et la trajectoire d’une comète', { skip: skipBrowser,
     assert.ok(pres > loin, `queue ${pres} px près > ${loin} px loin`);
   });
 
+  it('la queue est un filament qui s’éteint : alpha décroissant le long de l’axe, nul au bout, sans arête verticale autour de la tête (lu sur les pixels)', async () => {
+    const db = new Database(dbPath);
+    try { db.prepare("UPDATE swn_astres SET orbite = 3 WHERE cle = 'comete'").run(); } finally { db.close(); }
+    try {
+      const { page, ctx } = await ouvrir(1280, 800);
+      await attendre(page, 'data-queue-comete', 'comete');
+      await page.locator('.cs-corps[data-cle="p1"]').click(); // the gold line is not the thing read here
+      const { corps } = await page.evaluate(() => (window as Any).__carteSysteme());
+      const co = corps.find((c: Any) => c.cle === 'comete');
+      const q = (await crochet(page, 'data-queue-comete')).find((e: Any) => e.cle === 'comete');
+      assert.ok(q.longueur >= 20, `une queue lisible près de l’étoile (${q.longueur} px)`);
+      const lire = (arg: Any) => page.locator('canvas.cs-toile').evaluate((cv: HTMLCanvasElement, a: Any) => {
+        const r = cv.getBoundingClientRect(); const k = cv.width / r.width; const g = cv.getContext('2d')!;
+        // max alpha of the 3x3 block at each requested point
+        return a.pts.map(([x, y]: number[]) => { const d = g.getImageData(Math.round(x * k) - 1, Math.round(y * k) - 1, 3, 3).data; let m = 0; for (let i = 3; i < d.length; i += 4) m = Math.max(m, d[i]); return m; });
+      }, arg);
+      const dx = Math.cos(q.angle), dy = Math.sin(q.angle);
+      const fr = [0.05, 0.25, 0.5, 0.75, 0.97, 1.15];
+      const alphas: number[] = await lire({ pts: fr.map((f) => [co.x + dx * q.longueur * f, co.y + dy * q.longueur * f]) });
+      assert.ok(alphas[0] > 0 && alphas[1] > 0, `la queue est dessinée près de la tête (${alphas})`);
+      for (let i = 1; i < alphas.length; i++) assert.ok(alphas[i] <= alphas[i - 1] + 8, `alpha décroissant le long de la queue (${alphas})`);
+      assert.ok(alphas[4] < 40, `la queue s’éteint au bout (${alphas[4]})`);
+      assert.equal(alphas[5], 0, `rien au-delà de la longueur (${alphas[5]})`);
+      // no hard vertical edge: the comet is at 3 h, its tail goes right; the strongest alpha of each pixel column right of the head
+      // (the whole height of the sprite) must never fall by a step, whatever the row
+      assert.ok(Math.cos(q.angle) > 0.9, 'la comète est à l’est, sa queue part vers la droite');
+      const colonnes: number[] = await page.locator('canvas.cs-toile').evaluate((cv: HTMLCanvasElement, a: Any) => {
+        const r = cv.getBoundingClientRect(); const k = cv.width / r.width; const g = cv.getContext('2d')!;
+        const out: number[] = [];
+        for (let x = a.x; x <= a.x + a.n; x++) {
+          const d = g.getImageData(Math.round(x * k), Math.round((a.y - 60) * k), 1, Math.round(120 * k)).data; let m = 0;
+          for (let i = 3; i < d.length; i += 4) m = Math.max(m, d[i]);
+          out.push(m);
+        }
+        return out;
+      }, { x: co.x + 8, y: co.y, n: Math.round(q.longueur) + 40 });
+      let saut = 0; for (let i = 1; i < colonnes.length; i++) saut = Math.max(saut, colonnes[i - 1] - colonnes[i]);
+      assert.ok(saut <= 8, `pas d’arête franche à droite de la tête (chute max ${saut} sur ${colonnes})`);
+      await page.screenshot({ path: `${SHOTS}/queue-pixels.png` });
+      await ctx.close();
+    } finally {
+      const db2 = new Database(dbPath);
+      try { db2.prepare("UPDATE swn_astres SET orbite = 8 WHERE cle = 'comete'").run(); } finally { db2.close(); }
+    }
+  });
+
   it('à 390 px dézoomé au minimum la tête et la coma restent dessinées et aucune étiquette ne recouvre la queue', async () => {
     const { page, ctx } = await ouvrir(390, 780);
     await attendre(page, 'data-queue-comete', 'comete');
