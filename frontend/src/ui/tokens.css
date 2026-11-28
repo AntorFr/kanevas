@@ -41,6 +41,7 @@
   --ciel-lueur: #17182a;
   --ciel-trait: rgba(160,170,255,.34);
   --ciel-halo: rgba(0,0,0,.9);
+  --ciel-or: #f2c36b;
   /* The colours of an element's ring (E-23, B-96): the six names of the server, one token each, for the dark and the light theme. */
   --element-accent: #8b9bf0; --element-table: #3fc79a; --element-ambre: #f2a33c; --element-danger: #ec7b6f; --element-neutre: #a6a7b0; --element-clair: #ebecf0;
   --route-public: #5ad1c4; --route-private: #efe27a; --route-pirate: #ff6b6b; --route-autre: #a6a7b0;
@@ -95,6 +96,7 @@
   --ciel-lueur: #17182a;
   --ciel-trait: rgba(160,170,255,.34);
   --ciel-halo: rgba(0,0,0,.9);
+  --ciel-or: #f2c36b;
   --element-accent: #3a4cc0; --element-table: #08694a; --element-ambre: #8a5300; --element-danger: #b4352b; --element-neutre: #4a4c58; --element-clair: #1a1b22;
   --route-public: #0b7a70; --route-private: #7d6a00; --route-pirate: #c0332b; --route-autre: #4a4c58;
 }

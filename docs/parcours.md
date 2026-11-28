@@ -1375,7 +1375,7 @@ bodies are at the scale of the orbits (B-113), each with its allure: a violet wo
 sun, a belt as grains of rock, a nebula as a soft orange gas with asteroids. The names are there, never hidden by the corona. *Moment fort:* the
 comet of the system crosses the transition zone on a long ellipse, tail away from the star; he chooses it, its trajectory turns gold, its illustration
 and text open in the panel. A jump point shows an arrow, « 3 cases » and the colour of its route; he clicks it: the neighbour's portrait, « Enter the system ». Léa, on her
-phone, sees the same map with what she may read. *Failure path:* a setting the core does not render is named in the import report; a secret body is
+phone, sees the same map with what she may read. *Failure path:* a setting the core does not render is named in the import report; a comet whose perihelion is missing or too large is drawn with a bounded perihelion, one on its star has its tail straight up, and none is ever hidden (no body has a secret); a hidden system is
 absent for Léa, and so are its name and its route.
 
 ### P-28 — Cross the galaxy (Antor, GM; Léa, Player — `kanevas-carte-rendu`)
