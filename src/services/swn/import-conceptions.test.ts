@@ -52,8 +52,8 @@ test('quatre conceptions : 4 créées aux prix, PV, puissance et masse calculés
     'essai-eclaireur-blinde': [29000, 13, 15, 8, 5, 0, 1],
     'essai-fregate-de-ligne': [650000, 30, 14, 5, 10, 2, 3],
     // croiseur : 1 000 000 + moteur 120 000 + soute 100 000 + automatisation 6 000 + lasers 500 000 + canon 120 000
-    // + 3 chargeurs 3 000 + renforts 10 000 + montage 3 000 ; puissance 50 − 9 − 1 − (12 − 3 du montage) − 1 = 30 ; masse 40 − 28 = 12 ; PV 60 + 2 × 4
-    'essai-croiseur-complet': [1862000, 68, 15, 30, 12, 3, 5],
+    // + 3 chargeurs 3 000 (renforts 10 000 and montage 3 000 stay on their lines, B-95) ; puissance 50 − 9 − 1 − (12 − 3 du montage) − 1 = 30 ; masse 40 − 28 = 12 ; PV 60 + 2 × 4
+    'essai-croiseur-complet': [1849000, 68, 15, 30, 12, 3, 5],
   };
   for (const [cle, att] of Object.entries(attendu)) {
     const x: any = k.lireConception(m.db, m.antor, m.u, m.id(cle)).resultat;

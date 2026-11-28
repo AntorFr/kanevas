@@ -35,7 +35,7 @@ const TABLEAU: [string, number, number, number, number, number, number, number, 
   ['fregate-de-ligne', 700000, 30, 14, 5, 1, 2, 3, 28, 35000, 15],
   ['fregate-a-l-extreme', 815000, 30, 14, 0, 3, 3, 3, 33, 40750, 15],
   ['fregate-gourmande', 855000, 30, 14, -1, -3, 3, 3, 35, 42750, 15],
-  ['croiseur-de-transport', 1966000, 69, 16, 27, 3, 3, 5, 79, 98300, 15],
+  ['croiseur-de-transport', 1961000, 69, 16, 27, 3, 3, 5, 79, 98050, 15],
   ['fregate-sans-moteur', 465000, 30, 14, 15, 13, 1, 3, 19, 23250, null],
 ]
 for (const [cle, prix, pv, ca, pl, ml, u, t, j, ent, portee] of TABLEAU) {
@@ -231,7 +231,7 @@ test('texte : à surveiller, portée absente « — », ordre des choix', () => 
 
 test('texte : chantier au pluriel, deux jours, grand prix groupé', () => {
   const t = texteVaisseau(exemple('croiseur-de-transport'))
-  assert.ok(t.includes(`| Prix | 1${NBSP}966${NBSP}000${NBSP}cr |`))
+  assert.ok(t.includes(`| Prix | 1${NBSP}961${NBSP}000${NBSP}cr |`))
   assert.ok(t.includes('| Chantier | 79 jours |'))
   assert.ok(texteVaisseau(calculer({ ...coque('eclaireur'), cout: 30000 }, [], { porteeSaut: 5 })).includes('| Chantier | 2 jours |'))
 })
@@ -332,5 +332,5 @@ test('texte V-6 : « (+2 magasins) » et « (+1 magasin) » au singulier', () =>
 })
 test('canon-leger du jeu d\'essai : classe_min 3, le croiseur du tableau V-11 ne bouge pas', () => {
   assert.equal(essai.armes.find((a: { cle: string }) => a.cle === 'canon-leger').classe_min, 3)
-  assert.equal(exemple('croiseur-de-transport').prix, 1966000)
+  assert.equal(exemple('croiseur-de-transport').prix, 1961000)
 })

@@ -52,7 +52,7 @@ test('calculerDepuisChoix rend les sept exemples de V-11', () => {
     'fregate-de-ligne': [700000, 30, 14, 5, 1, 2, 3, 28, 35000, 15, 0],
     'fregate-a-l-extreme': [815000, 30, 14, 0, 3, 3, 3, 33, 40750, 15, 1],
     'fregate-gourmande': [855000, 30, 14, -1, -3, 3, 3, 35, 42750, 15, 2],
-    'croiseur-de-transport': [1966000, 69, 16, 27, 3, 3, 5, 79, 98300, 15, 1],
+    'croiseur-de-transport': [1961000, 69, 16, 27, 3, 3, 5, 79, 98050, 15, 1],
     'fregate-sans-moteur': [465000, 30, 14, 15, 13, 1, 3, 19, 23250, null, 1],
   };
   const exemples = JSON.parse(readFileSync(new URL('../../outils/swn/exemples/catalogue-essai.json', import.meta.url), 'utf8')).exemples;

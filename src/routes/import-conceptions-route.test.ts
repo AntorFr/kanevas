@@ -81,7 +81,7 @@ test('la sortie d\'une conception importée est celle de la même conception sai
   }
   // hand-written anchor: the cruiser's price
   const cr = JSON.parse(w.un('SELECT resultat FROM swn_conceptions c JOIN fiches f ON f.id = c.fiche_id WHERE f.cle = ?', 'essai-croiseur-complet').resultat);
-  assert.equal(cr.prix, 1862000);
+  assert.equal(cr.prix, 1849000);
 });
 
 test('plus de 1 000 refus : le rapport en garde 1 000, les compteurs restent exacts', async () => {

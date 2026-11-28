@@ -17,7 +17,7 @@ server, with an API token (E-23). Decisions: AD-145 and `AD-mcp-1` to `AD-mcp-6`
 
 ## Tools
 
-A sheet is cited by `fiche`: its key (`lieu:tenebria`, a former key too) or its numeric id. Lists and searches take
+A sheet is cited by `fiche`: its key (`lieu:ormevane`, a former key too) or its numeric id. Lists and searches take
 an optional `curseur` and return `curseur` (`null` on the last page); the list sits under the tool's own key: `univers` (`lister_univers`), `fiches` (`chercher`), `passages` (`chercher_texte`), `lignes` (`lire_historique`).
 
 | Level | Tools |

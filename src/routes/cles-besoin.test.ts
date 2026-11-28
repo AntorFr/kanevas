@@ -43,9 +43,9 @@ async function monter(semer = false) {
 
 test('B-99 : la clé se tire du titre (accents retirés), un titre identique reçoit -2, -3', async () => {
   const w = await monter();
-  assert.equal((await w.creer('lieu', 'Ténébria')).cle, 'lieu:tenebria');
-  assert.equal((await w.creer('lieu', 'Ténébria')).cle, 'lieu:tenebria-2');
-  assert.equal((await w.creer('lieu', 'Tenebria')).cle, 'lieu:tenebria-3');
+  assert.equal((await w.creer('lieu', 'Ormévane')).cle, 'lieu:ormevane');
+  assert.equal((await w.creer('lieu', 'Ormévane')).cle, 'lieu:ormevane-2');
+  assert.equal((await w.creer('lieu', 'Ormevane')).cle, 'lieu:ormevane-3');
   assert.equal((await w.creer('faction', 'Les Veilleurs')).cle, 'faction:les-veilleurs');
   await w.app.close();
 });

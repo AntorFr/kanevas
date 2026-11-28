@@ -68,19 +68,19 @@ test('X-3 : blindage 10 % sur la coque à 300 000 : +30 000 au total et à la li
   const w = await monde();
   const a = (await w.ok({ coque: 'fregate-r', choix: [] })).resultat;
   const b = (await w.ok({ coque: 'fregate-r', choix: [L('modifications', 'blindage')] })).resultat;
-  assert.equal(a.prix, 300000); assert.equal(b.prix, 330000);
+  assert.equal(a.prix, 300000); assert.equal(b.prix, 300000); // B-95: the modification's price stays on its line
   assert.equal(b.lignes[0].cout, 30000);
   assert.equal(a.armure, 5); assert.equal(b.armure, 7);
   assert.ok(!('cout' in (await w.ok({ coque: 'fregate-r', choix: [L('amenagements', 'vide')] })).resultat.lignes[0]));
   // quantity 3 : percentage counted per unit, never multiplied by a class factor
   const c = (await w.ok({ coque: 'fregate-r', choix: [{ ...L('modifications', 'blindage'), quantite: 3 }] })).resultat;
-  assert.equal(c.prix, 390000); assert.equal(c.lignes[0].cout, 90000); assert.equal(c.armure, 11);
+  assert.equal(c.prix, 300000); assert.equal(c.lignes[0].cout, 90000); assert.equal(c.armure, 11);
 });
 
 test('X-3 : arrondi au demi supérieur au crédit (333 335 à 10 % → 33 334) et vitesse négative gardée (H-6)', async () => {
   const w = await monde();
   const r = (await w.ok({ coque: 'rond', choix: [L('modifications', 'blindage')] })).resultat;
-  assert.equal(r.prix, 333335 + 33334); assert.equal(r.lignes[0].cout, 33334);
+  assert.equal(r.prix, 333335); assert.equal(r.lignes[0].cout, 33334);
   const vr = await w.ok({ coque: 'fregate-r', choix: [L('modifications', 'vif')] });
   assert.equal(vr.resultat.vitesse, -6);
   assert.ok(codes(vr).includes('vitesse_negative'));

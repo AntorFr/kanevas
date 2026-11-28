@@ -7,7 +7,7 @@
 // TEST PLAN (world « Éneria d'essai »: Antor GM, Léa Player and author of « Vent d'Orak » and « Étoile du soir »)
 // Hulls (all power 20, mass 20, factors 1): Frégate R class 2, cost 300 000, speed 3, armour 5 ; Mini R class 1 ; Croiseur R class 3 ;
 // Cuirassé R class 4 ; Impaire R cost 333 335 ; Paire R cost 333 334 ; Demi R cost 350 050.
-// B-83 pourcentage nominal : Blindage (10 %, armure +2) on Frégate R → prix 330 000, ligne 30 000, armure 7
+// B-83 pourcentage nominal : Blindage (10 %, armure +2) on Frégate R → prix 300 000, ligne 30 000, armure 7
 //                 bords    : 333 335 × 10 % → 33 334 (half up) ; 333 334 → 33 333 ; 350 050 × 1 % = 3 500,5 → 3 501 ; 1 % and 1 000 % import, 0 and 1 001 refused
 //                 exclusions : the percentage is not multiplied by the hull's cost factor ; a modification without percentage has no `cout` on its line
 // B-83 vitesse/armure nominal : vitesse +2 → 5, −1 → 2 ; armure +2 → 7
@@ -124,14 +124,14 @@ const ligne = (r: Rep, cle: string): Any => r.json.resultat.lignes.find((x: Any)
 const mods = (cle: string, q = 1, plus: Any = {}) => l('modifications', cle, q, plus);
 
 describe('B-83 coût en pourcentage de la coque', () => {
-  it('Blindage à 10 % sur la Frégate R (300 000) : prix 330 000, ligne 30 000, armure 7', async () => {
+  it('Blindage à 10 % sur la Frégate R (300 000) : prix 300 000, ligne 30 000, armure 7', async () => {
     const m = await monde();
     const base = await calc(m, { coque: 'fregate-r', choix: [] });
     assert.equal(base.json.resultat.prix, 300000);
     assert.equal(base.json.resultat.armure, 5);
     const r = await calc(m, { coque: 'fregate-r', choix: [mods('blindage')] });
     assert.equal(r.status, 200, r.texte);
-    assert.equal(r.json.resultat.prix, 330000);
+    assert.equal(r.json.resultat.prix, 300000);
     assert.equal(ligne(r, 'blindage').cout, 30000);
     assert.equal(r.json.resultat.armure, 7);
   });
@@ -140,27 +140,27 @@ describe('B-83 coût en pourcentage de la coque', () => {
     const m = await monde();
     const a = await calc(m, { coque: 'impaire-r', choix: [mods('blindage')] });
     assert.equal(ligne(a, 'blindage').cout, 33334);
-    assert.equal(a.json.resultat.prix, 333335 + 33334);
+    assert.equal(a.json.resultat.prix, 333335);
     const b = await calc(m, { coque: 'paire-r', choix: [mods('blindage')] });
     assert.equal(ligne(b, 'blindage').cout, 33333);
-    assert.equal(b.json.resultat.prix, 333334 + 33333);
+    assert.equal(b.json.resultat.prix, 333334);
     const c = await calc(m, { coque: 'demi-r', choix: [mods('pct1')] });
     assert.equal(ligne(c, 'pct1').cout, 3501);
-    assert.equal(c.json.resultat.prix, 350050 + 3501);
+    assert.equal(c.json.resultat.prix, 350050);
   });
 
   it('exclusion : le pourcentage n’est jamais multiplié par le facteur de coût de la coque (facteur 5 : 30 000 quand même)', async () => {
     const m = await monde();
     const r = await calc(m, { coque: 'facteur-r', choix: [mods('blindage')] });
     assert.equal(ligne(r, 'blindage').cout, 30000);
-    assert.equal(r.json.resultat.prix, 330000);
+    assert.equal(r.json.resultat.prix, 300000);
   });
 
   it('exclusion : une modification sans pourcentage ne porte pas de coût de ligne ; une modification à 0 de coût propre ajoute exactement le pourcentage', async () => {
     const m = await monde();
     const r = await calc(m, { coque: 'fregate-r', choix: [mods('sans-pct'), mods('pct5')] });
     assert.equal(ligne(r, 'sans-pct').cout, undefined);
-    assert.equal(r.json.resultat.prix, 300000 + 1000 + 15000);
+    assert.equal(r.json.resultat.prix, 300000);
     assert.equal(ligne(r, 'pct5').cout, 15000);
   });
 });
