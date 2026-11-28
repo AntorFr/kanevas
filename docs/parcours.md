@@ -1714,9 +1714,15 @@ the map or a rule **without the music stopping**.
 
 ### P-32 — The GM prepares a scene (GM, agent)
 
+*Example: Claire, GM, prepares Saturday's scene in the evening.*
+
 1. In the sheet (E-9) a section's « Sons » list (E-36): he adds a library sound or a missing sound, sets label, mode,
    gain, loop, instruction, order; for a scenario each scene is a section.
-2. In the text of a section he writes `son:cle:K` where a button is wanted.
+   A sound she does not have yet is added as a **missing sound** (name, description, where to find it) and placed later
+   with « Placer le son »; a global sound « GM only » is imported into the universe on the way. *Failure*: the sound left
+   the library between the choice and the save → « Le son n'est plus disponible. », the choice list reloaded; a save that
+   fails keeps the form as typed.
+2. In the text of a section he writes `son:cle:K` where a button is wanted (the key K is read on the sound's sheet).
 3. The agent does the same through the MCP door (P-36).
 
 ### P-33 — The GM plays the session (GM)
@@ -1732,7 +1738,8 @@ the map or a rule **without the music stopping**.
 
 He browses the library of his universe (E-31): only sounds « for the players » and the system's, hears them, hears the
 effect on the sheet of his weapon. He sees neither the global library, nor GM-only sounds, nor the entries of sections he
-does not read.
+does not read. A section he reads with no sound he may hear shows no « Sons » block at all, and the GM in player mode
+sees the same.
 
 ### P-35 — The admin keeps tags and purges (instance admin)
 
@@ -1751,5 +1758,6 @@ tags and purges the orphans it names, after reading the list; any other token on
 
 - The players' screen (scene images on a second screen); producing a sound inside Kanevas; random variants of an effect
   (later: an entry carrying several sounds); sound on the players' devices; online services (Spotify, YouTube).
+- Copying the key `son:cle:K` from the section's entry (the key is read on the sound's sheet); a count of sounds on a scene's title.
 - Playing from a phone or tablet is not a target: the table aims at the GM's computer, in Chrome.
 - The media library (AD-117) is untouched except for the shared size limit (B-135).
