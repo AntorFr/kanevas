@@ -1714,6 +1714,9 @@ the map or a rule **without the music stopping**.
 
    Details (`kanevas-sons-globale`): the global library is read from the user menu by any GM of a universe or system (a player has no entry); the list shows generic tags and the libraries he writes that already hold the sound (« Déjà dans… »), never the others; « Importer dans… » takes a universe he writes (a system's library comes with `-systeme`), « MJ seul » by default, and answers « Déjà dans cette bibliothèque » for a library that holds it. A sound held by no library stays there, public ones importable; a private one nobody holds is seen by nobody until the purge. Only a GM of a library holding the sound switches « Privé »; the other common-part fields are open to any GM who sees it.
 
+   *Steps in screens*: 1 — Inès, GM of « Éclats d'Hermès » and of another universe, opens « Bibliothèque globale » (E-33) and searches by a generic tag; 2 — she plays the sound before anything (the bar of E-34), then « Importer dans… » (the dialog), picks « Éclats d'Hermès », and « Ouvrir » in the toast leads to E-32 of her universe, where she writes her Notes; 3 — from E-33 she opens the sound (`/sons/:cle`, E-32 from the global library), corrects the description, replaces the file if it is wrong (B-122: the same sound everywhere) and switches « Privé » if one of her libraries holds it.
+   *Failure*: the import fails (« Importation impossible », the choice kept, « Réessayer »); the sound turned private or was removed meanwhile (« Ce son n'est plus disponible. » in the dialog, « Son introuvable » on its page); a player has no entry and « Page introuvable. ».
+
 ### P-32 — The GM prepares a scene (GM, agent)
 
 1. In the sheet (E-9) a section's « Sons » list (E-36): he adds a library sound or a missing sound, sets label, mode,
