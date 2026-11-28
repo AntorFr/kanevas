@@ -1704,7 +1704,7 @@ the map or a rule **without the music stopping**.
 2. On the sound (E-32) he sets type, generic tags, description, source and licence, ticks « listened » after hearing it.
 3. He finds the sounds still to classify (« no tag in Émotion ») and goes on.
 4. The system's GM does the same in the system's library (E-15, tab « Sons »).
-5. Removing a sound from the library first shows the sections that carry it.
+5. Removing a sound from the library first shows the sections that carry it (from `kanevas-sons-sections`; before it, the dialog names the sound only).
 
 ### P-31 — The GM imports from the global library (GM)
 
@@ -1751,5 +1751,5 @@ tags and purges the orphans it names, after reading the list; any other token on
 
 - The players' screen (scene images on a second screen); producing a sound inside Kanevas; random variants of an effect
   (later: an entry carrying several sounds); sound on the players' devices; online services (Spotify, YouTube).
-- Playing from a phone or tablet is not a target: the table aims at the GM's computer, in Chrome.
+- Playing from a phone or tablet is not a target for the GM: the table aims at the GM's computer, in Chrome. A player listening from a phone is supported (E-31 and E-34 at 390 px, no deposit there).
 - The media library (AD-117) is untouched except for the shared size limit (B-135).
