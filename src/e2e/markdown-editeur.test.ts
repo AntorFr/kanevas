@@ -209,38 +209,3 @@ test('bords section : 100 000 s’enregistre (compteur plein) ; 100 001 grise En
   await champ.waitFor({ state: 'detached' });
   await page.close();
 });
-
-test('bords entrée de système : 100 000 s’enregistre ; 100 001 grise Enregistrer, erreur, aucun aperçu', opts, async () => {
-  const m = await monde('Editeur plafond entree');
-  const sys = await api(C.antor, 'post', '/api/systemes', { nom: 'Plafond MD' });
-  await api(C.antor, 'put', `${m.b}/systeme`, { systemeId: sys.id });
-  await api(C.antor, 'post', `/api/systemes/${sys.id}/gabarits`, { type: 'creature', nom: 'Gobelin', contenu: 'x' });
-  const page = await C.antor.ctx.newPage();
-  await page.goto(`${srv.base}/systemes/${sys.id}`);
-  await page.waitForLoadState('networkidle');
-  const onglet = page.getByRole('tab', { name: /Créature/i });
-  if (await onglet.count()) await onglet.click();
-  await page.getByRole('button', { name: /Gobelin/ }).click();
-  await page.getByRole('button', { name: 'Modifier', exact: true }).click();
-  const champ = page.getByLabel('Contenu', { exact: true });
-  const compte = compterApercus(page);
-  await champ.fill('a'.repeat(100001));
-  await page.getByText('Erreur : 100 000 caractères au plus.').waitFor();
-  const enr = page.getByRole('button', { name: 'Enregistrer', exact: true });
-  assert.equal(await enr.getAttribute('aria-disabled'), 'true');
-  await enr.click({ force: true });
-  await page.getByRole('radio', { name: 'Aperçu', exact: true }).click();
-  assert.equal(compte.n, 0);
-  assert.equal(await champ.inputValue().then((v: string) => v.length), 100001, 'le clic sur un bouton grisé n’enregistre pas');
-  await champ.fill('a'.repeat(100000));
-  assert.match(plat(await page.locator('.compteur-md').innerText()), new RegExp(COMPTEUR_PLEIN));
-  await enr.click();
-  await champ.waitFor({ state: 'detached' });
-  await page.reload();
-  await page.waitForLoadState('networkidle');
-  if (await onglet.count()) await onglet.click();
-  await page.getByRole('button', { name: /Gobelin/ }).click();
-  await page.locator('.entree-contenu.md').waitFor();
-  assert.equal((await page.locator('.entree-contenu.md').innerText()).length >= 100000, true);
-  await page.close();
-});

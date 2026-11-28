@@ -621,8 +621,14 @@ test('garde : Léa (Joueuse) n’a pas l’onglet, ni son adresse, ni son API, a
   await lea.goto(`/systemes/${SYS}?onglet=outils`);
   await lea.getByRole('heading', { name: "Système d'essai", level: 1 }).waitFor();
   assert.equal(await lea.getByRole('heading', { name: 'Essai A', level: 2 }).count(), 0);
-  assert.equal(await lea.getByRole('switch').count(), 0);
+  // sans gabarits, l'écran n'a que l'onglet « Types de fiche » (le paramètre est type=outils, pas onglet) : ses
+  // interrupteurs sont tous désactivés pour un lecteur
+  const actifs = await lea.getByRole('switch').evaluateAll((l: Any[]) =>
+    l.filter((e) => !e.disabled && e.getAttribute('aria-disabled') !== 'true').length);
+  assert.equal(actifs, 0);
   await photo(lea, 'lea-systeme-sans-onglet');
+  await ouvrirSysteme(antor);
+  const avant = await carte(antor, 'Essai A').getByRole('switch').getAttribute('aria-checked');
   for (const [m, u, c] of [
     ['GET', `/api/univers/${ENERIA}/outils`],
     ['GET', `/api/systemes/${SYS}/outils`],
@@ -635,7 +641,7 @@ test('garde : Léa (Joueuse) n’a pas l’onglet, ni son adresse, ni son API, a
   }
   // Léa did not change anything
   await ouvrirSysteme(antor);
-  assert.equal(await carte(antor, 'Essai A').getByRole('switch').getAttribute('aria-checked'), 'true');
+  assert.equal(await carte(antor, 'Essai A').getByRole('switch').getAttribute('aria-checked'), avant);
 });
 
 // --- transfert (dernier : il retire des droits à Antor) --------------------------------------------------

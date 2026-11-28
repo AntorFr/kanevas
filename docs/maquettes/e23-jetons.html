@@ -25,8 +25,8 @@
    « Créer un jeton » (nom, durée, accès : « Tous mes univers » avec un niveau et des
    exceptions, ou une liste d'univers), le jeton montré une seule fois, « Modifier les
    accès », « Révoquer ». Parcours P-25 (docs/parcours.md). Hors de tout univers : barre de
-   e01-accueil.html, entrée « Mes jetons d'API » du menu du compte. Le choix « Outils »
-   (kanevas-outils, B-65) s'ajoute au formulaire quand cette epic est dans l'arbre : il n'est pas dessiné ici.
+   e01-accueil.html, entrée « Mes jetons d'API » du menu du compte. Le groupe « Ce que le jeton peut faire »
+   (kanevas-jeton-unique, B-jeton-1 : Contenu + outils cumulables) est dessiné dans la boîte de création.
    Cadre, tokens et composants : e18-acces-api.html (boîtes, bascules segmentées, lignes de liste).
    Le document prime sur la maquette.
 
@@ -39,6 +39,9 @@
      #etat-revoquer       boîte « Révoquer « Script Kanka — Mac » ? »
      #etat-erreur         « Impossible d'enregistrer. » avec « Réessayer », saisie gardée
      #etat-vide           « Aucun jeton. »
+     #etat-systemes       (kanevas-systemes-jeu-api) la boîte « Créer un jeton » ouverte sur le bloc « Systèmes de jeu » : un système où le compte est MJ (« Écriture » offerte), un où il est lecteur (« — / Lecture »)
+     #etat-sans-systeme   le même formulaire pour un compte qui ne lit aucun système : le bloc n'existe pas
+     #etat-systemes-erreur le bloc « Systèmes de jeu » : « Impossible de charger les systèmes. » + « Réessayer », le reste du formulaire utilisable
      #etat-perdue         bandeau « Connexion perdue » ; « Créer un jeton », « Modifier », « Révoquer » désactivés
    Et ceux du cadre : #etat-menu, #etat-tiroir.
    ===================================================================================== */
@@ -371,6 +374,8 @@ body.etat-perdue [data-ecrit-recherche] { opacity: .45; pointer-events: none; }
 .genre button .i { color: var(--texte-3); }
 .genre button[aria-checked="true"] .i { color: var(--accent-texte); }
 .dialogue .aide-genre { font-size: var(--t-12); color: var(--texte-3); }
+.dialogue .case-perm { display: flex; gap: 8px; align-items: flex-start; font-size: var(--t-13); }
+.dialogue .case-perm small { display: block; font-size: var(--t-12); color: var(--texte-3); }
 .dialogue .actions { margin-top: var(--e-2); }
 @media (max-width: 1080px) {
   .page.liste { padding-left: var(--e-6); padding-right: var(--e-6); }
@@ -548,6 +553,9 @@ body:not(.etat-vide) [data-vide] { display: none; }
 .acces-liste .u { flex: 1; min-width: 140px; font-size: var(--t-14); color: var(--texte); display: flex; align-items: center; gap: 8px; }
 .acces-liste .genre { align-self: auto; flex-wrap: wrap; }
 .genre.petit button { height: 26px; padding: 0 9px; font-size: var(--t-12); }
+.acces.systemes { color: var(--texte-3); }
+.dialogue .erreur-systemes { margin-top: 6px; }
+body.etat-sans-systeme [data-bloc-systemes] { display: none; }
 .dialogue .note-form { font-size: var(--t-12); color: var(--texte-3); }
 .acces { display: block; margin-top: 2px; font-size: var(--t-13); color: var(--texte-2); }
 .acces b { font-weight: 500; color: var(--texte); }
@@ -639,6 +647,7 @@ body.etat-perdue .actions-ligne .bouton { opacity: .45; }
           <span class="corps">
             <span class="nom" title="Script Kanka — Mac">Script Kanka — Mac</span>
             <span class="acces"><b>Tous mes univers</b> — lecture + écriture · Les Cendres de Vaëlis : lecture</span>
+            <span class="acces systemes">Systèmes : Stars Without Number : écriture · Chroniques Oubliées Fantasy : lecture</span>
             <span class="meta"><span>créé le 11 oct. 2026</span><span class="recent">dernier usage il y a 3 min</span><span data-fin>expire le 10 nov. 2026</span></span>
           </span>
           <span class="actions-ligne"><button class="bouton petit fantome" data-ecrit data-modifier aria-label="Modifier les accès de « Script Kanka — Mac »"><svg class="i p" aria-hidden="true"><use href="#i-sliders-horizontal"/></svg>Modifier les accès</button><button class="bouton petit fantome revoquer" data-ecrit data-revoquer aria-label="Révoquer « Script Kanka — Mac »"><svg class="i p" aria-hidden="true"><use href="#i-ban"/></svg>Révoquer</button></span>
@@ -706,6 +715,14 @@ body.etat-perdue .actions-ligne .bouton { opacity: .45; }
           <button type="button" role="radio" aria-checked="false" tabindex="-1" data-jours="365">1 an</button>
         </div>
       </div>
+      <div class="champ" id="champ-permissions" role="group" aria-labelledby="lib-perm">
+        <span id="lib-perm">Ce que le jeton peut faire</span>
+        <label class="case-perm"><input type="checkbox" checked> <span>Contenu <small>fiches, sections, relations, fichiers, cartes, export</small></span></label>
+        <label class="case-perm"><input type="checkbox"> <span>Galaxie <small>Systèmes de jeu · Stars Without Number — import de la galaxie</small></span></label>
+        <label class="case-perm"><input type="checkbox"> <span>Catalogue d'essai <small>Essai · catalogue d'équipement</small></span></label>
+        <span class="aide-genre">Un seul jeton peut tout faire, ou créez-en un par script : les accès ci-dessous valent pour tout ce que vous cochez.</span>
+        <span class="erreur" id="err-perm" hidden>Cochez au moins une permission.</span>
+      </div>
       <div class="champ">
         <span id="lib-portee">Univers atteints</span>
         <div class="genre portee" role="radiogroup" aria-labelledby="lib-portee">
@@ -726,6 +743,12 @@ body.etat-perdue .actions-ligne .bouton { opacity: .45; }
       <div class="champ" id="bloc-liste" hidden>
         <span id="lib-liste">Accès par univers</span>
         <ul class="acces-liste" data-liste="lst"><li><span class="u">Lame d'Ébène<span class="pastille mj">MJ</span></span><div class="genre petit" role="radiogroup" aria-label="Accès à Lame d'Ébène"><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="aucun">—</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="lecture">Lecture</button><button type="button" role="radio" aria-checked="true" tabindex="0" data-v="ecriture">Lecture + écriture</button></div></li><li><span class="u">Les Cendres de Vaëlis<span class="pastille table">Joueur</span></span><div class="genre petit" role="radiogroup" aria-label="Accès à Les Cendres de Vaëlis"><button type="button" role="radio" aria-checked="true" tabindex="0" data-v="aucun">—</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="lecture">Lecture</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="ecriture">Lecture + écriture</button></div></li></ul>
+      </div>
+      <div class="champ" id="bloc-systemes" data-bloc-systemes>
+        <span id="lib-systemes">Systèmes de jeu</span>
+        <ul class="acces-liste" data-liste="sys" aria-labelledby="lib-systemes"><li><span class="u">Stars Without Number<span class="pastille mj">MJ du système</span></span><div class="genre petit" role="radiogroup" aria-label="Accès au système Stars Without Number"><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="aucun">—</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="lecture">Lecture</button><button type="button" role="radio" aria-checked="true" tabindex="0" data-v="ecriture">Écriture</button></div></li><li><span class="u">Chroniques Oubliées Fantasy<span class="pastille table">Lecteur</span></span><div class="genre petit" role="radiogroup" aria-label="Accès au système Chroniques Oubliées Fantasy"><button type="button" role="radio" aria-checked="false" tabindex="-1" data-v="aucun">—</button><button type="button" role="radio" aria-checked="true" tabindex="0" data-v="lecture">Lecture</button></div></li></ul>
+        <span class="aide-genre" id="aide-systemes">Un système n'est jamais compris dans « Tous mes univers » : choisissez-le ici. « Écriture » n'est offerte que là où vous êtes MJ du système.</span>
+        <div class="alerte erreur-systemes" id="err-systemes" role="alert" hidden><svg class="i p" aria-hidden="true"><use href="#i-circle-alert"/></svg><span>Impossible de charger les systèmes. Sans cette liste, le jeton sera créé sans accès à un système.</span><button type="button" class="bouton petit" id="reessayer-systemes">Réessayer</button></div>
       </div>
       <div class="alerte erreur-sauve" id="err-sauve" role="alert" hidden><svg class="i p" aria-hidden="true"><use href="#i-circle-alert"/></svg><span>Impossible d'enregistrer.</span><button type="button" class="bouton petit" id="reessayer">Réessayer</button></div>
       <p class="note-form">Un jeton n'a jamais plus de droits que votre compte : là où vous êtes joueur, il agit en joueur.</p>
@@ -901,7 +924,7 @@ body.etat-perdue .actions-ligne .bouton { opacity: .45; }
     var creer = m === 'creer';
     $('#dlg-nouveau-titre').textContent = creer ? 'Créer un jeton' : 'Modifier les accès';
     $('#valider-jeton').textContent = creer ? 'Créer le jeton' : 'Enregistrer';
-    $('#champ-nom').hidden = !creer; $('#champ-duree').hidden = !creer;
+    $('#champ-nom').hidden = !creer; $('#champ-duree').hidden = !creer; $('#champ-permissions').hidden = !creer;
     $('#form-jeton').hidden = false; $('#face-jeton').hidden = true; $('#err-nom').hidden = true; $('#err-sauve').hidden = true;
     $('#nom-jeton').classList.remove('en-erreur'); $('#nom-jeton').value = creer ? (nom || '') : '';
     ouvrir($('#voile-nouveau'), depuis || $('#nouveau-jeton'), creer ? $('#nom-jeton') : $('#bloc-tous .genre button[aria-checked=true]'));
@@ -982,6 +1005,13 @@ body.etat-perdue .actions-ligne .bouton { opacity: .45; }
         if (et === 'liste') montrerPortee('liste');
         if (et === 'erreur') $('#err-sauve').hidden = false;
         if (et === 'jeton-montre') { montrerJeton('Script Kanka — Mac'); setTimeout(function () { $('[data-copier="jeton"]').focus(); $('[data-copier="jeton"]').blur(); }, 40); }
+      }
+      if (et === 'systemes' || et === 'systemes-erreur' || et === 'sans-systeme') {
+        var l2 = $('[data-jeton="Script Kanka — Mac"]'); if (l2) l2.remove();
+        ouvrirForm('creer', 'Script Kanka — Mac');
+        if (et === 'systemes-erreur') { $('#err-systemes').hidden = false; $('#bloc-systemes .acces-liste').hidden = true; $('#aide-systemes').hidden = true; }
+        if (et === 'sans-systeme') document.body.classList.add('etat-sans-systeme');
+        if (et === 'systemes') setTimeout(function () { $('#bloc-systemes').scrollIntoView({ block: 'center' }); }, 60);
       }
       if (et === 'modifier') setTimeout(function () { $('[data-jeton="Agent de lecture"] [data-modifier]').click(); }, 30);
       if (et === 'revoquer') setTimeout(function () { $('[data-jeton="Script Kanka — Mac"] [data-revoquer]').click(); }, 30);

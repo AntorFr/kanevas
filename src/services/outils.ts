@@ -8,6 +8,7 @@ import { exigerMJ, roleDe, vueMJ } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
 import { surSourceModifiee } from './crochets-outils.js';
 import type { Acteur } from './types.js';
+import { creerEspaceSysteme } from './systemes.js';
 
 export type CibleOutils = { niveau: 'systeme' | 'univers'; id: number };
 export type Origine = 'defaut' | 'systeme' | 'univers';
@@ -113,7 +114,9 @@ export function candidatsResponsable(db: Db, acteur: Acteur, systemeId: number):
 export function creerSystemeAncienPourBouchon(db: Db, nom: string): { id: number; nom: string } {
   if (env.KANEVAS_STUB !== '1' && env.NODE_ENV !== 'test') throw refuse();
   const info = db.prepare('INSERT INTO systemes_jeu (nom, cree_le) VALUES (?, ?)').run(nom, new Date().toISOString());
-  return { id: Number(info.lastInsertRowid), nom };
+  const id = Number(info.lastInsertRowid);
+  creerEspaceSysteme(db, id, nom);
+  return { id, nom };
 }
 function exigerEcriture(db: Db, compte: number | Acteur, cible: CibleOutils): void {
   const acteur = acteurDe(compte);

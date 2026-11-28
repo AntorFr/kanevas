@@ -6,6 +6,7 @@ import { useVue } from '../../cadre-contexte';
 import { Pastille } from '../../ui';
 import { badgeFiche, iconeDuType, marqueDe, useTypes } from '../../types-contexte';
 import { MarqueDisparu, classeDisparu } from './marque';
+import { MarquePersonnalise } from './marque-personnalise';
 import type { Fiche } from './types';
 import { StatutAventure } from './statut';
 
@@ -127,6 +128,7 @@ export function CarteFiche({ universId, fiche, gestion = false, onChange }: {
         <span className="titre" title={fiche.titre}>
           {fiche.titre}
         </span>
+        {fiche.origine === 'surcharge' && <MarquePersonnalise />}
         {fiche.type === 'personnage' && (
           <span className={`badge-type${fiche.charge.pj ? ' pj' : ''}`}>{badgeFiche(types, fiche)}</span>
         )}

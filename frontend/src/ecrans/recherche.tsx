@@ -10,6 +10,7 @@ import type { UniversListe } from '../types';
 import { Bouton, Champ, PageIntrouvable, VignetteFiche } from '../ui';
 import { useMJSeul } from './fiche/vignette';
 import { etatDe } from './fiche/marque';
+import { MarquePersonnalise } from './fiche/marque-personnalise';
 import { LONGUEUR_RECHERCHE } from './fiche/liste-recherche';
 import type { Fiche, PageFiches } from './fiche/types';
 import { StatutAventure } from './fiche/statut';
@@ -322,6 +323,7 @@ function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fi
             <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
             {fiche.titre}
           </span>
+          {fiche.origine === 'surcharge' && <MarquePersonnalise />}
           {fiche.via && <small className="via-recherche" title={fiche.via.titre}>{fiche.via.titre}</small>}
           {(fiche.aliasTrouve !== undefined || etiquettes.length > 0) && (
             <small className="sous-titre-recherche">

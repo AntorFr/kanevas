@@ -7,7 +7,8 @@ export interface UniversListe {
   nom: string;
   description: string;
   role: Role;
-  systeme?: { id: number; nom: string } | null;
+  /** `personnalisees`: the GM's count of customised sheets (AD-surcharge-4), absent for a player. */
+  systeme?: { id: number; nom: string; personnalisees?: number } | null;
   nbMembres?: number;
 }
 
@@ -22,7 +23,6 @@ export interface SystemeCompte {
   id: number;
   nom: string;
   nbUnivers: number;
-  entrees: { regle: number; creature: number; objet: number };
   mesUnivers: { id: number; nom: string; role: Role }[];
   peutEcrire: boolean;
 }

@@ -64,7 +64,7 @@ async function parametres(page: Any, id: number): Promise<void> {
   await page.getByLabel('Nom du système').waitFor();
   await attendre(page);
 }
-async function systeme(page: Any, id: number, onglet = 'Créatures'): Promise<void> {
+async function systeme(page: Any, id: number, onglet = 'Types de fiche'): Promise<void> {
   await page.goto(`/univers/${id}/systeme`);
   await page.getByRole('heading', { level: 1 }).waitFor();
   await attendre(page);
@@ -238,150 +238,6 @@ describe('B-13 rattacher un univers à un système', opts, () => {
   });
 });
 
-describe('B-14 le référentiel commun', opts, () => {
-  test('E-15 vide : le MJ voit « Aucune créature pour l’instant. » et le bouton d’ajout, onglets Règles et Objets de même', opts, async () => {
-    await antor.goto(`/univers/${idLame}/parametres`);
-    await attendre(antor);
-    await antor.getByRole('link', { name: rx('Ouvrir le système') }).or(antor.getByRole('button', { name: rx('Ouvrir le système') })).first().click();
-    await attendre(antor);
-    assert.match(antor.url(), new RegExp(`/systemes/\\d+$`)); // E-15 has its own address (AD-94)
-    await voit(antor, 'CoF Mini');
-    await voit(antor, 'Référentiel commun · utilisé par 2 univers');
-    await voit(antor, "Aucune créature pour l'instant.");
-    await antor.getByRole('button', { name: rxExact('Ajouter une créature') }).waitFor();
-    await ongletVers(antor, 'Règles');
-    await voit(antor, 'Aucune règle');
-    await ongletVers(antor, 'Objets');
-    await voit(antor, 'Aucun objet');
-    await antor.screenshot({ path: '/tmp/sys-e15-vide.png' });
-  });
-
-  test('Joueur, onglet vide : « Aucune créature à voir pour l’instant. » sans bouton d’ajout', opts, async () => {
-    await systeme(lea, idLame);
-    await voit(lea, "Aucune créature à voir pour l'instant.");
-    assert.equal(await lea.getByRole('button', { name: rx('^Ajouter') }).count(), 0);
-  });
-
-  test('Antor ajoute la créature « Garde du sceau » avec son contenu : elle apparaît sous « Créatures »', opts, async () => {
-    await systeme(antor, idLame);
-    await ajouterGabarit(antor, 'une créature', 'Garde du sceau', 'Sentinelle de pierre.\nDEF 14, PV 30.');
-    await voit(antor, 'Garde du sceau');
-    await voit(antor, 'Sentinelle de pierre.');
-    await ouvrirEntree(antor, 'Garde du sceau');
-    assert.ok((await texte(antor)).includes('DEF 14, PV 30.'));
-    await antor.screenshot({ path: '/tmp/sys-e15-creature.png' });
-  });
-
-  test('Mira lit « Garde du sceau » et « Utilisé par 2 univers », sans aucun nom d’univers', opts, async () => {
-    await systeme(mira, idLandes);
-    await voit(mira, 'Garde du sceau');
-    const t = await texte(mira);
-    assert.ok(t.includes('utilisé par 2 univers'));
-    assert.ok(!t.includes(LAME) && !t.includes('Ébène'));
-    await antor.goto(`/univers/${idLame}`);
-  });
-
-  test('Léa, Joueuse, lit la créature depuis le bloc « Système de jeu » de la vue d’ensemble, sans Ajouter ni Modifier', opts, async () => {
-    await lea.goto(`/univers/${idLame}`);
-    await attendre(lea);
-    await voit(lea, 'CoF Mini');
-    await lea.getByRole('link', { name: rx('Ouvrir le système') }).first().click();
-    await attendre(lea);
-    await ongletVers(lea, 'Créatures');
-    await voit(lea, 'Garde du sceau');
-    await ouvrirEntree(lea, 'Garde du sceau');
-    assert.ok((await texte(lea)).includes('DEF 14, PV 30.'));
-    assert.equal(await lea.getByRole('button', { name: rx('^Ajouter') }).count(), 0);
-    assert.equal(await lea.getByRole('button', { name: rx('^Modifier') }).count(), 0);
-  });
-
-  test('ce que Léa lit après l’écriture d’Antor : « Intrus MJ », pas « Intrus »', opts, async () => {
-    const corps = { type: 'creature', nom: 'Intrus', contenu: '' };
-    // Léa's refused write is proved by src/routes/systemes-lot-outils.test.ts; here the GM's one is the seed of what she reads
-    await api(antor, 'POST', `/api/systemes/${await sidDe(antor, idLame)}/gabarits`, { ...corps, nom: 'Intrus MJ' });
-    await systeme(lea, idLame);
-    const t = await texte(lea);
-    assert.ok(!t.includes('Intrus\n') && t.includes('Intrus MJ'));
-    assert.ok(!/^Intrus$/m.test(t));
-  });
-
-  test('un nom déjà pris dans le même type : « Une créature porte déjà ce nom. » ; le même nom dans un autre type est permis', opts, async () => {
-    await systeme(antor, idLame);
-    await ajouterGabarit(antor, 'une créature', 'garde du SCEAU'.replace('SCEAU', 'sceau'));
-    await voit(antor, 'Une créature porte déjà ce nom.');
-    await antor.getByRole('button', { name: rxExact('Annuler') }).click();
-    await ongletVers(antor, 'Règles');
-    await ajouterGabarit(antor, 'une règle', 'Garde du sceau', 'Règle homonyme.');
-    await voit(antor, 'Règle homonyme.');
-  });
-
-  test('nom vide : « Erreur : le nom est obligatoire. » ; 121 caractères : « Erreur : 120 caractères au plus. » ; contenu de 100 001 : « Erreur : 100 000 caractères au plus. »', opts, async () => {
-    await ongletVers(antor, 'Objets');
-    await antor.getByRole('button', { name: rxExact('Ajouter un objet') }).click();
-    await antor.getByRole('button', { name: rxExact('Ajouter') }).click();
-    await voit(antor, 'Erreur : le nom est obligatoire.');
-    await antor.getByLabel(NOM).fill('o'.repeat(121));
-    await antor.getByRole('button', { name: rxExact('Ajouter') }).click();
-    await voit(antor, 'Erreur : 120 caractères au plus.');
-    await antor.getByLabel(NOM).fill('Clé de brume');
-    await antor.getByLabel('Contenu').fill('c'.repeat(100001));
-    await voit(antor, 'Erreur : 100 000 caractères au plus.');
-    assert.equal(await antor.getByRole('button', { name: rxExact('Ajouter') }).getAttribute('aria-disabled'), 'true');
-    await antor.getByLabel('Contenu').fill('c'.repeat(100000));
-    await antor.getByRole('button', { name: rxExact('Ajouter') }).click();
-    await attendre(antor);
-    await voit(antor, 'Clé de brume');
-  });
-
-  test('l’ordre des entrées est alphabétique sans tenir compte de la casse', opts, async () => {
-    for (const nom of ['bête', 'Zèbre', 'Aigle']) await api(antor, 'POST', `/api/systemes/${await sidDe(antor, idLame)}/gabarits`, { type: 'creature', nom, contenu: '' });
-    await systeme(antor, idLame);
-    const noms: string[] = await antor.locator('main').getByText(/^(Aigle|bête|Garde du sceau|Intrus MJ|Zèbre)$/).allTextContents();
-    assert.deepEqual(noms.map((s) => s.trim()), ['Aigle', 'bête', 'Garde du sceau', 'Intrus MJ', 'Zèbre']);
-  });
-
-  test('cent entrées à la fois puis « Charger la suite »', opts, async () => {
-    for (let i = 1; i <= 101; i++) {
-      const r = await api(antor, 'POST', `/api/systemes/${await sidDe(antor, idLame)}/gabarits`, { type: 'objet', nom: `Objet ${String(i).padStart(3, '0')}`, contenu: '' });
-      assert.equal(r.status, 201);
-    }
-    await systeme(antor, idLame, 'Objets');
-    const motif = /^Objet \d{3}$/;
-    // « Clé de brume » (added above) sorts before « Objet 001 » : it takes one of the 100 places.
-    assert.equal(await antor.getByText(motif).count(), 99);
-    await antor.getByRole('button', { name: rxExact('Charger la suite') }).click();
-    await attendre(antor);
-    assert.equal(await antor.getByText(motif).count(), 101);
-    assert.equal(await antor.getByRole('button', { name: rxExact('Charger la suite') }).count(), 0);
-  });
-
-  test('modifier une entrée : le nouveau contenu est lu par Mira ; deux onglets, le second voit « Cette entrée a changé… » et garde son texte', opts, async () => {
-    const un = await antor.context().newPage();
-    const deux = await antor.context().newPage();
-    for (const p of [un, deux]) {
-      p.setDefaultTimeout(8000);
-      await systeme(p, idLame);
-      await ouvrirEntree(p, 'Aigle');
-      await p.getByRole('button', { name: rxExact('Modifier') }).click();
-    }
-    await un.getByLabel('Contenu').fill('Rapace des cimes.');
-    await un.getByRole('button', { name: rxExact('Enregistrer') }).click();
-    await attendre(un);
-    await voit(un, 'Rapace des cimes.');
-    await deux.getByLabel('Contenu').fill('Mon texte concurrent.');
-    await deux.getByRole('button', { name: rxExact('Enregistrer') }).click();
-    await voit(deux, "Cette entrée a changé depuis que vous l'avez ouverte.");
-    assert.equal(await deux.getByLabel('Contenu').inputValue(), 'Mon texte concurrent.');
-    await deux.getByRole('button', { name: rxExact('Recharger') }).waitFor();
-    await systeme(mira, idLandes);
-    await ouvrirEntree(mira, 'Aigle');
-    assert.ok((await texte(mira)).includes('Rapace des cimes.'));
-    assert.ok(!(await texte(mira)).includes('Mon texte concurrent.'));
-    await un.close();
-    await deux.close();
-  });
-});
-
 describe('P-8 univers non rattaché, détachement', opts, () => {
   test('Admin crée « Brume », non rattaché : « Page introuvable. » sur le système, pas de bloc sur la vue d’ensemble, aucun nom au catalogue d’un autre', opts, async () => {
     idBrume = await creerUnivers(admin, 'Brume');
@@ -411,7 +267,7 @@ describe('P-8 univers non rattaché, détachement', opts, () => {
     await rattacher(admin, 'CoF Mini');
     await voit(admin, 'Utilisé par 3 univers');
     await systeme(admin, idBrume);
-    await voit(admin, 'Garde du sceau');
+    await voit(admin, 'Types de fiche');
     await parametres(admin, idBrume);
     await rattacher(admin, 'Aucun système');
     await voit(admin, "Cet univers n'est rattaché à aucun système de jeu.");
@@ -420,13 +276,13 @@ describe('P-8 univers non rattaché, détachement', opts, () => {
     await attendre(admin);
     assert.ok(!/Ouvrir le système/.test(await texte(admin)));
     await systeme(mira, idLandes);
-    await voit(mira, 'Garde du sceau');
+    await voit(mira, 'Types de fiche');
     await voit(mira, 'utilisé par 2 univers');
   });
 
   test('un univers détaché pendant que le joueur lit : au prochain chargement la page du joueur dit « Page introuvable. »', opts, async () => {
     await systeme(lea, idLame);
-    await voit(lea, 'Garde du sceau');
+    await voit(lea, 'Types de fiche');
     await parametres(antor, idLame);
     await rattacher(antor, 'Aucun système');
     await voit(antor, "Cet univers n'est rattaché à aucun système de jeu.");
@@ -443,7 +299,7 @@ describe('P-8 univers non rattaché, détachement', opts, () => {
     assert.ok((await optionsCatalogue(antor)).includes('CoF Mini'), 'the system stays in the catalogue');
     await rattacher(antor, 'CoF Mini');
     await systeme(antor, idLame);
-    await voit(antor, 'Garde du sceau');
+    await voit(antor, 'Types de fiche');
   });
 });
 
@@ -471,7 +327,7 @@ describe('B-29 états de E-14 et E-15', opts, () => {
   test('erreur : « Impossible de charger cette page. » (E-14) et « Impossible de charger ce système. » (E-15), « Réessayer » rend le contenu', opts, async () => {
     const cas: [string, RegExp, string, string][] = [
       [`/univers/${idLame}/parametres`, /\/api\/(systemes$|univers\/\d+$)/, 'Impossible de charger cette page.', 'Utilisé par'],
-      [`/univers/${idLame}/systeme`, /\/api\/(univers\/\d+$|systemes\/\d+)/, 'Impossible de charger ce système.', 'Garde du sceau'],
+      [`/univers/${idLame}/systeme`, /\/api\/(univers\/\d+$|systemes\/\d+)/, 'Impossible de charger ce système.', 'Types de fiche'],
     ];
     for (const [url, motif, message, apres] of cas) {
       const page = await antor.context().newPage();
@@ -495,14 +351,6 @@ describe('B-29 états de E-14 et E-15', opts, () => {
     await page.getByRole('button', { name: rxExact('Créer et rattacher') }).click();
     await voit(page, "L'action n'a pas abouti. Réessayez.");
     assert.equal(await page.getByLabel('Nom du système').inputValue(), 'Système raté');
-    await systeme(page, idLame);
-    await page.route(/\/api\/systemes\/\d+\/gabarits$/, (route: Any) => route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"boom"}' }));
-    await page.getByRole('button', { name: rxExact('Ajouter une créature') }).click();
-    await page.getByLabel(NOM).fill('Échec');
-    await page.getByLabel('Contenu').fill('Texte gardé');
-    await page.getByRole('button', { name: rxExact('Ajouter') }).click();
-    await voit(page, "L'action n'a pas abouti. Réessayez.");
-    assert.equal(await page.getByLabel('Contenu').inputValue(), 'Texte gardé');
     await page.close();
   });
 
@@ -519,18 +367,6 @@ describe('B-29 états de E-14 et E-15', opts, () => {
     assert.equal(await page.getByLabel('Nom du système').inputValue(), 'Hors ligne');
     await page.context().setOffline(false);
     await page.close();
-    const p2 = await antor.context().newPage();
-    p2.setDefaultTimeout(8000);
-    await systeme(p2, idLame);
-    await p2.getByRole('button', { name: rxExact('Ajouter une créature') }).click();
-    await p2.getByLabel(NOM).fill('Saisie en cours');
-    await p2.context().setOffline(true);
-    await voit(p2, BANDEAU_PERDU);
-    assert.equal(await p2.getByRole('button', { name: rxExact('Ajouter') }).isDisabled(), true);
-    assert.equal(await p2.getByLabel(NOM).inputValue(), 'Saisie en cours');
-    assert.ok((await texte(p2)).includes('Garde du sceau'));
-    await p2.context().setOffline(false);
-    await p2.close();
   });
 
   test('refus : rôle retiré pendant que la page est ouverte, « Vous ne pouvez plus modifier ces paramètres. » à l’écriture suivante', opts, async () => {

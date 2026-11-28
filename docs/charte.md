@@ -296,7 +296,7 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   `--accent-fond` halo. A section's textarea keeps the reading typography (Newsreader
   18 px) on `--surface`, bordered by `--accent` with a halo, footer « 313 / 100 000 », keyboard help,
   « Annuler », « Enregistrer ». Checkbox: 16 px, outline `--bord-champ`; checked in `--mj`
-  for « Secrète (MJ seul) », in `--accent` for the search filter « sous-lieux compris ».
+  for « Secrète (MJ seul) », in `--accent` for the search filter « sous-lieux compris » and for the token permissions of E-23. `Case` takes an optional `detail` (kanevas-jeton-unique): a 12 px `--texte-3` line under the 13 px label, inside the `<label>` (clickable, part of the accessible name); without it the output is unchanged.
 - C: a visible label linked to the field; the error appears beneath in `--danger` with
   « Erreur : » before it, linked by `aria-describedby`; input is never lost on failure.
 
@@ -376,6 +376,10 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
 - C: `role="status"`, not dismissible; exact text in `docs/ecrans.md`. Lost connection: every
   write action is disabled (`aria-disabled`, 45 %).
 
+**System element banner** (`BandeauElement`, `frontend/src/ecrans/fiche/bandeau-element.tsx`, E-9, `kanevas-systemes-jeu`; guardian verdict).
+- V: a strip under the sheet header, before the first section, in the page and not sticky (the `Banner` above is an application state, full width under the top bar). `--accent-fond` background, `--accent-texte` text 13 px, `--bord` border on four sides, `Eye` icon 14 px (`lucide-react`), no tint of meaning: the word « lecture seule » carries the state. The system's name is a link to E-15 for who reads it. An actions zone on the right stays empty in `elements`; `surcharge` puts « Personnaliser pour cet univers » (small neutral `Button`) and the « Personnalisé » pill (`accent`) there, in components of its own.
+- C: `role="status"`, text « Élément de <système> — lecture seule », not dismissible; actions follow the text in tab order; under 760 px the strip stacks under the text; no animation. Absent in the system's own space for a GM of the system.
+
 **Assistant panel** (E-12, `kanevas-assistant-membre`).
 - V: an **inverted** floating « Demander à Kanevas » button (`--texte` on `--fond`, see “Deliberate
   deviations”), pill radius, `sparkles` icon, `--ombre-flottant`, bottom right; panel on
@@ -443,7 +447,8 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   to its sheet, at least 24 px high. Only adventure fields returned by the server appear.
   A deleted adventure is plain text for the GM; a hidden one leaves no placeholder or
   separator. Dates use a semantic `time` element. Without the adventure option (E-9 block),
-  the same row keeps only its title, author and date.
+  the same row keeps only its title, author and date; the block of an adventure's sheet turns the option on for the
+  rows of a scenario only (`cr.campagneId` differs from the sheet's id), the adventure's own rows staying without a pill.
 
 **Adventure sheet blocks** (`fiche/blocs-fiche/`, E-9, AD-124).
 - Visual: the compact panels of `e09-aventure.html`, `--surface` and `--bord`,
@@ -539,6 +544,13 @@ Existing, taken as they are: `Interrupteur` for « Suivre le MJ » (floating pil
   line, lines separated by `--bord`; name 14 px `--texte`; the choice wraps under the name on a phone. C: one line = one
   radiogroup labelled by the universe name; a universe the account left keeps its line, followed by « (plus membre) » in `--texte-3`; a
   refusal (« Choisissez au moins un univers. ») in `--danger`, tied to the list by `aria-describedby`.
+- **`kanevas-systemes-jeu-api` — variants of the two above, no new component, no token (verdict of the design-system guardian, 2026-11-22).** *Liste d'accès*, used for the
+  block « Systèmes de jeu » of E-23: (1) the list takes **its own set of options per call** (« — » / « Lecture » / « Écriture » for a system, where `TOUS` is hard-wired to
+  « Lecture + écriture »); (2) a line carries `ecritureOfferte` (the third choice exists on that line only: two choices on a line where the account is a reader); (3) the suffix of a
+  line the account left is a prop (`libelleAbsent`: « (plus lecteur) » for a system, « (plus membre) » for a universe); (4) the role pill is passed by the caller (`Pastille`
+  `mj` / `table` with « MJ du système » / « Lecteur »; `PastilleRole` stays « MJ » / « Joueur »); (5) a refusal can be tied to **one line** (message under the line, `aria-describedby` on that
+  line's group) as well as to the whole list. Loading: two lines of the `.squelette` class; load error: the box's `.alerte` with a « Réessayer » `Bouton`. *Ligne de jeton*: the
+  accesses may be two lines, the second (« Systèmes : … ») in `--texte-3` 13 px. `liste-acces.tsx`, `choix-segmente.tsx`, `ligne-jeton.tsx` and `jetons.css` are the files concerned.
 - **Ligne de jeton** (`frontend/src/ui/ligne-jeton.tsx`, with `ListeJetons`; named object + meta + actions revealed on hover; class `ligne-jeton`, **not** `.jeton`, which is the relation-target pill
   of `ui.css`). V: frame `--rayon-panneau`, inner `--bord` line; line 60 px min, `--rayon-champ`, hover and focus-within `--surface-2`; icon disc
   28 px `--surface-2` (inactive: transparent, `--texte-3`); name 14 px 500 on one line, cut with a tooltip (inactive `--texte-2`); accesses 13 px
@@ -553,6 +565,7 @@ Existing, taken as they are: `Interrupteur` for « Suivre le MJ » (floating pil
   `danger`, « Expiré » `neutre`. Contrast of `--danger` on `--danger-fond` and of `--accent-texte` on `--accent-fond` in a 22 px pill measured in both themes (`contraste.py`, § 5).
 - **Fenêtre** (`Fenetre` in `frontend/src/ui/composants.tsx`) gains a *large* variant (560 px, scrolling inside itself) and a *locked* property (neither Esc nor the veil closes it while a value is
   shown — E-23).
+- **Customisation mark** (`kanevas-systemes-jeu-surcharge`, `MarquePersonnalise` under `frontend/src/ecrans/fiche/`, no new component of `ui/`): the `Pastille` of *sens* `accent` « Personnalisé » with a 12 px Lucide icon beside the sheet's title; the confirmations of a return or a detachment are `BoiteDialogue` danger with the 36 px icon pastille and a body that scrolls under 760 px; no new token.
 
 ## 5. Thresholds
 

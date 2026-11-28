@@ -13,16 +13,19 @@ export function ChoixSegmente<T extends string>({
   onChange,
   petit,
   disabled,
+  decritPar,
 }: {
   /** Visible label above the choice. */
   legende?: string;
   /** Accessible name when there is no visible label. */
   etiquette?: string;
-  options: readonly { valeur: T; libelle: string }[];
+  options: readonly { valeur: T; libelle: string; /** This segment cannot be picked (it stays shown, checked if it is the value). */ desactive?: boolean }[];
   valeur: T;
   onChange: (valeur: T) => void;
   petit?: boolean;
   disabled?: boolean;
+  /** Id of the text that qualifies the group (a refusal under its line). */
+  decritPar?: string;
 }) {
   const racine = useRef<HTMLDivElement>(null);
   const idLegende = useId();
@@ -34,11 +37,20 @@ export function ChoixSegmente<T extends string>({
   }
   function touche(ev: React.KeyboardEvent) {
     if (disabled) return;
+    const n = options.length;
+    // A disabled segment is skipped over.
+    const pas = (depuis: number, sens: 1 | -1): number | null => {
+      for (let k = 1; k <= n; k++) {
+        const i = (((depuis + sens * k) % n) + n) % n;
+        if (!options[i]!.desactive) return i;
+      }
+      return null;
+    };
     let cible: number | null = null;
-    if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') cible = (courant + 1) % options.length;
-    else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') cible = (courant - 1 + options.length) % options.length;
-    else if (ev.key === 'Home') cible = 0;
-    else if (ev.key === 'End') cible = options.length - 1;
+    if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') cible = pas(courant, 1);
+    else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') cible = pas(courant, -1);
+    else if (ev.key === 'Home') cible = options[0]!.desactive ? pas(0, 1) : 0;
+    else if (ev.key === 'End') cible = options[n - 1]!.desactive ? pas(n - 1, -1) : n - 1;
     if (cible === null) return;
     ev.preventDefault();
     aller(cible);
@@ -57,6 +69,7 @@ export function ChoixSegmente<T extends string>({
         role="radiogroup"
         aria-labelledby={legende ? idLegende : undefined}
         aria-label={legende ? undefined : etiquette}
+        aria-describedby={decritPar}
         onKeyDown={touche}
       >
         {options.map((o, i) => (
@@ -66,7 +79,7 @@ export function ChoixSegmente<T extends string>({
             role="radio"
             aria-checked={o.valeur === valeur}
             tabIndex={i === courant ? 0 : -1}
-            disabled={disabled}
+            disabled={disabled || o.desactive}
             onClick={() => onChange(o.valeur)}
           >
             {o.libelle}

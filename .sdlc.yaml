@@ -11,12 +11,12 @@ deploiement:
 tests:
   installation: npm ci && npm run build:wasm
   fichiers: node scripts/rejouer-tests.mjs --fichiers {tests}
-  outillage: [package.json, scripts/]
-  commande: npm ci && npm run tests:attestes
-  local: npm ci && npm run tests:local
-  ecrans: npm run tests:ecrans -- {base} --installe
+  outillage: [scripts/tests-attestes.mjs, scripts/niveaux-tests.mjs, scripts/rejouer-tests.mjs, scripts/playwright.mjs]
+  commande: npm ci && node scripts/tests-attestes.mjs
+  local: npm ci && node scripts/tests-attestes.mjs --local
+  ecrans: node scripts/tests-attestes.mjs --ecrans {base} --installe
   ecrans_liste: npm ci --ignore-scripts --loglevel=error >/dev/null && node scripts/niveaux-tests.mjs --liste ecrans {base}
-  fiche: npm ci && npm run tests:fiche -- {base}
+  fiche: npm ci && node scripts/tests-attestes.mjs --fiche {base}
   rejouer: node scripts/rejouer-tests.mjs {tests} --installe
   rapport: resultats.tap
   format: tap

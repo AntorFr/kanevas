@@ -296,6 +296,7 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   in « lecture + écriture » writes only where that player may write. A token restricted to tools
   (`kanevas-outils`, B-65) keeps that restriction, set on E-23: it writes those tools' data and no
   content, whatever its level. *(P-25)*
+- **B-jeton-1** *(kanevas-jeton-unique)* — A token's permissions **add up**: when creating it, its owner chooses « Contenu » and/or any offerable tools (at least one), so that **one key** can import the galaxy and write sheets, or several keys split the work — his choice. The accesses (universes, level) are shared by all its permissions and the account's role decides at each use, as before; permissions are fixed at creation; tokens created before keep their value, scope and behaviour. *(P-jeton-unique-1, E-23, E-5)*
 - **B-95** — The **instance admin** sees every token of the instance on E-5 (name, owner, accesses,
   last use), **revokes** any of them and **changes its accesses**; the owner sees on E-23 « Modifié par
   l'admin » or « Révoqué par l'admin ». « Tous mes univers » takes **exceptions** — a universe at another
@@ -427,6 +428,21 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
 - **B-21** — When a GM asks their assistant (E-12) to update the world from a report,
   the assistant proposes new section content without writing anything; the GM sees the current and
   proposed content, then applies or abandons it in one action. Nothing applies itself. *(P-5)*
+
+- **B-cr-aventure-1** — *(`kanevas-cr-aventure`)* The GM **changes the adventure of an existing session
+  report**, from the report's sheet (E-9), among the adventures of the universe, with the rules of its creation
+  (B-19: an adventure he reads, of the same universe). The sheet keeps its id, its sections, its relations and the links that
+  aim at it; nothing is deleted and recreated. A member who is not a GM does not see the gesture. *(P-4, step 3)*
+- **B-cr-aventure-2** — *(`kanevas-cr-aventure`)* The **import** writes the adventure (`campagne`, an origin key)
+  of a report that already exists, like the other header fields (B-47) and under the header fingerprint
+  (AD-139); the batch counts it as a written sheet; it no longer answers « campagne non modifiable, ignorée ». A key that is not an
+  adventure of the universe stays refused (« campagne inconnue »). *(P-10)*
+- **B-cr-aventure-3** — *(`kanevas-cr-aventure`)* The **export** gives the new adventure of a moved report, with no
+  work of its own once B-cr-aventure-1 and 2 are delivered (`GET /export`, AD-export-1, gives each sheet in its read form, at the instant of the snapshot): verified, not built. *(P-10)*
+- **B-cr-aventure-4** — *(`kanevas-cr-aventure`)* The block « Comptes-rendus » of an **adventure's sheet** (B-60) also lists
+  the reports of its scenarios (all its descendants of type adventure reached through an unbroken chain of adventures by parent, at any depth, that the reader reads; an adventure filed under a sheet of another type is left out; an unread scenario cuts off what is under it), each with the **name of its own scenario**;
+  the sheet of a scenario lists its own, as before. Without it, filing a report under its scenario would make it disappear from its
+  campaign's page. *(P-4)*
 
 ### Maps
 - **B-22** — A GM creates an illustrated map (a background image dropped onto the map, freely
@@ -751,6 +767,7 @@ the frame says « Image indisponible. » and keeps « Remplacer » and « Retire
    publish it — it opens as a **sheet** (E-9) of type session report, which names the adventure.
 3. They edit it later; others read it from the adventure or the **report list**
    (E-13).
+   *(`kanevas-cr-aventure`)* Maëlle, the GM, finds a report filed under the whole campaign instead of its scenario: she opens it, « Changer d'aventure… » (E-9), picks the scenario and confirms; the « Campagne » line names it at once and the report keeps its address, its relations and the links that aim at it. If the write fails, the dialog says so and keeps her choice; if the scenario was deleted meanwhile, it says « Introuvable. » and offers the list again. Under a campaign, the reports of all its scenarios, however deep, show on its page with the scenario's name.
 
 ### P-5 — Update the world after the game (GM)
 1. They read reports (E-13 → E-9).
@@ -829,7 +846,10 @@ He first wants a disposable trial, then the real collection, without duplicates 
    **campaigns** first, then sheets, parents first (origin key, type, title, parent, aliases,
    labels, Markdown sections with their `[[…]]` links, GM blocks, images,
    audience) — session reports with their campaign key —, then relations, and closes the batch
-   (the order from AD-104).
+   (the order from AD-104). *(`kanevas-cr-aventure`)* A report already in Kanevas whose `campagne` key now names another adventure
+   (a scenario, say) is moved by the replay: the sheet is counted as written, its id, relations and links stay, and no
+   « campagne non modifiable » warning appears; a key that is not an adventure of the universe is a counted refusal « campagne inconnue ».
+   The next export gives the new adventure.
    Files, images and documents, first go into the **media library** (E-19), each with its
    permissions — « Réservée au MJ » for those Kanka only displays in GM content, « Visible des
    joueurs » otherwise —, including the 385 MB unused by any sheet; sheets reference them.
@@ -1223,6 +1243,12 @@ From the private Éneria repository, a script reads `atlas/systemes/*.yaml`, `sy
 (the galaxy already created on Éneria's seed by the conversion of P-20); the batch report counts created, unchanged and refused elements (bodies and map elements alike, each by its key). *Moment fort:* the GM opens the galaxy and a system of
 the lore and finds Éneria's bodies at their places with their illustrations. *Failure path:* a refused element is reported with its path in the file and nothing is half written (as P-20).
 
+### P-jeton-unique-1 — One key for the galaxy and the sheets (Monsieur, GM, Éneria's import)
+1. On « Mes jetons d'API » (E-23) Monsieur chooses « Créer un jeton », names it « Import Éneria », and in « Ce que le jeton peut faire » leaves « Contenu » checked and checks « Galaxie ». He picks « Une liste d'univers » (Éneria, lecture + écriture) and creates it; the value is shown once.
+2. His script uses that one key: it imports the galaxy (`PUT …/outils/swn/galaxie/…`, batch opened with `?outil=swn/galaxie`) and writes sheets (`PUT …/fiches/<cle>`, batch without `?outil=`). No second key, no second variable in the script.
+3. *Alternative:* he prefers one key per script (a content key for the lore, a tool key for the galaxy): the same form, one box each. Nothing forces either choice.
+4. *Failure path:* nothing checked → « Cochez au moins une permission. » and nothing is created. A key without « Galaxie » on the galaxy route: 401 `jeton_invalide`, as today. Tokens made before this slice work as they did.
+
 ### P-22 — Bring Kanevas up to date from the Éneria base (Monsieur, GM, a Saturday, Mac)
 1. The script opens a batch (`POST /lots`), then reads the lists of sheets, files and maps (B-105,
    B-90) and compares each fingerprint with the one it kept at its last run. A file sent again
@@ -1543,7 +1569,7 @@ is never deduced from a role in a universe, the admin grants it explicitly.
 - **B-116** — Within a universe, an element and its customisation are **one** entry: lists, search, links and the
   sheet show the customised one, marked as such; the system's element is never listed twice. *(P-27)*
 - **B-117** — Search (E-17) and lists carry a **pictogram** on every element that comes from a system, and a filter
-  « Hide the system's elements » (off by default); a customised element counts as the universe's own. *(P-27)*
+  « Masquer les éléments du système » (off by default); a customised element counts as the universe's own. *(P-27)*
 - **B-118** — The import API, the MCP door and the internal assistant **read and write a system's elements**, within the
   account's right on the system (B-114) and, for a token, its level on that system; a player's or a foreign GM's token or
   assistant reads, never writes. The API addresses the system on its own (`/systemes/<id>`); the MCP door and the assistant
@@ -1553,32 +1579,57 @@ is never deduced from a role in a universe, the admin grants it explicitly.
   reader of an attached universe reads only those the system marks readable by players. *(P-27)*
 
 - **B-120** — Deleting a system's element, detaching a universe from its system or moving it to another one, **keeps every customisation**: the copy
-  becomes an ordinary sheet of its universe (no longer marked « customised », no pictogram, listed on its own); nothing is deleted
+  becomes an ordinary sheet of its universe (no longer marked « Personnalisé », no pictogram, listed on its own); nothing is deleted
   in a universe by a gesture on a system. *(P-27)*
 
 ### P-27 — One pistol, four universes (Antor, GM of four universes on Stars Without Number; the admin once)
-1. The admin opens the system (E-15), panel « GMs of the system », and adds Antor (B-114). — E-15.
-2. Antor opens the system, adds « Laser pistol » (type object) with its sections. — E-15, then E-9.
-3. In universe 1, he searches « pistol »: one hit with the system pictogram; he opens it, read-only, under a banner « Element of
-   <system> ». — E-17, E-9.
-4. He presses « Customise for this universe », changes the damage, saves: universe 1 now lists his version marked
-   « customised »; universes 2 to 4 still show the original. — E-9.
-5. In universe 2, he turns on « Hide the system's elements »: the pistol disappears from the search, his own sheets stay. — E-17.
-6. Back in universe 1 he presses « Go back to the system's element »: the copy goes after a confirmation. — E-9.
-7. Later Antor deletes « Laser pistol » from the system (confirmation naming the universes that customised it): universe 1's copy stays,
-   now an ordinary sheet of universe 1, no longer marked « customised » (B-120). — E-9, E-15.
+1. The admin opens « Administration » (E-5), then the system in its list, then the tab « MJ du système » of E-15, and adds Antor (B-114). — E-5, E-15.
+2. Antor opens « Systèmes de jeu » (E-16: the system is listed since he is its GM, even with no universe), opens the system and presses « Nouvel élément » (E-15 form: name, type), then opens « Laser pistol » (type object) and writes its sections. — E-15, then E-9.
+3. In universe 1, he searches « pistol »: one hit with the system pictogram; he opens it, read-only, under a banner « Élément de
+   <système> ». — E-17, E-9. *(Slice split: `kanevas-systemes-jeu-elements` carries steps 1, 2, 7 and 9 and, for step 3, the hit in the universe's list and the reading under the banner, without the pictogram; `recherche` adds the pictogram and the filter, `surcharge` carries steps 4 to 6 and 8, and the confirmation naming the universes in step 7.)*
+4. He presses « Personnaliser pour cet univers », changes the damage, saves: universe 1 now lists his version marked
+   « Personnalisé »; universes 2 to 4 still show the original. — E-9.
+5. In universe 2, he turns on « Masquer les éléments du système »: the pistol disappears from the search, his own sheets stay. — E-17.
+6. Back in universe 1 he presses « Revenir à l'élément du système »: the copy goes after a confirmation. — E-9.
+7. Later Antor deletes « Laser pistol » from the system (a window giving the **number** of universes that customised it; the confirmation naming the account's own universes comes with slice `surcharge`): universe 1's copy stays,
+   now an ordinary sheet of universe 1, no longer marked « Personnalisé » (B-120). — E-9, E-15.
 8. Antor detaches universe 4 from the system in its settings (confirmation: « the customised sheets stay in the universe »), or moves it to
    another system: its copies stay as ordinary sheets (B-120). — E-14.
-9. The admin removes Antor from the GMs of the system (« Remove », B-114): nobody can edit the system any more, even if he was the last. — E-15.
+9. The admin removes Antor from the GMs of the system (« Retirer », B-114): nobody can edit the system any more, even if he was the last. — E-15.
 Léa (player of universe 3) reads the same original, only its player-readable sections, and sees no button to edit.
+*Failure paths:* the admin types an unknown identifier or an account already GM → the message below the field, nothing added; Antor opens an element another GM deleted meanwhile → « Page introuvable. » when he was reading, « Cet élément n'existe plus. » when he was editing, back to the list; his GM right is removed while he edits → « Vous ne pouvez plus modifier ce système. » on the next write, his text kept. *Moment of strength (slice `elements`):* step 3, the element read under its banner from a universe's list, after step 2 — the same pistol, found in four universes, edited once.
 
 ### P-28 — A key reads and writes a system (Monsieur, with his agent)
-He creates a token (« Mes jetons d'API », E-23 of `kanevas-synchro`), gives it level « write » on the system (choice described in E-23's « Systems » block), and the agent
+He creates a token (« Mes jetons d'API », E-23 of `kanevas-synchro`), gives it « Écriture » on the system (choice described in E-23's « Systèmes de jeu » block), and the agent
 lists and writes elements at `/api/v1/systemes/<id>/…`; the same token still opens his universes. — token screen, API.
+On the screen, the block shows only the systems the account reads, « Écriture » only where he is a GM of the system (Teo, who reads none, sees no block; Léa, a player of « Lame d'Ébène » attached to the system, sees « Lecture » only); when the list fails to load, the form stays usable and « Modifier les accès » touches no row; the admin opening Antor's token on E-5 sees Antor's systems, not his own. — token screen (E-23 « Mes jetons d'API », E-5 administration).
 His agent, connected to the MCP door of one of his universes with that token, lists and edits the same elements with the `systeme_*`
 tools; the assistant of the universe does the same for a GM of the system (a mere GM of the universe reads the system's elements only, and customises them for his universe with `personnaliser_fiche` / `revenir_au_systeme`). — MCP door, assistant.
+
+*The steps of the key (`kanevas-systemes-jeu-api`, the agent half is `kanevas-systemes-jeu-mcp-assistant`):*
+1. In « Mes jetons d'API » (E-23) Antor presses « Créer un jeton », names it, keeps « Tous mes univers », and in the block « Systèmes de jeu » sets « Stars Without Number »
+   (where the admin made him a GM, P-27 step 1) to « Écriture »; the value is shown once. — E-23.
+2. The agent calls `GET /api/v1/systemes/<id>/fiches` (the system's elements, all sections, because the account is a GM of the system), `POST …/fiches`
+   (« Pistolet laser », type `objet`) and `PUT …/fiches/<fid>/sections/<clé>` for its text; each answer carries the fingerprint of the next write (AD-140). — API.
+3. The same token reads, in universe 1, `GET /api/v1/univers/<clé>/fiches/id/<fid>` of that element: the player-readable sections only, with `origine`
+   and the system (the universe's door, whatever the token's rows on systems). — API.
+4. Later Antor opens « Modifier les accès » of the token and lowers the system to « Lecture »: the agent's next write answers 403 `lecture_seule`, its reads still work. If instead
+   the admin removes Antor from the GMs of the system (B-114), the token keeps « Écriture » on the list but the write answers 403 (the account's right wins, AD-144); the reads stay
+   if he still belongs to an attached universe, else the whole address answers 404. — E-23, API.
+   *Where the screen fails:* the admin, in E-5, opens Antor's token and sees Antor's systems, not his own, and changes one line the same way — E-5. When the list of systems does not load (creation or change), the block says « Impossible de charger les systèmes. » with « Réessayer », the rest of the form stays usable, and a creation made anyway gives a token without access to a system — E-23. If Antor was removed from the GMs between opening the box and saving, the save is refused with « Vous n'êtes plus MJ de ce système. » under the line, the box reloads the real choices and keeps what he typed — E-23 (400).
+5. A script whose token has no row on the system gets 404 on `/api/v1/systemes/<id>/…`, like an unknown system; it still reads the element from the universe's door at player level. — API.
 
 **Out of scope of `kanevas-systemes-jeu`:** importing a rules reference; typed relations between a universe's sheet and a
 system element (plain `[[…]]` links are resolved); propagating a later change of the system's element into its
 customisations (the copy is independent, and it outlives its original, B-120; a notice « the system's element changed since » is a later idea); deleting a system;
 several systems per universe; MCP tools or assistant tools beyond the sheet gestures of B-118 (types and tools of a system, catalogue, members).
+
+### `kanevas-systemes-jeu-surcharge` — the steps of P-27 it builds (2026-11-22)
+
+Steps 4, 6, 7 and 8 of P-27 (the rest belongs to `elements`, `recherche`). What the journey adds to them:
+
+- **Step 4** — pressing « Personnaliser pour cet univers » creates the copy and opens it in the same screen, with the mark « Personnalisé » and the editors a GM has on any sheet. Pressing it twice (two tabs, a second GM) opens the same copy, no second one (201 then 200). In the list, the search and every `[[…]]` of the universe, the entry is the copy; the system's element is never listed beside it. A link written before the customisation to the element's identifier opens the copy.
+- **Step 6** — « Revenir à l'élément du système » asks for a confirmation (« La version de cet univers … sera supprimée ») and deletes the copy: the entry is the system's element again, read-only, the line of the sheet saying so (no banner). The links written to the **copy's** identifier while it existed read as those of a deleted sheet, like any deleted sheet (AD-116); the confirmation says so.
+- **Step 7** — a GM of the system deletes the element: the window says how many universes hold a copy, names those the account belongs to (never the others), and says the copies stay; afterwards each copy is an ordinary sheet, its history reads « devenue fiche ordinaire », and the universe loses nothing.
+- **Step 8** — detaching the universe from its system, or choosing another system for it, asks for a confirmation **when the universe holds copies** (it states how many); with none, the gesture is the one of today, no window. Attaching an unattached universe to a system never touches a copy (a copy only exists under a system).
+- **Failure paths.** A player: no button, and 403 by the route. A GM in player mode: no button, 403 `mode_joueur` by the route. The original deleted while the GM was reading it: « Page introuvable. » on the next read; pressing « Personnaliser » on an element deleted meanwhile: « Cet élément n'existe plus. » (nothing created). The copy already gone (another GM reverted): « Cette fiche n'est plus personnalisée. » and the screen shows the system's element. The E-14 and E-15 windows fail as their screens say (unreadable counts: nothing is sent; right lost: « Vous ne pouvez plus modifier cet univers. »).

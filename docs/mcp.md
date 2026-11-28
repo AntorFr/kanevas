@@ -7,7 +7,7 @@ server, with an API token (E-23). Decisions: AD-145 and `AD-mcp-1` to `AD-mcp-6`
 
 - `POST /mcp` and `POST /mcp/:univers` (`:univers` is the universe **key**; its numeric id is accepted too, as everywhere). Streamable HTTP, stateless, JSON
   answers; `GET` and `DELETE` answer 405 (after the guard: 401 without a valid token). A client sends `Accept: application/json, text/event-stream`, else the SDK answers « Not Acceptable ». A request with an `Origin` header is refused 403; the body is capped at 1 MiB.
-- `Authorization: Bearer kvs_…`. Unknown, revoked or expired token (or a tool-scoped token): 401 `jeton_invalide`.
+- `Authorization: Bearer kvs_…`. Unknown, revoked or expired token (or a tool-only token, one without the `contenu` permission, AD-jeton-unique-1): 401 `jeton_invalide`.
   A universe the token does not reach, or where the account has no role: 404, like an unknown one. The session cookie
   is ignored.
 - Bare `/mcp` offers `lister_univers` only: the universes the token reaches, with the address to configure

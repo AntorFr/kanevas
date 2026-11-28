@@ -473,13 +473,20 @@ export function SqueletteFiche({ texte = 'Chargement de la fiche…', cadre }: {
 /** Checkbox, 16 px; `mj` tints it amber (the one box of the product that says « Secrète (MJ seul) »). */
 export function Case({
   etiquette,
+  detail,
   mj,
   ...reste
-}: { etiquette: string; mj?: boolean } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'>) {
+}: { etiquette: string; detail?: string; mj?: boolean } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'>) {
   return (
-    <label className={`case${mj ? ' mj' : ''}`}>
+    <label className={`case${detail ? ' avec-detail' : ''}${mj ? ' mj' : ''}`}>
       <input type="checkbox" {...reste} />
-      {etiquette}
+      {detail ? (
+        <span>
+          {etiquette} <small>{detail}</small>
+        </span>
+      ) : (
+        etiquette
+      )}
     </label>
   );
 }

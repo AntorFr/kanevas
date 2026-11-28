@@ -1,12 +1,16 @@
-import { BookOpen, Check, ChevronDown, Dices, Eye, Pencil, Plus } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { Dices, Eye } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
-import { useLimiteContenu, useTitreAriane } from '../cadre-contexte';
+import { useMoi, useTitreAriane } from '../cadre-contexte';
 import type { SystemeCompte } from '../types';
 import type { Ecran } from '../registre';
-import { Bouton, Champ, ChargementListe, EditeurMarkdown, ErreurChargement, Markdown, PageIntrouvable, Pastille, VideIcone, depasse, messageTropLong, refusServeur, useToasts } from '../ui';
+import { ChargementListe, ErreurChargement, PageIntrouvable, Pastille } from '../ui';
+import { GROUPE_ADMIN } from '../items';
+import { OngletMJSysteme } from './systeme/onglet-mj';
+import { OngletElements, type TypeSysteme } from './systeme/onglet-elements';
+import type { Fiche } from './fiche/types';
 import { PucesUnivers } from './systeme/puces';
 import { OngletTypesSysteme } from './types-reglage/onglet-systeme';
 import { PanneauOutils } from './outils/panneau';
@@ -16,149 +20,33 @@ import './liste.css';
 import './reglages.css';
 import './cartes.css';
 
-type Type = 'regle' | 'creature' | 'objet';
-
-interface Gabarit {
-  id: number;
-  type: Type;
-  nom: string;
-  /** Markdown source: only for who may write the templates (AD-113). */
-  contenu?: string;
-  html: string;
-  version: number;
-}
-
 interface Page extends SystemeCompte {
   types: { type: string; active: boolean }[];
-  gabarits: Gabarit[];
-  suivant: string | null;
+  mots: Omit<TypeSysteme, 'active'>[];
+  /** The elements, for who reads them; absent for the instance admin who reads nothing of the system. */
+  fiches?: Fiche[];
+  suivant?: string | null;
 }
 
-const NOM_MAX = 120;
-const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 const PLUS_DROIT = 'Vous ne pouvez plus modifier ce système.';
-const PERIME =
-  'Cette entrée a changé depuis que vous l’avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous.';
 
-const ONGLETS: { type: Type; titre: string; ajout: string; vide: string; videJoueur: string; pris: string }[] = [
-  { type: 'regle', titre: 'Règles', ajout: 'Ajouter une règle', vide: 'Aucune règle pour l’instant.', videJoueur: 'Aucune règle à voir pour l’instant.', pris: 'Une règle porte déjà ce nom.' },
-  { type: 'creature', titre: 'Créatures', ajout: 'Ajouter une créature', vide: 'Aucune créature pour l’instant.', videJoueur: 'Aucune créature à voir pour l’instant.', pris: 'Une créature porte déjà ce nom.' },
-  { type: 'objet', titre: 'Objets', ajout: 'Ajouter un objet', vide: 'Aucun objet pour l’instant.', videJoueur: 'Aucun objet à voir pour l’instant.', pris: 'Un objet porte déjà ce nom.' },
-];
-
-const premiereLigne = (c: string) => c.split('\n').find((l) => l.trim() !== '') ?? '';
-// A reader has no source: the one-line preview comes from the text of the rendered HTML (parsed inertly, never inserted).
-const apercuDe = (g: Gabarit) =>
-  g.contenu !== undefined
-    ? premiereLigne(g.contenu)
-    : premiereLigne(new DOMParser().parseFromString(g.html, 'text/html').body.firstElementChild?.textContent ?? '');
-const alpha = (a: Gabarit, b: Gabarit) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
-
-type Retour = { perime?: true; perdu?: true; texte: string };
-
-/** Message under a failed write: stale version, name taken, right removed, or generic. */
-function messageEcriture(e: unknown): { perime?: true; perdu?: true; texte: string } {
-  if (e instanceof ErreurApi) {
-    if (e.statut === 409 && e.code === 'gabarit_modifie') return { perime: true, texte: PERIME };
-    if (e.statut === 409) return { texte: e.message };
-    if (e.statut === 400 && /caractères au plus/.test(e.message)) return { texte: `Erreur : ${refusServeur(e.message)}` };
-    if (e.statut === 403 || e.statut === 404) return { texte: PLUS_DROIT, perdu: true };
-  }
-  return { texte: ECHEC };
-}
-
-/** Form of an entry (add or edit): name and content, kept on failure. */
-function Formulaire({
-  initial,
-  libelle,
-  onEnvoi,
-  onAnnuler,
-}: {
-  initial: { nom: string; contenu: string };
-  libelle: string;
-  onEnvoi: (v: { nom: string; contenu: string }) => Promise<Retour | undefined>;
-  onAnnuler: () => void;
-}) {
-  const [nom, setNom] = useState(initial.nom);
-  const [contenu, setContenu] = useState(initial.contenu);
-  const [nomVide, setNomVide] = useState(false);
-  const [echec, setEchec] = useState<Retour>();
-  const [enCours, setEnCours] = useState(false);
-
-  const erreurNom =
-    nom.length > NOM_MAX ? `${NOM_MAX} caractères au plus.` : nomVide && nom.trim() === '' ? 'le nom est obligatoire.' : undefined;
-  const max = useLimiteContenu();
-  const erreurContenu = depasse(contenu, max) ? messageTropLong(max!) : undefined;
-
-  async function envoyer(e?: FormEvent) {
-    e?.preventDefault();
-    if (enCours) return;
-    if (nom.trim() === '') return setNomVide(true);
-    if (erreurNom || erreurContenu) return;
-    setEnCours(true);
-    setEchec(undefined);
-    const r = await onEnvoi({ nom, contenu });
-    setEnCours(false);
-    if (r) setEchec(r);
-  }
-
-  return (
-    <form className="entree-formulaire" onSubmit={envoyer} noValidate>
-      {echec && (
-        <div className="echec" role="alert">
-          {echec.texte}
-        </div>
-      )}
-      <Champ etiquette="Nom" value={nom} erreur={erreurNom} onChange={(e: { target: { value: string } }) => setNom(e.target.value)} />
-      <EditeurMarkdown
-        etiquette="Contenu"
-        valeur={contenu}
-        max={max}
-        rows={8}
-        onEnregistrer={() => void envoyer()}
-        onAnnuler={onAnnuler}
-        onChange={setContenu}
-      />
-      <div className="actions">
-        <Bouton type="submit" variante="principal" ecrit icone={Check} disabled={Boolean(erreurContenu)} enCours={enCours}>
-          {libelle}
-        </Bouton>
-        <Bouton onClick={onAnnuler}>Annuler</Bouton>
-      </div>
-    </form>
-  );
-}
-
-const TYPES: Type[] = ['regle', 'creature', 'objet'];
-
-/** E-15 Système de jeu: the shared reference of a system, at its own address (AD-94). */
+/**
+ * E-15 Système de jeu, at its own address (AD-94): the tabs « Types de fiche » (the switches of its types, the default), « Éléments » (the system's sheets), « Outils » and « MJ du système » (instance admin). Each tab shows only to who may use it.
+ */
 function Systeme() {
   const { sid } = useParams();
   const [params, setParams] = useSearchParams();
-  const demande = params.get('type');
-  const surTypes = demande === 'types';
-  const surOutils = demande === 'outils';
-  const type: Type = TYPES.find((t) => t === demande) ?? 'creature';
-  const [entete, setEntete] = useState<Omit<Page, 'gabarits' | 'suivant'>>();
-  const [entrees, setEntrees] = useState<Gabarit[]>([]);
-  const [suivant, setSuivant] = useState<string | null>(null);
+  const moi = useMoi();
+  const estAdmin = moi.etat === 'ok' && moi.valeur.groups.includes(GROUPE_ADMIN);
+  const onglet = params.get('type');
+  const [entete, setEntete] = useState<Page>();
   const [etat, setEtat] = useState<'chargement' | 'ok' | 'erreur' | 'introuvable'>('chargement');
   const [essai, setEssai] = useState(0);
-  const [ouverte, setOuverte] = useState<number>();
-  const [edition, setEdition] = useState<number>();
-  const [ajout, setAjout] = useState(false);
-  const { toast } = useToasts();
-  const [echecSuite, setEchecSuite] = useState(false);
-  const [suiteEnCours, setSuiteEnCours] = useState(false);
   const [plusDroit, setPlusDroit] = useState(false);
   useTitreAriane(entete?.nom);
 
   const base = `/api/systemes/${sid}`;
-  const onglet = ONGLETS.find((o) => o.type === type)!;
-  const choisir = (t: Type) => setParams(t === 'creature' ? {} : { type: t }, { replace: true });
-  const choisirTypes = () => setParams({ type: 'types' }, { replace: true });
-
-  const charger = useCallback((t: Type) => appeler<Page>('GET', `${base}?type=${t}`), [base]);
+  const charger = useCallback(() => appeler<Page>('GET', base), [base]);
 
   // Another system's address: nothing of the previous one stays.
   useEffect(() => {
@@ -169,17 +57,10 @@ function Systeme() {
   useEffect(() => {
     let actif = true;
     setEtat('chargement');
-    setOuverte(undefined);
-    setEdition(undefined);
-    setAjout(false);
-    setEchecSuite(false);
-    charger(type).then(
+    charger().then(
       (p) => {
         if (!actif) return;
-        const { gabarits, suivant: s, ...tete } = p;
-        setEntete(tete);
-        setEntrees(gabarits);
-        setSuivant(s);
+        setEntete(p);
         setEtat('ok');
       },
       (e: unknown) => {
@@ -189,77 +70,28 @@ function Systeme() {
     return () => {
       actif = false;
     };
-  }, [charger, type, essai]);
+  }, [charger, essai]);
 
-  // Tabs stay visible while an other tab loads, but the very first load shows the loading state alone.
   if (etat === 'introuvable') return <PageIntrouvable retour="systemes" />;
   if (!entete) {
     if (etat === 'erreur') return <ErreurChargement texte="Impossible de charger ce système." onReessayer={() => setEssai((n) => n + 1)} />;
     return <ChargementListe texte="Chargement du système…" />;
   }
   const peutEcrire = entete.peutEcrire;
+  const types: TypeSysteme[] = entete.types.flatMap((t) => {
+    const m = entete.mots.find((x) => x.type === t.type);
+    return m ? [{ ...m, active: t.active }] : [];
+  });
   const peutLireOutils = params.get('mode') !== 'joueur' && entete.mesUnivers.some((u) => u.role === 'mj');
+  const voitElements = entete.fiches !== undefined;
+  // The first tab the account may use, when the address names none (the admin with no link sees the sole « MJ du système »).
+  const surOutils = onglet === 'outils';
+  const surMJ = onglet === 'mj' || (!voitElements && !surOutils);
+  const surElements = onglet === 'elements' && voitElements;
+  const surTypes = !surOutils && !surMJ && !surElements;
+  if (surMJ && moi.etat === 'chargement') return <ChargementListe texte="Chargement du système…" />;
+  if (surMJ && !estAdmin) return <PageIntrouvable retour="systemes" />;
   if (surOutils && !peutLireOutils) return <PageIntrouvable retour="systemes" />;
-
-  async function suite() {
-    if (!suivant || suiteEnCours) return;
-    setSuiteEnCours(true);
-    setEchecSuite(false);
-    try {
-      const p = await appeler<Page>('GET', `${base}?type=${type}&curseur=${encodeURIComponent(suivant)}`);
-      setEntrees((l) => [...l, ...p.gabarits]);
-      setSuivant(p.suivant);
-    } catch {
-      setEchecSuite(true);
-    } finally {
-      setSuiteEnCours(false);
-    }
-  }
-
-  /** A right withdrawn during a write: say so, and reload the page (read-only, or « Page introuvable. »). */
-  function echecEcriture(e: unknown) {
-    const m = messageEcriture(e);
-    if (m.perdu) {
-      setPlusDroit(true);
-      setEssai((n) => n + 1);
-      return undefined;
-    }
-    return m;
-  }
-
-  async function ajouter(v: { nom: string; contenu: string }) {
-    try {
-      const g = await appeler<Gabarit>('POST', `${base}/gabarits`, { type, nom: v.nom, contenu: v.contenu });
-      setEntrees((l) => [...l, g].sort(alpha));
-      setEntete((t) => (t ? { ...t, entrees: { ...t.entrees, [type]: t.entrees[type] + 1 } } : t));
-      setAjout(false);
-      toast(`« ${g.nom} » ajouté`);
-    } catch (e) {
-      return echecEcriture(e);
-    }
-  }
-
-  async function enregistrer(g: Gabarit, v: { nom: string; contenu: string }) {
-    try {
-      const m = await appeler<Gabarit>('PUT', `${base}/gabarits/${g.id}`, { nom: v.nom, contenu: v.contenu, version: g.version });
-      setEntrees((l) => l.map((x) => (x.id === g.id ? m : x)).sort(alpha));
-      setEdition(undefined);
-      toast(`« ${m.nom} » enregistré`);
-    } catch (e) {
-      return echecEcriture(e);
-    }
-  }
-
-  /** « Recharger » on a stale entry: take the new version from the server, drop the edit form. */
-  async function recharger(g: Gabarit): Promise<void> {
-    try {
-      const p = await charger(type);
-      const frais = p.gabarits.find((x) => x.id === g.id);
-      if (frais) setEntrees((l) => l.map((x) => (x.id === g.id ? frais : x)));
-    } catch {
-      setEtat('erreur');
-    }
-  }
 
   return (
     <div className="page-liste page-systeme">
@@ -291,44 +123,26 @@ function Systeme() {
       )}
       <div className="barre-outils">
         <div role="tablist" className="onglets">
-          {ONGLETS.map((o) => (
-            <button
-              key={o.type}
-              type="button"
-              role="tab"
-              aria-selected={!surTypes && !surOutils && o.type === type}
-              className={!surTypes && !surOutils && o.type === type ? 'actif' : undefined}
-              onClick={() => choisir(o.type)}
-            >
-              {o.titre}
-              <span className="nb">{entete.entrees[o.type]}</span>
-            </button>
-          ))}
-          <button
-            type="button"
-            role="tab"
-            aria-selected={surTypes}
-            className={surTypes ? 'actif' : undefined}
-            onClick={choisirTypes}
-          >
-            Types de fiche
-          </button>
+          {voitElements && (
+            <button type="button" role="tab" aria-selected={surTypes} className={surTypes ? 'actif' : undefined}
+              onClick={() => setParams({}, { replace: true })}>Types de fiche</button>
+          )}
+          {voitElements && (
+            <button type="button" role="tab" aria-selected={surElements} className={surElements ? 'actif' : undefined}
+              onClick={() => setParams({ type: 'elements' }, { replace: true })}>Éléments</button>
+          )}
           {peutLireOutils && <button type="button" role="tab" aria-selected={surOutils} className={surOutils ? 'actif' : undefined}
             onClick={() => setParams({ type: 'outils' }, { replace: true })}>Outils</button>}
+          {estAdmin && <button type="button" role="tab" aria-selected={surMJ} className={surMJ ? 'actif' : undefined}
+            onClick={() => setParams({ type: 'mj' }, { replace: true })}>MJ du système</button>}
         </div>
-        {!surTypes && !surOutils && etat === 'ok' && peutEcrire && !ajout && (
-          <Bouton variante="principal" ecrit icone={Plus} onClick={() => setAjout(true)}>
-            {onglet.ajout}
-          </Bouton>
-        )}
       </div>
       {surTypes && (
         <div role="tabpanel">
           <OngletTypesSysteme
             systemeId={sid!}
             systemeNom={entete.nom}
-            universId={entete.mesUnivers[0]?.id}
-            actifs={entete.types}
+            actifs={types}
             nbUnivers={entete.nbUnivers}
             peutEcrire={peutEcrire}
             onChange={(t, active) =>
@@ -341,119 +155,13 @@ function Systeme() {
           />
         </div>
       )}
-      {surOutils && <div role="tabpanel"><PanneauOutils key={sid} id={sid!} niveau="systeme" /></div>}
-      <div role="tabpanel" hidden={surTypes || surOutils}>
-        {etat === 'chargement' && <ChargementListe texte="Chargement du système…" />}
-        {etat === 'erreur' && (
-          <ErreurChargement texte="Impossible de charger ce système." onReessayer={() => setEssai((n) => n + 1)} />
-        )}
-        {etat === 'ok' && (
-          <>
-            {ajout && (
-              <Formulaire initial={{ nom: '', contenu: '' }} libelle="Ajouter" onEnvoi={ajouter} onAnnuler={() => setAjout(false)} />
-            )}
-            {entrees.length === 0 && !ajout && (
-              <VideIcone icone={BookOpen}>
-                <p>{peutEcrire ? onglet.vide : onglet.videJoueur}</p>
-              </VideIcone>
-            )}
-            <ul className="lignes liste-entrees">
-              {entrees.map((g) => (
-                <li key={g.id}>
-                  <button
-                    type="button"
-                    className="entree-ligne"
-                    aria-expanded={ouverte === g.id}
-                    onClick={() => {
-                      setOuverte(ouverte === g.id ? undefined : g.id);
-                      setEdition(undefined);
-                    }}
-                  >
-                    <strong className="entree-nom" title={g.nom}>
-                      {g.nom}
-                    </strong>
-                    <span className="entree-apercu">{apercuDe(g)}</span>
-                    <ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" className="entree-chevron" />
-                  </button>
-                  {ouverte === g.id &&
-                    (edition === g.id ? (
-                      <EditionEntree g={g} onEnregistrer={(v) => enregistrer(g, v)} onAnnuler={() => setEdition(undefined)} onRecharger={() => recharger(g)} />
-                    ) : (
-                      <div className="entree-detail">
-                        <h2>{g.nom}</h2>
-                        <Markdown className="entree-contenu" html={g.html} />
-                        {peutEcrire && (
-                          <div className="actions">
-                            <Bouton ecrit icone={Pencil} onClick={() => setEdition(g.id)}>
-                              Modifier
-                            </Bouton>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                </li>
-              ))}
-            </ul>
-            {echecSuite && (
-              <div className="echec" role="alert">
-                Impossible de charger la suite.
-              </div>
-            )}
-            {suivant && (
-              <div className="actions">
-                <Bouton ecrit enCours={suiteEnCours} onClick={suite}>
-                  Charger la suite
-                </Bouton>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/** Edit form of an open entry; on a stale write the typed text stays and « Recharger » is offered. */
-function EditionEntree({
-  g,
-  onEnregistrer,
-  onAnnuler,
-  onRecharger,
-}: {
-  g: Gabarit;
-  onEnregistrer: (v: { nom: string; contenu: string }) => Promise<Retour | undefined>;
-  onAnnuler: () => void;
-  onRecharger: () => Promise<void>;
-}) {
-  const [perime, setPerime] = useState(false);
-  return (
-    <div className="entree-detail">
-      <h2>{g.nom}</h2>
-      <Markdown className="entree-contenu" html={g.html} />
-      <Formulaire
-        initial={{ nom: g.nom, contenu: g.contenu ?? '' }}
-        libelle="Enregistrer"
-        onAnnuler={onAnnuler}
-        onEnvoi={async (v) => {
-          const r = await onEnregistrer(v);
-          setPerime(Boolean(r?.perime));
-          return r && !r.perime ? r : undefined;
-        }}
-      />
-      {perime && (
-        <div className="echec" role="alert">
-          {PERIME}{' '}
-          <Bouton
-            petit
-            onClick={async () => {
-              await onRecharger();
-              setPerime(false);
-            }}
-          >
-            Recharger
-          </Bouton>
+      {surElements && (
+        <div role="tabpanel">
+          <OngletElements systemeId={sid!} types={types} fiches={entete.fiches ?? []} suite={Boolean(entete.suivant)} peutEcrire={peutEcrire} />
         </div>
       )}
+      {surMJ && <div role="tabpanel"><OngletMJSysteme key={sid} id={sid!} nom={entete.nom} /></div>}
+      {surOutils && <div role="tabpanel"><PanneauOutils key={sid} id={sid!} niveau="systeme" /></div>}
     </div>
   );
 }

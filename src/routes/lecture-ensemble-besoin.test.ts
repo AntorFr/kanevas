@@ -212,14 +212,20 @@ describe('B-105 : la liste des fiches de l\'univers', () => {
     assert.equal(p1.json.fiches.length, 1000);
     assert.ok(p1.json.suivant !== null && p1.json.suivant !== undefined, 'un curseur pour la suite');
     // a sheet of page 1 changes between the two calls: it moves in modifie_le, not in id order
-    const premier = p1.json.fiches[0].id;
+    // the list also opens with the elements of an attached system (AD-155): the sheet to change is one of the universe's own
+    const propres = new Set((app.db.prepare('SELECT id FROM fiches WHERE univers_id = ?').all(U.landes) as { id: number }[]).map((r) => r.id));
+    const premier = p1.json.fiches.find((x: Any) => propres.has(x.id)).id;
     const titre = (await ecran('mira', 'GET', `/api/univers/${U.landes}/fiches/${premier}`)).json.titre;
     assert.equal((await ecran('mira', 'PATCH', `/api/univers/${U.landes}/fiches/${premier}`, { titre: `${titre} !` })).status, 200);
     const p2 = await api(jetons.miraLec, `${a}?apres=${p1.json.fiches[999].id}`);
     const tous = [...p1.json.fiches, ...p2.json.fiches].map((x: Any) => x.id);
     assert.equal(new Set(tous).size, tous.length, 'aucun doublon');
-    const attendu = (app.db.prepare('SELECT COUNT(*) AS c FROM fiches WHERE univers_id = ?').get(U.landes) as { c: number }).c;
-    assert.equal(tous.length, attendu, 'aucun trou');
+    const attendu = propres.size;
+    assert.equal(tous.filter((i: number) => propres.has(i)).length, attendu, 'aucun trou');
+    const espace = (app.db.prepare('SELECT s.id FROM univers u JOIN univers s ON s.espace_systeme_id = u.systeme_id WHERE u.id = ?').get(U.landes) as { id: number } | undefined)?.id;
+    for (const i of tous.filter((i: number) => !propres.has(i))) {
+      assert.equal((app.db.prepare('SELECT univers_id FROM fiches WHERE id = ?').get(i) as { univers_id: number }).univers_id, espace, 'le reste vient de l\'espace du système');
+    }
     assert.ok(p2.json.fiches.length >= 1);
     assert.equal(p2.json.suivant ?? null, null, 'dernière page');
   });

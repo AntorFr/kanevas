@@ -8,7 +8,8 @@ import { LONGUEUR_ALIAS, LONGUEUR_ETIQUETTE, MAX_ALIAS, MAX_ETIQUETTES } from '.
 import { MAX_CONTENU_SECTION } from '../services/sections.js';
 import { resoudreUnivers } from '../services/cles.js';
 import { ErreurService, introuvable } from '../services/erreurs.js';
-import { niveauEffectif, verifierJeton, type Jeton, type JetonRequete } from '../services/jetons.js';
+import { niveauEffectif, niveauSysteme, verifierJeton, type Jeton, type JetonRequete, type JetonSysteme } from '../services/jetons.js';
+import { enregistrerRoutesSystemes, optionsListe } from './import-systemes.js';
 import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import {
   appliquerCatalogueParJeton, apercuCatalogueParJeton, niveauDeRequete,
@@ -20,7 +21,7 @@ import { lireContexteImport } from '../services/import.js';
 import { modifierEnTete } from '../services/import-entete.js';
 import { assurerFiche, lotDeRequete, supprimerFicheImport } from '../services/import-fiches.js';
 import { listerHistorique } from '../services/historique.js';
-import { assurerFichier, listerFichiersApi, MAX_FICHIERS_JOINTS, ouvrirFichierParReference } from '../services/fichiers.js';
+import { assurerFichier, supprimerFichierImport, listerFichiersApi, MAX_FICHIERS_JOINTS, ouvrirFichierParReference } from '../services/fichiers.js';
 import { lireFicheApi, listerFichesApi } from '../services/lecture-api.js';
 import { estId } from '../services/cles-forme.js';
 import { listerCartesApi } from '../services/cartes.js';
@@ -41,13 +42,13 @@ declare module 'fastify' {
   }
   interface FastifyRequest {
     /** The verified API token of the import scope; never set elsewhere. */
-    jeton: JetonRequete | null;
+    jeton: JetonRequete | JetonSysteme | null;
   }
 }
 
 /**
- * What a route of this scope accepts (K-6): `contenu` the content token only, `outil` a token
- * carrying the tool of the address, `ouverture` the opening of a batch (the token's kind decides),
+ * What a route of this scope accepts (K-6): `contenu` a token with the content permission, `outil` a token
+ * carrying the tool of the address, `ouverture` the opening of a batch (content, or the tool of `?outil=`),
  * `lot` any token (a batch of its universe). A route without one is refused.
  */
 export type PorteeImport = 'contenu' | 'outil' | 'ouverture' | 'lot';
@@ -60,11 +61,11 @@ declare module 'fastify' {
 
 function porteeOuverte(portee: PorteeImport | undefined, jeton: Jeton, request: FastifyRequest): boolean {
   switch (portee) {
-    case 'contenu': return jeton.outils.length === 0;
+    case 'contenu': return jeton.contenu;
     case 'lot': return true;
     case 'ouverture': {
       const { outil } = request.query as { outil?: unknown };
-      if (outil === undefined) return jeton.outils.length === 0;
+      if (outil === undefined) return jeton.contenu;
       return typeof outil === 'string' && jeton.outils.includes(outil);
     }
     case 'outil': {
@@ -125,7 +126,23 @@ export async function registerImportRoutes(app: FastifyInstance) {
       }
       // The universe of the address (AD-jetons-1): a key or an id; unknown, out of the token's reach or without
       // a current role for its account, it is the same 404. The level is that of the request, never stored.
-      const { id } = request.params as { id?: string };
+      const { id, sid } = request.params as { id?: string; sid?: string };
+      // The system door (AD-systemes-api-1, 2): `:sid` is digits only, the level is the token's row and the account's right now.
+      if (sid !== undefined) {
+        const systemeId = /^\d+$/.test(sid) && Number.isSafeInteger(Number(sid)) ? Number(sid) : -1;
+        const { niveau: pose, droit } = niveauSysteme(app.db, jeton, systemeId);
+        if (pose === 'aucun' || droit === null) throw introuvable();
+        const niveau = pose === 'ecriture' && droit === 'mj' ? 'ecriture' : 'lecture';
+        request.jeton = { ...jeton, systemeId, niveau };
+        if (pose === 'lecture' && request.method !== 'GET' && request.method !== 'HEAD') {
+          return reply.code(403).send({ message: 'Ce jeton est en lecture seule.', code: 'lecture_seule' });
+        }
+        // A write on a system belongs to no batch.
+        if ((request.query as { lot?: unknown }).lot !== undefined) {
+          throw new ErreurService('invalide', 'Un système ne se lit ni ne s\'écrit par un lot.', undefined, 'lot');
+        }
+        return;
+      }
       if (id === undefined) return;
       const univers = resoudreUnivers(app.db, id);
       if (!univers) throw introuvable();
@@ -137,8 +154,11 @@ export async function registerImportRoutes(app: FastifyInstance) {
       }
     });
 
-    const jetonDe = (request: FastifyRequest) => request.jeton!;
+    const jetonDe = (request: FastifyRequest) => request.jeton as JetonRequete;
     const entier = (v: string) => (/^\d+$/.test(v) ? Number(v) : -1);
+
+    // The system door lives under `/api/v1` only (AD-systemes-api-1): the alias gets nothing new.
+    enregistrerRoutesSystemes(scope, app);
 
     // One registration, two prefixes: the alias keeps the existing import script running.
     for (const prefixe of PREFIXES) {
@@ -243,18 +263,7 @@ export async function registerImportRoutes(app: FastifyInstance) {
       // Reads of the sheets (B-80, B-81, AD-149): the account's rights; unreadable, unknown or foreign is one 404.
       scope.get(`${base}/fiches`, { config: { portee: 'contenu' } }, async (request) => {
         const j = jetonDe(request);
-        const q = request.query as { depuis?: unknown; apres?: unknown };
-        const options: { depuis?: string; apres?: number } = {};
-        if (q.depuis !== undefined) {
-          if (typeof q.depuis !== 'string') throw new ErreurService('invalide', '« depuis » doit être une date ISO 8601.', undefined, 'depuis');
-          options.depuis = q.depuis;
-        }
-        if (q.apres !== undefined) {
-          if (typeof q.apres !== 'string' || !estId(q.apres)) {
-            throw new ErreurService('invalide', '« apres » doit être un identifiant.', undefined, 'apres');
-          }
-          options.apres = Number(q.apres);
-        }
+        const options = optionsListe(request.query as Record<string, unknown>);
         return listerFichesApi(app.db, { compteId: j.compteId }, j.universId, options);
       });
 
@@ -386,6 +395,13 @@ export async function registerImportRoutes(app: FastifyInstance) {
           visibilite: champ('visibilite'),
           flux: part?.fieldname === 'fichier' ? flux() : null,
         }, app.horloge(), undefined, request.headers);
+      });
+
+      scope.delete(`${base}/fichiers/:cle`, { config: { portee: 'contenu' } }, async (request, reply) => {
+        const { cle } = request.params as { cle: string };
+        const { lot } = request.query as { lot?: unknown };
+        supprimerFichierImport(app.db, jetonDe(request), lotDeRequete(lot), cle, app.horloge());
+        return reply.code(204).send();
       });
 
       scope.delete(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request, reply) => {

@@ -241,7 +241,7 @@ interface LigneRow {
   fiche_titre: string;
   objet: 'entete' | 'section' | 'relation' | 'fiche';
   objet_cle: string | null;
-  action: 'creee' | 'modifiee' | 'supprimee';
+  action: 'creee' | 'modifiee' | 'supprimee' | 'detachee';
   compte_id: number | null;
   compte_nom: string | null;
   jeton_id: number | null;
@@ -415,7 +415,7 @@ export function listerHistorique(
     params.push(filtres.jeton);
   }
   if (filtres.action !== undefined) {
-    if (!['creee', 'modifiee', 'supprimee'].includes(filtres.action)) throw invalide("L'action est inconnue.");
+    if (!['creee', 'modifiee', 'supprimee', 'detachee'].includes(filtres.action)) throw invalide("L'action est inconnue.");
     conditions.push('h.action = ?');
     params.push(filtres.action);
   }

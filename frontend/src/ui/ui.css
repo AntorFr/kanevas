@@ -64,6 +64,8 @@ a { color: var(--accent-texte); }
 .champ-liste select { appearance: none; padding-right: var(--e-6); }
 .champ-liste svg { position: absolute; right: var(--e-3); top: 50%; transform: translateY(-50%); color: var(--texte-3); pointer-events: none; }
 .case { display: inline-flex; align-items: center; gap: var(--e-2); font-size: var(--t-13); color: var(--texte); cursor: pointer; min-height: 24px; }
+.case.avec-detail { align-items: flex-start; }
+.case.avec-detail small { display: block; font-size: var(--t-12); color: var(--texte-3); }
 .case input { appearance: none; width: 16px; height: 16px; margin: 0; flex: none; border: 1px solid var(--bord-champ); border-radius: 4px;
   background: var(--surface); display: grid; place-content: center; cursor: pointer; }
 .case input::after { content: ""; width: 8px; height: 4px; border-left: 2px solid var(--sur-accent); border-bottom: 2px solid var(--sur-accent);
@@ -182,6 +184,10 @@ a { color: var(--accent-texte); }
 .boite h2 { font-size: var(--t-16); font-weight: 600; }
 .boite p { margin: var(--e-1) 0 0; color: var(--texte-2); font-size: var(--t-14); }
 .boite-actions { display: flex; justify-content: flex-end; gap: var(--e-2); margin-top: var(--e-5); }
+@media (max-width: 600px) {
+  .boite-actions.empilee { flex-direction: column-reverse; align-items: stretch; }
+  .boite-actions.empilee button { justify-content: center; min-height: 44px; white-space: nowrap; }
+}
 .boite-corps { flex: 1; min-width: 0; }
 
 .etat { text-align: center; color: var(--texte-2); padding: var(--e-5) var(--e-4); }

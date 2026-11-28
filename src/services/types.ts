@@ -118,6 +118,12 @@ export interface Fiche {
   sousType: string | null;
   /** Derived from player-readable sections (B-57); GM outside player mode only. */
   visibleJoueurs?: boolean;
+  /** Where the sheet comes from (AD-154, AD-157): the universe's own, or an element of its attached system. */
+  origine?: 'univers' | 'systeme' | 'surcharge';
+  /** The element this sheet customises (AD-surcharge-2): only for a copy, and only to a reader of the system. */
+  surchargeDe?: number;
+  /** The system of an element (AD-157); absent for a universe's own sheet. */
+  systeme?: { id: number; nom: string };
   charge: Record<string, unknown>;
   creeLe: string;
   modifieLe: string;

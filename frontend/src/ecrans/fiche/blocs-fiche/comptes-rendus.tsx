@@ -45,7 +45,7 @@ function ComptesRendus({ universId, fiche, suffixeMode }: PropsBlocFiche) {
       {etat.k === 'ok' && (etat.valeur.comptesRendus.length === 0 ? (
         <p className="bloc-fiche-vide">Aucun compte-rendu pour l'instant.</p>
       ) : (
-        <ul className="suivi-liste">{etat.valeur.comptesRendus.map((cr) => <LigneCompteRendu key={cr.id} universId={universId} cr={cr} />)}</ul>
+        <ul className="suivi-liste">{etat.valeur.comptesRendus.map((cr) => <LigneCompteRendu key={cr.id} universId={universId} cr={cr} campagne={cr.campagneId !== fiche.id} />)}</ul>
       ))}
       {suiteEchec && <div className="echec" role="alert">Impossible de charger la suite.</div>}
       {etat.k === 'ok' && etat.valeur.suivant !== null && <Bouton icone={ArrowDown} disabled={perdue} enCours={suiteEnCours} onClick={() => void suite()}>Charger la suite</Bouton>}

@@ -463,7 +463,7 @@ as is; `recherche_fiches` triggers are recreated.
 | `types_systeme` | `systeme_id`, `type`, `active` (boolean) | primary key `(systeme_id, type)` (5); → `systemes_jeu`; no row: the product default (enabled) |
 | `types_univers` | `univers_id`, `type`, `active` (boolean) | primary key `(univers_id, type)` (5); → `univers`; no row: the universe inherits from its system |
 | `jetons_api` | *(since migration 0038 there is no `univers_id`: the universes a token reaches are in `jetons_univers`, see the amendment below)* `id`, `compte_id`, `nom`, `empreinte`, `cree_le`, `expire_le`, `revoque_le` (null: active), `dernier_usage_le` (null: never) | → `comptes`; unique `empreinte` (7); `nom` 1 to 80; `CHECK (expire_le > cree_le)`; at most one year: service |
-| `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (null: in progress), `dernier_ecrit_le`, `compteurs` (JSON: per nature — `fiches`, `fichiers`, `relations` (`campagnes` and `scenarios` no longer exist since `kanevas-scenarios-suivi`: adventures are sheets, counted in `fiches`) — `{creees, mises_a_jour, inchangees, refusees}`, integers ≥ 0; nature `fiches` adds `supprimees`, written by `DELETE /fiches/:cle`, `kanevas-import-tenir`), `avertissements`, `en_attente` (integers ≥ 0; pending links and references at closure), `rapport` (JSON: at most 1,000 entries, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api`; « abandonné » (abandoned) is not stored: open with `dernier_ecrit_le` older than 24 h |
+| `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (null: in progress), `dernier_ecrit_le`, `compteurs` (JSON: per nature — `fiches`, `fichiers`, `relations` (`campagnes` and `scenarios` no longer exist since `kanevas-scenarios-suivi`: adventures are sheets, counted in `fiches`) — `{creees, mises_a_jour, inchangees, refusees}`, integers ≥ 0; nature `fiches` adds `supprimees`, written by `DELETE /fiches/:cle`, `kanevas-import-tenir`; nature `fichiers` adds it too, written by `DELETE /fichiers/:cle` and absent until a first file is deleted in the batch), `avertissements`, `en_attente` (integers ≥ 0; pending links and references at closure), `rapport` (JSON: at most 1,000 entries, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api`; « abandonné » (abandoned) is not stored: open with `dernier_ecrit_le` older than 24 h |
 
 **Added columns** (`ALTER TABLE … ADD COLUMN`, as in 0002 and 0006):
 
@@ -692,7 +692,7 @@ Invariants, in sentences:
 7. A design is attached to **one sheet** in the same universe and to **one managed section** of that sheet.
 8. A placed system, a route, a zone, a design belong to **one universe**; deleting the universe deletes them.
 9. A route connects two **placed** systems in the same universe; its grid length is that of the coordinates.
-10. A tool token carries a **scope**: the set of tools it can write; without a scope, it writes no tool.
+10. A token carries a **scope** *(kanevas-jeton-unique, B-jeton-1)*: the content (`jetons_api.contenu`) and/or the set of tools it can write (`jetons_outils`); never neither. Without tools it writes no tool; without `contenu` it opens no content route.
 11. Disabling deletes no row; only the delete action does, in a transaction.
 
 ### Logical
@@ -736,7 +736,8 @@ Invariants, in sentences:
 |---|---|---|
 | `essai_catalogue_elements` | `niveau` (`systeme`/`univers`), `systeme_id` or `univers_id`, `nature` (`coques`/`armes`), `cle`, `nom`, `masse` (real), `cout` (integer), `portee` (`courte`/`longue`, null for a hull), `masque` (boolean, default false), `version` (integer, +1 on each change), `version_catalogue` (text) | the owner is two nullable columns (exactly one set: `CHECK`), so uniqueness is two partial unique indexes: `(systeme_id, nature, cle)` where `niveau = 'systeme'`, `(univers_id, nature, cle)` where `niveau = 'univers'`; `CHECK (masse >= 0 AND cout >= 0)`; `CHECK (niveau = 'univers' OR masque = 0)` — a system element is never masked; `portee` set exactly for `armes`; → `systemes_jeu`, → `univers` ON DELETE CASCADE |
 | `essai_catalogue_retraits` | `univers_id`, `nature`, `cle` (of a system element) | primary key `(univers_id, nature, cle)`; → `univers` ON DELETE CASCADE; deleting the row restores the element |
-| `jetons_outils` | `jeton_id`, `outil` | (core, K-6) primary key `(jeton_id, outil)`; → `jetons_api` ON DELETE CASCADE; no row = a content token |
+| `jetons_outils` | `jeton_id`, `outil` | (core, K-6) primary key `(jeton_id, outil)`; → `jetons_api` ON DELETE CASCADE; no row = no tool (*kanevas-jeton-unique*: it no longer says « content token », `jetons_api.contenu` does) |
+| `jetons_api.contenu` *(kanevas-jeton-unique, migration 0051, renumbered from 0046 when `main` was caught up, AD-51)* | column | `INTEGER NOT NULL DEFAULT 1 CHECK (contenu IN (0, 1))`; 1 = the token opens the content routes (`/api/v1` sheets, files, maps, export, `/mcp`). The migration sets 0 on every token that has a `jetons_outils` row (they keep working as today: tools only) and leaves 1 on the others. « At least one of `contenu` or a tool » is the service's rule (`creerJeton`, `invalide`, `champ: permissions`), not a `CHECK` (a `CHECK` cannot read another table); a token whose tools are deleted with the tool's data keeps the permissions it has, `contenu` included |
 
 `lots_import.outil` (core): null for a content batch, else the `module/outil` whose natures the counters carry. A tool batch's `compteurs` keys are the tool's declared natures (the content batch keeps the fixed list).
 
@@ -927,3 +928,38 @@ role; the instance admin writes `membres` of a space only. An element with no re
 Customisation: `personnaliser` copies the sheet and **the sections the universe's players read** (the only ones `lectureSysteme` hands to a universe, same visibility flags; the GM-only sections of the system's GMs are not copied and the customised sheet is therefore a player-level one) into the universe, GM outside player mode only;
 Deleting an element or detaching the universe from its system, or moving it to another system, sets `surcharge_de` to `NULL` on the copies (AD-158, B-120). `revenir` deletes the copy (`supprimerFiche`, AD-119). The universe's views substitute the copy for the original by `surcharge_de`.
 Migration: next free number when the slice merges (AD-51); existing systems get no GM until the admin grants one.
+
+### `jetons_systemes` (`kanevas-systemes-jeu-api`, AD-155, AD-systemes-api-3 and 4)
+
+| Column | Type | Rule |
+|---|---|---|
+| `jeton_id` | INTEGER NOT NULL | → `jetons_api(id)` ON DELETE CASCADE |
+| `systeme_id` | INTEGER NOT NULL | → `systemes_jeu(id)` ON DELETE CASCADE (no system is deleted today, the clause keeps the table clean the day one is) |
+| `niveau` | TEXT NOT NULL | `CHECK (niveau IN ('lecture', 'ecriture'))`; there is **no** `aucun` row: a system the token does not reach has no row |
+
+Primary key `(jeton_id, systeme_id)`; index on `systeme_id`. Written only by `services/jetons.ts` (creation, change of accesses), in the transaction that
+writes the token or replaces its rows; read only there (`systemesDe`, private; `niveauSysteme`, exported). A token revoked or expired keeps its rows, like `jetons_univers`.
+**Never stored: the account's right.** A row says what the token may reach; whether the account is a GM of the system or reads it is read from `membres` of the space and of the
+attached universes at each use (AD-144, AD-152) — removing a GM of a system, or an account from a universe, changes no `jetons_systemes` row.
+Rule (token and system): a row may be written only for a system the account **reads** at that moment, and `ecriture` only where it is a GM of the system; a row already carried
+for a system no longer read stays until the owner saves (it may be lowered or removed, never raised or added), as for a universe left.
+No existing token gets a row: after the migration every token reads nothing on `/api/v1/systemes/…`, and its universe door is unchanged.
+Migration: `CREATE TABLE jetons_systemes …`, no data to move; the number is the next free one when the slice merges (AD-51); a rise test plays it on a base of the previous schema
+holding a content token, a tool token and a revoked one, and finds the three unchanged and without a row.
+
+## `kanevas-cr-aventure` scope: the model
+
+No new entity, no migration. A session report's adventure is `fiches.charge.campagne_id` (unchanged); it becomes **writable by the GM** after creation.
+
+Rules:
+1. `campagne_id` is written by `creerCompteRendu` and by one new service function of `services/comptes_rendus.ts`, `changerAventureDuCompteRendu`, run inside `ecrire` (history, AD-147, and `modifie_le` by the triggers). The target is read with `aventureLue` (same guard as the creation); GM outside player mode only; an id that is not a readable sheet, or a target that is not a readable adventure of the universe: `introuvable` (as the creation); a readable sheet that is not a session report: `invalide` (400 on the route, as the other type-bound fields of `PATCH`); a player or a GM in player mode: the refusals of `changerStatutFiche` (AD-cr-aventure-5); the same adventure: no write.
+2. Nothing else of the sheet moves (id, key, sections, relations, `liens`, `parent_id`).
+3. The list `listerComptesRendus({campagneId})` returns the reports whose adventure is that one **or any descendant of it of type `aventure` that the caller reads** (reached through a chain of `aventure` sheets by `parent_id`, at any depth — the 50 levels of AD-115 cannot be exceeded; the walk tests the caller's read at each node, so a scenario the caller does not read brings nothing, nor does what is under it; an adventure under a sheet of another type is not a scenario); each line carries its own adventure (`campagneId`, `campagneNom`), from which the screen shows the scenario's name when it differs from the page's adventure. The deletion count of an adventure (AD-119) stays on direct reports. The filter is one for every reader of `listerComptesRendus({campagneId})` (the route `?campagne=`, E-9's block, E-13's list (through the route's filter, there is no screen filter); no assistant list calls it): all give the widened result with each line's own adventure; nothing else widens (the deletion count, the « Campagne » line of a report, the bilan).
+4. The import fingerprint of the header (AD-139) already holds `campagne_id` for a report: a change of adventure is a change of header.
+
+## `kanevas-systemes-jeu-surcharge`: the customisation (2026-11-22)
+
+- `fiches.surcharge_de INTEGER NULL REFERENCES fiches(id)` and a **unique partial index** on `(univers_id, surcharge_de) WHERE surcharge_de IS NOT NULL`: at most one copy per (universe, element). The foreign key has no `ON DELETE` action: a service that deletes an original detaches its copies first, in the same transaction (AD-surcharge-3), so a forgotten path fails loudly instead of silently orphaning a copy. What SQL cannot check is checked in the service (`services/surcharge.ts`): the original lives in the space of the system **attached to the copy's universe**, the copy's `type` is the original's, a copy is never an original (no chain), and the copy's universe is a real one.
+- `personnaliser` copies: the title, the `type`, the payload (`charge`) of the type, the aliases, and every section the universe's players read, with the same `joueurs_lisent` and the same order. It never copies: GM-only sections, labels, relations, attachments and the header illustration (the files belong to the space, AD-65; the copy starts without them and the GM adds his own), `parent_id` (the copy is a root sheet of the universe, like any element listed there), the keys (the copy draws its own, AD-146: a key is never shared between two sheets) and `source_version`. Sections are written through `insererSection`, so their links are extracted and their `contenu_public` computed (AD-114, AD-116); the copy is created by `creerFiche`, origin as the gesture's (`ecran`, `mcp`, `assistant`).
+- **The history line** (AD-147): the single migration of the slice (owned by the `socle` task) rebuilds `historique` to widen the `action` CHECK with `'detachee'` and gives the trigger of `fiches` a branch for `UPDATE OF surcharge_de` from a value to `NULL`: a line `objet = 'fiche'`, `action = 'detachee'`, shown as « devenue fiche ordinaire » (E-24), in the universe of the copy, with the account that deleted the element or detached the universe as author (`contexte_ecriture` of that write). The same update does not move `modifie_le` (the sheet's content did not change). The creation of the copy is an ordinary `creation` line; its deletion by `revenir` an ordinary deletion.
+- **Migration**: `0054-surcharge.sql` (renumbered from 0053 when the slice caught up with its target, which took 0053 for `jetons_systemes`, AD-51); one `ALTER TABLE … ADD COLUMN` (nullable, no default), the index, the rebuild of `historique` (the widened `action` CHECK) and the trigger branch. No sheet row changes: every existing sheet has `surcharge_de = NULL`. The climb test plays it on a base of the previous schema (sheets, sections, history lines present) and checks that nothing moved and that a copy can then be created.

@@ -15,6 +15,8 @@ import { badgeFiche, iconeDuType, typeParType, useTypes } from '../types-context
 import { BlocMentions } from './fiche/mentions';
 import { BlocsOutils } from './fiche/blocs-outils';
 import { BlocContient } from './fiche/contient';
+import { BandeauElement } from './fiche/bandeau-element';
+import { BoutonPersonnaliser } from './fiche/actions-surcharge';
 import { EnteteFiche, type MessageIllustration } from './fiche/entete';
 import { blocsFicheVisibles, placeDe } from './fiche/registre-blocs-fiche';
 
@@ -164,11 +166,14 @@ function PageFiche() {
 
   // The children read and link by the numeric id, whatever the address says (id, key or former key).
   const uid = String(univers.etat === 'ok' ? univers.valeur.id : id);
-  const mj = role === 'mj';
   const fiche = etat.fiche;
+  // An element of the system, opened from a universe: read-only for everyone (AD-157), the system's own right decides what is read.
+  const element = fiche.origine === 'systeme';
+  const mj = role === 'mj' && !element;
   const sections = etat.k === 'ok' ? fiche.sections : [];
+  const modeLu: 'mj' | 'joueur' = element ? 'joueur' : modeEffectif;
   const gestion = mj && modeEffectif === 'mj';
-  const tous = blocsFicheVisibles(fiche.type, modeEffectif);
+  const tous = element ? [] : blocsFicheVisibles(fiche.type, modeLu);
   const blocs = tous.filter((b) => placeDe(b) === 'haut');
   const blocsBas = tous.filter((b) => placeDe(b) === 'bas');
 
@@ -211,13 +216,16 @@ function PageFiche() {
   const formulaire = gestion && etat.k === 'ok' && ajoutOuvert;
   return (
     <article className="fiche" aria-labelledby="titre-fiche">
+      {element && fiche.systeme && <BandeauElement systeme={fiche.systeme} />}
       <EnteteFiche
         key={`${id}/${fid}/${gestion}`}
         universId={uid}
         fiche={fiche}
         gestion={gestion && etat.k === 'ok'}
-        modeJoueur={mj && modeEffectif === 'joueur'}
+        modeJoueur={mj && modeLu === 'joueur'}
         badge={badgeFiche(types, fiche)}
+        systemeId={univers.etat === 'ok' ? univers.valeur.systeme?.id : undefined}
+        actionsElement={element && role === 'mj' && modeEffectif === 'mj' ? <BoutonPersonnaliser universId={uid} fiche={fiche} /> : undefined}
         Icone={Icone}
         message={messageIll}
         setMessage={setMessageIll}
@@ -231,7 +239,7 @@ function PageFiche() {
       {etat.k === 'ok' && blocs.length > 0 && (
         <div className="blocs-fiche">
           {blocs.map((bloc) => (
-            <bloc.composant key={`${id}/${fid}/${modeEffectif}/${suffixe}/${bloc.id}`} universId={uid} fiche={fiche} role={modeEffectif} suffixeMode={suffixe} />
+            <bloc.composant key={`${id}/${fid}/${modeLu}/${suffixe}/${bloc.id}`} universId={uid} fiche={fiche} role={modeLu} suffixeMode={suffixe} />
           ))}
         </div>
       )}
@@ -260,7 +268,7 @@ function PageFiche() {
               universId={uid}
               fiche={fiche}
               section={s}
-              role={modeEffectif}
+              role={modeLu}
               suffixeMode={suffixe}
               joueurs={joueurs}
               premiere={i === 0}
@@ -272,11 +280,11 @@ function PageFiche() {
           ))}
         </div>
       )}
-      <BlocContient universId={uid} ficheId={fiche.id} suffixeMode={suffixe} />
+      {!element && <BlocContient universId={uid} ficheId={fiche.id} suffixeMode={suffixe} />}
       {etat.k === 'ok' && blocsBas.map((bloc) => (
-        <bloc.composant key={`${id}/${fid}/${modeEffectif}/${suffixe}/${bloc.id}`} universId={uid} fiche={fiche} role={modeEffectif} suffixeMode={suffixe} />
+        <bloc.composant key={`${id}/${fid}/${modeLu}/${suffixe}/${bloc.id}`} universId={uid} fiche={fiche} role={modeLu} suffixeMode={suffixe} />
       ))}
-      {etat.k === 'ok' && (
+      {etat.k === 'ok' && !element && (
         <BlocMentions
           universId={uid}
           ficheId={fiche.id}
@@ -286,7 +294,7 @@ function PageFiche() {
           suffixeMode={suffixe}
         />
       )}
-      {etat.k === 'ok' && <BlocsOutils blocs={fiche.blocs ?? AUCUNE_BLOC} />}
+      {etat.k === 'ok' && !element && <BlocsOutils blocs={fiche.blocs ?? AUCUNE_BLOC} />}
       {gestion && etat.k === 'ok' && (
         <div className={`ajout-section${formulaire ? ' ouvert' : ''}`}>
           {!formulaire && sections.length > 0 && (
