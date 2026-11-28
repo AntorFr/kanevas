@@ -244,9 +244,10 @@ describe('E-21 en écriture et « Carte de la galaxie » dans E-10', { skip: ski
     await page.waitForFunction(() => !document.querySelector('section[aria-label="Modifier le système"]'));
     // the step closer taken for the touch is undone: the whole known zone is in view again
     // the map reloads after the write: « Recentrer » is pressed again until the reloaded zone is framed
-    for (let i = 0; i < 20 && (await systeme(page, 'Relais').count()) === 0; i++) {
+    for (let i = 0; i < 20; i++) {
       await page.getByRole('button', { name: 'Recentrer' }).click();
-      await page.waitForTimeout(300);
+      // the visible result is waited for, not a fixed duration
+      if (await systeme(page, 'Relais').first().waitFor({ timeout: 1500 }).then(() => true, () => false)) break;
     }
     await attendreSysteme(page, 'Relais');
 
