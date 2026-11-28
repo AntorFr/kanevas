@@ -46,7 +46,7 @@ describe('E-23 la queue et la trajectoire d’une comète', { skip: skipBrowser,
     await a.ctx.close();
     const db = new Database(dbPath);
     try {
-      const centre = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,0)")
+      const centre = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.45,NULL,'',0,0)")
         .run(gid, univers, 'co-centre', 'Système des comètes', O.q, O.r).lastInsertRowid as number;
       const ast = db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille, aspect) VALUES (?,?,?,?,?,?,?,?,?,?,?)');
       ast.run(centre, 'etoile', 'etoile', null, 0, 'jaune', 'Étoile', 0, 0, 1, '{}');

@@ -76,7 +76,7 @@ describe('E-23 une comète montre sa queue détournée de l’étoile et sa traj
     await a.ctx.close();
     const db = new Database(dbPath);
     try {
-      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,0)");
+      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.45,NULL,'',0,0)");
       const ast = db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille, aspect) VALUES (?,?,?,?,?,?,?,?,?,?,?)');
       const nouveau = (cle: string, nom: string, p: { q: number; r: number }) => {
         const id = sys.run(gid, univers, cle, nom, p.q, p.r).lastInsertRowid as number;
