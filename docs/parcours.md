@@ -1712,6 +1712,8 @@ the map or a rule **without the music stopping**.
 2. « Importer dans… » picks a library he writes: the sound is in it, same file; he adds his own tags and Notes (E-32).
 3. He corrects the description: every library holding the sound sees it. He makes it private or public again.
 
+   Details (`kanevas-sons-globale`): the global library is read from the user menu by any GM of a universe or system (a player has no entry); the list shows generic tags and the libraries he writes that already hold the sound (« Déjà dans… »), never the others; « Importer dans… » takes a universe he writes (a system's library comes with `-systeme`), « MJ seul » by default, and answers « Déjà dans cette bibliothèque » for a library that holds it. A sound held by no library stays there, public ones importable; a private one nobody holds is seen by nobody until the purge. Only a GM of a library holding the sound switches « Privé »; the other common-part fields are open to any GM who sees it.
+
 ### P-32 — The GM prepares a scene (GM, agent)
 
 1. In the sheet (E-9) a section's « Sons » list (E-36): he adds a library sound or a missing sound, sets label, mode,

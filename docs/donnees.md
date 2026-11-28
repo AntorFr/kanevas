@@ -964,7 +964,7 @@ first slice's merge):
    row of its system's space, « GM only » ones included** (exception to AD-152, for sounds only, 2026-11-28: E-31 shows them to him, he
    places them in his scenes); a player never. No role: `introuvable`.
 2. **Writing the common part**: GM (outside player mode) of any library holding the sound, **a GM of a universe for a sound he reads in
-   its system's space (rule 1, « GM only » ones included)**, or any GM for a sound he sees in the global library; players never. This covers **replacing the file** and its measures (the sound keeps name, key, tags and places;
+   its system's space (rule 1, « GM only » ones included)**, or any GM for a sound he sees in the global library; players never. **Exception: « private » (`prive`) is written only by a GM of a library that holds the sound** (B-129, AD-sons-globale-1). This covers **replacing the file** and its measures (the sound keeps name, key, tags and places;
    « listened » goes back to false; the former `sons_octets` row waits for the purge, AD-sons-2). **Writing the library part**: GM of that
    universe, GM of that system — never a universe's GM for his system's sounds.
 3. **Global library**: the account is GM of at least one universe or system; a sound with `prive` shows only to the GMs
