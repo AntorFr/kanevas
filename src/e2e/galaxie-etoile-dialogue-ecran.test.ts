@@ -143,6 +143,8 @@ describe('E-21 le dialogue d’un système règle son étoile, le panneau la mon
     await form.locator('input[type=range]').fill('1');
     const rayonApercu = await form.locator('.apercu-etoile circle').getAttribute('r');
     await enregistrer(page, form);
+    // The map redraws after the save: wait for the radius to settle (or time out and let the assertion below say what was drawn).
+    await page.waitForFunction(() => Number(document.querySelector('g.gx-systeme[aria-label="Port-Sel"] .gx-point')?.getAttribute('r')) === 12, null, { timeout: 5000 }).catch(() => undefined);
     const rayonCarte = await systeme(page, 'Port-Sel').locator('.gx-point').getAttribute('r');
     assert.equal(Number(rayonCarte), 12, `la carte dessine la plus grande étoile (aperçu : ${rayonApercu}, carte : ${rayonCarte})`);
     form = await modifier(page, 'Port-Sel');
