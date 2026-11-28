@@ -128,11 +128,6 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
           </div>
         )}
         {onVisibilite && <FiltreVisibilite valeur={visibilite} onChoix={onVisibilite} desactive={perdue} />}
-        {onSansSysteme && (
-          <label className="filtre-sans-systeme">
-            <input ref={caseSysteme} type="checkbox" checked={sansSysteme} disabled={perdue} onChange={(e) => onSansSysteme(e.target.checked)} /> {LIBELLE_SANS_SYSTEME}
-          </label>
-        )}
         <div className="actions">
           <Bouton type="submit" disabled={perdue}>
             Chercher
@@ -144,6 +139,11 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
           )}
           {bascule}
         </div>
+        {onSansSysteme && (
+          <label className="filtre-sans-systeme">
+            <input ref={caseSysteme} type="checkbox" checked={sansSysteme} disabled={perdue} onChange={(e) => onSansSysteme(e.target.checked)} /> {LIBELLE_SANS_SYSTEME}
+          </label>
+        )}
       </form>
       {vue === 'arbre' && recherche === '' && sousType === '' && etat === '' && statut === '' && visibilite === '' && !sansSysteme ? (
         <Arbre key={`${type.type}${suffixeMode}`} universId={universId} type={type} suffixeMode={suffixeMode} videListe={videListe} gestion={gestion} />

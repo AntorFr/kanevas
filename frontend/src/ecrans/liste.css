@@ -240,3 +240,4 @@ main.principal:has(.page-grille) { max-width: 1080px; }
 .marque-systeme .nom-systeme { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 16ch; }
 .pied-carte .marque-systeme { margin-top: -1px; }
 @media (max-width: 760px) { .ligne-recherche .marque-systeme, .ligne-recherche .marque-personnalise { flex-basis: 100%; } }
+.recherche .filtre-sans-systeme { flex: 1 1 100%; } /* E-8: its own line under the filters, « Chercher » stays beside them */

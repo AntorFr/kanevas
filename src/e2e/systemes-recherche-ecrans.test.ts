@@ -70,7 +70,7 @@ describe('kanevas-systemes-jeu-recherche-ecrans : pastille et case du système',
     await p.screenshot({ path: '/tmp/kanevas-recherche-rendu.png' });
 
     // E-8 : la même case sur la liste d'un type
-    await p.goto(`/univers/${uid}/fiches/objet`);
+    await p.goto(`/univers/${uid}/fiches/objets`);
     await p.getByLabel('Masquer les éléments du système').click();
     await p.waitForURL(/sans-systeme=1/);
     await p.getByRole('link', { name: /Pistolet à pompe/ }).waitFor();
