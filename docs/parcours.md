@@ -1703,7 +1703,7 @@ the map or a rule **without the music stopping**.
    format. A better recording of the same sound: on E-32 « Remplacer le fichier » keeps everything else and measures again.
 2. On the sound (E-32) he sets type, generic tags, description, source and licence, ticks « listened » after hearing it.
 3. He finds the sounds still to classify (« no tag in Émotion ») and goes on.
-4. The system's GM does the same in the system's library (E-15, tab « Sons »).
+4. The system's GM does the same in the system's library (E-15, tab « Sons »: E-31 and E-32 of the system, both parts of a sound). The GMs of the system's universes then hear its sounds in their own E-31 (pill « Système », « MJ seul » ones marked), correct their common part (description, tags, type, replacement of the file) but see its library part read-only. *Failure*: a GM of a universe who tries to write that part by the API is refused (`bibliotheque_systeme`) and nothing is written.
 5. Removing a sound from the library first shows the sections that carry it.
 
 ### P-31 — The GM imports from the global library (GM)
@@ -1731,7 +1731,7 @@ the map or a rule **without the music stopping**.
 ### P-34 — A player hears what is opened to him (player)
 
 He browses the library of his universe (E-31): only sounds « for the players » and the system's, hears them, hears the
-effect on the sheet of his weapon. He sees neither the global library, nor GM-only sounds, nor the entries of sections he
+effect on the sheet of his weapon. The system's sounds are in the same list, marked « Système ». He sees neither the global library, nor GM-only sounds (the system's included), nor the entries of sections he
 does not read.
 
 ### P-35 — The admin keeps tags and purges (instance admin)
