@@ -35,10 +35,16 @@ system has it, `swn_lire_systeme` (read) and, with an `ecriture` token of a GM, 
 fed by `catalogueDe`; a player's token reads only (`swn_lire_systeme`). `swn_galaxie_trajet` stays the assistant's. Today the
 module is active only under `KANEVAS_STUB=1` / `NODE_ENV=test`.
 
-The elements of the universe's game system (AD-159, `kanevas-systemes-jeu`): when the universe has an attached system and the token has a
-level on it, `systeme_chercher`, `systeme_lire_fiche`, `systeme_lire_section` (any token), and with an `ecriture` token of a GM of the system
+The elements of the universe's game system (AD-159 of the `kanevas-systemes-jeu` table of `ARCHITECTURE.md`, « MCP door and assistant »: not the battle map's live stream): when the universe has an attached system and the token has a
+level on it, `systeme_chercher`, `systeme_lire_fiche`, `systeme_lire_section` (any level of token, provided it has a row for the system: a token made with `systemes:[{id, niveau}]`, AD-155), and with an `ecriture` token of a GM of the system
 `systeme_creer_fiche`, `systeme_modifier_entete`, `systeme_ecrire_section`, `systeme_supprimer_section`, `systeme_supprimer_fiche`; a GM of the
 universe also gets `personnaliser_fiche` and `revenir_au_systeme` (customise an element for this universe, go back). The system is never a parameter: it is the universe's own.
+
+Parameters of the system tools (the system is never one, AD-mcp-sj-2): `systeme_chercher` `mots`, `type?`, `curseur?`; `systeme_lire_fiche` `fiche`;
+`systeme_lire_section` `fiche`, `sectionId`; `systeme_creer_fiche` `type`, `titre`, `sousType?`; `systeme_modifier_entete` `fiche`, `empreinte` and any of `titre`, `sousType`, `alias`, `etiquettes`;
+`systeme_ecrire_section` `fiche`, `sectionId`, `contenu`, `empreinte`; `systeme_supprimer_section` `fiche`, `sectionId`, `empreinte`; `systeme_supprimer_fiche` `fiche`, `empreinte`;
+`personnaliser_fiche` and `revenir_au_systeme` `fiche`. A token with no row for the universe's system lists none of the eight `systeme_*` tools and, called by name, answers `introuvable`; a `lecture`
+token lists the three readers and answers `lecture_seule` to a `systeme_*` writer called by name; so does a token with a row on the system, even `ecriture`, whose account is not a GM of the system (the message is the same: « Ce jeton est en lecture seule. »). `personnaliser_fiche` and `revenir_au_systeme` belong to the universe's own list (GM of the universe, `ecriture` universe token): they need no row in `jetons_systemes`. Rights are read again at each request: a token whose account stopped being a GM of the system lists the readers only.
 
 Not offered on this door: `generer_image`, `proposer_mise_a_jour`, `modifier_section`, `ajouter_a_section`.
 
@@ -117,3 +123,12 @@ mcp '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"swn_lire_sy
 The first lists the ten `swn_*` tools. Read a drawn system (`etat: "tire"`) with `swn_lire_systeme`, then complete a body with
 `swn_completer_astre` (`cle`, `version_lue`, `version_systeme` as read, `nom`, `aspect`, `lien`): the first write anchors the system;
 reload E-23 as the GM to see the body named, linked and « Défini ». The automated proof is `src/routes/mcp-swn.test.ts`.
+
+### The system's elements, by hand (stub server)
+
+The map-tools token above has no row for the system, so it lists none of the `systeme_*` tools (only `personnaliser_fiche` and
+`revenir_au_systeme`). Give the token a row when creating it: add `"systemes":[{"id":3,"niveau":"lecture"}]` next to `acces` in the body
+(3 is « Système d'essai », the one attached to « Éneria d'essai »; an id the account does not read answers `invalide`). The same
+`tools/list` then adds `systeme_chercher`, `systeme_lire_fiche` and `systeme_lire_section`. In the stub seed `antor` is a GM of the universes
+but **not** of the system, so the five `systeme_*` writers do not appear whatever the level: they are proved by
+`src/routes/mcp-systeme-ecritures-revue.test.ts`, with an account that is a GM of the system.

@@ -12,6 +12,7 @@ export type TypeEvenement =
   | 'proposition_creee'
   | 'image_attachee'
   | 'fiche_modifiee'
+  | 'fiche_supprimee'
   | 'section_supprimee'
   | 'relation_creee'
   | 'relation_modifiee'

@@ -23,10 +23,13 @@ import type { Evenement, Outil, Resultat } from './types.js';
  */
 export const OUTILS_ECRITURE_MCP = [
   'creer_fiche', 'modifier_entete', 'ecrire_section', 'supprimer_section', 'relier', 'modifier_relation', 'retirer_relation',
+  // The system's writers and the two customisation tools (AD-mcp-sj-3): listed for a right, refused by name otherwise.
+  'systeme_creer_fiche', 'systeme_modifier_entete', 'systeme_ecrire_section', 'systeme_supprimer_section',
+  'systeme_supprimer_fiche', 'personnaliser_fiche', 'revenir_au_systeme',
 ] as const;
 
-const PERIMEE_SECTION = "La section a changé depuis que vous l'avez lue. Relisez-la.";
-const PERIMEE_ENTETE = "L'en-tête de la fiche a changé depuis que vous l'avez lu. Relisez la fiche.";
+export const PERIMEE_SECTION = "La section a changé depuis que vous l'avez lue. Relisez-la.";
+export const PERIMEE_ENTETE = "L'en-tête de la fiche a changé depuis que vous l'avez lu. Relisez la fiche.";
 const PERIMEE_RELATION = "La relation a changé depuis que vous l'avez lue. Relisez la fiche.";
 
 const id = z.number().int().positive();
@@ -46,18 +49,19 @@ function echec(e: unknown, perimee: string): Echec {
   return { ok: false, erreur: e.message, code, ...(e.champ ? { champ: e.champ } : {}) };
 }
 
-function ecrireOutil<S extends z.ZodObject>(
+export function ecrireOutil<S extends z.ZodObject>(
   nom: string,
   description: string,
   schema: S,
   perimee: string,
   run: (args: z.infer<S>) => { donnees: unknown; evenement?: Evenement },
+  portes: Outil['portes'] = ['mcp'],
 ): Outil {
   return {
     nom,
     description,
     schema,
-    portes: ['mcp'],
+    portes,
     executer(args) {
       const p = schema.safeParse(args ?? {});
       if (!p.success) {

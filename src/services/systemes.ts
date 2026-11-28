@@ -219,3 +219,18 @@ function systemeVisible(db: Db, compteId: number, systemeId: number): SystemeVue
 export function lireSysteme(db: Db, compteId: number, systemeId: number): SystemeVue {
   return systemeVisible(db, compteId, systemeId);
 }
+
+/**
+ * The system attached to a universe, `null` when none (AD-mcp-sj-1). The one read the doors of the agent make to learn
+ * which system a universe's door is closed over: never from a request parameter. A system's own space has none.
+ */
+export function systemeRattache(db: Db, universId: number): { id: number; nom: string } | null {
+  return (
+    (db
+      .prepare(
+        `SELECT s.id, s.nom FROM univers u JOIN systemes_jeu s ON s.id = u.systeme_id
+         WHERE u.id = ? AND u.espace_systeme_id IS NULL`,
+      )
+      .get(universId) as { id: number; nom: string } | undefined) ?? null
+  );
+}

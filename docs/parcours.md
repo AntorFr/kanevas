@@ -1604,7 +1604,7 @@ He creates a token (« Mes jetons d'API », E-23 of `kanevas-synchro`), gives it
 lists and writes elements at `/api/v1/systemes/<id>/…`; the same token still opens his universes. — token screen, API.
 On the screen, the block shows only the systems the account reads, « Écriture » only where he is a GM of the system (Teo, who reads none, sees no block; Léa, a player of « Lame d'Ébène » attached to the system, sees « Lecture » only); when the list fails to load, the form stays usable and « Modifier les accès » touches no row; the admin opening Antor's token on E-5 sees Antor's systems, not his own. — token screen (E-23 « Mes jetons d'API », E-5 administration).
 His agent, connected to the MCP door of one of his universes with that token, lists and edits the same elements with the `systeme_*`
-tools; the assistant of the universe does the same for a GM of the system (a mere GM of the universe reads only). — MCP door, assistant.
+tools; the assistant of the universe does the same for a GM of the system (a mere GM of the universe reads the system's elements only, and customises them for his universe with `personnaliser_fiche` / `revenir_au_systeme`). — MCP door, assistant.
 
 *The steps of the key (`kanevas-systemes-jeu-api`, the agent half is `kanevas-systemes-jeu-mcp-assistant`):*
 1. In « Mes jetons d'API » (E-23) Antor presses « Créer un jeton », names it, keeps « Tous mes univers », and in the block « Systèmes de jeu » sets « Stars Without Number »
