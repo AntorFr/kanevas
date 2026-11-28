@@ -359,11 +359,31 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
             o.globalAlpha = 1;
             o.globalCompositeOperation = 'destination-in';
             const fondu = o.createLinearGradient(0, 0, queue.dx * queue.longueur, queue.dy * queue.longueur);
-            fondu.addColorStop(0, 'rgba(0,0,0,1)'); fondu.addColorStop(0.6, 'rgba(0,0,0,1)'); fondu.addColorStop(1, 'rgba(0,0,0,0)');
+            // Eased over the whole length, so the picture's own tail dies out smoothly and never ends in a cut.
+            for (const [pos, a] of [[0, 1], [0.15, 0.9], [0.4, 0.55], [0.7, 0.2], [0.9, 0.05], [1, 0]] as const) fondu.addColorStop(pos, `rgba(0,0,0,${a})`);
             o.fillStyle = fondu;
             o.fillRect(-demi, -demi, 2 * demi, 2 * demi);
             g.globalAlpha = enEnvoiRef.current.has(c.cle) ? OPACITE_ENVOI : 1;
             g.drawImage(oc, x - demi, y - demi, 2 * demi, 2 * demi);
+          }
+          g.globalAlpha = enEnvoiRef.current.has(c.cle) ? OPACITE_ENVOI : 1;
+          // The tail itself: a filament along the drawn direction, as long as the geometry says, tapering and fading to nothing.
+          {
+            const rgb = (() => {
+              const h = (typeof c.astre.aspect?.couleur === 'string' && /^#[0-9a-f]{3,8}$/i.test(c.astre.aspect.couleur) ? c.astre.aspect.couleur : jeton.or).slice(1);
+              const v = h.length <= 4 ? h.split('').map((k) => k + k) : (h.match(/../g) ?? []);
+              const n = v.slice(0, 3).map((k) => parseInt(k, 16));
+              return n.length === 3 && n.every(Number.isFinite) ? n : [242, 195, 107];
+            })();
+            const L = queue.longueur;
+            const w0 = Math.max(1.5, Math.min(4, cote * 0.12));
+            g.save();
+            g.translate(x, y); g.rotate(Math.atan2(queue.dy, queue.dx));
+            const f = g.createLinearGradient(0, 0, L, 0);
+            for (const [pos, a] of [[0, 0.75], [0.25, 0.45], [0.55, 0.18], [0.85, 0.04], [1, 0]] as const) f.addColorStop(pos, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${a})`);
+            g.fillStyle = f;
+            g.beginPath(); g.moveTo(0, -w0); g.lineTo(L, 0); g.lineTo(0, w0); g.closePath(); g.fill();
+            g.restore();
           }
           // Readability (AD-cometes-3): a head never under RAYON_TETE_MIN_PX, and a coma when the picture is small.
           const teinte = typeof c.astre.aspect?.couleur === 'string' && /^#[0-9a-f]{3,8}$/i.test(c.astre.aspect.couleur) ? c.astre.aspect.couleur : jeton.or;
