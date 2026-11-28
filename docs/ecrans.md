@@ -5354,3 +5354,75 @@ E-35: a section with no sound is not a group; a table with no sound says so and 
 
 **Mockups** (`docs/maquettes/e31-table-lecteur.html`: E-34 + E-35; `e31-bibliotheque-sons.html`: E-31 + E-32) — E-34 + E-35 (the table with the bar, the structuring screen)
 and E-31 + E-32. E-36, E-37 and E-38 follow the sheet and the administration conventions already in the charter.
+
+### E-5 Administration — the panels « Tags de sons » (E-37) and « Purge des sons » (E-38) (`kanevas-sons-administration`)
+
+*Mockup*: `docs/maquettes/e37-administration-sons.html` (E-37 with a removal dialog, E-38 with its confirmation, E-23's level choice); the text prevails.
+Both panels sit in E-5 under « Limites », full width, seen by the instance admin only (« Page introuvable. » for anyone else, as the
+screen; the instance routes answer 404 to a session that is not the admin's, AD-86). Both read the same service as the API (AD-sons-6).
+
+**E-37 Tags de sons.** One block per category, in its order: its name, the number of values, « Renommer », « Retirer »; under it the
+values as rows (name, « N sons », « Renommer », « Retirer »). « Ajouter une valeur » at the foot of a category (a field and « Ajouter »),
+« Ajouter une catégorie » under the last block. Names are 1 to 40 characters, unique in their scope (two values of one category, two
+categories), compared without case. A rename shows the new name at once in every filter of E-31 and E-33 (nothing is stored on a sound
+but the value's id). **Order**: values and categories keep the order they were added; the screen does not reorder them (outside the slice).
+**Removing** a value or a category opens a dialog (`Fenetre`, danger) that first reads `GET …/compte`: « Retirer la valeur « Épique »
+de la catégorie « Genre » ? 14 sons la portent ; ils la perdent, rien d'autre ne change. » (a category: « …la catégorie « Genre » et ses
+6 valeurs ? 31 sons portent au moins une de ses valeurs… »; zero: « Aucun son ne la porte. »). The count is read when the dialog opens,
+and again when « Retirer » is pressed: if it moved, the dialog shows the new count and asks again (« Le compte a changé : 15 sons. »)
+instead of removing. Removing a value deletes its `sons_tags` rows and nothing else; a sound keeps its name, file, type, own tags and Notes.
+
+| State (E-37) | What is read | Gestures |
+|---|---|---|
+| loading | skeleton of two blocks | — |
+| read failed | « Impossible de charger les tags. » | « Réessayer » |
+| empty (every category removed) | « Aucune catégorie. Les sons n'ont pas d'étiquettes génériques. » | « Ajouter une catégorie » |
+| a category with no value | « Aucune valeur. » in its block | « Ajouter une valeur » |
+| name taken | « Ce nom existe déjà. » under the field, the entry kept | change it |
+| name empty or over 40 | « Entre 1 et 40 caractères. » | — |
+| count unreadable | in the dialog « Impossible de compter les sons touchés. » and « Retirer » inactive | « Réessayer », « Annuler » |
+| save failed | « L'action n'a pas abouti. Réessayez. » under the row, the entry kept | repeat |
+| removed meanwhile | the value was removed by another session: « Cette valeur n'existe plus. » (404), the list reloads | « Fermer » |
+| connection lost | the banner; every button inactive, entries kept | — |
+| long content | a 40-character name is cut with a tooltip; a category with more than 30 values keeps its rows scrolling in the block (max-height) | — |
+
+Under 760 px the row of a value stacks: name and count, then the two buttons at full width.
+
+**E-38 Purge des sons.** A table in two groups and a box per line (no « Tout cocher »: the owner decides sound by sound, AD-sons-6).
+*Sons sans bibliothèque*: name, type, « Privé » pill when it is, the size its bytes would free, e.g. « 4,2 Mo », or « 0 Mo — fichier
+partagé avec un son conservé » when another sound that stays uses the same bytes (the line is still listed, it frees nothing and says so),
+and, when sections carry it, « Portée par 3 sections » (a number, the admin sees all; the sections are not named). *Fichiers inutilisés*: the
+size, labelled « Fichier inutilisé » (a former file after a replacement, or what a purge of the sound alone left); no name.
+Every box starts **unticked** (the admin ticks what he erases; the request names exactly the ids ticked).
+Under the table the summary « 2 sons et 1 fichier cochés — 9,8 Mo libérés » and « Effacer les sons cochés » (danger, inactive while nothing
+is ticked). The confirmation names what leaves: « Effacer 2 sons et 1 fichier, 9,8 Mo ? Les sons restent sous leur nom comme « son
+manquant » dans les 4 sections qui les portent. Un fichier effacé ne se rattrape pas. » with « Annuler » focused. After success: the list reloads,
+« 2 sons et 1 fichier effacés. » in a status line; a line that vanished in the meantime is not an error (« 1 déjà effacé »).
+The list shows no description nor Notes of a sound (rule 8 of `docs/donnees.md`).
+
+| State (E-38) | What is read | Gestures |
+|---|---|---|
+| loading | skeleton of the table | — |
+| nothing orphan | « Aucun son à purger » | — |
+| read failed | « Impossible de charger la purge. » | « Réessayer » |
+| nothing ticked | the summary reads « Rien de coché », the button inactive | tick |
+| erasing | the button « Effacement… » inactive, boxes locked | — |
+| partial failure | « 2 effacés, 1 n'a pas pu l'être. » with the lines that stay ticked | « Effacer les sons cochés » again |
+| shared bytes | the line says « fichier partagé avec un son conservé », 0 Mo; erasing it removes the sound and keeps the file | — |
+| connection lost | the banner; the button inactive, the ticks kept | — |
+| long content | a long name is cut with a tooltip; more than 100 lines: the first 100 and « Charger la suite » (the list is read by pages, never a count of the rest) | — |
+
+Under 760 px each line becomes a block (box and name, then type, size, sections).
+
+**E-23, the level « Administrateur ».** The form's segmented control « Niveau », shown for a « Tous mes univers » token, offers
+« Lecture » and « Écriture »; for the instance admin only it offers a third segment « Administrateur », with the note « Écriture sur tout ce
+que vous lisez, plus les tags et la purge des sons. N'ouvre aucun univers que vous ne lisez pas. » The segment is not drawn for any other
+account, nor for a token tied to chosen universes or to a system. The list shows the level as « Tous les univers — Administrateur ». If the
+account stops being the admin the token reads « Administrateur — inactif (compte non administrateur) » and acts as « Écriture » (AD-144); the
+admin's E-5 token table shows the level the same way. Editing the accesses of an « Administrateur » token to a chosen-universes form
+drops the level (the control is not offered).
+
+Roles: **admin** E-37, E-38, E-23's third level; anyone else reads « Page introuvable. » on the two panels and never sees the segment.
+Player mode does not exist for these panels (the admin's own state, not the GM's).
+
+*Components* (verdict of the design-system keeper, `docs/charte.md` « Sound administration »): `Panneau`, `Bouton`, `Champ`, `Fenetre` danger, `Case`, `Pastille`, `ChoixSegmente` (third segment), states of `ui/etats.tsx`; two new ones, the category block and the tick list.

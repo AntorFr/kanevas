@@ -998,3 +998,13 @@ first slice's merge):
 9. **Placing a sound**: a sound the universe **holds** — in its own library or in its system's (the exception of rule 1) — is placed as it is, by reference,
    with its visibility (never copied into the universe). A sound neither holds but the GM sees in the global library is imported into that
    library in the same transaction, « GM only » (AD-sons-7); a sound he does not see and an unknown key are the same `introuvable`.
+
+## Migration `kanevas-sons-administration`
+
+> `src/db/migrations/`, number assigned when the slice merges (AD-51). Played with foreign keys off, `foreign_key_check` before the commit (`-- migrate: sans-cles-etrangeres`).
+
+- `jetons_api` is rebuilt with `niveau_tous` CHECK `IN ('lecture', 'ecriture', 'administrateur')` (the other checks of migration 0038 kept, every row copied unchanged: the test starts from a base of the previous schema and replays an `ecriture` token as it was).
+- `comptes.admin_vu_le` (TEXT, nullable): the time of the account's last sign-in at which the session groups contained the admin group, else null (AD-sons-admin-1). Read only by `estAdministrateurJeton`; the session never reads it. It is not a role (AD-9 holds: the right of a session is its cookie's groups).
+- Unique indexes `sons_categories(nom COLLATE NOCASE)` and `sons_valeurs(categorie_id, nom COLLATE NOCASE)`; names 1 to 40 characters (`CHECK`).
+- No other table. Removing a value deletes its `sons_tags` rows; removing a category deletes its values and their `sons_tags` rows; `sections_sons` is written by the purge only as rule 5 says.
+- The purge identifies a line by `son:<id>` (a `sons` row without `sons_bibliotheques` row) or `octets:<id>` (a `sons_octets` row no `sons` row refers to); nothing is stored for it.

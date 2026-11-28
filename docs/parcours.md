@@ -1737,7 +1737,7 @@ does not read.
 ### P-35 — The admin keeps tags and purges (instance admin)
 
 1. In « Administration » (E-5), « Tags de sons » (E-37): adds, renames, removes categories and values, seeing the count.
-2. « Purge des sons » (E-38): the orphan sounds with size, unticks what he keeps, erases the rest.
+2. « Purge des sons » (E-38): the orphan sounds with size, ticks what he erases (every box starts unticked), erases the ticked ones.
 3. In « Limites » he sets the one file limit.
 
 ### P-36 — An agent or a script deposits and places sounds (token, MCP)
@@ -1753,3 +1753,16 @@ tags and purges the orphans it names, after reading the list; any other token on
   (later: an entry carrying several sounds); sound on the players' devices; online services (Spotify, YouTube).
 - Playing from a phone or tablet is not a target: the table aims at the GM's computer, in Chrome.
 - The media library (AD-117) is untouched except for the shared size limit (B-135).
+
+#### P-35 in detail (`kanevas-sons-administration`)
+
+1. The admin opens « Administration » (E-5), reaches « Tags de sons » (E-37). He adds « Ambiance » as a category and « Taverne » as a
+   value; he renames « Épique » to « Héroïque » (the sounds keep it, the filters show the new name).
+2. He removes « Taverne »: the dialog says « 14 sons la portent »; he confirms; those sounds lose that tag and nothing else.
+   *Failure*: the count moved between the dialog and the click (the dialog asks again); the name is taken; the value was removed by another session.
+3. In « Purge des sons » (E-38) he reads the sounds in no library and the unused files with their size; he ticks two sounds and one file (every box starts unticked),
+   reads the confirmation (the sections that will show a missing sound), erases. *Failure*: bytes shared with a sound that stays free
+   nothing and the line says so; one erasure fails (the line stays ticked); nothing is orphan.
+4. *API/script* (P-36): with a token of level « Administrateur » (E-23, offered to him alone, for « Tous mes univers » only) the same steps through
+   `/api/v1/instance/sons/…`: the script reads the list, then names the ids it erases; a token of another level gets 403 `niveau_insuffisant`;
+   if the account stops being admin the token falls back to « Écriture » and the instance routes answer 403.

@@ -1,0 +1,47 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tags et purge des sons — Kanevas</title><style>
+/* MAQUETTE — SCREEN. Illustre docs/ecrans.md « E-37 et E-38 » (kanevas-sons-administration) et le niveau « Administrateur » de E-23. Tokens : e05-administration.html. Données inventées. Le document prime. */
+:root{--bg:#101012;--s1:#1a1a1f;--s2:#212127;--b:rgba(255,255,255,.07);--bs:rgba(255,255,255,.15);--i1:#f5f4f2;--i2:#a3a2a8;--i3:#6b6a72;--vi:#8b7cf6;--vis:#aca2f9;--vid:rgba(139,124,246,.16);--am:#f2a33c;--amb:rgba(242,163,60,.14);--re:#e2685b;--reb:rgba(226,104,91,.14);--red:rgba(226,104,91,.38);--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--i1);font:14px var(--sans);padding:16px;display:flex;flex-direction:column;gap:24px}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--am);margin:0 0 6px;font-weight:600}
+.panneau{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;max-width:880px}
+h2{margin:0;font-size:16px}h3{margin:0;font-size:13px}.note{color:var(--i2);font-size:12.5px;margin:0}
+.cat{border:1px solid var(--b);border-radius:10px;overflow:hidden}.cat>header{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--s2)}.cat>header h3{flex:1}
+.val{display:flex;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid var(--b)}.val .n{flex:1}.val .c{color:var(--i3);font-size:12.5px}
+button,input{font:inherit}button{background:var(--s2);color:var(--i1);border:1px solid var(--bs);border-radius:8px;padding:6px 11px;cursor:pointer}button.p{background:var(--vi);border-color:var(--vi);color:#101012;font-weight:600}button.d{background:var(--re);border-color:var(--re);color:#101012;font-weight:600}button[disabled]{opacity:.4;cursor:default}
+input[type=text]{background:var(--bg);color:var(--i1);border:1px solid var(--bs);border-radius:8px;padding:6px 10px}.ajout{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--b)}
+table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--i3);padding:6px 8px}td{padding:8px;border-top:1px solid var(--b)}
+.pastille{font-size:11.5px;padding:2px 8px;border-radius:99px;background:var(--amb);color:var(--am)}.zero{color:var(--i3)}
+.barre{display:flex;align-items:center;gap:12px;justify-content:space-between}
+.fenetre{background:var(--s1);border:1px solid var(--red);border-radius:12px;padding:18px;max-width:440px;display:flex;flex-direction:column;gap:12px}.fenetre .acts{display:flex;gap:8px;justify-content:flex-end}
+.seg{display:inline-flex;border:1px solid var(--bs);border-radius:8px;overflow:hidden}.seg span{padding:6px 14px;color:var(--i2)}.seg .on{background:var(--vid);color:var(--vis)}
+@media(max-width:760px){.val{flex-wrap:wrap}.val .n{flex-basis:100%}.val button{flex:1}}
+</style></head><body>
+<section><p class="label">E-37 — Tags de sons (administrateur)</p><div class="panneau">
+<h2>Tags de sons</h2><p class="note">Les étiquettes génériques des sons : celles des filtres de la bibliothèque et de la bibliothèque globale.</p>
+<div class="cat"><header><h3>Genre</h3><span class="c note">3 valeurs</span><button>Renommer</button><button>Retirer</button></header>
+<div class="val"><span class="n">Épique</span><span class="c">14 sons</span><button>Renommer</button><button>Retirer</button></div>
+<div class="val"><span class="n">Ambiance</span><span class="c">9 sons</span><button>Renommer</button><button>Retirer</button></div>
+<div class="val"><span class="n">Combat</span><span class="c zero">0 son</span><button>Renommer</button><button>Retirer</button></div>
+<div class="ajout"><input type="text" placeholder="Nouvelle valeur"><button class="p">Ajouter</button></div></div>
+<div class="cat"><header><h3>Émotion</h3><span class="c note">Aucune valeur.</span><button>Renommer</button><button>Retirer</button></header>
+<div class="ajout"><input type="text" placeholder="Nouvelle valeur"><button class="p">Ajouter</button></div></div>
+<div class="ajout" style="border:0;padding:0"><input type="text" placeholder="Nouvelle catégorie"><button class="p">Ajouter une catégorie</button></div>
+</div></section>
+<section><p class="label">E-37 — retrait d'une valeur</p><div class="fenetre"><h2>Retirer « Épique » ?</h2>
+<p class="note">Valeur de la catégorie « Genre ». 14 sons la portent ; ils la perdent, rien d'autre ne change.</p><div class="acts"><button>Annuler</button><button class="d">Retirer</button></div></div></section>
+<section><p class="label">E-38 — Purge des sons (administrateur)</p><div class="panneau">
+<h2>Purge des sons</h2><p class="note">Ce qui n'est plus dans aucune bibliothèque. Rien n'est coché : cochez ce que vous effacez.</p>
+<table><thead><tr><th></th><th>Sons sans bibliothèque</th><th>Type</th><th>Libère</th><th>Sections</th></tr></thead><tbody>
+<tr><td><input type="checkbox" checked aria-label="Taverne de nuit"></td><td>Taverne de nuit <span class="pastille">Privé</span></td><td>fond</td><td>4,2 Mo</td><td>Portée par 3 sections</td></tr>
+<tr><td><input type="checkbox" checked aria-label="Coup d'épée"></td><td>Coup d'épée</td><td>bruitage</td><td>0,3 Mo</td><td>—</td></tr>
+<tr><td><input type="checkbox" aria-label="Chant du forgeron"></td><td>Chant du forgeron</td><td>musique</td><td>0 Mo — fichier partagé avec un son conservé</td><td>Portée par 1 section</td></tr></tbody></table>
+<table><thead><tr><th></th><th>Fichiers inutilisés</th><th>Libère</th></tr></thead><tbody>
+<tr><td><input type="checkbox" checked aria-label="Fichier inutilisé 1"></td><td>Fichier inutilisé</td><td>5,3 Mo</td></tr></tbody></table>
+<div class="barre"><span class="note">2 sons et 1 fichier cochés — 9,8 Mo libérés</span><button class="d">Effacer les sons cochés</button></div>
+</div></section>
+<section><p class="label">E-38 — confirmation</p><div class="fenetre"><h2>Effacer 2 sons et 1 fichier, 9,8 Mo ?</h2>
+<p class="note">Les sons restent sous leur nom comme « son manquant » dans les 3 sections qui les portent. Un fichier effacé ne se rattrape pas.</p><div class="acts"><button>Annuler</button><button class="d">Effacer</button></div></div></section>
+<section><p class="label">E-23 — niveau « Administrateur » (administrateur seul)</p><div class="panneau"><h3>Niveau</h3>
+<div class="seg"><span>Lecture</span><span>Écriture</span><span class="on">Administrateur</span></div>
+<p class="note">Écriture sur tout ce que vous lisez, plus les tags et la purge des sons. N'ouvre aucun univers que vous ne lisez pas.</p></div></section>
+</body></html>
