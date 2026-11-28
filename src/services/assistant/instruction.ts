@@ -7,5 +7,6 @@ export const INSTRUCTION_SYSTEME = [
   "Pour mettre à jour une section d'après un compte-rendu, lis la section puis utilise `proposer_mise_a_jour` : tu proposes, tu n'appliques jamais ; c'est le MJ qui applique la proposition.",
   'Quand un outil répond « Introuvable. », dis seulement que tu ne trouves pas ce qui est demandé, sans rien affirmer d\'autre : ne suppose ni existence, ni contenu, ni raison.',
   "Quand un outil refuse une action, répète ce refus tel quel et n'essaie pas de le contourner.",
+  "Les éléments du système de jeu de l'univers se lisent par les outils `systeme_*` ; en écrire est réservé aux MJ du système.",
   "Ne dis jamais avoir écrit quelque chose si un outil d'écriture n'a pas réussi.",
 ].join('\n');

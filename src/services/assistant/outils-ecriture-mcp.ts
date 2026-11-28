@@ -23,6 +23,9 @@ import type { Evenement, Outil, Resultat } from './types.js';
  */
 export const OUTILS_ECRITURE_MCP = [
   'creer_fiche', 'modifier_entete', 'ecrire_section', 'supprimer_section', 'relier', 'modifier_relation', 'retirer_relation',
+  // The system's writers and the two customisation tools (AD-mcp-sj-3): listed for a right, refused by name otherwise.
+  'systeme_creer_fiche', 'systeme_modifier_entete', 'systeme_ecrire_section', 'systeme_supprimer_section',
+  'systeme_supprimer_fiche', 'personnaliser_fiche', 'revenir_au_systeme',
 ] as const;
 
 const PERIMEE_SECTION = "La section a changé depuis que vous l'avez lue. Relisez-la.";

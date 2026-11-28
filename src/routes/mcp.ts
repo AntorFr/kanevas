@@ -9,7 +9,8 @@ import { OUTILS_ECRITURE_MCP } from '../services/assistant/outils-ecriture-mcp.j
 import type { Outil, Resultat } from '../services/assistant/types.js';
 import { resoudreUnivers } from '../services/cles.js';
 import { sousOrigine } from '../services/historique.js';
-import { niveauEffectif, universDuJeton, verifierJeton } from '../services/jetons.js';
+import { niveauEffectif, niveauSysteme, universDuJeton, verifierJeton } from '../services/jetons.js';
+import { systemeRattache } from '../services/systemes.js';
 import { registerErreurs } from './erreurs.js';
 
 /** Body cap of the MCP door (AD-mcp-1). */
@@ -24,6 +25,8 @@ interface AccesMcp {
   /** Absent on bare `/mcp`. */
   universId?: number;
   niveau?: 'lecture' | 'ecriture';
+  /** The token's level on the universe's attached system; `null` with no row (AD-mcp-sj-1). Re-read at each request. */
+  systeme?: { niveau: 'lecture' | 'ecriture' } | null;
 }
 
 declare module 'fastify' {
@@ -77,7 +80,7 @@ function serveurDe(app: FastifyInstance, acces: AccesMcp): Server {
   const outils: Outil[] = acces.universId === undefined
     ? [outilListerUnivers(app, acces)]
     : catalogueDe(app.db, acces.compteId, acces.universId, {
-      porte: 'mcp', niveau: acces.niveau,
+      porte: 'mcp', niveau: acces.niveau, systeme: acces.systeme,
     }).outils;
   const serveur = new Server({ name: 'kanevas', version: '1' }, { capabilities: { tools: {} } });
   serveur.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -92,7 +95,12 @@ function serveurDe(app: FastifyInstance, acces: AccesMcp): Server {
     // A name the door does not offer (a player's `lire_historique` included) is the same « Introuvable. ».
     if (!outil) {
       // A write tool called by name with a `lecture` token is not listed, and refused as such (AD-mcp-2).
-      if (acces.niveau === 'lecture' && (OUTILS_ECRITURE_MCP as readonly string[]).includes(requete.params.name)) {
+      const nom = requete.params.name;
+      const ecriture = (OUTILS_ECRITURE_MCP as readonly string[]).includes(nom);
+      // A system writer (AD-mcp-sj-2): `lecture_seule` for a token with a row on the system, `introuvable` for one without.
+      if (ecriture && nom.startsWith('systeme_')) {
+        if (acces.systeme) return versResultatMcp({ ok: false, erreur: 'Ce jeton est en lecture seule.', code: 'lecture_seule' });
+      } else if (acces.niveau === 'lecture' && ecriture) {
         return versResultatMcp({ ok: false, erreur: 'Ce jeton est en lecture seule.', code: 'lecture_seule' });
       }
       return versResultatMcp({ ok: false, erreur: INTROUVABLE });
@@ -140,7 +148,13 @@ export async function registerMcpRoutes(app: FastifyInstance) {
       const univers = resoudreUnivers(app.db, cle);
       const { niveau } = univers ? niveauEffectif(app.db, jeton, univers.id) : { niveau: 'aucun' as const };
       if (!univers || niveau === 'aucun') return reply.code(404).send({ message: INTROUVABLE });
-      request.accesMcp = { jetonId: jeton.id, compteId: jeton.compteId, universId: univers.id, niveau };
+      // The system attached to this universe, read from the universe and never from the request; no row = `null`.
+      const rattache = systemeRattache(app.db, univers.id);
+      const sys = rattache ? niveauSysteme(app.db, jeton, rattache.id).niveau : 'aucun';
+      request.accesMcp = {
+        jetonId: jeton.id, compteId: jeton.compteId, universId: univers.id, niveau,
+        systeme: sys === 'aucun' ? null : { niveau: sys },
+      };
     });
 
     const poster = async (request: FastifyRequest, reply: import('fastify').FastifyReply) => {
