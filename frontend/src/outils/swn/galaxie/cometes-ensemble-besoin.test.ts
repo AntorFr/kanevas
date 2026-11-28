@@ -4,7 +4,7 @@
 // properties of the conic the besoin names (never recomputed with the code's own formula).
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { U, queueDeComete, trajectoireDeComete } from './carte-geometrie.ts';
+import { U, rayonOrbite, queueDeComete, trajectoireDeComete } from './carte-geometrie.ts';
 
 const O = { x: 0, y: 0 };
 const dist = (p: number[], c = O) => Math.hypot(p[0]! - c.x, p[1]! - c.y);
@@ -46,7 +46,7 @@ describe('B-116 la queue d’une comète est à l’opposé de l’étoile et pl
 
 describe('B-116 la trajectoire d’une comète est une ellipse très allongée depuis son périhélie, l’étoile à un foyer', () => {
   const comete = (heure: number, sens?: number, perihelie?: number) => ({
-    x: 6 * U * Math.sin((heure / 12) * 2 * Math.PI), y: -6 * U * Math.cos((heure / 12) * 2 * Math.PI), orbite: 6, heure,
+    x: rayonOrbite(6) * Math.sin((heure / 12) * 2 * Math.PI), y: -rayonOrbite(6) * Math.cos((heure / 12) * 2 * Math.PI), orbite: 6, heure,
     aspect: { ...(perihelie === undefined ? {} : { perihelie }), ...(sens === undefined ? {} : { sens }) },
   });
 
