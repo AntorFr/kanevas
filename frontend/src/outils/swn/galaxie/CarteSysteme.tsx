@@ -236,12 +236,14 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
   }, [dispo, ecran, echelle, sorties, marques, taille.w, selectionElement]);
 
   // A comet's tail as drawn (AD-cometes-1): away from the star it turns round, in screen pixels (its length follows the fit, never the zoom).
+  const LONGUEUR_BASE_QUEUE_PX = 12 + 32 + 4;
   const queueDe = (c: CorpsPlace) => {
     const etoile = dispo?.corps.find((e) => e.astre.genre === 'etoile' && e.astre.etoile_rang === c.astre.etoile_rang)
       ?? dispo?.corps.find((e) => e.astre.genre === 'etoile' && e.astre.etoile_rang === 0) ?? { x: 0, y: 0 };
     const la = typeof c.astre.aspect?.longueur === 'number' ? c.astre.aspect.longueur : 0.55;
     const q = queueDeComete({ x: c.x, y: c.y, orbite: c.astre.orbite ?? undefined, heure: c.astre.heure ?? undefined, aspect: c.astre.aspect }, etoile, la);
-    return { etoile, queue: { ...q, longueur: q.longueur * ajuste } };
+    // The geometry's length follows the fit; a readable base (past the 12 px coma, 32 px of tail) is added so the tail is never hidden by it.
+    return { etoile, queue: { ...q, longueur: LONGUEUR_BASE_QUEUE_PX + q.longueur * ajuste } };
   };
   const cometeChoisie = dispo?.corps.find((c) => c.genre === 'comete' && c.cle === selection) ?? null;
 
@@ -358,7 +360,11 @@ export default function CarteSysteme({ interieur, base, adresseVoisin, suffixe, 
             o.setTransform(dpr, 0, 0, dpr, demi * dpr, demi * dpr);
             o.globalAlpha = 1;
             o.globalCompositeOperation = 'destination-in';
-            const fondu = o.createLinearGradient(0, 0, queue.dx * queue.longueur, queue.dy * queue.longueur);
+            // The picture ends at its own square: the fade must reach nothing before it, whatever the tail's length.
+            const ux = -sens * 0.8, uy = 0.6, hx = -c.decalage[0] * cote, hy = -c.decalage[1] * cote;
+            const versBord = Math.min((Math.sign(ux) * cote / 2 - hx) / ux, (Math.sign(uy) * cote / 2 - hy) / uy);
+            const Lm = Math.max(1, Math.min(queue.longueur, versBord * 0.95));
+            const fondu = o.createLinearGradient(0, 0, queue.dx * Lm, queue.dy * Lm);
             // Eased over the whole length, so the picture's own tail dies out smoothly and never ends in a cut.
             for (const [pos, a] of [[0, 1], [0.15, 0.9], [0.4, 0.55], [0.7, 0.2], [0.9, 0.05], [1, 0]] as const) fondu.addColorStop(pos, `rgba(0,0,0,${a})`);
             o.fillStyle = fondu;
