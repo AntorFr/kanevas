@@ -20,6 +20,8 @@ describe('kanevas-systemes-jeu-recherche-ecrans : pastille et case du système',
       s.stop();
     });
     const antor = await connecte(browser, s.base, 'Antor');
+    const mira = await connecte(browser, s.base, 'Mira');
+    const admin = await connecte(browser, s.base, 'Admin');
     antor.page.setDefaultTimeout(60000);
 
     const u = await antor.ctx.request.post('/api/univers', { data: { nom: 'Lame', description: 'd' } });
@@ -28,8 +30,9 @@ describe('kanevas-systemes-jeu-recherche-ecrans : pastille et case du système',
     const sys = await antor.ctx.request.post(`/api/univers/${uid}/systeme-nouveau`, { data: { nom: 'Zeta' } });
     assert.equal(sys.status(), 201);
     const sid = (await sys.json()).id;
+    assert.ok((await admin.ctx.request.post(`/api/instance/systemes/${sid}/membres`, { data: { username: 'mira' } })).status() < 300);
     const element = async (titre: string) => {
-      const r = await antor.ctx.request.post(`/api/systemes/${sid}/fiches`, { data: { type: 'objet', titre, sections: [{ titre: 'Description', joueursLisent: true }] } });
+      const r = await mira.ctx.request.post(`/api/systemes/${sid}/fiches`, { data: { type: 'objet', titre, sections: [{ titre: 'Description', joueursLisent: true }] } });
       assert.equal(r.status(), 201);
       return (await r.json()).id;
     };
