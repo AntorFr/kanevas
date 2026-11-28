@@ -8,6 +8,7 @@ import { iconeDuType, useTypes, type TypeVue } from '../../types-contexte';
 import './arbre.css';
 import type { Fiche, PageFiches } from './types';
 import { StatutAventure } from './statut';
+import { MarqueOrigine } from './marque-personnalise';
 import { useMJSeul } from './vignette';
 
 /** A row of the tree (AD-115): `aDesEnfants` and `dans` are computed by the server under the caller's reading. */
@@ -306,6 +307,7 @@ function LienFiche({ universId, fiche: f, Icone }: { universId: string; fiche: F
             {f.sousType}
           </span>
         )}
+        <MarqueOrigine fiche={f} />
       </Link>
       {mjSeul.badge}
       {mjSeul.aide}

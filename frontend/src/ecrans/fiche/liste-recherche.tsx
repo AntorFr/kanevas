@@ -1,5 +1,5 @@
-import { Search, SearchX, X } from 'lucide-react';
-import { useEffect, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { Eye, Search, SearchX, X } from 'lucide-react';
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
 
 import { lire, useConnexionPerdue } from '../../api';
 import { useCharge } from '../../cadre-contexte';
@@ -10,6 +10,7 @@ import type { TypeVue } from '../../types-contexte';
 import { CarteFiche, ChargementGrille } from './vignette';
 import { FiltreEtat, type EtatFiche } from './marque';
 import { Arbre, type VueListe } from './arbre';
+import { LIBELLE_SANS_SYSTEME } from './marque-personnalise';
 import { STATUTS_AVENTURE, statutValide, type Statut } from './statut';
 
 /** Longest search the server accepts (B-11). */
@@ -35,6 +36,9 @@ interface Props {
   /** The visibility filter in force (B-57, GM in GM mode): '' (all), 'joueurs' or 'mj'; with `onVisibilite` the filter is offered. */
   visibilite?: Visibilite;
   onVisibilite?: (visibilite: Visibilite) => void;
+  /** « Masquer les éléments du système » in force (B-117); with `onSansSysteme` (attached universe) the box is offered. */
+  sansSysteme?: boolean;
+  onSansSysteme?: (actif: boolean) => void;
   /** Clear all the filters in one address update. */
   onToutEffacer?: () => void;
   /** The search in force (empty = the whole list). The caller owns it: address, local state… */
@@ -55,7 +59,8 @@ interface Props {
 }
 
 /** The list of one lore type with its search field (E-8); reused by the « Relier » form of E-9. */
-export function ListeRecherche({ universId, type, recherche, onRecherche, sousType = '', onSousType, etat = '', onEtat, statut: brutStatut, onStatut, gestion = false, visibilite = '', onVisibilite, onToutEffacer, ligne, action, videListe, vue = 'grille', bascule, suffixeMode = '' }: Props) {
+export function ListeRecherche({ universId, type, recherche, onRecherche, sousType = '', onSousType, etat = '', onEtat, statut: brutStatut, onStatut, gestion = false, visibilite = '', onVisibilite, sansSysteme = false, onSansSysteme, onToutEffacer, ligne, action, videListe, vue = 'grille', bascule, suffixeMode = '' }: Props) {
+  const caseSysteme = useRef<HTMLInputElement>(null);
   const perdue = useConnexionPerdue();
   const [saisie, setSaisie] = useState(recherche);
   const [erreur, setErreur] = useState<string>();
@@ -92,7 +97,8 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
   const avecEtat = etat === '' || !type.disparu ? avecSousType : `${avecSousType}&etat=${etat}`;
   const avecStatut = statut === '' ? avecEtat : `${avecEtat}&statut=${statut}`;
   const avecVisibilite = visibilite === '' ? avecStatut : `${avecStatut}&visibilite=${visibilite}`;
-  const chemin = (recherche === '' ? avecVisibilite : `${avecVisibilite}&q=${encodeURIComponent(recherche)}`) + suffixeMode;
+  const avecOrigine = sansSysteme ? `${avecVisibilite}&origine=univers` : avecVisibilite;
+  const chemin = (recherche === '' ? avecOrigine : `${avecOrigine}&q=${encodeURIComponent(recherche)}`) + suffixeMode;
   const etiquette = `Chercher dans ${dans(type)}`;
 
   return (
@@ -122,6 +128,11 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
           </div>
         )}
         {onVisibilite && <FiltreVisibilite valeur={visibilite} onChoix={onVisibilite} desactive={perdue} />}
+        {onSansSysteme && (
+          <label className="filtre-sans-systeme">
+            <input ref={caseSysteme} type="checkbox" checked={sansSysteme} disabled={perdue} onChange={(e) => onSansSysteme(e.target.checked)} /> {LIBELLE_SANS_SYSTEME}
+          </label>
+        )}
         <div className="actions">
           <Bouton type="submit" disabled={perdue}>
             Chercher
@@ -134,7 +145,7 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
           {bascule}
         </div>
       </form>
-      {vue === 'arbre' && recherche === '' && sousType === '' && etat === '' && statut === '' && visibilite === '' ? (
+      {vue === 'arbre' && recherche === '' && sousType === '' && etat === '' && statut === '' && visibilite === '' && !sansSysteme ? (
         <Arbre key={`${type.type}${suffixeMode}`} universId={universId} type={type} suffixeMode={suffixeMode} videListe={videListe} gestion={gestion} />
       ) : (
       <Resultats
@@ -151,6 +162,11 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
         gestion={gestion}
         visibilite={visibilite}
         onVisibilite={onVisibilite}
+        sansSysteme={sansSysteme}
+        onAfficherSysteme={onSansSysteme && (() => {
+          onSansSysteme(false);
+          caseSysteme.current?.focus();
+        })}
         onToutEffacer={onToutEffacer}
         ligne={ligne}
         action={action}
@@ -175,13 +191,16 @@ function Resultats({
   gestion,
   visibilite = '',
   onVisibilite,
+  sansSysteme = false,
+  onAfficherSysteme,
   onToutEffacer,
   ligne,
   action,
   videListe,
   onEffacer,
-}: Pick<Props, 'universId' | 'type' | 'recherche' | 'sousType' | 'onSousType' | 'etat' | 'onEtat' | 'statut' | 'gestion' | 'visibilite' | 'onVisibilite' | 'onToutEffacer' | 'ligne' | 'action' | 'videListe'> & {
+}: Pick<Props, 'universId' | 'type' | 'recherche' | 'sousType' | 'onSousType' | 'etat' | 'onEtat' | 'statut' | 'gestion' | 'visibilite' | 'onVisibilite' | 'sansSysteme' | 'onToutEffacer' | 'ligne' | 'action' | 'videListe'> & {
   chemin: string;
+  onAfficherSysteme?: () => void;
   onEffacer: () => void;
 }) {
   const perdue = useConnexionPerdue();
@@ -226,7 +245,12 @@ function Resultats({
 
   return (
     <>
-      {fiches.length === 0 && !cherche && etat !== '' && type.disparu ? (
+      {fiches.length === 0 && sansSysteme ? (
+        <VideIcone icone={SearchX}>
+          <p role="status">Aucun résultat sans les éléments du système.</p>
+          <Bouton variante="fantome" icone={Eye} onClick={onAfficherSysteme}>Afficher les éléments du système</Bouton>
+        </VideIcone>
+      ) : fiches.length === 0 && !cherche && etat !== '' && type.disparu ? (
         <VideIcone icone={SearchX}>
           <p>{etat === 'disparu' ? type.disparu.vide.disparu : type.disparu.vide.la}</p>
           <Bouton onClick={() => onEtat?.('')}>Voir tous {dans(type)}.</Bouton>

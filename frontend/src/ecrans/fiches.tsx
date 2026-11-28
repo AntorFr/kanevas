@@ -92,7 +92,10 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
   const vue = vues[type.type] ?? lireVue(universId, type.type);
   const gestion = mj && !modeJoueur;
   const statut = type.type === 'aventure' ? statutValide(params.get('statut')) : '';
-  const filtree = Boolean(params.get('q')?.trim() || params.get('sousType') || statut || visibilite || (type.disparu && etatDe(params.get('etat'))));
+  // B-117: the box exists only in a universe attached to a system; the address alone keeps it, per list.
+  const rattache = Boolean(univers.valeur.systeme);
+  const sansSysteme = rattache && params.get('sans-systeme') === '1';
+  const filtree = Boolean(sansSysteme || params.get('q')?.trim() || params.get('sousType') || statut || visibilite || (type.disparu && etatDe(params.get('etat'))));
   const choisirVue = (v: VueListe) => {
     memoriserVue(universId, type.type, v);
     setVues((m) => ({ ...m, [type.type]: v }));
@@ -130,9 +133,11 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
         onStatut={(v) => setParams((p) => majParam(p, 'statut', v))}
         onToutEffacer={() => setParams((p) => {
           const n = new URLSearchParams(p);
-          for (const cle of ['q', 'sousType', 'statut', 'visibilite', 'etat']) n.delete(cle);
+          for (const cle of ['q', 'sousType', 'statut', 'visibilite', 'etat', 'sans-systeme']) n.delete(cle);
           return n;
         })}
+        sansSysteme={sansSysteme}
+        onSansSysteme={rattache ? (v) => setParams((p) => majParam(p, 'sans-systeme', v ? '1' : ''), { replace: true }) : undefined}
         visibilite={visibilite}
         onVisibilite={offreVisibilite ? (v) => setParams((p) => majParam(p, 'visibilite', v)) : undefined}
         videListe={

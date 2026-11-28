@@ -1,4 +1,4 @@
-import { Search } from 'lucide-react';
+import { Eye, Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { Link, useParams, useSearchParams, type SetURLSearchParams } from 'react-router-dom';
 
@@ -10,7 +10,7 @@ import type { UniversListe } from '../types';
 import { Bouton, Champ, PageIntrouvable, VignetteFiche } from '../ui';
 import { useMJSeul } from './fiche/vignette';
 import { etatDe } from './fiche/marque';
-import { MarquePersonnalise } from './fiche/marque-personnalise';
+import { LIBELLE_SANS_SYSTEME, MarqueOrigine } from './fiche/marque-personnalise';
 import { LONGUEUR_RECHERCHE } from './fiche/liste-recherche';
 import type { Fiche, PageFiches } from './fiche/types';
 import { StatutAventure } from './fiche/statut';
@@ -33,10 +33,10 @@ function Recherche() {
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
   if (univers.etat === 'erreur') return <PageIntrouvable />;
   if (univers.etat === 'chargement') return <div className="page-recherche" role="status"><p className="note-recherche">Chargement…</p></div>;
-  return <Corps key={id} universId={id!} mj={univers.valeur.role === 'mj'} />;
+  return <Corps key={id} universId={id!} mj={univers.valeur.role === 'mj'} rattache={Boolean(univers.valeur.systeme)} />;
 }
 
-function Corps({ universId, mj }: { universId: string; mj: boolean }) {
+function Corps({ universId, mj, rattache }: { universId: string; mj: boolean; rattache: boolean }) {
   const perdue = useConnexionPerdue();
   const { types, etat: etatTypes } = useTypes();
   const [params, setParamsAdresse] = useSearchParams();
@@ -83,8 +83,11 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
   const etat = mots ? etatDe(params.get('etat')) : '';
   const avancee = useAvancee(universId, suffixeMode, params, setParams);
   const { lie, nature, descendants } = avancee;
+  // B-117: the box only exists in a universe attached to a system; the address is its only memory (AD-recherche-2).
+  const sansSysteme = rattache && params.get('sans-systeme') === '1';
+  const caseSysteme = useRef<HTMLInputElement>(null);
   const trop = q.length > LONGUEUR_RECHERCHE;
-  const depart = q === '' && etiquette === '' && lie === '';
+  const depart = q === '' && etiquette === '' && lie === '' && !sansSysteme;
   // Wait for what turns the address into a request (types, labels) before sending it.
   const attend = avancee.attend || etatTypes === 'chargement' || (etiquetteUrl !== '' && etiquettesLues.etat === 'chargement');
   const [resultats, setResultats] = useState<Resultats>({ etat: 'depart' });
@@ -104,9 +107,10 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
       if (nature) p.set('nature', nature);
       if (descendants) p.set('descendants', '1');
     }
+    if (sansSysteme) p.set('origine', 'univers');
     if (joueur) p.set('mode', 'joueur');
     return `/api/univers/${universId}/fiches?${p.toString()}`;
-  }, [universId, q, type, etat, etiquette, joueur, lie, nature, descendants]);
+  }, [universId, q, type, etat, etiquette, joueur, lie, nature, descendants, sansSysteme]);
 
   const parti = !depart && !trop && !attend && !perdue;
   useEffect(() => {
@@ -209,6 +213,12 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
             {t.pluriel}
           </Pastille>
         ))}
+        {rattache && (
+          <label className="filtre-sans-systeme">
+            <input ref={caseSysteme} type="checkbox" checked={sansSysteme} disabled={perdue}
+              onChange={(e) => setParams((p) => majParam(p, 'sans-systeme', e.target.checked ? '1' : ''), { replace: true })} /> {LIBELLE_SANS_SYSTEME}
+          </label>
+        )}
       </div>
       {noms.length > 0 && (
         <div className="filtres-recherche etiquettes" role="group" aria-label="Étiquettes">
@@ -222,6 +232,11 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
       <Avancee universId={universId} suffixeMode={suffixeMode} params={params} setParams={setParams} avancee={avancee} mots={mots} etat={etat} />
       <Corps2
         lie={lie !== ''}
+        sansSysteme={sansSysteme}
+        onAfficherSysteme={() => {
+          setParams((p) => majParam(p, 'sans-systeme', ''), { replace: true });
+          caseSysteme.current?.focus();
+        }}
         cible={avancee.cible.etat === 'ok' ? avancee.cible.fiche.titre : undefined}
         attend={attend}
         resultats={resultats}
@@ -241,6 +256,8 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
 
 function Corps2({
   lie,
+  sansSysteme,
+  onAfficherSysteme,
   cible,
   attend,
   resultats,
@@ -255,6 +272,8 @@ function Corps2({
   onEtiquette,
 }: {
   lie: boolean;
+  sansSysteme: boolean;
+  onAfficherSysteme: () => void;
   cible?: string;
   attend: boolean;
   resultats: Resultats;
@@ -284,7 +303,17 @@ function Corps2({
           La recherche n’a pas abouti. Réessayez. <Bouton petit onClick={onReessayer}>Réessayer</Bouton>
         </div>
       )}
-      {resultats.etat === 'ok' && resultats.fiches.length === 0 && <div className="vide-recherche">{lie ? cible ? <>Aucune fiche liée à « <span className="cible-vide" title={cible}>{cible}</span> » pour ces critères.</> : 'Aucune fiche liée pour ces critères.' : 'Aucune fiche ne correspond.'}</div>}
+      {resultats.etat === 'ok' && resultats.fiches.length === 0 && (
+        <div className="vide-recherche">
+          {lie ? cible ? <>Aucune fiche liée à « <span className="cible-vide" title={cible}>{cible}</span> » pour ces critères.</> : 'Aucune fiche liée pour ces critères.'
+            : sansSysteme ? <span role="status">Aucun résultat sans les éléments du système.</span> : 'Aucune fiche ne correspond.'}
+          {sansSysteme && (
+            <div className="afficher-systeme">
+              <Bouton variante="fantome" icone={Eye} onClick={onAfficherSysteme}>Afficher les éléments du système</Bouton>
+            </div>
+          )}
+        </div>
+      )}
       {resultats.fiches.length > 0 && (
         <ul className={`resultats-recherche${grise ? ' grise' : ''}`}>
           {resultats.fiches.map((f) => (
@@ -323,7 +352,7 @@ function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fi
             <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
             {fiche.titre}
           </span>
-          {fiche.origine === 'surcharge' && <MarquePersonnalise />}
+          <MarqueOrigine fiche={fiche} />
           {fiche.via && <small className="via-recherche" title={fiche.via.titre}>{fiche.via.titre}</small>}
           {(fiche.aliasTrouve !== undefined || etiquettes.length > 0) && (
             <small className="sous-titre-recherche">

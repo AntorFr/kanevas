@@ -225,3 +225,18 @@ main.principal:has(.page-grille) { max-width: 1080px; }
 @media (max-width: 520px) { .filtre-visibilite { flex: 1 1 100%; } }
 .filtre-visibilite .champ { margin: 0; }
 .filtre-visibilite .champ > .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+/* B-117: « Masquer les éléments du système » (E-8, E-17), the field of « sous-lieux compris »; 44 px to touch, on its own line on a phone. */
+.filtre-sans-systeme { display: flex; align-items: center; gap: var(--e-2); min-height: 44px; font-size: var(--t-13); color: var(--texte-2); cursor: pointer; }
+.filtre-sans-systeme input { appearance: none; display: grid; place-items: center; flex: none; width: 16px; height: 16px; margin: 0; border: 1px solid var(--bord-champ); border-radius: 3px; background: var(--surface); color: var(--sur-accent); cursor: pointer; }
+.filtre-sans-systeme input:checked { background: var(--accent); border-color: var(--accent); }
+.filtre-sans-systeme input:checked::after { content: ''; width: 4px; height: 8px; border: solid currentColor; border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg); }
+.filtre-sans-systeme input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.filtre-sans-systeme input:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 760px) { .filtre-sans-systeme { flex: 1 1 100%; } }
+.afficher-systeme { margin-top: var(--e-3); }
+/* The system's pastille: the name is cut with « … » (the whole name in the tooltip), the icon stays. */
+.marque-systeme { display: inline-flex; vertical-align: middle; flex: 0 1 auto; min-width: 0; max-width: 100%; }
+.marque-systeme > * { min-width: 0; max-width: 100%; }
+.marque-systeme .nom-systeme { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 16ch; }
+.pied-carte .marque-systeme { margin-top: -1px; }
+@media (max-width: 760px) { .ligne-recherche .marque-systeme, .ligne-recherche .marque-personnalise { flex-basis: 100%; } }
