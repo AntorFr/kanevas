@@ -35,7 +35,7 @@ system has it, `swn_lire_systeme` (read) and, with an `ecriture` token of a GM, 
 fed by `catalogueDe`; a player's token reads only (`swn_lire_systeme`). `swn_galaxie_trajet` stays the assistant's. Today the
 module is active only under `KANEVAS_STUB=1` / `NODE_ENV=test`.
 
-The elements of the universe's game system (AD-159, `kanevas-systemes-jeu`): when the universe has an attached system and the token has a
+The elements of the universe's game system (AD-159 of the `kanevas-systemes-jeu` table of `ARCHITECTURE.md`, « MCP door and assistant »: not the battle map's live stream): when the universe has an attached system and the token has a
 level on it, `systeme_chercher`, `systeme_lire_fiche`, `systeme_lire_section` (any level of token, provided it has a row for the system: a token made with `systemes:[{id, niveau}]`, AD-155), and with an `ecriture` token of a GM of the system
 `systeme_creer_fiche`, `systeme_modifier_entete`, `systeme_ecrire_section`, `systeme_supprimer_section`, `systeme_supprimer_fiche`; a GM of the
 universe also gets `personnaliser_fiche` and `revenir_au_systeme` (customise an element for this universe, go back). The system is never a parameter: it is the universe's own.
