@@ -1732,7 +1732,7 @@ the map or a rule **without the music stopping**.
 
 He browses the library of his universe (E-31): only sounds « for the players » and the system's, hears them, hears the
 effect on the sheet of his weapon. He sees neither the global library, nor GM-only sounds, nor the entries of sections he
-does not read.
+does not read. *Failure*: a sound turned « GM only » or removed while it plays leaves the bar with « <nom> n'est plus disponible »; a blocked audio asks for one click. The bar (E-34) is his too: he stops each sound and sets his volumes.
 
 ### P-35 — The admin keeps tags and purges (instance admin)
 
