@@ -7,7 +7,7 @@
 // TEST PLAN (world « Éneria d'essai »: Antor GM, Léa Player and author of « Vent d'Orak » and « Étoile du soir »)
 // Hulls (all power 20, mass 20, factors 1): Frégate R class 2, cost 300 000, speed 3, armour 5 ; Mini R class 1 ; Croiseur R class 3 ;
 // Cuirassé R class 4 ; Impaire R cost 333 335 ; Paire R cost 333 334 ; Demi R cost 350 050.
-// B-83 pourcentage nominal : Blindage (10 %, armure +2) on Frégate R → prix 330 000, ligne 30 000, armure 7
+// B-83 pourcentage nominal : Blindage (10 %, armure +2) on Frégate R → prix 300 000, ligne 30 000, armure 7
 //                 bords    : 333 335 × 10 % → 33 334 (half up) ; 333 334 → 33 333 ; 350 050 × 1 % = 3 500,5 → 3 501 ; 1 % and 1 000 % import, 0 and 1 001 refused
 //                 exclusions : the percentage is not multiplied by the hull's cost factor ; a modification without percentage has no `cout` on its line
 // B-83 vitesse/armure nominal : vitesse +2 → 5, −1 → 2 ; armure +2 → 7
@@ -124,7 +124,7 @@ const ligne = (r: Rep, cle: string): Any => r.json.resultat.lignes.find((x: Any)
 const mods = (cle: string, q = 1, plus: Any = {}) => l('modifications', cle, q, plus);
 
 describe('B-83 coût en pourcentage de la coque', () => {
-  it('Blindage à 10 % sur la Frégate R (300 000) : prix 330 000, ligne 30 000, armure 7', async () => {
+  it('Blindage à 10 % sur la Frégate R (300 000) : prix 300 000, ligne 30 000, armure 7', async () => {
     const m = await monde();
     const base = await calc(m, { coque: 'fregate-r', choix: [] });
     assert.equal(base.json.resultat.prix, 300000);

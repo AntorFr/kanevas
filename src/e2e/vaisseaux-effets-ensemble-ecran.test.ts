@@ -104,7 +104,7 @@ const ligneDe = (p: Any, nom: string) => p.locator('li').filter({ hasText: nom }
 const attendreResultat = (p: Any, re: RegExp) => p.waitForFunction((src: string) => new RegExp(src).test((document.querySelector('[aria-label="Résultats"]') as HTMLElement).innerText.replace(/[  ]/g, ' ')), re.source);
 
 describe('B-83 · E-22 : modifications à coût en pourcentage et effets de jeu', { skip: skipBrowser, timeout: 240000 }, () => {
-  it('Léa choisit Blindage (10 %) : « 10 % de la coque », « Ligne : 30 000 cr », prix 330 000 cr, Armure 7', async () => {
+  it('Léa choisit Blindage (10 %) : « 10 % de la coque », « Ligne : 30 000 cr », prix 300 000 cr, Armure 7', async () => {
     const m = await monde(true);
     await m.poser(m.etoile, { coque: 'fregate-r', choix: [] });
     const p = await ouvrir(m, 'Léa', m.etoile);
