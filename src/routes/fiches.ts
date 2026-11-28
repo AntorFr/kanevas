@@ -245,6 +245,7 @@ function monter(app: FastifyInstance, base: string, systeme: boolean) {
       visibilite: q.visibilite as string | undefined,
       curseur: q.curseur as string | undefined,
       recherche: q.q as string | undefined,
+      origine: q.origine as string | undefined,
       parent,
     });
   });

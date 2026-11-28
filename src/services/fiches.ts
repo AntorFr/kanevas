@@ -926,9 +926,14 @@ export function listerFiches(
     horsDe?: number;
     /** With `recherche`: each sheet carries the passages of its readable sections that match (AD-145). */
     extraits?: boolean;
+    /** `tous` (default) or `univers`: the sheets of the universe's own space only, copies included (B-117, AD-recherche-1). */
+    origine?: string;
   } = {},
 ): PageFiches {
   const role = exigerRole(db, universId, acteur.compteId);
+  if (options.origine !== undefined && options.origine !== 'tous' && options.origine !== 'univers') {
+    throw invalide('Requête invalide.');
+  }
   if ((options.nature !== undefined || options.descendants !== undefined) && options.lie === undefined) {
     throw invalide('Requête invalide.');
   }
@@ -1073,7 +1078,7 @@ export function listerFiches(
   }
   // The elements of the attached system join the list, read at the account's right on the system (AD-157): one
   // line each, once. Only the flat list and the search; the linked, tree and visibility reads stay the universe's.
-  const element = options.lie === undefined && options.parent === undefined && options.horsDe === undefined &&
+  const element = options.origine !== 'univers' && options.lie === undefined && options.parent === undefined && options.horsDe === undefined &&
     options.visibilite === undefined && options.statut === undefined && options.etat === undefined
     ? elementsDeLUnivers(db, acteur.compteId, universId)
     : null;
@@ -1112,6 +1117,17 @@ export function listerFiches(
   const passages = options.extraits === true && options.recherche !== undefined
     ? passagesDeLaPage(db, role, acteur, element, page, options.recherche)
     : null;
+  // The system a copy belongs to: the universe's attached one, its name readable by every member (AD-154); looked up once.
+  let lie: { id: number; nom: string } | null | undefined;
+  const systemeLie = (): { id: number; nom: string } | null => {
+    if (lie === undefined) {
+      const u = db.prepare('SELECT systeme_id FROM univers WHERE id = ?').get(universId) as { systeme_id: number | null } | undefined;
+      lie = u?.systeme_id == null
+        ? null
+        : ((db.prepare('SELECT id, nom FROM systemes_jeu WHERE id = ?').get(u.systeme_id) as { id: number; nom: string } | undefined) ?? null);
+    }
+    return lie;
+  };
   const enrichie = (r: FicheRow): Fiche => {
     const e = etiquetageDe(db, r.id);
     if (element && r.univers_id === element.espaceId) {
@@ -1131,7 +1147,8 @@ export function listerFiches(
       if (passages !== null) vue.passages = passages.get(r.id) ?? [];
       return vue;
     }
-    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur)), ...visibiliteVue(r), origine: r.surcharge_de != null ? 'surcharge' : 'univers', alias: e.alias, etiquettes: e.etiquettes };
+    const copie = r.surcharge_de != null;
+    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f), vueMJ(role, acteur)), ...visibiliteVue(r), origine: copie ? 'surcharge' : 'univers', ...(copie && systemeLie() ? { systeme: systemeLie()! } : {}), alias: e.alias, etiquettes: e.etiquettes };
     if (r.lien_via) {
       const via = JSON.parse(r.lien_via) as { id: number; titre: string };
       if (via.id !== options.lie) f.via = via;
