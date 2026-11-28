@@ -27,7 +27,7 @@ async function monde() {
   const E = one(app, 'SELECT id FROM univers WHERE nom = ?', "Éneria d'essai").id as number;
   const g = one(app, 'SELECT id FROM swn_galaxies WHERE univers_id = ?', E).id as number;
   const sys = (q: number, r: number, secret = 0, nom = 'Sys') =>
-    app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',?,0)")
+    app.db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.5,NULL,'',?,0)")
       .run(g, E, `hab-${q}-${r}`, nom, q, r, secret).lastInsertRowid as number;
   const route = (de: number, vers: number, publique: number, longueur: number, type: string | null) =>
     app.db.prepare('INSERT INTO swn_routes (galaxie_id, univers_id, depuis_id, vers_id, publique, longueur, type_lien) VALUES (?,?,?,?,?,?,?)')

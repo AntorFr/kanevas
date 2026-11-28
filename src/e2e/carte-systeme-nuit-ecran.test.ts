@@ -75,7 +75,7 @@ describe('E-23 un monde à lueur montre une face nocturne lumineuse', { skip: sk
     gid = Number(String(cartes.cartes.find((c: Any) => c.titre === "Galaxie d'essai").adresse).split('/').pop());
     await a.ctx.close();
     db = new Database(dbPath);
-    const centre = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,3,'accent','',0,0)")
+    const centre = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu) VALUES (?,?,?,?,?,?,0.5,NULL,'',0,0)")
       .run(gid, univers, 'nuit-centre', 'Système neutre', O.q, O.r).lastInsertRowid as number;
     const ast = db.prepare('INSERT INTO swn_astres (systeme_id, cle, genre, parent_id, etoile_rang, type, nom, orbite, heure, taille, aspect) VALUES (?,?,?,?,?,?,?,?,?,?,?)');
     ast.run(centre, 'etoile', 'etoile', null, 0, 'jaune', 'Étoile neutre', 0, 0, 1, '{}');

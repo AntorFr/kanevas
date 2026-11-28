@@ -2,9 +2,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { rayonEtoile, couleurEtoile } from './carte-geometrie.ts';
-import { cadrerZoneConnue, boiteZoneConnue, boiteGrille, zoomMinimal, TAILLE_FOND, BLOCS_FENETRE_MAX } from './carte-cadrage.ts';
+import { cadrerZoneConnue, boiteZoneConnue, boiteGrille, zoomMinimal, zoomDecouverte, TAILLE_FOND, BLOCS_FENETRE_MAX, ajustement } from './carte-cadrage.ts';
 import { nomsVisibles, type CandidatNom } from './carte-noms.ts';
-import { versPlan, TAILLE_MAX, COTE_BLOC } from './geo.ts';
+import { versPlan, TAILLE_MAX, COTE_BLOC, BLOCS_MAX, tailleMinimale } from './geo.ts';
 
 describe('rayonEtoile', () => {
   it('croît strictement avec la taille, valeurs littérales aux bornes (3 px à 0, 12 px à 1)', () => {
@@ -152,5 +152,33 @@ describe('nomsVisibles', () => {
     // width of « Havre » at body 12: 0.6 × 12 × 5 = 36 → half 18
     const k = nomsVisibles([sys('s:a', 100, 100), sys('s:b', 136, 100)], { s: 30 });
     assert.equal(k.size, 2);
+  });
+});
+
+describe('réouverture de recette : un système défini lointain (Vael à 30, -20)', () => {
+  const sys = [{ q: 0, r: 0 }, { q: 4, r: -2 }, { q: 30, r: -20 }];
+
+  it('le cadrage tient Vael et ses voisins dans la fenêtre à 1280 px et à 390 px', () => {
+    for (const f of [{ w: 901, h: 640 }, { w: 390, h: 600 }]) {
+      const v = cadrerZoneConnue(sys, [], f)!;
+      for (const s of sys) {
+        const p = { x: f.w / 2 + (versPlan(s.q, s.r).x - v.vx) * v.s, y: f.h / 2 + (versPlan(s.q, s.r).y - v.vy) * v.s };
+        assert.ok(p.x > 0 && p.x < f.w && p.y > 0 && p.y < f.h, `${s.q},${s.r} → ${p.x},${p.y} dans ${f.w}x${f.h}`);
+      }
+    }
+  });
+
+  it('le zoom de découverte est le plus bas du plafond de blocs : jamais sous 4 px, jamais au-dessus du plancher d’aujourd’hui', () => {
+    const z = zoomDecouverte(FEN);
+    assert.ok(z >= TAILLE_FOND);
+    assert.ok(z <= tailleMinimale(FEN.w, FEN.h) + 1e-9);
+    assert.equal(z, Math.max(TAILLE_FOND, tailleMinimale(FEN.w, FEN.h) * (BLOCS_MAX / BLOCS_FENETRE_MAX)));
+  });
+
+  it('le plancher de zoom, calculé sur la même part de fenêtre que le cadrage, ne retient pas l’ajustement', () => {
+    const b = boiteZoneConnue(sys, [])!;
+    const part = 0.7;
+    const fit = ajustement(b, { w: FEN.w * part, h: FEN.h * part });
+    assert.ok(zoomMinimal(FEN, b, part) <= Math.max(fit, TAILLE_FOND) + 1e-9);
   });
 });

@@ -43,7 +43,7 @@ describe('E-23 le halo de transition et les flèches de sortie', { skip: skipBro
     await a.ctx.close();
     const db = new Database(dbPath);
     try {
-      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu, transition) VALUES (?,?,?,?,?,?,3,'accent','',?,0,?)");
+      const sys = db.prepare("INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu, transition) VALUES (?,?,?,?,?,?,0.5,NULL,'',?,0,?)");
       const centre = sys.run(gid, univers, 'so-centre', 'Système neutre', O.q, O.r, 0, 8).lastInsertRowid as number;
       const pirate = sys.run(gid, univers, 'so-pirate', 'Voisin pirate', O.q + 1, O.r, 0, null).lastInsertRowid as number;
       const sans = sys.run(gid, univers, 'so-sans', 'Voisin sans type', O.q - 1, O.r, 0, null).lastInsertRowid as number;
