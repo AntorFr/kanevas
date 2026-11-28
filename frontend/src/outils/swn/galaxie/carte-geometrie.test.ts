@@ -3,16 +3,16 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import {
-  COTE_COURONNE_PX, EXCENTRICITE_COMETE, PERIHELIE_MIN_U, QUEUE_MAX_U, QUEUE_MIN_U, RAYON_TETE_MIN_PX, TRAJET_PAS_MAX, U,
+  COTE_COURONNE_PX, EXCENTRICITE_COMETE, PERIHELIE_MIN_U, QUEUE_MAX_U, QUEUE_MIN_U, RAYON_TETE_MIN_PX, TRAJET_PAS_MAX, U, rayonOrbite,
   queueDeComete, trajectoireDeComete,
 } from './carte-geometrie.ts';
 
 const O = { x: 0, y: 0 };
 const proche = (a: number, b: number, eps = 1e-9) => assert.ok(Math.abs(a - b) < eps, `${a} ≉ ${b}`);
-/** World place of a comet at `orbite` U and the clock `heure` (12 at the top, clockwise). */
+/** World place of a comet where the map puts it: `rayonOrbite(orbite)` and the clock `heure` (12 at the top, clockwise). */
 const placeDe = (orbite: number, heure: number) => {
-  const t = (heure / 12) * 2 * Math.PI;
-  return { x: orbite * U * Math.sin(t), y: -orbite * U * Math.cos(t) };
+  const t = (heure / 12) * 2 * Math.PI, r = rayonOrbite(orbite);
+  return { x: r * Math.sin(t), y: -r * Math.cos(t) };
 };
 const comete = (orbite: number, heure: number, aspect?: Record<string, unknown>) => ({ ...placeDe(orbite, heure), orbite, heure, aspect });
 const distanceAuSegment = (p: [number, number], a: [number, number], b: [number, number]) => {
@@ -122,6 +122,19 @@ describe('trajectoireDeComete', () => {
     proche(Math.hypot(...sommetM), U, 1e-6);
     assert.ok(Math.hypot(sommetM[0] - sommet[0], sommetM[1] - sommet[1]) > 1, 'les deux périhélies ne se confondent pas');
     assert.ok(Math.min(...m.map((p) => Math.hypot(p[0] - c.x, p[1] - c.y))) < 1);
+  });
+  it('orbite 6, heure 3 : la ligne traverse la comète posée à rayonOrbite(6) = 6,5·U, pas à 6·U', () => {
+    const cm = comete(6, 3, { perihelie: 1 });
+    proche(cm.x, 6.5 * U); proche(cm.y, 0);
+    for (const sens of [1, -1]) {
+      const t = trajectoireDeComete({ ...cm, aspect: { perihelie: 1, sens } }, O, 12).points;
+      assert.ok(distanceALaLigne([cm.x, cm.y], t) < 1e-3, `sens ${sens}`);
+    }
+  });
+  it('orbite 0,5 (sous 1) : la comète est à 1,5·U·orbite et la ligne la traverse', () => {
+    const cm = comete(0.5, 9, { perihelie: 0.3 });
+    proche(Math.hypot(cm.x, cm.y), 0.75 * U);
+    assert.ok(distanceALaLigne([cm.x, cm.y], trajectoireDeComete(cm, O, 12).points) < 1e-3);
   });
   it('l\'étoile n\'est pas forcément à l\'origine', () => {
     const t = trajectoireDeComete(c, { x: 100, y: -50 }, 12).points;
