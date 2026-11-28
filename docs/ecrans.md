@@ -5362,7 +5362,7 @@ Both panels sit in E-5 under « Limites », full width, seen by the instance adm
 screen; the instance routes answer 404 to a session that is not the admin's, AD-86). Both read the same service as the API (AD-sons-6).
 
 **E-37 Tags de sons.** Intro line: « Les tags génériques des sons : ceux des filtres de la bibliothèque et de la bibliothèque globale. » (the word is « tag »
-here, as in the panel's name: « étiquettes » stays the sheets' labels, AD-118). One block per category, in its order: its name, the number of values, « Renommer », « Retirer »; under it the
+here, as in the panel's name: « étiquettes » stays the sheets' labels, AD-118). One block per category, in its order: its name, the number of values (« 3 valeurs », « 1 valeur », « 0 valeur »), « Renommer », « Retirer »; under it the
 values as rows (name, « N sons », « Renommer », « Retirer »). « Ajouter une valeur » at the foot of a category (a field labelled « Nouvelle valeur » and « Ajouter »),
 a field « Nouvelle catégorie » and « Ajouter une catégorie » under the last block. **« Renommer »** swaps the name for a field in place, focused,
 holding the current name: Enter saves, Escape or « Annuler » puts the name back; « name taken » and « empty or over 40 » read under that field, the
@@ -5390,20 +5390,21 @@ After an add, a rename or a removal the list reloads with the previous rows kept
 | save failed | « L'action n'a pas abouti. Réessayez. » under the row, the entry kept | repeat |
 | removed meanwhile | the value was removed by another session: « Cette valeur n'existe plus. » (404), the list reloads | « Fermer » |
 | connection lost | the banner; every button inactive, entries kept | — |
+| filter empty | not applicable: the panel has no filter nor search, so nothing can be filtered to nothing | — |
 | long content | a 40-character name is cut with a tooltip; a category with more than 30 values keeps its rows scrolling in the block (max-height) | — |
 
 Under 760 px the row of a value stacks: name and count, then the two buttons at full width.
 
 **E-38 Purge des sons.** Intro line: « Ce qui n'est plus dans aucune bibliothèque. Chaque case part décochée : cochez ce que vous effacez. » A table in two groups and a box per line (no « Tout cocher »: the owner decides sound by sound, AD-sons-6).
-*Sons sans bibliothèque*: name, type, « Privé » pill when it is, the size its bytes would free, e.g. « 4,2 Mo », or « 0 Mo — fichier
+Column headings: « Sons sans bibliothèque » (the group's name, over the box column's neighbour), « Type », « Libère », « Sections »; the second group has « Fichiers inutilisés » and « Libère ». *Sons sans bibliothèque*: name, type, « Privé » pill when it is, the size its bytes would free, e.g. « 4,2 Mo », or « 0 Mo — fichier
 partagé avec un son conservé » when another sound that stays uses the same bytes (the line is still listed, it frees nothing and says so),
-and, when sections carry it, « Portée par 3 sections » (a number, the admin sees all; the sections are not named). *Fichiers inutilisés*: the
+and, when sections carry it, « Portée par 3 sections » (« Portée par 1 section » for one; « — » when no section carries it) (a number, the admin sees all; the sections are not named). *Fichiers inutilisés*: the
 size, labelled « Fichier inutilisé » (a former file after a replacement, or what a purge of the sound alone left); no name.
 Every box starts **unticked** (the admin ticks what he erases; the request names exactly the ids ticked).
 Under the table the summary « 2 sons et 1 fichier cochés — 9,8 Mo libérés » and « Effacer les sons cochés » (danger, inactive while nothing
 is ticked). The confirmation names what leaves: « Effacer 2 sons et 1 fichier, 9,8 Mo ? Les sons restent sous leur nom comme « son
 manquant » dans les 3 sections qui les portent. Un fichier effacé ne se rattrape pas. » with « Annuler » focused and « Effacer » (danger) beside it. After success: the list reloads,
-« 2 sons et 1 fichier effacés. » in a status line; a line that vanished in the meantime is not an error (« 1 déjà effacé », in the same status line); the failure texts of the table below read in that line too.
+« 2 sons et 1 fichier effacés. » in a status line; a line that vanished in the meantime is not an error (« 1 déjà effacé », in the same status line); the failure texts of the table below (« partial failure », « total failure ») read in that line too.
 The list shows no description nor Notes of a sound (rule 8 of `docs/donnees.md`).
 
 | State (E-38) | What is read | Gestures |
@@ -5414,12 +5415,15 @@ The list shows no description nor Notes of a sound (rule 8 of `docs/donnees.md`)
 | read failed | « Impossible de charger la purge. » | « Réessayer » |
 | nothing ticked | the summary reads « Rien de coché », the button inactive | tick |
 | erasing | the button « Effacement… » inactive, boxes locked | — |
+| one group empty | a group with no line keeps its heading and reads « Aucun son sans bibliothèque. » or « Aucun fichier inutilisé. » under it; the summary and the button count the other group only | — |
+| total failure | « L'effacement n'a pas abouti. Réessayez. » in the status line; nothing is erased as far as the screen knows, the boxes unlocked and the ticks kept | « Effacer les sons cochés » again |
+| filter empty | not applicable: the panel has no filter nor search | — |
 | partial failure | « 2 effacés, 1 n'a pas pu l'être. » with the lines that stay ticked | « Effacer les sons cochés » again |
 | shared bytes | the line says « fichier partagé avec un son conservé », 0 Mo; erasing it removes the sound and keeps the file | — |
 | connection lost | the banner; the button inactive, the ticks kept | — |
 | long content | a long name is cut with a tooltip; more than 100 lines: the first 100 and « Charger la suite » (the list is read by pages, never a count of the rest) | — |
 
-Under 760 px each line becomes a block (box and name, then type, size, sections).
+Under 760 px each line of both groups becomes a block (box and name, then type, size, sections), the mockup included; the group headings stay.
 
 **E-23, the level « Administrateur »** (B-140). The form's segmented control « Niveau », shown for a « Tous mes univers » token, offers
 « Lecture » and « Écriture »; for the instance admin only it offers a third segment « Administrateur », with the note « Écriture sur tout ce

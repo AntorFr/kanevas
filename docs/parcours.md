@@ -1758,16 +1758,17 @@ tags and purges the orphans it names, after reading the list; any other token on
 
 *Protagonist*: Élodie, who runs the instance and has just seen three universes deleted; the strong moment is step 3, the confirmation that names what leaves.
 
-1. The admin opens « Administration » (E-5), reaches « Tags de sons » (E-37). He adds « Ambiance » as a category and « Taverne » as a
-   value; he renames « Épique » to « Héroïque » (the sounds keep it, the filters show the new name).
-2. He removes « Taverne »: the dialog says « 14 sons la portent »; he confirms; those sounds lose that tag and nothing else.
+1. The admin opens « Administration » (E-5), reaches « Tags de sons » (E-37). She adds « Ambiance » as a category and « Taverne » as a
+   value; she renames « Épique » to « Héroïque » (the sounds keep it, the filters show the new name).
+2. She removes « Taverne »: the dialog says « 14 sons la portent »; she confirms; those sounds lose that tag and nothing else.
    *Failure*: the count moved between the dialog and the click (the dialog asks again); the name is taken; the value was removed by another session.
-3. In « Purge des sons » (E-38) he reads the sounds in no library and the unused files with their size; he ticks two sounds and one file (every box starts unticked),
+3. In « Purge des sons » (E-38) she reads the sounds in no library and the unused files with their size; she ticks two sounds and one file (every box starts unticked),
    reads the confirmation (the sections that will show a missing sound), erases. *Failure*: bytes shared with a sound that stays free
    nothing and the line says so; one erasure fails (« 2 effacés, 1 n'a pas pu l'être. », the line stays ticked); a line was erased meanwhile
    (« 1 déjà effacé »); nothing is orphan (« Aucun son à purger »).
+   In « Limites » (E-5) she may also set the one size limit shared by every file of the instance (B-135, `-bibliotheque`).
 4. For a script, in E-23 she chooses « Tous mes univers », then the level « Administrateur » (third segment, hers alone), creates the token
-   and copies it (B-140).
+   and copies it (B-140). *Failure*: she unticks « Tous mes univers » (the level falls back to « Écriture » and says so); her account stops being the admin's while the form is open (« Ce niveau est réservé à l'administrateur. », the segment removed); the creation fails (the entries are kept).
 5. *API/script* (P-36): with a token of level « Administrateur » (E-23, offered to him alone, for « Tous mes univers » only) the same steps through
    `/api/v1/instance/sons/…`: the script reads the list, then names the ids it erases; a token of another level gets 403 `niveau_insuffisant`;
    if the account stops being admin the token falls back to « Écriture » and the instance routes answer 403.
