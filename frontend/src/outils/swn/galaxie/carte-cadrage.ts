@@ -60,12 +60,12 @@ export function zoomDecouverte(fenetre: { w: number; h: number }): number {
   return Math.max(TAILLE_FOND, tailleMinimale(fenetre.w, fenetre.h) * (BLOCS_MAX / BLOCS_FENETRE_MAX));
 }
 
-/** The lowest zoom: today's, lowered to the fit of the known zone when it is wider, never under `TAILLE_FOND` nor past `BLOCS_FENETRE_MAX` blocks in the window. */
-export function zoomMinimal(fenetre: { w: number; h: number }, b: Boite | null): number {
+/** The lowest zoom (`part`: the share of the window the opening fit uses, so the floor never keeps the fit from being reached): today's, lowered to the fit of the known zone when it is wider, never under `TAILLE_FOND` nor past `BLOCS_FENETRE_MAX` blocks in the window. */
+export function zoomMinimal(fenetre: { w: number; h: number }, b: Boite | null, part = 1): number {
   const base = tailleMinimale(fenetre.w, fenetre.h);
   if (!b) return base;
   const plafond = Math.max(TAILLE_FOND, base * (BLOCS_MAX / BLOCS_FENETRE_MAX));
-  return Math.min(base, Math.max(plafond, ajustement(b, fenetre)));
+  return Math.min(base, Math.max(plafond, ajustement(b, { w: fenetre.w * part, h: fenetre.h * part })));
 }
 
 /** The opening view: the known zone centred, fitted with a margin of 8 % of the window; null when nothing is known. */

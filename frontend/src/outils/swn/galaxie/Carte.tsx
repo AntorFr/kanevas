@@ -17,7 +17,7 @@ const TAILLE_DEPART = 28;
 /** Below this radius (px) the name labels collapse. */
 const SEUIL_ETIQUETTES = SEUIL_NOMS;
 /** Share of the window the opening fit uses: the zoom column and the legend sit over the corners and must not hide a system. */
-const ENCART_COMMANDES = 0.8;
+const ENCART_COMMANDES = 0.7;
 const EN_VOL_MAX = 4;
 /** Blocks kept in memory: the whole window at the lowest zoom (`BLOCS_FENETRE_MAX` per side, one block more on each edge), so the first view never evicts what it shows. */
 const BLOCS_GARDES = (BLOCS_FENETRE_MAX + 2) ** 2;
@@ -114,7 +114,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
 
   const boiteConnue = useMemo(() => boiteZoneConnue([...donnees.systemes.values()], [...donnees.zones.values()]), [donnees.systemes, donnees.zones]);
   // Before the first framing nothing is known: the view opens as wide as the cap allows, to read the blocks where far systems may be.
-  const sMin = cadree.current ? zoomMinimal(taille, boiteConnue) : zoomDecouverte(taille);
+  const sMin = cadree.current ? zoomMinimal(taille, boiteConnue, ENCART_COMMANDES) : zoomDecouverte(taille);
   const borne = useCallback((s: number) => Math.min(TAILLE_MAX, Math.max(sMin, s)), [sMin]);
 
   useEffect(() => {
