@@ -5354,3 +5354,48 @@ E-35: a section with no sound is not a group; a table with no sound says so and 
 
 **Mockups** (`docs/maquettes/e31-table-lecteur.html`: E-34 + E-35; `e31-bibliotheque-sons.html`: E-31 + E-32) — E-34 + E-35 (the table with the bar, the structuring screen)
 and E-31 + E-32. E-36, E-37 and E-38 follow the sheet and the administration conventions already in the charter.
+
+### What `kanevas-sons-table` builds of E-35 (and the table half of E-34)
+
+**Who and where.** `/univers/:id/fiches/:fid/table`, reached by the « Table » button of E-9 (header actions, after the existing
+ones), for a **GM outside player mode** only: the button is absent for a player and in player mode, and the address answers the
+page « Page introuvable. » to them, like any unknown address (the read it makes answers `introuvable`, AD-table-1). The button is
+shown on every sheet, with or without sounds: an empty table says so (below). Page title: the sheet's title and a pill « Table »;
+a link « Retour à la fiche » to E-9 sits above the groups.
+
+**Groups.** One group per section **that carries at least one entry**, in the order of the sections (the GM reads all of them); the
+group's heading is the section's title. In a scenario each scene is a section, so one group per scene. A section with no sound is not
+a group, and nothing counts the sections left out. Inside a group, the entries in their order, one toggle button each:
+« ▶ <libellé, else the sound's name> » at rest, « ■ » on while it plays (`aria-pressed`), then in small text the **playing mode** (fond,
+musique, bruitage — the entry's `lecture` when it has one, else the sound's type) and « boucle » when it loops; the entry's
+`consigne` (a GM note) is shown under the button, as text. The same sound in two entries is one sound: it plays once, and the click on
+either button stops it (AD-table-2).
+
+**Volumes.** A block « Volumes » under the groups: general, fonds, musiques, bruitages (four sliders, labelled, 0–100 %, 100 % at
+opening). A volume per sound lives in the list of what plays (E-34): each playing sound has its own slider. All of them are memory
+only (reset at reload, AD-sons-5), and the same controls as the bar's: the table shows the block, the bar the list.
+
+**Playing** follows B-137 (rules in AD-table-2): a click starts the sound with a 1.5 s fade-in; a second click stops it with a 1.5 s
+fade-out (the button is « on » until the fade ends); a music replaces the playing music in a crossfade of 1.5 s; a background
+loops and can join other backgrounds; an effect plays once, over the rest; a sound that ends by itself leaves the list. « Tout
+couper » (the bar's) fades every sound out at once.
+
+**Preload.** On opening, the table fetches and decodes the sounds of its entries whose file is at most 8 MB, four at a time, so the
+click starts at once; a bigger file is not fetched: its click opens it as a streamed media element read by ranges (AD-sons-4), which
+starts before the whole file is there. A preload that fails marks nothing: the click tries again. Leaving the table releases what
+was decoded and does not play; what plays keeps playing (AD-sons-5).
+
+**States.** *Loading* « Chargement de la table… » (the groups and the volumes absent). *Error* of the read: the E-9 error alert
+« Impossible de charger la table. » with « Réessayer ». *No sound at all*: « Aucun son sur cette fiche. » and the link « Ajouter des sons
+à une section » to E-9 (E-36). *Missing sound* (a GM's entry whose sound was removed, or never placed): a disabled button « Son
+manquant : <nom> » with the description and where to find it in small text, playing nothing, and « Placer le son » that leads to the section
+on E-9 (E-36). *File not found at the click* (the sound exists but its file does not answer): the button keeps « ▶ », says « Fichier
+introuvable » beside it for the rest of the visit, and plays nothing. *The browser blocks sound*: the first click starts the audio
+context itself; if the browser still blocks, the bar shows « Cliquer pour activer le son » (E-34). *Another table or sheet opened*: the
+sounds keep playing, the buttons of the new table show « on » for the ones that play (identity is the sound).
+
+**Layout.** The mockup `e31-table-lecteur.html` (frames table, table with no sound, bar blocked, light, 390 px) is the reference;
+buttons wrap, the bar goes to the next line on a phone, targets are at least 34 px high, every control has a text label, the order of the
+tab key is the groups' then the volumes' then the bar's. Colours only through the tokens.
+
+**Components** *(verdict of the design-system guardian, to be reported here)*.
