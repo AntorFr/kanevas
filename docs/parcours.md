@@ -1704,6 +1704,8 @@ the map or a rule **without the music stopping**.
 2. On the sound (E-32) he sets type, generic tags, description, source and licence, ticks « listened » after hearing it.
 3. He finds the sounds still to classify (« no tag in Émotion ») and goes on.
 4. The system's GM does the same in the system's library (E-15, tab « Sons »: E-31 and E-32 of the system, both parts of a sound). The GMs of the system's universes then hear its sounds in their own E-31 (pill « Système », « MJ seul » ones marked), correct their common part (description, tags, type, replacement of the file) but see its library part read-only. *Failure*: a GM of a universe who tries to write that part by the API is refused (`bibliotheque_systeme`) and nothing is written.
+   The system's GM also places its sounds in the sections of the system's space (E-36 in E-15) and imports into the
+   system's library (« Importer dans… »); a script that places a sound foreign to the system is refused (`section_systeme`).
 5. Removing a sound from the library first shows the sections that carry it.
 
 ### P-31 — The GM imports from the global library (GM)
