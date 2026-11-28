@@ -6,7 +6,7 @@ import { Bouton } from '../../../ui';
 import { EtatVide } from '../../../ui/etats';
 import { classeDeCle, classesEtoile } from '../../../wasm/coeur';
 import { abreger, abregerType, placerEtiquetteType, BLOCS_MAX, bloc, cases, COTE_BLOC, distanceHex, TAILLE_MAX, versHex, versPlan } from './geo';
-import { TAILLE_FOND, boiteGrille, boiteZoneConnue, cadrerZoneConnue, zoomDecouverte, zoomMinimal } from './carte-cadrage';
+import { BLOCS_FENETRE_MAX, TAILLE_FOND, boiteGrille, boiteZoneConnue, cadrerZoneConnue, zoomDecouverte, zoomMinimal } from './carte-cadrage';
 import { couleurEtoile, rayonEtoile } from './carte-geometrie';
 import { nomsVisibles, SEUIL_NOMS, type CandidatNom } from './carte-noms';
 import { ZoneHexagones } from './ZoneHexagones';
@@ -19,7 +19,8 @@ const SEUIL_ETIQUETTES = SEUIL_NOMS;
 /** Share of the window the opening fit uses: the zoom column and the legend sit over the corners and must not hide a system. */
 const ENCART_COMMANDES = 0.8;
 const EN_VOL_MAX = 4;
-const BLOCS_GARDES = 400;
+/** Blocks kept in memory: the whole window at the lowest zoom (`BLOCS_FENETRE_MAX` per side, one block more on each edge), so the first view never evicts what it shows. */
+const BLOCS_GARDES = (BLOCS_FENETRE_MAX + 2) ** 2;
 
 interface Donnees {
   blocs: Map<string, [number, number, number, string][]>;
@@ -73,6 +74,9 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
   const cadree = useRef(false);
   // The opening frame follows the known zone while blocks still arrive (a far system only shows once its block is in), until the reader moves the view.
   const cadrageAuto = useRef(false);
+  const gesteLecteur = useRef(false);
+  // The map shows once its opening view is set: no star under the reader's finger moves while the first blocks come in.
+  const [pret, setPret] = useState(false);
   const [donnees, setDonnees] = useState<Donnees>(vide);
   const [premier, setPremier] = useState(true);
   const [echec, setEchec] = useState(false);
@@ -84,7 +88,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
   // A write happened: everything loaded is stale. Requests still in flight are marked so their answer is dropped.
   const generation = useRef(0);
   const encours = useRef(0);
-  const setVueUtilisateur: typeof setVue = useCallback((v) => { cadrageAuto.current = false; setVue(v); }, []);
+  const setVueUtilisateur: typeof setVue = useCallback((v) => { cadrageAuto.current = false; gesteLecteur.current = true; setVue(v); }, []);
   const vueRef = useRef(vue);
   vueRef.current = vue;
 
@@ -150,18 +154,20 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
   useEffect(() => {
     if (premier || echec) return;
     if (cadree.current && !cadrageAuto.current) return;
+    if (gesteLecteur.current) { cadree.current = true; setPret(true); return; }
     for (let by = visibles.by0; by <= visibles.by1; by++) {
       for (let bx = visibles.bx0; bx <= visibles.bx1; bx++) if (!donnees.blocs.has(cleBloc(bx, by))) return;
     }
-    if (centrer) { cadree.current = true; return; }
+    if (centrer) { cadree.current = true; setPret(true); return; }
     const v = cadrage();
-    if (!cadree.current) { cadree.current = true; cadrageAuto.current = true; }
+    if (!cadree.current) { cadree.current = true; cadrageAuto.current = true; setPret(true); }
     setVue((o) => (Math.abs(o.vx - v.vx) < 1e-6 && Math.abs(o.vy - v.vy) < 1e-6 && Math.abs(o.s - v.s) < 1e-6 ? o : v));
   }); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!centrer) return;
     cadree.current = true;
+    setPret(true);
     const p = versPlan(centrer.q, centrer.r);
     setVue((v) => ({ ...v, vx: p.x, vy: p.y }));
   }, [centrer]);
@@ -337,7 +343,8 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
     const p = versPlan(q, r);
     return { x: (p.x - vue.vx) * vue.s + taille.w / 2, y: (p.y - vue.vy) * vue.s + taille.h / 2 };
   };
-  const systemes = [...donnees.systemes.values()];
+  // In creation order whatever tile answered first: the first view asks for up to four tiles at once.
+  const systemes = [...donnees.systemes.values()].sort((a, b) => a.id - b.id);
   const rayon = (t: number) => rayonEtoile(t);
   const dist = (q: number, r: number) => (mesure ? distanceHex({ q, r }, mesure) : null);
   const survole = survol ? donnees.systemes.get(survol.cle) : undefined;
@@ -376,7 +383,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
   const ligne = chemin.map((c) => px(c.q, c.r)).map((p) => `${p.x},${p.y}`).join(' ');
 
   return (
-    <div className={`gx-carte${mode ? ' en-geste' : ''}`} ref={cadre}>
+    <div className={`gx-carte${mode ? ' en-geste' : ''}`} ref={cadre} onPointerDownCapture={() => { cadrageAuto.current = false; gesteLecteur.current = true; }} onKeyDownCapture={() => { cadrageAuto.current = false; gesteLecteur.current = true; }}>
       <svg
         ref={svg}
         className="gx-svg"
@@ -387,6 +394,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
         onPointerUp={haut}
         onPointerCancel={haut}
         onClick={toucheVide}
+        style={pret || echec ? undefined : { visibility: 'hidden' }}
       >
         <defs>
           <pattern id="gx-grille" patternUnits="userSpaceOnUse" width={l} height={3 * vue.s} patternTransform={`translate(${decal.x} ${decal.y})`}>
