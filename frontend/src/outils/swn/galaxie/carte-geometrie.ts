@@ -194,9 +194,71 @@ export function grainsAnneau(f: FormationSysteme, plan: Plan): Grain[] {
 /** Part of a star sprite's half-side its glow reaches (the renderer's corona fades out between 0.85 and 1): labels stay outside it. */
 export const PORTEE_COURONNE = 0.9;
 
+// Comet tail and trajectory (AD-cometes-1, AD-cometes-2): pure, in world pixels; `x`, `y` are world places.
+/** Longest and shortest tail, in orbit units. */
+export const QUEUE_MAX_U = 4;
+export const QUEUE_MIN_U = 0.25;
+/** Fixed eccentricity of a comet's trajectory, and the nearest perihelion allowed (orbit units). */
+export const EXCENTRICITE_COMETE = 0.96;
+export const PERIHELIE_MIN_U = 0.1;
+/** Most points of a trajectory line. */
+export const TRAJET_PAS_MAX = 192;
+/** Smallest head radius and side of the corona square on screen, in pixels (read by the canvas). */
+export const RAYON_TETE_MIN_PX = 4;
+export const COTE_COURONNE_PX = 24;
+
+export interface Place { x: number; y: number }
+export interface QueueComete { dx: number; dy: number; longueur: number; rotation: number }
+/** A comet as the geometry reads it: its world place, its place on the plan (orbit units, hour) and its aspect. */
+export interface CometeGeo extends Place { orbite?: number; heure?: number; aspect?: Record<string, unknown> }
+
+const sensDe = (aspect?: Record<string, unknown>): 1 | -1 => (typeof aspect?.sens === 'number' && aspect.sens < 0 ? -1 : 1);
+
+/** Direction (star → comet, unit; straight up when the places coincide), length in world pixels and the rotation that turns the core's picture
+ *  tail (`atan2(0.6, -sens * 0.8)`) onto that direction. `longueurAspect` is the aspect's `longueur`, bounded to [0.1, 1]. */
+export function queueDeComete(comete: CometeGeo, etoile: Place, longueurAspect: number): QueueComete {
+  const vx = comete.x - etoile.x, vy = comete.y - etoile.y;
+  const d = Math.hypot(vx, vy);
+  const [dx, dy] = d > 1e-9 ? [vx / d, vy / d] : [0, -1];
+  const la = Math.min(1, Math.max(0.1, Number.isFinite(longueurAspect) ? longueurAspect : 0.55));
+  const longueur = Math.max(QUEUE_MIN_U, (QUEUE_MAX_U * la) / (1 + d / (2 * U))) * U;
+  return { dx, dy, longueur, rotation: Math.atan2(dy, dx) - Math.atan2(0.6, -sensDe(comete.aspect) * 0.8) };
+}
+
+/** The whole trajectory of a comet, a conic of eccentricity `EXCENTRICITE_COMETE` with the star at a focus, through the comet's own place.
+ *  `rMaxU` is the outermost distance to draw, in orbit units. Distances are `U` per orbit unit, bearings are 12 at the top, clockwise. */
+export function trajectoireDeComete(comete: CometeGeo, etoile: Place, rMaxU: number): { points: [number, number][] } {
+  const nombre = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
+  const e = EXCENTRICITE_COMETE;
+  // the comet's own distance, in orbit units: where the map puts it (`rayonOrbite`, 0.5 U further than `orbite` from orbit 1 on)
+  const orbite = rayonOrbite(Math.max(nombre(comete.orbite) ?? 0, 0)) / U;
+  // the aphelion `q (1 + e) / (1 - e)` must reach the comet's own distance, so a too small perihelion is raised to `orbite (1 - e) / (1 + e)`
+  const plancher = Math.max(Math.min(PERIHELIE_MIN_U, orbite), (orbite * (1 - e)) / (1 + e));
+  const q = Math.min(orbite, Math.max(plancher, nombre(comete.aspect?.perihelie) ?? Math.min(1, orbite)));
+  const p = q * (1 + e);
+  const acos = (v: number) => Math.acos(Math.min(1, Math.max(-1, v)));
+  const nu0 = orbite > q ? acos((p / orbite - 1) / e) : 0;
+  const rMax = Math.max(nombre(rMaxU) ?? 0, orbite, q);
+  const nuMax = Math.max(nu0, acos((p / rMax - 1) / e));
+  const s = sensDe(comete.aspect);
+  const omega = ((nombre(comete.heure) ?? 0) / 12) * 2 * Math.PI - s * nu0;
+  const nus: number[] = [];
+  const n = TRAJET_PAS_MAX - 2;
+  for (let i = 0; i < n; i++) nus.push(-nuMax + (2 * nuMax * i) / (n - 1));
+  for (const v of [0, nu0]) if (!nus.some((w) => Math.abs(w - v) < 1e-12)) nus.push(v);
+  nus.sort((a, b) => a - b);
+  const points = nus.map((nu): [number, number] => {
+    const r = (p / (1 + e * Math.cos(nu))) * U;
+    const b = omega + s * nu;
+    return [etoile.x + r * Math.sin(b), etoile.y - r * Math.cos(b)];
+  });
+  return { points };
+}
+
 /** What a comet's two tails cover on screen, as `queue` obstacles (the renderer's geometry: the head on the body, tails fading out
  *  by ~3/4 of their length). `cote` is the sprite side in screen pixels. */
-export function queuesComete(x: number, y: number, cote: number, aspect: Record<string, unknown> | undefined): Extract<Obstacle, { type: 'queue' }>[] {
+export function queuesComete(x: number, y: number, cote: number, aspect: Record<string, unknown> | undefined,
+  queue?: Pick<QueueComete, 'longueur' | 'rotation'>): Extract<Obstacle, { type: 'queue' }>[] {
   const num = (k: string, d: number, lo: number, hi: number) => {
     const v = aspect?.[k];
     return Math.min(hi, Math.max(lo, typeof v === 'number' && Number.isFinite(v) ? v : d));
@@ -209,14 +271,16 @@ export function queuesComete(x: number, y: number, cote: number, aspect: Record<
   const long = (0.3 + longueur) * cote * 0.95;
   const rn = Math.max(1.2, cote * 0.022 * tete);
   const angleGaz = Math.atan2(0.6, -sens * 0.8);
-  const queue = (angle: number, longK: number, large: number, courbe: number) => {
-    const l = longK * 0.75;
-    return { type: 'queue' as const, x, y, dx: Math.cos(angle), dy: Math.sin(angle), longueur: l,
+  const tournee = queue?.rotation ?? 0;
+  const mord = (angle: number, longK: number, large: number, courbe: number) => {
+    const l = queue ? Math.min(longK * 0.75, queue.longueur) : longK * 0.75;
+    const a = angle + tournee;
+    return { type: 'queue' as const, x, y, dx: Math.cos(a), dy: Math.sin(a), longueur: l,
       r0: 1.2 * rn * 1.1, r1: 1.2 * (rn * 1.1 + large * l) + 0.25 * courbe * l * l / longK };
   };
   return [
-    queue(angleGaz, long * 1.05, ouv * 0.38, 0),
-    queue(angleGaz - sens * courb * 0.3, long * 0.85, ouv * 1.1, courb * 0.9),
+    mord(angleGaz, long * 1.05, ouv * 0.38, 0),
+    mord(angleGaz - sens * courb * 0.3, long * 0.85, ouv * 1.1, courb * 0.9),
   ];
 }
 
