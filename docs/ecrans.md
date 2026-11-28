@@ -5336,7 +5336,7 @@ E-36 and the play button of `son:cle:K`. Journeys: P-30 to P-36.
 | **E-34 Player bar** | `Cadre.tsx`, on every page once something plays | what plays, stop each, volumes, « Tout couper » |
 | **E-35 Table** `/univers/:id/fiches/:fid/table` | « Table » button of E-9 (GM) | groups of buttons per section, rules of B-137 |
 | **E-36 Section sounds** | in E-9, per section, beside attached files | the ordered list of entries, each with its play button (GM and players, same rules as the table); players see the entries they may, never a missing sound |
-| **E-37 Generic sound tags** | E-5 « Tags de sons » | categories and values, counts before removal |
+| **E-37 Generic sound tags** | E-5 « Tags de sons » | categories and values, counts before removal; the token form of E-23 offers the level « Administrateur » to the instance admin alone (the form belongs to `kanevas-jeton-unique`; this feature adds the choice, hidden from any other account) |
 | **E-38 Sound purge** | E-5 « Purge des sons » | orphan sounds and unused files (a former file after a replacement), a box each, size, « Effacer les sons cochés » (never « tout ») |
 
 Roles × actions: **player** E-31 (sounds opened to him), E-32 read-only (common part, his library's part where visible;

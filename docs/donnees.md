@@ -835,7 +835,7 @@ player; see below.)*
 and `jetons_outils.jeton_id` still point at the same rows — the migration starts with
 `-- migrate: sans-cles-etrangeres`, then `foreign_key_check`): `id`, `compte_id` → `comptes` (the owner), `nom` 1 to 80,
 `empreinte` unique, `cree_le`, `expire_le` (> `cree_le`), `revoque_le` (null: active), `revoque_par` → `comptes` (null
-until revoked; the owner or an admin), `dernier_usage_le`, `tous` (0 or 1), `niveau_tous` (`lecture` | `ecriture`; **not null
+until revoked; the owner or an admin), `dernier_usage_le`, `tous` (0 or 1), `niveau_tous` (`lecture` | `ecriture` | `administrateur` — the last added by `kanevas-sons`, AD-sons-8, the `CHECK` widened by its migration; **not null
 exactly when `tous` = 1**, a `CHECK`), `modifie_par_admin_par` → `comptes` and `modifie_par_admin_le` (both null or both set; set when an admin
 changes the accesses, cleared when the owner saves them). The column `univers_id` and the index `jetons_api_par_univers` are gone; an index
 `jetons_api_par_compte (compte_id, cree_le)`. `jetons_univers (jeton_id → jetons_api ON DELETE CASCADE, univers_id →
@@ -863,7 +863,7 @@ the backup of the file is a manual gesture before the deploy.
 records one write, with a **previous value** for 30 days.
 
 - `jetons_api`: `univers_id` and the « GM who created it » give way to `compte_id` (the owner) and
-  `tous` (boolean) with `niveau_tous` (`lecture` | `ecriture`, when `tous`); child
+  `tous` (boolean) with `niveau_tous` (`lecture` | `ecriture` | `administrateur`, when `tous`); child
   `jetons_univers (jeton_id, univers_id, niveau)` — the list when not `tous`; with `tous`, the exceptions —
   a row at the other level, or at `aucun` to leave a universe out — set by the owner or the admin alike;
   `modifie_par_admin` (account, date) on the token, cleared when the owner saves the accesses again;
@@ -995,5 +995,6 @@ first slice's merge):
    session (AD-86) **or by a token of level `administrateur`** (a level added to `lecture` and `ecriture` in `jetons_api.niveau_tous`, created only by an
    admin account, effective right = the lesser of token and account, AD-sons-8); every other token gets 403 `niveau_insuffisant`. Reading the categories
    and values is open to any account and any `contenu` token.
-9. **Placing a sound the section's library does not hold**: allowed for a sound the GM sees in the global library; it is imported into that
-   library in the same transaction, « GM only » (AD-sons-7); an unknown key is refused.
+9. **Placing a sound**: a sound the universe **holds** — in its own library or in its system's (the exception of rule 1) — is placed as it is, by reference,
+   with its visibility (never copied into the universe). A sound neither holds but the GM sees in the global library is imported into that
+   library in the same transaction, « GM only » (AD-sons-7); a sound he does not see and an unknown key are the same `introuvable`.
