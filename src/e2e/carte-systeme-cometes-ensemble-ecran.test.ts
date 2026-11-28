@@ -170,7 +170,8 @@ describe('E-23 une comète montre sa queue détournée de l’étoile et sa traj
     await attendre(page, 'data-queue-comete', 'lointaine');
     const pres = (await queue(page, 'brume')).longueur; const loin = (await queue(page, 'lointaine')).longueur;
     assert.ok(loin > 0, 'la queue lointaine existe (jamais coupée net)');
-    assert.ok(pres > loin * 1.2, `proche ${pres} px > lointaine ${loin} px`);
+    // the drawn length is the readable 48 px base plus the geometry's, so the gap is the geometry's: strictly longer near, by at least a few px
+    assert.ok(pres > loin + 5, `proche ${pres} px > lointaine ${loin} px`);
     await ctx.close();
   });
 
