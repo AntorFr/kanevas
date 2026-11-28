@@ -5331,18 +5331,18 @@ E-36 and the play button of `son:cle:K`. Journeys: P-30 to P-36.
 | Screen | Reached from | Purpose |
 |---|---|---|
 | **E-31 Sound library** `/univers/:id/sons` (and `/systemes/:sid/sons`, tab of E-15) | sidebar « Sons » (GM and players) | list and search the library (own and system's, marked); hear in one click; « Ajouter un son » (GM) |
-| **E-32 Sound** `/univers/:id/sons/:cle` | a row of E-31, of E-33, an entry of E-36 | common part (with « Clé » — changed here, the old one keeps resolving — and « Privé »), library part (« Ouvert aux joueurs », own tags, Notes), measures, « Utilisé dans », import / remove; from E-33 it is addressed `/sons/:cle`, read-only, with « Importer dans… » |
+| **E-32 Sound** `/univers/:id/sons/:cle` | a row of E-31, of E-33, an entry of E-36 | common part (with « Clé » — changed here, the old one keeps resolving — and « Privé »), library part (« Ouvert aux joueurs », own tags, Notes), measures, « Utilisé dans », import / remove; from E-33 it is addressed `/sons/:cle` and shows the **common part, editable** by a GM who sees the sound (rule 2: name, key, type, tags, description, source, « Écouté », « Privé », « Remplacer le fichier »), the library part replaced by « Importer dans… »; « Remplacer le fichier » (common part) keeps the rest and measures again |
 | **E-33 Global sound library** `/sons` | user menu « Bibliothèque globale » (GM only: no entry otherwise, 404 for others) | search with generic tags only, hear, « Importer dans… » |
 | **E-34 Player bar** | `Cadre.tsx`, on every page once something plays | what plays, stop each, volumes, « Tout couper » |
 | **E-35 Table** `/univers/:id/fiches/:fid/table` | « Table » button of E-9 (GM) | groups of buttons per section, rules of B-137 |
 | **E-36 Section sounds** | in E-9, per section, beside attached files | the ordered list of entries, each with its play button (GM and players, same rules as the table); players see the entries they may, never a missing sound |
 | **E-37 Generic sound tags** | E-5 « Tags de sons » | categories and values, counts before removal |
-| **E-38 Sound purge** | E-5 « Purge des sons » | orphan sounds, a box each, size, « Effacer les sons cochés » |
+| **E-38 Sound purge** | E-5 « Purge des sons » | orphan sounds and unused files (a former file after a replacement), a box each, size, « Effacer les sons cochés » (never « tout ») |
 
 Roles × actions: **player** E-31 (sounds opened to him), E-32 read-only (common part, his library's part where visible;
 no Notes of GM blocks), E-34, E-36 read; **GM** all of E-31 to E-36 on the libraries he writes (E-33 as a GM of any
-universe or system); **system's GM** E-31/E-32 on the system; **admin** E-37, E-38, E-5 limit, and E-31/E-32 as a GM where
-he is one; **player mode** (GM seeing as a player) shows what a player sees and plays.
+universe or system); **system's GM** E-31/E-32 on the system; **admin** E-37, E-38 (sounds and unused files, a box each), E-5 limit, and E-31/E-32 as a GM where
+he is one; a GM of a universe sees, in E-31, the system's « GM only » sounds (marked), a player does not; **player mode** (GM seeing as a player) shows what a player sees and plays.
 
 States of E-31: empty (« Aucun son — Ajouter un son »; players: « Aucun son pour l'instant »); loading; no result with
 the filters named and « Effacer les filtres »; a sound **non écouté** carries a mark; a file in measure (« Mesure en

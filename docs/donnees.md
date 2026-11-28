@@ -960,9 +960,13 @@ library parts serves the three levels; the global library is not stored, it is a
 **Rules** (rule 15, new; the rules numbered 14 by `kanevas-systemes-jeu` and 15 here are listed with the others at the
 first slice's merge):
 1. **Reading a sound in a universe**: a row of `sons_bibliotheques` for the universe or for its system's space, and for a
-   player `visibilite = 'joueurs'`; the system's row decides in every universe of the system. No role: `introuvable`.
+   player `visibilite = 'joueurs'`; the system's row decides in every universe of the system. **A GM of the universe reads every
+   row of its system's space, « GM only » ones included** (exception to AD-152, for sounds only, 2026-11-28: E-31 shows them to him, he
+   places them in his scenes); a player never. No role: `introuvable`.
 2. **Writing the common part**: GM (outside player mode) of any library holding the sound, or any GM for a sound he sees
-   in the global library; players never. **Writing the library part**: GM of that universe, GM of that system.
+   in the global library; players never. This covers **replacing the file** and its measures (the sound keeps name, key, tags and places;
+   « listened » goes back to false; the former `sons_octets` row waits for the purge, AD-sons-2). **Writing the library part**: GM of that
+   universe, GM of that system — never a universe's GM for his system's sounds.
 3. **Global library**: the account is GM of at least one universe or system; a sound with `prive` shows only to the GMs
    of the libraries that hold it; an orphan is public or private as it was; no deposit there.
 4. **A section's entry** is read when the reader reads the section **and** the sound (rule 1); for a GM of the section's
@@ -986,4 +990,10 @@ first slice's merge):
    the type (never stored apart from the measures).
 8. **Admin**: the purge's list shows each orphan's name, type, privacy and the size it frees, never its description nor Notes, and
    changes nothing of what other screens show of a private sound; no history line is kept for sounds (the sound has no
-   history screen). Generic tags and purge: generic tags and purge are the instance admin's (session group, AD-86; a token never opens these routes, AD-sons-8).
+   history screen; to be taken up if use shows the common part too open, decision of the owner, 2026-11-28). The purge lists orphan sounds **and unused files**
+   (a `sons_octets` row no sound refers to) and erases only the ids it is given, never « all ». Generic tags and purge are the instance admin's, by
+   session (AD-86) **or by a token of level `administrateur`** (a level added to `lecture` and `ecriture` in `jetons_api.niveau_tous`, created only by an
+   admin account, effective right = the lesser of token and account, AD-sons-8); every other token gets 403 `niveau_insuffisant`. Reading the categories
+   and values is open to any account and any `contenu` token.
+9. **Placing a sound the section's library does not hold**: allowed for a sound the GM sees in the global library; it is imported into that
+   library in the same transaction, « GM only » (AD-sons-7); an unknown key is refused.

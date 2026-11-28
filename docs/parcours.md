@@ -1630,7 +1630,7 @@ the map or a rule **without the music stopping**.
 - **B-121** — Each universe has a **sound library** written by its GMs; each game system has one, written by the GMs of the
   system (B-114); a universe reads the sounds of its own library and of its system's. *(P-30)*
 - **B-122** — A sound is **one** sound in the instance: a **common part** (name, key, description, type, generic tags,
-  source, author, licence, address and origin reference, « seamless loop », « listened », « private » (hidden from the GMs of libraries that do not hold it, B-128)) that **any GM who sees the sound**
+  source, author, licence, address and origin reference, « seamless loop », « listened », « private » (hidden from the GMs of libraries that do not hold it, B-128), and the **file with its measures**, which he can replace: the sound keeps its name, key, tags and places in sections, the former file goes to the purge when nothing uses it any more) that **any GM who sees the sound**
   edits, and a **part per library** (visibility to players, the library's own tags, Notes in Markdown with GM blocks) that only that
   library's GMs write. Importing never copies. *(P-31)*
 - **B-123** — A sound's file exists **once on the disk**, however many libraries hold it; two deposits of identical bytes
@@ -1652,7 +1652,7 @@ the map or a rule **without the music stopping**.
 - **B-129** — A sound deposited **private** appears in the global library only to the GMs of libraries that already hold
   it; any of them may make it public or private again; there is no owner. *(P-31)*
 - **B-130** — In a universe each sound is « for the players » or « GM only »; players browse and hear what it opens to them,
-  in their universe and its system; a system sound carries its visibility in every universe of the system. *(P-34)*
+  in their universe and its system; a system sound carries its visibility in every universe of the system. **A GM of a universe hears, in the library of his universe (E-31), every sound of the system, « GM only » ones included**, and may place them in his scenes; a player never. *(P-34)*
 - **B-131** — A sound held by **no** universe and no system stays in the instance, in the global library, and can be
   imported again, until the purge. Removing a sound from a library first shows the sections that carry it. *(P-30, P-35)*
 
@@ -1668,8 +1668,9 @@ the map or a rule **without the music stopping**.
 *Administration*
 
 - **B-134** — The admin **adds, renames and removes** generic categories and values (the screen says how many sounds a
-  removal touches); and **purges**: the sounds in no library listed with their size, **each with a box**, only the ticked
-  ones erased, file included. *(P-35)*
+  removal touches); and **purges**: the sounds in no library and the files no sound uses any more, listed with their size, **each with a box**,
+  only the ticked ones erased, file included — never « all at once ». The same through the API (the list is read, then the route erases the ids it
+  names) and the MCP door, for an administrator. *(P-35, P-36)*
 - **B-135** — **One size limit for every file** of the instance (sounds, media library, map backgrounds), set by the
   admin in « Limites ». *(P-35)*
 
@@ -1688,15 +1689,18 @@ the map or a rule **without the music stopping**.
 
 *Doors*
 
-- **B-140** — The import API and the MCP door **search, read, deposit, import, edit and place** sounds within the
-  account's right (token level on a universe or a system, AD-155; the lesser of it and the account's right, AD-144); the
-  generic tags and the purge have an admin route. *(P-36)*
+- **B-140** — **Whatever the screen does on sounds, the API and the MCP door do too**, within the right of the token (its level on a universe
+  or a system, AD-155; the lesser of it and the account's right, AD-144): search (the global library included), read, hear, deposit, **replace the
+  file**, import, edit the common part (from a library or from the global one) and the library part, remove from a library, place in sections —
+  a sound the universe does not hold is imported on the way (rule 9). The categories and values are readable by any token; adding, renaming and
+  removing them, and the purge (a list, then the ids named), need a **token of level « administrateur »**, a level above `lecture` and `ecriture`
+  that gives every access of the API and that only an administrator account creates. *(P-36)*
 
 ### P-30 — The GM builds and classifies a library (GM, system's GM)
 
 1. In the sound library of the universe (E-31) he deposits a file (« Ajouter un son »): the file is measured, a
    duplicate he can see is announced with « Importer celui-là ». *Failure*: file over the limit (B-135), unreadable
-   format.
+   format. A better recording of the same sound: on E-32 « Remplacer le fichier » keeps everything else and measures again.
 2. On the sound (E-32) he sets type, generic tags, description, source and licence, ticks « listened » after hearing it.
 3. He finds the sounds still to classify (« no tag in Émotion ») and goes on.
 4. The system's GM does the same in the system's library (E-15, tab « Sons »).
@@ -1738,8 +1742,10 @@ does not read.
 
 ### P-36 — An agent or a script deposits and places sounds (token, MCP)
 
-The script deposits a library through `PUT /sons/:son`, files and parts; the agent searches (`chercher_sons`), imports,
-edits, and writes the sounds of each scene's section; the admin routes keep the generic tags.
+The script deposits a library through `PUT /sons/:son`, files and parts, and replaces a file; the agent searches (`chercher_sons`, the
+global library too), imports, edits the common part and the library's, and writes the sounds of each scene's section (a sound seen in the
+global library is imported by placing it). With a token of level « administrateur » the same script adds, renames and removes the generic
+tags and purges the orphans it names, after reading the list; any other token only reads the tags.
 
 ### Out of scope of `kanevas-sons`
 
