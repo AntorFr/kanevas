@@ -40,6 +40,15 @@ level on it, `systeme_chercher`, `systeme_lire_fiche`, `systeme_lire_section` (a
 `systeme_creer_fiche`, `systeme_modifier_entete`, `systeme_ecrire_section`, `systeme_supprimer_section`, `systeme_supprimer_fiche`; a GM of the
 universe also gets `personnaliser_fiche` and `revenir_au_systeme` (customise an element for this universe, go back). The system is never a parameter: it is the universe's own.
 
+The sounds (`kanevas-sons`, AD-sons-mcp-1; the same actions as the screens, B-140): `chercher_sons`, `lire_son`, `lister_tags_sons`
+for any token; with an `ecriture` token of a GM `deposer_son`, `remplacer_fichier_son`, `importer_son`, `modifier_son`, `retirer_son`
+and `placer_son` (the section's whole ordered list, so a replay changes nothing), and, for a GM of the attached system whose token has a
+row in `jetons_systemes`, `systeme_deposer_son`, `systeme_remplacer_fichier_son`, `systeme_importer_son`, `systeme_modifier_son`,
+`systeme_retirer_son`, `systeme_placer_son`. `portee` (`univers` or `globale`) belongs to the two read tools only; a sound is cited by its
+key; the file is an `adresse` (http/https, fetched by the server, public addresses only) or `base64`, never a path of the host. A token of
+level `administrateur` (the instance admin's account) also gets `modifier_tags_sons` (`compter` first), `lister_sons_a_purger` and
+`purger_sons` (identifiers named, never « all »); the assistant has none of the three.
+
 Not offered on this door: `generer_image`, `proposer_mise_a_jour`, `modifier_section`, `ajouter_a_section`.
 
 ## Fingerprints (precondition of a write)
