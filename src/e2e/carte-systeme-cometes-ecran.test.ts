@@ -193,8 +193,7 @@ describe('E-23 la queue et la trajectoire d’une comète', { skip: skipBrowser,
     await page.screenshot({ path: `${SHOTS}/390-dezoome.png` });
     await ctx.close();
   });
-  for (const [largeur, hauteur] of [[1440, 900], [390, 780]] as const) {
-    it(`à orbite 8, la queue dessinée mesure au moins 32 px hors coma, lue sur les pixels (${largeur} px)`, async () => {
+  const queueLisible = async (largeur: number, hauteur: number) => {
       const { page, ctx } = await ouvrir(largeur, hauteur);
       await attendre(page, 'data-queue-comete', 'comete');
       await page.locator('.cs-corps[data-cle="comete"]').click();
@@ -211,6 +210,7 @@ describe('E-23 la queue et la trajectoire d’une comète', { skip: skipBrowser,
       }, pts);
       assert.ok(alphas[2] > 0, `de l’encre à 34 px de la tête, hors coma (${alphas})`);
       await ctx.close();
-    });
-  }
+  };
+  it('à orbite 8, la queue dessinée mesure au moins 32 px hors coma, lue sur les pixels (1440 px)', () => queueLisible(1440, 900));
+  it('à orbite 8, la queue dessinée mesure au moins 32 px hors coma, lue sur les pixels (390 px)', () => queueLisible(390, 780));
 });
