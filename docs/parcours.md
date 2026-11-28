@@ -1733,7 +1733,9 @@ the map or a rule **without the music stopping**.
 1. He opens the scenario sheet (E-9), presses « Table » in its header and reads one group per scene (E-35).
 2. He clicks a background, then a music: a click on a 40-minute file shows « Démarrage… » beside the button until he hears it, and a
    second click meanwhile changes nothing.
-3. *Failures*: a scenario with no sound says « Aucun son sur cette fiche. » and links to E-36 to add some; a sound whose file does not
+3. He opens an NPC sheet, then the map: the bar keeps his sounds; he lowers one sound's volume, then « Tout couper » (E-34).
+4. *Failures*: a scenario with no sound says « Aucun son sur cette fiche. » and links to E-36 to add some; a sound removed from the
+   library shows « Son manquant : <nom> » and « Placer le son »; if the browser blocks sound, the bar asks for one click; a sound whose file does not
    answer, or a ranged stream that fails, says « Fichier introuvable », plays nothing and tries again at the next click; a table that
    cannot be read, offline included, says « Impossible de charger la table. » with « Réessayer ».
 
