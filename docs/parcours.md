@@ -1694,7 +1694,7 @@ the map or a rule **without the music stopping**.
   file**, import, edit the common part (from a library or from the global one) and the library part, remove from a library, place in sections —
   a sound the universe does not hold is imported on the way (rule 9). The categories and values are readable by any token; adding, renaming and
   removing them, and the purge (a list, then the ids named), need a **token of level « administrateur »**, a level above `lecture` and `ecriture`
-  that gives every access of the API and that only an administrator account creates. *(P-36)*
+  that gives `ecriture` on everything the account reads plus the instance routes (tags, purge), never an access to a universe the account does not read, and that only an administrator account creates, for an « all universes » token. *(P-36)*
 
 ### P-30 — The GM builds and classifies a library (GM, system's GM)
 
