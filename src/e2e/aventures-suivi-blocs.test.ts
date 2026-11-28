@@ -1,4 +1,4 @@
-// ecrans: fiche, vue-ensemble
+// ecrans: comptes-rendus, fiche, vue-ensemble
 // Browser proof of kanevas-scenarios-suivi-blocs (B-60, B-19, E-9 blocks, E-13, E-3 « Derniers comptes-rendus », AD-124):
 // the « Préparation » (GM, outside player mode) and « Comptes-rendus » (every member) blocks of an adventure sheet.
 // Adventures are made through the routes of the sheets. Real server in stub mode + Chromium; waits are on
@@ -35,6 +35,28 @@ async function api(page: Any, method: string, path: string, data?: unknown) {
 const prep = (p: Any) => p.getByRole('region', { name: 'Préparation', exact: true });
 const crs = (p: Any) => p.getByRole('region', { name: 'Comptes-rendus', exact: true });
 const caseTache = (p: Any, n: string) => prep(p).getByRole('checkbox', { name: n, exact: true });
+// kanevas-cr-aventure-liste-bloc (B-cr-aventure-4, P-4, E-9 block, E-13 column, AD-cr-aventure-3): a second campaign with an
+// arc and a step, one report each, so the counts below do not depend on the 100-report test.
+let marches = 0;
+let arc = 0;
+let etape = 0;
+async function monde(p: Any) {
+  if (marches) return;
+  const fiche = async (sousType: string, titre: string, parent?: number) => {
+    const id = (await api(p, 'POST', `/api/univers/${uid}/fiches`, { type: 'aventure', sousType, titre, sections: [{ titre: 'Intrigue' }] })).id;
+    if (parent) await api(p, 'PATCH', `/api/univers/${uid}/fiches/${id}`, { parent });
+    return id;
+  };
+  marches = await fiche('Campagne', 'Les Marches de Sel');
+  arc = await fiche('Scénario', 'Arc des Marches', marches);
+  etape = await fiche('Scénario', 'Étape du gué', arc);
+  for (const [c, t] of [[marches, 'CR campagne'], [arc, 'CR arc'], [etape, 'CR étape']] as const) {
+    await api(p, 'POST', `/api/univers/${uid}/comptes-rendus`, { campagneId: c, titre: t });
+  }
+}
+const lignes = (p: Any) => crs(p).locator('li');
+const ligne = (p: Any, titre: string) => lignes(p).filter({ hasText: titre });
+
 const KO = { status: 500, contentType: 'application/json', body: '{}' };
 
 before(async () => {
@@ -202,8 +224,53 @@ test('plus de 100 CR : 100 lignes puis « Charger la suite » ; l’échec de la
   await p.unroute('**/api/univers/*/comptes-rendus?*curseur=*');
   await suite.click();
   await crs(p).getByRole('link', { name: /Séance 12/ }).waitFor();
-  assert.equal(await crs(p).locator('li').count(), 101);
+  // 101 lines of the campaign + the descending line of the scenario « Acte II » (AD-cr-aventure-3)
+  assert.equal(await crs(p).locator('li').count(), 102);
   assert.equal(await suite.count(), 0);
+});
+
+test('page de la campagne : trois lignes, arc et étape nomment leur scénario en lien, la campagne sans pastille', opts, async () => {
+  const p = antor.page;
+  await monde(p);
+  await p.goto(`/univers/${uid}/fiche/${marches}`);
+  await ligne(p, 'CR étape').waitFor();
+  assert.equal(await lignes(p).count(), 3);
+  assert.equal(await ligne(p, 'CR campagne').locator('.badge-type').count(), 0);
+  const pArc = ligne(p, 'CR arc').locator('a.badge-type');
+  const pEtape = ligne(p, 'CR étape').locator('a.badge-type');
+  assert.equal((await pArc.textContent())?.trim(), 'Arc des Marches');
+  assert.equal((await pEtape.textContent())?.trim(), 'Étape du gué');
+  assert.ok((await pEtape.boundingBox()).height >= 24, 'pastille de 24 px au moins');
+  assert.match(await pArc.getAttribute('href'), new RegExp(`/fiche/${arc}$`));
+  await pEtape.click();
+  await p.getByRole('heading', { name: 'Étape du gué', level: 1 }).waitFor();
+});
+
+test('page d’un scénario : ses lignes seulement, sans pastille ni décompte ni placeholder', opts, async () => {
+  const p = antor.page;
+  await monde(p);
+  await p.goto(`/univers/${uid}/fiche/${etape}`);
+  await ligne(p, 'CR étape').waitFor();
+  assert.equal(await lignes(p).count(), 1);
+  assert.equal(await crs(p).locator('.badge-type').count(), 0);
+  const arcPage = `/univers/${uid}/fiche/${arc}`;
+  await p.goto(arcPage);
+  await ligne(p, 'CR étape').waitFor();
+  assert.equal(await lignes(p).count(), 2, 'l’arc liste le sien et celui de l’étape');
+  assert.equal(await ligne(p, 'CR arc').locator('.badge-type').count(), 0);
+  assert.equal(await ligne(p, 'CR étape').locator('a.badge-type').count(), 1);
+  assert.doesNotMatch((await crs(p).textContent()) ?? '', /masqu|caché|\(\d+\)/i);
+});
+
+test('E-13 : chaque ligne nomme l’aventure propre', opts, async () => {
+  const p = antor.page;
+  await monde(p);
+  await p.goto(`/univers/${uid}/comptes-rendus`);
+  await p.getByRole('link', { name: 'CR étape' }).waitFor();
+  const l = (t: string) => p.locator('li.ligne-compte-rendu').filter({ hasText: t });
+  assert.equal((await l('CR campagne').locator('a.badge-type').textContent())?.trim(), 'Les Marches de Sel');
+  assert.equal((await l('CR arc').locator('a.badge-type').textContent())?.trim(), 'Arc des Marches');
+  assert.equal((await l('CR étape').locator('a.badge-type').textContent())?.trim(), 'Étape du gué');
 });
 
 test('aucune exception navigateur sur le parcours', opts, () => {

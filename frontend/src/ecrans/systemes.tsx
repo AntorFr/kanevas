@@ -6,7 +6,7 @@ import type { SystemeCompte } from '../types';
 import { ErreurChargement, Pastille } from '../ui';
 import { VisuelSysteme } from '../ui/dessins';
 import type { Ecran } from '../registre';
-import { PucesUnivers, resumeEntrees, utilisePar } from './systeme/puces';
+import { PucesUnivers, utilisePar } from './systeme/puces';
 import './ecrans.css';
 import './cartes.css';
 
@@ -81,13 +81,15 @@ function Systemes() {
                       Lecture seule
                     </Pastille>
                   )}
+                  {s.peutEcrire && s.mesUnivers.length === 0 && (
+                    <Pastille sens="neutre">MJ du système</Pastille>
+                  )}
                 </div>
                 <div className="pied-dessin">
                   <Link className="lien-carte deux-lignes" to={`/systemes/${s.id}`} title={s.nom}>
                     {s.nom}
                   </Link>
                   <span className="meta-carte">{utilisePar(s.nbUnivers)}</span>
-                  <span className="meta-carte">{resumeEntrees(s.entrees)}</span>
                   <PucesUnivers univers={s.mesUnivers} />
                 </div>
               </article>

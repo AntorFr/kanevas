@@ -42,8 +42,8 @@ function sectionBuild(md: string): string {
 }
 
 describe('docker-publish: build bounded to 120 minutes', () => {
-  test('the workflow has the two jobs attestation and build', () => {
-    assert.deepEqual([...jobs(workflow).keys()], ['attestation', 'build']);
+  test('the workflow has the three jobs attestation, build and web', () => {
+    assert.deepEqual([...jobs(workflow).keys()], ['attestation', 'build', 'web']);
   });
 
   test('every job declares timeout-minutes: 120', () => {

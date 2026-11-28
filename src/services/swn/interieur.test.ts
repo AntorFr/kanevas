@@ -267,7 +267,7 @@ test('0043 : montée depuis 0042 avec le semis, systèmes inchangés, transition
   const avant = lignes();
   assert.ok(avant.length > 0);
   assert.ok(!('transition' in (avant[0] as object)));
-  assert.deepEqual(migrate(db), [43, 44, 45]);
+  assert.deepEqual(migrate(db), [43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54]);
   const apres = lignes() as any[];
   assert.equal(apres.length, avant.length);
   for (let i = 0; i < avant.length; i++) assert.deepEqual({ ...apres[i], transition: undefined }, { ...(avant[i] as object), transition: undefined });

@@ -8,13 +8,10 @@ import { ErreurService } from './erreurs.js';
 import { ajouterMembre } from './membres.js';
 import {
   creerEtRattacherSysteme,
-  creerGabarit,
   creerSysteme,
   lireSysteme,
   listerCatalogue,
-  listerGabarits,
   listerSystemes,
-  modifierGabarit,
   rattacherSysteme,
 } from './systemes.js';
 import { creerUnivers, lireUnivers, listerUnivers, modifierUnivers } from './univers.js';
@@ -52,7 +49,7 @@ test('migration: base 0001 avec univers → systeme_id NULL partout, seconde ex�
   db.exec("CREATE TABLE migrations (numero INTEGER PRIMARY KEY, nom TEXT NOT NULL, applique_le TEXT NOT NULL)");
   db.exec("INSERT INTO migrations VALUES (1,'0001-premiere-fiche.sql','x')");
   db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('a','x'), ('b','x')").run();
-  assert.deepEqual(migrate(db), [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45]);
+  assert.deepEqual(migrate(db), [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54]);
   assert.deepEqual(db.prepare('SELECT systeme_id FROM univers').all(), [{ systeme_id: null }, { systeme_id: null }]);
   assert.equal(n(db, 'systemes_jeu'), 0);
   assert.deepEqual(migrate(db), []);
@@ -98,77 +95,38 @@ test('créer et rattacher refusé au joueur et au compte sans rôle, rien créé
   assert.equal(n(db, 'systemes_jeu'), 0);
 });
 
-test('rattacher/détacher : joueur et sans rôle refusés, id inconnu refusé, détacher garde système et gabarits', () => {
+test('rattacher/détacher : joueur et sans rôle refusés, id inconnu refusé, détacher garde le système', () => {
   const { db, marc, lea, zoe, u1 } = monde();
   const s = creerSysteme(db, marc.id, { nom: 'S' });
   assert.equal(code(() => rattacherSysteme(db, lea.id, u1.id, s.id)), 'refuse');
   assert.equal(code(() => rattacherSysteme(db, zoe.id, u1.id, s.id)), 'introuvable');
   assert.equal(code(() => rattacherSysteme(db, marc.id, u1.id, 999)), 'invalide');
   rattacherSysteme(db, marc.id, u1.id, s.id);
-  creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'G', contenu: 'c' });
   assert.equal(code(() => rattacherSysteme(db, lea.id, u1.id, null)), 'refuse');
   assert.equal(lireSysteme(db, lea.id, s.id).id, s.id);
   rattacherSysteme(db, marc.id, u1.id, null);
   assert.equal(code(() => lireSysteme(db, marc.id, s.id)), 'introuvable');
   assert.equal(lireUnivers(db, marc.id, u1.id).systeme, null);
   assert.equal(n(db, 'systemes_jeu'), 1);
-  assert.equal(n(db, 'gabarits'), 1);
 });
 
-test('gabarits : création, bornes, doublon même type (casse), autre type accepté, version périmée', () => {
-  const { db, marc, u1 } = monde();
-  const s = creerEtRattacherSysteme(db, marc.id, u1.id, { nom: 'S' });
-  const g = creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'Garde du sceau', contenu: 'PV 10' });
-  assert.equal(g.version, 1);
-  assert.equal(code(() => creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'GARDE DU SCEAU' })), 'conflit');
-  assert.equal(creerGabarit(db, marc.id, s.id, { type: 'objet', nom: 'garde du sceau' }).type, 'objet');
-  assert.equal(code(() => creerGabarit(db, marc.id, s.id, { type: 'creature', nom: '' })), 'invalide');
-  assert.equal(code(() => creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'y'.repeat(121) })), 'invalide');
-  creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'y'.repeat(120), contenu: 'z'.repeat(100000) });
-  assert.equal(code(() => creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'w', contenu: 'z'.repeat(100001) })), 'invalide');
-  assert.equal(code(() => creerGabarit(db, marc.id, s.id, { type: 'monstre', nom: 'w' })), 'invalide');
-  const m = modifierGabarit(db, marc.id, s.id, g.id, { nom: 'Garde', contenu: 'PV 12', version: 1 });
-  assert.equal(m.version, 2);
-  assert.equal(m.type, 'creature');
-  const e = err(() => modifierGabarit(db, marc.id, s.id, g.id, { nom: 'Périmé', contenu: 'X', version: 1 }));
-  assert.equal(e.code, 'conflit');
-  const apres = listerGabarits(db, marc.id, s.id, { type: 'creature' }).gabarits.find((x) => x.id === g.id)!;
-  assert.equal(apres.nom, 'Garde');
-  assert.equal(apres.contenu, 'PV 12');
-  assert.equal(apres.version, 2);
-  // renaming onto a sibling of the same type is refused, version untouched
-  const h = creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'Autre' });
-  assert.equal(code(() => modifierGabarit(db, marc.id, s.id, h.id, { nom: 'GARDE', contenu: '', version: 1 })), 'conflit');
-  // content over the limit on modification
-  assert.equal(code(() => modifierGabarit(db, marc.id, s.id, h.id, { nom: 'Autre', contenu: 'z'.repeat(100001), version: 1 })), 'invalide');
-});
-
-test('lecture partagée : le MJ d’un second univers rattaché lit et écrit ; le joueur lit sans écrire', () => {
+test('lecture partagée : les membres d’un univers rattaché lisent le système, aucun n’y écrit', () => {
   const { db, marc, lea, u1, u2 } = monde();
   const s = creerEtRattacherSysteme(db, marc.id, u1.id, { nom: 'S' });
-  creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'Garde du sceau', contenu: 'PV' });
   rattacherSysteme(db, marc.id, u2.id, s.id);
-  assert.deepEqual(listerGabarits(db, marc.id, s.id, { type: 'creature' }).gabarits.map((g) => g.nom), ['Garde du sceau']);
-  const g = listerGabarits(db, lea.id, s.id, { type: 'creature' }).gabarits[0]!;
-  assert.equal(code(() => creerGabarit(db, lea.id, s.id, { type: 'creature', nom: 'X' })), 'refuse');
-  assert.equal(code(() => modifierGabarit(db, lea.id, s.id, g.id, { nom: 'X', contenu: '', version: 1 })), 'refuse');
   assert.equal(lireSysteme(db, lea.id, s.id).peutEcrire, false);
-  assert.equal(lireSysteme(db, marc.id, s.id).peutEcrire, true);
-  assert.equal(listerGabarits(db, lea.id, s.id, { type: 'creature' }).gabarits[0]!.nom, 'Garde du sceau');
+  assert.equal(lireSysteme(db, marc.id, s.id).peutEcrire, false, 'le créateur n’a aucun droit d’écriture (AD-152)');
 });
 
-test('AD-94 : le rôle se calcule sur tous les univers rattachés du compte (joueur ici, MJ là)', () => {
+test('AD-152 : le rôle dans un univers rattaché ne donne aucun droit d’écriture sur le système', () => {
   const { db, marc, paul, u1, u3 } = monde();
   const s = creerEtRattacherSysteme(db, marc.id, u1.id, { nom: 'S' });
   ajouterMembre(db, marc.id, u1.id, 'paul', 'joueur');
-  // Paul: player of u1 (attached), GM of u3 (not attached) → reads, cannot write
   assert.equal(lireSysteme(db, paul.id, s.id).peutEcrire, false);
-  assert.equal(code(() => creerGabarit(db, paul.id, s.id, { type: 'regle', nom: 'R' })), 'refuse');
   rattacherSysteme(db, paul.id, u3.id, s.id);
   const vue = lireSysteme(db, paul.id, s.id);
-  assert.equal(vue.peutEcrire, true);
+  assert.equal(vue.peutEcrire, false);
   assert.deepEqual(vue.mesUnivers.map((u) => [u.nom, u.role]), [['U1', 'joueur'], ['U3', 'mj']]);
-  assert.equal(creerGabarit(db, paul.id, s.id, { type: 'regle', nom: 'R' }).version, 1);
 });
 
 test('listerSystemes : seuls les systèmes d’un univers du compte, sans nommer les autres univers', () => {
@@ -177,43 +135,31 @@ test('listerSystemes : seuls les systèmes d’un univers du compte, sans nommer
   rattacherSysteme(db, marc.id, u2.id, s.id);
   creerEtRattacherSysteme(db, paul.id, u3.id, { nom: 'Autre' });
   creerSysteme(db, marc.id, { nom: 'Détaché' });
-  creerGabarit(db, marc.id, s.id, { type: 'objet', nom: 'O' });
   assert.deepEqual(listerSystemes(db, marc.id).map((x) => x.nom), ['S']);
   assert.deepEqual(listerSystemes(db, paul.id).map((x) => x.nom), ['Autre']);
   assert.deepEqual(listerSystemes(db, zoe.id), []);
   const [vl] = listerSystemes(db, lea.id);
-  assert.deepEqual(Object.keys(vl!).sort(), ['entrees', 'id', 'mesUnivers', 'nbUnivers', 'nom', 'peutEcrire']);
+  assert.deepEqual(Object.keys(vl!).sort(), ['id', 'mesUnivers', 'nbUnivers', 'nom', 'peutEcrire']);
   assert.equal(vl!.nbUnivers, 2);
-  assert.deepEqual(vl!.entrees, { regle: 0, creature: 0, objet: 1 });
   assert.deepEqual(vl!.mesUnivers, [{ id: u1.id, nom: 'U1', role: 'joueur' }]);
   assert.equal(vl!.peutEcrire, false);
   assert.equal(JSON.stringify(listerSystemes(db, lea.id)).includes('U2'), false);
 });
 
-test('exclusions : inconnu, sans univers rattaché, détaché → même refus ; l’écriture aussi', () => {
+test('exclusions : inconnu, sans univers rattaché, détaché → même refus', () => {
   const { db, marc, zoe, paul, u1, u3 } = monde();
   const s = creerEtRattacherSysteme(db, marc.id, u1.id, { nom: 'S' });
-  const g = creerGabarit(db, marc.id, s.id, { type: 'regle', nom: 'R' });
   creerEtRattacherSysteme(db, paul.id, u3.id, { nom: 'P' });
   const detache = creerSysteme(db, marc.id, { nom: 'D' });
   const inconnu = err(() => lireSysteme(db, marc.id, 9999));
   assert.equal(inconnu.code, 'introuvable');
   for (const [c, sid] of [[zoe.id, s.id], [paul.id, s.id], [marc.id, detache.id]] as const) {
-    for (const fn of [
-      () => lireSysteme(db, c, sid),
-      () => listerGabarits(db, c, sid, { type: 'regle' }),
-      () => creerGabarit(db, c, sid, { type: 'regle', nom: 'Z' }),
-      () => modifierGabarit(db, c, sid, g.id, { nom: 'Z', contenu: '', version: 1 }),
-    ]) {
+    for (const fn of [() => lireSysteme(db, c, sid)]) {
       const e = err(fn);
       assert.equal(e.code, inconnu.code);
       assert.equal(e.message, inconnu.message);
     }
   }
-  // a template of another system cannot be reached through a system the caller sees
-  const p = listerSystemes(db, paul.id)[0]!;
-  assert.equal(code(() => modifierGabarit(db, paul.id, p.id, g.id, { nom: 'Z', contenu: '', version: 1 })), 'introuvable');
-  assert.equal(listerGabarits(db, marc.id, s.id, { type: 'regle' }).gabarits[0]!.nom, 'R');
 });
 
 test('listerUnivers / lireUnivers : système {id, nom} ou null, nbMembres', () => {

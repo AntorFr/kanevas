@@ -78,14 +78,6 @@ test('B-43: 100 000 characters are saved, 100 001 is 400 with the fixed message 
   const rc = await cr(trop);
   assert.equal(rc.status, 400);
   assert.equal(rc.corps.message, MSG);
-
-  const sys = await m.dire(m.antor, 'POST', '/api/systemes', { nom: 'Plafond' });
-  await m.dire(m.antor, 'PUT', `${m.b}/systeme`, { systemeId: sys.corps.id });
-  const en = (contenu: string) => m.dire(m.antor, 'POST', `/api/systemes/${sys.corps.id}/gabarits`, { type: 'creature', nom: 'R', contenu });
-  assert.equal((await en(ok)).status, 201);
-  const re = await en(trop);
-  assert.equal(re.status, 400);
-  assert.equal(re.corps.message, MSG);
 });
 
 test('B-43 screen counterpart: a section whose text went over the ceiling in the editor is not saved (the old text is read back)', async () => {

@@ -2,8 +2,11 @@ import { Check, Pencil, RotateCcw, X } from 'lucide-react';
 import { useState } from 'react';
 
 import { ErreurApi, useConnexionPerdue } from '../../api';
-import { Bouton, Champ } from '../../ui';
+import { Bouton, Champ, Interrupteur } from '../../ui';
 import { afficher, origine, type Niveau, type Reglage, type Resolue, type Valeur } from './types';
+
+/** Settings drawn as a switch (a yes/no that reads as a state of the table); the other booleans stay a choice « Oui / Non ». */
+const EN_INTERRUPTEUR = new Set(['jeu_a_distance']);
 
 /** Keep the opening version, even when another card refreshes: stale edits must be refused. */
 export function LigneReglage({ reglage, valeur, niveau, version, ecriture, occupe, enregistrer, recharger }: {
@@ -41,6 +44,20 @@ export function LigneReglage({ reglage, valeur, niveau, version, ecriture, occup
         : 'Enregistrement impossible.');
       if (!(e instanceof ErreurApi) || e.statut === 0 || e.statut >= 500) setReprise(() => () => void sauver(v, vOrigine));
     } finally { setAttente(false); }
+  }
+
+  if (forme.type === 'booleen' && EN_INTERRUPTEUR.has(reglage.nom)) {
+    // A switch is the setting itself: always visible, it saves on the flip (no « Remplacer » step, no second label).
+    return <div className="outil-reglage">
+      <Interrupteur etiquette={reglage.libelle} ecrit coche={valeur.valeur === true}
+        disabled={!ecriture || reglage.protege || disabled}
+        onChange={(v) => void sauver(v, version)} />
+      {reglage.aide && <p>{reglage.aide}</p>}
+      {attente && <p role="status">Enregistrement…</p>}
+      {erreur && <div className="echec" role="alert">{erreur} {perime && <Bouton petit icone={RotateCcw} onClick={async () => {
+        await recharger(); setErreur(undefined); setPerime(false);
+      }}>Recharger</Bouton>}{reprise && <Bouton petit ecrit disabled={disabled} onClick={reprise}>Réessayer</Bouton>}</div>}
+    </div>;
   }
 
   return <div className="outil-reglage">

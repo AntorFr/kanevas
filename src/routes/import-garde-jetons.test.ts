@@ -148,6 +148,7 @@ test('jeton d’outils : 401 jeton_invalide sur /api/v1/univers/<clé>/ et sur l
   const { app, u, cle, bearer, jeton } = await monter();
   const { valeur, jeton: j } = jeton({ tous: false, univers: [{ universId: u.id, niveau: 'ecriture' }] } as never);
   app.db.prepare('INSERT INTO jetons_outils (jeton_id, outil) VALUES (?, ?)').run(j.id, 'swn/galaxie');
+  app.db.prepare('UPDATE jetons_api SET contenu = 0 WHERE id = ?').run(j.id);
   for (const base of PREFIXES(cle(u))) {
     const r = await app.inject({ method: 'GET', url: base, headers: bearer(valeur) });
     assert.equal(r.statusCode, 401, r.body);

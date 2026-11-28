@@ -55,6 +55,12 @@ export interface SectionVue {
 
 export interface Fiche {
   id: number;
+  /** `systeme`: an element of the attached game system, read-only here (AD-157); `univers` otherwise. */
+  origine?: 'univers' | 'systeme' | 'surcharge';
+  /** The system of an element. */
+  systeme?: { id: number; nom: string };
+  /** The element a customisation copies (AD-surcharge-2): only for a copy, and only to a reader of the system. */
+  surchargeDe?: number;
   /** Readable key `type:name` (B-99): only in the body of a GM outside player mode (AD-146). */
   cle?: string;
   universId: number;

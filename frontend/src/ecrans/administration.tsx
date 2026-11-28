@@ -15,6 +15,39 @@ import './liste.css';
 import './reglages.css';
 import './administration.css';
 
+interface SystemeInstance {
+  id: number;
+  nom: string;
+  nbUnivers: number;
+  nbMJ: number;
+}
+
+/** The systems of the instance, each opening E-15 on its « MJ du système » tab (AD-157). */
+function Systemes() {
+  const [systemes, recharger] = useCharge<SystemeInstance[]>('/api/instance/systemes');
+  if (systemes.etat === 'chargement') return <Chargement texte="Chargement des systèmes…" />;
+  if (systemes.etat === 'erreur') return <ErreurChargement texte="Impossible de charger les systèmes." onReessayer={recharger} />;
+  return (
+    <section className="panneau">
+      <h2>Systèmes de jeu</h2>
+      {systemes.valeur.length === 0 ? (
+        <p className="note-admin">Aucun système sur l’instance.</p>
+      ) : (
+        <ul className="liste-instance">
+          {systemes.valeur.map((s) => (
+            <li key={s.id}>
+              <Link className="choix" to={`/systemes/${s.id}?type=mj`} title={s.nom}>
+                <span className="nom">{s.nom}</span>
+                <small>{`${s.nbUnivers} univers · ${s.nbMJ === 1 ? '1 MJ' : `${s.nbMJ} MJ`}`}</small>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 interface UniversInstance {
   id: number;
   nom: string;
@@ -83,15 +116,15 @@ function Administration() {
     </>
   );
 
-  if (univers.etat === 'chargement') return <>{entete}<Chargement texte="Chargement des univers…" /><JetonAssistant /><Limites /><JetonsApi /></>;
+  if (univers.etat === 'chargement') return <>{entete}<Chargement texte="Chargement des univers…" /><Systemes /><JetonAssistant /><Limites /><JetonsApi /></>;
   if (univers.etat === 'erreur') {
-    return <>{entete}<ErreurChargement texte="Impossible de charger les univers." onReessayer={recharger} /><JetonAssistant /><Limites /><JetonsApi /></>;
+    return <>{entete}<ErreurChargement texte="Impossible de charger les univers." onReessayer={recharger} /><Systemes /><JetonAssistant /><Limites /><JetonsApi /></>;
   }
   const liste = frais ?? univers.valeur;
   const choisi = selection === null ? undefined : liste.find((u) => u.id === selection);
   if (selection !== null && !choisi) return <PageIntrouvable />;
   if (liste.length === 0) {
-    return <>{entete}<div className="vide-pointille"><EtatVide titre="Aucun univers sur l’instance pour l’instant." /></div><JetonAssistant /><Limites /><JetonsApi /></>;
+    return <>{entete}<div className="vide-pointille"><EtatVide titre="Aucun univers sur l’instance pour l’instant." /></div><Systemes /><JetonAssistant /><Limites /><JetonsApi /></>;
   }
   // The selected universe stays visible even beyond the first page.
   const rang = choisi ? liste.indexOf(choisi) + 1 : 0;
@@ -131,7 +164,7 @@ function Administration() {
           )}
         </section>
       </div>
-      <JetonAssistant /><Limites /><JetonsApi />
+      <Systemes /><JetonAssistant /><Limites /><JetonsApi />
     </>
   );
 }

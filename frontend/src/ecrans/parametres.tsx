@@ -1,14 +1,15 @@
-import { ArrowRight, Check, Link2, Plus, Settings2, Trash2 } from 'lucide-react';
+import { ArrowRight, Check, Link2, Plus, Settings2, Trash2, Unlink } from 'lucide-react';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { ErreurApi, appeler } from '../api';
+import { ErreurApi, appeler, lire } from '../api';
 import { useCharge, useUnivers } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { BoiteDialogue, Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Panneau, useToasts } from '../ui';
+import { Alerte, BoiteDialogue, Bouton, Champ, ChargementListe, ErreurChargement, Onglets, PageIntrouvable, Panneau, useToasts } from '../ui';
 import { PanneauTypesUnivers } from './types-reglage/panneau-univers';
 import { PanneauOutils } from './outils/panneau';
+import { phraseFiches } from './fiche/fenetre-copies';
 import './ecrans.css';
 import './liste.css';
 import './reglages.css';
@@ -86,6 +87,10 @@ function Parametres() {
   const [echecIdentite, setEchecIdentite] = useState<string>();
   const [echecRattache, setEchecRattache] = useState<string>();
   const [echecCreation, setEchecCreation] = useState<string>();
+  // E-14: the window that announces what the detachment does to the copies (B-120); `n` copies, `geste` what it then sends.
+  const [detachement, setDetachement] = useState<{ n: number; geste: 'rattacher' | 'creer'; autre: boolean }>();
+  const [echecDetachement, setEchecDetachement] = useState<string>();
+  const [verification, setVerification] = useState(false);
   const [enCours, setEnCours] = useState<string>();
   const [boiteSuppression, setBoiteSuppression] = useState(false);
   const [nomConfirme, setNomConfirme] = useState('');
@@ -205,52 +210,104 @@ function Parametres() {
     }
   }
 
-  async function rattacher() {
-    setEchecRattache(undefined);
-    const avant = systeme?.nom;
-    const ok = await ecrire(
-      'rattache',
-      async () => {
-        await appeler('PUT', `${base}/systeme`, { systemeId: choix === AUCUN ? null : Number(choix) });
-        await relire();
-      },
-      setEchecRattache,
-    );
-    if (ok) toast(choix === AUCUN ? (avant ? `« ${avant} » détaché` : 'Aucun système rattaché') : `« ${liste.find((x) => String(x.id) === choix)?.nom ?? ''} » rattaché`);
+  /**
+   * E-14: an attached universe that leaves its system, or takes another, asks first when it holds copies (B-120). The count is
+   * read again here, never trusted from the first read of the page; if it cannot be read nothing is sent.
+   */
+  async function verifierCopies(geste: 'rattacher' | 'creer', enEchec: (m: string) => void, apres: () => Promise<void>) {
+    if (verification) return;
+    setVerification(true);
+    try {
+      const u = await lire<UniversListe>(base);
+      const n = u.systeme?.personnalisees ?? 0;
+      if (n > 0) {
+        setEchecDetachement(undefined);
+        setDetachement({ n, geste, autre: geste === 'creer' || choix !== AUCUN });
+        return;
+      }
+    } catch {
+      enEchec('Impossible de vérifier les copies. Rien n’a été envoyé.');
+      return;
+    } finally {
+      setVerification(false);
+    }
+    await apres();
   }
 
-  async function creer(e: FormEvent) {
+  /** The attach itself: the PUT, the reread and the toast. */
+  async function corpsRattacher() {
+    const avant = systeme?.nom;
+    await appeler('PUT', `${base}/systeme`, { systemeId: choix === AUCUN ? null : Number(choix) });
+    await relire();
+    toast(choix === AUCUN ? (avant ? `« ${avant} » détaché` : 'Aucun système rattaché') : `« ${liste.find((x) => String(x.id) === choix)?.nom ?? ''} » rattaché`);
+  }
+
+  async function envoyerRattacher() {
+    setEchecRattache(undefined);
+    await ecrire('rattache', corpsRattacher, setEchecRattache);
+  }
+
+  function rattacher() {
+    setEchecRattache(undefined);
+    // No window for an unattached universe, nor for the same system chosen again: the gesture of today.
+    if (!systeme || choix === String(systeme.id)) return void envoyerRattacher();
+    void verifierCopies('rattacher', setEchecRattache, envoyerRattacher);
+  }
+
+  /** The creation of a system and its attach; true when the name is already taken (nothing was created). */
+  async function corpsCreer(): Promise<boolean> {
+    try {
+      const s = await appeler<SystemeCatalogue>('POST', `${base}/systeme-nouveau`, { nom: nomSysteme });
+      setListe((l) => [...l, s].sort((a, b) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' })));
+      setChoix(String(s.id));
+      await relire();
+      toast(`« ${nomSysteme} » créé et rattaché`);
+      setNomSysteme('');
+      setNomSystemeVide(false);
+      return false;
+    } catch (err) {
+      if (err instanceof ErreurApi && err.statut === 409) {
+        setNomPris(true);
+        return true;
+      }
+      throw err;
+    }
+  }
+
+  async function envoyerCreer() {
+    setEchecCreation(undefined);
+    await ecrire('creation', async () => void (await corpsCreer()), setEchecCreation);
+  }
+
+  function creer(e: FormEvent) {
     e.preventDefault();
     setEchecCreation(undefined);
     setNomPris(false);
     if (nomSysteme.trim() === '') return setNomSystemeVide(true);
     if (nomSysteme.length > NOM_MAX) return;
-    let pris = false;
-    const nomCree = nomSysteme;
+    if (!systeme) return void envoyerCreer();
+    void verifierCopies('creer', setEchecCreation, envoyerCreer);
+  }
+
+  async function confirmerDetachement() {
+    if (!detachement) return;
+    setEchecDetachement(undefined);
+    const geste = detachement.geste;
+    // A name already taken on the creation: nothing was created, the window closes and the field says it.
     const ok = await ecrire(
-      'creation',
+      'detachement',
       async () => {
-        try {
-          const s = await appeler<SystemeCatalogue>('POST', `${base}/systeme-nouveau`, { nom: nomSysteme });
-          setListe((l) => [...l, s].sort((a, b) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' })));
-          setChoix(String(s.id));
-          await relire();
-        } catch (err) {
-          if (err instanceof ErreurApi && err.statut === 409) {
-            pris = true;
-            setNomPris(true);
-            return;
-          }
-          throw err;
-        }
+        if (geste === 'rattacher') await corpsRattacher();
+        else await corpsCreer();
       },
-      setEchecCreation,
+      (m) => {
+        if (m === PLUS_MJ) {
+          setDetachement(undefined);
+          setEchecRattache('Vous ne pouvez plus modifier cet univers.');
+        } else setEchecDetachement(m);
+      },
     );
-    if (ok && !pris) {
-      toast(`« ${nomCree} » créé et rattaché`);
-      setNomSysteme('');
-      setNomSystemeVide(false);
-    }
+    if (ok) setDetachement(undefined);
   }
 
   const nomUnivers = univers.etat === 'ok' ? univers.valeur.nom : '';
@@ -307,14 +364,12 @@ function Parametres() {
         </span>
         <h1>Paramètres de l’univers</h1>
       </header>
-      <div className="onglets outils-onglets" role="tablist" aria-label="Paramètres de l’univers">
-        <button type="button" role="tab" aria-selected={!surOutils && !surTypes} className={!surOutils && !surTypes ? 'actif' : undefined}
-          onClick={() => setParams({}, { replace: true })}>Général</button>
-        <button type="button" role="tab" aria-selected={surTypes} className={surTypes ? 'actif' : undefined}
-          onClick={() => setParams({ onglet: 'types' }, { replace: true })}>Types de fiche</button>
-        <button type="button" role="tab" aria-selected={surOutils} className={surOutils ? 'actif' : undefined}
-          onClick={() => setParams({ onglet: 'outils' }, { replace: true })}>Outils</button>
-      </div>
+      <Onglets
+        etiquette="Paramètres de l’univers"
+        actif={surOutils ? 'outils' : surTypes ? 'types' : 'general'}
+        onglets={[{ id: 'general', libelle: 'Général' }, { id: 'types', libelle: 'Types de fiche' }, { id: 'outils', libelle: 'Outils' }]}
+        onChange={(v) => setParams(v === 'general' ? {} : { onglet: v }, { replace: true })}
+      />
       {surOutils && <div role="tabpanel"><PanneauOutils key={`${id}-${systeme?.id ?? 'sans'}`} id={id!} niveau="univers" sansSysteme={systeme === null} /></div>}
       {surTypes && <div role="tabpanel"><PanneauTypesUnivers universId={id!} universNom={nomUnivers} avecSysteme={systeme !== null} /></div>}
       {!surOutils && !surTypes && <div className="panneaux-suivi">
@@ -364,7 +419,7 @@ function Parametres() {
                 </option>
               ))}
             </Champ>
-            <Bouton variante="principal" ecrit icone={Link2} enCours={enCours === 'rattache'} onClick={rattacher}>
+            <Bouton variante="principal" ecrit icone={Link2} enCours={enCours === 'rattache' || verification} onClick={rattacher}>
               Rattacher
             </Bouton>
           </div>
@@ -411,6 +466,20 @@ function Parametres() {
           </div>
         </Panneau>
       </div>}
+      {detachement && systeme && (
+        <BoiteDialogue
+          titre={detachement.autre ? 'Changer de système ?' : `Détacher cet univers de « ${systeme.nom} » ?`}
+          texte={phraseFiches(detachement.n)}
+          action={detachement.autre ? 'Changer de système' : 'Détacher'}
+          libelleEnCours="Envoi…"
+          icone={Unlink}
+          enCours={enCours === 'detachement'}
+          onConfirmer={() => void confirmerDetachement()}
+          onFermer={() => { if (enCours !== 'detachement') setDetachement(undefined); }}
+        >
+          {echecDetachement && <Alerte>{echecDetachement}</Alerte>}
+        </BoiteDialogue>
+      )}
       {boiteSuppression && (
         <BoiteDialogue
           titre={`Supprimer « ${nomUnivers} » ?`}

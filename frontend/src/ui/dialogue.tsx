@@ -30,6 +30,7 @@ export function BoiteDialogue({
   formulaire,
   focusChamp,
   annulation,
+  empilee,
   children,
 }: {
   titre: string;
@@ -61,6 +62,8 @@ export function BoiteDialogue({
   focusChamp?: boolean;
   /** Label of the neutral button when the default « Annuler » reads wrong (« Rester »). */
   annulation?: string;
+  /** Under 600 px the buttons stack, the action first and « Annuler » last (E-9, E-14, E-15). */
+  empilee?: boolean;
   children?: ReactNode;
 }) {
   const Pastille = icone ?? (variante === 'neutre' ? Anchor : Trash2);
@@ -133,7 +136,7 @@ export function BoiteDialogue({
           <h2 id={idTitre}>{titre}</h2>
           <p id={idTexte}>{texte}</p>
           {children && (formulaire ? <div className="boite-champs">{children}</div> : children)}
-          <div className="boite-actions">
+          <div className={`boite-actions${empilee ? ' empilee' : ''}`}>
             <button type="button" className="bouton neutre" ref={annuler} onClick={onFermer}>
               {annulation ?? (action ? 'Annuler' : 'Fermer')}
             </button>

@@ -1,0 +1,465 @@
+{
+  "document": {
+    "schema": 1,
+    "largeur": 10,
+    "hauteur": 6,
+    "calques": [
+      {
+        "id": "sol",
+        "nom": "Sol",
+        "type": "sol",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": false
+      },
+      {
+        "id": "murs",
+        "nom": "Murs",
+        "type": "mur",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": false
+      },
+      {
+        "id": "objets",
+        "nom": "Objets",
+        "type": "objet",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": false
+      },
+      {
+        "id": "mj",
+        "nom": "Calque MJ secret",
+        "type": "objet",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": true
+      },
+      {
+        "id": "cache",
+        "nom": "Calque masque secret",
+        "type": "objet",
+        "visible": true,
+        "verrouille": false,
+        "mj_seul": false
+      }
+    ],
+    "sols": [
+      {
+        "calque": "sol",
+        "x": 0,
+        "y": 0,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 1,
+        "y": 0,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 2,
+        "y": 0,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 3,
+        "y": 0,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 0,
+        "y": 1,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 1,
+        "y": 1,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 2,
+        "y": 1,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 3,
+        "y": 1,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 0,
+        "y": 2,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 1,
+        "y": 2,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 2,
+        "y": 2,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 3,
+        "y": 2,
+        "asset_id": "dalle"
+      },
+      {
+        "calque": "sol",
+        "x": 8,
+        "y": 4,
+        "asset_id": "dalle"
+      }
+    ],
+    "murs": [
+      {
+        "calque": "murs",
+        "x": 0,
+        "y": 0,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 0,
+        "y": 3,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 1,
+        "y": 0,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 1,
+        "y": 3,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 2,
+        "y": 0,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 2,
+        "y": 3,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 3,
+        "y": 0,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 3,
+        "y": 3,
+        "cote": "h",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 0,
+        "y": 0,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 4,
+        "y": 0,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 0,
+        "y": 1,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 4,
+        "y": 1,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": true
+      },
+      {
+        "calque": "murs",
+        "x": 0,
+        "y": 2,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      },
+      {
+        "calque": "murs",
+        "x": 4,
+        "y": 2,
+        "cote": "v",
+        "asset_id": "mur-pierre",
+        "porte": false
+      }
+    ],
+    "elements": [
+      {
+        "id": "e-chaise",
+        "calque": "objets",
+        "asset_id": "chaise",
+        "x": 1.5,
+        "y": 0.5,
+        "rotation": 0,
+        "miroir": false,
+        "echelle": 1.0
+      },
+      {
+        "id": "e-relique",
+        "calque": "objets",
+        "asset_id": "asset-mj-secret",
+        "x": 2.5,
+        "y": 0.5,
+        "rotation": 0,
+        "miroir": false,
+        "echelle": 1.0
+      },
+      {
+        "id": "e-piege",
+        "calque": "mj",
+        "asset_id": "piege-secret",
+        "x": 2.5,
+        "y": 1.5,
+        "rotation": 0,
+        "miroir": false,
+        "echelle": 1.0
+      },
+      {
+        "id": "e-cache",
+        "calque": "cache",
+        "asset_id": "objet-calque-masque-secret",
+        "x": 1.5,
+        "y": 2.5,
+        "rotation": 0,
+        "miroir": false,
+        "echelle": 1.0
+      },
+      {
+        "id": "e-tresor",
+        "calque": "objets",
+        "asset_id": "tresor-sous-brouillard",
+        "x": 8.5,
+        "y": 4.5,
+        "rotation": 0,
+        "miroir": false,
+        "echelle": 1.0
+      }
+    ]
+  },
+  "contexte": {
+    "assets_mj_seul": [
+      "asset-mj-secret"
+    ],
+    "fiches_lisibles": [
+      "fiche-ok"
+    ],
+    "empreintes": {
+      "geant": [
+        2,
+        2
+      ]
+    }
+  },
+  "cas": [
+    {
+      "nom": "une pièce fermée s'arrête aux murs et à la porte",
+      "lot": [
+        {
+          "type": "reveler_piece",
+          "x": 1,
+          "y": 1
+        }
+      ],
+      "attendu": {
+        "ok": true,
+        "revele": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "nom": "depuis l'extérieur, la pièce reste fermée",
+      "lot": [
+        {
+          "type": "reveler_piece",
+          "x": 6,
+          "y": 3
+        }
+      ],
+      "attendu": {
+        "ok": true,
+        "revele_hors": [
+          0,
+          0,
+          4,
+          3
+        ]
+      }
+    },
+    {
+      "nom": "masquer une pièce",
+      "preparation": [
+        {
+          "type": "reveler_rect",
+          "x": 0,
+          "y": 0,
+          "l": 10,
+          "h": 6
+        }
+      ],
+      "lot": [
+        {
+          "type": "masquer_piece",
+          "x": 2,
+          "y": 2
+        }
+      ],
+      "attendu": {
+        "ok": true,
+        "masque": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            2
+          ]
+        ]
+      }
+    }
+  ]
+}

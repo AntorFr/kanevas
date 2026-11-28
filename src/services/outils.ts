@@ -8,6 +8,7 @@ import { exigerMJ, roleDe, vueMJ } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
 import { surSourceModifiee } from './crochets-outils.js';
 import type { Acteur } from './types.js';
+import { creerEspaceSysteme } from './systemes.js';
 
 export type CibleOutils = { niveau: 'systeme' | 'univers'; id: number };
 export type Origine = 'defaut' | 'systeme' | 'univers';
@@ -113,7 +114,9 @@ export function candidatsResponsable(db: Db, acteur: Acteur, systemeId: number):
 export function creerSystemeAncienPourBouchon(db: Db, nom: string): { id: number; nom: string } {
   if (env.KANEVAS_STUB !== '1' && env.NODE_ENV !== 'test') throw refuse();
   const info = db.prepare('INSERT INTO systemes_jeu (nom, cree_le) VALUES (?, ?)').run(nom, new Date().toISOString());
-  return { id: Number(info.lastInsertRowid), nom };
+  const id = Number(info.lastInsertRowid);
+  creerEspaceSysteme(db, id, nom);
+  return { id, nom };
 }
 function exigerEcriture(db: Db, compte: number | Acteur, cible: CibleOutils): void {
   const acteur = acteurDe(compte);
@@ -200,7 +203,10 @@ export function listerCartesOutil(db: Db, acteur: Acteur, universId: number, cle
   const role = roleDe(db, universId, acteur.compteId)!;
   return outil.cartes(db, acteur, universId).filter((c) => vueMJ(role, acteur) || c.visible);
 }
-export interface CarteListee { module: string; outil: string; id: number; titre: string; visible: boolean; version?: number }
+export interface CarteListee {
+  module: string; outil: string; id: number; titre: string; visible: boolean; version?: number;
+  largeur?: number; hauteur?: number; adresse?: string;
+}
 /** Every map of every active module for E-10 (G-8): tools `accessible` to the actor only, a player gets the visible maps. */
 export function listerCartesOutils(db: Db, acteur: Acteur, universId: number): CarteListee[] {
   const role = roleDe(db, universId, acteur.compteId);
@@ -210,7 +216,9 @@ export function listerCartesOutils(db: Db, acteur: Acteur, universId: number): C
     .filter(({ o }) => o.type === 'carte' && accessible(db, acteur, universId, o.cle))
     .flatMap(({ m, o }) => (o as DeclarationCarte).cartes(db, acteur, universId)
       .filter((c) => mj || c.visible)
-      .map((c) => ({ module: m.nom, outil: o.cle.slice(m.nom.length + 1), id: c.id, titre: c.titre, visible: c.visible, version: c.version })));
+      .map((c) => ({ module: m.nom, outil: o.cle.slice(m.nom.length + 1), id: c.id, titre: c.titre, visible: c.visible, version: c.version,
+        ...(c.largeur !== undefined ? { largeur: c.largeur } : {}), ...(c.hauteur !== undefined ? { hauteur: c.hauteur } : {}),
+        ...(c.adresse !== undefined ? { adresse: c.adresse } : {}) })));
 }
 export interface FormeCreable { module: string; outil: string; libelle: string }
 /** The « Nouvelle carte » forms (T-6): tools `accessible` that declare `creation`, for a GM outside Player mode. */

@@ -1,21 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { ErreurApi, appeler } from '../../api';
-import { Interrupteur, ChargementListe, ErreurChargement, useToasts } from '../../ui';
-import { iconeDeNom, type TypeVue } from '../../types-contexte';
+import { Interrupteur, useToasts } from '../../ui';
+import { iconeDeNom } from '../../types-contexte';
 import './types-reglage.css';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 const PLUS_DROIT = 'Vous ne pouvez plus modifier ce système.';
 
 /**
- * E-15, tab « Types de fiche »: one switch per settable type. The labels come from the list of one
- * of the caller's universes (the server owns the list, AD-120); the on/off state from the system.
+ * E-15, tab « Types de fiche »: one switch per settable type. The server owns the list and its words (AD-120):
+ * they come with the system's read (`GET /api/systemes/:sid`), so a GM with no universe sees them too.
  */
 export function OngletTypesSysteme({
   systemeId,
   systemeNom,
-  universId,
   actifs,
   nbUnivers,
   peutEcrire,
@@ -24,34 +23,17 @@ export function OngletTypesSysteme({
 }: {
   systemeId: string;
   systemeNom: string;
-  universId: number | undefined;
-  actifs: { type: string; active: boolean }[];
+  actifs: { type: string; active: boolean; singulier: string; icone: string }[];
   nbUnivers: number;
   peutEcrire: boolean;
   onChange: (type: string, active: boolean) => void;
   onDroitPerdu: () => void;
 }) {
   const { toast } = useToasts();
-  const [liste, setListe] = useState<TypeVue[]>();
-  const [erreur, setErreur] = useState(false);
-  const [essai, setEssai] = useState(0);
   const [attente, setAttente] = useState<string>();
   const [echec, setEchec] = useState<string>();
 
-  useEffect(() => {
-    if (universId === undefined) return;
-    let actif = true;
-    setErreur(false);
-    appeler<TypeVue[]>('GET', `/api/univers/${universId}/types`).then(
-      (l) => actif && setListe(l.filter((t) => t.reglable)),
-      () => actif && setErreur(true),
-    );
-    return () => {
-      actif = false;
-    };
-  }, [universId, essai]);
-
-  async function basculer(t: TypeVue, active: boolean) {
+  async function basculer(t: { type: string; singulier: string }, active: boolean) {
     if (attente) return;
     setEchec(undefined);
     setAttente(t.type);
@@ -70,10 +52,7 @@ export function OngletTypesSysteme({
     }
   }
 
-  if (erreur) return <ErreurChargement texte="Impossible de charger les types." onReessayer={() => setEssai((n) => n + 1)} />;
-  if (!liste) return <ChargementListe texte="Chargement des types…" />;
-  const etat = new Map(actifs.map((a) => [a.type, a.active]));
-
+  
   return (
     <>
       {echec && (
@@ -86,12 +65,12 @@ export function OngletTypesSysteme({
         <span>Activé</span>
       </div>
       <ul className="types-sys">
-        {liste.map((t) => (
+        {actifs.map((t) => (
           <li key={t.type}>
             <Interrupteur
               etiquette={t.singulier}
               icone={iconeDeNom(t.icone)}
-              coche={etat.get(t.type) ?? true}
+              coche={t.active}
               disabled={!peutEcrire || Boolean(attente)}
               ecrit
               onChange={(v) => void basculer(t, v)}
