@@ -28,8 +28,8 @@ export const OUTILS_ECRITURE_MCP = [
   'systeme_supprimer_fiche', 'personnaliser_fiche', 'revenir_au_systeme',
 ] as const;
 
-const PERIMEE_SECTION = "La section a changé depuis que vous l'avez lue. Relisez-la.";
-const PERIMEE_ENTETE = "L'en-tête de la fiche a changé depuis que vous l'avez lu. Relisez la fiche.";
+export const PERIMEE_SECTION = "La section a changé depuis que vous l'avez lue. Relisez-la.";
+export const PERIMEE_ENTETE = "L'en-tête de la fiche a changé depuis que vous l'avez lu. Relisez la fiche.";
 const PERIMEE_RELATION = "La relation a changé depuis que vous l'avez lue. Relisez la fiche.";
 
 const id = z.number().int().positive();
@@ -49,18 +49,19 @@ function echec(e: unknown, perimee: string): Echec {
   return { ok: false, erreur: e.message, code, ...(e.champ ? { champ: e.champ } : {}) };
 }
 
-function ecrireOutil<S extends z.ZodObject>(
+export function ecrireOutil<S extends z.ZodObject>(
   nom: string,
   description: string,
   schema: S,
   perimee: string,
   run: (args: z.infer<S>) => { donnees: unknown; evenement?: Evenement },
+  portes: Outil['portes'] = ['mcp'],
 ): Outil {
   return {
     nom,
     description,
     schema,
-    portes: ['mcp'],
+    portes,
     executer(args) {
       const p = schema.safeParse(args ?? {});
       if (!p.success) {

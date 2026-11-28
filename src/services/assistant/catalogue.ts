@@ -17,7 +17,7 @@ import { ecrireContenu, lireSection } from '../sections.js';
 import { TYPES_FICHE } from '../types-fiche.js';
 import type { Acteur } from '../types.js';
 import { outilsEcritureMcp } from './outils-ecriture-mcp.js';
-import { outilsLectureSysteme } from './outils-systeme.js';
+import { outilsEcritureSysteme, outilsLectureSysteme, outilsPersonnalisation } from './outils-systeme.js';
 import { lectureSysteme } from '../droits.js';
 import { systemeRattache } from '../systemes.js';
 import type { Catalogue, ContexteDemande, Evenement, Outil, Porte, Resultat } from './types.js';
@@ -357,9 +357,22 @@ export function catalogueDe(
 
   // The system's elements (AD-159): the system attached to the universe, the account's right on it and, for the MCP door,
   // the token's level on it — three facts read at each request. Closed over; never a parameter of a tool.
-  const rattache = porte === 'mcp' && !opts.systeme ? null : systemeRattache(db, universId);
-  if (rattache && lectureSysteme(db, compteId, rattache.id)) {
-    outils.push(...outilsLectureSysteme(db, compteId, universId, rattache.id, rattache.nom));
+  const rattache = systemeRattache(db, universId);
+  if (rattache) {
+    const droit = lectureSysteme(db, compteId, rattache.id);
+    // The MCP door lists the `systeme_*` tools only for a token with a row on the system; the readers for any level,
+    // the writers for `ecriture` and a GM of the system. The assistant's door: the account's right alone.
+    const porteSysteme = porte === 'assistant' || !!opts.systeme;
+    if (droit && porteSysteme) {
+      outils.push(...outilsLectureSysteme(db, compteId, universId, rattache.id, rattache.nom));
+      if (droit.role === 'mj' && (porte === 'assistant' || opts.systeme?.niveau === 'ecriture')) {
+        outils.push(...outilsEcritureSysteme(db, compteId, universId, rattache.id, rattache.nom, porte));
+      }
+    }
+    // Customising needs the GM of the universe and the door's ordinary level — no right, no row on the system (AD-mcp-sj-1).
+    if (role === 'mj' && niveau === 'ecriture') {
+      outils.push(...outilsPersonnalisation(db, compteId, universId, rattache.nom));
+    }
   }
 
   // The image engine is a GM tool, and absent when no engine exists (AD-45, AD-89).
