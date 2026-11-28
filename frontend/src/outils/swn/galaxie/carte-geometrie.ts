@@ -230,7 +230,8 @@ export function queueDeComete(comete: CometeGeo, etoile: Place, longueurAspect: 
 export function trajectoireDeComete(comete: CometeGeo, etoile: Place, rMaxU: number): { points: [number, number][] } {
   const nombre = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
   const e = EXCENTRICITE_COMETE;
-  const orbite = Math.max(nombre(comete.orbite) ?? 0, 0);
+  // the comet's own distance, in orbit units: where the map puts it (`rayonOrbite`, 0.5 U further than `orbite` from orbit 1 on)
+  const orbite = rayonOrbite(Math.max(nombre(comete.orbite) ?? 0, 0)) / U;
   // the aphelion `q (1 + e) / (1 - e)` must reach the comet's own distance, so a too small perihelion is raised to `orbite (1 - e) / (1 + e)`
   const plancher = Math.max(Math.min(PERIHELIE_MIN_U, orbite), (orbite * (1 - e)) / (1 + e));
   const q = Math.min(orbite, Math.max(plancher, nombre(comete.aspect?.perihelie) ?? Math.min(1, orbite)));
